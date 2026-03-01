@@ -128,11 +128,11 @@ const CheckboxGroup = ({ title, options, limit, onLimitExceeded }: { title: stri
     );
 };
 
-const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint?: string}) => (
+const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => (
     <div className="space-y-2">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label}</Label>
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
-            <input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
+            <input id={`${label}-upload`} type="file" className="hidden" accept={accept} required={required} />
             <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
@@ -163,7 +163,7 @@ const AuthorizedPersonFields = () => (
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
                 <div className="flex gap-2">
                     <div className="w-[100px] shrink-0">
-                        <Select defaultValue="90">
+                        <Select defaultValue="90" required>
                             <SelectTrigger className="h-11 rounded-xl">
                                 <SelectValue placeholder="Kod" />
                             </SelectTrigger>
@@ -181,7 +181,7 @@ const AuthorizedPersonFields = () => (
     </div>
 );
 
-const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: { title?: string }) => (
+const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya", emailRequired = true, phoneRequired = true }: { title?: string, emailRequired?: boolean, phoneRequired?: boolean }) => (
     <div className="space-y-6">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">{title}</h3>
         
@@ -191,14 +191,14 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-muted rounded-lg"><Mail className="h-4 w-4 text-muted-foreground" /></div>
-                    <Input type="email" placeholder="kurumsal@ornek.com" className="h-11 rounded-xl" />
+                    <Input type="email" placeholder="kurumsal@ornek.com" required={emailRequired} className="h-11 rounded-xl" />
                 </div>
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
                 <div className="flex gap-2">
                     <div className="w-[100px] shrink-0">
-                        <Select defaultValue="90">
+                        <Select defaultValue="90" required={phoneRequired}>
                             <SelectTrigger className="h-11 rounded-xl">
                                 <SelectValue placeholder="Kod" />
                             </SelectTrigger>
@@ -209,7 +209,7 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: {
                             </SelectContent>
                         </Select>
                     </div>
-                    <Input type="tel" placeholder="5XX XXX XX XX" className="h-11 rounded-xl flex-1" />
+                    <Input type="tel" placeholder="5XX XXX XX XX" required={phoneRequired} className="h-11 rounded-xl flex-1" />
                 </div>
             </div>
             <div className="space-y-2">
@@ -249,13 +249,13 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya" }: {
     </div>
 );
 
-const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
+const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => (
     <div className="space-y-4">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
-                <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
+                <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                     <SelectContent>
                         {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -264,7 +264,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
-                <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
+                <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                     <SelectContent>
                         {city && (districtsData[city] || ['Merkez']).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -273,7 +273,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
             </div>
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
+                <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district} required={required}>
                     <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
                     <SelectContent>
                         {district && (neighborhoodsData[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
@@ -283,21 +283,21 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
         </div>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
-            <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" />
+            <Input placeholder="Sokak, kapı no..." className="h-11 rounded-xl" required={required} />
         </div>
     </div>
 );
 
-const FinancialFields = ({ type = 'STK' }: { type?: 'STK' | 'Marka' }) => (
+const FinancialFields = ({ type = 'STK', required = false }: { type?: 'STK' | 'Marka', required?: boolean }) => (
     <div className="space-y-4">
         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal & Finansal</h3>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
-            <Input placeholder="Hesap Adı" className="h-11 rounded-xl" />
+            <Input placeholder="Hesap Adı" className="h-11 rounded-xl" required={required} />
         </div>
         <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN Numarası</Label>
-            <Input placeholder="TR..." className="h-11 rounded-xl font-mono" />
+            <Input placeholder="TR..." className="h-11 rounded-xl font-mono" required={required} />
         </div>
     </div>
 );
@@ -476,7 +476,7 @@ const FormRenderer = () => {
                     <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Telefon Numarası</Label>
                     <div className="flex gap-2">
                         <div className="w-[100px] shrink-0">
-                            <Select defaultValue="90">
+                            <Select defaultValue="90" required>
                                 <SelectTrigger className="h-12 rounded-xl font-bold">
                                     <SelectValue placeholder="Kod" />
                                 </SelectTrigger>
@@ -551,7 +551,7 @@ const FormRenderer = () => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
-                                <Input placeholder="hangel Derneği" className="h-11 rounded-xl" />
+                                <Input placeholder="hangel Derneği" required className="h-11 rounded-xl" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
@@ -577,7 +577,7 @@ const FormRenderer = () => {
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
-                                <Select defaultValue="both">
+                                <Select defaultValue="both" required>
                                     <SelectTrigger className="h-11 rounded-xl text-[11px]"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="donation">Bağış toplamak</SelectItem>
@@ -646,15 +646,15 @@ const FormRenderer = () => {
                     <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} />
                     <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} />
                     
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
-                    <FinancialFields />
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
+                    <FinancialFields required={true} />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler</h3>
-                        <FileUpload label="Logo" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" />
-                        <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Desteklenen format: .pdf, .png" />
-                        <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
+                        <FileUpload label="Logo" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" required={true} />
+                        <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Desteklenen format: .pdf, .png" required={true} />
+                        <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
                     </div>
 
                     <AuthorizedPersonFields />
@@ -695,7 +695,7 @@ const FormRenderer = () => {
 
                         {brandStatus && brandStatus !== 'brand' && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
-                                <FileUpload label="İşletme Kanıt Belgesi" accept=".pdf,.png,.jpg" hint="Statünüzü belgeleyen resmi döküman (Tüzük, tescil vb.)" />
+                                <FileUpload label="İşletme Kanıt Belgesi" accept=".pdf,.png,.jpg" hint="Statünüzü belgeleyen resmi döküman (Tüzük, tescil vb.)" required={true} />
                             </div>
                         )}
 
@@ -728,6 +728,7 @@ const FormRenderer = () => {
                                             value={item.category} 
                                             onChange={(e) => updateDonationRate(index, 'category', e.target.value)}
                                             className="h-10 rounded-xl"
+                                            required
                                         />
                                     </div>
                                     <div className="w-24 space-y-1">
@@ -738,6 +739,7 @@ const FormRenderer = () => {
                                             value={item.rate} 
                                             onChange={(e) => updateDonationRate(index, 'rate', e.target.value)}
                                             className="h-10 rounded-xl"
+                                            required
                                         />
                                     </div>
                                     <Button 
@@ -770,13 +772,13 @@ const FormRenderer = () => {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Affiliate ID veya Referral ID</Label>
-                                <Input placeholder="Örnek: HANGEL_REF_001" className="h-11 rounded-xl" />
+                                <Input placeholder="Örnek: HANGEL_REF_001" required className="h-11 rounded-xl" />
                                 <p className="text-[9px] text-muted-foreground italic ml-1">Markanın affiliate sistemi varsa sana vereceği ID</p>
                             </div>
 
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Affiliate / Tracking Link / Base URL</Label>
-                                <Input placeholder="Örnek: https://marka.com/product/123?ref=HANGEL_REF_001" className="h-11 rounded-xl" />
+                                <Input placeholder="Örnek: https://marka.com/product/123?ref=HANGEL_REF_001" required className="h-11 rounded-xl" />
                                 <p className="text-[9px] text-muted-foreground italic ml-1">Platform üzerinden yönlendirme için kullanılır</p>
                             </div>
 
@@ -803,26 +805,26 @@ const FormRenderer = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Cookie Süresi veya Tracking Window</Label>
-                                    <Input placeholder="Örn: 30 Gün" className="h-11 rounded-xl" />
+                                    <Input placeholder="Örn: 30 Gün" required className="h-11 rounded-xl" />
                                     <p className="text-[9px] text-muted-foreground italic ml-1">Kaç saat/gün içinde dönüşüm sayılacak</p>
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kategori / Ürün Bilgisi</Label>
-                                    <Input placeholder="Örn: Tüm ürünler" className="h-11 rounded-xl" />
+                                    <Input placeholder="Örn: Tüm ürünler" required className="h-11 rounded-xl" />
                                     <p className="text-[9px] text-muted-foreground italic ml-1">Hangi ürünleri yayınlayabilirsin</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
-                    <FinancialFields type="Marka" />
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
+                    <FinancialFields type="Marka" required={true} />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Yasal Belgeler & Logolar</h3>
-                        <FileUpload label="Vergi Levhası" accept=".pdf" hint="Desteklenen format: .pdf" />
-                        <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" />
+                        <FileUpload label="Vergi Levhası" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
+                        <FileUpload label="Marka Logosu" accept=".jpg,.jpeg,.png" hint="Yüksek çözünürlüklü .png veya .jpg" required={true} />
                     </div>
 
                     <AuthorizedPersonFields />
@@ -908,13 +910,13 @@ const FormRenderer = () => {
                         </div>
                     </div>
 
-                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} />
-                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" />
+                    <AddressFields city={city} setCity={setCity} district={district} setDistrict={setDistrict} neighborhood={neighborhood} setNeighborhood={setNeighborhood} required={true} />
+                    <CommunicationAndSocialMedia title="İletişim ve Sosyal Medya" emailRequired={true} phoneRequired={true} />
 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Görseller</h3>
-                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" />
-                        <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
+                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" required={true} />
+                        <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" required={true} />
                     </div>
 
                     <AuthorizedPersonFields />
@@ -957,7 +959,7 @@ const FormRenderer = () => {
                             <div className="space-y-6 pt-4 border-t border-dashed">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hesap Tipi</Label>
-                                    <Select onValueChange={handleTypeChange} value={type}>
+                                    <Select onValueChange={handleTypeChange} value={type} required>
                                         <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
                                             <SelectValue placeholder="Hesap tipi seçin..." />
                                         </SelectTrigger>
@@ -971,7 +973,7 @@ const FormRenderer = () => {
                                 {type === 'corporate' && (
                                     <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
-                                        <Select onValueChange={handleEntityChange} value={entity}>
+                                        <Select onValueChange={handleEntityChange} value={entity} required>
                                             <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
                                                 <SelectValue placeholder="Kuruluş türünü seçin..." />
                                             </SelectTrigger>
@@ -1067,7 +1069,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Telefon Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[100px] shrink-0">
-                                        <Select defaultValue="90">
+                                        <Select defaultValue="90" required>
                                             <SelectTrigger className="h-12 rounded-xl font-bold">
                                                 <SelectValue placeholder="Kod" />
                                             </SelectTrigger>
@@ -1078,7 +1080,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <Input type="tel" placeholder="5XX XXX XX XX" value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl text-center text-lg font-bold flex-1" />
+                                    <Input type="tel" placeholder="5XX XXX XX XX" value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl text-center text-lg font-bold flex-1" required />
                                 </div>
                             </div>
                             <Button onClick={handleInviteFriend} className="w-full h-12 rounded-2xl font-bold">Davet Et</Button>

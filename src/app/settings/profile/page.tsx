@@ -138,33 +138,33 @@ export default function ProfileSettingsPage() {
             </CardContent>
         </Card>
 
-        {/* Info Cards - Same as before but with updated state handlers */}
+        {/* Info Cards */}
         <Card>
             <CardHeader><CardTitle>Temel Bilgiler</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Ad Soyad</Label>
-                        <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} />
+                        <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} required />
                     </div>
                     <div className="space-y-2">
                         <Label>Kullanıcı Adı</Label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
-                            <Input value={profile.username.replace('@','')} onChange={(e) => handleChange('username', 'username', `@${e.target.value}`)} className="pl-8"/>
+                            <Input value={profile.username.replace('@','')} onChange={(e) => handleChange('username', 'username', `@${e.target.value}`)} className="pl-8" required />
                         </div>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>E-posta</Label>
-                        <Input value={profile.personalInfo.email} readOnly className="bg-muted" />
+                        <Input value={profile.personalInfo.email} readOnly className="bg-muted" required />
                     </div>
                      <div className="space-y-2">
                         <Label>Telefon</Label>
                         <div className="flex gap-2">
                             <div className="w-[100px] shrink-0">
-                                <Select defaultValue="90">
+                                <Select defaultValue="90" required>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Kod" />
                                     </SelectTrigger>
@@ -175,7 +175,7 @@ export default function ProfileSettingsPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Input value={profile.personalInfo.phone} onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)} className="flex-1" />
+                            <Input value={profile.personalInfo.phone} onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)} className="flex-1" required />
                         </div>
                     </div>
                 </div>
@@ -188,14 +188,14 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>İl</Label>
-                        <Select value={profile.personalInfo.address.city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v })}>
+                        <Select value={profile.personalInfo.address.city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v })} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>İlçe</Label>
-                        <Select value={profile.personalInfo.address.district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v })}>
+                        <Select value={profile.personalInfo.address.district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v })} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{districts[profile.personalInfo.address.city]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
@@ -204,14 +204,14 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Kan Grubu</Label>
-                        <Select value={profile.personalInfo.bloodType} onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)}>
+                        <Select value={profile.personalInfo.bloodType} onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{bloodGroups.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>Cinsiyet</Label>
-                        <Select value={profile.personalInfo.gender} onValueChange={(v) => handleChange('personalInfo', 'gender', v)}>
+                        <Select value={profile.personalInfo.gender} onValueChange={(v) => handleChange('personalInfo', 'gender', v)} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Erkek">Erkek</SelectItem>
@@ -229,7 +229,7 @@ export default function ProfileSettingsPage() {
         </div>
       </form>
 
-      {/* Rich Photo Editor Dialog */}
+      {/* Photo Editor Dialog */}
       <Dialog open={isPhotoEditorOpen} onOpenChange={setIsPhotoEditorOpen}>
           <DialogContent className="sm:max-w-md rounded-[2.5rem]">
               <DialogHeader>

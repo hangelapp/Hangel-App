@@ -12,7 +12,7 @@ import { Upload, ArrowLeft, Plus, X, Instagram, Facebook, Linkedin, Twitter, You
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, allUniversities, countryPhoneCodes } from '@/lib/data';
 
 // --- Shared Constants & Data ---
 const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantp", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
@@ -32,7 +32,6 @@ const neighborhoods: { [key: string]: string[] } = {
     'Fatih': ['Aksaray', 'Balat', 'Eminönü', 'Sultanahmet', 'Sirkeci', 'Beyazıt', 'Çapa', 'Kocamustafapaşa', 'Yedikule', 'Karagümrük'],
 };
 
-const universities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi'];
 const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 'Bölgesel', 'İş Dünyası', 'Girişimciler'];
 const allSdgs = ['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme', '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam', '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'];
 
@@ -56,11 +55,11 @@ const CheckboxGroup = ({ title, options }: { title: string, options: string[] })
     </div>
 );
 
-const FileUpload = ({label, accept, hint}: {label: string, accept?: string, hint?: string}) => (
+const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => (
     <div className="space-y-2">
-        <Label>{label}</Label>
+        <Label>{label} {required && "*"}</Label>
         <div className="flex items-center gap-4">
-            <Input id={`${label}-upload`} type="file" className="hidden" accept={accept} />
+            <Input id={`${label}-upload`} type="file" className="hidden" accept={accept} required={required} />
             <Button asChild variant="outline" size="sm">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
@@ -115,15 +114,15 @@ const SocialMediaFields = () => (
     </Card>
 );
 
-const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood }: any) => (
+const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => (
     <Card>
         <CardHeader><CardTitle className="text-lg">İletişim & Adres</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-            <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="iletisim@ornek.com" required /></div>
+            <div className="space-y-2"><Label>E-posta</Label><Input type="email" placeholder="iletisim@ornek.com" required={required} /></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                     <Label>İl</Label>
-                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
+                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
                         <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                         <SelectContent>
                             {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -132,7 +131,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                 </div>
                 <div className="space-y-2">
                     <Label>İlçe</Label>
-                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
+                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
                         <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                         <SelectContent>
                             {city && (districts[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -141,7 +140,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                 </div>
                 <div className="space-y-2">
                     <Label>Mahalle</Label>
-                    <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
+                    <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district} required={required}>
                         <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                         <SelectContent>
                             {district && (neighborhoods[district] || ['Merkez', 'Cumhuriyet', 'Hürriyet']).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
@@ -149,7 +148,7 @@ const AddressFields = ({ city, setCity, district, setDistrict, neighborhood, set
                     </Select>
                 </div>
             </div>
-            <div className="space-y-2"><Label>Açık Adres</Label><Input placeholder="Sokak, kapı no..." /></div>
+            <div className="space-y-2"><Label>Açık Adres</Label><Input placeholder="Sokak, kapı no..." required={required} /></div>
         </CardContent>
     </Card>
 );
@@ -188,12 +187,12 @@ export default function NewApplicationPage() {
                 <CardContent className="space-y-4">
                     <div className="space-y-2"><Label>Kuruluş Adı</Label><Input placeholder="Kuruluşunuzun tam adı" required /></div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2"><Label>Kuruluş Kısa Adı</Label><Input placeholder="Örn: TEMA" /></div>
-                        <div className="space-y-2"><Label>Kuruluş Yılı</Label><Input type="number" placeholder="Örn: 1992" /></div>
+                        <div className="space-y-2"><Label>Kuruluş Kısa Adı</Label><Input placeholder="Örn: TEMA" required /></div>
+                        <div className="space-y-2"><Label>Kuruluş Yılı</Label><Input type="number" placeholder="Örn: 1992" required /></div>
                     </div>
                     <div className="space-y-2">
                       <Label>Kuruluş Türü</Label>
-                      <Select>
+                      <Select required>
                         <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="dernek">Dernek</SelectItem>
@@ -215,6 +214,7 @@ export default function NewApplicationPage() {
                             maxLength={ABOUT_LIMIT} 
                             placeholder="Kuruluşunuzu anlatan kısa bir metin." 
                             className="min-h-[120px]"
+                            required
                         />
                     </div>
                 </CardContent>
@@ -226,6 +226,7 @@ export default function NewApplicationPage() {
                 city={officeCity} setCity={setOfficeCity}
                 district={officeDistrict} setDistrict={setOfficeDistrict}
                 neighborhood={officeNeighborhood} setNeighborhood={setOfficeNeighborhood}
+                required={true}
             />
 
             <SocialMediaFields />
@@ -233,9 +234,9 @@ export default function NewApplicationPage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">Yasal Belgeler</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                    <FileUpload label="Logo" accept=".jpg,.jpeg" hint="Desteklenen format: .jpg" />
-                    <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" />
-                    <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" />
+                    <FileUpload label="Logo" accept=".jpg,.jpeg,.png" hint="Desteklenen format: .jpg, .png" required={true} />
+                    <FileUpload label="Faaliyet Belgesi" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
+                    <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" required={true} />
                 </CardContent>
             </Card>
           </div>
@@ -248,7 +249,7 @@ export default function NewApplicationPage() {
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
                             <Label>Kulüp Türü</Label>
-                            <Select onValueChange={setClubSchoolType}>
+                            <Select onValueChange={setClubSchoolType} required>
                                 <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="university">Üniversite</SelectItem>
@@ -259,8 +260,8 @@ export default function NewApplicationPage() {
                         {clubSchoolType === 'university' && (
                             <div className="space-y-2">
                                 <Label>Üniversite</Label>
-                                <Select><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
-                                    <SelectContent>{universities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                                <Select required><SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
+                                    <SelectContent>{allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                         )}
@@ -271,8 +272,8 @@ export default function NewApplicationPage() {
                 <Card>
                     <CardHeader><CardTitle className="text-lg">Görseller</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" />
-                        <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" />
+                        <FileUpload label="Kulüp Logosu" accept=".jpg,.jpeg,.png" required={true} />
+                        <FileUpload label="Kapak Fotoğrafı" accept=".jpg,.jpeg,.png" required={true} />
                     </CardContent>
                 </Card>
             </div>
@@ -284,7 +285,7 @@ export default function NewApplicationPage() {
                     <CardHeader><CardTitle className="text-lg">Marka Kimliği</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2"><Label>Marka Adı</Label><Input placeholder="Markanızın adı" required /></div>
-                        <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" /></div>
+                        <div className="space-y-2"><Label>Web Sitesi</Label><Input placeholder="https://marka.com" required /></div>
                         
                         <div className="space-y-4 border-t pt-4">
                             <Label className="text-base font-semibold">Kategori Bazlı Bağış Oranları (%)</Label>
@@ -297,6 +298,7 @@ export default function NewApplicationPage() {
                                             <Select 
                                                 value={item.category} 
                                                 onValueChange={(val) => updateDonationRate(index, 'category', val)}
+                                                required
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Seçiniz" />
@@ -315,6 +317,7 @@ export default function NewApplicationPage() {
                                                 placeholder="5" 
                                                 value={item.rate} 
                                                 onChange={(e) => updateDonationRate(index, 'rate', e.target.value)}
+                                                required
                                             />
                                         </div>
                                         <Button 
@@ -341,6 +344,7 @@ export default function NewApplicationPage() {
                     city={officeCity} setCity={setOfficeCity}
                     district={officeDistrict} setDistrict={setOfficeDistrict}
                     neighborhood={officeNeighborhood} setNeighborhood={setOfficeNeighborhood}
+                    required={true}
                 />
 
                 <SocialMediaFields />
@@ -348,9 +352,9 @@ export default function NewApplicationPage() {
                 <Card>
                     <CardHeader><CardTitle className="text-lg">Yasal & Finansal</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="space-y-2"><Label>Yasal Unvan</Label><Input placeholder="Şirket tam adı" /></div>
-                        <div className="space-y-2"><Label>IBAN</Label><Input placeholder="TR..." /></div>
-                        <FileUpload label="Vergi Levhası" accept=".pdf" />
+                        <div className="space-y-2"><Label>Yasal Unvan</Label><Input placeholder="Şirket tam adı" required /></div>
+                        <div className="space-y-2"><Label>IBAN</Label><Input placeholder="TR..." required /></div>
+                        <FileUpload label="Vergi Levhası" accept=".pdf" required={true} />
                     </CardContent>
                 </Card>
             </div>

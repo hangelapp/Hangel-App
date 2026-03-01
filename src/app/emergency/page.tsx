@@ -102,7 +102,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                              <Label htmlFor="contact-phone">İrtibat Telefon</Label>
                              <div className="flex gap-1">
                                 <div className="w-[70px] shrink-0">
-                                    <Select defaultValue="90">
+                                    <Select defaultValue="90" required>
                                         <SelectTrigger className="h-10 px-2 text-xs">
                                             <SelectValue />
                                         </SelectTrigger>

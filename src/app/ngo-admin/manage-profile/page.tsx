@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Facebook, Instagram, Linkedin, Youtube, Link as LinkIcon, ArrowLeft, Globe, Mail, Phone, MapPin, Sparkles, Target, Users, CheckCircle2, X, Plus } from 'lucide-react';
+import { Upload, Facebook, Instagram, Linkedin, Youtube, Link as LinkIcon, ArrowLeft, Globe, Mail, Phone, MapPin, Sparkles, Target, Users, CheckCircle2, X, Plus, Save } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
@@ -54,11 +53,11 @@ const allSdgs = [
 const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
 const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
-const FileUpload = ({label, currentFile}: {label: string, currentFile?: string}) => (
+const FileUpload = ({label, currentFile, required}: {label: string, currentFile?: string, required?: boolean}) => (
     <div className="space-y-2">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label}</Label>
+        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
-            <input id={`${label}-upload`} type="file" className="hidden" />
+            <input id={`${label}-upload`} type="file" className="hidden" required={required} />
             <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Belge Seç'}</label>
             </Button>
@@ -148,17 +147,17 @@ export default function ManageProfilePage() {
 
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Tam Adı</Label>
-                <Input defaultValue="Ahbap Derneği" className="h-11 rounded-xl" />
+                <Input defaultValue="Ahbap Derneği" className="h-11 rounded-xl" required />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
-                    <Input defaultValue="Ahbap" className="h-11 rounded-xl" />
+                    <Input defaultValue="Ahbap" className="h-11 rounded-xl" required />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
-                    <Select defaultValue="2017">
+                    <Select defaultValue="2017" required>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
@@ -170,7 +169,7 @@ export default function ManageProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme Durumu</Label>
-                    <Select defaultValue="var">
+                    <Select defaultValue="var" required>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="var">Var</SelectItem>
@@ -180,7 +179,7 @@ export default function ManageProfilePage() {
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
-                    <Select defaultValue="both">
+                    <Select defaultValue="both" required>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="donation">Bağış toplamak</SelectItem>
@@ -214,13 +213,14 @@ export default function ManageProfilePage() {
             <div className="space-y-2">
                 <div className="flex justify-between items-end mb-1">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Hakkında</Label>
-                    <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_MAX_LENGTH}</span>
+                    <span className={cn("text-[10px] font-bold text-muted-foreground")}>{aboutText.length} / {ABOUT_MAX_LENGTH}</span>
                 </div>
                 <Textarea 
                     value={aboutText} 
                     onChange={(e) => setAboutText(e.target.value)} 
                     maxLength={ABOUT_MAX_LENGTH} 
                     className="min-h-[120px] rounded-2xl"
+                    required
                 />
             </div>
           </CardContent>
@@ -240,30 +240,30 @@ export default function ManageProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
-                        <Select value={city} onValueChange={setCity}>
+                        <Select value={city} onValueChange={setCity} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
-                        <Input value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl" />
+                        <Input value={district} onChange={(e) => setDistrict(e.target.value)} className="h-11 rounded-xl" required />
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
-                    <Input type="email" defaultValue="iletisim@ahbap.org" className="h-11 rounded-xl" />
+                    <Input type="email" defaultValue="iletisim@ahbap.org" className="h-11 rounded-xl" required />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
                     <div className="flex gap-2">
                         <div className="w-[100px] shrink-0">
-                            <Select defaultValue="90">
+                            <Select defaultValue="90" required>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                                 <SelectContent>{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
-                        <Input defaultValue="5551234567" className="h-11 rounded-xl flex-1" />
+                        <Input defaultValue="5551234567" className="h-11 rounded-xl flex-1" required />
                     </div>
                 </div>
             </CardContent>
@@ -296,9 +296,9 @@ export default function ManageProfilePage() {
             <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Yasal Belgeler</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile="ahbap_logo.png" />
-             <FileUpload label="Faaliyet Belgesi (PNG/PDF)" currentFile="faaliyet_belgesi_2024.pdf" />
-             <FileUpload label="Tüzük / Vakıf Senedi (PDF)" currentFile="dernek_tuzugu.pdf" />
+             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile="ahbap_logo.png" required={true} />
+             <FileUpload label="Faaliyet Belgesi (PNG/PDF)" currentFile="faaliyet_belgesi_2024.pdf" required={true} />
+             <FileUpload label="Tüzük / Vakıf Senedi (PDF)" currentFile="dernek_tuzugu.pdf" required={true} />
           </CardContent>
         </Card>
 
@@ -310,15 +310,15 @@ export default function ManageProfilePage() {
             <CardContent className="space-y-4 pt-0">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                    <Input defaultValue="Haluk Levent" className="h-11 rounded-xl bg-white" />
+                    <Input defaultValue="Haluk Levent" className="h-11 rounded-xl bg-white" required />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
-                    <Input defaultValue="Genel Başkan" className="h-11 rounded-xl bg-white" />
+                    <Input defaultValue="Genel Başkan" className="h-11 rounded-xl bg-white" required />
                 </div>
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şahsi E-posta</Label>
-                    <Input defaultValue="haluk@ahbap.org" className="h-11 rounded-xl bg-white" />
+                    <Input defaultValue="haluk@ahbap.org" className="h-11 rounded-xl bg-white" required />
                 </div>
             </CardContent>
         </Card>

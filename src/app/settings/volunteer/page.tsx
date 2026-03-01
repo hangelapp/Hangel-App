@@ -144,7 +144,7 @@ export default function VolunteerSettingsPage() {
     };
 
     return (
-        <div className="p-4 space-y-6 animate-in fade-in-0">
+        <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
@@ -172,7 +172,7 @@ export default function VolunteerSettingsPage() {
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
                             <Label>Üniversite</Label>
-                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)}>
+                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)} required>
                                 <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
                                 <SelectContent>
                                     {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
@@ -191,7 +191,7 @@ export default function VolunteerSettingsPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="sector">Çalıştığınız Sektör</Label>
-                                <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)}>
+                                <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)} required>
                                     <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -200,7 +200,7 @@ export default function VolunteerSettingsPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
-                                <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)}>
+                                <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)} required>
                                     <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
                                     <SelectContent>
                                         {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -261,13 +261,13 @@ export default function VolunteerSettingsPage() {
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-1" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} />
+                                    <Input id="emergency-contact-name-1" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} required />
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
                                     <div className="flex gap-2">
                                         <div className="w-[100px] shrink-0">
-                                            <Select defaultValue="90">
+                                            <Select defaultValue="90" required>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Kod" />
                                                 </SelectTrigger>
@@ -278,7 +278,7 @@ export default function VolunteerSettingsPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" />
+                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" required />
                                     </div>
                                 </div>
                             </div>

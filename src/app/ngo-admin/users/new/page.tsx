@@ -119,7 +119,7 @@ export default function NewUserPage() {
                                 <Label htmlFor="phone">Telefon Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[100px] shrink-0">
-                                        <Select defaultValue="90">
+                                        <Select defaultValue="90" required>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Kod" />
                                             </SelectTrigger>
@@ -150,7 +150,7 @@ export default function NewUserPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="role">Rol</Label>
-                            <Select value={role} onValueChange={setRole}>
+                            <Select value={role} onValueChange={setRole} required>
                                 <SelectTrigger id="role">
                                     <SelectValue />
                                 </SelectTrigger>
