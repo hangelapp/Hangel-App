@@ -253,7 +253,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">Giriş Yap</Link>
+                            <Link href="/login/selection?action=login">Geniş Yap</Link>
                         </Button>
                     )}
                 </div>

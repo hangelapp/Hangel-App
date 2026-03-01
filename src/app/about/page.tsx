@@ -193,8 +193,8 @@ export default function AboutPage() {
             
             {/* Hangel Derneği */}
             <AppleSection 
-                title="Sivil Toplumের Kalbinde: hangel Derneği."
-                description="Platformun teknolojik gücünü, Social Business Global Derneğinin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
+                title="Sivil Toplum'un Kalbinde: hangel Derneği."
+                description="Platformun teknolojik gücünü, Social Business Global Derneği'nin (SBG) saha tecrübesi ve akademik vizyonuyla birleştiriyoruz. Derneğimiz, sosyal girişimcilik ekosistemini güçlendirmek, mevzuat çalışmaları yapmak ve uluslararası işbirlikleri kurmak için çalışır."
                 cta1="Daha Fazla Bilgi"
                 cta1Href="/hangelassociation"
                 imageUrl="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop"

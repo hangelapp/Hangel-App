@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, MessageSquare, Edit, Loader2 } from 'lucide-react';
-import { allEntityLists } from '@/lib/data';
+import { allEntityLists, ngos } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -245,7 +245,7 @@ export default function BrandProfilePage() {
                     <CardTitle className="text-lg flex items-center gap-2 text-primary">
                         <ShieldAlert className="h-5 w-5" /> Mağaza Özel Koşulları
                     </CardTitle>
-                    <CardDescription className="font-medium">Bağışınızın sorunsuz yansıması için lütfen okuyunuz.</CardDescription>
+                    <CardDescription className="font-medium">Bağış countdownText yansıması için lütfen okuyunuz.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm">
                     <div className="grid gap-4">
