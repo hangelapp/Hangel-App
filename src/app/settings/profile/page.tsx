@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,36 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { user as staticUser, countryPhoneCodes } from '@/lib/data';
-import { ArrowLeft, Github, Linkedin, Globe, Palette, Instagram, Camera, Trash2, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { user as staticUser, countryPhoneCodes, allProvinces, districtsData } from '@/lib/data';
+import { ArrowLeft, Camera, Trash2, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Slider } from '@/components/ui/slider';
+import Image from 'next/image';
 
-const XIcon = (props: React.ComponentProps<'svg'>) => (
-    <svg
-      role="img"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      {...props}
-    >
-      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
-    </svg>
-);
-
-const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
-
-const nationalities = ['Türkiye Cumhuriyeti', 'Diğer'];
 const bloodGroups = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'];
-const cities = allProvinces;
-const districts: { [key: string]: string[] } = {
-    'İstanbul': ['Kadıköy', 'Beşiktaş', 'Fatih', 'Üsküdar', 'Sarıyer'],
-    'Ankara': ['Çankaya', 'Mamak', 'Keçiören'],
-    'İzmir': ['Konak', 'Bornova', 'Karşıyaka'],
-};
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -188,16 +169,16 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>İl</Label>
-                        <Select value={profile.personalInfo.address.city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v })} required>
+                        <Select value={profile.personalInfo.address.city} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '' })} required>
                             <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>{cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>İlçe</Label>
-                        <Select value={profile.personalInfo.address.district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v })} required>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>{districts[profile.personalInfo.address.city]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                        <Select value={profile.personalInfo.address.district} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v })} required disabled={!profile.personalInfo.address.city}>
+                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectContent>{districtsData[profile.personalInfo.address.city]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 </div>
