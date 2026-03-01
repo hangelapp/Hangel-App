@@ -1,0 +1,51 @@
+
+[
+  {
+    "id": "1",
+    "name": "TEMA Vakfı",
+    "foundationYear": 1992,
+    "category": "Çevre",
+    "type": "Vakıf",
+    "transparencyScore": 92,
+    "about": "Türkiye Çöl Olmasın! TEMA Vakfı, ağaçlandırma ve erozyonla mücadele ederek Türkiye'nin topraklarını korumaktadır.",
+    "supportedSDGs": ["İklim Eylemi", "Sudaki Yaşam", "Karasal Yaşam"],
+    "beneficiaryGroups": ["Çevre", "Gelecek Nesiller"],
+    "contact": {
+      "email": "info@tema.org.tr",
+      "phone": "0212 292 69 69",
+      "website": "https://tema.org.tr"
+    }
+  },
+  {
+    "id": "2",
+    "name": "Uluslararası Sosyal Fayda Derneği",
+    "shortName": "SBG",
+    "foundationYear": 2017,
+    "category": "Dayanışma",
+    "type": "Dernek",
+    "transparencyScore": 95,
+    "about": "Uluslararası Sosyal Fayda Derneği, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
+    "supportedSDGs": ["Yoksulluğa Son", "Açlığa Son", "Nitelikli Eğitim"],
+    "beneficiaryGroups": ["İhtiyaç Sahipleri", "Afetzedeler", "Öğrenciler"],
+    "contact": {
+      "email": "info@socialbusinessglobal.org",
+      "phone": "0216 550 50 50",
+      "website": "https://socialbusinessglobal.org"
+    }
+  },
+  {
+    "id": "8",
+    "name": "hangel Derneği",
+    "shortName": "hangel",
+    "foundationYear": 2020,
+    "category": "Sosyal İnovasyon",
+    "type": "Dernek",
+    "transparencyScore": 98,
+    "about": "hangel Derneği, sosyal fayda odaklı teknoloji ve inovasyon projeleri geliştirerek, bireylerin ve kurumların sosyal etki potansiyelini en üst düzeye çıkarmayı hedefler.",
+    "contact": {
+      "email": "dernek@hangel.org",
+      "phone": "0850 123 45 67",
+      "website": "https://hangelassociation.org"
+    }
+  }
+]

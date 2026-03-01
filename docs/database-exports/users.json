@@ -1,0 +1,25 @@
+
+[
+  {
+    "id": "1",
+    "name": "İsmail Hilmi ADIGÜZEL",
+    "username": "@ismailhilmicom",
+    "email": "i.adiguzel@email.com",
+    "impactScore": 15750,
+    "avatarUrl": "https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080",
+    "phoneNumber": "5077007007",
+    "birthDate": "1993-05-21",
+    "gender": "Erkek",
+    "nationality": "Türkiye Cumhuriyeti",
+    "bloodType": "0 Rh+",
+    "address": {
+      "country": "Türkiye",
+      "city": "İstanbul",
+      "district": "Kadıköy",
+      "neighborhood": "Caferağa",
+      "fullAddress": "Caferağa Mah. Moda Cad. No: 123 D:4"
+    },
+    "skills": ["Proje Yönetimi", "Sosyal Medya Yönetimi", "Grafik Tasarım", "Bağışçı İlişkileri"],
+    "interests": ["Hayvan Hakları", "Çevre", "Eğitim", "Sosyal Girişimcilik"]
+  }
+]

@@ -1,0 +1,33 @@
+
+[
+  {
+    "id": "1",
+    "title": "Afet Bölgesi Lojistik Destek",
+    "organization": "Uluslararası Sosyal Fayda Derneği",
+    "ngoId": "2",
+    "location": { "city": "Hatay", "district": "Antakya", "type": "Saha" },
+    "socialArea": "Afet",
+    "points": 1500,
+    "dates": {
+      "applicationEnd": "2026-05-21",
+      "eventStart": "2025-06-01",
+      "eventEnd": "2025-06-30"
+    },
+    "description": "Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz."
+  },
+  {
+    "id": "5",
+    "title": "Üniversite Sosyal Etki Temsilcisi",
+    "organization": "hangel Derneği",
+    "ngoId": "8",
+    "location": { "city": "Online", "district": "Türkiye Geneli", "type": "Online" },
+    "socialArea": "Sosyal Girişimcilik",
+    "points": 5000,
+    "dates": {
+      "applicationEnd": "2026-05-21",
+      "eventStart": "2025-06-01",
+      "eventEnd": "2026-06-01"
+    },
+    "description": "Kampüsünüzde sosyal etki rüzgarı estirin! hangel'in üniversite temsilcisi olun."
+  }
+]

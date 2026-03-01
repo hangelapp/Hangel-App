@@ -1,0 +1,53 @@
+
+[
+  {
+    "id": "brand-1",
+    "name": "Trip.com",
+    "slug": "tripcom",
+    "donationRate": 2,
+    "category": "Seyahat",
+    "type": "brand",
+    "domain": "trip.com",
+    "logoUrl": "https://logo.clearbit.com/trip.com"
+  },
+  {
+    "id": "brand-2",
+    "name": "Pazarama",
+    "slug": "pazarama",
+    "donationRate": 2,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "pazarama.com",
+    "logoUrl": "https://logo.clearbit.com/pazarama.com"
+  },
+  {
+    "id": "brand-3",
+    "name": "Karaca",
+    "slug": "karaca",
+    "donationRate": 3,
+    "category": "Ev & Yaşam",
+    "type": "brand",
+    "domain": "karaca.com",
+    "logoUrl": "https://logo.clearbit.com/karaca.com"
+  },
+  {
+    "id": "brand-22",
+    "name": "Decathlon",
+    "slug": "decathlon",
+    "donationRate": 2,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "decathlon.com.tr",
+    "logoUrl": "https://logo.clearbit.com/decathlon.com.tr"
+  },
+  {
+    "id": "brand-26",
+    "name": "Amazon TR",
+    "slug": "amazontr",
+    "donationRate": 13,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "amazon.com.tr",
+    "logoUrl": "https://logo.clearbit.com/amazon.com.tr"
+  }
+]
