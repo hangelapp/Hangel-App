@@ -1,9 +1,10 @@
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, MessageSquare, Edit } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, MessageSquare, Edit, Loader2 } from 'lucide-react';
 import { allEntityLists } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,8 +16,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
-// Local StatRow component for statistics tab
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
     return (
@@ -27,7 +29,6 @@ const StatRow = ({ label, value }: { label: string, value: string | number | und
     );
 };
 
-// Local PostCard component for posts tab
 const PostCard = ({ post }: { post: Post }) => (
     <Card>
         <CardHeader>
@@ -67,13 +68,15 @@ export default function BrandProfilePage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { user: authUser } = useUser();
+  const db = useFirestore();
   const slug = params.id as string;
   const [brand, setBrand] = useState<Brand | null | undefined>(undefined);
   const [profileUrl, setProfileUrl] = useState('');
+  const [isDonating, setIsDonating] = useState(false);
 
   useEffect(() => {
-    const storedBrands = localStorage.getItem('managedBrands');
-    const brandsSource: Brand[] = storedBrands ? JSON.parse(storedBrands) : allEntityLists;
+    const brandsSource = allEntityLists;
     const foundBrand = brandsSource.find((b: Brand) => b.slug === slug);
     setBrand(foundBrand || null);
     
@@ -81,6 +84,40 @@ export default function BrandProfilePage() {
       setProfileUrl(window.location.href);
     }
   }, [slug]);
+
+  const handleStartShopping = () => {
+    if (!authUser) {
+        toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Bağış sürecini başlatmak için lütfen oturum açın." });
+        return;
+    }
+    
+    if (!brand) return;
+
+    setIsDonating(true);
+    const transRef = collection(db, 'donations');
+    
+    addDocumentNonBlocking(transRef, {
+        userId: authUser.uid,
+        brandId: brand.id,
+        brandName: brand.name,
+        purchaseAmount: "0.00", // Will be updated by system
+        donationAmount: "0.00", // Will be updated by system
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+        type: 'expense',
+        status: 'Yönlendirildi',
+        ngo: ["Varsayılan STK'nız"]
+    });
+
+    setTimeout(() => {
+        setIsDonating(false);
+        toast({
+            title: "Mağazaya Yönlendiriliyorsunuz",
+            description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
+        });
+        // Real app would redirect here: window.open(brand.affiliateLink, '_blank');
+    }, 1000);
+  };
 
   if (brand === undefined) {
     return (
@@ -141,10 +178,10 @@ export default function BrandProfilePage() {
                 <span className="font-bold text-foreground">{brand.followers?.toLocaleString('tr-TR') || 0}</span> kişi bu markayı takip ederek destekliyor.
             </div>
             <div className="flex gap-2 mt-2">
-                <Button className="flex-1">
-                    Alışverişe Başla <ExternalLink className="ml-2 h-4 w-4" />
+                <Button className="flex-1" onClick={handleStartShopping} disabled={isDonating}>
+                    {isDonating ? <Loader2 className="animate-spin h-4 w-4" /> : <>Alışverişe Başla <ExternalLink className="ml-2 h-4 w-4" /></>}
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={() => toast({ title: "Takip Edildi", description: `${brand.name} artık favorilerinde.` })}>
                     <Heart className="mr-2 h-4 w-4" /> Takip Et
                 </Button>
             </div>

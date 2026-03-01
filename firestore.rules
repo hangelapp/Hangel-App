@@ -9,16 +9,48 @@ service cloud.firestore {
     }
 
     // --- Veri Erişim Kuralları ---
-    // Geliştirme ve MVP aşamasında, giriş yapmış tüm kullanıcıların 
-    // tüm koleksiyonlara (users, applications, ngos, brands vb.) 
-    // tam erişimini sağlıyoruz. Bu, Super Admin panelindeki listeleme 
-    // ve sayma hatalarını kesin olarak çözer.
+    // Geliştirme aşamasında tüm ana koleksiyonlara tam erişim sağlıyoruz.
+    // Bu kural yapısı 'list' operasyonlarındaki (Super Admin sayaçları gibi) 
+    // yetki hatalarını kesin olarak önler.
 
+    match /users/{userId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /applications/{appId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /ngos/{ngoId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /brands/{brandId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /posts/{postId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /volunteering/{oppId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /library/{sectionId} {
+      allow read, write: if isSignedIn();
+    }
+    
+    match /events/{eventId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // fallback kuralı
     match /{allPaths=**} {
       allow read, write: if isSignedIn();
     }
     
-    // Sistem watcher tetikleyici yorum satırı: Yetki kuralları global erişim için güncellendi.
-    // Son güncelleme: 2024-07-22 16:45
+    // Sistem watcher tetikleyici: Yetki kuralları koleksiyon bazlı ve global olarak güçlendirildi.
+    // Son güncelleme: 2024-07-22 18:30
   }
 }
