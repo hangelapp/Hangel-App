@@ -47,7 +47,7 @@ const funds = [
         status: 'Açık', 
         deadline: '2024-09-15', 
         areas: ['Sosyal Girişimcilik', 'Gençlik'],
-        description: 'Sosyal girişimcilerin kapasite gelişimini, ekosistem içindeki işbirliklerini ve toplumsal etki odaklı yeni iş modellerini destekleyen bir hızlandırma ve hibe programıdır.',
+        description: 'Sosyal girişimlerin kapasite gelişimini, ekosistem içindeki işbirliklerini ve toplumsal etki odaklı yeni iş modellerini destekleyen bir hızlandırma ve hibe programıdır.',
         budget: '25.000 ₺ - 75.000 ₺',
         requirements: 'Sosyal girişim statüsündeki veya bu modele geçmek isteyen yapılar.',
         url: 'https://sosyalgirisimcilikagi.org'

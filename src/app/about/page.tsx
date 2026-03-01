@@ -133,8 +133,8 @@ export default function AboutPage() {
                 imageHint="university students working together"
             >
                 <div className="mt-4 flex justify-center">
-                    <Link href="/hangelassociation" className="text-primary font-bold hover:underline flex items-center group text-[11px] uppercase tracking-wider">
-                        Derneğin ana sayfasını görüntüle <ChevronRight className="ml-1 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    <Link href="/hangelassociation" className="text-primary font-medium hover:underline flex items-center group text-[10px] tracking-tight">
+                        Derneğin ana sayfasını görüntüle <ChevronRight className="ml-0.5 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                 </div>
             </AppleSection>
