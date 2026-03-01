@@ -137,7 +137,7 @@ const ProductShowcaseSection = ({
         ) : (
             imageUrl && (
                 <div className="relative w-full flex-1 flex items-end justify-center mt-16 px-4 max-w-7xl mx-auto">
-                    <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-25px_rgba(0,0,0,0.1)]">
+                    <div className="relative w-full aspect-[21/9] rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.1)]">
                         <Image src={imageUrl} alt={title} fill className="object-cover" data-ai-hint={imageHint} />
                     </div>
                 </div>
@@ -254,7 +254,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">Giriş Yap</Link>
+                            <Link href="/login/selection?action=login">Geniş Yap</Link>
                         </Button>
                     )}
                 </div>
@@ -594,8 +594,8 @@ export default function LoginPage() {
             title: "Kütüphane", 
             description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
             href: "/library",
-            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "modern library",
+            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1513475382585-d06e58bc0e05?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "digital library",
             linkText: "Kütüphaneye Gir",
             linkText2: "Daha Fazla Bilgi",
             href2: "/library"

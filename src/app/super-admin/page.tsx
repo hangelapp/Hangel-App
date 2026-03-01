@@ -29,7 +29,8 @@ import {
   Globe,
   MessageSquare,
   DatabaseZap,
-  Activity
+  Activity,
+  ChevronRight
 } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -179,7 +180,7 @@ export default function SuperAdminDashboard() {
                                         <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.label}</p>
                                         <p className="text-sm text-muted-foreground font-medium leading-tight">{item.description}</p>
                                     </div>
-                                    <Icons.ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
+                                    <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
                                 </div>
                             </Link>
                         )

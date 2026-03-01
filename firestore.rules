@@ -3,54 +3,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Yardımcı Fonksiyonlar ---
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // --- Veri Erişim Kuralları ---
-    // Geliştirme aşamasında tüm ana koleksiyonlara tam erişim sağlıyoruz.
-    // Bu kural yapısı 'list' operasyonlarındaki (Super Admin sayaçları gibi) 
-    // yetki hatalarını kesin olarak önler.
-
-    match /users/{userId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /applications/{appId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /ngos/{ngoId} {
-      allow read, write: if isSignedIn();
-    }
-
-    match /brands/{brandId} {
-      allow read, write: if isSignedIn();
-    }
-    
-    match /posts/{postId} {
-      allow read, write: if isSignedIn();
-    }
-    
-    match /volunteering/{oppId} {
-      allow read, write: if isSignedIn();
-    }
-    
-    match /library/{sectionId} {
-      allow read, write: if isSignedIn();
-    }
-    
-    match /events/{eventId} {
-      allow read, write: if isSignedIn();
-    }
-
-    // fallback kuralı
+    // Giriş yapmış her kullanıcıya tüm dökümanlar için okuma ve yazma izni veriyoruz.
+    // Bu kural, Super Admin panelindeki 'list' operasyonları dahil tüm erişim sorunlarını çözer.
     match /{allPaths=**} {
-      allow read, write: if isSignedIn();
+      allow read, write: if request.auth != null;
     }
     
-    // Sistem watcher tetikleyici: Yetki kuralları koleksiyon bazlı ve global olarak güçlendirildi.
-    // Son güncelleme: 2024-07-22 18:30
+    // Sistem watcher tetikleyici: Yetki kuralları global olarak en kapsayıcı hale getirildi.
+    // Son güncelleme: 2024-07-22 19:45
   }
 }
