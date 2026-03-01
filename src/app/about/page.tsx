@@ -132,9 +132,9 @@ export default function AboutPage() {
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="university students working together"
             >
-                <div className="mt-8 flex justify-center">
-                    <Link href="/hangelassociation" className="text-primary font-bold hover:underline flex items-center group text-lg">
-                        Derneğin ana sayfasını görüntüle <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <div className="mt-6 flex justify-center">
+                    <Link href="/hangelassociation" className="text-primary font-bold hover:underline flex items-center group text-sm">
+                        Derneğin ana sayfasını görüntüle <ChevronRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                 </div>
             </AppleSection>
