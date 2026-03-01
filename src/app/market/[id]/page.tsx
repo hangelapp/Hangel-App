@@ -1,4 +1,3 @@
-
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -103,7 +102,7 @@ export default function BrandProfilePage() {
             </div>
           </div>
           <div className="p-4 space-y-4">
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-24" />
             <Skeleton className="h-40 w-full" />
           </div>
         </div>
@@ -159,89 +158,82 @@ export default function BrandProfilePage() {
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
         </TabsList>
         <TabsContent value="about" className="p-4 space-y-4">
-            <Card>
+            <Card className="rounded-[2rem] shadow-sm border-black/5">
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Marka Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
-                    <p>{brand.about}</p>
-                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t">
-                        <Badge variant="secondary">{brand.type}</Badge>
-                        <Badge variant="secondary">{brand.category}</Badge>
-                        {brand.joinDate && <Badge variant="outline" className='text-xs'>Katılım: {brand.joinDate}</Badge>}
+                    <p className="leading-relaxed">{brand.about}</p>
+                    <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-dashed">
+                        <Badge variant="secondary" className="font-bold">{brand.type}</Badge>
+                        <Badge variant="secondary" className="font-bold">{brand.category}</Badge>
+                        {brand.joinDate && <Badge variant="outline" className='text-[10px] uppercase font-bold tracking-widest'>Katılım: {brand.joinDate}</Badge>}
                     </div>
                 </CardContent>
             </Card>
             {brand.donationRate > 0 && (
-                 <Card>
-                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Percent className="h-5 w-5 text-primary"/> Bağış Oranları</CardTitle></CardHeader>
-                    <CardContent className='space-y-3'>
-                        <div>
-                            <p className="text-2xl font-bold text-primary">%{brand.donationRate}</p>
-                            <p className="text-sm text-muted-foreground">Bu markadan yapacağınız her alışverişin ortalama %{brand.donationRate}'i seçtiğiniz STK'ya bağışlanır.</p>
+                 <Card className="rounded-[2rem] shadow-sm border-black/5 overflow-hidden">
+                    <CardHeader className="bg-primary/5 pb-6">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg flex items-center gap-2 text-primary">
+                                <Percent className="h-5 w-5"/> Bağış Oranları
+                            </CardTitle>
+                            <Badge className="bg-primary text-white font-black text-xl px-4 py-1.5 h-auto rounded-xl">%{brand.donationRate}</Badge>
                         </div>
-                        {brand.donationByCategory && brand.donationByCategory.length > 0 && (
-                            <div className="pt-4 border-t">
-                                <h4 className="font-semibold text-sm mb-2 text-foreground">Kategori Bazlı Oranlar</h4>
-                                <div className="rounded-xl border overflow-hidden">
-                                    <table className="w-full text-xs text-left">
-                                        <thead className="bg-muted">
-                                            <tr>
-                                                <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px] text-muted-foreground">Kategori</th>
-                                                <th className="px-4 py-2 font-bold uppercase tracking-widest text-[9px] text-muted-foreground text-right">Bağış Oranı</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y">
-                                            {brand.donationByCategory.map(item => (
-                                                <tr key={item.category} className="hover:bg-accent/50 transition-colors">
-                                                    <td className="px-4 py-2.5 font-medium text-foreground">{item.category}</td>
-                                                    <td className="px-4 py-2.5 font-black text-primary text-right">% {item.rate.toFixed(2)}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <CardDescription className="text-muted-foreground mt-2 font-medium">
+                            Bu markadan yapacağınız her alışverişin belirtilen oranı seçtiğiniz STK'ya bağışlanır.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className='p-0'>
+                        {brand.donationByCategory && brand.donationByCategory.length > 0 ? (
+                            <div className="divide-y border-t border-black/5">
+                                {brand.donationByCategory.map(item => (
+                                    <div key={item.category} className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
+                                        <span className="font-bold text-sm text-[#1d1d1f]">{item.category}</span>
+                                        <span className="font-black text-primary text-lg tracking-tighter">%{item.rate.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-8 text-center text-muted-foreground italic text-sm">
+                                Tüm kategorilerde sabit %{brand.donationRate} oranı uygulanmaktadır.
                             </div>
                         )}
                     </CardContent>
                 </Card>
             )}
 
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-primary/20 bg-primary/5 rounded-[2rem] shadow-sm">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2 text-primary">
-                        <ShieldAlert className="h-5 w-5" /> Mağaza Özel Bağış Koşulları
+                        <ShieldAlert className="h-5 w-5" /> Mağaza Özel Koşulları
                     </CardTitle>
-                    <CardDescription>Bağışınızın sorunsuz yansıması için lütfen okuyunuz.</CardDescription>
+                    <CardDescription className="font-medium">Bağışınızın sorunsuz yansıması için lütfen okuyunuz.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                    <div className="grid gap-3">
+                <CardContent className="space-y-4 text-sm">
+                    <div className="grid gap-4">
                         <div className="flex gap-3">
                             <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
-                            <p>Aldığınız ürünleri mağaza üzerinden onaylamanızı öneririz. Onay işlemi bağış değerlendirme sürecini hızlandıracaktır.</p>
+                            <p className="leading-relaxed">Aldığınız ürünleri mağaza üzerinden onaylamanızı öneririz. Onay işlemi bağış sürecini hızlandıracaktır.</p>
                         </div>
                         <div className="flex gap-3">
                             <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-                            <p>Alışveriş sırasında itiraz (dispute) açılması durumunda mağaza bağış aktarımı yapmamaktadır.</p>
+                            <p className="leading-relaxed">Alışveriş sırasında itiraz (dispute) açılması durumunda mağaza bağış aktarımı yapmamaktadır.</p>
                         </div>
                         <div className="flex gap-3">
                             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                            <p>Satın alımların tek bir oturumda tamamlanması tavsiye edilir; tarayıcı kapatıldığında çerez takibi sıfırlanabilir.</p>
-                        </div>
-                        <div className="flex gap-3">
-                            <Percent className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                            <p>Bağış tutarı ödediğiniz net tutar üzerinden hesaplanır; hediye çekleri ve puan kullanımları bağış kapsamı dışındadır.</p>
+                            <p className="leading-relaxed">Satın alımların tek bir oturumda tamamlanması tavsiye edilir; tarayıcı kapatıldığında takip sıfırlanabilir.</p>
                         </div>
                         <div className="flex gap-3">
                             <Calendar className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                            <p>Bağışların değerlendirme ve onay süreci ürüne göre 4 ile 6 ay arasında değişiklik gösterebilir.</p>
+                            <p className="leading-relaxed">Bağışların değerlendirme ve onay süreci ürüne göre 4 ile 6 ay arasında değişiklik gösterebilir.</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
         </TabsContent>
         <TabsContent value="stats" className="p-4 space-y-4">
-             <Card>
+             <Card className="rounded-[2rem] shadow-sm border-black/5">
                 <CardHeader><CardTitle className="text-lg">Topluluk İstatistikleri</CardTitle></CardHeader>
-                 <CardContent className="divide-y">
+                 <CardContent className="divide-y border-t border-black/5">
                     <StatRow label="Takipçi Sayısı" value={brand.followers?.toLocaleString('tr-TR')} />
                     <StatRow label="Destekçi Sayısı" value={brand.stats?.supporters.toLocaleString('tr-TR')} />
                     <StatRow label="Toplam Bağış Tutarı" value={brand.stats?.totalDonation ? `${brand.stats.totalDonation.toLocaleString('tr-TR')} ₺` : 'N/A'} />
@@ -252,7 +244,7 @@ export default function BrandProfilePage() {
              </Card>
         </TabsContent>
         <TabsContent value="sustainability" className="p-4 space-y-4">
-            <Card>
+            <Card className="rounded-[2rem] shadow-sm border-black/5">
                 <CardHeader>
                     <CardTitle className="text-lg">Sürdürülebilirlik ve KSS Raporları</CardTitle>
                     <CardDescription>Markanın sosyal ve çevresel etki raporları.</CardDescription>
@@ -261,15 +253,15 @@ export default function BrandProfilePage() {
                     {brand.sustainabilityReports && brand.sustainabilityReports.length > 0 ? (
                         <div className="space-y-3">
                             {brand.sustainabilityReports.map((report) => (
-                                <a key={report.title} href={report.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent">
-                                    <span className="font-medium text-sm">{report.title}</span>
+                                <a key={report.title} href={report.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 border rounded-xl hover:bg-accent transition-colors">
+                                    <span className="font-bold text-sm">{report.title}</span>
                                     <ExternalLink className="h-4 w-4 text-muted-foreground" />
                                 </a>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                            <p>Henüz bir rapor yayınlanmadı.</p>
+                        <div className="text-center text-muted-foreground py-16">
+                            <p className="italic font-medium">Henüz bir rapor yayınlanmadı.</p>
                         </div>
                     )}
                 </CardContent>
@@ -281,7 +273,7 @@ export default function BrandProfilePage() {
             ) : (
                 <div className="text-center text-muted-foreground py-16">
                     <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>
-                    <p className="mt-4">Bu marka henüz bir gönderi paylaşmadı.</p>
+                    <p className="mt-4 font-medium italic">Bu marka henüz bir gönderi paylaşmadı.</p>
                 </div>
             )}
         </TabsContent>

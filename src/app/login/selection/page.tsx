@@ -35,7 +35,8 @@ import {
     Mail,
     Globe,
     Code,
-    UserCircle
+    UserCircle,
+    FileText
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -665,6 +666,8 @@ const FormRenderer = () => {
     };
 
     const BrandRegistrationForm = () => {
+        const [brandStatus, setBrandStatus] = useState<string>('');
+
         const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             toast({ title: "Başvuru Alındı", description: "Marka başvurunuz incelemeye alınmıştır." });
@@ -676,6 +679,26 @@ const FormRenderer = () => {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Marka Kimliği</h3>
+                        
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İşletme Statüsü</Label>
+                            <Select required onValueChange={setBrandStatus} value={brandStatus}>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="brand">Ticari Marka</SelectItem>
+                                    <SelectItem value="cooperative">Kooperatif</SelectItem>
+                                    <SelectItem value="economic">İktisadi İşletme</SelectItem>
+                                    <SelectItem value="social">Sosyal İşletme</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {brandStatus && brandStatus !== 'brand' && (
+                            <div className="animate-in slide-in-from-top-2 duration-300">
+                                <FileUpload label="İşletme Kanıt Belgesi" accept=".pdf,.png,.jpg" hint="Statünüzü belgeleyen resmi döküman (Tüzük, tescil vb.)" />
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Marka Adı</Label>
                             <Input placeholder="Markanızın adı" required className="h-11 rounded-xl" />
