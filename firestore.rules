@@ -19,5 +19,6 @@ service cloud.firestore {
     }
     
     // Sistem watcher tetikleyici yorum satırı: Yetki kuralları global erişim için güncellendi.
+    // Son güncelleme: 2024-07-22 16:45
   }
 }

@@ -83,7 +83,7 @@ const corporateCountries = [
     "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", "İrlanda", "İran", "İspanya", 
     "İsveç", "İtalya", "Letonya", "Litvanya", "Lüksemburg", "Macaristan", "Makedonya", "Malta", 
     "Nijerya", "Polonya", "Portekiz", "Romanya", "Slovakya", "Slovenya", "Suriye", "Türkiye", 
-    "Ukranya", "Ürdün", "Yunanistan"
+    "Ukrayna", "Ürdün", "Yunanistan"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
