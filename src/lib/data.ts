@@ -29,8 +29,8 @@ export const user: User = {
     coverPhotoUrl: 'https://images.unsplash.com/photo-1693902939226-449195d2698b?q=80&w=1080',
     impactScore: 15750,
     personalInfo: {
-        email: 'i.adiguzel@email.com',
-        phone: '5384009090',
+        email: 'ihadiguzel@gmail.com',
+        phone: '5547007007',
         birthDate: '1993-05-21',
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
