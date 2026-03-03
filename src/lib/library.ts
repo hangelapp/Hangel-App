@@ -103,5 +103,18 @@ export const librarySections: LibrarySection[] = [
                 content: `<h4>Veri Güvenliği</h4><p>Bağışçı ve gönüllü verilerinin saklanmasında dikkat edilmesi gereken hukuki sorumluluklar.</p>`
             }
         ]
+    },
+    {
+        slug: 'akademik-raporlar',
+        title: "Akademik Raporlar",
+        description: "Üniversiteler ve araştırma kurumları tarafından hazırlanan sosyal etki raporları.",
+        icon: "GraduationCap",
+        items: [
+            {
+                slug: 'turkiye-sosyal-girisimcilik-durum-analizi',
+                title: "Türkiye Sosyal Girişimcilik Durum Analizi (2024)",
+                content: "<h4>Rapor Özeti</h4><p>Türkiye'deki sosyal girişimlerin ekosistem içindeki yerini, karşılaştıkları engelleri ve büyüme potansiyellerini inceleyen kapsamlı çalışma.</p>"
+            }
+        ]
     }
 ];

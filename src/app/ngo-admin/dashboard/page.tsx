@@ -1,11 +1,13 @@
+
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert } from 'lucide-react';
-import { user, ngos } from '@/lib/data';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2 } from 'lucide-react';
+import { user, ngos, studentClubs, allEntityLists } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
@@ -127,9 +129,19 @@ const navGroups = [
 ];
 
 export default function NgoDashboardPage() {
-    const userName = user.name;
+    const searchParams = useSearchParams();
+    const entityId = searchParams.get('id');
+    const entityType = searchParams.get('type');
+
+    const activeEntity = useMemo(() => {
+        if (!entityId) return ngos[1]; // Default to SBG
+        if (entityType === 'STK') return ngos.find(n => n.id === entityId);
+        if (entityType === 'Öğrenci Kulübü') return studentClubs.find(c => c.id === entityId);
+        if (entityType === 'Marka') return allEntityLists.find(b => b.id === entityId);
+        return ngos[1];
+    }, [entityId, entityType]);
+
     const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; 
-    const ngo = ngos.find(n => n.id === '2'); 
 
     const filteredGroups = useMemo(() => {
         return navGroups.map(group => ({
@@ -138,20 +150,22 @@ export default function NgoDashboardPage() {
         })).filter(group => group.items.length > 0);
     }, [userRole]);
 
-    if (!ngo) return null;
+    if (!activeEntity) return null;
 
-    const totalDonation = ngo.stats.totalDonation;
-    const volunteerHours = ngo.stats.volunteerHours;
-    const volunteerValue = volunteerHours * 100;
-    const cashDonation = totalDonation;
-    const totalImpactValue = volunteerValue + cashDonation;
+    // Use stats from the active entity if available, otherwise use defaults
+    const stats = (activeEntity as any).stats || { totalDonation: 0, volunteers: 0, followers: 0 };
 
   return (
-    <div className="space-y-6 animate-in fade-in-0 pb-8">
+    <div className="space-y-6 animate-in fade-in-0 pb-8 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1">
-            <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
-            <p className="text-muted-foreground text-sm">Yönetim Paneline hoş geldin, {userName}.</p>
+        <div className="flex items-center gap-4">
+            <div className="p-3 bg-white rounded-2xl shadow-sm border border-black/5">
+                <Building2 className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-1">
+                <h1 className="text-2xl font-bold font-headline">{activeEntity.name}</h1>
+                <p className="text-muted-foreground text-sm">Kurumsal Yönetim Paneli</p>
+            </div>
         </div>
         <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20 self-start md:self-center">
             <ShieldAlert className="h-4 w-4 text-primary" />
@@ -159,21 +173,21 @@ export default function NgoDashboardPage() {
         </div>
       </div>
 
-      <Card className="shadow-sm overflow-hidden">
-        <CardHeader className="border-b bg-muted/30">
+      <Card className="shadow-sm overflow-hidden rounded-[2rem] border-black/5">
+        <CardHeader className="border-b border-black/5 bg-muted/30 p-6">
             <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-            <div className="divide-y">
+            <div className="divide-y divide-black/5">
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
+                    <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                                <DollarSign className="h-5 w-5 text-green-600" />
+                            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-2xl">
+                                <DollarSign className="h-6 w-6 text-green-600" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Bağış</p>
-                                <p className="text-xl font-bold tracking-tight">{totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Kaynak</p>
+                                <p className="text-2xl font-black tracking-tighter">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) || '0,00 ₺'}</p>
                             </div>
                         </div>
                         <div className="text-right">
@@ -186,54 +200,19 @@ export default function NgoDashboardPage() {
                 )}
 
                 {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
+                    <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-blue-100 dark:bg-green-900/30 rounded-xl">
-                                <Users className="h-5 w-5 text-blue-600" />
+                            <div className="p-3 bg-blue-100 dark:bg-green-900/30 rounded-2xl">
+                                <Users className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Gönüllü</p>
-                                <p className="text-xl font-bold tracking-tight">+{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Aktif Topluluk</p>
+                                <p className="text-2xl font-black tracking-tighter">+{stats.volunteers?.toLocaleString('tr-TR') || stats.followers?.toLocaleString('tr-TR') || '0'}</p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-xs text-muted-foreground font-semibold">Bu ay +180 yeni</p>
+                            <p className="text-xs text-muted-foreground font-semibold">Bu ay %12 artış</p>
                             <p className="text-[10px] text-muted-foreground">kayıt gerçekleşti</p>
-                        </div>
-                    </div>
-                )}
-
-                {(userRole === 'Gönüllü Yöneticisi' || userRole === 'Genel Yönetici') && (
-                    <div className="flex items-center justify-between p-4 transition-colors hover:bg-accent/30">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-red-100 dark:bg-green-900/30 rounded-xl">
-                                <Heart className="h-5 w-5 text-red-600" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Yeni Başvurular</p>
-                                <p className="text-xl font-bold tracking-tight">12</p>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xs text-amber-600 font-bold">Onay Bekliyor</p>
-                            <p className="text-[10px] text-muted-foreground">aktif incelemede</p>
-                        </div>
-                    </div>
-                )}
-
-                {userRole === 'Genel Yönetici' && (
-                    <div className="flex items-center justify-between p-4 bg-primary/5 transition-colors hover:bg-primary/10">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2.5 bg-primary/10 rounded-xl">
-                                <TrendingUp className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-0.5">Toplam Sosyal Etki mali değeri</p>
-                                <p className="text-xl font-bold text-primary tracking-tight">{totalImpactValue.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
-                            </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter opacity-70">Bağış + Gönüllülük Değeri</p>
                         </div>
                     </div>
                 )}
@@ -243,20 +222,22 @@ export default function NgoDashboardPage() {
 
         <div className="space-y-6">
             <h2 className="text-xl font-bold font-headline px-1">Yönetim Araçları</h2>
-            {filteredGroups.map(group => (
-                <Card key={group.title} className="shadow-sm overflow-hidden">
-                    <CardHeader className="bg-muted/20 py-3">
-                        <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{group.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <div className="flex flex-col">
-                            {group.items.map(item => (
-                                <NavLink key={item.id} {...item} />
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredGroups.map(group => (
+                    <Card key={group.title} className="shadow-sm overflow-hidden rounded-[2rem] border-black/5">
+                        <CardHeader className="bg-muted/20 py-4 px-6 border-b border-black/5">
+                            <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">{group.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="flex flex-col">
+                                {group.items.map(item => (
+                                    <NavLink key={item.id} {...item} />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </div>
     </div>
   );
