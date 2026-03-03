@@ -78,11 +78,7 @@ const marketCategoryLabels = marketCategories
     .map(c => c.mainCategory);
 
 const corporateCountries = [
-    "Almanya", "Avusturya", "Azerbaycan", "Belçika", "Bulgaristan", "Çekya", "Danimarka", 
-    "Endonezya", "Estonya", "Finlandiya", "Fransa", "GKRY", "Hırvatistan", "Hollanda", 
-    "İrlanda", "İspanya", "İsveç", "İtalya", "İran", "Letonya", "Litvanya", "Lüksemburg", 
-    "Macaristan", "Makedonya", "Malta", "Nijerya", "Polonya", "Portekiz", "Romanya", 
-    "Slovakya", "Slovenya", "Suriye", "Türkiye", "Ukrayna", "Ürdün", "Yunanistan"
+    "Almanya", "Azerbaycan", "Danimarka", "Endonezya", "İran", "Makedonya", "Nijerya", "Suriye", "Türkiye", "Ukrayna", "Ürdün"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
