@@ -43,6 +43,8 @@ export default function VolunteeringDetailPage() {
   const handleApply = () => {
     if (!authUser) {
         toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Başvuru yapmak için lütfen oturum açın." });
+        const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(window.location.pathname)}`;
+        router.push(redirectUrl);
         return;
     }
     
@@ -126,10 +128,10 @@ export default function VolunteeringDetailPage() {
 
                  <Card>
                     <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
-                    <CardContent className="text-sm space-y-3">
-                        <div className='flex justify-between'><span className='text-muted-foreground'>Son Başvuru:</span><span className='font-medium'>{format(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between'><span className='text-muted-foreground'>Başlangıç:</span><span className='font-medium'>{format(parse(opportunity.dates.eventStart, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between'><span className='text-muted-foreground'>Bitiş:</span><span className='font-medium'>{format(parse(opportunity.dates.eventEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
+                    <CardContent className="space-y-3">
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Son Başvuru:</span><span className='font-bold text-primary'>{format(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Başlangıç:</span><span className='font-bold'>{format(parse(opportunity.dates.eventStart, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Bitiş:</span><span className='font-bold'>{format(parse(opportunity.dates.eventEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
                     </CardContent>
                 </Card>
 

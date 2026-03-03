@@ -108,7 +108,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Authorization Flags
     const isSuperAdmin = useMemo(() => {
         if (!authUser) return false;
-        // Check for specific master admin email or general role in Firestore
         return authUser.email === '5384009090@hangel.org' || userData?.role === 'super-admin';
     }, [authUser, userData]);
 
