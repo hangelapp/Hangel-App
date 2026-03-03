@@ -1,7 +1,7 @@
 
 'use client';
 
-import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby } from 'lucide-react';
+import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby, Globe, ShoppingBag, School } from 'lucide-react';
 import type { Post, Brand, Event, Volunteering, User, Badge, Certificate, StudentClub, SchoolRepresentative, Application, DonationTransaction, ManagedItem, NGO, AdBanner, MarketCategory, HelpTopic } from './types';
 
 const slugify = (str: string) => {
@@ -14,128 +14,31 @@ const slugify = (str: string) => {
     .replace(/ş/g, 's')
     .replace(/ö/g, 'o')
     .replace(/ç/g, 'c')
-    .replace(/\s+/g, '-')           // Replace spaces with -
-    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
-    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
-    .replace(/^-+/, '')             // Trim - from start of text
-    .replace(/-+$/, '');            // Trim - from end of text
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
 }
 
 export const allProvinces = ["Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"];
 
 export const districtsData: { [key: string]: string[] } = {
-  "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
-  "Adıyaman": ["Adıyaman (Merkez)", "Besni", "Çelikhan", "Gerger", "Gölbaşı", "Kâhta", "Samsat", "Sincik", "Tut"],
-  "Afyonkarahisar": ["Afyonkarahisar (Merkez)", "Başmakçı", "Bayat", "Bolvadin", "Çay", "Çobanlar", "Dazkırı", "Dinar", "Emirdağ", "Evciler", "Hocalar", "İhsaniye", "İscehisar", "Kızılören", "Sandıklı", "Sinanpaşa", "Sultandağı", "Şuhut"],
-  "Ağrı": ["Ağrı (Merkez)", "Diyadin", "Doğubayazıt", "Eleşkirt", "Hamur", "Patnos", "Taşlıçay", "Tutak"],
-  "Aksaray": ["Aksaray (Merkez)", "Ağaçören", "Eskil", "Gülağaç", "Güzelyurt", "Ortaköy", "Sarıyahşi", "Sultanhanı"],
-  "Amasya": ["Amasya (Merkez)", "Göynücek", "Gümüşhacıköy", "Hamamözü", "Merzifon", "Suluova", "Taşova"],
-  "Ankara": ["Akyurt", "Altındağ", "Ayaş", "Balâ", "Beypazarı", "Çamlıdere", "Çankaya", "Çubuk", "Elmadağ", "Etimesgut", "Evren", "Gölbaşı", "Güdül", "Haymana", "Kalecik", "Kahramankazan", "Keçiören", "Kızılcahamam", "Mamak", "Nallıhan", "Polatlı", "Pursaklar", "Sincan", "Şereflikoçhisar", "Yenimahalle"],
-  "Antalya": ["Akseki", "Aksu", "Alanya", "Demre", "Döşemealtı", "Elmalı", "Finike", "Gazipaşa", "Gündoğmuş", "İbradı", "Kaş", "Kemer", "Kepez", "Konyaaltı", "Korkuteli", "Kumluca", "Manavgat", "Muratpaşa", "Serik"],
-  "Ardahan": ["Ardahan (Merkez)", "Çıldır", "Damal", "Göle", "Hanak", "Posof"],
-  "Artvin": ["Artvin (Merkez)", "Ardanuç", "Arhavi", "Borçka", "Hopa", "Kemalpaşa", "Murgul", "Şavşat", "Yusufeli"],
-  "Aydın": ["Bozdoğan", "Buharkent", "Çine", "Didim", "Efeler", "Germencik", "İncirliova", "Karacasu", "Karpuzlu", "Koçarlı", "Köşk", "Kuşadası", "Kuyucak", "Nazilli", "Söke", "Sultanhisar", "Yenipazar"],
-  "Balıkesir": ["Altıeylül", "Ayvalık", "Balya", "Bandırma", "Bigadiç", "Burhaniye", "Dursunbey", "Edremit", "Erdek", "Gömeç", "Gönen", "Havran", "İvrindi", "Karesi", "Kepsut", "Manyas", "Marmara", "Savaştepe", "Sındırgı", "Susurluk"],
-  "Bartın": ["Bartın (Merkez)", "Amasra", "Kurucaşile", "Ulus"],
-  "Batman": ["Batman (Merkez)", "Beşiri", "Gercüş", "Hasankeyf", "Kozluk", "Sason"],
-  "Bayburt": ["Bayburt (Merkez)", "Aydıntepe", "Demirözü"],
-  "Bilecik": ["Bilecik (Merkez)", "Bozüyük", "Gölpazarı", "İnhisar", "Osmaneli", "Pazaryeri", "Söğüt", "Yenipazar"],
-  "Bingöl": ["Bingöl (Merkez)", "Adaklı", "Genç", "Karlıova", "Kiğı", "Solhan", "Yayladere", "Yedisu"],
-  "Bitlis": ["Bitlis (Merkez)", "Adilcevaz", "Ahlat", "Güroymak", "Hizan", "Mutki", "Tatvan"],
-  "Bolu": ["Bolu (Merkez)", "Dörtdivan", "Gerede", "Göynük", "Kıbrıscık", "Mengen", "Mudurnu", "Seben", "Yeniçağa"],
-  "Burdur": ["Burdur (Merkez)", "Ağlasun", "Altınyayla", "Bucak", "Çavdır", "Çeltikçi", "Gölhisar", "Karamanlı", "Kemer", "Tefenni", "Yeşilova"],
-  "Bursa": ["Büyükorhan", "Gemlik", "Gürsu", "Harmancık", "İnegöl", "İznik", "Karacabey", "Keles", "Kestel", "Mudanya", "Mustafakemalpaşa", "Nilüfer", "Orhaneli", "Orhangazi", "Osmangazi", "Yenişehir", "Yıldırım"],
-  "Çanakkale": ["Çanakkale (Merkez)", "Ayvacık", "Bayramiç", "Biga", "Bozcaada", "Çan", "Eceabat", "Ezine", "Gelibolu", "Gökçeada", "Lapseki", "Yenice"],
-  "Çankırı": ["Çankırı (Merkez)", "Atkaracalar", "Bayramören", "Çerkeş", "Eldivan", "Ilgaz", "Kızılırmak", "Korgun", "Kurşunlu", "Orta", "Şabanözü", "Yapraklı"],
-  "Çorum": ["Çorum (Merkez)", "Alaca", "Bayat", "Boğazkale", "Dodurga", "İskilip", "Kargı", "Laçin", "Mecitözü", "Oğuzlar", "Ortaköy", "Osmancık", "Sungurlu", "Uğurludağ"],
-  "Denizli": ["Acıpayam", "Babadağ", "Baklan", "Bekilli", "Beyağaç", "Bozkurt", "Buldan", "Çal", "Çameli", "Çardak", "Çivril", "Güney", "Honaz", "Kale", "Merkezefendi", "Pamukkale", "Sarayköy", "Serinhisar", "Tavas"],
-  "Diyarbakır": ["Bağlar", "Bismil", "Çermik", "Çınar", "Çüngüş", "Dicle", "Eğil", "Ergani", "Hani", "Hazro", "Kayapınar", "Kocaköy", "Kulp", "Lice", "Silvan", "Sur", "Yenişehir"],
-  "Düzce": ["Düzce (Merkez)", "Akçakoca", "Cumayeri", "Çilimli", "Gölyaka", "Gümüşova", "Kaynaşlı", "Yığılca"],
-  "Edirne": ["Edirne (Merkez)", "Enez", "Havsa", "İpsala", "Keşan", "Lalapaşa", "Meriç", "Süloğlu", "Uzunköprü"],
-  "Elazığ": ["Elazığ (Merkez)", "Ağın", "Alacakaya", "Arıcak", "Baskil", "Karakoçan", "Keban", "Kovancılar", "Maden", "Palu", "Sivrice"],
-  "Erzincan": ["Erzincan (Merkez)", "Çayırlı", "İliç", "Kemah", "Kemaliye", "Otlukbeli", "Refahiye", "Tercan", "Üzümlü"],
-  "Erzurum": ["Aşkale", "Aziziye", "Çat", "Hınıs", "Horasan", "İspir", "Karaçoban", "Karayazı", "Köprüköy", "Narman", "Oltu", "Olur", "Palandöken", "Pasinler", "Pazaryolu", "Şenkaya", "Tekman", "Tortum", "Uzundere", "Yakutiye"],
-  "Eskişehir": ["Alpu", "Beylikova", "Çifteler", "Günyüzü", "Han", "İnönü", "Mahmudiye", "Mihalgazi", "Mihalıççık", "Odunpazarı", "Sarıcakaya", "Seyitgazi", "Sivrihisar", "Tepebaşı"],
-  "Gaziantep": ["Araban", "İslahiye", "Karkamış", "Nizip", "Nurdağı", "Oğuzeli", "Şahinbey", "Şehitkamil", "Yavuzeli"],
-  "Giresun": ["Giresun (Merkez)", "Alucra", "Bulancak", "Çamoluk", "Çanakçı", "Dereli", "Doğankent", "Espiye", "Eynesil", "Görele", "Güce", "Keşap", "Piraziz", "Şebinkarahisar", "Tirebolu", "Yağlıdere"],
-  "Gümüşhane": ["Gümüşhane (Merkez)", "Kelkit", "Köse", "Kürtün", "Şiran", "Torul"],
-  "Hakkâri": ["Hakkâri (Merkez)", "Çukurca", "Derecik", "Şemdinli", "Yüksekova"],
-  "Hatay": ["Altınözü", "Antakya", "Arsuz", "Belen", "Defne", "Dörtyol", "Erzin", "Hassa", "İskenderun", "Kırıkhan", "Kumlu", "Payas", "Reyhanlı", "Samandağ", "Yayladağı"],
-  "Iğdır": ["Iğdır (Merkez)", "Aralık", "Karakoyunlu", "Tuzluca"],
-  "Isparta": ["Isparta (Merkez)", "Aksu", "Atabey", "Eğirdir", "Gelendost", "Gönen", "Keçiborlu", "Senirkent", "Sütçüler", "Şarkikaraağaç", "Uluborlu", "Yalvaç", "Yenişarbademli"],
-  "İstanbul": ["Adalar", "Arnavutköy", "Ataşehir", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy", "Başakşehir", "Bayrampaşa", "Beşiktaş", "Beykoz", "Beylikdüzü", "Beyoğlu", "Büyükçekmece", "Çatalca", "Çekmeköy", "Esenler", "Esenyurt", "Eyüpsultan", "Fatih", "Gaziosmanpaşa", "Güngören", "Kadıköy", "Kâğıthane", "Kartal", "Küçükçekmece", "Maltepe", "Pendik", "Sancaktepe", "Sarıyer", "Silivri", "Sultanbeyli", "Sultangazi", "Şile", "Şişli", "Tuzla", "Ümraniye", "Üsküdar", "Zeytinburnu"],
-  "İzmir": ["Aliağa", "Balçova", "Bayındır", "Bayraklı", "Bergama", "Beydağ", "Bornova", "Buca", "Çeşme", "Çiğli", "Dikili", "Foça", "Gaziemir", "Güzelbahçe", "Karabağlar", "Karaburun", "Karşıyaka", "Kemalpaşa", "Kınık", "Kiraz", "Konak", "Menderes", "Menemen", "Narlıdere", "Ödemiş", "Seferihisar", "Selçuk", "Tire", "Torbalı", "Urla"],
-  "Kahramanmaraş": ["Afşin", "Andırın", "Çağlayancerit", "Dulkadiroğlu", "Ekinözü", "Elbistan", "Göksun", "Nurhak", "Onikişubat", "Pazarcık", "Türkoğlu"],
-  "Karabük": ["Karabük (Merkez)", "Eflani", "Eskipazar", "Ovacık", "Safranbolu", "Yenice"],
-  "Karaman": ["Karaman (Merkez)", "Ayrancı", "Başyayla", "Ermenek", "Kazımkarabekir", "Sarıveliler"],
-  "Kars": ["Kars (Merkez)", "Akyaka", "Arpaçay", "Digor", "Kağızman", "Sarıkamış", "Selim", "Susuz"],
-  "Kastamonu": ["Kastamonu (Merkez)", "Abana", "Ağlı", "Araç", "Azdavay", "Bozkurt", "Cide", "Çatalzeytin", "Daday", "Devrekani", "Doğanyurt", "Hanönü", "İhsangazi", "İneolu", "Küre", "Pınarbaşı", "Seydiler", "Şenpazar", "Taşköprü", "Tosya"],
-  "Kayseri": ["Akkışla", "Bünyan", "Develi", "Felahiye", "Hacılar", "İncesu", "Kocasinan", "Melikgazi", "Özvatan", "Pınarbaşı", "Sarıoğlan", "Sarız", "Talas", "Tomarza", "Yahyalı", "Yeşilhisar"],
-  "Kırıkkale": ["Kırıkkale (Merkez)", "Bahşılı", "Balışeyh", "Çelebi", "Delice", "Karakeçili", "Keskin", "Sulakyurt", "Yahşihan"],
-  "Kırklareli": ["Kırklareli (Merkez)", "Babaeski", "Demirköy", "Kofçaz", "Lüleburgaz", "Pehlivanköy", "Pınarhisar", "Vize"],
-  "Kırşehir": ["Kırşehir (Merkez)", "Akçakent", "Akpınar", "Boztepe", "Çiçekdağı", "Kaman", "Mucur"],
-  "Kilis": ["Kilis (Merkez)", "Elbeyli", "Musabeyli", "Polateli"],
-  "Kocaeli": ["Başiskele", "Çayırova", "Darıca", "Derince", "Dilovası", "Gebze", "Gölcük", "İzmit", "Kandıra", "Karamürsel", "Kartepe", "Körfez"],
-  "Konya": ["Ahırlı", "Akören", "Akşehir", "Altınekin", "Beyşehir", "Bozkır", "Cihanbeyli", "Çeltik", "Çumra", "Derbent", "Derebucak", "Doğanhisar", "Emirgazi", "Ereğli", "Güneysınır", "Hadim", "Halkapınar", "Hüyük", "Ilgın", "Kadınhanı", "Karapınar", "Karatay", "Kulu", "Meram", "Sarayönü", "Selçuklu", "Seydişehir", "Taşkent", "Tuzlukçu", "Yalıhüyük", "Yunak"],
-  "Kütahya": ["Kütahya (Merkez)", "Altıntaş", "Aslanapa", "Çavdarhisar", "Domaniç", "Dumlupınar", "Emet", "Gediz", "Hisarcık", "Pazarlar", "Şaphane", "Simav", "Tavşanlı"],
-  "Malatya": ["Akçadağ", "Arapgir", "Arguvan", "Battalgazi", "Darende", "Doğanşehir", "Doğanyol", "Hekimhan", "Kale", "Kuluncak", "Pütürge", "Yazıhan", "Yeşilyurt"],
-  "Manisa": ["Ahmetli", "Akhisar", "Alaşehir", "Demirci", "Gölmarmara", "Gördes", "Kırkağaç", "Köprübaşı", "Kula", "Salihli", "Sarıgöl", "Saruhanlı", "Selendi", "Soma", "Şehzadeler", "Turgutlu", "Yunusemre"],
-  "Mardin": ["Artuklu", "Dargeçit", "Derik", "Kızıltepe", "Mazıdağı", "Midyat", "Nusaybin", "Ömerli", "Savur", "Yeşilli"],
-  "Mersin": ["Akdeniz", "Anamur", "Aydıncık", "Bozyazı", "Çamlıyayla", "Erdemli", "Gülnar", "Mezitli", "Mut", "Silifke", "Tarsus", "Toroslar", "Yenişehir"],
-  "Muğla": ["Bodrum", "Dalaman", "Datça", "Fethiye", "Kavaklıdere", "Köyceğiz", "Marmaris", "Menteşe", "Milas", "Ortaca", "Seydikemer", "Ula", "Yatağan"],
-  "Muş": ["Muş (Merkez)", "Bulanık", "Hasköy", "Korkut", "Malazgirt", "Varto"],
-  "Nevşehir": ["Nevşehir (Merkez)", "Acıgöl", "Avanos", "Derinkuyu", "Gülşehir", "Hacıbektaş", "Kozaklı", "Ürgüp"],
-  "Niğde": ["Niğde (Merkez)", "Altunhisar", "Bor", "Çamardı", "Çiftlik", "Ulukışla"],
-  "Ordu": ["Akkuş", "Altınordu", "Aybastı", "Çamaş", "Çatalpınar", "Çaybaşı", "Fatsa", "Gölköy", "Gülyalı", "Gürgentepe", "İkizce", "Kabadüz", "Kabataş", "Korgan", "Kumru", "Mesudiye", "Perşembe", "Ulubey", "Ünye"],
-  "Osmaniye": ["Osmaniye (Merkez)", "Bahçe", "Düziçi", "Hasanbeyli", "Kadirli", "Sumbas", "Toprakkale"],
-  "Rize": ["Rize (Merkez)", "Ardeşen", "Çamlıhemşin", "Çayeli", "Derepazarı", "Fındıklı", "Güneysu", "Hemşin", "İkizdere", "İyidere", "Kalkandere", "Pazar"],
-  "Sakarya": ["Adapazarı", "Akyazı", "Arifiye", "Erenler", "Ferizli", "Geyve", "Hendek", "Karapürçek", "Karasu", "Kaynarca", "Kocaali", "Pamukova", "Sapanca", "Serdivan", "Söğütlü", "Taraklı"],
-  "Samsun": ["19 Mayıs", "Alaçam", "Asarcık", "Atakum", "Ayvacık", "Bafra", "Canik", "Çarşamba", "Havza", "İlkadım", "Kavak", "Ladik", "Salıpazarı", "Tekkeköy", "Terme", "Vezirköprü", "Yakakent"],
-  "Siirt": ["Siirt (Merkez)", "Baykan", "Eruh", "Kurtalan", "Pervari", "Şirvan", "Tillo"],
-  "Sinop": ["Sinop (Merkez)", "Ayancık", "Boyabat", "Dikmen", "Durağan", "Erfelek", "Gerze", "Saraydüzü", "Türkeli"],
-  "Sivas": ["Sivas (Merkez)", "Akıncılar", "Altınyayla", "Divriği", "Doğanşar", "Gemerek", "Gölova", "Gürün", "Hafik", "İmranlı", "Kangal", "Koyulhisar", "Suşehri", "Şarkışla", "Ulaş", "Yıldızeli", "Zara"],
-  "Şanlıurfa": ["Akçakale", "Birecik", "Bozova", "Ceylanpınar", "Eyyübiye", "Halfeti", "Haliliye", "Harran", "Hilvan", "Karaköprü", "Siverek", "Suruç", "Viranşehir"],
-  "Şırnak": ["Şırnak (Merkez)", "Beytüşşebap", "Cizre", "Güçlükonak", "İdil", "Silopi", "Uludere"],
-  "Tekirdağ": ["Çerkezköy", "Çorlu", "Ergene", "Hayrabolu", "Kapaklı", "Malkara", "Marmaraereğlisi", "Muratlı", "Saray", "Süleymanpaşa", "Şarköy"],
-  "Tokat": ["Tokat (Merkez)", "Almus", "Artova", "Başçiftlik", "Erbaa", "Niksar", "Pazar", "Reşadiye", "Sulusaray", "Turhal", "Yeşilyurt", "Zile"],
-  "Trabzon": ["Akçaabat", "Araklı", "Arsin", "Beşikdüzü", "Çarşıbaşı", "Çaykara", "Dernekpazarı", "Düzköy", "Hayrat", "Köprübaşı", "Maçka", "Of", "Ortahisar", "Sürmene", "Şalpazarı", "Tonya", "Vakfıkebir", "Yomra"],
-  "Tunceli": ["Tunceli (Merkez)", "Çemişgezek", "Hozat", "Mazgirt", "Nazımiye", "Ovacık", "Pertek", "Pülümür"],
-  "Uşak": ["Uşak (Merkez)", "Banaz", "Eşme", "Karahallı", "Sivaslı", "Ulubey"],
-  "Van": ["Bahçesaray", "Başkale", "Çaldıran", "Çatak", "Edremit", "Erciş", "Gevaş", "Gürpınar", "İpekyolu", "Muradiye", "Özalp", "Saray", "Tuşba"],
-  "Yalova": ["Yalova (Merkez)", "Altınova", "Armutlu", "Çınarcık", "Çiftlikköy", "Termal"],
-  "Yozgat": ["Yozgat (Merkez)", "Akdağmadeni", "Aydıncık", "Boğazlıyan", "Çandır", "Çayıralan", "Çekerek", "Kadışehri", "Saraykent", "Sarıkaya", "Sorgun", "Şefaatli", "Yenifakılı", "Yerköy"],
-  "Zonguldak": ["Zonguldak (Merkez)", "Alaplı", "Çaycuma", "Devrek", "Gökçebey", "Karadeniz Ereğli", "Kilimli", "Kozlu"]
+  "İstanbul": ["Kadıköy", "Beşiktaş", "Üsküdar", "Beykoz", "Sarıyer", "Fatih", "Şişli", "Bakırköy"],
+  "Ankara": ["Çankaya", "Etimesgut", "Yenimahalle", "Gölbaşı"],
+  "İzmir": ["Konak", "Karşıyaka", "Bornova", "Buca"],
 };
 
 export const neighborhoodsData: { [province: string]: { [district: string]: string[] } } = {
-  "Adana": {
-    "Aladağ": ["AKPINAR MAH", "BAŞPINAR MAH", "MANSURLU MAH", "SİNANPAŞA MAH", "AKÖREN MAH", "BOZTAHTA MAH", "BÜYÜKSOFULU MAH", "CERİTLER MAH", "DAİLER MAH", "DARILIK MAH", "DÖLEKLİ MAH", "EBRİŞİM MAH", "EĞNER MAH", "GERDİBİ MAH", "GİREĞİYENİKÖY MAH", "GÖKÇEKÖY MAH", "KABASAKAL MAH", "KARAHAN MAH", "KICAK MAH", "KIŞLAK MAH", "KIZILDAM MAH", "KÖKEZ MAH", "KÖPRÜCÜK MAH", "KÜP MAH", "MADENLİ MAH", "MAZILIK MAH", "POSYAĞBASAN MAH", "TOPALLI MAH", "UZUNKUYU MAH", "YETİMLİ MAH", "YÜKSEKÖREN MAH"],
-    "Ceyhan": ["ADAPINAR MAH", "ADATEPE MAH", "AĞAÇLI MAH", "AĞAÇPINAR MAH", "AKDAM MAH", "ALTIGÖZBEKİRLİ MAH", "ALTIKARA MAH", "AYDINLAR MAH", "AZİZLİ MAH", "BAŞÖREN MAH", "BİRKENT MAH", "BURHANLI MAH", "BÜYÜKBURHANİYE MAH", "BÜYÜKMANGIT MAH", "CAMUZAĞILI MAH", "CEYHANBEKİRLİ MAH", "ÇAKALDERE MAH", "ÇATAKLI MAH", "ÇATALHÜYÜK MAH", "ÇEVRETEPE MAH", "ÇİÇEKLİ MAH", "ÇİFTLİKLER MAH", "ÇOKÇAPINAR MAH", "DAĞISTAN MAH", "DEĞİRMENDERE MAH", "DEĞİRMENLİ MAH", "DİKİLİTAŞ MAH", "DOKUZTEKNE MAH", "DORUK MAH", "DURHASANDEDE MAH", "DUTLUPINAR MAH", "EKİNYAZI MAH", "ELMAGÖLÜ MAH", "ERENLER MAH", "GÜMÜRDÜLÜ MAH", "GÜNDOĞAN MAH", "GÜNLÜCE MAH", "HAMDİLLİ MAH", "HAMİDİYE MAH", "HAMİTBEY MAH", "HAMİTBEYBUCAĞI MAH", "IRMAKLI MAH", "ISIRGANLI MAH", "İMRAN MAH", "İNCEYER MAH", "İSALI MAH", "KARAKAYALI MAH", "KILIÇKAYA MAH", "KIVRIKLI MAH", "KIZILDERE MAH", "KÖPRÜLÜ MAH", "KÖRKUYU MAH", "KÖSRELİ MAH", "KURTKULAĞI MAH", "KURTPINAR MAH", "KUZUCAK MAH", "KÜÇÜKBURHANİYE MAH", "KÜÇÜKMANGIT MAH", "MERCİMEK MAH", "MERCİN MAH", "NARLIK MAH", "NAZIMBEY YENİKÖY MAH", "SAĞIRLAR MAH", "SAĞKAYA MAH", "SARIBAHÇE MAH", "SARIMAZI MAH", "SARIMAZI SB MAH", "SELİMİYE MAH", "SİRKELİ MAH", "SOĞUKPINAR MAH", "SOYSALLI MAH", "TATARLI MAH", "TATLIKUYU MAH", "TOKTAMIŞ MAH", "TUMLU MAH", "ÜÇDUTYEŞİLOVA MAH", "VEYSİYE MAH", "YALAK MAH", "YELLİBEL MAH", "YEŞİLBAHÇE MAH", "YEŞİLDAM MAH", "YILANKALE MAH", "ALTIOCAK MAH", "ATATÜRK MAH", "AYDEMİROĞLU MAH", "BELEDİYE EVLERİ MAH", "BOTA MAH", "BURHANİYE MAH", "BÜYÜKKIRIM MAH", "CİVANTAYAK MAH", "CUMHURİYET MAH", "EMEK MAH", "ESENTEPE MAH", "FATİH SULTAN MEHMET MAH", "GAZİ OSMAN PAŞA MAH", "HÜRRİYET MAH", "İNÖNÜ MAH", "İSTİKLAL MAH", "KELEMETİ MAH", "KONAKOĞLU MAH", "KORUKLU MAH", "KÜÇÜKKIRIM MAH", "MİTHAT PAŞA MAH", "MODERNEVLER MAH", "MURADİYE MAH", "NAMIK KEMAL MAH", "SARISAKAL MAH", "ŞAHİN ÖZBİLEN MAH", "ŞEHİT HACI İBRAHİM MAH", "ULUS MAH", "YARSUAT MAH", "ZÜBEYDE HANIM MAH", "MUSTAFABEYLİ MAH"],
-    "Çukurova": ["BELEDİYE EVLERİ MAH", "HUZUREVLERİ MAH", "YÜZÜNCÜYIL MAH", "BEYAZEVLER MAH", "BOZCALAR MAH", "DÖRTLER MAH", "ESENTEPE MAH", "FADIL MAH", "GÖKKUYU MAH", "GÜZELYALI MAH", "KABASAKAL MAH", "KARAHAN MAH", "KARSLILAR MAH", "KAŞOBA MAH", "KOCATEPE MAH", "KURTTEPE MAH", "KÜÇÜKÇINAR MAH", "MAHFESIĞMAZ MAH", "MEMİŞLİ MAH", "ÖRCÜN MAH", "PİRİLİ MAH", "SÖĞÜTLÜ MAH", "ŞAMBAYADI MAH", "TOROS MAH", "YENİ MAH", "YURT MAH", "SALBAŞ ESENTEPE MAH"],
-    "Feke": ["AKKAYA MAH", "AKOLUK MAH", "BAĞDATLI MAH", "BAHÇECİK MAH", "ÇANDIRLAR MAH", "ÇONDU MAH", "ÇÜRÜKLER MAH", "DEĞİRMENCİUŞAĞI MAH", "GAFFARUŞAĞI MAH", "GEDİKLİ MAH", "GÖBELLİ MAH", "GÜRÜMZE MAH", "GÜZPINARI MAH", "HIDIRUŞAĞI MAH", "İNCİRCİ MAH", "KALEYÜZÜ MAH", "KAŞALTI MAH", "KAYADİBİ MAH", "KIRIKUŞAĞI MAH", "KISACIKLI MAH", "KIZILYER MAH", "KOÇYAZI MAH", "KONAKKURAN MAH", "KOVUKÇINAR MAH", "MANSURLU MAH", "MUSALAR MAH", "OLUCAK MAH", "ORMANCIK MAH", "ORTAKÖY MAH", "ORUÇLU MAH", "PAŞALI MAH", "SÜPHANDERE MAH", "ŞAHMURATLI MAH", "TENKERLİ MAH", "TOKMANAKLI MAH", "TORTULU MAH", "UĞURLUBAĞ MAH", "YAYLAPINAR MAH", "YEREBAKAN MAH", "BELENKÖY MAH", "GÖKÇELİ MAH", "İSLAM MAH", "KARACAOĞLAN MAH", "KARACAUŞAĞI MAH", "KAZANCI MAH", "KEKLİKÇİ MAH", "SÜLEMİŞLİ MAH", "YEŞİL DÜŞMÜŞ MAH"],
-    "İmamoğlu": ["ADALET MAH", "CUMHURİYET MAH", "FATİH MAH", "HÜRRİYET MAH", "MENTEŞ MAH", "TUNA MAH", "AĞZIKARACA MAH", "ALAYBEYİ MAH", "ALİLER MAH", "AYVALI MAH", "CAMİLİ MAH", "ÇÖRTEN MAH", "DANACILI MAH", "HACIHASANLI MAH", "KOYUNEVİ MAH", "MALIHIDIRLI MAH", "OTLUK MAH", "PEKMEZCİ MAH", "SAYCA MAH", "SAYGEÇİT MAH", "SEVİNÇLİ MAH", "SOKUTAŞ MAH", "UFACIKÖREN MAH", "ULUÇINAR MAH", "ÜÇTEPE MAH", "YAZITEPE MAH", "YENİEVLER MAH"],
-    "Karaisalı": ["AKÇALI MAH", "AKTAŞ MAH", "ALTINOVA MAH", "AŞAĞIBELEMEDİK MAH", "AŞAĞIYÖRÜKLER MAH", "AYAKKIF MAH", "BARAKDAĞI MAH", "BAŞKIF MAH", "BEKİRLİ MAH", "BEYDEMİR MAH", "BOLACALI MAH", "BUCAK MAH", "ÇAKALLI MAH", "ÇATALAN MAH", "ÇECELİ MAH", "ÇEVLİK MAH", "ÇOCUKLAR MAH", "ÇORLU MAH", "ÇUKUR MAH", "DEMİRÇİT MAH", "DÖŞEKEVİ MAH", "DURAK MAH", "EĞLENCE MAH", "EMELCİK MAH", "ETEKLİ MAH", "FETTAHLI MAH", "FİLİKLİ MAH", "GİLDİRLİ MAH", "GÖKHASANLI MAH", "GÜLÜŞLÜ MAH", "GÜVENÇ MAH", "HACILI MAH", "HACIMUSALI MAH", "KALEDAĞI MAH", "KAPIKAYA MAH", "KARAHASANLI MAH", "KARAKILIÇ MAH", "KARAKUYU MAH", "KARAPINAR MAH", "KIRALAN MAH", "KIRIKLI MAH", "KOCAVELİLER MAH", "KÖRÜKLÜ MAH", "KUŞCUSOFULU MAH", "KUYUCU MAH", "KUZGUN MAH", "MARAŞLI MAH", "MERKEZBOZTAHTA MAH", "MURTÇUKURU MAH", "NERGİZLİK MAH", "NUHLU MAH", "ÖMERLİ MAH", "SADIKALİ MAH", "SARIMEHMETLİ MAH", "SAYPINAR MAH", "SELAMPINAR MAH", "TATIK MAH", "TOPAKTAŞ MAH", "TOPKARALI MAH", "TORUNSOLAKLI MAH", "TÜMENLİ MAH", "YAZIBAŞI MAH"],
-    "Karataş": ["ADALI MAH", "ATAKÖY MAH", "BAHÇE MAH", "BEBELİ MAH", "ÇAĞŞIRLI MAH", "ÇAKIRÖREN MAH", "ÇAVUŞLU MAH", "ÇİMELİ MAH", "ÇUKURKAMIŞ MAH", "DAMLAPINAR MAH", "DEVELİÖREN MAH", "DOLAPLI MAH", "GÖLKAYA MAH", "HACIHASAN MAH", "HASIRAĞACI MAH", "HELVACI MAH", "İNNEPLİHÜYÜĞÜ MAH", "İSAHACILI MAH", "KAPI MAH", "KARAGÖÇER MAH", "KARATAŞ MAH", "KARŞIYAKA MAH", "KEMALİYE MAH", "KESİK MAH", "KIRHASAN MAH", "KIZILTAHTA MAH", "KİREMİTLİ MAH", "MELETMEZ MAH", "ORTA MAH", "OYMAKLI MAH", "SARIMSAK MAH", "SİRKENLİ MAH", "TABAKLAR MAH", "TABUR MAH", "TERLİKSİZ MAH", "TOPRAKLI MAH", "TUZKUYUSU MAH", "TUZLA MAH", "YASSIVEREN MAH", "YEMİŞLİ MAH", "YENİ MAH", "YENİMURAT MAH", "YÜZBAŞI MAH"],
-    "Kozan": ["GAZİ MAH", "HACIBEYLİ MAH", "ACARMANTAŞ MAH", "AKARCA MAH", "AKÇALIUŞAĞI MAH", "AKDAM MAH", "AKKAYA MAH", "ALAPINAR MAH", "ANDIL MAH", "ARSLANLI MAH", "AYDIN MAH", "AYŞEHOCA MAH", "BAĞÖZÜ MAH", "BAĞTEPE MAH", "BOZTAHTA MAH", "BUCAK MAH", "BULDUKLU MAH", "ÇAMDERE MAH", "ÇAMLARCA MAH", "ÇANDIK MAH", "ÇELENUŞAĞI MAH", "ÇOBANPINARI MAH", "ÇOKAK MAH", "ÇUKURÖREN MAH", "ÇULLUUŞAĞI MAH", "ÇÜRÜKLÜ MAH", "DAMYERİ MAH", "DİKİLİTAŞ MAH", "DİLEKKAYA MAH", "DOĞANALANI MAH", "DURALUŞAĞI MAH", "DURMUŞLU MAH", "DÜZAĞAÇ MAH", "ENİZÇAKIRI MAH", "ERGENUŞAĞI MAH", "ESKİKABASAKAL MAH", "ESKIMANTAŞ MAH", "FAYDALI MAH", "FERHATLI MAH", "GEDİKLİ MAH", "GÖKÇEYOL MAH", "GÖKGÖZ MAH", "GÖRBEYAZ MAH", "GÜNERİ MAH", "HACIMİRZALI MAH", "HAMAM MAH", "ILICA MAH", "IŞIKKAYA MAH", "IŞIKLI MAH", "İDEMKÖY MAH", "KABAKTEPE MAH", "KAHVELİ MAH", "KALKUMAÇ MAH", "KAPIKAYA MAH", "KARABUCAK MAH", "KARACAÖREN MAH", "KARAHAMZALI MAH", "KARANEBİLİ MAH", "KEMERKÖY MAH", "KIBRISLAR MAH", "KIZILLAR MAH", "KIZLARSEKİSİ MAH", "KÖSELİ MAH", "KUYTUCAK MAH", "KUYUBELİ MAH", "KUYULUK MAH", "MAHYALAR MAH", "MARANKEÇİLİ MAH", "MİNNETLİ MAH", "ORÇAN MAH", "ORUÇLU MAH", "ÖRENDERE MAH", "ÖZBAŞI MAH", "PEKMEZCİ MAH", "POSTKABASAKAL MAH", "SALMANLI MAH", "ŞERİFLİ MAH", "TEPECİKÖREN MAH", "TUFANLI MAH", "TURGUTLU MAH", "TURUNÇLU MAH", "VELİCANLI MAH", "YANALERİK MAH", "YASSIÇALI MAH", "YENİKÖY MAH", "YUKARIKEÇİLİ MAH", "YÜKSEKÖREN MAH", "ZERDALİ MAH", "AĞLIBOĞAZ MAH", "ARSLANPAŞA MAH", "BAĞLAR MAH", "CUMHURİYET MAH", "ÇANAKLI MAH", "HACIUŞAĞI MAH", "KARACAOĞLAN MAH", "MAHMUTLU MAH", "ŞEVKİYE MAH", "TAŞ MAH", "TAVŞANTEPE MAH", "TUFANPAŞA MAH", "TÜRKELİ MAH", "VARSAKLAR MAH", "YARIMOĞLU MAH"],
-    "Pozantı": ["AKÇATEKİR MAH", "ALPU MAH", "AŞÇIBEKİRLİ MAH", "BELEMEDİK MAH", "ÇAMLIBEL MAH", "DAĞDİBİ MAH", "ESKİKONACIK MAH", "FINDIKLI MAH", "GÖKBEZ MAH", "HAMİDİYE MAH", "KAMIŞLI MAH", "KARAKIŞLAKÇI MAH", "ÖMERLİ MAH", "YAĞLITAŞ MAH", "YAZICAK MAH", "YENİKONACIK MAH", "YUKARIBELEMEDİK MAH", "CUMHURİYET MAH", "İSTİKLAL MAH", "KURTULUŞ MAH", "ZAFER MAH"],
-    "Saimbeyli": ["AKSAAĞAÇ MAH", "AVCIPINARI MAH", "AYVACIK MAH", "BEYPINARI MAH", "CIVIKLI MAH", "CUMHURLU MAH", "ÇATAK MAH", "ÇERALAN MAH", "ÇORAK MAH", "DEĞİRMENCİUŞAĞI MAH", "EYÜPLÜ MAH", "FATİH MAH", "GÖKMENLER MAH", "GÜRLEŞEN MAH", "HALİLBEYLİ MAH", "HİMMETLİ MAH", "İSLAM MAH", "KANDİLLİ MAH", "KAPAKLIKUYU MAH", "KARAKUYU MAH", "KIZILAĞAÇ MAH", "MAHMUTLU MAH", "NALTAŞ MAH", "TOPALLAR MAH", "TÜLÜ MAH", "YARDİBİ MAH", "YENİKÖY MAH", "YEŞİLBAĞLAR MAH"],
-    "Sarıçam": ["ACIDEREOSB MAH", "BEYCELİ MAH", "BURUK CUMHURİYET MAH", "İSTİKLAL MAH", "SOFUDEDE MAH", "HÜRRİYET MAH", "KEMALPAŞA MAH", "YENİ MAH", "ACIDERE MAH", "AFLAK MAH", "AKKUYU MAH", "AVCILAR MAH", "AYDINYURDU MAH", "AYVALI MAH", "BAYRAM HACILI MAH", "BOYNUYOĞUN MAH", "BOZTEPE MAH", "BÜYÜK BAKLALI MAH", "CERENLİ MAH", "CİHADİYE MAH", "ÇAMLICA MAH", "ÇARKIPARE MAH", "ÇAYLI MAH", "ÇINARLI MAH", "ÇİÇEKLİ MAH", "ÇİRİŞGEDİĞİ MAH", "DAĞCI MAH", "DUTLUCA MAH", "EĞECİUŞAĞI MAH", "ERTUĞRULGAZİ MAH", "GÖKBUKET MAH", "GÖZTEPE MAH", "HAKKIBEYLİ MAH", "HASANBEYLİ MAH", "HOCALLI MAH", "KARAÖMERLİ MAH", "KARAYUSUFLU MAH", "KARGAKEKEÇ MAH", "KARLIK MAH", "KAŞOBASI MAH", "KEPEZTEPE MAH", "KILBAŞ MAH", "KILIÇLI MAH", "KIZILKAŞ MAH", "KÖSEFAKILI MAH", "KÜÇÜKBAKLALI MAH", "MALTEPE MAH", "MENEKŞE MAH", "MUSTAFALAR MAH", "MÜMİNLİ MAH", "OSMANGAZİ MAH", "SULUCA MAH", "TURUNÇLU MAH", "ÜNLÜCE MAH", "YAĞIZLAR MAH", "YARIMCA MAH", "YENİYAYLA MAH", "YÜREKLİ MAH", "BALCALI MAH", "ESENTEPE MAH", "GÜLTEPE MAH", "MEHMET AKİF ERSOY MAH", "ORHANGAZİ MAH", "REMZİ OĞUZ ARIK MAH", "ŞAHİNTEPE MAH", "YAVUZ SULTAN SELİM MAH", "YEŞİLTEPE MAH", "YILDIRIM BEYAZIT MAH"],
-    "Seyhan": ["AKKAPI MAH", "DAĞLIOĞLU MAH", "AHMET REMZİ YÜREĞİR MAH", "DENİZLİ MAH", "KURTULUŞ MAH", "MİTHATPAŞA MAH", "SAKARYA MAH", "EMEK MAH", "OVA MAH", "ŞAKİRPAŞA MAH", "UÇAK MAH", "AYDINLAR MAH", "BARIŞ MAH", "FEVZİPAŞA MAH", "CEMALPAŞA MAH", "REŞATBEY MAH", "GÜLBAHÇESİ MAH", "2000 EVLER MAH", "BAHÇEŞEHİR MAH", "GÜRSELPAŞA MAH", "YENİ MAH", "HADIRLI MAH", "ALİDEDE MAH", "BEŞOCAK MAH", "MESTANZADE MAH", "SARIYAKUP MAH", "ŞEHİTDURAN MAH", "TÜRKOCAĞI MAH", "YENİBEY MAH", "BAHÇELİEVLER MAH", "BÜYÜKÇILDIRIM MAH", "BÜYÜKDİKİLİ MAH", "CAMUZCU MAH", "ÇAPUTÇU MAH", "DERVİŞLER MAH", "DÖRTAĞAÇ MAH", "GÖKÇELER MAH", "GÖLBAŞI MAH", "KARAKUYU MAH", "KARAYUSUFLU MAH", "KAYIŞLI MAH", "KOYUNCU MAH", "KÖYLÜOĞLU MAH", "KUYUMCULAR MAH", "KÜÇÜKÇILDIRIM MAH", "MÜRSELOĞLU MAH", "SALMANBEYLİ MAH", "SARIHUĞLAR MAH", "SERİNEVLER MAH", "YALMANLI MAH", "YENİDAM MAH", "YOLGEÇEN MAH", "ZEYTİNLİ MAH", "ÇINARLI MAH", "DÖŞEME MAH", "HANEDAN MAH", "HURMALI MAH", "İSTİKLAL MAH", "KOCAVEZİR MAH", "KURUKÖPRÜ MAH", "KAVAKLI MAH", "KOZA MAH", "KÜÇÜKDİKİLİ MAH", "MEKAN MAH", "FATİH MAH", "PINAR MAH", "TELLİDERE MAH", "DUMLUPINAR MAH", "GÜLPINAR MAH", "MEYDAN MAH", "MİRZAÇELEBİ MAH", "YEŞİLYUVA MAH", "BARBAROS MAH", "BEY MAH", "HAVUZLUBAHÇE MAH", "HÜRRİYET MAH", "MIDIK MAH", "SUCUZADE MAH", "ONUR MAH", "YEŞİLOBA MAH", "KARASOKU MAH", "KAYALIBAĞ MAH", "TEPEBAĞ MAH", "ULUCAMİİ MAH", "DEMETEVLER MAH", "İSMETPAŞA MAH", "NARLICA MAH", "YEŞİLEVLER MAH", "SARIHAMZALI MAH", "SÖĞÜTLÜ MAH", "YENİBARAJ MAH", "YEŞİLYURT MAH", "GAZİPAŞA MAH", "NAMIK KEMAL MAH", "SÜMER MAH", "ZİYAPAŞA MAH"],
-    "Tufanbeyli": ["AKÇAL MAH", "AKPINAR MAH", "AYVAT MAH", "BOLATPINARI MAH", "BOZGÜNEY MAH", "ÇATALÇAM MAH", "ÇUKURKIŞLA MAH", "DAMLALI MAH", "DEMİROLUK MAH", "DOĞANBEYLİ MAH", "DOĞANLI MAH", "ELEMANLI MAH", "EVCİ MAH", "FATMAKUYU MAH", "GÜZELİM MAH", "HANYERİ MAH", "İĞDEBEL MAH", "KARSAVRAN MAH", "KAYAPINAR MAH", "KAYARCIK MAH", "KİRAZLIYURT MAH", "KOCCAĞIZ MAH", "ORTAKÖY MAH", "PEKMEZLİ MAH", "PINARLAR MAH", "ŞAR MAH", "TAŞPINAR MAH", "TOZLU MAH", "YAMANLI MAH", "YEŞİLOVA MAH", "CUMHURİYET MAH", "İSTİKLAL MAH", "YENİCAMİ MAH"],
-    "Yumurtalık": ["ASMALI MAH", "AYVALIK MAH", "DEMİRTAŞ MAH", "DEVECİUŞAĞI MAH", "GÖLOVASI MAH", "HAMZALI MAH", "HAYLAZLI MAH", "KALDIRIM MAH", "KALEMLİ MAH", "KESMEBURUN MAH", "KIRMIZIDAM MAH", "KUZUPINARI MAH", "NARLIÖREN MAH", "SUGÖZÜ MAH", "YENİKÖY MAH", "YEŞİLKÖY MAH", "YUMURTALIK MAH", "ZEYTİNBELİ MAH", "AKDENİZ MAH", "AKYUVA MAH", "AYAS MAH", "DEVRİŞİYE MAH", "KEMALPAŞA MAH", "ÖREN MAH"],
-    "Yüreğir": ["YAKAPINAR MAH", "ABDİOĞLU CUMHURİYET MAH", "AĞZIBÜYÜK MAH", "AKARCALI MAH", "AKDAM MAH", "AKPINAR MAH", "ALİHOCALI MAH", "AYDINCIK MAH", "BELÖREN MAH", "BEYKÖY MAH", "BÜYÜKKAPILI MAH", "CAMİLİ MAH", "CIRIK MAH", "CİNE MAH", "ÇAĞIRKANLI MAH", "ÇATALPINAR MAH", "ÇELEMLİ MAH", "ÇOTLU MAH", "DANIŞMENT MAH", "DEDEPINARI MAH", "DENİZKUYUSU MAH", "DÜZCE MAH", "EĞRİAĞAÇ MAH", "ESENLER MAH", "GEÇİTLİ CUMHURİYET MAH", "GÖKÇELİ MAH", "GÜMÜŞYAZI MAH", "GÜVELOĞLU MAH", "HACIALİ MAH", "HAVRANİYE MAH", "HEREKLİ MAH", "IRMAKBAŞI MAH", "KADIKÖY MAH", "KAMIŞLI MAH", "KARAAHMETLİ MAH", "KAŞLICA MAH", "KAYARLI MAH", "KÖKLÜCE MAH", "KÖPRÜGÖZÜ MAH", "KÜTÜKLÜ MAH", "ÖZLER MAH", "PAŞAKÖY MAH", "PEKMEZLİ MAH", "SAĞDIÇLI MAH", "SAKIZLI MAH", "SAZAK MAH", "ŞAHİNAĞA MAH", "ŞEYHMURAT MAH", "TAŞÇI MAH", "VAYVAYLI MAH", "YAHŞİLER MAH", "YALNIZCA MAH", "YENİCE MAH", "YENİKÖY MAH", "YERDELEN MAH", "YUKARIÇİÇEKLİ MAH", "YUNUSOĞLU CUMHURİYET MAH", "YUNUSOĞLU HÜRRİYET MAH", "ZAĞARLI MAH", "19 MAYIS MAH", "ANADOLU MAH", "BAHÇELİEVLER MAH", "BAŞAK MAH", "DEDE KORKUT MAH", "GÜZELEVLER MAH", "KOZA MAH", "LEVENT MAH", "YEŞİL BAĞLAR MAH", "YUNUS EMRE MAH", "DOĞANKENT BAHÇELİEVLER MAH", "DOĞANKENT CUMHURİYET MAH", "DOĞANKENT KIŞLA MAH", "GAZİPAŞA MAH", "ATATÜRK MAH", "HAVUTLU MAH", "SOLAKLI CUMHURİYET MAH", "SOLAKLI HÜRRİYET MAH", "GÜZEL CUMHURİYET MAH", "ATAKENT MAH", "ÇAMLIBEL MAH", "DERVİŞLER MAH", "KİREMİTHANE MAH", "MUTLU MAH", "ŞEHİT ERKUT AKBAY MAH", "TAHSİLLİ MAH", "ULUBATLI HASAN MAH", "CUMHURİYET MAH", "GÜNEŞLİ MAH", "KAZIM KARABEKİR MAH", "KIŞLA MAH", "KÖPRÜLÜ MAH", "YENİDOĞAN MAH", "DADALOĞLU MAH", "KARACAOĞLAN MAH", "P.T.T MAH", "SELAHATTİN EYYUBİ MAH", "SERİNEVLER MAH", "ESKİ MİSİS MAH", "AKDENİZ MAH", "HAYDAROĞLU MAH", "SEYHAN MAH", "YAMAÇLI MAH", "AKINCILAR MAH", "ÖZGÜR MAH", "SARIÇAM MAH", "SİNANPAŞA MAH", "YAVUZLAR MAH"]
+  "İstanbul": {
+    "Kadıköy": ["Caferağa", "Moda", "Osmanağa", "Rasimpaşa"],
   }
 };
 
-export const countryPhoneCodes = [
-  "1", "7", "20", "27", "30", "31", "32", "33", "34", "36", "39", "40", "41", "43", "44", "45", "46", "47", "48", "49", "51", "52", "53", "54", "55", "56", "57", "58", "60", "61", "62", "63", "64", "65", "66", "81", "82", "84", "86", "90", "91", "92", "93", "94", "95", "98", "211", "212", "213", "216", "218", "220", "221", "222", "223", "224", "225", "226", "227", "228", "229", "230", "231", "232", "233", "234", "235", "236", "237", "238", "239", "240", "241", "242", "243", "244", "245", "246", "248", "249", "250", "251", "252", "253", "254", "255", "256", "257", "258", "260", "261", "262", "263", "264", "265", "266", "267", "268", "269", "290", "291", "297", "298", "299", "350", "351", "352", "353", "354", "355", "356", "357", "358", "359", "370", "371", "372", "373", "374", "375", "376", "377", "378", "379", "380", "381", "382", "383", "385", "386", "387", "389", "420", "421", "423", "440", "472", "500", "501", "502", "503", "504", "505", "506", "507", "508", "509", "590", "591", "592", "593", "594", "595", "596", "597", "598", "599", "670", "672", "673", "674", "675", "676", "677", "678", "679", "680", "681", "682", "683", "685", "686", "687", "688", "689", "690", "691", "692", "850", "852", "853", "855", "856", "870", "880", "886", "960", "961", "962", "963", "964", "965", "966", "967", "968", "970", "971", "972", "973", "974", "975", "976", "977", "992", "993", "994", "995", "996", "998"
-].sort((a, b) => parseInt(a) - parseInt(b));
+export const countryPhoneCodes = ["90", "1", "44", "49", "33"];
 
-export const sportsFederations = [
-  "Türkiye Okçuluk Federasyonu Başkanlığı", "Türkiye Oryantiring Federasyonu", "Türkiye Otomobil Sporları Federasyonu Başkanlığı", "Türkiye Özel Sporcular Spor Federasyonu Başkanlığı", "Türkiye Satranç Federasyonu", "Türkiye Sualtı Sporları Federasyonu Başkanlığı", "Türkiye Sutopu Federasyonu Başkanlığı", "Türkiye Taekwondo Federasyonu Başkanlığı", "Türkiye Tenis Federasyonu Başkanlığı", "Türkiye Triatlon Federasyonu Başkanlığı", "Türkiye Üniversite Sporları Federasyonu Başkanlığı", "Türkiye Voleybol Federasyonu Başkanlığı", "Türkiye Vücut Geliştirme Fitness Federasyonu", "Türkiye Wushu KungFu Federasyonu Başkanlığı", "Türkiye Yelken Federasyonu Başkanlığı", "Türkiye Yüzme Federasyonu Başkanlığı", "Türkiye Atıcılık Federasyonu Başkanlığı", "Türkiye Atletizm Federasyonu", "Türkiye Badminton Federasyonu Başkanlığı", "Türkiye Basketbol Federasyonu Başkanlığı", "Türkiye Bedensel Engelliler Spor Federasyonu Başkanlığı", "Türkiye Ragbi Federasyonu Başkanlığı", "Türkiye Bilardo Federasyonu Başkanlığı", "Türkiye Binicilik Federasyonu Başkanlığı", "Türkiye Bisiklet Federasyonu Başkanlığı", "Türkiye Bocce Bowling Dart Federasyonu Başkanlığı", "Türkiye Boks Federasyonu Başkanlığı", "Türkiye Briç Federasyonu Başkanlığı", "Türkiye Buz Hokeyi Federasyon Başkanlığı", "Türkiye Buz Pateni Federasyonu Başkanlığı", "Türkiye Cimnastik Federasyonu Başkanlığı", "Türkiye Dağcılık Federasyonu Başkanlığı", "Türkiye Dans Sporları Federasyonu Başkanlığı", "Türkiye Eskrim Federasyonu Başkanlığı", "Türkiye Geleneksel Spor Dalları Federasyonu Başkanlığı", "Türkiye Gelişmekte Olan Spor Branşları Federasyonu Bşk.", "Türkiye Golf Federasyonu Başkanlığı", "Türkiye Görme Engelliler Spor Federasyonu Başkanlığı", "Türkiye Güreş Federasyonu Başkanlığı", "Türkiye Halk Oyunları Federasyonu Başkanlığı", "Türkiye Halter Federasyonu Başkanlığı", "Türkiye Hentbol Federasyonu Başkanlığı", "Türkiye Herkes İçin Spor Federasyonu Başkanlığı", "Türkiye Hokey Federasyonu Başkanlığı", "Türkiye İşitme Engelliler Spor Federasyonu Başkanlığı", "Türkiye İzcilik Federasyonu Başkanlığı", "Türkiye Judo Federasyonu Başkanlığı", "Türkiye Kano Federasyonu Başkanlığı", "Türkiye Karate Federasyonu Başkanlığı", "Türkiye Kayak Federasyonu Baskanlığı", "Türkiye Kick Boks Federasyonu Başkanlığı", "Türkiye Kürek Federasyonu Başkanlığı", "Türkiye Masa Tenisi Federasyonu Başkanlığı", "Türkiye Modern Pentatlon Federasyonu Başkanlığı", "Türkiye Motosiklet Federasyonu Başkanlığı", "Türkiye Muay Thai Federasyonu Başkanlığı", "Türkiye Curling Federasyonu", "Türkiye Hava Sporları Federasyonu", "Türkiye Kaykay Federasyonu", "Türkiye ESpor Federasyonu", "Türkiye Geleneksel Türk Okçuluk Federasyonu", "Türkiye Geleneksel Atlı Spor Dalları Federasyonu", "Türkiye Geleneksel Güreşler Federasyonu"
-].sort((a, b) => a.localeCompare(b, 'tr'));
+export const sportsFederations = ["Türkiye Basketbol Federasyonu", "Türkiye Futbol Federasyonu", "Türkiye Satranç Federasyonu"];
 
-// Persisting only the required demo user
 export const user: User = {
     id: '1',
     name: 'İsmail Hilmi ADIGÜZEL',
@@ -150,323 +53,33 @@ export const user: User = {
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
         bloodType: '0 Rh+',
-        address: {
-            country: 'Türkiye',
-            city: 'İstanbul',
-            district: 'Kadıköy',
-            neighborhood: 'Caferağa',
-            fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4'
-        },
+        address: { country: 'Türkiye', city: 'İstanbul', district: 'Kadıköy', neighborhood: 'Caferağa', fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4' },
         website: 'https://ismailhilmi.com',
-        social: {
-            linkedin: 'ismailhilmi',
-            github: 'ismailhilmi',
-            behance: 'ismailhilmi',
-            instagram: 'ismailhilmi',
-            twitter: 'ismailhilmi',
-        }
+        social: { linkedin: 'ismailhilmi', github: 'ismailhilmi', instagram: 'ismailhilmi' }
     },
     volunteerInfo: {
-        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Bağışçı İlişkileri'],
-        dailySkills: ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim'],
-        interests: ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sosyal Girişimcilik'],
-        education: [
-            { level: 'Lisans', school: 'Boğaziçi Üniversitesi - Yönetim Bilişim Sistemleri' },
-            { level: 'Lise', school: 'Kabataş Erkek Lisesi' }
-        ],
+        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi'],
+        dailySkills: ['Organizasyon', 'İletişim'],
+        interests: ['Çevre', 'Eğitim', 'Sosyal Girişimcilik'],
+        education: [{ level: 'Lisans', school: 'Boğaziçi Üniversitesi' }],
         profession: 'Yazılım Geliştirici',
-        sector: 'Teknoloji',
-        languages: ['Türkçe', 'İngilizce', 'Almanca'],
-        programs: ['VS Code', 'Figma', 'Docker', 'Google Analytics'],
+        languages: ['Türkçe', 'İngilizce'],
+        programs: ['VS Code', 'Figma'],
         licenses: ['B Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası', 'Hijyen Belgesi'],
-        travelInfo: { 
-            domesticObstacle: false, 
-            internationalObstacle: false,
-            visas: ['Schengen', 'ABD (B1/B2)']
-        },
-        emergency: {
-            available: true,
-            hasChronicIllness: false,
-            usesRegularMedication: false,
-            hasPhysicalLimitation: false,
-            emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }]
-        }
+        documents: ['İlk Yardım Sertifikası'],
+        travelInfo: { domesticObstacle: false, internationalObstacle: false, visas: ['Schengen'] },
+        emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }] }
     },
     stats: {
-        totalDonation: 1250,
-        donationCount: 42,
-        highestSingleDonation: 150,
-        supportedNgosCount: 7,
-        mostSupportedNgo: 'TEMA Vakfı',
-        avgDonation: 29.76,
-        volunteerHours: 48,
-        completedProjects: 5,
-        volunteerRank: {
-            country: 'İlk %5',
-            city: 'İlk %2',
-            school: 'İlk %1',
-            interest: 'Hayvan Hakları alanında İlk %10',
-        },
-        mostActiveVolunteerArea: 'Hayvan Hakları',
-        avgVolunteerDuration: '3 Hafta',
-        totalImpactValue: 25000,
+        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 25000
     },
-    progress: { 'Çevre': 80, 'Hayvan Hakları': 100, 'Eğitim': 50 }
+    progress: { 'Çevre': 80 }
 };
-
-const brandsData = [
-    { name: 'Trip.com', rate: 2, category: 'Seyahat', domain: 'trip.com', type: 'brand' },
-    { name: 'Pazarama', rate: 2, category: 'Pazar Yeri', domain: 'pazarama.com', type: 'brand' },
-    { name: 'Karaca', rate: 3, category: 'Ev & Yaşam', domain: 'karaca.com', type: 'brand' },
-    { name: 'Yalıspor', rate: 2, category: 'Giyim', domain: 'yalispor.com.tr', type: 'brand' },
-    { name: 'Mango', rate: 2, category: 'Giyim', domain: 'mango.com', type: 'brand' },
-    { name: 'Getir', rate: 2, category: 'Süpermarket', domain: 'getir.com', type: 'brand' },
-    { name: 'Tatilbudur', rate: 3, category: 'Seyahat', domain: 'tatilbudur.com', type: 'brand' },
-    { name: 'CarrefourSA', rate: 2, category: 'Süpermarket', domain: 'carrefoursa.com', type: 'brand' },
-    { name: 'Boyner', rate: 2, category: 'Giyim', domain: 'boyner.com.tr', type: 'brand' },
-    { name: 'Ucuzabilet', rate: 2, category: 'Seyahat', domain: 'ucuzabilet.com', type: 'brand' },
-    { name: 'CamperTR', rate: 4.67, category: 'Ayakkabı', domain: 'camper.com', type: 'brand' },
-    { name: 'H&M', rate: 6, category: 'Giyim', domain: 'hm.com', type: 'brand' },
-    { name: 'Bilet.com', rate: 2, category: 'Seyahat', domain: 'bilet.com', type: 'brand' },
-    { name: 'Tchibo', rate: 2, category: 'Gıda & İçecek', domain: 'tchibo.com.tr', type: 'brand' },
-    { name: 'Homend', rate: 2, category: 'Elektronik', domain: 'homend.com.tr', type: 'brand' },
-    { name: 'Skechers', rate: 2, category: 'Ayakkabı', domain: 'skechers.com.tr', type: 'brand' },
-    { name: 'MediaMarkt', rate: 2, category: 'Elektronik', domain: 'mediamarkt.com.tr', type: 'brand' },
-    { name: 'Mudo', rate: 1.8, category: 'Giyim', domain: 'mudo.com.tr', type: 'brand' },
-    { name: 'Bella Maison', rate: 2, category: 'Ev & Yaşam', domain: 'bellamaison.com', type: 'brand' },
-    { name: 'Ayakkabı Dünyası', rate: 4, category: 'Ayakkabı', domain: 'ayakkabidunyasi.com.tr', type: 'brand' },
-    { name: 'Decathlon', rate: 2, category: 'Giyim', domain: 'decathlon.com.tr', type: 'brand' },
-    { name: 'Carter’s', rate: 2, category: 'Anne & Bebek', domain: 'carters.com', type: 'brand' },
-    { name: 'MinyCenter', rate: 2, category: 'Anne & Bebek', domain: 'minycenter.com.tr', type: 'brand' },
-    { name: 'Huawei', rate: 2, category: 'Elektronik', domain: 'huawei.com', type: 'brand' },
-    { name: 'Vitaminler', rate: 5, category: 'Kozmetik & Bakım', domain: 'vitaminler.com', type: 'brand' },
-    { name: 'Amazon TR', rate: 13, category: 'Pazar Yeri', domain: 'amazon.com.tr', type: 'brand' },
-    { name: 'Emsan', rate: 2, category: 'Ev & Yaşam', domain: 'emsan.com.tr', type: 'brand' },
-    { name: 'Mavi', rate: 2, category: 'Giyim', domain: 'mavi.com', type: 'brand' },
-    { name: 'A101', rate: 2, category: 'Süpermarket', domain: 'a101.com.tr', type: 'brand' },
-    { name: 'Pierre Cardin', rate: 11, category: 'Giyim', domain: 'pierrecardin.com.tr', type: 'brand' },
-    { name: 'Cacharel', rate: 11, category: 'Giyim', domain: 'cacharel.com.tr', type: 'brand' },
-    { name: 'US Polo Assn.', rate: 11, category: 'Giyim', domain: 'tr.uspoloassn.com', type: 'brand' },
-    { name: 'n11', rate: 2, category: 'Pazar Yeri', domain: 'n11.com', type: 'brand' },
-    { name: 'Samsung', rate: 1.66, category: 'Elektronik', domain: 'samsung.com', type: 'brand' },
-    { name: 'Penti', rate: 2, category: 'Giyim', domain: 'penti.com', type: 'brand' },
-    { name: 'Teknosa', rate: 2, category: 'Elektronik', domain: 'teknosa.com', type: 'brand' },
-    { name: 'Altınbaş', rate: 2, category: 'Aksesuar & Takı', domain: 'altinbas.com', type: 'brand' },
-    { name: 'IKEA', rate: 2, category: 'Ev & Yaşam', domain: 'ikea.com.tr', type: 'brand' },
-    { name: 'Etstur', rate: 2, category: 'Seyahat', domain: 'etstur.com', type: 'brand' },
-    { name: 'Divarese', rate: 5, category: 'Ayakkabı', domain: 'divarese.com.tr', type: 'brand' },
-    { name: 'Flaw Wear', rate: 3, category: 'Giyim', domain: 'flawwear.com', type: 'brand' },
-    { name: 'Fresh Scarfs', rate: 5, category: 'Giyim', domain: 'freshscarfs.com', type: 'brand' },
-    { name: 'TARTI', rate: 10, category: 'Hobi & Hizmet', domain: 'tarti.com', type: 'brand' },
-    { name: 'Reeder', rate: 1.5, category: 'Elektronik', domain: 'reeder.com.tr', type: 'brand' },
-    { name: 'Enjoy eSIM', rate: 9, category: 'Hobi & Hizmet', domain: 'enjoyesim.com', type: 'brand' },
-    { name: 'Madame Coco', rate: 4, category: 'Ev & Yaşam', domain: 'madamecoco.com', type: 'brand' },
-    { name: 'LG', rate: 3, category: 'Elektronik', domain: 'lg.com', type: 'brand' },
-    { name: 'Arkopharma', rate: 15, category: 'Kozmetik & Bakım', domain: 'arkopharma.com.tr', type: 'brand' },
-    { name: 'Petzzshop', rate: 3, category: 'Hobi & Hizmet', domain: 'petzzshop.com', type: 'brand' },
-    { name: 'Manuka', rate: 5, category: 'Giyim', domain: 'manuka.com.tr', type: 'brand' },
-    { name: 'Kayra', rate: 5, category: 'Giyim', domain: 'kayra.com', type: 'brand' },
-    { name: 'Sosyopix', rate: 10, category: 'Hobi & Hizmet', domain: 'sosyopix.com', type: 'brand' },
-    { name: 'Airalo', rate: 8, category: 'Seyahat', domain: 'airalo.com', type: 'brand' },
-    { name: 'Xiaomi', rate: 2, category: 'Elektronik', domain: 'mi.com', type: 'brand' },
-    { name: 'FLO', rate: 7.5, category: 'Ayakkabı', domain: 'flo.com.tr', type: 'brand' },
-    { name: 'Forever21', rate: 2, category: 'Giyim', domain: 'forever21.com', type: 'brand' },
-    { name: 'Bialetti', rate: 7, category: 'Ev & Yaşam', domain: 'bialetti.com.tr', type: 'brand' },
-    { name: 'Tazecicek', rate: 4.5, category: 'Hobi & Hizmet', domain: 'tazecicek.com', type: 'brand' },
-    { name: 'Mizalle', rate: 5, category: 'Giyim', domain: 'mizalle.com', type: 'brand' },
-    { name: 'Teknevia', rate: 2, category: 'Seyahat', domain: 'teknevia.com', type: 'brand' },
-    { name: 'Lona Cosmetics', rate: 25, category: 'Kozmetik & Bakım', domain: 'lonacosmetics.com', type: 'brand' },
-    { name: 'EvdeEczane', rate: 3, category: 'Kozmetik & Bakım', domain: 'evdeeczane.com', type: 'brand' },
-    { name: 'Cosmed', rate: 5, category: 'Kozmetik & Bakım', domain: 'cosmed.com.tr', type: 'brand' },
-    { name: 'Tonguç Akademi', rate: 5.5, category: 'Hobi & Hizmet', domain: 'tongucakademi.com', type: 'brand' },
-    { name: 'Tonguç Mağaza', rate: 5.5, category: 'Hobi & Hizmet', domain: 'tongucmagaza.com', type: 'brand' },
-    { name: 'Kütahya Porselen', rate: 4, category: 'Ev & Yaşam', domain: 'kutahyaporselen.com', type: 'brand' },
-    { name: 'General Mobile', rate: 2, category: 'Elektronik', domain: 'generalmobile.com', type: 'brand' },
-    { name: 'Farfetch', rate: 7, category: 'Giyim', domain: 'farfetch.com', type: 'brand' },
-    { name: 'Konyalı Saat', rate: 2, category: 'Aksesuar & Takı', domain: 'konyalisaat.com.tr', type: 'brand' },
-    { name: 'Korkmaz', rate: 3, category: 'Ev & Yaşam', domain: 'korkmaz.com.tr', type: 'brand' },
-    { name: 'E-bebek', rate: 2.5, category: 'Anne & Bebek', domain: 'e-bebek.com', type: 'brand' },
-    { name: 'Slazenger', rate: 3, category: 'Giyim', domain: 'slazenger.com.tr', type: 'brand' },
-    { name: 'Tudors', rate: 6, category: 'Giyim', domain: 'tudors.com', type: 'brand' },
-    { name: 'Casper', rate: 2, category: 'Elektronik', domain: 'casper.com.tr', type: 'brand' },
-    { name: 'Toyzz Shop', rate: 7.2, category: 'Anne & Bebek', domain: 'toyzzshop.com', type: 'brand' },
-    { name: 'Taç', rate: 4, category: 'Ev & Yaşam', domain: 'tac.com.tr', type: 'brand' },
-    { name: 'PUMA', rate: 6, category: 'Giyim', domain: 'puma.com', type: 'brand' },
-    { name: 'Marks & Spencer', rate: 2, category: 'Giyim', domain: 'marksandspencer.com.tr', type: 'brand' },
-    { name: 'GAP', rate: 2, category: 'Giyim', domain: 'gap.com.tr', type: 'brand' },
-    { name: 'Beymen', rate: 3, category: 'Giyim', domain: 'beymen.com', type: 'brand' },
-    { name: 'Banggood', rate: 5.5, category: 'Pazar Yeri', domain: 'banggood.com', type: 'brand' },
-    { name: 'Koçtaş', rate: 2.2, category: 'Ev & Yaşam', domain: 'koctas.com.tr', type: 'brand' },
-    { name: 'Colins', rate: 9, category: 'Giyim', domain: 'colins.com.tr', type: 'brand' },
-    { name: 'D&R', rate: 2.5, category: 'Hobi & Hizmet', domain: 'dr.com.tr', type: 'brand' },
-    { name: 'Koton', rate: 4.5, category: 'Giyim', domain: 'koton.com', type: 'brand' },
-    { name: 'Linens', rate: 5, category: 'Ev & Yaşam', domain: 'linens.com.tr', type: 'brand' },
-    { name: 'Saat & Saat', rate: 1, category: 'Aksesuar & Takı', domain: 'saatvesaat.com.tr', type: 'brand' },
-    { name: 'Sportive', rate: 6.5, category: 'Giyim', domain: 'sportive.com.tr', type: 'brand' },
-    { name: 'Beko', rate: 3, category: 'Elektronik', domain: 'beko.com.tr', type: 'brand' },
-    { name: 'Benetton', rate: 6, category: 'Giyim', domain: 'benetton.com', type: 'brand' },
-    { name: 'Yargıcı', rate: 5.6, category: 'Giyim', domain: 'yargici.com', type: 'brand' },
-    { name: 'Gant', rate: 6, category: 'Giyim', domain: 'gant.com.tr', type: 'brand' },
-    { name: 'Nautica', rate: 7, category: 'Giyim', domain: 'nautica-tr.com', type: 'brand' },
-    { name: 'Lacoste', rate: 5, category: 'Giyim', domain: 'lacoste.com.tr', type: 'brand' },
-    { name: 'Arçelik', rate: 3, category: 'Elektronik', domain: 'arcelik.com.tr', type: 'brand' },
-    { name: 'Little Caesars', rate: 6, category: 'Gıda & İçecek', domain: 'littlecaesars.com.tr', type: 'brand' },
-
-    // Kooperatifler
-    { name: 'S.S. Kadın Emeği Kooperatifi', type: 'cooperative', rate: 4, category: 'El Sanatları', domain: 'kadinkoop.org' },
-    { name: 'S.S. Trakya Bağcılık Kooperatifi', type: 'cooperative', rate: 3.5, category: 'Gıda & İçecek', domain: 'trakyabag.coop' },
-    { name: 'S.S. Anadolu Arı Kadınlar Kooperatifi', type: 'cooperative', rate: 5, category: 'Gıda & İçecek', domain: 'arikadinlar.org' },
-    { name: 'S.S. Ege Zeytincilik Kooperatifi', type: 'cooperative', rate: 4.2, category: 'Gıda & İçecek', domain: 'egezeytin.coop' },
-    { name: 'S.S. Toprak Ana Tarım Kooperatifi', type: 'cooperative', rate: 3, category: 'Tarım', domain: 'toprakana.org' },
-    { name: 'S.S. Kars Kaşarı Üreticileri Kooperatifi', type: 'cooperative', rate: 4.5, category: 'Gıda & İçecek', domain: 'karskasari.coop' },
-    { name: 'S.S. El Sanatları ve Tasarım Kooperatifi', type: 'cooperative', rate: 5.5, category: 'El Sanatları', domain: 'elsanatlari.coop' },
-    { name: 'S.S. Geri Dönüşüm Emekçileri Kooperatifi', type: 'cooperative', rate: 2.5, category: 'Çevre', domain: 'geridonusum.coop' },
-    { name: 'S.S. Organik Sebze Üreticileri Kooperatifi', type: 'cooperative', rate: 3.8, category: 'Tarım', domain: 'organiksebze.coop' },
-    { name: 'S.S. Güneş Enerjisi Kooperatifi', type: 'cooperative', rate: 2, category: 'Enerji', domain: 'gunesenerjisi.coop' },
-    { name: 'S.S. Köy Turizmi Geliştirme Kooperatifi', type: 'cooperative', rate: 4, category: 'Seyahat', domain: 'koyturizmi.coop' },
-    { name: 'S.S. Dayanışma Tüketim Kooperatifi', type: 'cooperative', rate: 1.5, category: 'Pazar Yeri', domain: 'dayanismatuketim.coop' },
-    { name: 'S.S. Tohum Takas Kooperatifi', type: 'cooperative', rate: 3, category: 'Tarım', domain: 'tohumtakas.org' },
-    { name: 'S.S. Patili Dostlar Bakım Kooperatifi', type: 'cooperative', rate: 5, category: 'Hobi & Hizmet', domain: 'patilidostlar.coop' },
-    { name: 'S.S. İpek Dokuma Kadın Kooperatifi', type: 'cooperative', rate: 6, category: 'Giyim', domain: 'ipekdokuma.coop' },
-    { name: 'S.S. Adil Ticaret Kahve Kooperatifi', type: 'cooperative', rate: 4.5, category: 'Gıda & İçecek', domain: 'adilticaretkahve.coop' },
-    { name: 'S.S. Yöresel Peynir Üreticileri Kooperatifi', type: 'cooperative', rate: 4.8, category: 'Gıda & İçecek', domain: 'yoreselpeynir.coop' },
-    { name: 'S.S. Çocuk Gelişim ve Eğitim Kooperatifi', type: 'cooperative', rate: 3.5, category: 'Eğitim', domain: 'cocukgelisim.coop' },
-    { name: 'S.S. Temiz Su Erişim Kooperatifi', type: 'cooperative', rate: 2.8, category: 'Çevre', domain: 'temizsu.coop' },
-    { name: 'S.S. Engelsiz Yaşam Destek Kooperatifi', type: 'cooperative', rate: 4, category: 'Sosyal Hizmet', domain: 'engelsizyasam.coop' },
-    { name: 'S.S. Kültürel Miras Koruma Kooperatifi', type: 'cooperative', rate: 3.2, category: 'Kültür & Sanat', domain: 'kulturelmiras.coop' },
-
-    // İktisadi İşletmeler
-    { name: 'TEMA Vakfı İktisadi İşletmesi', type: 'economic', rate: 5, category: 'Mağazacılık', domain: 'temavakfi.org' },
-    { name: 'LÖSEV İktisadi İşletmesi (LSV Dükkan)', type: 'economic', rate: 6, category: 'Mağazacılık', domain: 'lsvdukkan.com' },
-    { name: 'Uluslararası Sosyal Fayda Derneği İktisadi İşletmesi', type: 'economic', rate: 4, category: 'Mağazacılık', domain: 'socialbusinessglobal.org' },
-    { name: 'HAYTAP İktisadi İşletmesi', type: 'economic', rate: 4.5, category: 'Mağazacılık', domain: 'haytap.org' },
-    { name: 'TEGV İktisadi İşletmesi (Eğitim Parkları)', type: 'economic', rate: 3, category: 'Eğitim', domain: 'tegv.org' },
-    { name: 'İHD İktisadi İşletmesi (Yayıncılık)', type: 'economic', rate: 2.5, category: 'Hobi & Hizmet', domain: 'ihd.org.tr' },
-    { name: 'KEDV İktisadi İşletmesi (Nahıl Dükkan)', type: 'economic', rate: 5.5, category: 'El Sanatları', domain: 'nahil.com.tr' },
-    { name: 'Mor Çatı İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Sosyal Hizmet', domain: 'morcati.org.tr' },
-    { name: 'Tohum Otizm Vakfı İktisadi İşletmesi', type: 'economic', rate: 4, category: 'Eğitim', domain: 'tohumotizm.org.tr' },
-    { name: 'Darüşşafaka Cemiyeti İktisadi İşletmesi', type: 'economic', rate: 3.5, category: 'Mağazacılık', domain: 'darussafaka.org' },
-    { name: 'Türk Kızılayı İktisadi İşletmesi', type: 'economic', rate: 2, category: 'Sağlık', domain: 'kizilay.org.tr' },
-    { name: 'Yeşilay İktisadi İşletmesi', type: 'economic', rate: 2.5, category: 'Hobi & Hizmet', domain: 'yesilay.org.tr' },
-    { name: 'ÇYDD İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Mağazacılık', domain: 'cydd.org.tr' },
-    { name: 'Koruncuk Vakfı İktisadi İşletmesi', type: 'economic', rate: 4, category: 'Mağazacılık', domain: 'koruncuk.org' },
-    { name: 'AÇEV İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Eğitim', domain: 'acev.org' },
-    { name: 'Toplum Gönüllüleri Vakfı (TOG) İktisadi İşletmesi', type: 'economic', rate: 4, category: 'Mağazacılık', domain: 'tog.org.tr' },
-    { name: 'Türkiye Spastik Çocuklar Vakfı İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Sağlık', domain: 'tscv.org.tr' },
-    { name: 'WWF Türkiye İktisadi İşletmesi', type: 'economic', rate: 5, category: 'Mağazacılık', domain: 'wwf.org.tr' },
-    { name: 'UNICEF Türkiye Milli Komitesi İktisadi İşletmesi', type: 'economic', rate: 2, category: 'Mağazacılık', domain: 'unicefturk.org' },
-    { name: 'Türk Eğitim Vakfı (TEV) İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Mağazacılık', domain: 'tev.org.tr' },
-    { name: 'Türkiye Omurilik Felçlileri Derneği İktisadi İşletmesi', type: 'economic', rate: 3, category: 'Sağlık', domain: 'tofd.org.tr' },
-
-    // Sosyal Şirketler
-    { name: 'Fazla Gıda', type: 'social', rate: 3, category: 'Teknoloji', domain: 'fazlagida.com' },
-    { name: 'Otsimo', type: 'social', rate: 4, category: 'Eğitim', domain: 'otsimo.com' },
-    { name: 'B-Good', type: 'social', rate: 5, category: 'Giyim', domain: 'b-good.com' },
-    { name: 'E-Bursum', type: 'social', rate: 2.5, category: 'Teknoloji', domain: 'e-bursum.com' },
-    { name: 'Askıda Ne Var', type: 'social', rate: 3.5, category: 'Sosyal Hizmet', domain: 'askidanevar.com' },
-    { name: 'Anlatan Eller', type: 'social', rate: 4, category: 'Eğitim', domain: 'anlataneller.org' },
-    { name: 'İhtiyaç Haritası', type: 'social', rate: 3, category: 'Teknoloji', domain: 'ihtiyacharitası.org' },
-    { name: 'Good4Trust', type: 'social', rate: 2, category: 'Pazar Yeri', domain: 'good4trust.org' },
-    { name: 'Twin Science', type: 'social', rate: 4.5, category: 'Eğitim', domain: 'twinscience.com' },
-    { name: 'Evreka', type: 'social', rate: 3, category: 'Teknoloji', domain: 'evreka.co' },
-    { name: 'WeWalk', type: 'social', rate: 5, category: 'Teknoloji', domain: 'wewalk.io' },
-    { name: 'BlindLook', type: 'social', rate: 4, category: 'Teknoloji', domain: 'blindlook.com' },
-    { name: 'Biolive', type: 'social', rate: 3.5, category: 'Çevre', domain: 'biolive.com.tr' },
-    { name: 'Ecording', type: 'social', rate: 4, category: 'Teknoloji', domain: 'ecording.org' },
-    { name: 'Robotel Türkiye', type: 'social', rate: 3, category: 'Sosyal Hizmet', domain: 'robotel.org' },
-    { name: 'KODA (Köy Okulları Değişim Ağı)', type: 'social', rate: 4, category: 'Eğitim', domain: 'kodegisim.org' },
-    { name: 'Düşler Akademisi', type: 'social', rate: 3.5, category: 'Kültür & Sanat', domain: 'duslerakademisi.org' },
-    { name: 'Givin', type: 'social', rate: 3, category: 'Pazar Yeri', domain: 'givin.co' },
-    { name: 'SOGLA (Sosyal Girişimci Genç Liderler Akademisi)', type: 'social', rate: 2.5, category: 'Eğitim', domain: 'sogla.org' },
-    { name: 'Toyi', type: 'social', rate: 4, category: 'Anne & Bebek', domain: 'toyi.io' },
-    { name: 'Puduhepa ve Kız Kardeşleri', type: 'social', rate: 5, category: 'Kültür & Sanat', domain: 'puduhepa.com' },
-];
-
-export const allEntityLists: Brand[] = brandsData.map((brand, index) => {
-    const slug = slugify(brand.name);
-    const brandId = `brand-${index + 1}`;
-    
-    // Create mock data based on user request
-    const mockAbout = `"${brand.name}" olarak, sürdürülebilir ve etik üretim prensiplerini benimsiyoruz. Her alışverişinizde, belirlediğimiz sosyal etki alanlarına katkıda bulunarak toplumsal bir fayda yaratmanıza olanak tanıyoruz. Kaliteyi ve toplumsal sorumluluğu bir araya getiriyoruz.`;
-    const mockJoinDate = `202${3 - (index % 4)}-0${(index % 9) + 1}-${(index % 28) + 1}`;
-    const mockDonationByCategory = [
-        { category: 'Giyim', rate: brand.rate },
-        { category: 'Aksesuar', rate: brand.rate * 0.8 },
-        { category: 'Ev & Yaşam', rate: brand.rate * 0.9 },
-        { category: 'Elektronik', rate: brand.rate * 0.5 },
-    ].slice(0, 4);
-
-    const mockStats = {
-        supporters: 15000 + (index * 1234),
-        totalDonation: 250000 + (index * 5432),
-        monthlyFollowerGrowth: 5 + (index % 10),
-        profileViews: 50000 + (index * 4321),
-        profileShares: 2000 + (index * 123),
-    };
-    
-    const mockSustainabilityReports = [
-        { title: '2024 Sürdürülebilirlik Raporu', url: '#' },
-        { title: '2023 Sürdürülebilirlik Raporu', url: '#' },
-        { title: '2024 KSS Raporu', url: '#' },
-        { title: '2023 KSS Raporu', url: '#' },
-    ];
-
-    const mockPosts: Post[] = [
-        {
-            id: `post-brand-${brandId}`,
-            author: {
-                name: brand.name,
-                avatarUrl: `https://logo.clearbit.com/${brand.domain}`,
-            },
-            content: `Yeni sezon ürünlerimizle tanışın! ✨ Her alışverişinizde doğaya ve topluma katkıda bulunmanın keyfini çıkarın. Bu sezonki gelirlerimizin bir kısmını ${['TEMA Vakfı', 'Uluslararası Sosyal Fayda Derneği', 'LÖSEV'][index % 3]}'na bağışlıyoruz.`,
-            imageUrl: `https://picsum.photos/seed/${slug}/800/450`,
-            imageHint: 'product lifestyle shot',
-            timestamp: `${(index % 5) + 1} gün önce`,
-            likes: 150 + (index * 23),
-            comments: 10 + (index * 5),
-            sponsored: index % 4 === 0,
-        },
-    ];
-
-    return {
-        id: brandId,
-        slug: slug,
-        name: brand.name,
-        donationRate: brand.rate,
-        logoUrl: `https://logo.clearbit.com/${brand.domain}`,
-        type: (brand as any).type || 'brand',
-        category: brand.category,
-        agency: 'GelirOrtaklari', // default
-        about: mockAbout,
-        joinDate: mockJoinDate,
-        donationByCategory: mockDonationByCategory,
-        stats: mockStats,
-        sustainabilityReports: mockSustainabilityReports,
-        posts: mockPosts,
-        followers: 15000 + (index * 1234),
-    };
-});
-
-export const marketCategories: MarketCategory[] = [{ mainCategory: 'Tümü', subCategories: [] }, ...[...new Set(allEntityLists.map(b => b.category))].map(c => ({ mainCategory: c, subCategories: [] }))];
-
-
-export const timelinePosts: Post[] = [
-    { id: '1', author: { name: 'TEMA Vakfı', avatarUrl: 'https://logo.clearbit.com/tema.org.tr' }, content: 'Bugün Balıkesir fidan dikme etkinliğimizde 200 yeni ağacı toprakla buluşturduk! 🌳 Gelecek nesillere daha yeşil bir dünya bırakmak için var gücümüzle çalışıyoruz. #Doğaİçin #TEMA', timestamp: '2 saat önce', likes: 1240, comments: 45, imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop', imageHint: 'planting trees' },
-    { id: '2', author: { name: 'Uluslararası Sosyal Fayda Derneği', avatarUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' }, content: 'Hatay ve Adıyaman bölgelerindeki ihtiyaç sahibi aileler için hazırladığımız 5000 adet gıda kolisini gönüllü ekibimizle birlikte dağıtmaya başladık. 🙏 Dayanışma yaşatır! #SBG #Dayanışma', timestamp: '5 saat önce', likes: 3500, comments: 120, imageUrl: 'https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop', imageHint: 'food donation' }
-];
-
-export const adBanners: AdBanner[] = [
-    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'Kırtasiye ihtiyaçlarınızla TEGV\'e bağış yapın.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market?category=Kırtasiye' },
-    { id: '2', title: 'Yaz Tatili Fırsatları', description: 'Tatil rezervasyonlarınızla sokak hayvanlarına umut olun.', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723a9ce6890?q=80&w=2070&auto=format&fit=crop', link: '/market?category=Seyahat' },
-    { id: '3', title: 'Teknolojide İyilik Var', description: 'Elektronik alışverişlerinizle LÖSEV\'e destek olun.', imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop', link: '/market?category=Elektronik' },
-];
 
 export const ngos: NGO[] = [
     {
         id: '1',
         name: 'TEMA Vakfı',
-        foundationYear: 1992,
         category: 'Çevre',
         type: 'Vakıf',
         avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
@@ -475,11 +88,9 @@ export const ngos: NGO[] = [
         transparencyScore: 92,
         about: "Türkiye Çöl Olmasın! TEMA Vakfı, ağaçlandırma ve erozyonla mücadele ederek Türkiye'nin topraklarını korumaktadır.",
         joinDate: "2023-01-10",
-        supportedSDGs: ['İklim Eylemi', 'Sudaki Yaşam', 'Karasal Yaşam'],
+        supportedSDGs: ['İklim Eylemi', 'Karasal Yaşam'],
         beneficiaryGroups: ['Çevre', 'Gelecek Nesiller'],
         memberOf: ['Açık Açık'],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
         contact: { email: 'info@tema.org.tr', phone: '0212 292 69 69', website: 'https://tema.org.tr', social: { twitter: 'temavakfi', instagram: 'temavakfi', facebook: 'temavakfi', linkedin: 'tema' } },
         posts: [],
         opportunities: []
@@ -488,232 +99,89 @@ export const ngos: NGO[] = [
         id: '2',
         name: 'Uluslararası Sosyal Fayda Derneği',
         shortName: 'SBG',
-        foundationYear: 2017,
         category: 'Dayanışma',
         type: 'Dernek',
         avatarUrl: 'https://logo.clearbit.com/socialbusinessglobal.org',
         coverPhotoUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop',
         stats: { followers: 850000, donors: 250000, volunteers: 150000, volunteerHours: 500000, projects: 500, totalDonation: 12500000, donationCount: 300000, avgDonation: 41.67, highestSingleDonation: 1000, peopleReached: 2000000 },
         transparencyScore: 95,
-        about: "Uluslararası Sosyal Fayda Derneği, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
+        about: "Uluslararası Sosyal Fayda Derneği (SBG), toplumsal yardımlaşmaya dayalı bir işbirliği hareketidir.",
         joinDate: "2023-02-20",
-        supportedSDGs: ['Yoksulluğa Son', 'Açlığa Son', 'Nitelikli Eğitim'],
-        beneficiaryGroups: ['İhtiyaç Sahipleri', 'Afetzedeler', 'Öğrenciler'],
+        supportedSDGs: ['Yoksulluğa Son', 'Nitelikli Eğitim'],
+        beneficiaryGroups: ['İhtiyaç Sahipleri', 'Afetzedeler'],
         memberOf: ['Afet Platformu'],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
         contact: { email: 'info@socialbusinessglobal.org', phone: '0216 550 50 50', website: 'https://socialbusinessglobal.org', social: { twitter: 'socialbusinessglobal', instagram: 'socialbusinessglobal', facebook: 'socialbusinessglobal', linkedin: 'socialbusinessglobal' } },
         posts: [],
         opportunities: []
-    },
-    {
-        id: '3',
-        name: 'LÖSEV',
-        foundationYear: 1998,
-        category: 'Sağlık',
-        type: 'Vakıf',
-        avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop',
-        stats: { followers: 500000, donors: 180000, volunteers: 90000, volunteerHours: 300000, projects: 200, totalDonation: 8000000, donationCount: 250000, avgDonation: 32, highestSingleDonation: 800, peopleReached: 1000000 },
-        transparencyScore: 90,
-        about: 'Lösemili Çocuklar Sağlık ve Eğitim Vakfı, lösemili ve kan hastası çocukların, sağlık ve eğitim başta olmak üzere her türlü ihtiyaçlarının sağlanmasına yardımcı olmaktadır.',
-        joinDate: "2023-03-15",
-        supportedSDGs: ['Sağlıklı ve Kaliteli Yaşam', 'Nitelikli Eğitim'],
-        beneficiaryGroups: ['Çocuklar', 'Hastalar'],
-        memberOf: [],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
-        contact: { email: 'info@losev.org.tr', phone: '0312 447 06 60', website: 'https://www.losev.org.tr', social: { twitter: 'losev1998', instagram: 'losev1998', facebook: 'losev', linkedin: 'losev' } },
-        posts: [],
-        opportunities: []
-    },
-    {
-        id: '4',
-        name: 'HAYTAP',
-        foundationYear: 2008,
-        category: 'Hayvan Hakları',
-        type: 'Dernek',
-        avatarUrl: 'https://logo.clearbit.com/haytap.org',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42?q=80&w=1974&auto=format&fit=crop',
-        stats: { followers: 300000, donors: 100000, volunteers: 50000, volunteerHours: 150000, projects: 100, totalDonation: 3000000, donationCount: 120000, avgDonation: 25, highestSingleDonation: 600, peopleReached: 400000 },
-        transparencyScore: 88,
-        about: 'Hayvan Hakları Federasyonu, Türkiye\'deki hayvan hakları ihlallerine karşı mücadele eden ve sahipsiz hayvanlar için çözümler üreten bir sivil toplum örgütüdür.',
-        joinDate: "2023-04-01",
-        supportedSDGs: ['Karasal Yaşam'],
-        beneficiaryGroups: ['Hayvanlar'],
-        memberOf: [],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
-        contact: { email: 'info@haytap.org', phone: '0212 212 HAY', website: 'https://www.haytap.org', social: { twitter: 'haytap', instagram: 'haytap', facebook: 'haytap', linkedin: 'haytap' } },
-        posts: [],
-        opportunities: []
-    },
-    {
-        id: '5',
-        name: 'Türkiye Eğitim Gönüllüleri Vakfı',
-        shortName: 'TEGV',
-        foundationYear: 1995,
-        category: 'Eğitim',
-        type: 'Vakıf',
-        avatarUrl: 'https://logo.clearbit.com/tegv.org',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop',
-        stats: { followers: 250000, donors: 80000, volunteers: 60000, volunteerHours: 400000, projects: 300, totalDonation: 5000000, donationCount: 150000, avgDonation: 33.33, highestSingleDonation: 700, peopleReached: 800000 },
-        transparencyScore: 94,
-        about: "TEGV, ilköğretim çağındaki çocuklarımıza okul dışı, çok yönlü bir eğitim desteği vererek, onları geleceğe donanımlı bireyler olarak hazırlamayı amaçlar.",
-        joinDate: "2023-05-10",
-        supportedSDGs: ['Nitelikli Eğitim', 'Eşitsizliklerin Azaltılması'],
-        beneficiaryGroups: ['Çocuklar', 'Öğrenciler', 'Gençler'],
-        memberOf: ['Açık Açık'],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
-        contact: { email: 'info@tegv.org', phone: '0216 290 70 00', website: 'https://tegv.org', social: { twitter: 'tegv', instagram: 'tegv', facebook: 'tegv', linkedin: 'tegv' } },
-        posts: [],
-        opportunities: []
-    },
-    {
-        id: '6',
-        name: 'İnsan Hakları Derneği',
-        shortName: 'İHD',
-        foundationYear: 1986,
-        category: 'İnsan Hakları',
-        type: 'Dernek',
-        avatarUrl: 'https://logo.clearbit.com/ihd.org.tr',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=2070&auto=format&fit=crop',
-        stats: { followers: 80000, donors: 15000, volunteers: 5000, volunteerHours: 50000, projects: 40, totalDonation: 500000, donationCount: 20000, avgDonation: 25, highestSingleDonation: 400, peopleReached: 100000 },
-        transparencyScore: 85,
-        about: "İnsan Hakları Derneği, Türkiye'de insan haklarının korunması, geliştirilmesi ve ihlallerin önlenmesi için mücadele eden bağımsız bir sivil toplum kuruluşudur.",
-        joinDate: "2023-06-20",
-        supportedSDGs: ['Barış, Adalet ve Güçlü Kurumlar', 'Eşitsizliklerin Azaltılması'],
-        beneficiaryGroups: ['Hak mücadelesi verenler'],
-        memberOf: [],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'yok',
-        contact: { email: 'info@ihd.org.tr', phone: '0312 417 71 80', website: 'https://ihd.org.tr', social: { twitter: 'ihdgenelmerkez', instagram: 'ihdgenelmerkez', facebook: 'ihdgenelmerkez', linkedin: 'insan-haklari-dernegi' } },
-        posts: [],
-        opportunities: []
-    },
-     {
-        id: '7',
-        name: 'Kadın Emeğini Değerlendirme Vakfı',
-        shortName: 'KEDV',
-        foundationYear: 1986,
-        category: 'Kadın Hakları',
-        type: 'Vakıf',
-        avatarUrl: 'https://logo.clearbit.com/kedv.org.tr',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2070&auto=format&fit=crop',
-        stats: { followers: 95000, donors: 25000, volunteers: 8000, volunteerHours: 60000, projects: 70, totalDonation: 1200000, donationCount: 30000, avgDonation: 40, highestSingleDonation: 550, peopleReached: 150000 },
-        transparencyScore: 91,
-        about: "KEDV, dar gelirli kadınların ekonomik ve sosyal olarak güçlenmelerini desteklemek amacıyla kurulmuştur. Kadınların kurduğu kooperatifler aracılığıyla sürdürülebilir bir yaşam kurmalarına destek oluyoruz.",
-        joinDate: "2023-07-01",
-        supportedSDGs: ['Toplumsal Cinsiyet Eşitliği', 'İnsana Yakışır İş ve Ekonomik Büyüme', 'Yoksulluğa Son'],
-        beneficiaryGroups: ['Kadınlar', 'Girişimciler'],
-        memberOf: [],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
-        contact: { email: 'kedv@kedv.org.tr', phone: '0212 244 17 64', website: 'https://www.kedv.org.tr', social: { twitter: 'kedv', instagram: 'kedv', facebook: 'kedv', linkedin: 'kedv' } },
-        posts: [],
-        opportunities: []
-    },
-    {
-        id: '8',
-        name: 'hangel Derneği',
-        shortName: 'hangel',
-        foundationYear: 2020,
-        category: 'Sosyal İnovasyon',
-        type: 'Dernek',
-        avatarUrl: '',
-        coverPhotoUrl: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop',
-        stats: { followers: 15000, donors: 5000, volunteers: 2000, volunteerHours: 10000, projects: 15, totalDonation: 250000, donationCount: 1000, avgDonation: 250, highestSingleDonation: 5000, peopleReached: 50000 },
-        transparencyScore: 98,
-        about: "hangel Derneği, sosyal fayda odaklı teknoloji ve inovasyon projeleri geliştirerek, bireylerin ve kurumların sosyal etki potansiyelini en üst düzeye çıkarmayı hedefler. Sürdürülebilir ve ölçülebilir çözümlerle toplumsal sorunlara kalıcı çözümler üretmek için çalışır.",
-        joinDate: "2023-01-01",
-        supportedSDGs: ['Amaçlar için Ortaklıklar', 'Sanayi, Yenilikçilik ve Altyapı', 'Nitelikli Eğitim'],
-        beneficiaryGroups: ['Girişimciler', 'Gençler', 'Sivil Toplum', 'Öğrenciler'],
-        memberOf: ['Açık Açık', 'Afet Platformu'],
-        usagePurpose: 'both',
-        economicEnterpriseStatus: 'var',
-        contact: { email: 'dernek@hangel.org', phone: '0850 123 45 67', website: 'https://hangelassociation.org', social: { twitter: 'hangel', instagram: 'hangel', facebook: 'hangel', linkedin: 'hangel' } },
-        posts: [],
-        opportunities: []
     }
+];
+
+export const allEntityLists: Brand[] = [
+    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' },
+    { id: 'brand-2', slug: 'kadin-emegi', name: 'S.S. Kadın Emeği Kooperatifi', donationRate: 5, logoUrl: 'https://picsum.photos/seed/koop/200/200', type: 'cooperative', category: 'El Sanatları', about: 'Kadın üreticilerin güçlenmesini destekleyen kooperatif.' },
+    { id: 'brand-3', slug: 'tema-isletme', name: 'TEMA Vakfı İktisadi İşletmesi', donationRate: 4, logoUrl: 'https://logo.clearbit.com/tema.org.tr', type: 'economic', category: 'Mağazacılık', about: 'Vakıf projelerine fon sağlayan ticari işletme.' }
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [
     { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Uluslararası Sosyal Fayda Derneği', ngoId: '2', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 50, applications: 120 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '09:00', end: '18:00', total: 56 }, socialArea: 'Afet', points: 1500, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Afet Kahramanı'], hasPreTraining: true, description: 'Bölgedeki yardım kolilerinin tasnifi ve dağıtımında görev alacak gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: true } },
     { id: '2', title: 'Fidan Dikme Etkinliği', organization: 'TEMA Vakfı', ngoId: '1', location: { city: 'İstanbul', district: 'Beykoz', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 100, applications: 250 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-01' }, hours: { start: '10:00', end: '16:00', total: 6 }, socialArea: 'Çevre', points: 500, ngoTransparencyScore: 92, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: ['Doğa Koruyucu'], hasPreTraining: false, description: 'Geleceğe nefes olmak için binlerce fidanı toprakla buluşturuyoruz.', amenities: { transport: false, food: true, accommodation: false } },
-    { id: '3', title: 'Sosyal Medya İçerik Gönüllüsü', organization: 'LÖSEV', ngoId: '3', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Sürekli', volunteerCount: { needed: 5, applications: 45 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-01' }, hours: { start: '09:00', end: '18:00', total: 240 }, socialArea: 'Sağlık', points: 2000, ngoTransparencyScore: 90, taskType: 'Sürekli', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'LÖSEV\'in sosyal medya hesapları için yaratıcı ve etkili içerikler üretecek gönüllüler arıyoruz.', amenities: { transport: false, food: false, accommodation: false }, skills: ['Sosyal Medya Yönetimi', 'Grafik Tasarım'] },
-    { id: '4', title: 'Sokak Hayvanları İçin Kış Hazırlığı', organization: 'HAYTAP', ngoId: '4', location: { city: 'Bursa', district: 'Nilüfer', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 20, applications: 15 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2025-06-30' }, hours: { start: '10:00', end: '17:00', total: 28 }, socialArea: 'Hayvan Hakları', points: 800, ngoTransparencyScore: 88, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Hayvan Dostu'], hasPreTraining: false, description: 'Sokaktaki canlarımız için kulübe yapımı ve masa dağıtımı.', amenities: { transport: true, food: true, accommodation: false } },
-    { id: '5', title: 'Üniversite Sosyal Etki Temsilcisi', organization: 'hangel Derneği', ngoId: '8', location: { city: 'Online', district: 'Türkiye Geneli', type: 'Online' }, commitment: 'Sürekli', volunteerCount: { needed: 25, applications: 0 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2026-05-21', eventStart: '2025-06-01', eventEnd: '2026-06-01' }, hours: { start: '10:00', end: '18:00', total: 0 }, socialArea: 'Sosyal Girişimcilik', points: 5000, ngoTransparencyScore: 98, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Liderlik Rozeti', 'Topluluk Yöneticisi'], hasPreTraining: true, description: 'Kampüsünüzde sosyal etki rüzgarı estirin! hangel\'in üniversite temsilcisi olarak etkinlikler düzenleyin, sosyal sorumluluk projeleri geliştirin ve kendi topluluğunuzun değişim lideri olun.', amenities: { transport: false, food: false, accommodation: false }, skills: ['Proje Yönetimi', 'Organizasyon', 'İletişim'], education: 'Üniversite' },
+    { id: '3', title: 'Çocuklara Kodlama Eğitimi', organization: 'TEGV', ngoId: '5', location: { city: 'Ankara', district: 'Çankaya', type: 'Hibrit' }, commitment: 'Haftalık', volunteerCount: { needed: 10, applications: 30 }, dates: { applicationStart: '2025-06-01', applicationEnd: '2025-06-30', eventStart: '2025-07-01', eventEnd: '2025-08-30' }, hours: { start: '14:00', end: '17:00', total: 24 }, socialArea: 'Eğitim', points: 1200, ngoTransparencyScore: 94, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Eğitim Elçisi'], hasPreTraining: true, description: 'İlköğretim öğrencilerine temel kodlama ve mantıksal düşünme becerileri kazandırıyoruz.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '4', title: 'Sokak Hayvanları Besleme Odaklı', organization: 'HAYTAP', ngoId: '4', location: { city: 'İzmir', district: 'Karşıyaka', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 25, applications: 15 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2025-12-31', eventStart: '2025-06-01', eventEnd: '2025-12-31' }, hours: { start: '09:00', end: '12:00', total: 100 }, socialArea: 'Hayvan Hakları', points: 800, ngoTransparencyScore: 88, taskType: 'Sürekli', providesCertificate: false, earnedBadges: ['Patili Dost'], hasPreTraining: false, description: 'Düzenli olarak belirlenen noktalarda sahipsiz hayvanların beslenmesi ve takibi.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '5', title: 'Kadın Girişimcilere Mentorluk', organization: 'KEDV', ngoId: '7', location: { city: 'Online', district: 'Türkiye Geneli', type: 'Online' }, commitment: 'Aylık', volunteerCount: { needed: 15, applications: 10 }, dates: { applicationStart: '2025-01-01', applicationEnd: '2025-12-31', eventStart: '2025-01-01', eventEnd: '2025-12-31' }, hours: { start: '10:00', end: '18:00', total: 12 }, socialArea: 'Kadın Hakları', points: 2500, ngoTransparencyScore: 91, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Mentor'], hasPreTraining: true, description: 'Kadın kooperatiflerine iş geliştirme ve dijital pazarlama alanında destek veriyoruz.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '6', title: 'Müze Rehberliği Gönüllüsü', organization: 'Kültür Sanat Vakfı', ngoId: '9', location: { city: 'İstanbul', district: 'Beyoğlu', type: 'Saha' }, commitment: 'Haftasonu', volunteerCount: { needed: 20, applications: 40 }, dates: { applicationStart: '2025-06-01', applicationEnd: '2025-07-01', eventStart: '2025-07-01', eventEnd: '2025-09-30' }, hours: { start: '10:00', end: '18:00', total: 48 }, socialArea: 'Kültür & Sanat', points: 1000, ngoTransparencyScore: 85, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Sanat Elçisi'], hasPreTraining: true, description: 'Ziyaretçilere sergiler hakkında bilgi verecek, sanatsever gönüllüler arıyoruz.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '7', title: 'İşaret Dili Çevirmenliği', organization: 'Anlatan Eller', ngoId: '10', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Esnek', volunteerCount: { needed: 5, applications: 8 }, dates: { applicationStart: '2025-01-01', applicationEnd: '2025-12-31', eventStart: '2025-01-01', eventEnd: '2025-12-31' }, hours: { start: '09:00', end: '21:00', total: 0 }, socialArea: 'Erişilebilirlik', points: 3000, ngoTransparencyScore: 96, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Erişilebilirlik Kahramanı'], hasPreTraining: false, description: 'Eğitim videolarımızın işaret diline çevrilmesi ve alt yazı çalışmaları.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '8', title: 'Sahil Temizliği Operasyonu', organization: 'Deniz Temiz Derneği', ngoId: '11', location: { city: 'Antalya', district: 'Kaş', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 200, applications: 150 }, dates: { applicationStart: '2025-08-01', applicationEnd: '2025-08-15', eventStart: '2025-08-20', eventEnd: '2025-08-20' }, hours: { start: '08:00', end: '14:00', total: 6 }, socialArea: 'Çevre', points: 600, ngoTransparencyScore: 89, taskType: 'Tek Gün', providesCertificate: false, earnedBadges: ['Deniz Dostu'], hasPreTraining: false, description: 'Akdeniz sahillerini plastik atıklardan temizliyoruz.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '9', title: 'Yaşlılara Dijital Okuryazarlık', organization: 'Nesiller Arası Dayanışma', ngoId: '12', location: { city: 'Bursa', district: 'Nilüfer', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 12, applications: 5 }, dates: { applicationStart: '2025-09-01', applicationEnd: '2025-09-30', eventStart: '2025-10-01', eventEnd: '2025-12-31' }, hours: { start: '10:00', end: '12:00', total: 24 }, socialArea: 'Sosyal Dayanışma', points: 1500, ngoTransparencyScore: 82, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Bilgi Köprüsü'], hasPreTraining: true, description: '65 yaş üstü bireylere akıllı telefon ve temel internet kullanımı eğitimi.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '10', title: 'Kütüphane Düzenleme Gönüllüsü', organization: 'Kitap Vakfı', ngoId: '13', location: { city: 'Erzurum', district: 'Yakutiye', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 30, applications: 10 }, dates: { applicationStart: '2025-05-01', applicationEnd: '2025-05-30', eventStart: '2025-06-05', eventEnd: '2025-06-05' }, hours: { start: '09:00', end: '17:00', total: 8 }, socialArea: 'Eğitim', points: 400, ngoTransparencyScore: 80, taskType: 'Tek Gün', providesCertificate: false, earnedBadges: [], hasPreTraining: false, description: 'Yeni kurulan köy okulu kütüphanesinin kitap tasnifi ve yerleştirilmesi.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '11', title: 'Kan Bağışı Kampanya Destekçisi', organization: 'Kızılay', ngoId: '14', location: { city: 'Ankara', district: 'Kızılay', type: 'Saha' }, commitment: 'Dönemsel', volunteerCount: { needed: 40, applications: 100 }, dates: { applicationStart: '2025-01-01', applicationEnd: '2025-01-31', eventStart: '2025-02-01', eventEnd: '2025-02-28' }, hours: { start: '10:00', end: '19:00', total: 40 }, socialArea: 'Sağlık', points: 1000, ngoTransparencyScore: 90, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Hayat Kurtaran'], hasPreTraining: true, description: 'Kan bağışı noktalarında bilgilendirme ve yönlendirme çalışmaları.', amenities: { transport: false, food: true, accommodation: false } },
+    { id: '12', title: 'Sosyal Girişimcilik Mentoru', organization: 'Ashoka Türkiye', ngoId: '15', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Aylık', volunteerCount: { needed: 10, applications: 25 }, dates: { applicationStart: '2025-03-01', applicationEnd: '2025-03-31', eventStart: '2025-04-01', eventEnd: '2025-12-31' }, hours: { start: '09:00', end: '18:00', total: 18 }, socialArea: 'Sosyal Girişimcilik', points: 4000, ngoTransparencyScore: 97, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Değişim Öncüsü'], hasPreTraining: false, description: 'Genç sosyal girişimcilerin projelerini ölçeklendirmelerine rehberlik ediyoruz.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '13', title: 'Yazılım Geliştirme Gönüllüsü', organization: 'Açık Kaynak Sosyal Fayda', ngoId: '16', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Sürekli', volunteerCount: { needed: 8, applications: 12 }, dates: { applicationStart: '2025-01-01', applicationEnd: '2025-12-31', eventStart: '2025-01-01', eventEnd: '2025-12-31' }, hours: { start: '09:00', end: '21:00', total: 0 }, socialArea: 'Teknoloji', points: 3500, ngoTransparencyScore: 93, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Kod Dostu'], hasPreTraining: false, description: 'Dezavantajlı gruplar için geliştirilen mobil uygulamaların kodlama süreçlerine katkı.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '14', title: 'Engelsiz Şehir Haritalama', organization: 'BlindLook', ngoId: '17', location: { city: 'İstanbul', district: 'Kadıköy', type: 'Saha' }, commitment: 'Haftasonu', volunteerCount: { needed: 50, applications: 20 }, dates: { applicationStart: '2025-04-01', applicationEnd: '2025-04-30', eventStart: '2025-05-01', eventEnd: '2025-06-30' }, hours: { start: '11:00', end: '16:00', total: 16 }, socialArea: 'Erişilebilirlik', points: 1800, ngoTransparencyScore: 95, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Gözcü'], hasPreTraining: true, description: 'Mekanların görme engelliler için uygunluğunu denetleyip sisteme işliyoruz.', amenities: { transport: true, food: false, accommodation: false } },
+    { id: '15', title: 'Afet Farkındalık Eğitmeni', organization: 'AKUT', ngoId: '18', location: { city: 'İzmir', district: 'Bornova', type: 'Hibrit' }, commitment: 'Haftalık', volunteerCount: { needed: 30, applications: 15 }, dates: { applicationStart: '2025-02-01', applicationEnd: '2025-02-28', eventStart: '2025-03-01', eventEnd: '2025-12-31' }, hours: { start: '18:00', end: '20:00', total: 40 }, socialArea: 'Afet', points: 2200, ngoTransparencyScore: 98, taskType: 'Sürekli', providesCertificate: true, earnedBadges: ['Eğitmen'], hasPreTraining: true, description: 'Okullarda ve mahallelerde afet bilinci eğitimleri verecek gönüllüler yetiştiriyoruz.', amenities: { transport: true, food: false, accommodation: false } },
+    { id: '16', title: 'Sürdürülebilir Moda Atölyesi', organization: 'Gelecek Geri Dönüşüm', ngoId: '19', location: { city: 'İstanbul', district: 'Şişli', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 15, applications: 35 }, dates: { applicationStart: '2025-10-01', applicationEnd: '2025-10-15', eventStart: '2025-10-20', eventEnd: '2025-10-20' }, hours: { start: '13:00', end: '18:00', total: 5 }, socialArea: 'Çevre', points: 750, ngoTransparencyScore: 84, taskType: 'Tek Gün', providesCertificate: false, earnedBadges: ['Dönüşümcü'], hasPreTraining: false, description: 'Atık kumaşlardan yeni aksesuarlar tasarlayarak farkındalık yaratıyoruz.', amenities: { transport: false, food: true, accommodation: false } },
+    { id: '17', title: 'Mülteci Çocuklara Oyun Terapisi', organization: 'Sınır Tanımayan İyilik', ngoId: '20', location: { city: 'Gaziantep', district: 'Şahinbey', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 10, applications: 18 }, dates: { applicationStart: '2025-03-01', applicationEnd: '2025-03-31', eventStart: '2025-04-01', eventEnd: '2025-06-30' }, hours: { start: '15:00', end: '18:00', total: 36 }, socialArea: 'Çocuk Hakları', points: 2800, ngoTransparencyScore: 87, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Oyun Arkadaşı'], hasPreTraining: true, description: 'Psikolojik destek süreçlerine yardımcı olacak, çocuk gelişimi eğitimi almış gönüllüler.', amenities: { transport: true, food: true, accommodation: false } },
+    { id: '18', title: 'Şehir Bahçeciliği Gönüllüsü', organization: 'Yeşil Şehirler', ngoId: '21', location: { city: 'Ankara', district: 'Yenimahalle', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 25, applications: 40 }, dates: { applicationStart: '2025-04-01', applicationEnd: '2025-04-30', eventStart: '2025-05-01', eventEnd: '2025-09-30' }, hours: { start: '08:00', end: '11:00', total: 60 }, socialArea: 'Tarım', points: 1100, ngoTransparencyScore: 83, taskType: 'Dönemsel', providesCertificate: false, earnedBadges: ['Toprak Dostu'], hasPreTraining: false, description: 'Mahalle bostanlarında üretim ve bakım süreçlerine katılım.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '19', title: 'Sokak Sanatçıları Destek Ağı', organization: 'Sanat Her Yerde', ngoId: '22', location: { city: 'İstanbul', district: 'Kadıköy', type: 'Saha' }, commitment: 'Esnek', volunteerCount: { needed: 15, applications: 25 }, dates: { applicationStart: '2025-01-01', applicationEnd: '2025-12-31', eventStart: '2025-01-01', eventEnd: '2025-12-31' }, hours: { start: '10:00', end: '22:00', total: 0 }, socialArea: 'Kültür & Sanat', points: 900, ngoTransparencyScore: 81, taskType: 'Sürekli', providesCertificate: false, earnedBadges: ['Sahne Arkası'], hasPreTraining: false, description: 'Sokak sanatçılarının yasal izinleri ve organizasyonları için destek ekibi.', amenities: { transport: false, food: true, accommodation: false } },
+    { id: '20', title: 'İklim Değişikliği Veri Analizi', organization: 'Green Data', ngoId: '23', location: { city: 'Online', district: 'Online', type: 'Online' }, commitment: 'Proje Bazlı', volunteerCount: { needed: 3, applications: 15 }, dates: { applicationStart: '2025-06-01', applicationEnd: '2025-06-30', eventStart: '2025-07-01', eventEnd: '2025-08-30' }, hours: { start: '09:00', end: '18:00', total: 40 }, socialArea: 'Çevre', points: 3200, ngoTransparencyScore: 92, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Veri Bilimci'], hasPreTraining: false, description: 'Küresel sıcaklık değişim verilerinin görselleştirilmesi ve raporlanması.', amenities: { transport: false, food: false, accommodation: false } },
+    { id: '21', title: 'Otizmli Gençlerle Spor Etkinliği', organization: 'Tohum Otizm', ngoId: '24', location: { city: 'İstanbul', district: 'Beykoz', type: 'Saha' }, commitment: 'Haftalık', volunteerCount: { needed: 10, applications: 5 }, dates: { applicationStart: '2025-09-01', applicationEnd: '2025-09-30', eventStart: '2025-10-01', eventEnd: '2025-12-31' }, hours: { start: '10:00', end: '13:00', total: 24 }, socialArea: 'Sağlık', points: 2600, ngoTransparencyScore: 94, taskType: 'Dönemsel', providesCertificate: true, earnedBadges: ['Spor Arkadaşı'], hasPreTraining: true, description: 'Otizmli bireylerin sosyal uyum süreçlerini spor aracılığıyla destekliyoruz.', amenities: { transport: true, food: true, accommodation: false } },
 ];
 
 export const badges: Badge[] = [
     { id: '1', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Bronz', socialArea: 'Çevre', pointsRequired: 500, currentPoints: 800 },
-    { id: '2', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Gümüş', socialArea: 'Çevre', pointsRequired: 1000, currentPoints: 800 },
-    { id: '3', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Altın', socialArea: 'Çevre', pointsRequired: 2500, currentPoints: 800 },
-    { id: '4', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Platin', socialArea: 'Çevre', pointsRequired: 5000, currentPoints: 800 },
-    { id: '5', name: 'Çevre Koruyucusu', iconName: Leaf, level: 'Elmas', socialArea: 'Çevre', pointsRequired: 10000, currentPoints: 800 },
 ];
 export const certificates: Certificate[] = [
     { id: 'cert1', title: 'Gönüllülük Liderliği Sertifikası', organization: 'hangel Akademi', date: '2024-05-20', linkedinUrl: '#' },
 ];
 
-export const helpTopics: HelpTopic[] = [
-    {
-        icon: 'User',
-        title: "Bireysel Kullanıcılar",
-        slug: "bireysel-kullanicilar",
-        description: "Profil, bağış, gönüllülük ve puan sistemi hakkında her şey.",
-        subtopics: [
-            {
-                title: "hangel Etki Puanı nasıl hesaplanır?",
-                content: "hangel Etki Puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Puanları şu şekillerde kazanırsınız: <ul><li>Anlaşmalı markalardan yaptığın her alışverişle.</li><li>Gönüllülük faaliyetlerini tamamlayarak.</li><li>Platforma yeni arkadaşlarını davet ederek.</li><li>Rozetler kazanarak ve seviye atlayarak.</li></ul>"
-            }
-        ]
-    }
-];
-
-export const ngoHelpTopics = helpTopics;
-
-export const ngoFaqArticles = [
-    { title: 'Şeffaflık Puanım neden düşük?', content: '...' },
-];
-
-export const pastVolunteering = [];
 export const managedItems: ManagedItem[] = [
     { name: 'Uluslararası Sosyal Fayda Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
+    { name: 'TEMA Vakfı', type: 'STK', icon: 'leaf', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/tema.org.tr' },
+    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'school', href: '/admin/clubs/profile/1', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
+    { name: 'Amazon TR', type: 'Marka', icon: 'shopping-bag', href: '/market/amazon-tr', status: 'approved', logoUrl: 'https://logo.clearbit.com/amazon.com.tr' },
+    { name: 'Kadın Emeği Kooperatifi', type: 'Marka', icon: 'store', href: '/market/kadin-emegi', status: 'approved', logoUrl: 'https://picsum.photos/seed/koop/200/200' },
 ];
 
 export const qrPaymentCardData = [
     { id: 'bireysel', type: 'Bireysel', number: '5549601000001234', owner: 'İsmail Hilmi ADIGÜZEL', expiry: '12/28', balance: '1.250,75 ₺', ngoId: '1', cvv: '123', bgColor: 'bg-gradient-to-tr from-gray-900 to-gray-700' },
 ];
 
-export const allUniversities = [
-    "Abant İzzet Baysal Üniversitesi", "Abdullah Gül Üniversitesi", "Acıbadem Mehmet Ali Aydınlar Üniversitesi", "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi", "Adıyaman Üniversitesi", "Afyon Kocatepe Üniversitesi", "Afyonkarahisar Sağlık Bilimleri Üniversitesi", "Ağrı İbrahim Çeçen Üniversitesi", "Akdeniz Üniversitesi", "Aksaray Üniversitesi", "Alanya Alaaddin Keykubat Üniversitesi", "Alanya Hamdullah Emin Paşa Üniversitesi", "Altınbaş Üniversitesi", "Amasya Üniversitesi", "Anadolu Üniversitesi", "Anka Teknoloji Üniversitesi", "Ankara Bilim Üniversitesi", "Ankara Hacı Bayram Veli Üniversitesi", "Ankara Medipol Üniversitesi", "Ankara Müzik ve Güzel Sanatlar Üniversitesi", "Ankara Sosyal Bilimler Üniversitesi", "Ankara Üniversitesi", "Ankara Yıldırım Beyazıt Üniversitesi", "Antalya Bilim Üniversitesi", "Ardahan Üniversitesi", "Artvin Çoruh Üniversitesi", "Ataşehir Adıgüzel Meslek Yüksekokulu", "Atatürk Üniversitesi", "Atılım Üniversitesi", "Avrasya Üniversitesi", "Aydın Adnan Menderes Üniversitesi", "Bahçeşehir Üniversitesi", "Balıkesir Üniversitesi", "Bandırma Onyedi Eylül Üniversitesi", "Bartın Üniversitesi", "Başkent Üniversitesi", "Batman Üniversitesi", "Bayburt Üniversitesi", "Beykent Üniversitesi", "Beykoz Üniversitesi", "Bezm-i Âlem Vakıf Üniversitesi", "Bilecik Şeyh Edebali Üniversitesi", "Bingöl Üniversitesi", "Biruni Üniversitesi", "Bitlis Eren Üniversitesi", "Bizim Tepe Üniversitesi", "Boğaziçi Üniversitesi", "Bolu Abant İzzet Baysal Üniversitesi", "Bozok Üniversitesi", "Bursa Teknik Üniversitesi", "Bursa Uludağ Üniversitesi", "Çağ Üniversitesi", "Çanakkale Onsekiz Mart Üniversitesi", "Çankaya Üniversitesi", "Çankırı Karatekin Üniversitesi", "Çukurova Üniversitesi", "Demiroğlu Bilim Üniversitesi", "Denizli Üniversitesi", "Dicle Üniversitesi", "Doğuş Üniversitesi", "Dokuz Eylül Üniversitesi", "Dumlupınar Üniversitesi", "Düzce Üniversitesi", "Ege Üniversitesi", "Erzincan Binali Yıldırım Üniversitesi", "Erzurum Teknik Üniversitesi", "Eskişehir Osmangazi Üniversitesi", "Eskişehir Teknik Üniversitesi", "Fatih Sultan Mehmet Vakıf Üniversitesi", "Fenerbahçe Üniversitesi", "Fırat Üniversitesi", "Galatasaray Üniversitesi", "Gazi Üniversitesi", "Gaziantep Bilim ve Teknoloji Üniversitesi", "Gaziantep Üniversitesi", "Gebze Teknik Üniversitesi", "Giresun Üniversitesi", "Gümüşhane Üniversitesi", "Hacettepe Üniversitesi", "Hakkari Üniversitesi", "Haliç Üniversitesi", "Harran Üniversitesi", "Hasan Kalyoncu Üniversitesi", "Hatay Mustafa Kemal Üniversitesi", "Hitit Üniversitesi", "Iğdır Üniversitesi", "Işık Üniversitesi", "İbn Haldun Üniversitesi", "İhsan Doğramacı Bilkent Üniversitesi", "İnönü Üniversitesi", "İskenderun Teknik Üniversitesi", "İstanbul Arel Üniversitesi", "İstanbul Atlas Üniversitesi", "İstanbul Aydın Üniversitesi", "İstanbul Ayvansaray Üniversitesi", "İstanbul Bilgi Üniversitesi", "İstanbul Galata Üniversitesi", "İstanbul Gelişim Üniversitesi", "İstanbul Kent Üniversitesi", "İstanbul Kültür Üniversitesi", "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi", "İstanbul Okan Üniversitesi", "İstanbul Rumeli Üniversitesi", "İstanbul Sabahattin Zaim Üniversitesi", "İstanbul Sağlık ve Sosyal Bilimler Meslek Yüksekokulu", "İstanbul Sağlık ve Teknoloji Üniversitesi", "İstanbul Şehir Üniversitesi", "İstanbul Şişli Meslek Yüksekokulu", "İstanbul Teknik Üniversitesi", "İstanbul Ticaret Üniversitesi", "İstanbul Üniversitesi", "İstanbul Üniversitesi-Cerrahpaşa", "İstanbul Yeni Yüzyıl Üniversitesi", "İstanbul 29 Mayıs Üniversitesi", "İstanbul Yeditepe Üniversitesi", "İstinye Üniversitesi", "İzmir Bakırçay Üniversitesi", "İzmir Demokrasi Üniversitesi", "İzmir Ekonomi Üniversitesi", "İzmir Katip Çelebi Üniversitesi", "İzmir Kavram Meslek Yüksekokulu", "İzmir Tınaztepe Üniversitesi", "İzmir Yüksek Teknoloji Enstitüsü", "Kadir Has Üniversitesi", "Kafkas Üniversitesi", "Kahramanmaraş İstiklal Üniversitesi", "Kahramanmaraş Sütçü İmam Üniversitesi", "Kapadokya Üniversitesi", "Karabük Üniversitesi", "Karadeniz Teknik Üniversitesi", "Karamanoğlu Mehmetbey Üniversitesi", "Karatay Üniversitesi", "Kastamonu Üniversitesi", "Kayseri Üniversitesi", "Kırıkkale Üniversitesi", "Kırklareli Üniversitesi", "Kırşehir Ahi Evran Üniversitesi", "Kilis 7 Aralık Üniversitesi", "Kocaeli Sağlık ve Teknoloji Üniversitesi", "Kocaeli Üniversitesi", "Koç Üniversitesi", "Konya Gıda ve Tarım Üniversitesi", "Konya Teknik Üniversitesi", "KTO Karatay Üniversitesi", "Kütahya Dumlupınar Üniversitesi", "Kütahya Sağlık Bilimleri Üniversitesi", "Lefke Avrupa Üniversitesi", "Lokman Hekim Üniversitesi", "Malatya Turgut Özal Üniversitesi", "Maltepe Üniversitesi", "Manisa Celal Bayar Üniversitesi", "Mardin Artuklu Üniversitesi", "Marmara Üniversitesi", "MEF Üniversitesi", "Mersin Üniversitesi", "Mimar Sinan Güzel Sanatlar Üniversitesi", "Muğla Sıtkı Koçman Üniversitesi", "Munzur Üniversitesi", "Muş Alparslan Üniversitesi", "Necmettin Erbakan Üniversitesi", "Nevşehir Hacı Bektaş Veli Üniversitesi", "Niğde Ömer Halisdemir Üniversitesi", "Nişantaşı Üniversitesi", "Nuh Naci Yazgan Üniversitesi", "Ondokuz Mayıs Üniversitesi", "Ordu Üniversitesi", "Orta Doğu Teknik Üniversitesi", "Osmaniye Korkut Ata Üniversitesi", "Ostim Teknik Üniversitesi", "Özyeğin Üniversitesi", "Pamukkale Üniversitesi", "Piri Reis Üniversitesi", "Recep Tayyip Erdoğan Üniversitesi", "Sabancı Üniversitesi", "Sağlık Bilimleri Üniversitesi", "Sakarya Uygulamalı Bilimler Üniversitesi", "Sakarya Üniversitesi", "Samsun Üniversitesi", "Sanko Üniversitesi", "Selçuk Üniversitesi", "Siirt Üniversitesi", "Sinop Üniversitesi", "Sivas Bilim ve Teknoloji Üniversitesi", "Sivas Cumhuriyet Üniversitesi", "Süleyman Demirel Üniversitesi", "Şırnak Üniversitesi", "Tarsus Üniversitesi", "TED Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi", "TOBB Ekonomi ve Teknoloji Üniversitesi", "Tokat Gaziosmanpaşa Üniversitesi", "Toros Üniversitesi", "Trabzon Üniversitesi", "Trakya Üniversitesi", "Türk-Alman Üniversitesi", "Türk Hava Kurumu Üniversitesi", "Türk-Japon Bilim ve Teknoloji Üniversitesi", "Türkiye Uluslararası İslam, Ekonomi ve Teknoloji Üniversitesi", "Ufuk Üniversitesi", "Uşak Üniversitesi", "Üsküdar Üniversitesi", "Van Yüzüncü Yıl Üniversitesi", "Yalova Üniversitesi", "Yaşar Üniversitesi", "Yeditepe Üniversitesi", "Yozgat Bozok Üniversitesi", "Yüksek İhtisas Üniversitesi", "Zonguldak Bülent Ecevit Üniversitesi"
-];
-
-export const provincialDirectorates = [
-    "Adana İl Millî Eğitim Müdürlüğü", "Adıyaman İl Millî Eğitim Müdürlüğü", "Afyonkarahisar İl Millî Eğitim Müdürlüğü", "Ağrı İl Millî Eğitim Müdürlüğü", "Aksaray İl Millî Eğitim Müdürlüğü", "Amasya İl Millî Eğitim Müdürlüğü", "Ankara İl Millî Eğitim Müdürlüğü", "Antalya İl Millî Eğitim Müdürlüğü", "Ardahan İl Millî Eğitim Müdürlüğü", "Artvin İl Millî Eğitim Müdürlüğü", "Aydın İl Millî Eğitim Müdürlüğü", "Balıkesir İl Millî Eğitim Müdürlüğü", "Bartın İl Millî Eğitim Müdürlüğü", "Batman İl Millî Eğitim Müdürlüğü", "Bayburt İl Millî Eğitim Müdürlüğü", "Bilecik İl Millî Eğitim Müdürlüğü", "Bingöl İl Millî Eğitim Müdürlüğü", "Bitlis İl Millî Eğitim Müdürlüğü", "Bolu İl Millî Eğitim Müdürlüğü", "Burdur İl Millî Eğitim Müdürlüğü", "Bursa İl Millî Eğitim Müdürlüğü", "Çanakkale İl Millî Eğitim Müdürlüğü", "Çankırı İl Millî Eğitim Müdürlüğü", "Çorum İl Millî Eğitim Müdürlüğü", "Denizli İl Millî Eğitim Müdürlüğü", "Diyarbakır İl Millî Eğitim Müdürlüğü", "Düzce İl Millî Eğitim Müdürlüğü", "Edirne İl Millî Eğitim Müdürlüğü", "Elazığ İl Millî Eğitim Müdürlüğü", "Erzincan İl Millî Eğitim Müdürlüğü", "Erzurum İl Millî Eğitim Müdürlüğü", "Eskişehir İl Millî Eğitim Müdürlüğü", "Gaziantep İl Millî Eğitim Müdürlüğü", "Giresun İl Millî Eğitim Müdürlüğü", "Gümüşhane İl Millî Eğitim Müdürlüğü", "Hakkari İl Millî Eğitim Müdürlüğü", "Hatay İl Millî Eğitim Müdürlüğü", "Iğdır İl Millî Eğitim Müdürlüğü", "Isparta İl Millî Eğitim Müdürlüğü", "İstanbul İl Millî Eğitim Müdürlüğü", "İzmir İl Millî Eğitim Müdürlüğü", "Kahramanmaraş İl Millî Eğitim Müdürlüğü", "Karabük İl Millî Eğitim Müdürlüğü", "Karaman İl Millî Eğitim Müdürlüğü", "Kars İl Millî Eğitim Müdürlüğü", "Kastamonu İl Millî Eğitim Müdürlüğü", "Kayseri İl Millî Eğitim Müdürlüğü", "Kırıkkale İl Millî Eğitim Müdürlüğü", "Kırklareli İl Millî Eğitim Müdürlüğü", "Kırşehir İl Millî Eğitim Müdürlüğü", "Kilis İl Millî Eğitim Müdürlüğü", "Kocaeli İl Millî Eğitim Müdürlüğü", "Konya İl Millî Eğitim Müdürlüğü", "Kütahya İl Millî Eğitim Müdürlüğü", "Malatya İl Millî Eğitim Müdürlüğü", "Manisa İl Millî Eğitim Müdürlüğü", "Mardin Artuklu Üniversitesi", "Mersin İl Millî Eğitim Müdürlüğü", "Muğla İl Millî Eğitim Müdürlüğü", "Muş İl Millî Eğitim Müdürlüğü", "Nevşehir İl Millî Eğitim Müdürlüğü", "Niğde İl Millî Eğitim Müdürlüğü", "Ordu İl Millî Eğitim Müdürlüğü", "Osmaniye İl Millî Eğitim Müdürlüğü", "Rize İl Millî Eğitim Müdürlüğü", "Sakarya İl Millî Eğitim Müdürlüğü", "Samsun İl Millî Eğitim Müdürlüğü", "Siirt İl Millî Eğitim Müdürlüğü", "Sinop İl Millî Eğitim Müdürlüğü", "Sivas İl Millî Eğitim Müdürlüğü", "Şanlıurfa İl Millî Eğitim Müdürlüğü", "Şırnak İl Millî Eğitim Müdürlüğü", "Tekirdağ İl Millî Eğitim Müdürlüğü", "Tokat İl Millî Eğitim Müdürlüğü", "Trabzon İl Millî Eğitim Müdürlüğü", "Tunceli İl Millî Eğitim Müdürlüğü", "Uşak İl Millî Eğitim Müdürlüğü", "Van İl Millî Eğitim Müdürlüğü", "Yalova İl Millî Eğitim Müdürlüğü", "Yozgat İl Millî Eğitim Müdürlüğü", "Zonguldak İl Millî Eğitim Müdürlüğü"
-];
-
+export const allUniversities = ["Boğaziçi Üniversitesi", "İTÜ", "ODTÜ"];
+export const provincialDirectorates = ["İstanbul İl MEM", "Ankara İl MEM"];
 export const studentClubs: StudentClub[] = [
-    {
-        id: '1',
-        name: 'İTÜ Girişimcilik Kulübü',
-        university: 'İstanbul Teknik Üniversitesi',
-        type: 'university',
-        category: 'Girişimcilik',
-        avatarUrl: 'https://logo.clearbit.com/itu.edu.tr',
-        coverPhotoUrl: 'https://picsum.photos/seed/clubcover1/800/200',
-        members: 150,
-        points: 4500,
-        description: 'Türkiye\'nin en köklü üniversite girişimcilik kulüplerinden biridir.',
-        vision: 'Girişimcilik ekosistemini kampüse taşımak.',
-        joinDate: '2023-01-01',
-        contact: { email: 'iletisim@itugirisim.org', phone: '+90 555 123 45 67', website: 'itugirisim.org' }
-    }
+    { id: '1', name: 'İTÜ Girişimcilik Kulübü', university: 'İstanbul Teknik Üniversitesi', type: 'university', category: 'Girişimcilik', avatarUrl: 'https://logo.clearbit.com/itu.edu.tr', coverPhotoUrl: 'https://picsum.photos/seed/clubcover1/800/200', members: 150, points: 4500, description: 'Girişimcilik ekosistemini kampüse taşımak.', vision: 'Kampüsün lideri olmak.', joinDate: '2023-01-01', contact: { email: 'iletisim@itugirisim.org', phone: '+90 555 123 45 67', website: 'itugirisim.org' } }
 ];
 
+export const helpTopics: HelpTopic[] = [
+    { icon: 'User', title: "Bireysel Kullanıcılar", slug: "bireysel-kullanicilar", description: "Profil ve bağış işlemleri.", subtopics: [{ title: "Puanlar", link: "#", content: "..." }] }
+];
+export const ngoHelpTopics = helpTopics;
+export const ngoFaqArticles = [{ title: 'Hata', content: '...' }];
+export const pastVolunteering = [];
 export const events: Event[] = [];
 export const schoolRepresentatives: SchoolRepresentative[] = [];
 export const applications: Application[] = [];
 export const donationTransactions: DonationTransaction[] = [];
+export const adBanners: AdBanner[] = [
+    { id: '1', title: 'Okul Alışverişiyle Destek Ol!', description: 'TEGV bağışları için tıkla.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop', link: '/market' }
+];
+export const marketCategories: MarketCategory[] = [{ mainCategory: 'Tümü', subCategories: [] }];
