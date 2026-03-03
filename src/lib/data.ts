@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Leaf, Heart, HeartHandshake, Star, Award, Calendar, MapPin, Landmark, Briefcase, DollarSign, Users, Smile, Utensils, Siren, Scale, Lightbulb, FlaskConical, Accessibility, PersonStanding, Palette, Sprout, HeartPulse, Handshake, Baby, Globe, ShoppingBag, School } from 'lucide-react';
@@ -138,11 +137,11 @@ export const certificates: Certificate[] = [
 ];
 
 export const managedItems: ManagedItem[] = [
-    { name: 'Uluslararası Sosyal Fayda Derneği', type: 'STK', icon: 'heart', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
-    { name: 'TEMA Vakfı', type: 'STK', icon: 'leaf', href: '/ngo-admin/dashboard', status: 'approved', logoUrl: 'https://logo.clearbit.com/tema.org.tr' },
-    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'school', href: '/admin/clubs/profile/1', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
-    { name: 'Amazon TR', type: 'Marka', icon: 'shopping-bag', href: '/market/amazontr', status: 'approved', logoUrl: 'https://logo.clearbit.com/amazon.com.tr' },
-    { name: 'Kadın Emeği Kooperatifi', type: 'Marka', icon: 'store', href: '/market/kadin-emegi', status: 'approved', logoUrl: 'https://picsum.photos/seed/koop/200/200' },
+    { name: 'Uluslararası Sosyal Fayda Derneği', type: 'Dernek', icon: 'heart', href: '/ngo-admin/dashboard?id=2&type=STK', status: 'approved', logoUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
+    { name: 'TEMA Vakfı', type: 'Vakıf', icon: 'leaf', href: '/ngo-admin/dashboard?id=1&type=STK', status: 'approved', logoUrl: 'https://logo.clearbit.com/tema.org.tr' },
+    { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'school', href: '/ngo-admin/dashboard?id=1&type=Öğrenci Kulübü', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
+    { name: 'Amazon TR', type: 'Marka', icon: 'shopping-bag', href: '/ngo-admin/dashboard?id=brand-26&type=Marka', status: 'approved', logoUrl: 'https://logo.clearbit.com/amazon.com.tr' },
+    { name: 'Kadın Emeği Kooperatifi', type: 'Marka', icon: 'store', href: '/ngo-admin/dashboard?id=brand-2&type=Marka', status: 'approved', logoUrl: 'https://picsum.photos/seed/koop/200/200' },
 ];
 
 export const qrPaymentCardData = [

@@ -1,9 +1,8 @@
-
 'use client';
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag } from 'lucide-react';
+import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { managedItems } from '@/lib/data';
 import { cn } from '@/lib/utils';
@@ -77,7 +76,7 @@ export default function AdminPage() {
           </div>
           <div className="space-y-2">
               <h3 className="text-2xl font-bold">Yeni Varlık Ekle</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">Başka bir STK, marka veya kulüp yönetimine dahil olmak için yeni bir başvuru yapabilirsiniz.</p>
+              <p className="text-muted-foreground max-w-md mx-auto">Başka bir STK, marka veya kulüp yönetimimine dahil olmak için yeni bir başvuru yapabilirsiniz.</p>
           </div>
           <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold shadow-xl shadow-primary/20">
               <Link href="/login/selection?action=register&type=corporate">Yeni Başvuru Başlat</Link>

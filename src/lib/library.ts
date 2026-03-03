@@ -1,4 +1,3 @@
-
 export interface LibraryItem {
   slug: string;
   title: string;
@@ -52,6 +51,11 @@ export const librarySections: LibrarySection[] = [
                 slug: 'ibb-sosyal-yardim-istatistikleri',
                 title: "İstanbul Büyükşehir Belediyesi - Sosyal Yardım İstatistikleri",
                 content: `<h4>Açıklama</h4><p>İstanbul genelinde mahalle bazlı sosyal yardım talepleri ve karşılanma oranlarını gösteren anonimleştirilmiş veri setidir.</p>`
+            },
+            {
+                slug: 'tuik-gonulluluk-istatistikleri',
+                title: "TÜİK - Türkiye Gönüllülük Araştırması Sonuçları",
+                content: "<h4>İstatistiksel Analiz</h4><p>Türkiye'deki gönüllülük oranlarının yaş, cinsiyet ve bölge bazlı dağılımını içeren resmi istatistik raporu.</p>"
             }
         ]
     },
@@ -65,6 +69,11 @@ export const librarySections: LibrarySection[] = [
                 slug: 'sosyal-girisimcilik-rehberi',
                 title: "Sosyal Girişimcilik: Dünyayı Değiştiren İş Modelleri",
                 content: `<h4>Kitap Hakkında</h4><p>Geleneksel hayırseverlikten sürdürülebilir sosyal girişimciliğe geçişi anlatan temel bir başvuru kaynağıdır.</p>`
+            },
+            {
+                slug: 'iyilik-ekonomisi',
+                title: "İyilik Ekonomisi: Yeni Bir Kapitalizm Mümkün Mü?",
+                content: "<p>Kâr maksimizasyonu yerine sosyal fayda odaklı bir ekonomik sistemin temellerini anlatan ufuk açıcı bir eser.</p>"
             }
         ]
     },
@@ -78,6 +87,11 @@ export const librarySections: LibrarySection[] = [
                 slug: 'umudunu-kaybetme',
                 title: "Umudunu Kaybetme (The Pursuit of Happyness)",
                 content: `<h4>Film Analizi</h4><p>Azim ve toplumsal dayanışma üzerine çarpıcı bir hikaye.</p>`
+            },
+            {
+                slug: 'sosyal-ikilem',
+                title: "Sosyal İkilem (The Social Dilemma)",
+                content: "<p>Dijital dünyanın toplumsal davranışlar üzerindeki etkisini ve etik sorunları ele alan etkileyici bir belgesel.</p>"
             }
         ]
     },
@@ -88,7 +102,9 @@ export const librarySections: LibrarySection[] = [
         icon: "BookOpen",
         items: [
           { slug: 'stk', title: 'Sivil Toplum Kuruluşu (STK)', content: '<p>Kâr amacı gütmeyen, gönüllülük esasına dayalı tüzel kişiliklerdir.</p>' },
-          { slug: 'gonulluluk', title: 'Gönüllülük', content: '<p>Bireyin kendi özgür iradesiyle maddi karşılık beklemeden zamanını ayırmasıdır.</p>' }
+          { slug: 'gonulluluk', title: 'Gönüllülük', content: '<p>Bireyin kendi özgür iradesiyle maddi karşılık beklemeden zamanını ayırmasıdır.</p>' },
+          { slug: 'sosyal-girisim', title: 'Sosyal Girişim', content: '<p>Ticari faaliyetlerini toplumsal bir sorunu çözmek için kullanan iş modelidir.</p>' },
+          { slug: 'sroi', title: 'SROI (Sosyal Yatırım Getirisi)', content: '<p>Yatırılan her bir birim kaynağın ne kadar sosyal değer yarattığını ölçen metodolojidir.</p>' }
         ]
     },
     {
@@ -101,6 +117,11 @@ export const librarySections: LibrarySection[] = [
                 slug: 'kvkk-stk-uyumu',
                 title: "STK'lar İçin KVKK Uyum Rehberi",
                 content: `<h4>Veri Güvenliği</h4><p>Bağışçı ve gönüllü verilerinin saklanmasında dikkat edilmesi gereken hukuki sorumluluklar.</p>`
+            },
+            {
+                slug: 'yardim-toplama-kanunu-ozeti',
+                title: "2860 Sayılı Yardım Toplama Kanunu Özeti",
+                content: "<p>Bağış toplama süreçlerinde yasal izinler ve dikkat edilmesi gereken temel maddeler.</p>"
             }
         ]
     },
@@ -114,6 +135,11 @@ export const librarySections: LibrarySection[] = [
                 slug: 'turkiye-sosyal-girisimcilik-durum-analizi',
                 title: "Türkiye Sosyal Girişimcilik Durum Analizi (2024)",
                 content: "<h4>Rapor Özeti</h4><p>Türkiye'deki sosyal girişimlerin ekosistem içindeki yerini, karşılaştıkları engelleri ve büyüme potansiyellerini inceleyen kapsamlı çalışma.</p>"
+            },
+            {
+                slug: 'genclik-ve-sivil-katilim-raporu',
+                title: "Gençlik ve Sivil Katılım Araştırması (2023)",
+                content: "<p>Z kuşağının sivil toplum kuruluşlarına bakış açısını ve katılım motivasyonlarını analiz eden akademik rapor.</p>"
             }
         ]
     }
