@@ -67,7 +67,7 @@ export const librarySections: LibrarySection[] = [
         items: [
             {
                 slug: 'sosyal-girisimcilik-rehberi',
-                title: "Sosyal Girişimcilik: Dünyayı Değiştiren İş Modelleri",
+                title: "Sosyal Girişim Cilik: Dünyayı Değiştiren İş Modelleri",
                 content: `<h4>Kitap Hakkında</h4><p>Geleneksel hayırseverlikten sürdürülebilir sosyal girişimciliğe geçişi anlatan temel bir başvuru kaynağıdır.</p>`
             },
             {

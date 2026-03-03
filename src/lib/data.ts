@@ -30,7 +30,7 @@ export const user: User = {
     impactScore: 15750,
     personalInfo: {
         email: 'i.adiguzel@email.com',
-        phone: '5077007007',
+        phone: '5384009090',
         birthDate: '1993-05-21',
         gender: 'Erkek',
         nationality: 'Türkiye Cumhuriyeti',
@@ -140,7 +140,7 @@ export const managedItems: ManagedItem[] = [
     { name: 'Uluslararası Sosyal Fayda Derneği', type: 'Dernek', icon: 'heart', href: '/ngo-admin/dashboard?id=2&type=STK', status: 'approved', logoUrl: 'https://logo.clearbit.com/socialbusinessglobal.org' },
     { name: 'TEMA Vakfı', type: 'Vakıf', icon: 'leaf', href: '/ngo-admin/dashboard?id=1&type=STK', status: 'approved', logoUrl: 'https://logo.clearbit.com/tema.org.tr' },
     { name: 'İTÜ Girişimcilik Kulübü', type: 'Öğrenci Kulübü', icon: 'school', href: '/ngo-admin/dashboard?id=1&type=Öğrenci Kulübü', status: 'approved', logoUrl: 'https://logo.clearbit.com/itu.edu.tr' },
-    { name: 'Amazon TR', type: 'Marka', icon: 'shopping-bag', href: '/ngo-admin/dashboard?id=brand-26&type=Marka', status: 'approved', logoUrl: 'https://logo.clearbit.com/amazon.com.tr' },
+    { name: 'Trip.com', type: 'Marka', icon: 'shopping-bag', href: '/ngo-admin/dashboard?id=brand-1&type=Marka', status: 'approved', logoUrl: 'https://logo.clearbit.com/trip.com' },
     { name: 'Kadın Emeği Kooperatifi', type: 'Marka', icon: 'store', href: '/ngo-admin/dashboard?id=brand-2&type=Marka', status: 'approved', logoUrl: 'https://picsum.photos/seed/koop/200/200' },
 ];
 
