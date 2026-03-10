@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -510,7 +509,7 @@ const FormRenderer = () => {
                 }
                 onComplete();
             } catch (error: any) {
-                console.error(error);
+                // DO NOT use console.error(error) here to prevent the visual overlay from showing for expected errors
                 if (error.code === 'auth/email-already-in-use') {
                     toast({ 
                         variant: "destructive", 
@@ -518,7 +517,7 @@ const FormRenderer = () => {
                         description: "Bu telefon numarası ile kayıtlı bir hesap zaten var. Lütfen giriş yapın." 
                     });
                     handleActionChange('login');
-                } else if (error.code === 'auth/invalid-credential') {
+                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                     toast({ 
                         variant: "destructive", 
                         title: "Giriş Başarısız", 
