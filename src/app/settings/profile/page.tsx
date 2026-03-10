@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { user as staticUser, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
-import { ArrowLeft, Camera, Trash2, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -61,8 +61,6 @@ export default function ProfileSettingsPage() {
         const newProfile = JSON.parse(JSON.stringify(prev));
         if (section === 'personalInfo' && field === 'address') {
             newProfile.personalInfo.address = { ...newProfile.personalInfo.address, ...value };
-        } else if (section === 'personalInfo' && field === 'social') {
-            newProfile.personalInfo.social = { ...newProfile.personalInfo.social, ...value };
         } else if (section === 'personalInfo') {
             newProfile.personalInfo[field] = value;
         } else if (section === 'username') {
@@ -99,7 +97,7 @@ export default function ProfileSettingsPage() {
         personalInfo: profile.personalInfo
     });
 
-    toast({ title: "Profil Güncellendi", description: "Tüm değişiklikler başarıyla kaydedildi." });
+    toast({ title: "Profil Güncellendi", description: "Bilgileriniz başarıyla kaydedildi." });
     
     if (isOnboarding) {
         localStorage.setItem('onboardingStep', 'volunteer');
@@ -115,6 +113,7 @@ export default function ProfileSettingsPage() {
   const currentNeighborhood = profile.personalInfo.address.neighborhood;
   const isTurkey = currentCountry === 'Türkiye';
 
+  const countryOptions = ["Türkiye", "Almanya", "ABD", "Azerbaycan", "İngiltere"];
   const cityOptions = isTurkey ? allProvinces : (globalCitiesData[currentCountry] || []);
   const districtOptions = isTurkey ? (districtsData[currentCity] || []) : (globalDistrictsData[currentCity] || []);
 
@@ -132,12 +131,11 @@ export default function ProfileSettingsPage() {
             <ArrowLeft className="h-6 w-6" />
         </Button>
       <div>
-        <h1 className="text-3xl font-bold font-headline">Profil Ayarları</h1>
-        <p className="text-muted-foreground text-sm">Kişisel bilgilerinizi ve profil fotoğrafınızı yönetin.</p>
+        <h1 className="text-3xl font-bold font-headline">Profil Bilgileri</h1>
+        <p className="text-muted-foreground text-sm">İyilik yolculuğundaki kimliğini oluştur.</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
-        {/* Photo Section */}
         <Card className="overflow-hidden border-none shadow-lg">
             <CardHeader className="bg-primary/5 border-b border-primary/10">
                 <CardTitle className="text-lg">Profil Fotoğrafı</CardTitle>
@@ -156,100 +154,19 @@ export default function ProfileSettingsPage() {
                     <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </div>
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('photo-upload')?.click()}>Fotoğrafı Değiştir</Button>
-                    <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => handleChange('avatarUrl', 'avatarUrl', '')}>
-                        <Trash2 className="h-4 w-4 mr-2" /> Kaldır
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
-
-        {/* Info Cards */}
-        <Card>
-            <CardHeader><CardTitle>Temel Bilgiler</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Ad Soyad</Label>
-                        <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Kullanıcı Adı</Label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">@</span>
-                            <Input value={profile.username.replace('@','')} onChange={(e) => handleChange('username', 'username', `@${e.target.value}`)} className="pl-8" required />
-                        </div>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>E-posta</Label>
-                        <Input value={profile.personalInfo.email} readOnly className="bg-muted" required />
-                    </div>
-                     <div className="space-y-2">
-                        <Label>Telefon</Label>
-                        <div className="flex gap-2">
-                            <div className="w-[100px] shrink-0">
-                                <Select defaultValue="90" required>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Kod" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {countryPhoneCodes.map(code => (
-                                            <SelectItem key={code} value={code}>+{code}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Input value={profile.personalInfo.phone} onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)} className="flex-1" required />
-                        </div>
-                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('photo-upload')?.click()}>Değiştir</Button>
+                    <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => handleChange('avatarUrl', 'avatarUrl', '')}><Trash2 className="h-4 w-4 mr-2" /> Kaldır</Button>
                 </div>
             </CardContent>
         </Card>
 
         <Card>
-            <CardHeader><CardTitle>Adres ve Diğer</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Kimlik Bilgileri</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>{isTurkey ? 'İl' : 'Eyalet / Şehir'}</Label>
-                        {cityOptions.length > 0 ? (
-                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                            </Select>
-                        ) : (
-                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="İl / Eyalet girin" required />
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                        <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
-                        {districtOptions.length > 0 ? (
-                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!currentCity}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                            </Select>
-                        ) : (
-                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="İlçe / Bölge girin" required />
-                        )}
-                    </div>
-                </div>
-                
                 <div className="space-y-2">
-                    <Label>Mahalle</Label>
-                    {isTurkey && currentCity && currentDistrict && neighborhoodsData[currentCity]?.[currentDistrict] ? (
-                        <Select value={currentNeighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">
-                                {neighborhoodsData[currentCity][currentDistrict].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    ) : (
-                        <Input value={currentNeighborhood || ''} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle giriniz..." required disabled={isTurkey && !currentDistrict} className="h-11 rounded-xl" />
-                    )}
+                    <Label>Ad Soyad</Label>
+                    <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} required />
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Kan Grubu</Label>
@@ -273,45 +190,71 @@ export default function ProfileSettingsPage() {
             </CardContent>
         </Card>
 
+        <Card>
+            <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres Bilgileri</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Ülke</Label>
+                    <Select value={currentCountry} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>{countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>{isTurkey ? 'İl' : 'Şehir'}</Label>
+                        {cityOptions.length > 0 ? (
+                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" required />
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                        {districtOptions.length > 0 ? (
+                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!currentCity}>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" required />
+                        )}
+                    </div>
+                </div>
+                
+                <div className="space-y-2">
+                    <Label>Mahalle</Label>
+                    {isTurkey && currentCity && currentDistrict && neighborhoodsData[currentCity]?.[currentDistrict] ? (
+                        <Select value={currentNeighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent className="max-h-60">{neighborhoodsData[currentCity][currentDistrict].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                        </Select>
+                    ) : (
+                        <Input value={currentNeighborhood || ''} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle" required disabled={isTurkey && !currentDistrict} className="h-11 rounded-xl" />
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Sokak / Cadde</Label>
+                        <Input value={profile.personalInfo.address.street || ''} onChange={(e) => handleChange('personalInfo', 'address', { street: e.target.value })} placeholder="Örn: Moda Cad." required />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Bina / Kapı No</Label>
+                        <Input value={profile.personalInfo.address.doorNo || ''} onChange={(e) => handleChange('personalInfo', 'address', { doorNo: e.target.value })} placeholder="Örn: 12/4" required />
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
         <div className="flex justify-end pt-4">
           <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">Kaydet ve Devam Et</Button>
         </div>
       </form>
-
-      {/* Photo Editor Dialog */}
-      <Dialog open={isPhotoEditorOpen} onOpenChange={setIsPhotoEditorOpen}>
-          <DialogContent className="sm:max-w-md rounded-[2.5rem]">
-              <DialogHeader>
-                  <DialogTitle>Fotoğrafı Düzenle</DialogTitle>
-                  <DialogDescription>Görseli merkeze alarak istediğiniz alanı seçin.</DialogDescription>
-              </DialogHeader>
-              <div className="py-8 space-y-8 flex flex-col items-center">
-                  <div className="relative w-64 h-64 rounded-full overflow-hidden border-4 border-primary/20 shadow-2xl">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                          <Image 
-                            src={profile.avatarUrl || 'https://picsum.photos/seed/avatar/200/200'} 
-                            alt="Preview" 
-                            width={256} 
-                            height={256} 
-                            className="object-cover transition-transform duration-200" 
-                            style={{ transform: `scale(${zoom[0]})` }}
-                          />
-                      </div>
-                  </div>
-                  <div className="w-full px-8 space-y-2">
-                      <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                          <span>Yakınlaştır</span>
-                          <span>{Math.round(zoom[0] * 100)}%</span>
-                      </div>
-                      <Slider value={zoom} onValueChange={setZoom} min={1} max={3} step={0.1} />
-                  </div>
-              </div>
-              <DialogFooter>
-                  <Button variant="ghost" onClick={() => setIsPhotoEditorOpen(false)}>Vazgeç</Button>
-                  <Button onClick={() => setIsPhotoEditorOpen(false)}>Uygula</Button>
-              </DialogFooter>
-          </DialogContent>
-      </Dialog>
     </div>
   );
 }

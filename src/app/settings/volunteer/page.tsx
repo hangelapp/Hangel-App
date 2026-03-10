@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
-import { user as staticUser, countryPhoneCodes } from '@/lib/data';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { user as staticUser, countryPhoneCodes, allInterests, allSkills, allDailySkills, allLanguages, allPrograms, allLicenses, allDocuments, allVisas, allSectors, allPositions, allUniversities } from '@/lib/data';
+import { ArrowLeft, Loader2, Sparkles, Brain, Users, Cpu, Languages, FileText, Plane, Briefcase, HeartPulse, User as UserIcon, Phone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
@@ -22,19 +22,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
-
-const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
-const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
-const allDailySkills = ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim', 'Tamirat', 'Bahçe İşleri', 'Çocuk Bakımı'];
-const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İşaret Dili'];
-const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'VS Code', 'Docker', 'Google Analytics'];
-const allLicenses = ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'SRC Belgesi', 'İş Güvenliği Uzmanlığı', 'Profesyonel Turist Rehberi Kokartı'];
-const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'Scrum Master Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası'];
-const allVisas = ['Schengen', 'ABD (B1/B2)', 'İngiltere', 'Kanada'];
-const allSectors = ['Teknoloji', 'Sağlık', 'Eğitim', 'Finans', 'Sanat ve Kültür', 'Hukuk', 'Kamu', 'Perakende', 'Turizm', 'Gıda', 'İnşaat'];
-const allPositions = ['Yazılım Geliştirici', 'Doktor', 'Öğretmen', 'Avukat', 'Grafik Tasarımcı', 'Proje Yöneticisi', 'Öğrenci', 'Emekli', 'Serbest Çalışan'];
-const allUniversities = ['Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Hacettepe Üniversitesi', 'Bilkent Üniversitesi'];
-const allHighSchools = ['Kabataş Erkek Lisesi', 'Galatasaray Lisesi', 'İstanbul Erkek Lisesi', 'Robert Kolej', 'Ankara Fen Lisesi', 'İzmir Fen Lisesi'];
 
 const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
     return (
@@ -52,7 +39,7 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
                         ) : `${title} seçin...`}
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
                     {options.map((option) => (
                         <DropdownMenuCheckboxItem
                             key={option}
@@ -117,19 +104,6 @@ export default function VolunteerSettingsPage() {
         }));
     };
     
-    const handleEducationChange = (level: 'Lisans' | 'Lise', field: 'school', value: string) => {
-        setVolunteerInfo(prev => {
-            const newEducation = [...prev.education];
-            const eduIndex = newEducation.findIndex(e => e.level === level);
-            if (eduIndex > -1) {
-                newEducation[eduIndex] = { ...newEducation[eduIndex], [field]: value };
-            } else {
-                newEducation.push({ level, school: value });
-            }
-            return { ...prev, education: newEducation };
-        });
-    };
-
     const handleEmergencyContactChange = (index: number, field: 'name' | 'phone', value: string) => {
         setVolunteerInfo(prev => {
             const newContacts = [...prev.emergency.emergencyContacts];
@@ -145,25 +119,21 @@ export default function VolunteerSettingsPage() {
 
         updateDocumentNonBlocking(userDocRef, { volunteerInfo });
 
-        toast({
-            title: "Gönüllülük Bilgileri Güncellendi",
-            description: "Bilgileriniz başarıyla kaydedildi.",
-        });
-        
         if (isOnboarding) {
+            toast({
+                title: "Melek gibi insanlar topluluğuna hoş geldin!",
+                description: "Profilin başarıyla tamamlandı.",
+            });
             localStorage.removeItem('onboardingStep');
             router.push('/market');
         } else {
+            toast({ title: "Bilgiler Güncellendi", description: "Değişiklikler kaydedildi." });
             router.push('/settings');
         }
     };
 
     if (isUserLoading || isUserDataLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
+        return <div className="flex items-center justify-center min-h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     }
 
     return (
@@ -172,62 +142,43 @@ export default function VolunteerSettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Gönüllülük Bilgilerini Düzenle</h1>
-                <p className="text-muted-foreground text-sm">Size en uygun fırsatları önerebilmemiz için bilgilerinizi güncel tutun.</p>
+                <h1 className="text-2xl font-bold font-headline">Gönüllülük Bilgileri</h1>
+                <p className="text-muted-foreground text-sm">Yeteneklerinle topluma değer katmaya başla.</p>
             </div>
             
             <form className="space-y-6" onSubmit={handleSubmit}>
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Yetkinlik ve Sosyal Hassasiyetler</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Hassasiyetler & Yetkinlikler</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                         <MultiSelect title="Sosyal Hassasiyetler" options={allInterests} selected={volunteerInfo.interests} onSelectedChange={(val) => handleChange('interests', val)} />
                         <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={volunteerInfo.skills} onSelectedChange={(val) => handleChange('skills', val)} />
-                        <MultiSelect title="Sosyal Yetkinlikler" options={allDailySkills} selected={volunteerInfo.dailySkills} onSelectedChange={(val) => handleChange('dailySkills', val)} />
+                        <MultiSelect title="Sosyal/Günlük Yetkinlikler" options={allDailySkills} selected={volunteerInfo.dailySkills} onSelectedChange={(val) => handleChange('dailySkills', val)} />
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Eğitim ve Kariyer</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Briefcase className="h-5 w-5 text-primary" /> Eğitim & Kariyer</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                          <div className="space-y-2">
                             <Label>Üniversite</Label>
-                            <Select value={volunteerInfo.education.find(e => e.level === 'Lisans')?.school || ''} onValueChange={(value) => handleEducationChange('Lisans', 'school', value)}>
-                                <SelectTrigger><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
-                                <SelectContent>
-                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                         <div className="space-y-2">
-                            <Label>Lise</Label>
-                            <Select value={volunteerInfo.education.find(e => e.level === 'Lise')?.school || ''} onValueChange={(value) => handleEducationChange('Lise', 'school', value)}>
-                                <SelectTrigger><SelectValue placeholder="Lise seçin..." /></SelectTrigger>
-                                <SelectContent>
-                                    {allHighSchools.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                                </SelectContent>
+                            <Select value={volunteerInfo.education[0]?.school || ''} onValueChange={(v) => handleChange('education', [{ level: 'Lisans', school: v }])}>
+                                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent className="max-h-60">{allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <div className="space-y-2">
-                                <Label htmlFor="sector">Çalıştığınız Sektör</Label>
+                                <Label>Sektör</Label>
                                 <Select value={volunteerInfo.sector || ''} onValueChange={(val) => handleChange('sector', val)}>
-                                    <SelectTrigger id="sector"><SelectValue placeholder="Sektör seçin..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                                    </SelectContent>
+                                    <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent>{allSectors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="profession">Çalıştığınız Pozisyon</Label>
+                                <Label>Pozisyon</Label>
                                 <Select value={volunteerInfo.profession || ''} onValueChange={(val) => handleChange('profession', val)}>
-                                    <SelectTrigger id="profession"><SelectValue placeholder="Pozisyon seçin..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                                    </SelectContent>
+                                    <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectContent className="max-h-60">{allPositions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                         </div>
@@ -235,106 +186,70 @@ export default function VolunteerSettingsPage() {
                 </Card>
                 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Dil ve Program Bilgisi</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><Languages className="h-5 w-5 text-primary" /> Dil & Program & Vize</CardTitle></CardHeader>
                      <CardContent className="space-y-4">
                         <MultiSelect title="Yabancı Diller" options={allLanguages} selected={volunteerInfo.languages} onSelectedChange={(val) => handleChange('languages', val)} />
                         <MultiSelect title="Bildiği Programlar" options={allPrograms} selected={volunteerInfo.programs} onSelectedChange={(val) => handleChange('programs', val)} />
+                        <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={volunteerInfo.travelInfo.visas} onSelectedChange={(val) => handleNestedChange('travelInfo', 'visas', val)} />
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Belgeler ve Lisanslar</CardTitle>
-                    </CardHeader>
+                    <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Lisanslar & Belgeler</CardTitle></CardHeader>
                      <CardContent className="space-y-4">
                         <MultiSelect title="Lisanslar" options={allLicenses} selected={volunteerInfo.licenses} onSelectedChange={(val) => handleChange('licenses', val)} />
-                        <MultiSelect title="Belgeler" options={allDocuments} selected={volunteerInfo.documents} onSelectedChange={(val) => handleChange('documents', val)} />
+                        <MultiSelect title="Onaylı Belgeler" options={allDocuments} selected={volunteerInfo.documents} onSelectedChange={(val) => handleChange('documents', val)} />
                     </CardContent>
-                </Card>
-                
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Seyahat Uygunluğu</CardTitle>
-                    </CardHeader>
-                     <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                           <Label htmlFor="domestic-travel" className="font-medium">Yurtiçi seyahat engelim yok</Label>
-                           <Switch id="domestic-travel" checked={!volunteerInfo.travelInfo.domesticObstacle} onCheckedChange={(val) => handleNestedChange('travelInfo', 'domesticObstacle', !val)} />
-                        </div>
-                        <div className="flex items-center justify-between p-4 border rounded-lg">
-                           <Label htmlFor="international-travel" className="font-medium">Yurtdışı seyahat engelim yok</Label>
-                           <Switch id="international-travel" checked={!volunteerInfo.travelInfo.internationalObstacle} onCheckedChange={(val) => handleNestedChange('travelInfo', 'internationalObstacle', !val)} />
-                        </div>
-                         <div className="space-y-2">
-                           <MultiSelect title="Sahip Olunan Vizeler" options={allVisas} selected={volunteerInfo.travelInfo.visas} onSelectedChange={(val) => handleNestedChange('travelInfo', 'visas', val)} />
-                        </div>
-                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Acil Durum Kişileri</CardTitle>
-                        <CardDescription>Acil bir durumda ulaşılacak kişilerin bilgilerini girin.</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Acil Durum Kişileri (İsteğe Bağlı)</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div>
-                            <h4 className="font-medium text-base mb-2">Acil Durum Kişisi 1</h4>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency-contact-name-1">Ad Soyad</Label>
-                                    <Input id="emergency-contact-name-1" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} required />
+                        <div className="space-y-4">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">Birinci Kişi</Label>
+                            <Input placeholder="Ad Soyad" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} />
+                            <div className="flex gap-2">
+                                <div className="w-[80px] shrink-0">
+                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="emergency-contact-phone-1">Telefon</Label>
-                                    <div className="flex gap-2">
-                                        <div className="w-[100px] shrink-0">
-                                            <Select defaultValue="90">
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Kod" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {countryPhoneCodes.map(code => (
-                                                        <SelectItem key={code} value={code}>+{code}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Input id="emergency-contact-phone-1" type="tel" value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" required />
-                                    </div>
+                                <Input type="tel" placeholder="5XX..." value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" />
+                            </div>
+                        </div>
+                        <div className="space-y-4 pt-4 border-t border-dashed">
+                            <Label className="text-xs font-bold uppercase text-muted-foreground">İkinci Kişi</Label>
+                            <Input placeholder="Ad Soyad" value={volunteerInfo.emergency.emergencyContacts[1]?.name || ''} onChange={(e) => handleEmergencyContactChange(1, 'name', e.target.value)} />
+                            <div className="flex gap-2">
+                                <div className="w-[80px] shrink-0">
+                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
+                                <Input type="tel" placeholder="5XX..." value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} className="flex-1" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Sağlık Bilgileri</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
                         <div className="flex items-center justify-between p-4 border rounded-lg">
                            <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
                            <Switch id="emergency-available" checked={volunteerInfo.emergency.available} onCheckedChange={(val) => handleNestedChange('emergency', 'available', val)} />
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
                             <Checkbox id="chronic-illness" checked={volunteerInfo.emergency.hasChronicIllness} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasChronicIllness', !!checked)} />
-                            <Label htmlFor="chronic-illness">Kronik bir rahatsızlığım var.</Label>
+                            <Label htmlFor="chronic-illness" className="text-sm">Kronik bir rahatsızlığım var.</Label>
                         </div>
                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
                             <Checkbox id="regular-medication" checked={volunteerInfo.emergency.usesRegularMedication} onCheckedChange={(checked) => handleNestedChange('emergency', 'usesRegularMedication', !!checked)} />
-                            <Label htmlFor="regular-medication">Düzenli olarak kullandığım bir ilaç var.</Label>
-                        </div>
-                         <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                            <Checkbox id="physical-limitation" checked={volunteerInfo.emergency.hasPhysicalLimitation} onCheckedChange={(checked) => handleNestedChange('emergency', 'hasPhysicalLimitation', !!checked)} />
-                            <Label htmlFor="physical-limitation">Fiziksel bir kısıtlılığım var.</Label>
+                            <Label htmlFor="regular-medication" className="text-sm">Düzenli ilaç kullanıyorum.</Label>
                         </div>
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end">
-                    <Button type="submit">{isOnboarding ? "Bitir ve Keşfetmeye Başla" : "Değişiklikleri Kaydet"}</Button>
+                <div className="flex justify-end pt-4 pb-10">
+                    <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">Profili Tamamla</Button>
                 </div>
             </form>
         </div>
