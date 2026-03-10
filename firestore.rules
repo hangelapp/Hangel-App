@@ -35,48 +35,59 @@ service cloud.firestore {
     // Kütüphane koleksiyonu - Giriş yapan tüm kullanıcılar erişebilsin
     match /library {
       allow read, list: if isSignedIn();
-      match /{document=**} {
-        allow read, get, list: if isSignedIn();
-        allow write: if isSuperAdmin();
-      }
+    }
+    match /library/{document=**} {
+      allow read, get, list: if isSignedIn();
     }
 
-    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Kamu Erişimi
+    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Kamu Erişimi (Okuma)
     match /ngos {
       allow read, list: if true;
-      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+    match /ngos/{document=**} {
+      allow read, get, list: if true;
     }
 
     match /brands {
       allow read, list: if true;
-      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+    match /brands/{document=**} {
+      allow read, get, list: if true;
     }
 
     match /posts {
       allow read, list: if true;
-      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+    match /posts/{document=**} {
+      allow read, get, list: if true;
     }
 
     match /volunteering {
       allow read, list: if true;
-      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+    match /volunteering/{document=**} {
+      allow read, get, list: if true;
     }
 
     match /events {
       allow read, list: if true;
-      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+    match /events/{document=**} {
+      allow read, get, list: if true;
     }
 
     // Başvuru koleksiyonu
+    match /applications {
+      allow list: if isSignedIn();
+    }
     match /applications/{appId} {
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
       allow create: if isSignedIn();
       allow update, delete: if isSuperAdmin();
     }
 
-    // Global erişim
+    // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
-      allow read: if isSignedIn();
       allow write: if isSuperAdmin();
     }
   }
