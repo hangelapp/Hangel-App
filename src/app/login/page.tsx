@@ -10,9 +10,6 @@ import { HangelLogo } from '@/components/icons';
 import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
 import type { Brand, Volunteering } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { languages, useTranslation } from '@/components/providers/language-provider';
@@ -23,7 +20,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
 import { UserNav } from '@/components/layout/user-nav';
 
@@ -181,7 +179,7 @@ const projectCardsData = [
     { 
       title: "Etki Odaklı İstihdam",
       subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",
-      cta: "Protokolü İncele, imzala",
+      cta: "Protokolü İncele",
       ctaHref: "/hangelassociation/projects/istihdam-protokolu",
       imageUrl: "https://picsum.photos/seed/protocol/600/800",
       imageHint: "handshake meeting",
@@ -196,19 +194,11 @@ const projectCardsData = [
     },
     { 
       title: "Sosyal Etki Atlası",
-      subtitle: "Türkiye'nin iyilik haritasını 54 ülkeden 639 örnek ile çiziyoruz.",
+      subtitle: "Türkiye'nin iyilik haritasını çiziyoruz.",
       cta: "Atlası Keşfet",
       ctaHref: "/hangelassociation/projects/etki-atlasi",
       imageUrl: "https://picsum.photos/seed/atlas/600/800",
       imageHint: "digital map",
-    },
-    { 
-      title: "Girişimcilik Kütüphanesi",
-      subtitle: "21 merkezde bilgi ve tecrübe temelli yol haritaları.",
-      cta: "Kütüphaneye Gir",
-      ctaHref: "/library",
-      imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
-      imageHint: "modern library",
     }
 ];
 
@@ -325,47 +315,6 @@ const DiscoveryCarouselCard = ({ title, description, href, imageUrl, imageHint, 
     </div>
 );
 
-const FullStandardsSection = () => {
-    return (
-        <section className="py-8 md:py-12 bg-[#f5f5f7]">
-            <div className="container mx-auto px-4 max-w-4xl text-center">
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-standards" className="border-none">
-                        <AccordionTrigger className="text-2xl md:text-3xl font-bold tracking-tight hover:no-underline text-center justify-center data-[state=open]:text-primary py-6 [&>svg:last-child]:hidden">
-                            <div className="flex items-center gap-4">
-                                <ChevronDown className="h-8 w-8" />
-                                <span>Standartlarımız</span>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pt-8 text-left">
-                             <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl mx-auto text-center mb-8">
-                                hangel, veri güvenliği, finansal şeffaflık ve kurumsal yönetişim alanlarında 50'den fazla uluslararası standart ve yerel mevzuata tam uyumla çalışır.
-                             </p>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Link href="/standards" className="p-6 bg-white rounded-3xl border border-black/5 hover:border-primary transition-all flex items-center justify-between group">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-primary/10 rounded-xl text-primary"><ShieldCheck className="h-6 w-6" /></div>
-                                        <span className="font-bold">Kalite ve Uyum</span>
-                                    </div>
-                                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-all" />
-                                </Link>
-                                <Link href="/accessibility" className="p-6 bg-white rounded-3xl border border-black/5 hover:border-primary transition-all flex items-center justify-between group">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-primary/10 rounded-xl text-primary"><Users className="h-6 w-6" /></div>
-                                        <span className="font-bold">Erişilebilirlik</span>
-                                    </div>
-                                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-all" />
-                                </Link>
-                             </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-            </div>
-        </section>
-    );
-};
-
-
 const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: string, description: string, link: string, linkText: string, icon: React.ElementType }) => (
     <div className="bg-[#f5f5f7] rounded-3xl p-8 flex flex-col h-full text-left">
         <div className="p-3 bg-white rounded-2xl w-fit shadow-sm mb-6">
@@ -409,17 +358,11 @@ export default function LoginPage() {
         let bIdx = 0, cIdx = 0, eIdx = 0, sIdx = 0;
         
         while (result.length < 15) {
-            // 2 Ticari
             if (brands[bIdx]) result.push(brands[bIdx++]);
             if (result.length < 15 && brands[bIdx]) result.push(brands[bIdx++]);
-            // 1 Kooperatif
             if (result.length < 15 && cooperatives[cIdx]) result.push(cooperatives[cIdx++]);
-            // 1 İktisadi İşl.
             if (result.length < 15 && economics[eIdx]) result.push(economics[eIdx++]);
-            // 1 Sosyal Ş.
             if (result.length < 15 && socials[sIdx]) result.push(socials[sIdx++]);
-            
-            // Break if we ran out of everything
             if (bIdx >= brands.length && cIdx >= cooperatives.length && eIdx >= economics.length && sIdx >= socials.length) break;
         }
         return result.slice(0, 15);
@@ -433,7 +376,6 @@ export default function LoginPage() {
       { href: '/support', label: 'Destek' },
     ];
 
-    const libraryImg = PlaceHolderImages.find(img => img.id === 'library-illustration');
     const campusImg = PlaceHolderImages.find(img => img.id === 'campus-poster-1');
 
     const discoveryItems = [
@@ -470,22 +412,12 @@ export default function LoginPage() {
         { 
             title: "Kulüplerin Etkinlikleri", 
             description: "Kampüsteki sosyal etkinlikleri ve zirveleri keşfet, ağını genişlet.", 
-            href: "/admin/clubs",
+            href: "/events",
             imageUrl: "https://picsum.photos/seed/club-events/1080/1080",
             imageHint: "university event",
             linkText: "Etkinlikleri Keşfet",
             linkText2: "Daha Fazla Bilgi",
             href2: "/campus-advantages"
-        },
-        { 
-            title: "Kütüphane", 
-            description: "Sosyal etki, gönüllülük ve sivil toplum hakkında kaynakları, raporları ve makaleleri keşfedin.", 
-            href: "/library",
-            imageUrl: libraryImg?.imageUrl || "https://images.unsplash.com/photo-1513475382585-d06e58bc0e05?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "digital library",
-            linkText: "Kütüphaneye Gir",
-            linkText2: "Daha Fazla Bilgi",
-            href2: "/library"
         }
     ];
 
@@ -625,7 +557,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl font-bold tracking-tight">hangel'i Keşfedin</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
                             {discoveryItems.map((item, index) => (
                                 <DiscoveryCarouselCard key={index} {...item} />
                             ))}
@@ -703,7 +635,6 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </section>
-                <FullStandardsSection />
             </main>
             <PublicFooter currentPageLabel="Anasayfa" />
         </div>

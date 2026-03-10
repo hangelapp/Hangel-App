@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -22,7 +21,6 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 {label: "Market", href: "/market"}, 
                 {label: "Gönüllülük", href: "/volunteering"}, 
                 {label: "Zaman Tüneli", href: "/timeline"},
-                {label: "Kütüphane", href: "/library"}, 
             ] 
         },
         { 

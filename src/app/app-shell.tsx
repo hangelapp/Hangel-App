@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -33,7 +32,6 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
-    { href: '/library', label: 'Kütüphane', icon: 'library' },
 ];
 
 const group4Items: SideNavItem[] = [
@@ -58,7 +56,6 @@ const iconColorMap: { [key: string]: string } = {
   'bar-chart-3': 'bg-indigo-500',
   send: 'bg-cyan-500',
   sparkles: 'bg-purple-500',
-  library: 'bg-amber-700',
   'layout-grid': 'bg-slate-500',
   shield: 'bg-red-600',
   settings: 'bg-gray-500',
@@ -131,7 +128,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             const protectedPaths = [
                 '/timeline', '/market', '/volunteering', '/clubs', '/events', 
                 '/qr-payment', '/emergency', '/leaderboard', '/stories', 
-                '/invite', '/library', '/profile', '/my-donations', 
+                '/invite', '/profile', '/my-donations', 
                 '/my-applications', '/my-badges', '/messages', '/settings', 
                 '/ngo-admin', '/super-admin', '/admin'
             ];

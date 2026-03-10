@@ -32,48 +32,40 @@ service cloud.firestore {
       }
     }
 
-    // Kütüphane koleksiyonu - Giriş yapan tüm kullanıcılar erişebilsin
-    match /library {
+    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Giriş yapanlar okuyabilir
+    match /ngos {
       allow read, list: if isSignedIn();
     }
-    match /library/{document=**} {
+    match /ngos/{document=**} {
       allow read, get, list: if isSignedIn();
     }
 
-    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Kamu Erişimi (Okuma)
-    match /ngos {
-      allow read, list: if true;
-    }
-    match /ngos/{document=**} {
-      allow read, get, list: if true;
-    }
-
     match /brands {
-      allow read, list: if true;
+      allow read, list: if isSignedIn();
     }
     match /brands/{document=**} {
-      allow read, get, list: if true;
+      allow read, get, list: if isSignedIn();
     }
 
     match /posts {
-      allow read, list: if true;
+      allow read, list: if isSignedIn();
     }
     match /posts/{document=**} {
-      allow read, get, list: if true;
+      allow read, get, list: if isSignedIn();
     }
 
     match /volunteering {
-      allow read, list: if true;
+      allow read, list: if isSignedIn();
     }
     match /volunteering/{document=**} {
-      allow read, get, list: if true;
+      allow read, get, list: if isSignedIn();
     }
 
     match /events {
-      allow read, list: if true;
+      allow read, list: if isSignedIn();
     }
     match /events/{document=**} {
-      allow read, get, list: if true;
+      allow read, get, list: if isSignedIn();
     }
 
     // Başvuru koleksiyonu

@@ -72,7 +72,6 @@ const superAdminNavItems = [
     { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
     { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Platformun genel metriklerini izle.' },
     { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
-    { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'BookCopy', description: 'Kütüphane içeriklerini ekle, düzenle veya sil.' },
     { href: '/super-admin/communications', label: 'DM, Bildirimler & E-Bülten', icon: 'MessageSquare', description: 'Kullanıcılara direkt mesaj, anlık bildirim ve e-bülten gönder.' },
     { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
     { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
