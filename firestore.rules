@@ -32,65 +32,46 @@ service cloud.firestore {
       }
     }
 
+    // Kütüphane koleksiyonu - Giriş yapan tüm kullanıcılar erişebilsin
+    match /library {
+      allow read, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+        allow write: if isSuperAdmin();
+      }
+    }
+
+    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Kamu Erişimi
+    match /ngos {
+      allow read, list: if true;
+      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+
+    match /brands {
+      allow read, list: if true;
+      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+
+    match /posts {
+      allow read, list: if true;
+      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+
+    match /volunteering {
+      allow read, list: if true;
+      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+
+    match /events {
+      allow read, list: if true;
+      match /{document=**} { allow read, get, list: if true; allow write: if isSuperAdmin(); }
+    }
+
     // Başvuru koleksiyonu
     match /applications/{appId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
       allow create: if isSignedIn();
       allow update, delete: if isSuperAdmin();
-    }
-
-    // Kütüphane koleksiyonu - Giriş yapan tüm kullanıcılar erişebilsin
-    match /library/{sectionId} {
-      allow read: if isSignedIn();
-      allow write: if isSuperAdmin();
-    }
-    match /library {
-      allow read: if isSignedIn();
-    }
-
-    // STK'lar
-    match /ngos/{ngoId} {
-      allow read: if true; // Kamu sayfaları için herkese açık
-      allow write: if isSuperAdmin();
-    }
-    match /ngos {
-      allow read: if true;
-    }
-
-    // Markalar - Market sayfası için okuma izni
-    match /brands/{brandId} {
-      allow read: if true;
-      allow write: if isSuperAdmin();
-    }
-    match /brands {
-      allow read: if true;
-    }
-
-    // Gönderiler
-    match /posts/{postId} {
-      allow read: if true;
-      allow write: if isSuperAdmin();
-    }
-    match /posts {
-      allow read: if true;
-    }
-
-    // Gönüllülük İlanları
-    match /volunteering/{oppId} {
-      allow read: if true;
-      allow write: if isSuperAdmin();
-    }
-    match /volunteering {
-      allow read: if true;
-    }
-
-    // Etkinlikler
-    match /events/{eventId} {
-      allow read: if true;
-      allow write: if isSuperAdmin();
-    }
-    match /events {
-      allow read: if true;
     }
 
     // Global erişim
