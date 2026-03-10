@@ -94,9 +94,12 @@ export default function ManageProfilePage() {
   
   const [ngoType, setNgoType] = useState('dernek');
   const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
+  const [country, setCountry] = useState('Türkiye');
   const [city, setCity] = useState('İstanbul');
   const [district, setDistrict] = useState('Kadıköy');
   const [neighborhood, setNeighborhood] = useState('Caferağa');
+
+  const isTurkey = country === 'Türkiye';
 
   const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
@@ -237,26 +240,44 @@ export default function ManageProfilePage() {
                 <CardTitle className="text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres & İletişim</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
+                    <Select value={country} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            {["Türkiye", "Almanya", "ABD", "İngiltere", "Azerbaycan"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
-                        <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
-                            <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                        </Select>
+                        {isTurkey ? (
+                            <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
+                                <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Şehir / Eyalet" className="h-11 rounded-xl" required />
+                        )}
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
-                        <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
-                            <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                        </Select>
+                        {isTurkey ? (
+                            <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
+                                <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="İlçe / Bölge" className="h-11 rounded-xl" required />
+                        )}
                     </div>
                 </div>
 
                 <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                    {city && district && neighborhoodsData[city]?.[district] ? (
+                    {isTurkey && city && district && neighborhoodsData[city]?.[district] ? (
                         <Select value={neighborhood} onValueChange={setNeighborhood} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
                             <SelectContent>
@@ -264,7 +285,7 @@ export default function ManageProfilePage() {
                             </SelectContent>
                         </Select>
                     ) : (
-                        <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle giriniz..." required disabled={!district} className="h-11 rounded-xl" />
+                        <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle giriniz..." required disabled={isTurkey && !district} className="h-11 rounded-xl" />
                     )}
                 </div>
 

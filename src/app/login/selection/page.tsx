@@ -250,7 +250,7 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl / Eyalet</Label>
                     {isTurkey ? (
                         <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             </SelectContent>
@@ -263,7 +263,7 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe / Bölge</Label>
                     {isTurkey ? (
                         <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 {city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                             </SelectContent>
@@ -284,7 +284,7 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                         </SelectContent>
                     </Select>
                 ) : (
-                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required={required} className="h-11 rounded-xl" />
+                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required={required} className="h-11 rounded-xl" disabled={isTurkey && !district} />
                 )}
             </div>
 
