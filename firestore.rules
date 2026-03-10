@@ -37,6 +37,42 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && isSuperAdmin();
     }
 
+    // Kütüphane koleksiyonu
+    match /library/{sectionId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
+    // STK'lar
+    match /ngos/{ngoId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
+    // Markalar
+    match /brands/{brandId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
+    // Gönderiler
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
+    // Gönüllülük İlanları
+    match /volunteering/{oppId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
+    // Etkinlikler
+    match /events/{eventId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isSuperAdmin();
+    }
+
     // Global erişim (Süper Admin her şeyi yapabilir, diğerleri sadece okuyabilir)
     match /{allPaths=**} {
       allow read: if isSignedIn();
