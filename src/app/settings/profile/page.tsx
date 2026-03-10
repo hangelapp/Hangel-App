@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { user as staticUser, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { user as staticUser, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
 import { ArrowLeft, Camera, Trash2, Save, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -115,6 +115,9 @@ export default function ProfileSettingsPage() {
   const currentNeighborhood = profile.personalInfo.address.neighborhood;
   const isTurkey = currentCountry === 'Türkiye';
 
+  const cityOptions = isTurkey ? allProvinces : (globalCitiesData[currentCountry] || []);
+  const districtOptions = isTurkey ? (districtsData[currentCity] || []) : (globalDistrictsData[currentCity] || []);
+
   if (isUserLoading || isUserDataLoading) {
       return (
           <div className="flex items-center justify-center min-h-screen">
@@ -210,22 +213,22 @@ export default function ProfileSettingsPage() {
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>İl</Label>
-                        {isTurkey ? (
+                        <Label>{isTurkey ? 'İl' : 'Eyalet / Şehir'}</Label>
+                        {cityOptions.length > 0 ? (
                             <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
-                                <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
                             <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="İl / Eyalet girin" required />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label>İlçe</Label>
-                        {isTurkey ? (
+                        <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                        {districtOptions.length > 0 ? (
                             <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!currentCity}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
-                                <SelectContent>{currentCity && (districtsData[currentCity] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
                             <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="İlçe / Bölge girin" required />
@@ -238,7 +241,7 @@ export default function ProfileSettingsPage() {
                     {isTurkey && currentCity && currentDistrict && neighborhoodsData[currentCity]?.[currentDistrict] ? (
                         <Select value={currentNeighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-60">
                                 {neighborhoodsData[currentCity][currentDistrict].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                             </SelectContent>
                         </Select>

@@ -43,7 +43,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
@@ -79,7 +79,7 @@ const marketCategoryLabels = marketCategories
     .map(c => c.mainCategory);
 
 const corporateCountries = [
-    "Almanya", "Azerbaycan", "Danimarka", "Endonezya", "İran", "Makedonya", "Nijerya", "Suriye", "Türkiye", "Ukrayna", "Ürdün"
+    "Almanya", "ABD", "Azerbaycan", "Danimarka", "Endonezya", "İran", "Makedonya", "Nijerya", "Suriye", "Ukrayna", "Ürdün", "Türkiye"
 ].sort((a, b) => a.localeCompare(b, 'tr'));
 
 // --- Shared Components ---
@@ -241,18 +241,20 @@ const CommunicationAndSocialMedia = ({ title = "İletişim ve Sosyal Medya", ema
 
 const AddressFields = ({ country, city, setCity, district, setDistrict, neighborhood, setNeighborhood, required = true }: any) => {
     const isTurkey = country === 'Türkiye';
+    const cityOptions = isTurkey ? allProvinces : (globalCitiesData[country] || []);
+    const districtOptions = isTurkey ? (districtsData[city] || []) : (globalDistrictsData[city] || []);
 
     return (
         <div className="space-y-4">
             <h3 className="text-sm font-black uppercase tracking-widest text-primary border-b pb-2">Adres Bilgileri</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl / Eyalet</Label>
-                    {isTurkey ? (
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{isTurkey ? 'İl' : 'Eyalet / Şehir'}</Label>
+                    {cityOptions.length > 0 ? (
                         <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                {allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            <SelectContent className="max-h-60">
+                                {cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     ) : (
@@ -260,12 +262,12 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                     )}
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe / Bölge</Label>
-                    {isTurkey ? (
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                    {districtOptions.length > 0 ? (
                         <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                {city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            <SelectContent className="max-h-60">
+                                {districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     ) : (
@@ -279,7 +281,7 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                 {isTurkey && city && district && neighborhoodsData[city]?.[district] ? (
                     <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60">
                             {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                         </SelectContent>
                     </Select>
@@ -922,7 +924,7 @@ const FormRenderer = () => {
                                 {isTurkey ? (
                                     <Select required>
                                         <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="max-h-60">
                                             {(clubSchoolType === 'university' ? allUniversities : provincialDirectorates).map(u => (
                                                 <SelectItem key={u} value={u}>{u}</SelectItem>
                                             ))}
@@ -938,7 +940,7 @@ const FormRenderer = () => {
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kulüp Kategorisi</Label>
                             <Select required onValueChange={setClubCategory} value={clubCategory}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="max-h-60">
                                     {clubCategories.map(cat => (
                                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
