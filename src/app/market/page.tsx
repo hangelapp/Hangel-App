@@ -1,10 +1,11 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, Bot, Send, Loader2, Sparkles, X } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
+import { marketCategories, allEntityLists } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -141,11 +142,17 @@ export default function MarketPage() {
     return collection(db, 'brands');
   }, [db]);
 
-  const { data: brandsData, isLoading } = useCollection<Brand>(brandsQuery);
+  const { data: firestoreBrands, isLoading } = useCollection<Brand>(brandsQuery);
 
   const brandsToShow = useMemo(() => {
-    if (!brandsData) return [];
-    let list = [...brandsData];
+    // Merge Firestore brands with static fallback brands
+    const staticBrands = allEntityLists;
+    const combined = [...(firestoreBrands || []), ...staticBrands];
+    
+    // Deduplicate by ID
+    const uniqueMap = new Map<string, Brand>();
+    combined.forEach(b => uniqueMap.set(b.id, b));
+    let list = Array.from(uniqueMap.values());
 
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
@@ -161,7 +168,7 @@ export default function MarketPage() {
     }
 
     return list.sort((a, b) => b.donationRate - a.donationRate);
-  }, [brandsData, activeCategory, searchTerm, brandType]);
+  }, [firestoreBrands, activeCategory, searchTerm, brandType]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
@@ -224,7 +231,7 @@ export default function MarketPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 pb-32">
-            {isLoading ? (
+            {isLoading && brandsToShow.length === 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[...Array(8)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)}
                 </div>
