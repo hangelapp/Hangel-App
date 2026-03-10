@@ -8,9 +8,11 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return request.auth.token.email == '5384009090@hangel.org' || 
-             (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin');
+      return isSignedIn() && (
+        request.auth.token.email == '5384009090@hangel.org' || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin')
+      );
     }
 
     function isOwner(userId) {
@@ -22,7 +24,7 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
-      allow delete: if isSignedIn() && isSuperAdmin();
+      allow delete: if isSuperAdmin();
       
       match /{allChildren=**} {
         allow read: if isSignedIn();
@@ -34,49 +36,67 @@ service cloud.firestore {
     match /applications/{appId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
     }
 
-    // Kütüphane koleksiyonu
+    // Kütüphane koleksiyonu - Giriş yapan tüm kullanıcılar erişebilsin
     match /library/{sectionId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+    match /library {
+      allow read: if isSignedIn();
     }
 
     // STK'lar
     match /ngos/{ngoId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow read: if true; // Kamu sayfaları için herkese açık
+      allow write: if isSuperAdmin();
+    }
+    match /ngos {
+      allow read: if true;
     }
 
-    // Markalar
+    // Markalar - Market sayfası için okuma izni
     match /brands/{brandId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+    match /brands {
+      allow read: if true;
     }
 
     // Gönderiler
     match /posts/{postId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+    match /posts {
+      allow read: if true;
     }
 
     // Gönüllülük İlanları
     match /volunteering/{oppId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+    match /volunteering {
+      allow read: if true;
     }
 
     // Etkinlikler
     match /events/{eventId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+    match /events {
+      allow read: if true;
     }
 
-    // Global erişim (Süper Admin her şeyi yapabilir, diğerleri sadece okuyabilir)
+    // Global erişim
     match /{allPaths=**} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isSuperAdmin();
+      allow write: if isSuperAdmin();
     }
   }
 }
