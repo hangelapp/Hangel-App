@@ -37,13 +37,14 @@ import {
     Globe,
     Code,
     UserCircle,
-    FileText
+    FileText,
+    ShieldAlert
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
+import { marketCategories, allUniversities, provincialDirectorates, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
@@ -510,7 +511,22 @@ const FormRenderer = () => {
                 onComplete();
             } catch (error: any) {
                 console.error(error);
-                toast({ variant: "destructive", title: "Hata", description: error.message || "İşlem başarısız oldu." });
+                if (error.code === 'auth/email-already-in-use') {
+                    toast({ 
+                        variant: "destructive", 
+                        title: "Hesap Zaten Mevcut", 
+                        description: "Bu telefon numarası ile kayıtlı bir hesap zaten var. Lütfen giriş yapın." 
+                    });
+                    handleActionChange('login');
+                } else if (error.code === 'auth/invalid-credential') {
+                    toast({ 
+                        variant: "destructive", 
+                        title: "Giriş Başarısız", 
+                        description: "Telefon numarası veya şifre hatalı." 
+                    });
+                } else {
+                    toast({ variant: "destructive", title: "Hata", description: error.message || "İşlem başarısız oldu." });
+                }
             } finally {
                 setIsLoading(false);
             }
