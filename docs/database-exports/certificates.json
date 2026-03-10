@@ -1,10 +1,7 @@
-
 [
-  {
-    "id": "cert1",
-    "title": "Gönüllülük Liderliği Sertifikası",
-    "organization": "hangel Akademi",
-    "date": "2024-05-20",
-    "linkedinUrl": "https://linkedin.com/..."
-  }
+  { "id": "cert-1", "title": "Gönüllülük Liderliği Sertifikası", "organization": "hangel Akademi", "date": "2024-05-20", "linkedinUrl": "https://linkedin.com/" },
+  { "id": "cert-2", "title": "Sosyal Etki Uzmanı", "organization": "Social Business Global", "date": "2024-06-15", "linkedinUrl": "https://linkedin.com/" },
+  { "id": "cert-3", "title": "Afet Müdahale Temel Eğitimi", "organization": "AKUT", "date": "2024-07-10", "linkedinUrl": "https://linkedin.com/" },
+  { "id": "cert-4", "title": "Proje Yönetimi Başarı Belgesi", "organization": "İTÜ Girişimcilik", "date": "2024-04-12", "linkedinUrl": "https://linkedin.com/" },
+  { "id": "cert-5", "title": "Dijital Okuryazarlık Sertifikası", "organization": "TEGV", "date": "2024-03-05", "linkedinUrl": "https://linkedin.com/" }
 ]

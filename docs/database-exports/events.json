@@ -1,49 +1,7 @@
-
 [
-  {
-    "id": "event-1",
-    "slug": "uluslararasi-sosyal-girisimcilik-calistayi",
-    "name": "5. Uluslararası Sosyal Girişimcilik Çalıştayı",
-    "organizer": "hangel Derneği",
-    "type": "Çalıştay",
-    "startDate": "2024-12-01 08:00",
-    "endDate": "2024-12-01 17:00",
-    "location": {
-      "type": "Fiziksel",
-      "address": "Ankara Sheraton",
-      "city": "Ankara",
-      "district": "Çankaya"
-    },
-    "language": "Türkçe / İngilizce",
-    "capacity": {
-      "current": 350,
-      "max": 500
-    },
-    "tags": ["Sosyal Girişimcilik", "Global Diyalog"],
-    "imageUrl": "https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop",
-    "providesCertificate": true
-  },
-  {
-    "id": "event-2",
-    "slug": "stk-gelir-modeli-zirvesi",
-    "name": "STK'larda Gelir Modeli Oluşturma",
-    "organizer": "hangel Derneği",
-    "type": "Eğitim",
-    "startDate": "2024-12-27 14:00",
-    "endDate": "2024-12-27 17:00",
-    "location": {
-      "type": "Fiziksel",
-      "address": "Tekirdağ TSO",
-      "city": "Tekirdağ",
-      "district": "Süleymanpaşa"
-    },
-    "language": "Türkçe",
-    "capacity": {
-      "current": 80,
-      "max": 100
-    },
-    "tags": ["STK", "Sürdürülebilirlik"],
-    "imageUrl": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop",
-    "providesCertificate": true
-  }
+  { "id": "event-1", "slug": "zirve-2024", "name": "Girişimcilik Zirvesi", "organizer": "İTÜ Girişimcilik Kulübü", "type": "Zirve", "startDate": "2024-12-01 09:00", "endDate": "2024-12-01 18:00", "location": { "type": "Fiziksel", "address": "İTÜ SDK", "city": "İstanbul", "district": "Sarıyer" }, "language": "Türkçe", "capacity": { "current": 450, "max": 500 }, "tags": ["Girişimcilik", "Teknoloji"], "imageUrl": "https://picsum.photos/seed/ev1/800/400", "providesCertificate": true },
+  { "id": "event-2", "slug": "konser-2024", "name": "Dayanışma Konseri", "organizer": "Boğaziçi Sosyal Hizmet", "type": "Konser", "startDate": "2024-11-15 20:00", "endDate": "2024-11-15 23:00", "location": { "type": "Fiziksel", "address": "Albert Long Hall", "city": "İstanbul", "district": "Beşiktaş" }, "language": "Türkçe", "capacity": { "current": 300, "max": 350 }, "tags": ["Müzik", "Yardım"], "imageUrl": "https://picsum.photos/seed/ev2/800/400", "providesCertificate": false },
+  { "id": "event-3", "slug": "robotik-2024", "name": "Robotik Günleri", "organizer": "ODTÜ Hayvan Dostları", "type": "Yarışma", "startDate": "2024-10-10 10:00", "endDate": "2024-10-12 17:00", "location": { "type": "Fiziksel", "address": "ODTÜ KKM", "city": "Ankara", "district": "Çankaya" }, "language": "Türkçe/İngilizce", "capacity": { "current": 200, "max": 300 }, "tags": ["Teknoloji", "Robotik"], "imageUrl": "https://picsum.photos/seed/ev3/800/400", "providesCertificate": true },
+  { "id": "event-4", "slug": "kan-bagisi", "name": "Kan Bağışı Kampanyası", "organizer": "Marmara Kızılay Kulübü", "type": "Kampanya", "startDate": "2024-09-20 09:00", "endDate": "2024-09-20 17:00", "location": { "type": "Fiziksel", "address": "Göztepe Kampüsü", "city": "İstanbul", "district": "Kadıköy" }, "language": "Türkçe", "capacity": { "current": 100, "max": 1000 }, "tags": ["Sağlık", "Bağış"], "imageUrl": "https://picsum.photos/seed/ev4/800/400", "providesCertificate": false },
+  { "id": "event-5", "slug": "iklim-calistayi", "name": "İklim Krizi Çalıştayı", "organizer": "Yıldız Teknik Çevre Kulübü", "type": "Çalıştay", "startDate": "2024-08-25 13:00", "endDate": "2024-08-25 17:00", "location": { "type": "Online", "address": "Zoom", "city": "Online", "district": "Online" }, "language": "Türkçe", "capacity": { "current": 85, "max": 100 }, "tags": ["Çevre", "Sürdürülebilirlik"], "imageUrl": "https://picsum.photos/seed/ev5/800/400", "providesCertificate": true }
 ]

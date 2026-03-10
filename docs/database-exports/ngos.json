@@ -1,125 +1,22 @@
-
 [
-  {
-    "id": "1",
-    "name": "TEMA Vakfı",
-    "foundationYear": 1992,
-    "category": "Çevre",
-    "type": "Vakıf",
-    "avatarUrl": "https://logo.clearbit.com/tema.org.tr",
-    "coverPhotoUrl": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2041&auto=format&fit=crop",
-    "transparencyScore": 92,
-    "about": "Türkiye Çöl Olmasın! TEMA Vakfı, ağaçlandırma ve erozyonla mücadele ederek Türkiye'nin topraklarını korumaktadır.",
-    "joinDate": "2023-01-10",
-    "supportedSDGs": ["İklim Eylemi", "Sudaki Yaşam", "Karasal Yaşam"],
-    "beneficiaryGroups": ["Çevre", "Gelecek Nesiller"],
-    "memberOf": ["Açık Açık"],
-    "usagePurpose": "both",
-    "economicEnterpriseStatus": "var",
-    "contact": {
-      "email": "info@tema.org.tr",
-      "phone": "0212 292 69 69",
-      "website": "https://tema.org.tr",
-      "social": {
-        "twitter": "temavakfi",
-        "instagram": "temavakfi",
-        "facebook": "temavakfi",
-        "linkedin": "tema"
-      }
-    },
-    "stats": {
-      "followers": 120000,
-      "donors": 50000,
-      "volunteers": 80000,
-      "volunteerHours": 250000,
-      "projects": 150,
-      "totalDonation": 1500000,
-      "donationCount": 65000,
-      "avgDonation": 23.07,
-      "highestSingleDonation": 500,
-      "peopleReached": 500000
-    }
-  },
-  {
-    "id": "2",
-    "name": "Uluslararası Sosyal Fayda Derneği",
-    "shortName": "SBG",
-    "foundationYear": 2017,
-    "category": "Dayanışma",
-    "type": "Dernek",
-    "avatarUrl": "https://logo.clearbit.com/socialbusinessglobal.org",
-    "coverPhotoUrl": "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
-    "transparencyScore": 95,
-    "about": "Uluslararası Sosyal Fayda Derneği, toplumsal yardımlaşmaya, dayanışmaya, sevgiye ve paylaşmaya dayalı bir işbirliği hareketidir.",
-    "joinDate": "2023-02-20",
-    "supportedSDGs": ["Yoksulluğa Son", "Açlığa Son", "Nitelikli Eğitim"],
-    "beneficiaryGroups": ["İhtiyaç Sahipleri", "Afetzedeler", "Öğrenciler"],
-    "memberOf": ["Afet Platformu"],
-    "usagePurpose": "both",
-    "economicEnterpriseStatus": "var",
-    "contact": {
-      "email": "info@socialbusinessglobal.org",
-      "phone": "0216 550 50 50",
-      "website": "https://socialbusinessglobal.org",
-      "social": {
-        "twitter": "socialbusinessglobal",
-        "instagram": "socialbusinessglobal",
-        "facebook": "socialbusinessglobal",
-        "linkedin": "socialbusinessglobal"
-      }
-    },
-    "stats": {
-      "followers": 850000,
-      "donors": 250000,
-      "volunteers": 150000,
-      "volunteerHours": 500000,
-      "projects": 500,
-      "totalDonation": 12500000,
-      "donationCount": 300000,
-      "avgDonation": 41.67,
-      "highestSingleDonation": 1000,
-      "peopleReached": 2000000
-    }
-  },
-  {
-    "id": "8",
-    "name": "hangel Derneği",
-    "shortName": "hangel",
-    "foundationYear": 2020,
-    "category": "Sosyal İnovasyon",
-    "type": "Dernek",
-    "avatarUrl": "",
-    "coverPhotoUrl": "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop",
-    "transparencyScore": 98,
-    "about": "hangel Derneği, sosyal fayda odaklı teknoloji ve inovasyon projeleri geliştirerek, bireylerin ve kurumların sosyal etki potansiyelini en üst düzeye çıkarmayı hedefler.",
-    "joinDate": "2023-01-01",
-    "supportedSDGs": ["Amaçlar için Ortaklıklar", "Sanayi, Yenilikçilik ve Altyapı", "Nitelikli Eğitim"],
-    "beneficiaryGroups": ["Girişimciler", "Gençler", "Sivil Toplum", "Öğrenciler"],
-    "memberOf": ["Açık Açık", "Afet Platformu"],
-    "usagePurpose": "both",
-    "economicEnterpriseStatus": "var",
-    "contact": {
-      "email": "dernek@hangel.org",
-      "phone": "0850 123 45 67",
-      "website": "https://hangelassociation.org",
-      "social": {
-        "twitter": "hangel",
-        "instagram": "hangel",
-        "facebook": "hangel",
-        "linkedin": "hangel"
-      }
-    },
-    "stats": {
-      "followers": 15000,
-      "donors": 5000,
-      "volunteers": 2000,
-      "volunteerHours": 10000,
-      "projects": 15,
-      "totalDonation": 250000,
-      "donationCount": 1000,
-      "avgDonation": 250,
-      "highestSingleDonation": 5000,
-      "peopleReached": 50000
-    }
-  }
+  { "id": "ngo-1", "name": "Ahbap Derneği", "category": "Dayanışma", "type": "Dernek", "avatarUrl": "https://logo.clearbit.com/ahbap.org", "transparencyScore": 98, "about": "Yardımlaşma ve dayanışma hareketi.", "joinDate": "2023-01-01", "supportedSDGs": ["Yoksulluğa Son"], "beneficiaryGroups": ["İhtiyaç Sahipleri"], "memberOf": ["Afet Platformu"], "stats": { "followers": 500000, "donors": 200000, "volunteers": 100000, "volunteerHours": 1000000, "projects": 1200, "totalDonation": 50000000 } },
+  { "id": "ngo-2", "name": "ÇYDD", "category": "Eğitim", "type": "Dernek", "avatarUrl": "https://logo.clearbit.com/cydd.org.tr", "transparencyScore": 95, "about": "Çağdaş yaşamı destekleme derneği.", "joinDate": "2023-01-01", "supportedSDGs": ["Nitelikli Eğitim"], "beneficiaryGroups": ["Öğrenciler"], "stats": { "followers": 150000, "donors": 80000, "volunteers": 40000, "volunteerHours": 200000, "projects": 500, "totalDonation": 15000000 } },
+  { "id": "ngo-3", "name": "AKUT", "category": "Arama Kurtarma", "type": "Dernek", "avatarUrl": "https://logo.clearbit.com/akut.org.tr", "transparencyScore": 92, "about": "Arama kurtarma derneği.", "joinDate": "2023-01-01", "supportedSDGs": ["Sürdürülebilir Şehirler"], "beneficiaryGroups": ["Afetzedeler"], "stats": { "followers": 200000, "donors": 50000, "volunteers": 5000, "volunteerHours": 150000, "projects": 1000, "totalDonation": 10000000 } },
+  { "id": "ngo-4", "name": "TOG", "category": "Gençlik", "type": "Dernek", "avatarUrl": "https://logo.clearbit.com/tog.org.tr", "transparencyScore": 94, "about": "Toplum gönüllüleri vakfı.", "joinDate": "2023-01-01", "supportedSDGs": ["Nitelikli Eğitim"], "beneficiaryGroups": ["Gençler"], "stats": { "followers": 100000, "donors": 30000, "volunteers": 25000, "volunteerHours": 180000, "projects": 450, "totalDonation": 8000000 } },
+  { "id": "ngo-5", "name": "İhtiyaç Haritası", "category": "Dayanışma", "type": "Dernek", "avatarUrl": "https://logo.clearbit.com/ihtiyacharitasi.org", "transparencyScore": 96, "about": "İhtiyaç sahipleri ile destekçileri buluşturan platform.", "joinDate": "2023-01-01", "supportedSDGs": ["Eşitsizliklerin Azaltılması"], "beneficiaryGroups": ["İhtiyaç Sahipleri"], "stats": { "followers": 120000, "donors": 45000, "volunteers": 15000, "volunteerHours": 120000, "projects": 800, "totalDonation": 5000000 } },
+  { "id": "ngo-6", "name": "TEMA Vakfı", "category": "Çevre", "type": "Vakıf", "avatarUrl": "https://logo.clearbit.com/tema.org.tr", "transparencyScore": 92, "about": "Türkiye Erozyonla Mücadele Vakfı.", "joinDate": "2023-01-01", "supportedSDGs": ["Karasal Yaşam"], "beneficiaryGroups": ["Doğa"], "stats": { "followers": 400000, "donors": 150000, "volunteers": 80000, "volunteerHours": 500000, "projects": 1200, "totalDonation": 25000000 } },
+  { "id": "ngo-7", "name": "LÖSEV", "category": "Sağlık", "type": "Vakıf", "avatarUrl": "https://logo.clearbit.com/losev.org.tr", "transparencyScore": 90, "about": "Lösemili Çocuklar Vakfı.", "joinDate": "2023-01-01", "supportedSDGs": ["Sağlık ve Kaliteli Yaşam"], "beneficiaryGroups": ["Lösemili Çocuklar"], "stats": { "followers": 600000, "donors": 300000, "volunteers": 120000, "volunteerHours": 800000, "projects": 1500, "totalDonation": 60000000 } },
+  { "id": "ngo-8", "name": "TEGV", "category": "Eğitim", "type": "Vakıf", "avatarUrl": "https://logo.clearbit.com/tegv.org", "transparencyScore": 93, "about": "Türkiye Eğitim Gönüllüleri Vakfı.", "joinDate": "2023-01-01", "supportedSDGs": ["Nitelikli Eğitim"], "beneficiaryGroups": ["Çocuklar"], "stats": { "followers": 180000, "donors": 90000, "volunteers": 15000, "volunteerHours": 300000, "projects": 600, "totalDonation": 18000000 } },
+  { "id": "ngo-9", "name": "Darüşşafaka", "category": "Eğitim", "type": "Vakıf", "avatarUrl": "https://logo.clearbit.com/darussafaka.org", "transparencyScore": 97, "about": "Eğitimde fırsat eşitliği.", "joinDate": "2023-01-01", "supportedSDGs": ["Nitelikli Eğitim"], "beneficiaryGroups": ["Yetim Öğrenciler"], "stats": { "followers": 120000, "donors": 60000, "volunteers": 5000, "volunteerHours": 100000, "projects": 300, "totalDonation": 12000000 } },
+  { "id": "ngo-10", "name": "Türk Eğitim Vakfı", "category": "Eğitim", "type": "Vakıf", "avatarUrl": "https://logo.clearbit.com/tev.org.tr", "transparencyScore": 95, "about": "Gençlere burs desteği.", "joinDate": "2023-01-01", "supportedSDGs": ["Nitelikli Eğitim"], "beneficiaryGroups": ["Öğrenciler"], "stats": { "followers": 140000, "donors": 100000, "volunteers": 10000, "volunteerHours": 120000, "projects": 400, "totalDonation": 20000000 } },
+  { "id": "ngo-11", "name": "Beşiktaş JK", "category": "Spor", "type": "Spor Kulübü", "avatarUrl": "https://logo.clearbit.com/bjk.com.tr", "transparencyScore": 85, "about": "Beşiktaş JK sosyal projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 5000000, "volunteers": 20000, "totalDonation": 5000000 } },
+  { "id": "ngo-12", "name": "Galatasaray SK", "category": "Spor", "type": "Spor Kulübü", "avatarUrl": "https://logo.clearbit.com/galatasaray.org", "transparencyScore": 84, "about": "Galatasaray SK sosyal projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 6000000, "volunteers": 25000, "totalDonation": 6000000 } },
+  { "id": "ngo-13", "name": "Fenerbahçe SK", "category": "Spor", "type": "Spor Kulübü", "avatarUrl": "https://logo.clearbit.com/fenerbahce.org", "transparencyScore": 86, "about": "Fenerbahçe SK sosyal projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 5500000, "volunteers": 22000, "totalDonation": 5500000 } },
+  { "id": "ngo-14", "name": "Anadolu Efes SK", "category": "Spor", "type": "Spor Kulübü", "avatarUrl": "https://logo.clearbit.com/anadoluefessk.org", "transparencyScore": 88, "about": "Anadolu Efes basketbol sosyal projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 500000, "volunteers": 5000, "totalDonation": 2000000 } },
+  { "id": "ngo-15", "name": "Vakıfbank SK", "category": "Spor", "type": "Spor Kulübü", "avatarUrl": "https://logo.clearbit.com/vakifbanksporkulubu.com", "transparencyScore": 89, "about": "Vakıfbank voleybol sosyal projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 400000, "volunteers": 4000, "totalDonation": 1500000 } },
+  { "id": "ngo-16", "name": "Türk Kızılayı", "category": "İnsani Yardım", "type": "Özel İzinli", "avatarUrl": "https://logo.clearbit.com/kizilay.org.tr", "transparencyScore": 85, "about": "İnsani yardım kuruluşu.", "joinDate": "2023-01-01", "stats": { "followers": 1000000, "donors": 1000000, "volunteers": 500000 } },
+  { "id": "ngo-17", "name": "Yeşilay", "category": "Sağlık", "type": "Özel İzinli", "avatarUrl": "https://logo.clearbit.com/yesilay.org.tr", "transparencyScore": 88, "about": "Bağımlılıkla mücadele.", "joinDate": "2023-01-01", "stats": { "followers": 300000, "donors": 100000, "volunteers": 50000 } },
+  { "id": "ngo-18", "name": "Türk Hava Kurumu", "category": "Havacılık", "type": "Özel İzinli", "avatarUrl": "https://logo.clearbit.com/thk.org.tr", "transparencyScore": 82, "about": "Havacılık faaliyetleri.", "joinDate": "2023-01-01", "stats": { "followers": 150000, "volunteers": 10000 } },
+  { "id": "ngo-19", "name": "Mehmetçik Vakfı", "category": "Dayanışma", "type": "Özel İzinli", "avatarUrl": "https://logo.clearbit.com/mehmetcik.org.tr", "transparencyScore": 91, "about": "Mehmetçik ailelerine destek.", "joinDate": "2023-01-01", "stats": { "followers": 250000, "donors": 500000 } },
+  { "id": "ngo-20", "name": "Türk Eğitim Derneği", "category": "Eğitim", "type": "Özel İzinli", "avatarUrl": "https://logo.clearbit.com/ted.org.tr", "transparencyScore": 94, "about": "Eğitim bursları ve projeleri.", "joinDate": "2023-01-01", "stats": { "followers": 180000, "donors": 120000, "volunteers": 15000 } }
 ]
