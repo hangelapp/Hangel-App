@@ -94,9 +94,9 @@ export default function ManageProfilePage() {
   
   const [ngoType, setNgoType] = useState('dernek');
   const [selectedFeds, setSelectedFeds] = useState<string[]>([]);
-  const [city, setCity] = useState('Adana');
-  const [district, setDistrict] = useState('Seyhan');
-  const [neighborhood, setNeighborhood] = useState('');
+  const [city, setCity] = useState('İstanbul');
+  const [district, setDistrict] = useState('Kadıköy');
+  const [neighborhood, setNeighborhood] = useState('Caferağa');
 
   const handleSave = (e: React.FormEvent) => {
       e.preventDefault();
@@ -241,30 +241,32 @@ export default function ManageProfilePage() {
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
                         <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
                         <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
                             <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 </div>
 
-                {city && district && neighborhoodsData[city]?.[district] && (
-                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                    {city && district && neighborhoodsData[city]?.[district] ? (
                         <Select value={neighborhood} onValueChange={setNeighborhood} required>
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                             </SelectContent>
                         </Select>
-                    </div>
-                )}
+                    ) : (
+                        <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle giriniz..." required disabled={!district} className="h-11 rounded-xl" />
+                    )}
+                </div>
 
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
@@ -314,7 +316,7 @@ export default function ManageProfilePage() {
           <CardContent className="space-y-6 pt-6">
              <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile="ahbap_logo.png" required={true} />
              <FileUpload label="Faaliyet Belgesi (PNG/PDF)" currentFile="faaliyet_belgesi_2024.pdf" required={true} />
-             <FileUpload label="Tüzük / Vakıf Senedi (PDF)" currentFile="dernek_tuzugu.pdf" required={true} />
+             <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF)' : 'Tüzük (PDF)'} currentFile="dernek_tuzugu.pdf" required={true} />
           </CardContent>
         </Card>
 
@@ -347,5 +349,3 @@ export default function ManageProfilePage() {
     </div>
   );
 }
-
-    

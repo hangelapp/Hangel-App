@@ -210,30 +210,32 @@ export default function ProfileSettingsPage() {
                     <div className="space-y-2">
                         <Label>İl</Label>
                         <Select value={city || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
                             <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
                         <Label>İlçe</Label>
                         <Select value={district || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!city}>
-                            <SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
                             <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 </div>
                 
-                {city && district && neighborhoodsData[city]?.[district] && (
-                    <div className="space-y-2">
-                        <Label>Mahalle</Label>
+                <div className="space-y-2">
+                    <Label>Mahalle</Label>
+                    {city && district && neighborhoodsData[city]?.[district] ? (
                         <Select value={neighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
-                            <SelectTrigger><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
                             <SelectContent>
                                 {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                             </SelectContent>
                         </Select>
-                    </div>
-                )}
+                    ) : (
+                        <Input value={neighborhood || ''} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle giriniz..." required disabled={!district} className="h-11 rounded-xl" />
+                    )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">

@@ -7,15 +7,58 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, User, Building, Store, Briefcase } from 'lucide-react';
+import { ArrowLeft, User, Building, Store, Briefcase, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { countryPhoneCodes } from '@/lib/data';
+import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 
-const countryOptions = ["Türkiye", "ABD", "Almanya", "İngiltere"];
 const institutionTypeOptions = ["Belediye", "Bakanlık", "Üniversite", "Lise", "Şirket", "Diğer"];
+
+const AddressSelection = ({ required = true }: { required?: boolean }) => {
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+
+    return (
+        <div className="space-y-4 pt-2 border-t border-dashed">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <MapPin className="h-3.5 w-3.5" /> Adres Bilgileri
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İl</Label>
+                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seç" /></SelectTrigger>
+                        <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İlçe</Label>
+                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seç" /></SelectTrigger>
+                        <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
+            </div>
+            
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mahalle</Label>
+                {city && district && neighborhoodsData[city]?.[district] ? (
+                    <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seç" /></SelectTrigger>
+                        <SelectContent>
+                            {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                ) : (
+                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required={required} disabled={!district} className="h-11 rounded-xl" />
+                )}
+            </div>
+        </div>
+    );
+};
 
 // Individual Form Component
 const IndividualContactForm = () => {
@@ -34,6 +77,7 @@ const IndividualContactForm = () => {
                 <Label htmlFor="ind-email">E-posta</Label>
                 <Input id="ind-email" type="email" placeholder="ornek@eposta.com" required />
             </div>
+            <AddressSelection required={false} />
             <div className="space-y-2">
                 <Label htmlFor="ind-subject">Konu</Label>
                 <Input id="ind-subject" placeholder="Talebinizin konusu" required />
@@ -68,6 +112,7 @@ const NgoContactForm = () => {
                 <Label htmlFor="ngo-email">E-posta</Label>
                 <Input id="ngo-email" type="email" placeholder="iletisim@stk.org.tr" required />
             </div>
+            <AddressSelection />
             <div className="space-y-2">
                 <Label htmlFor="ngo-message">Mesajınız</Label>
                 <Textarea id="ngo-message" placeholder="İşbirliği talebinizi veya sorunuzu detaylandırın..." required />
@@ -98,6 +143,7 @@ const BrandContactForm = () => {
                 <Label htmlFor="brand-email">E-posta</Label>
                 <Input id="brand-email" type="email" placeholder="kurumsal@marka.com" required />
             </div>
+            <AddressSelection />
              <div className="space-y-2">
                 <Label htmlFor="brand-website">Web Sitesi</Label>
                 <Input id="brand-website" placeholder="https://marka.com" />
@@ -134,6 +180,7 @@ const CorporateContactForm = () => {
                 <Label htmlFor="purpose">İşbirliği Amacı</Label>
                 <Textarea id="purpose" placeholder="Kurmak istediğiniz işbirliğinin amacını kısaca açıklayınız..." required />
             </div>
+            <AddressSelection />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="first-name">İlk adı</Label>
@@ -171,15 +218,6 @@ const CorporateContactForm = () => {
             <div className="space-y-2">
                 <Label htmlFor="department">Departman</Label>
                 <Input id="department" placeholder="Departmanınız (örn: Kurumsal İletişim)" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="country">Ülke</Label>
-                <Select required>
-                    <SelectTrigger id="country"><SelectValue placeholder="Birini seçin" /></SelectTrigger>
-                    <SelectContent>
-                        {countryOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                    </SelectContent>
-                </Select>
             </div>
             <Button type="submit" className="w-full">Gönder</Button>
             <p className="text-xs text-muted-foreground pt-2">

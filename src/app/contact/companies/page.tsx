@@ -6,14 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Briefcase, ArrowLeft } from 'lucide-react';
+import { Briefcase, ArrowLeft, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React from 'react';
+import React, { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 
 export default function CompaniesPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const [city, setCity] = useState('');
+    const [district, setDistrict] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -44,7 +49,7 @@ export default function CompaniesPage() {
                     <CardDescription>Şirketinize özel çözümler ve işbirliği modelleri hakkında bilgi almak için formu doldurun.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="company-name">Şirket Adı</Label>
@@ -65,6 +70,44 @@ export default function CompaniesPage() {
                                 <Input id="phone" type="tel" placeholder="+90..." />
                             </div>
                         </div>
+
+                        {/* Address Section */}
+                        <div className="space-y-4 pt-4 border-t border-dashed">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                <MapPin className="h-3.5 w-3.5" /> Şirket Adres Bilgileri
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İl</Label>
+                                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
+                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seç" /></SelectTrigger>
+                                        <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İlçe</Label>
+                                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
+                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seç" /></SelectTrigger>
+                                        <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mahalle</Label>
+                                {city && district && neighborhoodsData[city]?.[district] ? (
+                                    <Select value={neighborhood} onValueChange={setNeighborhood} required>
+                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seç" /></SelectTrigger>
+                                        <SelectContent>
+                                            {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required disabled={!district} className="h-11 rounded-xl" />
+                                )}
+                            </div>
+                        </div>
+
                          <div className="space-y-2">
                             <Label htmlFor="website">Web Sitesi</Label>
                             <Input id="website" placeholder="https://sirket.com" />
@@ -73,7 +116,7 @@ export default function CompaniesPage() {
                             <Label htmlFor="message">Mesajınız</Label>
                             <Textarea id="message" placeholder="İşbirliği yapmak istediğiniz alanlar, KSS hedefleriniz veya sorularınız..." rows={5} required/>
                         </div>
-                        <Button type="submit" className="w-full">Mesajı Gönder</Button>
+                        <Button type="submit" className="w-full h-12 rounded-xl font-bold text-base">Mesajı Gönder</Button>
                     </form>
                 </CardContent>
             </Card>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -273,17 +274,19 @@ const AddressFields = ({ country, city, setCity, district, setDistrict, neighbor
                 </div>
             </div>
             
-            {isTurkey && city && district && neighborhoodsData[city]?.[district] && (
-                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                {isTurkey && city && district && neighborhoodsData[city]?.[district] ? (
                     <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
                         <SelectContent>
                             {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                         </SelectContent>
                     </Select>
-                </div>
-            )}
+                ) : (
+                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required={required} className="h-11 rounded-xl" />
+                )}
+            </div>
 
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
