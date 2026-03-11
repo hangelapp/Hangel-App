@@ -4,7 +4,7 @@ import { events, user, ngos, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette, Briefcase, ChevronRight, X } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette, Briefcase, ChevronRight, X, Map } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -122,7 +122,7 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="animate-in fade-in-0 max-w-4xl mx-auto">
+    <div className="animate-in fade-in-0 max-w-5xl mx-auto">
         <div className="p-4 bg-background">
             <div className="flex justify-between items-center mb-6">
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
@@ -138,21 +138,7 @@ export default function EventDetailPage() {
 
       <div className="p-4 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-            {/* Poster Section (Left or Top) */}
-            <div className="md:col-span-2">
-                <div className="relative aspect-[210/297] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/5 bg-muted">
-                    <Image 
-                        src={event.imageUrl} 
-                        alt={event.name} 
-                        fill 
-                        className="object-cover" 
-                        priority
-                        data-ai-hint="event poster a4 portrait"
-                    />
-                </div>
-            </div>
-
-            {/* Info Section (Right or Bottom) */}
+            {/* Info Section (Left or Top) */}
             <div className="md:col-span-3 space-y-6">
                 <Tabs defaultValue="details" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl bg-muted/50 p-1">
@@ -167,25 +153,41 @@ export default function EventDetailPage() {
                         <CardContent className="divide-y p-0">
                                 <InfoRow icon={Calendar} label="Başlangıç" href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`}>{formatDateTime(event.startDate)}</InfoRow>
                                 <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
-                                <InfoRow icon={MapPin} label="Adres">{event.location.type === 'Online' ? 'Online' : `${event.location.address}, ${event.location.district}, ${event.location.city}`}</InfoRow>
-                                <InfoRow icon={Languages} label="Dil" href={`/events?tag=${encodeURIComponent(event.language)}`}>{event.language}</InfoRow>
+                                <InfoRow icon={MapPin} label="Adres">
+                                    <div className="flex flex-col gap-2">
+                                        <span>{event.location.type === 'Online' ? 'Online' : `${event.location.address}`}</span>
+                                        {event.location.type !== 'Online' && (
+                                            <Button variant="outline" size="sm" className="w-fit h-7 rounded-lg text-[10px] font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
+                                                <Map className="h-3 w-3" /> Adres Tarifi Al
+                                            </Button>
+                                        )}
+                                    </div>
+                                </InfoRow>
+                                <InfoRow icon={Languages} label="Dil">
+                                    <Link href={`/events?tag=${encodeURIComponent(event.language)}`}>
+                                        <Badge variant="secondary" className="font-bold hover:bg-primary/10 transition-colors">{event.language}</Badge>
+                                    </Link>
+                                </InfoRow>
                                 <InfoRow icon={Users} label="Kapasite">{event.capacity.current} / {event.capacity.max}</InfoRow>
                                 <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
                                 <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${event.location.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
                                 
                                 <InfoRow icon={Tag} label="Etkinlik Türü">
-                                    <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.type}</Badge></Link>
+                                    <Link href={`/events?tag=${encodeURIComponent(event.type)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.type}</Badge></Link>
                                 </InfoRow>
                                 {organizerCategory && (
                                     <InfoRow icon={Tag} label="Etkinlik Kategorisi">
-                                        <Link href={`/ngos?category=${encodeURIComponent(organizerCategory)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{organizerCategory}</Badge></Link>
+                                        <Link href={`/ngos?category=${encodeURIComponent(organizerCategory)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{organizerCategory}</Badge></Link>
                                     </InfoRow>
                                 )}
                                 <InfoRow icon={Building} label="Düzenleyen">
-                                    <Link href={organizerLink} className="text-muted-foreground hover:underline">{event.organizer}</Link>
+                                    <Link href={organizerLink} className="text-muted-foreground hover:underline font-bold text-primary">{event.organizer}</Link>
                                 </InfoRow>
-                                <InfoRow icon={MapPin} label="İl">
-                                    <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20">{event.location.city}</Badge></Link>
+                                <InfoRow icon={MapPin} label="Konum (İlçe / İl)">
+                                    <div className="flex gap-2">
+                                        <Link href={`/events?tag=${encodeURIComponent(event.location.district)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.district}</Badge></Link>
+                                        <Link href={`/events?tag=${encodeURIComponent(event.location.city)}`}><Badge variant="secondary" className="cursor-pointer hover:bg-primary/20 font-bold">{event.location.city}</Badge></Link>
+                                    </div>
                                 </InfoRow>
                             </CardContent>
                         </Card>
@@ -241,6 +243,20 @@ export default function EventDetailPage() {
                         </Card>
                     </TabsContent>
                 </Tabs>
+            </div>
+
+            {/* Poster Section (Right or Bottom) */}
+            <div className="md:col-span-2">
+                <div className="relative aspect-[210/297] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/5 bg-muted">
+                    <Image 
+                        src={event.imageUrl} 
+                        alt={event.name} 
+                        fill 
+                        className="object-cover" 
+                        priority
+                        data-ai-hint="event poster a4 portrait"
+                    />
+                </div>
             </div>
         </div>
 
@@ -331,25 +347,7 @@ export default function EventDetailPage() {
             </AlertDialogContent>
             </AlertDialog>
             
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-14 w-14 rounded-2xl border-black/10"><Share2 className="h-6 w-6" /></Button>
-                </DialogTrigger>
-                <DialogContent className="rounded-[2rem]">
-                    <DialogHeader>
-                        <DialogTitle>Etkinliği Paylaş</DialogTitle>
-                    </DialogHeader>
-                    <div className="flex items-center space-x-2 py-4">
-                        <div className="grid flex-1 gap-2">
-                            <Label htmlFor="link" className="sr-only">Link</Label>
-                            <Input id="link" defaultValue={profileUrl} readOnly className="rounded-xl font-mono text-xs" />
-                        </div>
-                        <Button type="button" size="icon" className="px-3 rounded-xl" onClick={handleCopy}>
-                            <Copy className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
         </div>
       </div>
     </div>
