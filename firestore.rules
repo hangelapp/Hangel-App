@@ -32,50 +32,57 @@ service cloud.firestore {
       }
     }
 
-    // STK'lar, Markalar, Gönderiler, Gönüllülük ve Etkinlikler - Giriş yapanlar okuyabilir
+    // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
     match /ngos {
       allow read, list: if isSignedIn();
-    }
-    match /ngos/{document=**} {
-      allow read, get, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
 
     match /brands {
       allow read, list: if isSignedIn();
-    }
-    match /brands/{document=**} {
-      allow read, get, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
 
     match /posts {
       allow read, list: if isSignedIn();
-    }
-    match /posts/{document=**} {
-      allow read, get, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
 
     match /volunteering {
       allow read, list: if isSignedIn();
-    }
-    match /volunteering/{document=**} {
-      allow read, get, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
 
     match /events {
       allow read, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
-    match /events/{document=**} {
-      allow read, get, list: if isSignedIn();
+
+    match /library {
+      allow read, list: if isSignedIn();
+      match /{document=**} {
+        allow read, get, list: if isSignedIn();
+      }
     }
 
     // Başvuru koleksiyonu
     match /applications {
       allow list: if isSignedIn();
-    }
-    match /applications/{appId} {
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
-      allow create: if isSignedIn();
-      allow update, delete: if isSuperAdmin();
+      match /{appId} {
+        allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
+        allow create: if isSignedIn();
+        allow update, delete: if isSuperAdmin();
+      }
     }
 
     // Global Yazma Erişimi (Sadece Super Admin)

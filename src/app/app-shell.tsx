@@ -20,6 +20,7 @@ const group1Items: SideNavItem[] = [
   { href: '/ngos', label: 'STK\'lar', icon: 'building' },
   { href: '/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
   { href: '/events', label: 'Etkinlikler', icon: 'calendar' },
+  { href: '/library', label: 'Kütüphane', icon: 'library' },
 ];
 
 const group2Items: SideNavItem[] = [
@@ -49,6 +50,7 @@ const iconColorMap: { [key: string]: string } = {
   building: 'bg-orange-500',
   users: 'bg-blue-500',
   calendar: 'bg-rose-500',
+  library: 'bg-amber-700',
   'dollar-sign': 'bg-green-600',
   'file-text': 'bg-sky-500',
   award: 'bg-amber-500',
@@ -130,7 +132,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 '/qr-payment', '/emergency', '/leaderboard', '/stories', 
                 '/invite', '/profile', '/my-donations', 
                 '/my-applications', '/my-badges', '/messages', '/settings', 
-                '/ngo-admin', '/super-admin', '/admin'
+                '/ngo-admin', '/super-admin', '/admin', '/library'
             ];
             
             const isProtected = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
