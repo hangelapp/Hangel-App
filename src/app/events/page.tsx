@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -36,7 +35,7 @@ function EventsPageContent() {
     if (searchTerm.trim()) {
       const lowercased = searchTerm.toLowerCase();
       eventsToFilter = eventsToFilter.filter(event => 
-        event.name.toLowerCase().includes(lowercased) ||
+        event.name.toLowerCase().includes(lowercased) || 
         event.organizer.toLowerCase().includes(lowercased)
       );
     }
@@ -112,37 +111,45 @@ function EventsPageContent() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedEvents.map((event: Event) => (
-          <Card key={event.id} className="overflow-hidden">
-            <div className="relative h-40 w-full">
-              <Image src={event.imageUrl} alt={event.name} fill className="object-cover" data-ai-hint={event.imageHint}/>
+          <Card key={event.id} className="overflow-hidden flex flex-col h-full border-none shadow-lg rounded-[2rem] hover:shadow-xl transition-shadow">
+            <div className="relative aspect-[210/297] w-full bg-muted">
+              <Image 
+                src={event.imageUrl} 
+                alt={event.name} 
+                fill 
+                className="object-cover" 
+                data-ai-hint="event poster a4"
+              />
+              <div className="absolute top-4 left-4">
+                <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-bold uppercase text-[10px] tracking-widest px-3 py-1 rounded-full shadow-sm">{event.type}</Badge>
+              </div>
             </div>
-            <CardContent className="p-4 space-y-2">
-              <h2 className="text-lg font-bold font-headline">{event.name}</h2>
-              <p className="text-sm font-medium text-muted-foreground">{event.organizer}</p>
-              <div className="text-sm text-muted-foreground flex items-center gap-2 pt-1">
-                <Calendar className='h-4 w-4'/>
-                <span>{format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'dd MMMM, HH:mm', {locale: tr})}</span>
-              </div>
-               <div className="text-sm text-muted-foreground flex items-center gap-2">
-                <MapPin className='h-4 w-4'/>
-                <span>{event.location.type === 'Online' ? 'Online' : `${event.location.city}, ${event.location.district}`}</span>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Badge variant="secondary">{event.type}</Badge>
-                {event.tags.map(tag => (
-                    <Badge key={tag} variant="secondary">{tag}</Badge>
-                ))}
+            <CardContent className="p-6 flex-1 space-y-3">
+              <h2 className="text-xl font-bold font-headline leading-tight line-clamp-2">{event.name}</h2>
+              <p className="text-sm font-semibold text-primary">{event.organizer}</p>
+              <div className="space-y-2 pt-2 border-t border-dashed">
+                <div className="text-xs text-muted-foreground font-medium flex items-center gap-2">
+                    <Calendar className='h-3.5 w-3.5 text-primary'/>
+                    <span>{format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'dd MMMM yyyy, HH:mm', {locale: tr})}</span>
+                </div>
+                <div className="text-xs text-muted-foreground font-medium flex items-center gap-2">
+                    <MapPin className='h-3.5 w-3.5 text-primary'/>
+                    <span className="truncate">{event.location.type === 'Online' ? 'Online' : `${event.location.city}, ${event.location.district}`}</span>
+                </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between items-center bg-muted/50 p-4">
-              <p className="text-sm font-semibold text-muted-foreground">
-                Kapasite: {event.capacity.current} / {event.capacity.max}
-              </p>
-              <Button asChild variant="secondary">
-                <Link href={`/events/${event.slug}`}>Detayları Gör</Link>
-              </Button>
+            <CardFooter className="px-6 pb-6 pt-0 mt-auto flex flex-col gap-4">
+              <div className="flex justify-between items-end w-full">
+                <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kapasite</p>
+                    <p className="text-sm font-bold">{event.capacity.current} / {event.capacity.max}</p>
+                </div>
+                <Button asChild className="rounded-xl font-bold px-6">
+                    <Link href={`/events/${event.slug}`}>Detayları Gör</Link>
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         ))}
