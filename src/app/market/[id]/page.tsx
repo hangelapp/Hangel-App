@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -273,10 +274,14 @@ export default function BrandProfilePage() {
                         Genel Kullanım Şartları
                     </AccordionTrigger>
                     <AccordionContent className="pb-6 space-y-4 text-muted-foreground font-medium leading-relaxed">
-                        <p>1. hangel üzerinden yapılan alışverişlerde "Alışverişe Başla" butonuna tıklandıktan sonra sepetin onaylanması esastır.</p>
-                        <p>2. Tarayıcıda reklam engelleyici (AdBlock) kullanımı, bağış takibini engelleyebilir. İşlem öncesi devre dışı bırakılması önerilir.</p>
-                        <p>3. Kurumsal indirim kodları veya çeklerin kullanımı, bazı markalarda bağış oranını değiştirebilir veya iptal edebilir.</p>
-                        <p>4. Mobil uygulamalara geçiş yapıldığında takibin devam etmesi için hangel yönlendirme sayfasındaki uyarılara dikkat edilmelidir.</p>
+                        <p>1. hangel üzerinden "Alışverişe Başla" butonuna tıklayarak markanın resmi online mağazasına ya da mobil uygulamasına gitmeniz ve alışverişinizi aynı oturumda tamamlamanız gerekmektedir.</p>
+                        <p>2. Bağış oranları sadece sayfada belirtilen kategoriler için geçerlidir. Diğer ürün ve kategorilerde bağış aktarımı yapılmayabilir.</p>
+                        <p>3. Alışveriş sırasında herhangi bir kupon, indirim kodu veya hediye çeki kullanıldığında bağış süreci teknik olarak iptal olabilir.</p>
+                        <p>4. Toplu alımlarda bağış verilmemektedir. (1 ay içerisinde herhangi bir üründen 3 adet ve üzeri alımlar, ve/veya aynı adrese aynı müşteri tarafından yapılan toplu siparişler bu kapsamdadır.)</p>
+                        <p>5. Öğrenci/Öğretmen indirimleri veya kurumsal ayrıcalıklı indirim programları (Kamu, Eğitim, İş Ortağı vb.) kullanıldığında bağış yapılmayacaktır.</p>
+                        <p>6. Belirtilen kısıtlamalar dışındaki diğer genel mağaza kampanyaları ile hangel bağışı birleştirilebilir.</p>
+                        <p>7. Markanın mobil uygulaması üzerinden gerçekleşen alışverişlerde de aksi belirtilmedikçe bağış takibi yapılmaktadır.</p>
+                        <p>8. Tarayıcıda reklam engelleyici (AdBlock) kullanımı bağış takibini engelleyebilir; işlem öncesi devre dışı bırakılması önerilir.</p>
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
