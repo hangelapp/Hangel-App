@@ -1,8 +1,7 @@
-
 'use client';
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2 } from 'lucide-react';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info } from 'lucide-react';
 import { user, ngos, studentClubs, allEntityLists } from '@/lib/data';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -15,7 +14,7 @@ const iconColorMap: { [key: string]: string } = {
   'dollar-sign': 'bg-green-600',
   'HandCoins': 'bg-emerald-700',
   newspaper: 'bg-orange-500',
-  'bar-chart-3': 'bg-indigo-500',
+  'bar-chart': 'bg-indigo-500',
   'shield-check': 'bg-green-500',
   'qr-code': 'bg-slate-500',
   'globe': 'bg-cyan-500',
@@ -47,8 +46,8 @@ const iconColorMap: { [key: string]: string } = {
 };
 
 const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
-  // @ts-ignore
-  const Icon = Icons[icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')] || Icons.HelpCircle;
+  const iconName = icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+  const Icon = (Icons as any)[iconName] || Info;
   const color = iconColorMap[icon] || 'bg-gray-500';
 
   return (
@@ -83,7 +82,7 @@ const navGroups = [
         title: "Gönüllü ve Gönüllülük Yönetimi",
         items: [
             { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart-3', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
         ]
     },
     {

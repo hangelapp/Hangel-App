@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
+import { CircleHelp, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { user as staticUser } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -31,7 +32,7 @@ const group2Items: SideNavItem[] = [
 ];
 
 const group3Items: SideNavItem[] = [
-    { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart-3' },
+    { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart' },
     { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
 ];
 
@@ -42,7 +43,7 @@ const group4Items: SideNavItem[] = [
   { href: '/about', label: 'Hakkımızda', icon: 'info' },
   { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'Üye İşyeri', icon: 'zap' },
   { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'STK Başvurusu', icon: 'HeartHandshake' },
-  { href: '/support/app-support', label: 'App Destek', icon: 'help-circle' },
+  { href: '/support/app-support', label: 'App Destek', icon: 'circle-help' },
 ];
 
 const iconColorMap: { [key: string]: string } = {
@@ -55,7 +56,7 @@ const iconColorMap: { [key: string]: string } = {
   'file-text': 'bg-sky-500',
   award: 'bg-amber-500',
   'message-square': 'bg-blue-400',
-  'bar-chart-3': 'bg-indigo-500',
+  'bar-chart': 'bg-indigo-500',
   send: 'bg-cyan-500',
   sparkles: 'bg-purple-500',
   'layout-grid': 'bg-slate-500',
@@ -64,11 +65,12 @@ const iconColorMap: { [key: string]: string } = {
   info: 'bg-blue-400',
   zap: 'bg-yellow-500',
   'HeartHandshake': 'bg-rose-500',
-  'help-circle': 'bg-teal-500',
+  'circle-help': 'bg-teal-500',
 };
 
 const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => void }) => {
-    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('') as keyof typeof Icons] || Icons.HelpCircle;
+    const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+    const Icon = (Icons as any)[iconName] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (

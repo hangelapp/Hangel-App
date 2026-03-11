@@ -1,10 +1,10 @@
-
 'use client';
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
+import { Info } from 'lucide-react';
 import type { SideNavItem } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
 
@@ -16,7 +16,7 @@ const iconColorMap: { [key: string]: string } = {
   'file-text': 'bg-sky-500',
   award: 'bg-amber-500',
   'message-square': 'bg-blue-400',
-  'bar-chart-3': 'bg-indigo-500',
+  'bar-chart': 'bg-indigo-500',
   send: 'bg-cyan-500',
   sparkles: 'bg-purple-500',
   library: 'bg-amber-700',
@@ -26,11 +26,12 @@ const iconColorMap: { [key: string]: string } = {
   info: 'bg-blue-400',
   zap: 'bg-yellow-500',
   'HeartHandshake': 'bg-rose-500',
-  'help-circle': 'bg-teal-500',
+  'circle-help': 'bg-teal-500',
 };
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
-    const Icon = Icons[item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('') as keyof typeof Icons] || Icons.HelpCircle;
+    const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+    const Icon = (Icons as any)[iconName] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (
