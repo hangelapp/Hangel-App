@@ -209,11 +209,85 @@ export const certificates: Certificate[] = [
 
 // --- Diğer Statik Veriler ---
 export const allEntityLists: Brand[] = [
-    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' },
-    { id: 'brand-2', slug: 'pazarama', name: 'Pazarama', donationRate: 2, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand', category: 'Pazar Yeri', about: 'Türkiye\'nin güvenilir pazar yeri.' },
-    { id: 'brand-3', slug: 'karaca', name: 'Karaca', donationRate: 3, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', category: 'Ev & Yaşam', about: 'Mutfak ve ev tekstili ürünleri.' },
-    { id: 'brand-22', slug: 'decathlon', name: 'Decathlon', donationRate: 2, logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', type: 'brand', category: 'Giyim', about: 'Spor ekipmanları ve kıyafetleri.' },
-    { id: 'brand-26', slug: 'amazontr', name: 'Amazon TR', donationRate: 13, logoUrl: 'https://logo.clearbit.com/amazon.com.tr', type: 'brand', category: 'Pazar Yeri', about: 'Dünyanın en büyük e-ticaret platformu.' }
+    { 
+        id: 'brand-1', 
+        slug: 'tripcom', 
+        name: 'Trip.com', 
+        donationRate: 2, 
+        logoUrl: 'https://logo.clearbit.com/trip.com', 
+        type: 'brand', 
+        category: 'Seyahat', 
+        about: 'Global seyahat platformu.',
+        donationByCategory: [
+            { category: 'Otel Rezervasyonu', rate: 2.5 },
+            { category: 'Uçak Bileti', rate: 1.0 },
+            { category: 'Tren Bileti', rate: 1.5 },
+            { category: 'Araç Kiralama', rate: 2.0 }
+        ]
+    },
+    { 
+        id: 'brand-2', 
+        slug: 'pazarama', 
+        name: 'Pazarama', 
+        donationRate: 2, 
+        logoUrl: 'https://logo.clearbit.com/pazarama.com', 
+        type: 'brand', 
+        category: 'Pazar Yeri', 
+        about: 'Türkiye\'nin güvenilir pazar yeri.',
+        donationByCategory: [
+            { category: 'Elektronik', rate: 1.5 },
+            { category: 'Giyim', rate: 3.0 },
+            { category: 'Kozmetik', rate: 2.5 },
+            { category: 'Ev & Yaşam', rate: 2.0 }
+        ]
+    },
+    { 
+        id: 'brand-3', 
+        slug: 'karaca', 
+        name: 'Karaca', 
+        donationRate: 3, 
+        logoUrl: 'https://logo.clearbit.com/karaca.com', 
+        type: 'brand', 
+        category: 'Ev & Yaşam', 
+        about: 'Mutfak ve ev tekstili ürünleri.',
+        donationByCategory: [
+            { category: 'Sofra & Mutfak', rate: 4.0 },
+            { category: 'Küçük Ev Aletleri', rate: 2.0 },
+            { category: 'Ev Tekstili', rate: 3.5 }
+        ]
+    },
+    { 
+        id: 'brand-22', 
+        slug: 'decathlon', 
+        name: 'Decathlon', 
+        donationRate: 2, 
+        logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', 
+        type: 'brand', 
+        category: 'Giyim', 
+        about: 'Spor ekipmanları ve kıyafetleri.',
+        donationByCategory: [
+            { category: 'Spor Kıyafetleri', rate: 2.5 },
+            { category: 'Spor Ayakkabı', rate: 2.0 },
+            { category: 'Kamp Malzemeleri', rate: 1.5 }
+        ]
+    },
+    { 
+        id: 'brand-26', 
+        slug: 'amazontr', 
+        name: 'Amazon TR', 
+        donationRate: 13, 
+        logoUrl: 'https://logo.clearbit.com/amazon.com.tr', 
+        type: 'brand', 
+        category: 'Pazar Yeri', 
+        about: 'Dünyanın en büyük e-ticaret platformu.',
+        donationByCategory: [
+            { category: 'Elektronik', rate: 3.5 },
+            { category: 'Moda', rate: 13.0 },
+            { category: 'Kitap', rate: 8.0 },
+            { category: 'Ev & Yaşam', rate: 6.0 },
+            { category: 'Kişisel Bakım', rate: 10.0 }
+        ]
+    }
 ];
 
 export const marketCategories: MarketCategory[] = [
