@@ -21,7 +21,9 @@ import {
     Flame,
     Droplets,
     Anchor,
-    Search
+    Search,
+    CircleHelp,
+    BarChart
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
@@ -64,19 +66,6 @@ export const globalDistrictsData: { [city: string]: string[] } = {
 };
 
 export const countryPhoneCodes = ["90", "1", "44", "49", "33", "994"];
-
-// --- Listeler ---
-export const allInterests = ['Hayvan Hakları', 'Çevre & İklim', 'Eğitim', 'Sağlık & Psikoloji', 'Afet Müdahale', 'Çocuk Gelişimi', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele', 'Gençlik Çalışmaları', 'Engelli Hakları', 'Mülteci Hakları', 'Teknoloji & İnovasyon'];
-export const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme (Fundraising)', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu', 'Stratejik Planlama', 'Gönüllü Yönetimi', 'Kurumsal İletişim', 'Etkinlik Organizasyonu', 'Finansal Analiz', 'Veri Analizi', 'Eğitimcilik', 'İlk Yardım', 'Psikososyal Destek'];
-export const allDailySkills = ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim', 'Tamirat', 'Bahçe İşleri', 'Çocuk Bakımı', 'Sürücülük', 'Alışveriş Refakati', 'Hayvan Bakımı', 'Ofis Desteği'];
-export const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İtalyanca', 'Çince', 'Japonca', 'İşaret Dili', 'Kürtçe', 'Azerbaycan Türkçesi', 'Farsça'];
-export const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'InDesign', 'VS Code', 'Docker', 'Google Analytics', 'WordPress', 'Canva', 'Trello', 'Zoom', 'Python', 'SQL', 'SAP', 'Salesforce'];
-export const allLicenses = ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'C Sınıfı Ehliyet', 'SRC Belgesi', 'İş Güvenliği Uzmanlığı (A/B/C)', 'Profesyonel Turist Rehberi Kokartı', 'Amatör Telsizcilik Belgesi', 'İHA Ticari Pilot Lisansı', 'Gemiadamı Cüzdanı'];
-export const allDocuments = ['İlk Yardım Sertifikası (Onaylı)', 'Hijyen Belgesi', 'Scrum Master / Agile Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası', 'Gıda Güvenliği Belgesi', 'Yabancı Dil Yeterlilik Belgesi (YDS/TOEFL)', 'Sabıka Kaydı (Temiz)', 'Sağlık Raporu (Gönüllülüğe Engel Yok)'];
-export const allVisas = ['Schengen (AB)', 'ABD (B1/B2)', 'Birleşik Krallık (İngiltere)', 'Kanada', 'Avustralya', 'Çin', 'Rusya', 'Yeşil Pasaport', 'Diplomatik Pasaport'];
-export const allSectors = ['Teknoloji', 'Sağlık', 'Eğitim', 'Finans & Bankacılık', 'Sanat ve Kültür', 'Hukuk', 'Kamu Sektörü', 'Perakende & E-ticaret', 'Turizm & Otelcilik', 'Gıda & Tarım', 'Lojistik & Nakliye', 'Enerji', 'STK / Sivil Toplum', 'Medya & Reklamcılık', 'Tekstil & Moda'];
-export const allPositions = ['Yazılım Geliştirici', 'Sistem Analisti', 'Doktor', 'Hemşire', 'Öğretmen', 'Akademisyen', 'Avukat', 'Hukuk Müşaviri', 'Grafik Tasarımcı', 'Art Direktör', 'Proje Yöneticisi', 'Pazarlama Uzmanı', 'Satış Temsilcisi', 'İnsan Kaynakları Uzmanı', 'Muhasebeci / Mali Müşavir', 'Mühendis', 'Mimar', 'Öğrenci', 'Emekli', 'Serbest Çalışan (Freelancer)', 'CEO / Üst Düzey Yönetici'];
-export const allUniversities = ['Boğaziçi Üniversitesi', 'İTÜ', 'ODTÜ', 'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Hacettepe Üniversitesi', 'Bilkent Üniversitesi', 'İstanbul Üniversitesi', 'Yıldız Teknik Üniversitesi', 'Ankara Üniversitesi', 'Ege Üniversitesi', 'Dokuz Eylül Üniversitesi', 'Marmara Üniversitesi', 'Anadolu Üniversitesi', 'Akdeniz Üniversitesi'];
 
 export const user: User = {
     id: '1',
@@ -189,7 +178,6 @@ export const studentClubs: StudentClub[] = [
 ];
 
 // --- Etkinlikler (5 Adet) ---
-// Not: A4 dikey format için görseller 600x850 boyutunda güncellendi.
 export const events: Event[] = [
     { id: 'event-1', slug: 'zirve-2024', name: 'Girişimcilik Zirvesi', organizer: 'İTÜ Girişimcilik Kulübü', type: 'Zirve', date: '2024-12-01', startDate: '2024-12-01 09:00', endDate: '2024-12-01 18:00', location: { type: 'Fiziksel', address: 'İTÜ SDK', city: 'İstanbul', district: 'Sarıyer' }, language: 'Türkçe', participationCondition: 'Herkese Açık', capacity: { current: 450, max: 500 }, tags: ['Girişimcilik', 'Teknoloji'], imageUrl: 'https://picsum.photos/seed/ev1/600/850', description: 'Yılın en büyük öğrenci zirvesi.', providesCertificate: true },
     { id: 'event-2', slug: 'konser-2024', name: 'Dayanışma Konseri', organizer: 'Boğaziçi Sosyal Hizmet', type: 'Konser', date: '2024-11-15', startDate: '2024-11-15 20:00', endDate: '2024-11-15 23:00', location: { type: 'Fiziksel', address: 'Albert Long Hall', city: 'İstanbul', district: 'Beşiktaş' }, language: 'Türkçe', participationCondition: 'Biletli', capacity: { current: 300, max: 350 }, tags: ['Müzik', 'Yardım'], imageUrl: 'https://picsum.photos/seed/ev2/600/850', description: 'Geliri burs fonuna aktarılacaktır.', providesCertificate: false },
@@ -207,7 +195,6 @@ export const certificates: Certificate[] = [
     { id: "cert-5", title: "Dijital Okuryazarlık Sertifikası", organization: "TEGV", date: "2024-03-05", linkedinUrl: "https://linkedin.com/" }
 ];
 
-// --- Diğer Statik Veriler ---
 export const allEntityLists: Brand[] = [
     { 
         id: 'brand-1', 
@@ -254,38 +241,6 @@ export const allEntityLists: Brand[] = [
             { category: 'Sofra & Mutfak', rate: 4.0 },
             { category: 'Küçük Ev Aletleri', rate: 2.0 },
             { category: 'Ev Tekstili', rate: 3.5 }
-        ]
-    },
-    { 
-        id: 'brand-22', 
-        slug: 'decathlon', 
-        name: 'Decathlon', 
-        donationRate: 2, 
-        logoUrl: 'https://logo.clearbit.com/decathlon.com.tr', 
-        type: 'brand', 
-        category: 'Giyim', 
-        about: 'Spor ekipmanları ve kıyafetleri.',
-        donationByCategory: [
-            { category: 'Spor Kıyafetleri', rate: 2.5 },
-            { category: 'Spor Ayakkabı', rate: 2.0 },
-            { category: 'Kamp Malzemeleri', rate: 1.5 }
-        ]
-    },
-    { 
-        id: 'brand-26', 
-        slug: 'amazontr', 
-        name: 'Amazon TR', 
-        donationRate: 13, 
-        logoUrl: 'https://logo.clearbit.com/amazon.com.tr', 
-        type: 'brand', 
-        category: 'Pazar Yeri', 
-        about: 'Dünyanın en büyük e-ticaret platformu.',
-        donationByCategory: [
-            { category: 'Elektronik', rate: 3.5 },
-            { category: 'Moda', rate: 13.0 },
-            { category: 'Kitap', rate: 8.0 },
-            { category: 'Ev & Yaşam', rate: 6.0 },
-            { category: 'Kişisel Bakım', rate: 10.0 }
         ]
     }
 ];

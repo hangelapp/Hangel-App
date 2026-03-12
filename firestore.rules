@@ -33,28 +33,28 @@ service cloud.firestore {
     }
 
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
-    match /ngos/{document=**} {
-      allow read: if isSignedIn();
+    match /ngos/{ngoId} {
+      allow read, list: if isSignedIn();
     }
 
-    match /brands/{document=**} {
-      allow read: if isSignedIn();
+    match /brands/{brandId} {
+      allow read, list: if isSignedIn();
     }
 
-    match /posts/{document=**} {
-      allow read: if isSignedIn();
+    match /posts/{postId} {
+      allow read, list: if isSignedIn();
     }
 
-    match /volunteering/{document=**} {
-      allow read: if isSignedIn();
+    match /volunteering/{oppId} {
+      allow read, list: if isSignedIn();
     }
 
-    match /events/{document=**} {
-      allow read: if isSignedIn();
+    match /events/{eventId} {
+      allow read, list: if isSignedIn();
     }
 
-    match /library/{document=**} {
-      allow read: if isSignedIn();
+    match /library/{sectionId} {
+      allow read, list: if isSignedIn();
     }
 
     // Başvuru koleksiyonu
