@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className={`${poppins.variable}`} suppressHydrationWarning>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <FirebaseClientProvider>
           <LanguageProvider>
             <AppShell>

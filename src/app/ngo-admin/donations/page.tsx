@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ArrowDownUp } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -75,6 +75,12 @@ const TransactionList = ({ transactions }: { transactions: typeof donationHistor
 
 
 export default function DonationsPage() {
+    const [currentMonthYear, setCurrentMonthYear] = useState('');
+
+    useEffect(() => {
+        setCurrentMonthYear(format(new Date(), 'MMMM yyyy', { locale: tr }));
+    }, []);
+
     const pastTransactions = donationHistory.filter(tx => tx.status === 'Tamamlandı');
     const futureTransactions = donationHistory.filter(tx => tx.status === 'Beklemede');
     
@@ -100,8 +106,6 @@ export default function DonationsPage() {
             brandChartData,
         };
     }, []);
-    
-    const currentMonthYear = format(new Date(), 'MMMM yyyy', { locale: tr });
 
   return (
     <div className="space-y-6">
@@ -120,7 +124,7 @@ export default function DonationsPage() {
                 {monthlyEarnings.map(earning => (
                     <div key={earning.month} className={cn(
                         "flex justify-between items-center p-3 rounded-lg bg-muted/50",
-                        earning.month.toLowerCase() === currentMonthYear.toLowerCase() && "ring-2 ring-primary"
+                        (currentMonthYear && earning.month.toLowerCase() === currentMonthYear.toLowerCase()) && "ring-2 ring-primary"
                     )}>
                         <div>
                             <p className="font-semibold">{earning.month}</p>
