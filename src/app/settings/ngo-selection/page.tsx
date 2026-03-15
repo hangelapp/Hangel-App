@@ -2,9 +2,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, ChevronRight, X, Info, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, X, Info, ShieldAlert } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ngos, user, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import type { NGO, Post, Volunteering } from '@/lib/types';
+import type { NGO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,8 +28,6 @@ type LocationFilter = 'global' | 'country' | 'city';
 
 // This is the component for the popup profile view
 const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
-    const { toast } = useToast();
-    const router = useRouter();
     const [profileUrl, setProfileUrl] = useState('');
 
     useEffect(() => {
@@ -42,30 +40,6 @@ const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
         return null;
     }
 
-    const ngoPosts = timelinePosts.filter(p => p.author.name === ngo.name);
-    const ngoOpps = volunteeringOpportunities.filter(o => o.ngoId === ngo.id);
-    
-    const transparencyCriteria = [
-        { name: 'Faaliyet Belgesi', completed: true },
-        { name: 'Tüzük / Vakıf Senedi', completed: true },
-        { name: 'Yönetim Kurulu Listesi', completed: ngo.transparencyScore > 80 },
-        { name: 'Yıllık Faaliyet Raporu', completed: true },
-        { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
-        { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
-        { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
-    ];
-    
-    const handleStoreClick = () => {
-        if (ngo.economicEnterpriseUrl) {
-            router.push(ngo.economicEnterpriseUrl);
-        } else {
-            toast({
-                title: "Bilgi",
-                description: "Bu sivil toplum kuruluşunun iktisadi işletmesi bulunmamaktadır.",
-            });
-        }
-    };
-    
     return (
         <div className="animate-in fade-in-0">
             <div className="relative h-48 w-full bg-muted">
@@ -98,26 +72,14 @@ const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
             <Tabs defaultValue="about" className="w-full p-4">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="about">Hakkında</TabsTrigger>
-                    <TabsTrigger value="opportunities">Fırsatlar</TabsTrigger>
                     <TabsTrigger value="transparency">Şeffaflık</TabsTrigger>
+                    <TabsTrigger value="stats">Veriler</TabsTrigger>
                 </TabsList>
                 <TabsContent value="about" className="mt-4 space-y-4">
                     <Card>
                         <CardHeader><CardTitle className="text-lg">Kuruluş Hakkında</CardTitle></CardHeader>
                         <CardContent className="text-sm text-muted-foreground space-y-4">
                            <p>{ngo.about}</p>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="opportunities" className="mt-4 space-y-4">
-                    <Card>
-                        <CardHeader><CardTitle>Gönüllülük Fırsatları</CardTitle></CardHeader>
-                        <CardContent>
-                             {ngoOpps.length > 0 ? (
-                                ngoOpps.map(opp => <p key={opp.id}>{opp.title}</p>)
-                            ) : (
-                                <p className="text-center text-muted-foreground p-4">Aktif gönüllülük ilanı bulunmuyor.</p>
-                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -162,8 +124,6 @@ export default function NgoSelectionPage() {
 
         if (locationFilter === 'city') {
             filtered = filtered.filter(ngo => ngo.contact.address?.city === user.personalInfo.address.city);
-        } else if (locationFilter === 'country') {
-             // Assuming all are in TR for now
         }
         
         if (typeFilter !== 'Tümü') {
@@ -188,7 +148,7 @@ export default function NgoSelectionPage() {
                 case 'followers': valA = a.stats.followers; valB = b.stats.followers; break;
                 case 'volunteers': valA = a.stats.volunteers; valB = b.stats.volunteers; break;
                 case 'transparencyScore': valA = a.transparencyScore; valB = b.transparencyScore; break;
-                default: // name
+                default:
                     return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
             }
             if(typeof valA === 'number' && typeof valB === 'number') {
@@ -200,18 +160,10 @@ export default function NgoSelectionPage() {
         return filtered;
     }, [typeFilter, locationFilter, searchTerm, sortConfig, categoryFilter]);
 
-    const [toastInfo, setToastInfo] = useState<{variant?: 'destructive', title: string, description: string} | null>(null);
-    useEffect(() => {
-        if (toastInfo) {
-            toast(toastInfo);
-            setToastInfo(null);
-        }
-    }, [toastInfo, toast]);
-
     const handleNgoSelect = (ngoId: string) => {
         const isCurrentlySelected = selectedNgos.includes(ngoId);
         if (selectedNgos.length >= 2 && !isCurrentlySelected) {
-             setToastInfo({
+             toast({
                 variant: 'destructive',
                 title: "Limit Aşıldı",
                 description: "En fazla 2 varsayılan STK seçebilirsiniz.",
@@ -245,7 +197,7 @@ export default function NgoSelectionPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Bağışçısı Olduğun STK'ları Değiştir</h1>
+                <h1 className="text-2xl font-bold font-headline">Bağışçı Olduğun STK'ları Değiştir</h1>
                 <p className="text-muted-foreground text-sm">Alışverişlerinizden doğan bağışların aktarılacağı varsayılan STK'ları seçin. En fazla 2 STK seçebilirsiniz.</p>
             </div>
 
@@ -257,7 +209,6 @@ export default function NgoSelectionPage() {
                 </AlertDescription>
             </Alert>
             
-            {/* Search and Filter Controls */}
              <div className="p-0 flex gap-2 items-center">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -307,7 +258,6 @@ export default function NgoSelectionPage() {
                 </DropdownMenu>
             </div>
 
-            {/* Location and Type Tabs */}
             <Tabs defaultValue="country" className="w-full" onValueChange={(value) => setLocationFilter(value as LocationFilter)}>
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="global">Global</TabsTrigger>

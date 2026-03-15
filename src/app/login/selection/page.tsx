@@ -165,7 +165,6 @@ const FormRenderer = () => {
         router.push('/settings/ngo-selection');
     };
 
-    // --- Bireysel Kayıt Formu (Sıfır Bilgi Mantığı) ---
     const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
         const auth = useAuth();
         const db = useFirestore();
@@ -263,12 +262,11 @@ const FormRenderer = () => {
         );
     };
 
-    // --- Kurumsal Kayıt Formu ---
     const CorporateForm = () => {
         const db = useFirestore();
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [aboutText, setAboutText] = useState('');
-        const [entityType, setEntityType] = useState<string>(initialEntity); // NGO, BRAND, CLUB
+        const [entityType, setEntityType] = useState<string>(initialEntity);
         const ABOUT_LIMIT = 1000;
 
         const [formData, setFormData] = useState({
@@ -324,8 +322,6 @@ const FormRenderer = () => {
 
         return (
             <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
-                
-                {/* 1. Kategori & Konum */}
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <FormLabel>Ülke</FormLabel>
@@ -386,7 +382,6 @@ const FormRenderer = () => {
 
                 <Separator className="border-dashed" />
 
-                {/* 2. Kuruluş Bilgileri */}
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <h3 className="font-bold text-lg flex items-center gap-2">
@@ -504,7 +499,6 @@ const FormRenderer = () => {
 
                 <Separator className="border-dashed" />
 
-                {/* 3. Adres Bilgileri */}
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <h3 className="font-bold text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary"/> Adres Bilgileri</h3>
@@ -527,7 +521,6 @@ const FormRenderer = () => {
 
                 <Separator className="border-dashed" />
 
-                {/* 4. İletişim & Sosyal Medya */}
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <h3 className="font-bold text-lg flex items-center gap-2"><Globe className="h-5 w-5 text-primary"/> İletişim ve Sosyal Medya</h3>
@@ -572,7 +565,6 @@ const FormRenderer = () => {
 
                 <Separator className="border-dashed" />
 
-                {/* 5. Yasal & Finansal */}
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <h3 className="font-bold text-lg flex items-center gap-2"><Landmark className="h-5 w-5 text-primary"/> Yasal & Finansal</h3>
@@ -617,7 +609,6 @@ const FormRenderer = () => {
 
                 <Separator className="border-dashed" />
 
-                {/* 6. Yetkili Kişi Bilgileri */}
                 <div className="space-y-6">
                     <div className="space-y-1">
                         <h3 className="font-bold text-lg flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary"/> Yetkili Kişi Bilgileri</h3>
@@ -643,13 +634,12 @@ const FormRenderer = () => {
                                 <div className="w-[80px] shrink-0">
                                     <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
-                                <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value})} className="flex-1 font-bold" />
+                                <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} className="flex-1 font-bold" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 7. Onaylar */}
                 <div className="space-y-4 pt-6 border-t">
                     <div className="flex items-start space-x-3">
                         <Checkbox id="check-1" required />
@@ -682,7 +672,7 @@ const FormRenderer = () => {
                 </div>
             </form>
         );
-    }
+    };
 
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
@@ -702,7 +692,7 @@ const FormRenderer = () => {
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Geniş Yap</TabsTrigger>
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>

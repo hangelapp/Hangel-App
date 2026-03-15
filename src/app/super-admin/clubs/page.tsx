@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -17,8 +18,13 @@ export default function ClubsPage() {
 
     useEffect(() => {
         const storedClubs = localStorage.getItem('managedClubs');
-        if (storedClubs) {
-            setClubs(JSON.parse(storedClubs));
+        if (storedClubs && storedClubs.trim() !== "") {
+            try {
+                setClubs(JSON.parse(storedClubs));
+            } catch (e) {
+                const initialClubsWithStatus = initialClubs.map(c => ({...c, status: 'Aktif' as 'Aktif' | 'Pasif'}));
+                setClubs(initialClubsWithStatus);
+            }
         } else {
             const initialClubsWithStatus = initialClubs.map(c => ({...c, status: 'Aktif' as 'Aktif' | 'Pasif'}));
             setClubs(initialClubsWithStatus);

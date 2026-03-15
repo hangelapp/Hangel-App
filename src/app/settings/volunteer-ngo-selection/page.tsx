@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -26,7 +27,11 @@ export default function VolunteerNgoSelectionPage() {
         }
         const savedNgos = localStorage.getItem('volunteerNgos');
         if (savedNgos) {
-            setSelectedNgos(JSON.parse(savedNgos));
+            try {
+                setSelectedNgos(JSON.parse(savedNgos));
+            } catch (e) {
+                setSelectedNgos(['1', '2']);
+            }
         } else {
             setSelectedNgos(['1', '2']);
         }

@@ -63,7 +63,12 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
             return [];
         }
 
-        const resData = await response.json();
+        const responseText = await response.text();
+        if (!responseText || responseText.trim() === "") {
+            return [];
+        }
+
+        const resData = JSON.parse(responseText);
         let rawList = [];
 
         if (Array.isArray(resData)) rawList = resData;
@@ -107,7 +112,7 @@ export async function fetchAllAgencyOffers(): Promise<Brand[]> {
   
   const uniqueMap = new Map<string, Brand>();
   combined.forEach(brand => {
-    if (!brand?.name) return; // Guard against empty or invalid brand objects
+    if (!brand?.name) return;
     const key = brand.name.toLowerCase().trim();
     const existing = uniqueMap.get(key);
     if (!existing || brand.donationRate > existing.donationRate) {
