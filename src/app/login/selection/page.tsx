@@ -25,7 +25,8 @@ import {
     School,
     Percent,
     X,
-    ShieldCheck
+    ShieldCheck,
+    Landmark
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -541,18 +542,34 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <FormLabel>Ad Soyad</Label>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
+                        <FormLabel>Ad Soyad</FormLabel>
+                        <FormInput 
+                            placeholder="Ör.: İsmail Hilmi ADIGÜZEL" 
+                            required 
+                            value={formData.authorized.name} 
+                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} 
+                        />
                     </div>
                     <div className="space-y-2">
                         <FormLabel>Görevi</FormLabel>
-                        <FormInput placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
+                        <FormInput 
+                            placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" 
+                            required 
+                            value={formData.authorized.role} 
+                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} 
+                        />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <FormLabel>Kurumsal E-posta</FormLabel>
-                        <FormInput type="email" placeholder="yetkili@kurum.com" required value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                        <FormInput 
+                            type="email" 
+                            placeholder="yetkili@kurum.com" 
+                            required 
+                            value={formData.authorized.email} 
+                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} 
+                        />
                     </div>
                     <div className="space-y-2 text-left">
                         <FormLabel>Kurumsal Telefon</FormLabel>
@@ -565,7 +582,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} className="flex-1 font-bold" />
+                            <FormInput 
+                                type="tel" 
+                                placeholder="5XX XXX XX XX" 
+                                required 
+                                value={formData.authorized.phone} 
+                                onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} 
+                                className="flex-1 font-bold" 
+                            />
                         </div>
                     </div>
                 </div>
@@ -677,7 +701,7 @@ const FormRenderer = () => {
     const handleTypeChange = (value: string) => {
         const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
         if (value === 'individual') {
-            router.push(`/login/selection?action={action}${redirectPart}`);
+            router.push(`/login/selection?action=${action}${redirectPart}`);
         } else {
             router.push(`/login/selection?action=${action}&type=corporate&entity=${initialEntity}${redirectPart}`);
         }
