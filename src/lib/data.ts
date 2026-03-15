@@ -23,7 +23,10 @@ import {
     Anchor,
     Search,
     CircleHelp,
-    BarChart
+    BarChart,
+    Building,
+    Landmark,
+    Target
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
@@ -71,6 +74,40 @@ export const globalDistrictsData: { [city: string]: string[] } = {
 };
 
 export const countryPhoneCodes = ["90", "1", "44", "49", "33", "994"];
+
+export const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
+export const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
+export const allDailySkills = ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim'];
+export const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İşaret Dili'];
+export const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'VS Code', 'Docker', 'Google Analytics'];
+export const allLicenses = ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'D Sınıfı Ehliyet'];
+export const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'Scrum Master Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası', 'SRC Belgesi'];
+export const allVisas = ['Schengen', 'ABD (B1/B2)', 'İngiltere', 'Kanada'];
+export const allSectors = ['Teknoloji', 'Eğitim', 'Sağlık', 'Finans', 'Üretim', 'Hizmet', 'Sivil Toplum', 'Diğer'];
+export const allPositions = ['Yazılım Geliştirici', 'Proje Müdürü', 'Tasarımcı', 'Pazarlama Uzmanı', 'Satış Temsilcisi', 'İnsan Kaynakları', 'Öğrenci', 'Stajyer', 'Emekli', 'Diğer'];
+
+export const allUniversities = [
+  "Boğaziçi Üniversitesi",
+  "İstanbul Teknik Üniversitesi",
+  "Orta Doğu Teknik Üniversitesi",
+  "Yıldız Teknik Üniversitesi",
+  "Marmara Üniversitesi",
+  "Koç Üniversitesi",
+  "Sabancı Üniversitesi",
+  "Hacettepe Üniversitesi",
+  "Bilkent Üniversitesi",
+  "Ankara Üniversitesi",
+  "Ege Üniversitesi",
+  "Dokuz Eylül Üniversitesi",
+  "Galatasaray Üniversitesi",
+  "İstanbul Üniversitesi",
+  "Akdeniz Üniversitesi",
+  "Gazi Üniversitesi",
+  "Çukurova Üniversitesi",
+  "Anadolu Üniversitesi",
+  "Selçuk Üniversitesi",
+  "Erciyes Üniversitesi"
+];
 
 export const user: User = {
     id: '1',

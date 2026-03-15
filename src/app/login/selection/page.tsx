@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, Suspense, useEffect, useMemo } from 'react';
-import { Button, buttonVariants } from '@/components/ui/button';
+import React, { useState, Suspense, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,30 +13,17 @@ import {
     ArrowLeft, 
     Upload, 
     Loader2,
-    Landmark,
     Building2,
     CheckCircle,
     FileText,
     ShieldAlert,
     Sparkles,
-    Briefcase,
     Store,
     Globe,
     UserCircle,
-    Phone,
-    Info,
     MapPin,
-    ChevronDown,
-    Building,
     School,
     Percent,
-    GraduationCap,
-    BookOpen,
-    Trash2,
-    Save,
-    Map,
-    Smartphone,
-    MessageSquare,
     X
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,7 +37,6 @@ import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking }
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
 
 // --- Form Constants ---
 
@@ -554,7 +540,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <FormLabel>Hesap Adı</FormLabel>
+                        <FormLabel>Hesap Adı</Label>
                         <FormInput placeholder="Hesap Adı" required value={formData.accountName} onChange={e => setFormData({...formData, accountName: e.target.value})} />
                     </div>
                     <div className="space-y-2">
@@ -594,7 +580,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <FormLabel>Ad Soyad</FormLabel>
+                        <FormLabel>Ad Soyad</Label>
                         <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                     </div>
                     <div className="space-y-2">
