@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -32,7 +31,9 @@ import {
     School,
     Percent,
     GraduationCap,
-    BookOpen
+    BookOpen,
+    Trash2,
+    Save
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -527,14 +528,14 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <FormLabel>Kurumsal E-posta</FormLabel>
+                            <FormLabel>Kurumsal E-posta</Label>
                             <FormInput type="email" placeholder="örnek@kurum.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                         </div>
                         <div className="space-y-2">
                             <FormLabel>Kurumsal Telefon</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[80px] shrink-0">
-                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={code}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
                                 <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="flex-1 font-bold" />
                             </div>
@@ -615,7 +616,7 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <FormLabel>Ad Soyad</FormLabel>
+                            <FormLabel>Ad Soyad</Label>
                             <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                         </div>
                         <div className="space-y-2">
@@ -625,7 +626,7 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <FormLabel>Kurumsal E-posta</FormLabel>
+                            <FormLabel>Kurumsal E-posta</Label>
                             <FormInput type="email" placeholder="yetkili@kurum.com" required value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
                         </div>
                         <div className="space-y-2">
