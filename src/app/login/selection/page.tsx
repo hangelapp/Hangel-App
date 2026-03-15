@@ -25,13 +25,16 @@ import {
     UserCircle,
     Phone,
     Info,
-    MapPin
+    MapPin,
+    ChevronDown,
+    Building,
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { marketCategories, countryPhoneCodes, allCountries } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -67,9 +70,9 @@ const years = Array.from({ length: 126 }, (_, i) => (2025 - i).toString());
 const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => (
     <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
-        <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
+        <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20 transition-all hover:bg-muted/30">
             <input id={`${label}-upload`} type="file" className="hidden" accept={accept} required={required} />
-            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
+            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 bg-background">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
             <div className="flex-1">
@@ -82,9 +85,9 @@ const FileUpload = ({label, accept, hint, required}: {label: string, accept?: st
 const MultiCheckboxGroup = ({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) => (
     <div className="space-y-3">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-2xl border p-4 bg-muted/10 max-h-60 overflow-y-auto no-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-2xl border p-4 bg-background max-h-60 overflow-y-auto no-scrollbar shadow-sm">
             {options.map(option => (
-                <div key={option} className="flex items-center space-x-2">
+                <div key={option} className="flex items-center space-x-2 p-1 hover:bg-accent rounded-lg transition-colors">
                     <Checkbox 
                         id={`${title}-${option}`} 
                         checked={selected.includes(option)}
@@ -100,6 +103,16 @@ const MultiCheckboxGroup = ({ title, options, selected, onChange }: { title: str
     </div>
 );
 
+const FormLabel = ({ children }: { children: React.ReactNode }) => (
+    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 mb-2 block">
+        {children}
+    </Label>
+);
+
+const FormInput = (props: React.ComponentProps<typeof Input>) => (
+    <Input {...props} className={cn("h-12 rounded-xl bg-background border-none shadow-sm focus-visible:ring-primary", props.className)} />
+);
+
 // --- Main Page Component ---
 
 const FormRenderer = () => {
@@ -109,14 +122,14 @@ const FormRenderer = () => {
     
     const action = searchParams.get('action') || 'login';
     const type = searchParams.get('type') || 'individual';
-    const entity = searchParams.get('entity') || 'NGO'; // NGO or BRAND
+    const initialEntity = searchParams.get('entity') || 'NGO'; 
     const redirectParam = searchParams.get('redirect');
     
     const [showSurvey, setShowSurvey] = useState(false);
 
     const handleActionChange = (value: string) => {
         const typePart = type !== 'individual' ? `&type=${type}` : '';
-        const entityPart = entity ? `&entity=${entity}` : '';
+        const entityPart = initialEntity ? `&entity=${initialEntity}` : '';
         const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
         router.push(`/login/selection?action=${value}${typePart}${entityPart}${redirectPart}`);
     };
@@ -126,7 +139,7 @@ const FormRenderer = () => {
         if (value === 'individual') {
             router.push(`/login/selection?action=${action}${redirectPart}`);
         } else {
-            router.push(`/login/selection?action=${action}&type=corporate&entity=${entity}${redirectPart}`);
+            router.push(`/login/selection?action=${action}&type=corporate&entity=${initialEntity}${redirectPart}`);
         }
     };
 
@@ -166,7 +179,6 @@ const FormRenderer = () => {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const userId = userCredential.user.uid;
                     
-                    // SIFIR BİLGİ İLE BAŞLAT
                     const userRef = doc(db, 'users', userId);
                     setDocumentNonBlocking(userRef, {
                         id: userId,
@@ -206,25 +218,25 @@ const FormRenderer = () => {
             <form onSubmit={handleSubmit} className="space-y-5 animate-in fade-in-0">
                 {isRegister && (
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                        <Input id="name" placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} className="h-12 rounded-xl" />
+                        <FormLabel>Ad Soyad</FormLabel>
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={e => setName(e.target.value)} />
                     </div>
                 )}
                 <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Telefon</Label>
+                    <FormLabel>Telefon</FormLabel>
                     <div className="flex gap-2">
                         <div className="w-[100px] shrink-0">
                             <Select defaultValue="90" required>
-                                <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger>
                                 <SelectContent>{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
-                        <Input id="phone" type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold" />
+                        <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="flex-1 font-bold" />
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şifre</Label>
-                    <Input id="password" type="password" placeholder="••••••••" required value={password} onChange={e => setPassword(e.target.value)} className="h-12 rounded-xl" />
+                    <FormLabel>Şifre</FormLabel>
+                    <FormInput type="password" placeholder="••••••••" required value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
                 {!isRegister ? (
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
@@ -247,16 +259,17 @@ const FormRenderer = () => {
         );
     };
 
-    // --- Kurumsal Kayıt Formu (STK / Marka / Kulüp) ---
+    // --- Kurumsal Kayıt Formu ---
     const CorporateForm = () => {
         const db = useFirestore();
         const [isSubmitting, setIsSubmitting] = useState(false);
         const [aboutText, setAboutText] = useState('');
+        const [entityType, setEntityType] = useState(initialEntity); // NGO, BRAND, CLUB
         const ABOUT_LIMIT = 1000;
 
         const [formData, setFormData] = useState({
             country: 'Almanya',
-            ngoType: '',
+            specificType: '',
             fullName: '',
             shortName: 'hangel Derneği',
             foundationYear: '',
@@ -286,7 +299,7 @@ const FormRenderer = () => {
                 await addDocumentNonBlocking(appRef, {
                     ...formData,
                     about: aboutText,
-                    type: entity === 'NGO' ? 'STK' : entity === 'BRAND' ? 'Marka' : 'Kulüp',
+                    type: entityType === 'NGO' ? 'STK' : entityType === 'BRAND' ? 'Marka' : 'Kulüp',
                     date: new Date().toISOString().split('T')[0],
                     status: 'Beklemede',
                     org: formData.fullName || formData.shortName
@@ -306,32 +319,54 @@ const FormRenderer = () => {
                 {/* 1. Kategori & Konum */}
                 <div className="space-y-6">
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
+                        <FormLabel>Ülke</FormLabel>
                         <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
-                            <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {["Almanya", "Türkiye", "ABD", "İngiltere", "Fransa", "Hollanda"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-bold"><SelectValue /></SelectTrigger>
+                            <SelectContent className="max-h-60">
+                                {allCountries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
+                    
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
-                        <Select value={formData.ngoType} onValueChange={(val) => setFormData({...formData, ngoType: val})} required>
-                            <SelectTrigger className="h-12 rounded-xl font-bold"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                        <FormLabel>Kuruluş Türü</FormLabel>
+                        <Select value={entityType} onValueChange={(val) => { setEntityType(val); setFormData({...formData, specificType: ''}) }}>
+                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-bold">
+                                <SelectValue />
+                            </SelectTrigger>
                             <SelectContent>
-                                {entity === 'NGO' ? (
+                                <SelectItem value="NGO">STK (Dernek, Vakıf, Spor Kulübü, Özel İzinli)</SelectItem>
+                                <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
+                                <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="space-y-2 animate-in slide-in-from-top-2">
+                        <Select value={formData.specificType} onValueChange={(val) => setFormData({...formData, specificType: val})} required>
+                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-medium"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                {entityType === 'NGO' && (
                                     <>
                                         <SelectItem value="Dernek">Dernek</SelectItem>
                                         <SelectItem value="Vakıf">Vakıf</SelectItem>
                                         <SelectItem value="Spor Kulübü">Spor Kulübü</SelectItem>
                                         <SelectItem value="Özel İzinli">Özel İzinli</SelectItem>
                                     </>
-                                ) : (
+                                )}
+                                {entityType === 'BRAND' && (
                                     <>
                                         <SelectItem value="Global Marka">Global Marka</SelectItem>
                                         <SelectItem value="Yerel İşletme">Yerel İşletme</SelectItem>
                                         <SelectItem value="Kooperatif">Kooperatif</SelectItem>
                                         <SelectItem value="Sosyal Şirket">Sosyal Şirket</SelectItem>
+                                    </>
+                                )}
+                                {entityType === 'CLUB' && (
+                                    <>
+                                        <SelectItem value="Üniversite Kulübü">Üniversite Kulübü</SelectItem>
+                                        <SelectItem value="Lise Kulübü">Lise Kulübü</SelectItem>
+                                        <SelectItem value="Gençlik Grubu">Gençlik Grubu</SelectItem>
                                     </>
                                 )}
                             </SelectContent>
@@ -343,22 +378,19 @@ const FormRenderer = () => {
 
                 {/* 2. Kuruluş Bilgileri */}
                 <div className="space-y-6">
-                    <div className="space-y-1">
-                        <h3 className="font-bold text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Kuruluş Bilgileri</h3>
-                    </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Adı</Label>
-                        <Input placeholder="Kuruluşunuzun tam adı" required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} className="h-12 rounded-xl" />
+                        <FormLabel>Kuruluş Adı</FormLabel>
+                        <FormInput placeholder="Kuruluşunuzun tam adı" required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
-                            <Input placeholder="hangel Derneği" value={formData.shortName} onChange={e => setFormData({...formData, shortName: e.target.value})} className="h-12 rounded-xl" />
+                            <FormLabel>Kuruluş Kısa Adı</FormLabel>
+                            <FormInput placeholder="hangel Derneği" value={formData.shortName} onChange={e => setFormData({...formData, shortName: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
+                            <FormLabel>Kuruluş Yılı</FormLabel>
                             <Select onValueChange={(val) => setFormData({...formData, foundationYear: val})}>
-                                <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Seç" /></SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue placeholder="Seç" /></SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                                 </SelectContent>
@@ -367,9 +399,9 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme Durumu</Label>
+                            <FormLabel>İktisadi İşletme Durumu</FormLabel>
                             <Select onValueChange={(val) => setFormData({...formData, enterpriseStatus: val})}>
-                                <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Var">Var</SelectItem>
                                     <SelectItem value="Yok">Yok</SelectItem>
@@ -377,13 +409,13 @@ const FormRenderer = () => {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
-                            <Input value={formData.purpose} readOnly className="h-12 rounded-xl bg-muted/50 cursor-not-allowed" />
+                            <FormLabel>Kullanım Amacı</FormLabel>
+                            <FormInput value={formData.purpose} readOnly className="bg-muted/50 cursor-not-allowed opacity-70" />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hakkında</Label>
+                            <FormLabel>Hakkında</FormLabel>
                             <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_LIMIT} (Kalan: {ABOUT_LIMIT - aboutText.length})</span>
                         </div>
                         <Textarea 
@@ -392,7 +424,7 @@ const FormRenderer = () => {
                             maxLength={ABOUT_LIMIT} 
                             value={aboutText}
                             onChange={(e) => setAboutText(e.target.value)}
-                            className="rounded-2xl p-4 leading-relaxed"
+                            className="rounded-2xl p-4 leading-relaxed border-none shadow-sm bg-background focus-visible:ring-primary"
                             required
                         />
                     </div>
@@ -413,17 +445,17 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl / Eyalet</Label>
-                            <Input placeholder="Şehir / Eyalet girin" required value={formData.cityState} onChange={e => setFormData({...formData, cityState: e.target.value})} className="h-12 rounded-xl" />
+                            <FormLabel>İl / Eyalet</FormLabel>
+                            <FormInput placeholder="Şehir / Eyalet girin" required value={formData.cityState} onChange={e => setFormData({...formData, cityState: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe / Bölge</Label>
-                            <Input placeholder="İlçe / Bölge girin" required value={formData.districtRegion} onChange={e => setFormData({...formData, districtRegion: e.target.value})} className="h-12 rounded-xl" />
+                            <FormLabel>İlçe / Bölge</FormLabel>
+                            <FormInput placeholder="İlçe / Bölge girin" required value={formData.districtRegion} onChange={e => setFormData({...formData, districtRegion: e.target.value})} />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Açık Adres</Label>
-                        <Input placeholder="Sokak, kapı no..." required value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} className="h-12 rounded-xl" />
+                        <FormLabel>Açık Adres</FormLabel>
+                        <FormInput placeholder="Sokak, kapı no..." required value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
                     </div>
                 </div>
 
@@ -436,37 +468,37 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
-                            <Input type="email" placeholder="örnek@marka.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="h-12 rounded-xl" />
+                            <FormLabel>Kurumsal E-posta</FormLabel>
+                            <FormInput type="email" placeholder="örnek@marka.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                            <FormLabel>Kurumsal Telefon</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[80px] shrink-0">
-                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
-                                <Input type="tel" placeholder="5XX XXX XX XX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="h-12 rounded-xl flex-1 font-bold" />
+                                <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="flex-1 font-bold" />
                             </div>
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Web Sitesi</Label>
-                        <Input placeholder="https://www.ornek.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} className="h-12 rounded-xl" />
+                        <FormLabel>Web Sitesi</FormLabel>
+                        <FormInput placeholder="https://www.ornek.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                     </div>
                     <div className="space-y-4 pt-4">
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sosyal Medya Linkleri</p>
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-muted rounded-lg"><UserCircle className="h-4 w-4" /></div>
-                                <Input placeholder="instagram.com/kullaniciadi" value={formData.social.instagram} onChange={e => setFormData({...formData, social: {...formData.social, instagram: e.target.value}})} className="h-11 rounded-xl" />
+                                <div className="p-2 bg-muted rounded-lg shadow-inner"><UserCircle className="h-4 w-4" /></div>
+                                <FormInput placeholder="instagram.com/kullaniciadi" value={formData.social.instagram} onChange={e => setFormData({...formData, social: {...formData.social, instagram: e.target.value}})} />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-muted rounded-lg"><Globe className="h-4 w-4" /></div>
-                                <Input placeholder="x.com/kullaniciadi" value={formData.social.twitter} onChange={e => setFormData({...formData, social: {...formData.social, twitter: e.target.value}})} className="h-11 rounded-xl" />
+                                <div className="p-2 bg-muted rounded-lg shadow-inner"><Globe className="h-4 w-4" /></div>
+                                <FormInput placeholder="x.com/kullaniciadi" value={formData.social.twitter} onChange={e => setFormData({...formData, social: {...formData.social, twitter: e.target.value}})} />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-muted rounded-lg"><Briefcase className="h-4 w-4" /></div>
-                                <Input placeholder="linkedin.com/company/kurumadi" value={formData.social.linkedin} onChange={e => setFormData({...formData, social: {...formData.social, linkedin: e.target.value}})} className="h-11 rounded-xl" />
+                                <div className="p-2 bg-muted rounded-lg shadow-inner"><Briefcase className="h-4 w-4" /></div>
+                                <FormInput placeholder="linkedin.com/company/kurumadi" value={formData.social.linkedin} onChange={e => setFormData({...formData, social: {...formData.social, linkedin: e.target.value}})} />
                             </div>
                         </div>
                     </div>
@@ -480,17 +512,17 @@ const FormRenderer = () => {
                         <h3 className="font-bold text-lg flex items-center gap-2"><Landmark className="h-5 w-5 text-primary"/> Yasal & Finansal</h3>
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Yasal Unvan</Label>
-                        <Input placeholder="Yasal Unvan" required value={formData.legalTitle} onChange={e => setFormData({...formData, legalTitle: e.target.value})} className="h-12 rounded-xl" />
+                        <FormLabel>Yasal Unvan</FormLabel>
+                        <FormInput placeholder="Yasal Unvan" required value={formData.legalTitle} onChange={e => setFormData({...formData, legalTitle: e.target.value})} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hesap Adı</Label>
-                            <Input placeholder="Hesap Adı" required value={formData.accountName} onChange={e => setFormData({...formData, accountName: e.target.value})} className="h-12 rounded-xl" />
+                            <FormLabel>Hesap Adı</FormLabel>
+                            <FormInput placeholder="Hesap Adı" required value={formData.accountName} onChange={e => setFormData({...formData, accountName: e.target.value})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">IBAN Numarası</Label>
-                            <Input placeholder="TR..." required value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} className="h-12 rounded-xl font-mono" />
+                            <FormLabel>IBAN Numarası</FormLabel>
+                            <FormInput placeholder="TR..." required value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} className="font-mono" />
                         </div>
                     </div>
                 </div>
@@ -513,26 +545,26 @@ const FormRenderer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
-                            <Input placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} className="h-12 rounded-xl" />
+                            <FormLabel>Ad Soyad</FormLabel>
+                            <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
-                            <Input placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} className="h-12 rounded-xl" />
+                            <FormLabel>Görevi</FormLabel>
+                            <FormInput placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" required value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
-                            <Input type="email" placeholder="örnek@marka.com" required value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} className="h-12 rounded-xl" />
+                            <FormLabel>Kurumsal E-posta</FormLabel>
+                            <FormInput type="email" placeholder="örnek@marka.com" required value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                            <FormLabel>Kurumsal Telefon</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[80px] shrink-0">
-                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                    <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
-                                <Input type="tel" placeholder="5XX XXX XX XX" required value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} className="h-12 rounded-xl flex-1 font-bold" />
+                                <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} className="flex-1 font-bold" />
                             </div>
                         </div>
                     </div>
@@ -601,9 +633,9 @@ const FormRenderer = () => {
                         ) : (
                             <div className="space-y-6 pt-4 border-t border-dashed">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Hesap Tipi</Label>
+                                    <FormLabel>Hesap Tipi</FormLabel>
                                     <Select onValueChange={handleTypeChange} value={type} required>
-                                        <SelectTrigger className="h-12 rounded-xl font-bold border-muted">
+                                        <SelectTrigger className="h-12 rounded-xl font-bold border-none shadow-sm bg-background">
                                             <SelectValue placeholder="Seçiniz..." />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -673,7 +705,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[80px] shrink-0">
-                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                     </div>
                                     <Input type="tel" placeholder="5XX..." value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold" />
                                 </div>
