@@ -24,7 +24,8 @@ import {
     Globe,
     UserCircle,
     Phone,
-    Info
+    Info,
+    MapPin
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -574,7 +575,7 @@ const FormRenderer = () => {
 
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
-            <div className="w-full max-w-sm lg:max-w-2xl">
+            <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
                 <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
@@ -590,7 +591,7 @@ const FormRenderer = () => {
                     <CardContent className="space-y-6 px-8 pb-10">
                          <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Geniş Yap</TabsTrigger>
                                 <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
                             </TabsList>
                         </Tabs>
