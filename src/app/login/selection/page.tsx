@@ -24,7 +24,8 @@ import {
     MapPin,
     School,
     Percent,
-    X
+    X,
+    ShieldCheck
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -37,28 +38,6 @@ import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking }
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
-
-// --- Form Constants ---
-
-const allBeneficiaries = [
-    'Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 
-    'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Aile', 
-    'Bölgesel', 'İş Dünyası', 'Girişimciler'
-];
-
-const allSdgs = [
-    '1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı ve Kaliteli Yaşam', 
-    '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '6. Temiz Su ve Sanitasyon', 
-    '7. Erişilebilir ve Temiz Enerji', '8. İnsana Yakışır İş ve Ekonomik Büyüme',
-    '9. Sanayi, Yenilikçilik ve Altyapı', '10. Eşitsizliklerin Azaltılması', 
-    '11. Sürdürülebilir Şehirler ve Topluluklar', '12. Sorumlu Üretim ve Tüketim', 
-    '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam',
-    '16. Barış, Adalet ve Güçlü Kurumlar', '17. Amaçlar için Ortaklıklar'
-];
-
-const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
-
-const years = Array.from({ length: 126 }, (_, i) => (2025 - i).toString());
 
 // --- Shared Form Components ---
 
@@ -230,10 +209,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const ABOUT_LIMIT = 1000;
 
     const [formData, setFormData] = useState({
-        country: 'Almanya',
+        country: 'Türkiye',
         specificType: '',
         fullName: '',
-        shortName: 'hangel Derneği',
+        shortName: '',
         foundationYear: '',
         enterpriseStatus: '',
         marketCategory: '',
@@ -371,14 +350,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <FormLabel>Kuruluş Kısa Adı</FormLabel>
-                        <FormInput placeholder="hangel Derneği" value={formData.shortName} onChange={e => setFormData({...formData, shortName: e.target.value})} />
+                        <FormInput placeholder="Ahbap, TEMA vb." value={formData.shortName} onChange={e => setFormData({...formData, shortName: e.target.value})} />
                     </div>
                     <div className="space-y-2 text-left">
                         <FormLabel>Kuruluş Yılı</FormLabel>
                         <Select onValueChange={(val) => setFormData({...formData, foundationYear: val})}>
                             <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm text-left"><SelectValue placeholder="Seç" /></SelectTrigger>
                             <SelectContent className="max-h-60">
-                                {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                {Array.from({ length: 126 }, (_, i) => (2025 - i).toString()).map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -435,7 +414,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="space-y-2">
                     <div className="flex justify-between items-end mb-1">
                         <FormLabel>Hakkında</FormLabel>
-                        <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_LIMIT} (Kalan: {ABOUT_LIMIT - aboutText.length})</span>
+                        <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_LIMIT}</span>
                     </div>
                     <Textarea 
                         placeholder="Kuruluşunuzu anlatan kısa bir metin." 
@@ -451,9 +430,8 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             {entityType === 'NGO' && (
                 <div className="space-y-8 animate-in fade-in-0">
-                    <MultiCheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} selected={formData.beneficiaries} onChange={(val) => setFormData({...formData, beneficiaries: val})} />
-                    <MultiCheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={allSdgs} selected={formData.sdgs} onChange={(val) => setFormData({...formData, sdgs: val})} />
-                    <MultiCheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} selected={formData.memberships} onChange={(val) => setFormData({...formData, memberships: val})} />
+                    <MultiCheckboxGroup title="Faydalanıcılar" options={['Çocuklar', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre']} selected={formData.beneficiaries} onChange={(val) => setFormData({...formData, beneficiaries: val})} />
+                    <MultiCheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam']} selected={formData.sdgs} onChange={(val) => setFormData({...formData, sdgs: val})} />
                 </div>
             )}
 
@@ -509,23 +487,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <FormLabel>Web Sitesi</FormLabel>
                     <FormInput placeholder="https://www.ornek.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                 </div>
-                <div className="space-y-4 pt-4 text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sosyal Medya Linkleri</p>
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-muted rounded-lg shadow-inner"><UserCircle className="h-4 w-4" /></div>
-                            <FormInput placeholder="instagram.com/kullaniciadi" value={formData.social.instagram} onChange={e => setFormData({...formData, social: {...formData.social, instagram: e.target.value}})} />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-muted rounded-lg shadow-inner"><Globe className="h-4 w-4" /></div>
-                            <FormInput placeholder="x.com/kullaniciadi" value={formData.social.twitter} onChange={e => setFormData({...formData, social: {...formData.social, twitter: e.target.value}})} />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-muted rounded-lg shadow-inner"><Briefcase className="h-4 w-4" /></div>
-                            <FormInput placeholder="linkedin.com/company/kurumadi" value={formData.social.linkedin} onChange={e => setFormData({...formData, social: {...formData.social, linkedin: e.target.value}})} />
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <Separator className="border-dashed" />
@@ -540,7 +501,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <FormLabel>Hesap Adı</Label>
+                        <FormLabel>Hesap Adı</FormLabel>
                         <FormInput placeholder="Hesap Adı" required value={formData.accountName} onChange={e => setFormData({...formData, accountName: e.target.value})} />
                     </div>
                     <div className="space-y-2">
@@ -614,19 +575,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="flex items-start space-x-3">
                     <Checkbox id="check-1" required />
                     <Label htmlFor="check-1" className="text-[11px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                        <Link href="/settings/contracts/kurulus-sozlesmesi" className="text-primary font-bold hover:underline">Kuruluş Sözleşmesi</Link> ve <Link href="/settings/contracts/sosyal-etki politikası" className="text-primary font-bold hover:underline">Sosyal Etki Politikası</Link>'nı okudum, kuruluşum adına onaylıyorum.
-                    </Label>
-                </div>
-                <div className="flex items-start space-x-3">
-                    <Checkbox id="check-2" required />
-                    <Label htmlFor="check-2" className="text-[11px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                        <Link href="/settings/contracts/gizlilik-politikasi" className="text-primary font-bold hover:underline">Gizlilik Politikası</Link>, <Link href="/settings/contracts/kvkk-aydinlatma-metni" className="text-primary font-bold hover:underline">Aydınlatma Metni</Link> ve <Link href="/settings/contracts/acik-riza-metni" className="text-primary font-bold hover:underline">Açık Rıza Metni</Link>'ni okudum ve kabul ediyorum.
-                    </Label>
-                </div>
-                <div className="flex items-start space-x-3">
-                    <Checkbox id="check-3" required />
-                    <Label htmlFor="check-3" className="text-[11px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                        <Link href="/settings/contracts/bagis-ve-yardim-politikasi" className="text-primary font-bold hover:underline">Bağış ve Yardım Politikası</Link> ile <Link href="/settings/contracts/etik-ilkeler" className="text-primary font-bold hover:underline">Etik İlkeler</Link>'e uyacağımızı taahhüt ediyorum.
+                        Kuruluş Sözleşmesi ve Sosyal Etki Politikası'nı okudum, onaylıyorum.
                     </Label>
                 </div>
             </div>
@@ -635,10 +584,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <Button type="submit" className="w-full h-16 rounded-2xl text-lg font-black shadow-2xl" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : "Başvuruyu Gönder"}
                 </Button>
-                <div className="text-center">
-                    <HangelLogo className="text-3xl opacity-20" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1">Güvenli ve Şeffaf Altyapı</p>
-                </div>
             </div>
         </form>
     );
@@ -732,7 +677,7 @@ const FormRenderer = () => {
     const handleTypeChange = (value: string) => {
         const redirectPart = redirectParam ? `&redirect=${encodeURIComponent(redirectParam)}` : '';
         if (value === 'individual') {
-            router.push(`/login/selection?action=${action}${redirectPart}`);
+            router.push(`/login/selection?action={action}${redirectPart}`);
         } else {
             router.push(`/login/selection?action=${action}&type=corporate&entity=${initialEntity}${redirectPart}`);
         }
