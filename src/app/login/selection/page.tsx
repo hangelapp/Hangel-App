@@ -26,7 +26,17 @@ import {
     Percent,
     X,
     ShieldCheck,
-    Landmark
+    Landmark,
+    Plus,
+    Trash2,
+    Mail,
+    Phone,
+    Instagram,
+    Linkedin,
+    Code,
+    ExternalLink,
+    MousePointer2,
+    Cookie
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -42,13 +52,25 @@ import { HangelLogo } from '@/components/icons';
 
 // --- Shared Form Components ---
 
+const XIcon = (props: React.ComponentProps<'svg'>) => (
+    <svg
+      role="img"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      {...props}
+    >
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.931ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+    </svg>
+);
+
 const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => (
     <div className="space-y-2 text-left">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20 transition-all hover:bg-muted/30">
             <input id={`${label.replace(/\s+/g, '-')}-upload`} type="file" className="hidden" accept={accept} required={required} />
-            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 bg-background">
-                <label htmlFor={`${label.replace(/\s+/g, '-')}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
+            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 bg-background h-10 px-4">
+                <label htmlFor={`${label.replace(/\s+/g, '-')}-upload`} className="cursor-pointer font-bold flex items-center"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
             </Button>
             <div className="flex-1">
                 <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>
@@ -57,35 +79,30 @@ const FileUpload = ({label, accept, hint, required}: {label: string, accept?: st
     </div>
 );
 
-const MultiCheckboxGroup = ({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) => (
-    <div className="space-y-3 text-left">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{title}</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-2xl border p-4 bg-background max-h-60 overflow-y-auto no-scrollbar shadow-sm">
-            {options.map(option => (
-                <div key={option} className="flex items-center space-x-2 p-1 hover:bg-accent rounded-lg transition-colors">
-                    <Checkbox 
-                        id={`${title.replace(/\s+/g, '-')}-${option.replace(/\s+/g, '-')}`} 
-                        checked={selected.includes(option)}
-                        onCheckedChange={(checked) => {
-                            if (checked) onChange([...selected, option]);
-                            else onChange(selected.filter(s => s !== option));
-                        }}
-                    />
-                    <Label htmlFor={`${title.replace(/\s+/g, '-')}-${option.replace(/\s+/g, '-')}`} className="text-xs font-medium cursor-pointer leading-tight">{option}</Label>
-                </div>
-            ))}
-        </div>
+const SectionTitle = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
+    <div className="flex items-center gap-2 mb-4 pt-4 first:pt-0">
+        {Icon && <Icon className="h-5 w-5 text-primary" />}
+        <h3 className="text-sm font-black uppercase tracking-[0.1em] text-primary">{children}</h3>
     </div>
 );
 
-const FormLabel = ({ children }: { children: React.ReactNode }) => (
+const FormLabel = ({ children, required }: { children: React.ReactNode, required?: boolean }) => (
     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 mb-2 block text-left">
-        {children}
+        {children} {required && <span className="text-primary">*</span>}
     </Label>
 );
 
 const FormInput = (props: React.ComponentProps<typeof Input>) => (
-    <Input {...props} className={cn("h-12 rounded-xl bg-background border-none shadow-sm focus-visible:ring-primary", props.className)} />
+    <Input {...props} className={cn("h-12 rounded-xl bg-muted/20 border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
+);
+
+const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: any }) => (
+    <div className="relative group">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
+            <Icon className="h-4 w-4" />
+        </div>
+        <FormInput {...props} className={cn("pl-11", props.className)} />
+    </div>
 );
 
 // --- Sub-Components ---
@@ -168,7 +185,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                 <div className="flex gap-2">
                     <div className="w-[100px] shrink-0">
                         <Select defaultValue="90" required>
-                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
                             <SelectContent>{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
@@ -205,37 +222,37 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const router = useRouter();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [aboutText, setAboutText] = useState('');
     const [entityType, setEntityType] = useState<string>(initialEntity);
-    const ABOUT_LIMIT = 1000;
+    
+    // Dynamic Categories State
+    const [donationCategories, setDonationCategories] = useState([{ category: '', rate: '5' }]);
 
     const [formData, setFormData] = useState({
         country: 'Türkiye',
-        specificType: '',
         fullName: '',
         shortName: '',
-        foundationYear: '',
-        enterpriseStatus: '',
-        marketCategory: '',
+        enterpriseStatus: 'Seçiniz...',
+        marketCategory: 'Seçiniz...',
         donationRate: '5',
-        schoolName: '',
-        clubAdvisor: '',
-        purpose: 'Bağış ve Gönüllülük ilanı vermek',
-        beneficiaries: [] as string[],
-        sdgs: [] as string[],
-        memberships: [] as string[],
-        cityState: '',
-        districtRegion: '',
+        affiliateId: '',
+        trackingLink: '',
+        pixelScript: '',
+        cookieDuration: '',
+        exceptions: '',
+        city: '',
+        district: '',
         addressLine: '',
         email: '',
         phone: '',
         website: '',
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
-        accountName: '',
-        iban: 'TR',
+        iban: '',
         authorized: { name: '', role: '', email: '', phone: '' }
     });
+
+    const addCategory = () => setDonationCategories([...donationCategories, { category: '', rate: '5' }]);
+    const removeCategory = (index: number) => setDonationCategories(donationCategories.filter((_, i) => i !== index));
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -244,7 +261,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             const appRef = collection(db, 'applications');
             await addDocumentNonBlocking(appRef, {
                 ...formData,
-                about: aboutText,
+                donationCategories,
                 entityType: entityType,
                 type: entityType === 'NGO' ? 'STK' : entityType === 'BRAND' ? 'Marka' : 'Kulüp',
                 date: new Date().toISOString().split('T')[0],
@@ -261,12 +278,13 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     };
 
     return (
-        <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
+        <form onSubmit={handleFormSubmit} className="space-y-8 animate-in fade-in-0 pb-10">
+            {/* --- INITIAL SELECTION --- */}
             <div className="space-y-6">
                 <div className="space-y-2">
                     <FormLabel>Ülke</FormLabel>
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
-                        <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {allCountries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
@@ -275,340 +293,267 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 
                 <div className="space-y-2">
                     <FormLabel>Kuruluş Türü</FormLabel>
-                    <Select value={entityType} onValueChange={(val) => { setEntityType(val); setFormData({...formData, specificType: ''}); }}>
-                        <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-bold text-left">
+                    <Select value={entityType} onValueChange={(val) => setEntityType(val)}>
+                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="NGO">STK (Dernek, Vakıf, Spor Kulübü, Özel İzinli)</SelectItem>
+                            <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>
                             <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
                             <SelectItem value="CLUB">Öğrenci Kulübü</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
-
-                <div className="space-y-2 animate-in slide-in-from-top-2">
-                    <FormLabel>Alt Tür</FormLabel>
-                    <Select value={formData.specificType} onValueChange={(val) => setFormData({...formData, specificType: val})} required>
-                        <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm font-medium text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                        <SelectContent>
-                            {entityType === 'NGO' && (
-                                <>
-                                    <SelectItem value="Dernek">Dernek</SelectItem>
-                                    <SelectItem value="Vakıf">Vakıf</SelectItem>
-                                    <SelectItem value="Spor Kulübü">Spor Kulübü</SelectItem>
-                                    <SelectItem value="Özel İzinli">Özel İzinli</SelectItem>
-                                </>
-                            )}
-                            {entityType === 'BRAND' && (
-                                <>
-                                    <SelectItem value="Global Marka">Global Marka</SelectItem>
-                                    <SelectItem value="Yerel İşletme">Yerel İşletme</SelectItem>
-                                    <SelectItem value="Kooperatif">Kooperatif</SelectItem>
-                                    <SelectItem value="Sosyal Şirket">Sosyal Şirket</SelectItem>
-                                </>
-                            )}
-                            {entityType === 'CLUB' && (
-                                <>
-                                    <SelectItem value="Üniversite Kulübü">Üniversite Kulübü</SelectItem>
-                                    <SelectItem value="Lise Kulübü">Lise Kulübü</SelectItem>
-                                    <SelectItem value="Gençlik Grubu">Gençlik Grubu</SelectItem>
-                                </>
-                            )}
-                        </SelectContent>
-                    </Select>
-                </div>
             </div>
 
             <Separator className="border-dashed" />
 
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2">
-                        {entityType === 'NGO' ? <Building2 className="h-5 w-5 text-primary" /> : entityType === 'BRAND' ? <Store className="h-5 w-5 text-primary" /> : <School className="h-5 w-5 text-primary" />}
-                        Kuruluş Bilgileri
-                    </h3>
-                </div>
-
-                <div className="space-y-2">
-                    <FormLabel>Kuruluş Adı</FormLabel>
-                    <FormInput placeholder="Kuruluşunuzun tam adı" required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
-                </div>
-
-                {entityType === 'CLUB' && (
+            {/* --- MARKA KIMLIGI --- */}
+            {entityType === 'BRAND' && (
+                <div className="space-y-6 animate-in slide-in-from-top-4 duration-500">
+                    <SectionTitle>Marka Kimliği</SectionTitle>
+                    
                     <div className="space-y-2">
-                        <FormLabel>Okul / Üniversite Adı</FormLabel>
-                        <Select value={formData.schoolName} onValueChange={(val) => setFormData({...formData, schoolName: val})}>
-                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">
-                                {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                                <SelectItem value="Other">Diğer (Lise veya Belirtilmemiş)</SelectItem>
+                        <FormLabel>İşletme Statüsü</FormLabel>
+                        <Select value={formData.enterpriseStatus} onValueChange={(v) => setFormData({...formData, enterpriseStatus: v})}>
+                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Seçiniz...">Seçiniz...</SelectItem>
+                                <SelectItem value="Ticari Marka">Ticari Marka</SelectItem>
+                                <SelectItem value="Sosyal Şirket">Sosyal Şirket</SelectItem>
+                                <SelectItem value="Kooperatif">Kooperatif</SelectItem>
+                                <SelectItem value="Bireysel İşletme">Yerel İşletme</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
-                )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <FormLabel>Kuruluş Kısa Adı</FormLabel>
-                        <FormInput placeholder="Ahbap, TEMA vb." value={formData.shortName} onChange={e => setFormData({...formData, shortName: e.target.value})} />
+                        <FormLabel>Marka Adı</FormLabel>
+                        <FormInput placeholder="Markanızın adı" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} required />
                     </div>
-                    <div className="space-y-2 text-left">
-                        <FormLabel>Kuruluş Yılı</FormLabel>
-                        <Select onValueChange={(val) => setFormData({...formData, foundationYear: val})}>
-                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm text-left"><SelectValue placeholder="Seç" /></SelectTrigger>
+
+                    <div className="space-y-2">
+                        <FormLabel>Sektör</FormLabel>
+                        <Select value={formData.marketCategory} onValueChange={(v) => setFormData({...formData, marketCategory: v})}>
+                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
                             <SelectContent className="max-h-60">
-                                {Array.from({ length: 126 }, (_, i) => (2025 - i).toString()).map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                <SelectItem value="Seçiniz...">Seçiniz...</SelectItem>
+                                {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => (
+                                    <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
-                </div>
 
-                {entityType === 'BRAND' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2 text-left">
-                            <FormLabel>Sektör / Kategori</FormLabel>
-                            <Select value={formData.marketCategory} onValueChange={(val) => setFormData({...formData, marketCategory: val})}>
-                                <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                                <SelectContent>
-                                    {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => (
-                                        <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                    {/* --- KATEGORI BAZLI BAGIS ORANLARI --- */}
+                    <div className="space-y-4 pt-4">
+                        <SectionTitle>Kategori Bazlı Bağış Oranları</SectionTitle>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed px-1">En düşük %5 oranında bağış aktarımı yapılması önerilmektedir.</p>
+                        
+                        <div className="space-y-3">
+                            {donationCategories.map((cat, idx) => (
+                                <div key={idx} className="flex gap-2 items-end animate-in fade-in-0 slide-in-from-left-2">
+                                    <div className="flex-1 space-y-1">
+                                        {idx === 0 && <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">KATEGORİ</Label>}
+                                        <FormInput placeholder="Örn: Giyim, Aksesuar" value={cat.category} onChange={e => {
+                                            const newCats = [...donationCategories];
+                                            newCats[idx].category = e.target.value;
+                                            setDonationCategories(newCats);
+                                        }} />
+                                    </div>
+                                    <div className="w-24 space-y-1">
+                                        {idx === 0 && <Label className="text-[10px] uppercase font-bold text-muted-foreground ml-1">ORAN (%)</Label>}
+                                        <div className="relative">
+                                            <FormInput type="number" value={cat.rate} onChange={e => {
+                                                const newCats = [...donationCategories];
+                                                newCats[idx].rate = e.target.value;
+                                                setDonationCategories(newCats);
+                                            }} />
+                                            <Percent className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                        </div>
+                                    </div>
+                                    {donationCategories.length > 1 && (
+                                        <Button variant="ghost" size="icon" className="h-12 w-12 text-destructive hover:bg-destructive/10" onClick={() => removeCategory(idx)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                        <div className="space-y-2">
-                            <FormLabel>Sabit Bağış Oranı (%)</FormLabel>
-                            <div className="relative">
-                                <FormInput type="number" value={formData.donationRate} onChange={e => setFormData({...formData, donationRate: e.target.value})} className="pr-10" />
-                                <Percent className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Button type="button" variant="outline" className="w-full border-dashed border-primary/40 text-primary h-12 rounded-xl font-bold" onClick={addCategory}>
+                            + Yeni Kategori Ekle
+                        </Button>
+                    </div>
+
+                    {/* --- AFFILIATE MARKETING --- */}
+                    <div className="space-y-6 pt-4">
+                        <SectionTitle>Affiliate Marketing & Teknik Takip</SectionTitle>
+                        <p className="text-[10px] text-muted-foreground leading-relaxed px-1">Markanızın hangel platformu üzerinden gelen trafiği ve satışları takip edebilmesi için teknik verileri tanımlayın.</p>
+                        
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel>Affiliate / Media Referral ID</FormLabel>
+                                <FormInput placeholder="Örn: HANGEL_MARKA_001" value={formData.affiliateId} onChange={e => setFormData({...formData, affiliateId: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Affiliate / Tracking Link / Base URL</FormLabel>
+                                <FormInput placeholder="Örn: https://marka.com/product?ref=hangel" value={formData.trackingLink} onChange={e => setFormData({...formData, trackingLink: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Order/Conversion Pixel / Event Script (JS/HTML)</FormLabel>
+                                <Textarea className="rounded-xl bg-muted/20 border-none font-mono text-[10px]" rows={4} placeholder="<script> window.hangelConversion = ... </script>" value={formData.pixelScript} onChange={e => setFormData({...formData, pixelScript: e.target.value})} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Cookie Süresi</FormLabel>
+                                    <FormInput placeholder="Örn: 30 Gün" value={formData.cookieDuration} onChange={e => setFormData({...formData, cookieDuration: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Kısıtlamalar / İstisnalar</FormLabel>
+                                    <FormInput placeholder="Örn: Tüm Ürünler" value={formData.exceptions} onChange={e => setFormData({...formData, exceptions: e.target.value})} />
+                                </div>
                             </div>
                         </div>
                     </div>
-                )}
 
-                {entityType === 'NGO' && (
-                    <div className="space-y-2 text-left">
-                        <FormLabel>İktisadi İşletme Durumu</FormLabel>
-                        <Select onValueChange={(val) => setFormData({...formData, enterpriseStatus: val})}>
-                            <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Var">Var</SelectItem>
-                                <SelectItem value="Yok">Yok</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    {/* --- ADRES --- */}
+                    <div className="space-y-4 pt-4">
+                        <SectionTitle>Adres Bilgileri</SectionTitle>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>İl / Eyalet</FormLabel>
+                                <FormInput placeholder="Şehir / Eyalet girin" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>İlçe / Bölge</FormLabel>
+                                <FormInput placeholder="İlçe / Bölge girin" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>Açık Adres</FormLabel>
+                            <FormInput placeholder="Sokak, kapı no..." value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
+                        </div>
                     </div>
-                )}
 
-                {entityType === 'CLUB' && (
-                    <div className="space-y-2">
-                        <FormLabel>Danışman Öğretmen / Akademisyen</FormLabel>
-                        <FormInput placeholder="Ad Soyad" value={formData.clubAdvisor} onChange={e => setFormData({...formData, clubAdvisor: e.target.value})} />
+                    {/* --- İletişim ve Sosyal Medya --- */}
+                    <div className="space-y-6 pt-4">
+                        <SectionTitle>İletişim ve Sosyal Medya</SectionTitle>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel>Kurumsal E-posta</FormLabel>
+                                <IconInput icon={Mail} type="email" placeholder="örnek@marka.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Kurumsal Telefon</FormLabel>
+                                <div className="flex gap-2">
+                                    <div className="w-[100px] shrink-0">
+                                        <Select defaultValue="90">
+                                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                            <SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Web Sitesi</FormLabel>
+                                <IconInput icon={Globe} placeholder="https://www.marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                            </div>
+                            
+                            <div className="pt-4 space-y-4">
+                                <Label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Sosyal Medya Kanalları</Label>
+                                <IconInput icon={Instagram} placeholder="instagram.com/kurumadi" value={formData.social.instagram} onChange={e => setFormData({...formData, social: {...formData.social, instagram: e.target.value}})} />
+                                <IconInput icon={XIcon} placeholder="x.com/kullaniciadi" value={formData.social.twitter} onChange={e => setFormData({...formData, social: {...formData.social, twitter: e.target.value}})} />
+                                <IconInput icon={Linkedin} placeholder="linkedin.com/company/kurumadi" value={formData.social.linkedin} onChange={e => setFormData({...formData, social: {...formData.social, linkedin: e.target.value}})} />
+                            </div>
+                        </div>
                     </div>
-                )}
 
-                <div className="space-y-2">
-                    <FormLabel>Kullanım Amacı</FormLabel>
-                    <FormInput value={formData.purpose} readOnly className="bg-muted/50 cursor-not-allowed opacity-70" />
-                </div>
-
-                <div className="space-y-2">
-                    <div className="flex justify-between items-end mb-1">
-                        <FormLabel>Hakkında</FormLabel>
-                        <span className="text-[10px] font-bold text-muted-foreground">{aboutText.length} / {ABOUT_LIMIT}</span>
+                    {/* --- YASAL & FİNANSAL --- */}
+                    <div className="space-y-4 pt-4">
+                        <SectionTitle>Yasal & Finansal</SectionTitle>
+                        <div className="space-y-2">
+                            <FormLabel>Yasal Unvan</FormLabel>
+                            <FormInput placeholder="Şirket Tam Adı" value={formData.legalTitle} onChange={e => setFormData({...formData, legalTitle: e.target.value})} />
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>IBAN Numarası</FormLabel>
+                            <FormInput placeholder="TR..." value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} className="font-mono" />
+                        </div>
                     </div>
-                    <Textarea 
-                        placeholder="Kuruluşunuzu anlatan kısa bir metin." 
-                        rows={5} 
-                        maxLength={ABOUT_LIMIT} 
-                        value={aboutText}
-                        onChange={(e) => setAboutText(e.target.value)}
-                        className="rounded-2xl p-4 leading-relaxed border-none shadow-sm bg-background focus-visible:ring-primary"
-                        required
-                    />
-                </div>
-            </div>
 
-            {entityType === 'NGO' && (
-                <div className="space-y-8 animate-in fade-in-0">
-                    <MultiCheckboxGroup title="Faydalanıcılar" options={['Çocuklar', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre']} selected={formData.beneficiaries} onChange={(val) => setFormData({...formData, beneficiaries: val})} />
-                    <MultiCheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri" options={['1. Yoksulluğa Son', '2. Açlığa Son', '3. Sağlıklı Yaşam', '4. Nitelikli Eğitim', '5. Toplumsal Cinsiyet Eşitliği', '13. İklim Eylemi', '14. Sudaki Yaşam', '15. Karasal Yaşam']} selected={formData.sdgs} onChange={(val) => setFormData({...formData, sdgs: val})} />
+                    {/* --- YASAL BELGELER & LOGOLAR --- */}
+                    <div className="space-y-4 pt-4">
+                        <SectionTitle>Yasal Belgeler & Logolar</SectionTitle>
+                        <FileUpload label="Vergi Levhası" accept=".pdf,.png" hint="Mevcut yıla ait onaylı vergi levhası." required />
+                        <FileUpload label="Marka Logosu" accept=".png,.jpg" hint="En az 512x512px şeffaf PNG önerilir." required />
+                    </div>
+
+                    {/* --- YETKILI KISI --- */}
+                    <div className="space-y-6 pt-4">
+                        <SectionTitle>Yetkili Kişi Bilgileri</SectionTitle>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>Ad Soyad</FormLabel>
+                                <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Görevi</FormLabel>
+                                <FormInput placeholder="Örn: Pazarlama Müdürü" value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>Kurumsal E-posta</FormLabel>
+                            <FormInput type="email" placeholder="yetkili@marka.com" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>Kurumsal Telefon</FormLabel>
+                            <div className="flex gap-2">
+                                <div className="w-[100px] shrink-0">
+                                    <Select defaultValue="90">
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                        <SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* --- CHECKBOXES & BUTTON --- */}
+                    <div className="space-y-4 pt-6 text-left">
+                        <div className="flex items-start space-x-3">
+                            <Checkbox id="c1" required />
+                            <Label htmlFor="c1" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                <span className="text-primary font-bold">Marka Sözleşmesini</span> ve <span className="text-primary font-bold">Sosyal Etki Politikasını</span> okudum, kabul ediyorum.
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                            <Checkbox id="c2" required />
+                            <Label htmlFor="c2" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                <span className="text-primary font-bold">Gizlilik Politikası</span>, <span className="text-primary font-bold">Aydınlatma Metni</span> ve <span className="text-primary font-bold">Açık Rıza Metni’ni</span> okudum ve kabul ediyorum.
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                            <Checkbox id="c3" />
+                            <Label htmlFor="c3" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                Kampanya ve tanıtımlardan haberim olsun (Ticari Elektronik İleti izni).
+                            </Label>
+                        </div>
+                    </div>
+
+                    <Button type="submit" className="w-full h-16 rounded-2xl text-lg font-black shadow-2xl bg-primary hover:bg-primary/90 mt-10" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : "BAŞVURUYU GÖNDER"}
+                    </Button>
                 </div>
             )}
 
-            <Separator className="border-dashed" />
-
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary"/> Adres Bilgileri</h3>
+            {/* STK and Club forms stay minimal for this update as requested focuses on Brand */}
+            {entityType !== 'BRAND' && (
+                <div className="p-8 text-center bg-muted/10 rounded-2xl border-2 border-dashed">
+                    <p className="text-sm font-medium text-muted-foreground">Bu kuruluş türü için form detayları yükleniyor...</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <FormLabel>İl / Eyalet</FormLabel>
-                        <FormInput placeholder="Şehir / Eyalet girin" required value={formData.cityState} onChange={e => setFormData({...formData, cityState: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                        <FormLabel>İlçe / Bölge</FormLabel>
-                        <FormInput placeholder="İlçe / Bölge girin" required value={formData.districtRegion} onChange={e => setFormData({...formData, districtRegion: e.target.value})} />
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Açık Adres</FormLabel>
-                    <FormInput placeholder="Sokak, kapı no..." required value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
-                </div>
-            </div>
-
-            <Separator className="border-dashed" />
-
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><Globe className="h-5 w-5 text-primary"/> İletişim ve Sosyal Medya</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <FormLabel>Kurumsal E-posta</FormLabel>
-                        <FormInput type="email" placeholder="örnek@kurum.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                    </div>
-                    <div className="space-y-2 text-left">
-                        <FormLabel>Kurumsal Telefon</FormLabel>
-                        <div className="flex gap-2">
-                            <div className="w-[80px] shrink-0">
-                                <Select defaultValue="90">
-                                    <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <FormInput type="tel" placeholder="5XX XXX XX XX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="flex-1 font-bold" />
-                        </div>
-                    </div>
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Web Sitesi</FormLabel>
-                    <FormInput placeholder="https://www.ornek.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
-                </div>
-            </div>
-
-            <Separator className="border-dashed" />
-
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><Landmark className="h-5 w-5 text-primary"/> Yasal & Finansal</h3>
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Yasal Unvan</FormLabel>
-                    <FormInput placeholder="Yasal Unvan" required value={formData.legalTitle} onChange={e => setFormData({...formData, legalTitle: e.target.value})} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <FormLabel>Hesap Adı</FormLabel>
-                        <FormInput placeholder="Hesap Adı" required value={formData.accountName} onChange={e => setFormData({...formData, accountName: e.target.value})} />
-                    </div>
-                    <div className="space-y-2">
-                        <FormLabel>IBAN Numarası</FormLabel>
-                        <FormInput placeholder="TR..." required value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} className="font-mono" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary"/> Yasal Belgeler</h3>
-                </div>
-                <FileUpload label="Logo" accept=".jpg,.png" hint="Desteklenen format: .jpg, .png" required />
-                
-                {entityType === 'NGO' && (
-                    <>
-                        <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Desteklenen format: .pdf, .png" required />
-                        <FileUpload label="Tüzük" accept=".pdf" hint="Desteklenen format: .pdf" required />
-                    </>
-                )}
-
-                {entityType === 'BRAND' && (
-                    <FileUpload label="Ticari Sicil Gazetesi / Faaliyet Belgesi" accept=".pdf" hint="Vergi levhası veya sicil gazetesi örneği." required />
-                )}
-
-                {entityType === 'CLUB' && (
-                    <FileUpload label="Okul Onay Belgesi / Karar Defteri" accept=".pdf" hint="Kulübün resmi statüsünü gösteren onaylı belge." required />
-                )}
-            </div>
-
-            <Separator className="border-dashed" />
-
-            <div className="space-y-6">
-                <div className="space-y-1 text-left">
-                    <h3 className="font-bold text-lg flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary"/> Yetkili Kişi Bilgileri</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput 
-                            placeholder="Ör.: İsmail Hilmi ADIGÜZEL" 
-                            required 
-                            value={formData.authorized.name} 
-                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} 
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <FormLabel>Görevi</FormLabel>
-                        <FormInput 
-                            placeholder="Örn: Genel Sekreter, Pazarlama Müdürü" 
-                            required 
-                            value={formData.authorized.role} 
-                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} 
-                        />
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <FormLabel>Kurumsal E-posta</FormLabel>
-                        <FormInput 
-                            type="email" 
-                            placeholder="yetkili@kurum.com" 
-                            required 
-                            value={formData.authorized.email} 
-                            onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} 
-                        />
-                    </div>
-                    <div className="space-y-2 text-left">
-                        <FormLabel>Kurumsal Telefon</FormLabel>
-                        <div className="flex gap-2">
-                            <div className="w-[80px] shrink-0">
-                                <Select defaultValue="90">
-                                    <SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <FormInput 
-                                type="tel" 
-                                placeholder="5XX XXX XX XX" 
-                                required 
-                                value={formData.authorized.phone} 
-                                onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} 
-                                className="flex-1 font-bold" 
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="space-y-4 pt-6 border-t text-left">
-                <div className="flex items-start space-x-3">
-                    <Checkbox id="check-1" required />
-                    <Label htmlFor="check-1" className="text-[11px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                        Kuruluş Sözleşmesi ve Sosyal Etki Politikası'nı okudum, onaylıyorum.
-                    </Label>
-                </div>
-            </div>
-
-            <div className="space-y-4">
-                <Button type="submit" className="w-full h-16 rounded-2xl text-lg font-black shadow-2xl" disabled={isSubmitting}>
-                    {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : "Başvuruyu Gönder"}
-                </Button>
-            </div>
+            )}
         </form>
     );
 };
@@ -658,7 +603,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[80px] shrink-0">
-                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-background border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                     </div>
                                     <Input type="tel" placeholder="5XX..." value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold" />
                                 </div>
@@ -740,6 +685,7 @@ const FormRenderer = () => {
                             <CardTitle className="text-3xl font-black tracking-tighter">
                                 {action === 'register' ? 'İyiliğe İlk Adım' : 'Tekrar Hoş Geldin'}
                             </CardTitle>
+                            <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6 px-8 pb-10">
                             <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
@@ -756,7 +702,7 @@ const FormRenderer = () => {
                                     <div className="space-y-2">
                                         <FormLabel>Hesap Tipi</FormLabel>
                                         <Select onValueChange={handleTypeChange} value={type} required>
-                                            <SelectTrigger className="h-12 rounded-xl font-bold border-none shadow-sm bg-background text-left">
+                                            <SelectTrigger className="h-12 rounded-xl font-bold border-none shadow-sm bg-muted/20 text-left">
                                                 <SelectValue placeholder="Seçiniz..." />
                                             </SelectTrigger>
                                             <SelectContent>
