@@ -26,6 +26,7 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const funds = [
     { 

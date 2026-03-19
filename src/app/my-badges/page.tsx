@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { user, badges } from '@/lib/data';
 import { Badge as BadgeType } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";

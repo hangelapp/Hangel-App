@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info } from 'lucide-react';
 import { user, ngos, studentClubs, allEntityLists } from '@/lib/data';
@@ -127,7 +127,7 @@ const navGroups = [
     }
 ];
 
-export default function NgoDashboardPage() {
+function NgoDashboardPageContent() {
     const searchParams = useSearchParams();
     const entityId = searchParams.get('id');
     const entityType = searchParams.get('type');
@@ -239,5 +239,13 @@ export default function NgoDashboardPage() {
             </div>
         </div>
     </div>
+  );
+}
+
+export default function NgoDashboardPage() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <NgoDashboardPageContent />
+    </Suspense>
   );
 }
