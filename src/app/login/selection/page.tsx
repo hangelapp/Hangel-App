@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, Suspense, useEffect } from 'react';
@@ -38,13 +39,29 @@ import {
     MousePointer2,
     Cookie,
     Target,
-    Users
+    Users,
+    CheckCircle2,
+    DollarSign,
+    Activity
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, countryPhoneCodes, allCountries, allUniversities, allBeneficiaries, allSdgs, allMemberships, years, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { 
+    marketCategories, 
+    countryPhoneCodes, 
+    allCountries, 
+    allUniversities, 
+    allBeneficiaries, 
+    allSdgs, 
+    allMemberships, 
+    years, 
+    allProvinces, 
+    districtsData, 
+    neighborhoodsData,
+    allInterests 
+} from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -199,7 +216,7 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                     <div className="w-[100px] shrink-0">
                         <Select defaultValue="90" required>
                             <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent>{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
+                            <SelectContent className="max-h-60">{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                     <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="flex-1 font-bold" />
@@ -264,11 +281,12 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         addressLine: '',
         email: '',
         phone: '',
+        phoneCode: '90',
         website: '',
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
         iban: '',
-        authorized: { name: '', role: '', email: '', phone: '' }
+        authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' }
     });
 
     const addCategory = () => setDonationCategories([...donationCategories, { category: '', rate: '5' }]);
@@ -307,11 +325,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-8 animate-in fade-in-0 pb-10">
-            {/* --- INITIAL SELECTION --- */}
             <div className="space-y-6">
                 <div className="space-y-2">
                     <FormLabel>Ülke</FormLabel>
-                    <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
+                    <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val, city: '', district: ''})}>
                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {allCountries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
@@ -336,12 +353,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             <Separator className="border-dashed" />
 
-            {/* --- STK KAYIT FORMU --- */}
             {entityType === 'NGO' && (
                 <div className="space-y-10 animate-in slide-in-from-top-4 duration-500">
-                    {/* Kuruluş Kimliği */}
                     <div className="space-y-6">
-                        <SectionTitle icon={Building2}>Kuruluş Kimliği</SectionTitle>
+                        <SectionTitle icon={Building2}>Kurumsal Kimlik</SectionTitle>
                         <div className="space-y-2">
                             <FormLabel>Kuruluş Türü</FormLabel>
                             <Select value={formData.ngoType} onValueChange={(v) => setFormData({...formData, ngoType: v})}>
@@ -398,7 +413,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Etki Alanları */}
                     <div className="space-y-6">
                         <SectionTitle icon={Target}>Etki Alanları</SectionTitle>
                         <div className="space-y-4">
@@ -411,7 +425,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Kurumsal Network */}
                     <div className="space-y-6">
                         <SectionTitle icon={Users}>Kurumsal Network</SectionTitle>
                         <div className="space-y-4">
@@ -420,41 +433,52 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Adres Bilgileri */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>Adres Bilgileri</SectionTitle>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <FormLabel>İl</FormLabel>
-                                <Select value={formData.city} onValueChange={(v) => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                                </Select>
+                        {formData.country === 'Türkiye' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>İl</FormLabel>
+                                    <Select value={formData.city} onValueChange={(v) => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>İlçe</FormLabel>
+                                    <Select value={formData.district} onValueChange={(v) => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{formData.city && (districtsData[formData.city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <FormLabel>İlçe</FormLabel>
-                                <Select value={formData.district} onValueChange={(v) => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{formData.city && (districtsData[formData.city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                </Select>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Şehir</FormLabel>
+                                    <FormInput placeholder="Şehir girin" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Bölge / Eyalet</FormLabel>
+                                    <FormInput placeholder="Bölge girin" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
+                                </div>
                             </div>
-                        </div>
+                        )}
                         <div className="space-y-2">
                             <FormLabel>Açık Adres</FormLabel>
                             <FormInput placeholder="Mahalle, sokak, no..." value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
                         </div>
                     </div>
 
-                    {/* İletişim ve Sosyal Medya */}
                     <div className="space-y-6">
                         <SectionTitle icon={Globe}>İletişim ve Sosyal Medya</SectionTitle>
                         <div className="space-y-4">
                             <IconInput icon={Mail} type="email" placeholder="kurumsal@kurum.org" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
-                                    <Select defaultValue="90">
+                                    <Select value={formData.phoneCode} onValueChange={val => setFormData({...formData, phoneCode: val})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                        <SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
@@ -466,31 +490,59 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Yasal Belgeler */}
                     <div className="space-y-6">
-                        <SectionTitle icon={FileText}>Yasal Belgeler & Logolar</SectionTitle>
+                        <SectionTitle icon={FileText}>Yasal ve Finansal</SectionTitle>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>Yasal Unvan</FormLabel>
+                                <FormInput placeholder="Yasal unvan girin" value={formData.legalTitle} onChange={e => setFormData({...formData, legalTitle: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Banka IBAN</FormLabel>
+                                <FormInput placeholder="TR..." value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <SectionTitle icon={ShieldCheck}>Yasal Belgeler</SectionTitle>
                         <FileUpload label="Kuruluş Logosu" accept=".png,.jpg" hint="En az 512x512px, şeffaf PNG önerilir." required />
                         <FileUpload label="Faaliyet Belgesi" accept=".pdf,.png" hint="Son 6 aya ait resmi faaliyet belgesi." required />
                         <FileUpload label="Tüzük veya Vakıf Senedi" accept=".pdf" hint="Kuruluşun güncel tüzüğü/senedi." required />
                     </div>
 
-                    {/* Yetkili Bilgileri */}
                     <div className="space-y-6">
                         <SectionTitle icon={UserCircle}>Yetkili Kişi Bilgileri</SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <FormLabel>Ad Soyad</FormLabel>
-                                <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
+                                <FormInput placeholder="Yetkili ad soyad" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Görevi</FormLabel>
                                 <FormInput placeholder="Örn: Genel Başkan" value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
                             </div>
                         </div>
-                        <FormInput type="email" placeholder="yetkili@kurum.org" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>Email</FormLabel>
+                                <FormInput type="email" placeholder="yetkili@kurum.org" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Telefon</FormLabel>
+                                <div className="flex gap-2">
+                                    <div className="w-[80px] shrink-0">
+                                        <Select value={formData.authorized.phoneCode} onValueChange={val => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
+                                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                            <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Onaylar */}
                     <div className="space-y-4 pt-6">
                         <div className="flex items-start space-x-3 text-left">
                             <Checkbox id="terms-ngo" required />
@@ -512,7 +564,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
             )}
 
-            {/* --- MARKA KAYIT FORMU --- */}
             {entityType === 'BRAND' && (
                 <div className="space-y-10 animate-in slide-in-from-top-4 duration-500">
                     <SectionTitle icon={Store}>Marka Kimliği</SectionTitle>
@@ -576,7 +627,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </div>
                                     </div>
                                     {donationCategories.length > 1 && (
-                                        <Button variant="ghost" size="icon" className="h-12 w-12 text-destructive hover:bg-destructive/10" onClick={() => removeCategory(idx)}>
+                                        <Button type="button" variant="ghost" size="icon" className="h-12 w-12 text-destructive hover:bg-destructive/10" onClick={() => removeCategory(idx)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     )}
@@ -606,19 +657,31 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Ortak Alanlar (İletişim, Yasal, Yetkili) */}
                     <div className="space-y-6 pt-4">
                         <SectionTitle icon={MapPin}>Adres Bilgileri</SectionTitle>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <FormLabel>İl</FormLabel>
-                                <FormInput placeholder="Şehir girin" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                        {formData.country === 'Türkiye' ? (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>İl</FormLabel>
+                                    <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: ''})}>
+                                        <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Seç..." /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>İlçe</FormLabel>
+                                    <Select value={formData.district} onValueChange={v => setFormData({...formData, district: v})} disabled={!formData.city}>
+                                        <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Seç..." /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{formData.city && districtsData[formData.city]?.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <FormLabel>İlçe</FormLabel>
-                                <FormInput placeholder="İlçe girin" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2"><FormLabel>Şehir</FormLabel><FormInput placeholder="Şehir" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} /></div>
+                                <div className="space-y-2"><FormLabel>Bölge</FormLabel><FormInput placeholder="Bölge" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} /></div>
                             </div>
-                        </div>
+                        )}
                         <FormInput placeholder="Açık Adres" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
                     </div>
 
@@ -626,7 +689,15 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <SectionTitle icon={Globe}>İletişim ve Sosyal Medya</SectionTitle>
                         <div className="space-y-4">
                             <IconInput icon={Mail} type="email" placeholder="kurumsal@marka.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                            <IconInput icon={Phone} placeholder="5XXXXXXXXX" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                            <div className="flex gap-2">
+                                <div className="w-[100px] shrink-0">
+                                    <Select value={formData.phoneCode} onValueChange={v => setFormData({...formData, phoneCode: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                            </div>
                             <IconInput icon={Globe} placeholder="https://www.marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             <IconInput icon={Instagram} placeholder="instagram.com/marka" value={formData.social.instagram} onChange={e => setFormData({...formData, social: {...formData.social, instagram: e.target.value}})} />
                         </div>
@@ -648,14 +719,31 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormInput placeholder="Ad Soyad" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                             <FormInput placeholder="Görevi" value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
                         </div>
-                        <FormInput type="email" placeholder="yetkili@marka.com" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormInput type="email" placeholder="yetkili@marka.com" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                            <div className="flex gap-2">
+                                <div className="w-[80px] shrink-0">
+                                    <Select value={formData.authorized.phoneCode} onValueChange={v => setFormData({...formData, authorized: {...formData.authorized, phoneCode: v}})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                                <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-4 pt-6">
                         <div className="flex items-start space-x-3 text-left">
                             <Checkbox id="c1" required />
                             <Label htmlFor="c1" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                                <span className="text-primary font-bold">Marka Sözleşmesini</span> ve <span className="text-primary font-bold">Sosyal Etki Politikasını</span> kabul ediyorum.
+                                <span className="text-primary font-bold">Marka Sözleşmesini</span> ve <span className="text-primary font-bold">Sosyal Etki Politikası</span>'nı okudum, kabul ediyorum.
+                            </Label>
+                        </div>
+                        <div className="flex items-start space-x-3 text-left">
+                            <Checkbox id="c2" required />
+                            <Label htmlFor="c2" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                <span className="text-primary font-bold">Gizlilik Politikası</span> kapsamında verilerimin işlenmesine onay veriyorum.
                             </Label>
                         </div>
                     </div>
@@ -666,7 +754,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
             )}
 
-            {/* --- ÖĞRENCİ KULÜBÜ FORMU --- */}
             {entityType === 'CLUB' && (
                 <div className="space-y-10 animate-in slide-in-from-top-4 duration-500">
                     <SectionTitle icon={School}>Kulüp Bilgileri</SectionTitle>
@@ -700,8 +787,28 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                         <div className="space-y-6 pt-4">
                             <SectionTitle icon={UserCircle}>Yetkili Bilgileri (Başkan/Danışman)</SectionTitle>
-                            <FormInput placeholder="Ad Soyad" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormInput placeholder="Ad Soyad" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
+                                <div className="flex gap-2">
+                                    <div className="w-[80px] shrink-0">
+                                        <Select value={formData.authorized.phoneCode} onValueChange={val => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
+                                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                            <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
+                                </div>
+                            </div>
                             <FormInput type="email" placeholder="kulup@okul.edu.tr" value={formData.authorized.email} onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 pt-6">
+                        <div className="flex items-start space-x-3 text-left">
+                            <Checkbox id="c-club" required />
+                            <Label htmlFor="c-club" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
+                                <span className="text-primary font-bold">Kulüp Katılım Beyanı</span>'nı ve <span className="text-primary font-bold">Kampüs Kuralları</span>'nı kabul ediyorum.
+                            </Label>
                         </div>
                     </div>
 
@@ -759,7 +866,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[80px] shrink-0">
-                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                     </div>
                                     <Input type="tel" placeholder="5XX..." value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold" />
                                 </div>
@@ -827,60 +934,58 @@ const FormRenderer = () => {
     };
 
     return (
-        <>
-            <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
-                <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
-                    <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                    <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
-                        <CardHeader className="text-center pt-10 pb-6">
-                            <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
-                                <HangelLogo className="text-3xl" />
-                            </div>
-                            <CardTitle className="text-3xl font-black tracking-tighter">
-                                {action === 'register' ? 'İyiliğe İlk Adım' : 'Tekrar Hoş Geldin'}
-                            </CardTitle>
-                            <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6 px-8 pb-10">
-                            <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
-                                <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                    <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
-                                    <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
-                                </TabsList>
-                            </Tabs>
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
+            <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
+                <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
+                    <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
+                    <CardHeader className="text-center pt-10 pb-6">
+                        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
+                            <HangelLogo className="text-3xl" />
+                        </div>
+                        <CardTitle className="text-3xl font-black tracking-tighter">
+                            {action === 'register' ? 'İyiliğe İlk Adım' : 'Tekrar Hoş Geldin'}
+                        </CardTitle>
+                        <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 px-8 pb-10">
+                        <Tabs defaultValue={action} onValueChange={handleActionChange} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
+                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
+                                <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
 
-                            {action === 'login' ? (
-                                <IndividualForm onComplete={handleLoginComplete} />
-                            ) : (
-                                <div className="space-y-6 pt-4 border-t border-dashed">
-                                    <div className="space-y-2">
-                                        <FormLabel>Hesap Tipi</FormLabel>
-                                        <Select onValueChange={handleTypeChange} value={type} required>
-                                            <SelectTrigger className="h-12 rounded-xl font-bold border-none shadow-sm bg-muted/20 text-left">
-                                                <SelectValue placeholder="Seçiniz..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="individual">Bireysel Kullanıcı</SelectItem>
-                                                <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {type === 'individual' ? (
-                                        <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
-                                    ) : (
-                                        <CorporateForm initialEntity={initialEntity} />
-                                    )}
+                        {action === 'login' ? (
+                            <IndividualForm onComplete={handleLoginComplete} />
+                        ) : (
+                            <div className="space-y-6 pt-4 border-t border-dashed">
+                                <div className="space-y-2">
+                                    <FormLabel>Hesap Tipi</FormLabel>
+                                    <Select onValueChange={handleTypeChange} value={type} required>
+                                        <SelectTrigger className="h-12 rounded-xl font-bold border-none shadow-sm bg-muted/20 text-left">
+                                            <SelectValue placeholder="Seçiniz..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="individual">Bireysel Kullanıcı</SelectItem>
+                                            <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
+
+                                {type === 'individual' ? (
+                                    <IndividualForm isRegister={true} onComplete={handleRegistrationComplete} />
+                                ) : (
+                                    <CorporateForm initialEntity={initialEntity} />
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
             <PostRegistrationSurvey open={showSurvey} onOpenChange={setShowSurvey} onComplete={handleSurveyComplete} />
-        </>
+        </div>
     );
 };
 
