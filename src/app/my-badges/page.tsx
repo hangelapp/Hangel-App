@@ -128,7 +128,7 @@ export default function MyBadgesPage() {
                         <p className="text-8xl font-black tracking-tighter text-primary drop-shadow-2xl">{user.impactScore.toLocaleString('tr-TR')}</p>
                     </div>
                 </Card>
-            </Card>
+            </TabsContent>
 
             <TabsContent value="badges" className="mt-8 space-y-12">
                  {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => (
