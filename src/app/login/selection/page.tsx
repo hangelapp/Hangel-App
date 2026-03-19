@@ -65,7 +65,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -131,74 +131,137 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     const db = useFirestore();
     const { toast } = useToast();
     const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
+    const [phoneCode, setPhoneCode] = useState('90');
     const [name, setName] = useState('');
+    const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+    const [step, setStep] = useState<'phone' | 'otp'>('phone');
+    const recaptchaContainerRef = React.useRef<HTMLDivElement>(null);
+    const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
     const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Initialize reCAPTCHA verifier
+    const getRecaptchaVerifier = () => {
+        if (!recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                size: 'invisible',
+            });
+        }
+        return recaptchaVerifierRef.current;
+    };
+
+    // Step 1: Send OTP
+    const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        const email = `${phone.replace(/\D/g, '')}@hangel.org`;
+        const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            if (isRegister) {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const userId = userCredential.user.uid;
-                
-                setDocumentNonBlocking(doc(db, 'users', userId), {
-                    id: userId,
-                    name: name,
-                    username: `@${phone.replace(/\D/g, '')}`,
-                    role: 'user',
-                    personalInfo: { email, phone, address: { country: 'Türkiye' } },
-                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                }, { merge: true });
-
-                await updateProfile(userCredential.user, { displayName: name });
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-            }
-            onComplete();
+            const verifier = getRecaptchaVerifier();
+            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            setConfirmationResult(result);
+            setStep('otp');
+            toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
+            // Reset reCAPTCHA on error
+            recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
         } finally {
             setIsLoading(false);
         }
     };
 
+    // Step 2: Verify OTP
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!confirmationResult) return;
+        setIsLoading(true);
+        try {
+            const userCredential = await confirmationResult.confirm(otp);
+            const userId = userCredential.user.uid;
+            const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
+
+            if (isRegister && name) {
+                setDocumentNonBlocking(doc(db, 'users', userId), {
+                    id: userId,
+                    name: name,
+                    username: `@${phone.replace(/\D/g, '')}`,
+                    role: 'user',
+                    personalInfo: { phone: fullPhone, address: { country: 'Türkiye' } },
+                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                }, { merge: true });
+                await updateProfile(userCredential.user, { displayName: name });
+            }
+
+            onComplete();
+        } catch (error: any) {
+            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı. Lütfen tekrar deneyin." });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-5">
-            {isRegister && (
-                <div className="space-y-2">
-                    <FormLabel>Ad Soyad</FormLabel>
-                    <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={(e) => setName(e.target.value)} />
-                </div>
-            )}
-            <div className="space-y-2">
-                <FormLabel>Telefon</FormLabel>
-                <div className="flex gap-2">
-                    <div className="w-[100px] shrink-0">
-                        <Select defaultValue="90">
-                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent className="max-h-60">
-                                {uniquePhoneCodes.map((code, idx) => (
-                                    <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+        <>
+            <div id="recaptcha-container" ref={recaptchaContainerRef} />
+            {step === 'phone' ? (
+                <form onSubmit={handleSendOtp} className="space-y-5">
+                    {isRegister && (
+                        <div className="space-y-2">
+                            <FormLabel>Ad Soyad</FormLabel>
+                            <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
+                    )}
+                    <div className="space-y-2">
+                        <FormLabel>Telefon</FormLabel>
+                        <div className="flex gap-2">
+                            <div className="w-[100px] shrink-0">
+                                <Select value={phoneCode} onValueChange={setPhoneCode}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {uniquePhoneCodes.map((code, idx) => (
+                                            <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" />
+                        </div>
                     </div>
-                    <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" />
-                </div>
-            </div>
-            <div className="space-y-2">
-                <FormLabel>Şifre</FormLabel>
-                <FormInput type="password" placeholder="••••••••" required value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-            <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
-                {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isRegister ? "Kayıt Ol" : "Giriş Yap")}
-            </Button>
-        </form>
+                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
+                    </Button>
+                </form>
+            ) : (
+                <form onSubmit={handleVerifyOtp} className="space-y-5">
+                    <div className="text-center space-y-2">
+                        <p className="text-sm text-muted-foreground">
+                            <span className="font-bold text-foreground">+{phoneCode}{phone}</span> numarasına gönderilen kodu girin
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <FormLabel>Doğrulama Kodu</FormLabel>
+                        <FormInput
+                            type="text"
+                            inputMode="numeric"
+                            placeholder="123456"
+                            required
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            className="text-center text-2xl font-black tracking-[0.5em]"
+                            maxLength={6}
+                        />
+                    </div>
+                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
+                    </Button>
+                    <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => { setStep('phone'); setOtp(''); recaptchaVerifierRef.current = null; }}>
+                        Numarayı Değiştir
+                    </Button>
+                </form>
+            )}
+        </>
     );
 };
 
@@ -557,8 +620,6 @@ const FormRenderer = () => {
     const type = searchParams.get('type') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
     
-    const [showSurvey, setShowSurvey] = useState(false);
-
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
             <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
@@ -588,7 +649,7 @@ const FormRenderer = () => {
                         ) : (
                             <div className="space-y-6 pt-4">
                                 {type === 'individual' ? (
-                                    <IndividualForm isRegister={true} onComplete={() => setShowSurvey(true)} />
+                                    <IndividualForm isRegister={true} onComplete={() => router.push('/timeline')} />
                                 ) : (
                                     <CorporateForm initialEntity={initialEntity} />
                                 )}
