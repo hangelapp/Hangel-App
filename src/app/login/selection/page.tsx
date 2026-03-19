@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, Suspense, useEffect } from 'react';
+import React, { useState, Suspense, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -146,6 +145,9 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
     const [name, setName] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Deduplicate phone codes for unique keys
+    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -216,7 +218,11 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
                     <div className="w-[100px] shrink-0">
                         <Select defaultValue="90" required>
                             <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
-                            <SelectContent className="max-h-60">{countryPhoneCodes.map(code => <SelectItem key={code} value={code}>+{code}</SelectItem>)}</SelectContent>
+                            <SelectContent className="max-h-60">
+                                {uniquePhoneCodes.map((code, idx) => (
+                                    <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
+                                ))}
+                            </SelectContent>
                         </Select>
                     </div>
                     <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="flex-1 font-bold" />
@@ -323,6 +329,8 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         });
     };
 
+    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
+
     return (
         <form onSubmit={handleFormSubmit} className="space-y-8 animate-in fade-in-0 pb-10">
             <div className="space-y-6">
@@ -331,7 +339,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val, city: '', district: ''})}>
                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
-                            {allCountries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            {allCountries.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -478,7 +486,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.phoneCode} onValueChange={val => setFormData({...formData, phoneCode: val})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
@@ -515,7 +523,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <SectionTitle icon={UserCircle}>Yetkili Kişi Bilgileri</SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <FormLabel>Ad Soyad</FormLabel>
+                                <FormLabel>Ad Soyad</Label>
                                 <FormInput placeholder="Yetkili ad soyad" value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                             </div>
                             <div className="space-y-2">
@@ -534,7 +542,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <div className="w-[80px] shrink-0">
                                         <Select value={formData.authorized.phoneCode} onValueChange={val => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
                                             <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                            <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                     <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
@@ -693,7 +701,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.phoneCode} onValueChange={v => setFormData({...formData, phoneCode: v})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
@@ -725,7 +733,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="w-[80px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={v => setFormData({...formData, authorized: {...formData.authorized, phoneCode: v}})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                        <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
@@ -763,7 +771,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <Select value={formData.marketCategory} onValueChange={(v) => setFormData({...formData, marketCategory: v})}>
                                 <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="Kurum Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">
-                                    {allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                    {allUniversities.map((u, idx) => <SelectItem key={`${u}-${idx}`} value={u}>{u}</SelectItem>)}
                                     <SelectItem value="Other">Diğer (Lise veya Belirtilmemiş)</SelectItem>
                                 </SelectContent>
                             </Select>
@@ -793,7 +801,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <div className="w-[80px] shrink-0">
                                         <Select value={formData.authorized.phoneCode} onValueChange={val => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
                                             <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                            <SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                            <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
                                     <FormInput placeholder="5XXXXXXXXX" className="flex-1" value={formData.authorized.phone} onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})} />
@@ -866,7 +874,7 @@ const PostRegistrationSurvey = ({ open, onOpenChange, onComplete }: { open: bool
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Arkadaşının Numarası</Label>
                                 <div className="flex gap-2">
                                     <div className="w-[80px] shrink-0">
-                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                        <Select defaultValue="90"><SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger><SelectContent className="max-h-60">{countryPhoneCodes.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                     </div>
                                     <Input type="tel" placeholder="5XX..." value={friendPhone} onChange={(e) => setFriendPhone(e.target.value)} className="h-12 rounded-xl flex-1 font-bold" />
                                 </div>
