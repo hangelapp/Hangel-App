@@ -330,13 +330,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             {/* Global Selectors */}
             <div className="space-y-6">
                 <div className="space-y-2">
-                    <FormLabel>Hesap Tipi</FormLabel>
-                    <Select value="kurumsal">
-                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue placeholder="Kurumsal (STK, Marka, Kulüp)" /></SelectTrigger>
-                        <SelectContent><SelectItem value="kurumsal">Kurumsal (STK, Marka, Kulüp)</SelectItem></SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
                     <FormLabel>Ülke</FormLabel>
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
@@ -360,107 +353,115 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             <Separator className="border-dashed" />
 
-            {entityType === 'BRAND' && (
+            {entityType && (
                 <div className="space-y-12 animate-in slide-in-from-top-4 duration-500">
                     
-                    {/* Marka Kimliği */}
+                    {/* Kuruluş Bilgileri */}
                     <div className="space-y-6">
-                        <SectionTitle>MARKA KİMLİĞİ</SectionTitle>
+                        <SectionTitle>{entityType === 'BRAND' ? 'MARKA KİMLİĞİ' : 'KURULUŞ BİLGİLERİ'}</SectionTitle>
+                        {entityType === 'BRAND' && (
+                            <div className="space-y-2">
+                                <FormLabel>İşletme Statüsü</FormLabel>
+                                <Select value={formData.brandStatus} onValueChange={(val) => setFormData({...formData, brandStatus: val})}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="brand">Ticari Marka</SelectItem>
+                                        <SelectItem value="cooperative">Kooperatif</SelectItem>
+                                        <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <div className="space-y-2">
-                            <FormLabel>İşletme Statüsü</FormLabel>
-                            <Select value={formData.brandStatus} onValueChange={(val) => setFormData({...formData, brandStatus: val})}>
-                                <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="brand">Ticari Marka</SelectItem>
-                                    <SelectItem value="cooperative">Kooperatif</SelectItem>
-                                    <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <FormLabel>{entityType === 'BRAND' ? 'Marka Adı' : 'Kuruluş Adı'}</FormLabel>
+                            <FormInput placeholder={entityType === 'BRAND' ? 'Markanın adı' : 'Kuruluşun resmi adı'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                         </div>
-                        <div className="space-y-2">
-                            <FormLabel>Marka Adı</FormLabel>
-                            <FormInput placeholder="Markanın adı" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
-                        </div>
-                        <div className="space-y-2">
-                            <FormLabel>Sektör</FormLabel>
-                            <Select value={formData.sector} onValueChange={(val) => setFormData({...formData, sector: val})}>
-                                <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
-                                <SelectContent className="max-h-60">
-                                    {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {entityType === 'BRAND' && (
+                            <div className="space-y-2">
+                                <FormLabel>Sektör</FormLabel>
+                                <Select value={formData.sector} onValueChange={(val) => setFormData({...formData, sector: val})}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Kategori Bazlı Bağış Oranları */}
-                    <div className="space-y-6">
-                        <SectionTitle>KATEGORİ BAZLI BAĞIŞ ORANLARI</SectionTitle>
-                        <p className="text-[10px] text-muted-foreground leading-tight ml-1 -mt-2">Satışlardan bağışlanacak oranları kategorilere göre belirleyebilirsiniz.</p>
-                        <div className="space-y-3">
-                            <div className="grid grid-cols-12 gap-2 mb-1 px-1">
-                                <div className="col-span-7"><Label className="text-[9px] font-black uppercase text-muted-foreground">Kategori</Label></div>
-                                <div className="col-span-4"><Label className="text-[9px] font-black uppercase text-muted-foreground">Oran (%)</Label></div>
-                            </div>
-                            {donationCategories.map((cat, idx) => (
-                                <div key={cat.id} className="grid grid-cols-12 gap-2 animate-in fade-in-0 duration-300">
-                                    <div className="col-span-7">
-                                        <FormInput placeholder="Örn: Giyim, Aksesuar" value={cat.category} onChange={(e) => {
-                                            const newCats = [...donationCategories];
-                                            newCats[idx].category = e.target.value;
-                                            setDonationCategories(newCats);
-                                        }} />
+                    {entityType === 'BRAND' && (
+                        <>
+                            {/* Kategori Bazlı Bağış Oranları */}
+                            <div className="space-y-6">
+                                <SectionTitle>KATEGORİ BAZLI BAĞIŞ ORANLARI</SectionTitle>
+                                <p className="text-[10px] text-muted-foreground leading-tight ml-1 -mt-2">Satışlardan bağışlanacak oranları kategorilere göre belirleyebilirsiniz.</p>
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-12 gap-2 mb-1 px-1">
+                                        <div className="col-span-7"><Label className="text-[9px] font-black uppercase text-muted-foreground">Kategori</Label></div>
+                                        <div className="col-span-4"><Label className="text-[9px] font-black uppercase text-muted-foreground">Oran (%)</Label></div>
                                     </div>
-                                    <div className="col-span-4 relative">
-                                        <FormInput type="number" value={cat.rate} onChange={(e) => {
-                                            const newCats = [...donationCategories];
-                                            newCats[idx].rate = e.target.value;
-                                            setDonationCategories(newCats);
-                                        }} />
-                                    </div>
-                                    <div className="col-span-1 flex items-center justify-center">
-                                        {donationCategories.length > 1 && (
-                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
+                                    {donationCategories.map((cat, idx) => (
+                                        <div key={cat.id} className="grid grid-cols-12 gap-2 animate-in fade-in-0 duration-300">
+                                            <div className="col-span-7">
+                                                <FormInput placeholder="Örn: Giyim, Aksesuar" value={cat.category} onChange={(e) => {
+                                                    const newCats = [...donationCategories];
+                                                    newCats[idx].category = e.target.value;
+                                                    setDonationCategories(newCats);
+                                                }} />
+                                            </div>
+                                            <div className="col-span-4 relative">
+                                                <FormInput type="number" value={cat.rate} onChange={(e) => {
+                                                    const newCats = [...donationCategories];
+                                                    newCats[idx].rate = e.target.value;
+                                                    setDonationCategories(newCats);
+                                                }} />
+                                            </div>
+                                            <div className="col-span-1 flex items-center justify-center">
+                                                {donationCategories.length > 1 && (
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        <Button type="button" variant="outline" className="w-full h-12 border-dashed border-primary/30 rounded-xl text-primary font-bold hover:bg-primary/5" onClick={addCategory}>
-                            + YENİ KATEGORİ EKLE
-                        </Button>
-                    </div>
+                                <Button type="button" variant="outline" className="w-full h-12 border-dashed border-primary/30 rounded-xl text-primary font-bold hover:bg-primary/5" onClick={addCategory}>
+                                    + YENİ KATEGORİ EKLE
+                                </Button>
+                            </div>
 
-                    {/* Affiliate Marketing & Teknik Takip */}
-                    <div className="space-y-6">
-                        <SectionTitle>AFFILIATE MARKETING & TEKNİK TAKİP</SectionTitle>
-                        <p className="text-[10px] text-muted-foreground leading-tight ml-1 -mt-2">Satışların hangel platformu üzerinden takip edilmesi için teknik verilerin doğru girilmesi zorunludur.</p>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <FormLabel>AFFILIATE ID VEYA REFERRAL ID</FormLabel>
-                                <FormInput placeholder="Örnek: HAN_2024_PRO_001" value={formData.affiliateId} onChange={(e) => setFormData({...formData, affiliateId: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>AFFILIATE / TRACKING LINK (DEEP LINK)</FormLabel>
-                                <FormInput placeholder="Örnek: https://marka.com/product?ref=hangel" value={formData.trackingLink} onChange={(e) => setFormData({...formData, trackingLink: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>CONVERSION PIXEL / EVENT SCRIPTS (JS/HTML)</FormLabel>
-                                <Textarea className="min-h-[100px] rounded-xl bg-muted/20 border-none font-mono text-[10px]" placeholder="<script> window.hangelConversion = { amount: '120.00', currency: 'TRY', ... } </script>" value={formData.pixelScript} onChange={(e) => setFormData({...formData, pixelScript: e.target.value})} />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <FormLabel>COOKIE SÜRESİ</FormLabel>
-                                    <FormInput placeholder="Örn: 30 Gün" value={formData.cookieDuration} onChange={(e) => setFormData({...formData, cookieDuration: e.target.value})} />
+                            {/* Affiliate Marketing & Teknik Takip */}
+                            <div className="space-y-6">
+                                <SectionTitle>AFFILIATE MARKETING & TEKNİK TAKİP</SectionTitle>
+                                <p className="text-[10px] text-muted-foreground leading-tight ml-1 -mt-2">Satışların hangel platformu üzerinden takip edilmesi için teknik verilerin doğru girilmesi zorunludur.</p>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <FormLabel>AFFILIATE ID VEYA REFERRAL ID</FormLabel>
+                                        <FormInput placeholder="Örnek: HAN_2024_PRO_001" value={formData.affiliateId} onChange={(e) => setFormData({...formData, affiliateId: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel>AFFILIATE / TRACKING LINK (DEEP LINK)</FormLabel>
+                                        <FormInput placeholder="Örnek: https://marka.com/product?ref=hangel" value={formData.trackingLink} onChange={(e) => setFormData({...formData, trackingLink: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel>CONVERSION PIXEL / EVENT SCRIPTS (JS/HTML)</FormLabel>
+                                        <Textarea className="min-h-[100px] rounded-xl bg-muted/20 border-none font-mono text-[10px]" placeholder="<script> window.hangelConversion = { amount: '120.00', currency: 'TRY', ... } </script>" value={formData.pixelScript} onChange={(e) => setFormData({...formData, pixelScript: e.target.value})} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <FormLabel>COOKIE SÜRESİ</FormLabel>
+                                            <FormInput placeholder="Örn: 30 Gün" value={formData.cookieDuration} onChange={(e) => setFormData({...formData, cookieDuration: e.target.value})} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <FormLabel>KATEGORİ / MARKA İSTİSNASI</FormLabel>
+                                            <FormInput placeholder="Örn: Tüm Ürünler" value={formData.exceptions} onChange={(e) => setFormData({...formData, exceptions: e.target.value})} />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <FormLabel>KATEGORİ / MARKA İSTİSNASI</FormLabel>
-                                    <FormInput placeholder="Örn: Tüm Ürünler" value={formData.exceptions} onChange={(e) => setFormData({...formData, exceptions: e.target.value})} />
-                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </>
+                    )}
 
                     {/* Adres Bilgileri */}
                     <div className="space-y-6">
@@ -600,14 +601,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 </div>
             )}
 
-            {/* STK ve Kulüp Formları (Görseldeki Marka Formu odaklı olduğu için benzer hiyerarşide tutuldu) */}
-            {entityType !== 'BRAND' && (
-                <div className="py-20 text-center space-y-4 animate-in fade-in-0">
-                    <Building2 className="h-16 w-16 mx-auto text-muted-foreground/20" />
-                    <p className="text-muted-foreground font-medium">Bu kuruluş türü için form yapılandırması Marka formuna benzer hiyerarşide hazırlanmaktadır.</p>
-                    <Button variant="outline" onClick={() => setEntityType('BRAND')}>Marka Formunu İncele</Button>
-                </div>
-            )}
         </form>
     );
 };
@@ -648,6 +641,16 @@ const FormRenderer = () => {
                             <IndividualForm onComplete={() => router.push('/timeline')} />
                         ) : (
                             <div className="space-y-6 pt-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Hesap Tipi</FormLabel>
+                                    <Select value={type} onValueChange={(val) => router.push(`/login/selection?action=register&type=${val}&entity=${initialEntity}`)}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="individual">Bireysel</SelectItem>
+                                            <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 {type === 'individual' ? (
                                     <IndividualForm isRegister={true} onComplete={() => router.push('/timeline')} />
                                 ) : (
