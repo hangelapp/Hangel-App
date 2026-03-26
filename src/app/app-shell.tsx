@@ -96,10 +96,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
 
+    const isDevBypass = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true';
+
     const userDocRef = useMemoFirebase(() => {
-        if (!db || !authUser) return null;
+        if (isDevBypass || !db || !authUser) return null;
         return doc(db, 'users', authUser.uid);
-    }, [db, authUser]);
+    }, [db, authUser, isDevBypass]);
 
     const { data: userData } = useDoc<User>(userDocRef);
 
