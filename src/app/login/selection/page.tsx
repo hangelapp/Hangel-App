@@ -277,14 +277,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     // State
     const [formData, setFormData] = useState({
         country: 'Türkiye',
-        brandStatus: 'Seçiniz...',
+        brandStatus: '',
         name: '',
         shortName: '',
         orgTag: '',
         orgSubType: '',
         communicationAddress: '',
         slogan: '',
-        sector: 'Seçiniz...',
+        sector: '',
         affiliateId: '',
         trackingLink: '',
         pixelScript: '',
