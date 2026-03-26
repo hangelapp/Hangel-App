@@ -87,10 +87,14 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       const name = cleanBrandName(offer.name);
       if (!name) continue;
 
+      // Filter out book/ebook offers
+      const nameLower = name.toLowerCase();
+      if (/e?kitap|e?book/i.test(nameLower)) continue;
+
       const thumbnailUrl = entry?.Thumbnail?.thumbnail || entry?.Thumbnail?.display;
       const previewUrl = offer.preview_url || offer.offer_url || '';
       const domain = getDomainFromUrl(previewUrl, `${name.toLowerCase().replace(/\s+/g, '')}.com`);
-      const logoUrl = thumbnailUrl || `https://logo.clearbit.com/${domain}`;
+      const logoUrl = thumbnailUrl || `https://logo.uplead.com/${domain}`;
 
       let category = 'Genel';
       const cats = entry?.OfferCategory;
