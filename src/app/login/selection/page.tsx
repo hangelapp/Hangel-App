@@ -413,6 +413,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         <SelectItem value="brand">Ticari Marka</SelectItem>
                                         <SelectItem value="cooperative">Kooperatif</SelectItem>
                                         <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
+                                        <SelectItem value="economic-enterprise">İktisadi İşletme</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -566,11 +567,16 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     {donationCategories.map((cat, idx) => (
                                         <div key={cat.id} className="grid grid-cols-12 gap-2 animate-in fade-in-0 duration-300">
                                             <div className="col-span-7">
-                                                <FormInput placeholder="Örn: Giyim, Aksesuar" value={cat.category} onChange={(e) => {
+                                                <Select value={cat.category} onValueChange={(val) => {
                                                     const newCats = [...donationCategories];
-                                                    newCats[idx].category = e.target.value;
+                                                    newCats[idx].category = val;
                                                     setDonationCategories(newCats);
-                                                }} />
+                                                }}>
+                                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+                                                    <SelectContent className="max-h-60">
+                                                        {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                             <div className="col-span-4 relative">
                                                 <FormInput type="number" value={cat.rate} onChange={(e) => {
