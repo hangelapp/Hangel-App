@@ -287,7 +287,8 @@ const brandCategoryOptions = [
     'Oyun, Film & Müzik',
     'Yapı Market & Hırdavat',
     'Sağlık & Medikal',
-    'Endüstriyel & Ofis'
+    'Endüstriyel & Ofis',
+    'Diğer'
 ];
 
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
@@ -363,9 +364,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         }
     };
 
-    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5' }]);
+    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
 
-    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5' }]);
+    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
     const removeCategory = (id: string) => setDonationCategories(donationCategories.filter(c => c.id !== id));
 
     const handleFormSubmit = async (e: React.FormEvent) => {
@@ -588,33 +589,47 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         <div className="col-span-4"><Label className="text-[9px] font-black uppercase text-muted-foreground">Oran (%)</Label></div>
                                     </div>
                                     {donationCategories.map((cat, idx) => (
-                                        <div key={cat.id} className="grid grid-cols-12 gap-2 animate-in fade-in-0 duration-300">
-                                            <div className="col-span-7">
-                                                <Select value={cat.category} onValueChange={(val) => {
-                                                    const newCats = [...donationCategories];
-                                                    newCats[idx].category = val;
-                                                    setDonationCategories(newCats);
-                                                }}>
-                                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
-                                                    <SelectContent className="max-h-60">
-                                                        {brandCategoryOptions.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
+                                        <div key={cat.id} className="space-y-2 animate-in fade-in-0 duration-300">
+                                            <div className="grid grid-cols-12 gap-2">
+                                                <div className="col-span-7">
+                                                    <Select value={cat.category} onValueChange={(val) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].category = val;
+                                                        newCats[idx].customCategory = val === 'Diğer' ? newCats[idx].customCategory : '';
+                                                        setDonationCategories(newCats);
+                                                    }}>
+                                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+                                                        <SelectContent className="max-h-60">
+                                                            {brandCategoryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="col-span-4 relative">
+                                                    <FormInput type="number" value={cat.rate} onChange={(e) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].rate = e.target.value;
+                                                        setDonationCategories(newCats);
+                                                    }} />
+                                                </div>
+                                                <div className="col-span-1 flex items-center justify-center">
+                                                    {donationCategories.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="col-span-4 relative">
-                                                <FormInput type="number" value={cat.rate} onChange={(e) => {
-                                                    const newCats = [...donationCategories];
-                                                    newCats[idx].rate = e.target.value;
-                                                    setDonationCategories(newCats);
-                                                }} />
-                                            </div>
-                                            <div className="col-span-1 flex items-center justify-center">
-                                                {donationCategories.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                            </div>
+                                            {cat.category === 'Diğer' && (
+                                                <FormInput
+                                                    placeholder="Kategori adını yazınız"
+                                                    value={cat.customCategory}
+                                                    onChange={(e) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].customCategory = e.target.value;
+                                                        setDonationCategories(newCats);
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     ))}
                                 </div>
