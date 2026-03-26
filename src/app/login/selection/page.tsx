@@ -725,11 +725,11 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormInput placeholder="Örn: Genel Sekreter, Pazarlama Md. vb." value={formData.authorized.role} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>KURUMSAL E-POSTA</FormLabel>
-                            <FormInput type="email" placeholder="ornek@marka.com" value={formData.authorized.email} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} required />
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL E-POSTA' : 'KURUMSAL E-POSTA'}</FormLabel>
+                            <FormInput type="email" placeholder={entityType === 'NGO' ? 'ornek@example.com' : 'ornek@marka.com'} value={formData.authorized.email} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>KURUMSAL TELEFON</FormLabel>
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL TELEFON' : 'KURUMSAL TELEFON'}</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={(val) => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
@@ -747,7 +747,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="flex items-start space-x-3 text-left">
                             <Checkbox id="terms-brand" required />
                             <Label htmlFor="terms-brand" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                                <span className="text-primary font-bold">Marka Katılım Sözleşmesi</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
+                                <span className="text-primary font-bold">{entityType === 'NGO' ? 'STK Katılım Sözleşmesi' : 'Marka Katılım Sözleşmesi'}</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
                             </Label>
                         </div>
                         <div className="flex items-start space-x-3 text-left">
