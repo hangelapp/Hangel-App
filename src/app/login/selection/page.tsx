@@ -267,6 +267,29 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
 // --- Corporate Form Component ---
 
+const brandCategoryOptions = [
+    'Moda',
+    'Elektronik',
+    'Ev & Yaşam',
+    'Market',
+    'Kozmetik & Kişisel Bakım',
+    'Anne, Bebek & Çocuk',
+    'Etkinlik',
+    'Seyahat Bilet',
+    'Otomotiv & Motosiklet',
+    'Spor & Outdoor',
+    'Tatil & Otel Rezervasyonu',
+    'Pazaryeri',
+    'Kitap, Kırtasiye & Hobi',
+    'Süpermarket & Pet Shop',
+    'Mücevher & Saat',
+    'Sigorta',
+    'Oyun, Film & Müzik',
+    'Yapı Market & Hırdavat',
+    'Sağlık & Medikal',
+    'Endüstriyel & Ofis'
+];
+
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
     const router = useRouter();
@@ -574,7 +597,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                                 }}>
                                                     <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
                                                     <SelectContent className="max-h-60">
-                                                        {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
+                                                        {brandCategoryOptions.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
                                             </div>
