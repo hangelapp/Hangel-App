@@ -127,8 +127,8 @@ function EventsPageContent() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => (
-          <Card key={event.id} className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer" onClick={() => {/* Event card can be clicked */}}>
-            <div className="relative aspect-[210/297] w-full bg-muted">
+          <Card key={event.id} className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow">
+            <Link href={`/events/${event.slug}`} className="relative aspect-[210/297] w-full bg-muted block">
               <Image
                 src={event.imageUrl}
                 alt={event.name}
@@ -139,7 +139,7 @@ function EventsPageContent() {
               <div className="absolute top-2 left-2">
                 <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
               </div>
-            </div>
+            </Link>
             <CardContent className="p-3 flex-1 space-y-2">
               <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem]">{event.name}</h2>
               <p className="text-[10px] font-bold text-primary truncate">{event.organizer}</p>
