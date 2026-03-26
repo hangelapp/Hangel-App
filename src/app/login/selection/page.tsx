@@ -661,11 +661,22 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-    
+
     const action = searchParams.get('action') || 'login';
     const type = searchParams.get('type') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
-    
+
+    useEffect(() => {
+        if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
+            const redirect = searchParams.get('redirect') || '/events';
+            router.replace(redirect);
+        }
+    }, [router, searchParams]);
+
+    if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
+        return <div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+    }
+
     return (
         <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
             <div className="w-full max-sm:max-w-sm lg:max-w-2xl">

@@ -251,24 +251,7 @@ export const studentClubs: StudentClub[] = Array.from({ length: 10 }, (_, i) => 
     contact: { email: `iletisim@club${i}.edu.tr`, phone: '0212 123 45 67', website: `https://club${i}.edu.tr` }
 }));
 
-export const events: Event[] = Array.from({ length: 5 }, (_, i) => ({
-    id: `event-${i + 1}`,
-    slug: `etkinlik-${i + 1}`,
-    name: ['Girişimcilik Zirvesi', 'Dayanışma Konseri', 'Robotik Günleri', 'Kan Bağışı Kampanyası', 'İklim Krizi Çalıştayı'][i],
-    organizer: i < 3 ? studentClubs[i].name : ngos[i % ngos.length].name,
-    type: ['Zirve', 'Konser', 'Yarışma', 'Kampanya', 'Çalıştay'][i],
-    date: '2024-12-01',
-    startDate: '2024-12-01 09:00',
-    endDate: '2024-12-01 18:00',
-    location: { type: 'Fiziksel', address: 'Ana Kampüs', city: 'İstanbul', district: 'Sarıyer' },
-    language: 'Türkçe',
-    participationCondition: 'Herkese Açık',
-    capacity: { current: 100, max: 500 },
-    tags: ['Etki', 'Gençlik'],
-    imageUrl: `https://picsum.photos/seed/evposter${i}/600/850`,
-    description: 'Toplumsal farkındalık için düzenlenen özel bir etkinlik.',
-    providesCertificate: i % 2 === 0
-}));
+export const events: Event[] = [];
 
 export const allEntityLists: Brand[] = [
     { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' },
