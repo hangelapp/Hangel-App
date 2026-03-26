@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, MessageSquare, Edit, Loader2, BarChart3, TrendingUp, Users, Share2 } from 'lucide-react';
-import { allEntityLists, ngos } from '@/lib/data';
+import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, Star, ShieldAlert, CheckCircle2, AlertTriangle, HelpCircle, Calendar, MessageSquare, Edit, Loader2, BarChart3, TrendingUp, Users, Share2, FileText } from 'lucide-react';
+import { ngos } from '@/lib/data';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -77,13 +77,16 @@ export default function BrandProfilePage() {
   const [isDonating, setIsDonating] = useState(false);
 
   useEffect(() => {
-    const brandsSource = allEntityLists;
-    const foundBrand = brandsSource.find((b: Brand) => b.slug === slug);
-    setBrand(foundBrand || null);
-    
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
+    fetch('/api/offers')
+      .then(res => res.ok ? res.json() : [])
+      .then((data: Brand[]) => {
+        const match = Array.isArray(data) ? data.find(b => b.slug === slug) : undefined;
+        setBrand(match || null);
+      })
+      .catch(() => setBrand(null));
   }, [slug]);
 
   const handleStartShopping = () => {

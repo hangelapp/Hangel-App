@@ -5,6 +5,8 @@ import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import AppBottomNav from '@/components/layout/bottom-nav';
+import { RatingPopup } from '@/components/shared/rating-popup';
+import { AccessibilityApplier } from '@/components/shared/accessibility-applier';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -26,6 +28,8 @@ export default function RootLayout({
                 {children}
             </AppShell>
             <AppBottomNav />
+            <RatingPopup />
+            <AccessibilityApplier />
             <Toaster />
           </LanguageProvider>
         </FirebaseClientProvider>

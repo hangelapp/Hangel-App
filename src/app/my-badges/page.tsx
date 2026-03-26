@@ -6,7 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Award, Star, Users, Heart, Download, Eye, Share2, Milestone, Briefcase, HandCoins, Handshake, DollarSign, Filter, ArrowDownUp, Leaf, X, GraduationCap, Code, Palette, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { user, badges } from '@/lib/data';
+import { badges } from '@/lib/data';
+import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { Badge as BadgeType } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -101,6 +103,15 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 
 export default function MyBadgesPage() {
     const { toast } = useToast();
+    const { user: authUser } = useUser();
+    const db = useFirestore();
+    const userDocRef = useMemoFirebase(
+        () => authUser ? doc(db, 'users', authUser.uid) : null,
+        [db, authUser?.uid]
+    );
+    const { data: userData } = useDoc(userDocRef);
+    const impactScore: number = (userData as any)?.impactScore || 0;
+
     const groupedBadges = React.useMemo(() => {
         return groupBy(badges, 'socialArea');
     }, []);
@@ -126,7 +137,7 @@ export default function MyBadgesPage() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                     <div className="relative z-10 space-y-2">
                         <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">TOPLAM SOSYAL ETKİ PUANI</p>
-                        <p className="text-8xl font-black tracking-tighter text-primary drop-shadow-2xl">{user.impactScore.toLocaleString('tr-TR')}</p>
+                        <p className="text-8xl font-black tracking-tighter text-primary drop-shadow-2xl">{impactScore.toLocaleString('tr-TR')}</p>
                     </div>
                 </Card>
             </TabsContent>

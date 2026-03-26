@@ -61,6 +61,7 @@ const iconColorMap: { [key: string]: string } = {
 
 const superAdminNavItems = [
     { href: '/super-admin/setup', label: 'Veritabanı Kurulumu (Import)', icon: 'DatabaseZap', description: 'Mock dataları veritabanına aktar ve sistemi başlat.' },
+    { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
     { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
     { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },

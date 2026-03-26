@@ -177,11 +177,64 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
 }));
 
 export const allUniversities = [
-    'Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 
-    'Galatasaray Üniversitesi', 'Koç Üniversitesi', 'Sabancı Üniversitesi', 
-    'Hacettepe Üniversitesi', 'Bilkent Üniversitesi', 'Yıldız Teknik Üniversitesi', 
-    'Marmara Üniversitesi', 'Ankara Üniversitesi', 'Ege Üniversitesi', 'Dokuz Eylül Üniversitesi'
-];
+    // İstanbul
+    'Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'İstanbul Üniversitesi',
+    'İstanbul Üniversitesi-Cerrahpaşa', 'Galatasaray Üniversitesi', 'Marmara Üniversitesi',
+    'Yıldız Teknik Üniversitesi', 'Mimar Sinan Güzel Sanatlar Üniversitesi',
+    'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Bahçeşehir Üniversitesi',
+    'İstanbul Bilgi Üniversitesi', 'Kadir Has Üniversitesi', 'Özyeğin Üniversitesi',
+    'Beykent Üniversitesi', 'Beykoz Üniversitesi', 'Fatih Sultan Mehmet Vakıf Üniversitesi',
+    'Haliç Üniversitesi', 'İstanbul 29 Mayıs Üniversitesi', 'İstanbul Aydın Üniversitesi',
+    'İstanbul Esenyurt Üniversitesi', 'İstanbul Gelişim Üniversitesi', 'İstanbul Kültür Üniversitesi',
+    'İstanbul Medeniyet Üniversitesi', 'İstanbul Okan Üniversitesi', 'İstanbul Rumeli Üniversitesi',
+    'İstanbul Sabahattin Zaim Üniversitesi', 'İstanbul Şehir Üniversitesi', 'İstanbul Ticaret Üniversitesi',
+    'Maltepe Üniversitesi', 'Nişantaşı Üniversitesi', 'Piri Reis Üniversitesi',
+    'Türk-Alman Üniversitesi', 'Uskudar Üniversitesi', 'Yeni Yüzyıl Üniversitesi',
+    // Ankara
+    'Orta Doğu Teknik Üniversitesi', 'Hacettepe Üniversitesi', 'Ankara Üniversitesi',
+    'Bilkent Üniversitesi', 'Gazi Üniversitesi', 'Atılım Üniversitesi',
+    'Başkent Üniversitesi', 'Çankaya Üniversitesi', 'TOBB Ekonomi ve Teknoloji Üniversitesi',
+    'TED Üniversitesi', 'Ankara Yıldırım Beyazıt Üniversitesi', 'Ankara Sosyal Bilimler Üniversitesi',
+    'Ankara Medipol Üniversitesi', 'Ankara Hacı Bayram Veli Üniversitesi',
+    // İzmir
+    'Ege Üniversitesi', 'Dokuz Eylül Üniversitesi', 'İzmir Yüksek Teknoloji Enstitüsü',
+    'Yaşar Üniversitesi', 'İzmir Ekonomi Üniversitesi', 'İzmir Kâtip Çelebi Üniversitesi',
+    'İzmir Demokrasi Üniversitesi', 'Izmir Tınaztepe Üniversitesi',
+    // Bursa
+    'Uludağ Üniversitesi', 'Bursa Teknik Üniversitesi', 'Bursa Uludağ Üniversitesi',
+    'Işık Üniversitesi',
+    // Diğer Büyükşehirler
+    'Selçuk Üniversitesi', 'Necmettin Erbakan Üniversitesi', 'KTO Karatay Üniversitesi', // Konya
+    'Çukurova Üniversitesi', 'Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi', // Adana
+    'Gaziantep Üniversitesi', 'Hasan Kalyoncu Üniversitesi', // Gaziantep
+    'Ondokuz Mayıs Üniversitesi', 'Samsun Üniversitesi', // Samsun
+    'Karadeniz Teknik Üniversitesi', // Trabzon
+    'Atatürk Üniversitesi', 'Erzurum Teknik Üniversitesi', // Erzurum
+    'Fırat Üniversitesi', // Elazığ
+    'İnönü Üniversitesi', // Malatya
+    'Mersin Üniversitesi', // Mersin
+    'Akdeniz Üniversitesi', // Antalya
+    'Pamukkale Üniversitesi', // Denizli
+    'Muğla Sıtkı Koçman Üniversitesi', // Muğla
+    'Kocaeli Üniversitesi', 'Gebze Teknik Üniversitesi', // Kocaeli
+    'Sakarya Üniversitesi', // Sakarya
+    'Trakya Üniversitesi', // Edirne
+    'Namık Kemal Üniversitesi', // Tekirdağ
+    'Balıkesir Üniversitesi', // Balıkesir
+    'Celal Bayar Üniversitesi', 'Manisa Celal Bayar Üniversitesi', // Manisa
+    'Afyon Kocatepe Üniversitesi', // Afyon
+    'Eskişehir Osmangazi Üniversitesi', 'Anadolu Üniversitesi', // Eskişehir
+    'Kayseri Üniversitesi', 'Erciyes Üniversitesi', // Kayseri
+    'Cumhuriyet Üniversitesi', // Sivas
+    'Sütçü İmam Üniversitesi', // Kahramanmaraş
+    'Dicle Üniversitesi', // Diyarbakır
+    'Harran Üniversitesi', // Şanlıurfa
+    'Mustafa Kemal Üniversitesi', 'İskenderun Teknik Üniversitesi', // Hatay
+    'Bülent Ecevit Üniversitesi', 'Zonguldak Bülent Ecevit Üniversitesi', // Zonguldak
+    'Kastamonu Üniversitesi', 'Sinop Üniversitesi', 'Çorum Hitit Üniversitesi',
+    'Düzce Üniversitesi', 'Bolu Abant İzzet Baysal Üniversitesi', 'Bartın Üniversitesi',
+    'Yalova Üniversitesi', 'Çanakkale Onsekiz Mart Üniversitesi',
+].sort((a, b) => a.localeCompare(b, 'tr'));
 
 export const studentClubs: StudentClub[] = Array.from({ length: 10 }, (_, i) => ({
     id: `club-${i + 1}`,

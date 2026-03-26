@@ -75,3 +75,67 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
+
+/* Accessibility overrides */
+html.a11y-high-contrast {
+  filter: contrast(1.5);
+}
+
+html[data-a11y-font="large"] body {
+  font-size: 1.125rem !important;
+}
+html[data-a11y-font="huge"] body {
+  font-size: 1.375rem !important;
+}
+html[data-a11y-font="small"] body {
+  font-size: 0.8125rem !important;
+}
+
+html[data-a11y-line-height="1.5"] body {
+  line-height: 1.9 !important;
+}
+html[data-a11y-line-height="2.0"] body {
+  line-height: 2.4 !important;
+}
+
+html[data-a11y-word-spacing="wide"] body {
+  word-spacing: 0.1em !important;
+}
+html[data-a11y-word-spacing="extra"] body {
+  word-spacing: 0.2em !important;
+}
+
+html.a11y-dyslexia-font body {
+  font-family: 'Arial', 'Helvetica Neue', sans-serif !important;
+  letter-spacing: 0.05em !important;
+}
+
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+html.a11y-large-targets button,
+html.a11y-large-targets a,
+html.a11y-large-targets [role="button"] {
+  min-height: 48px !important;
+  min-width: 48px !important;
+}
+
+html[data-a11y-focus="thick"] *:focus-visible {
+  outline: 3px solid hsl(var(--ring)) !important;
+  outline-offset: 3px !important;
+}
+html[data-a11y-focus="high"] *:focus-visible {
+  outline: 4px solid #000 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 6px #fff !important;
+}
+
+html.a11y-focus-mode .animate-in,
+html.a11y-focus-mode [data-decorative] {
+  animation: none !important;
+}
