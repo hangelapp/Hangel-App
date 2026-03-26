@@ -427,10 +427,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                             <SelectItem value="Dernek">Dernek</SelectItem>
                                             <SelectItem value="Vakıf">Vakıf</SelectItem>
                                             <SelectItem value="Spor Kulübü">Spor Kulübü</SelectItem>
-                                            <SelectItem value="Sendika">Sendika</SelectItem>
-                                            <SelectItem value="Meslek Odası">Meslek Odası</SelectItem>
-                                            <SelectItem value="Kooperatif">Kooperatif</SelectItem>
-                                            <SelectItem value="Diğer STK">Diğer STK</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -469,13 +465,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         <FormInput placeholder="hangel Dernek" value={formData.shortName} onChange={(e) => setFormData({...formData, shortName: e.target.value})} />
                                     </div>
                                     <div className="space-y-2">
-                                        <FormLabel>Kuruluş Tağ</FormLabel>
-                                        <FormInput placeholder="@hangel" value={formData.orgTag} onChange={(e) => setFormData({...formData, orgTag: e.target.value})} />
+                                        <FormLabel>Kuruluş Yılı</FormLabel>
+                                        <FormInput type="date" value={formData.orgTag} onChange={(e) => setFormData({...formData, orgTag: e.target.value})} />
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <FormLabel>İnternet İletişim Adresi</FormLabel>
-                                    <FormInput placeholder="Bağış ve etkinlikler için kullanılacak adres" value={formData.communicationAddress} onChange={(e) => setFormData({...formData, communicationAddress: e.target.value})} />
                                 </div>
                                 <div className="space-y-2">
                                     <FormLabel>Slogan</FormLabel>
