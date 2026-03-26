@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ListFilter, Map, Search, Calendar, MapPin } from 'lucide-react';
+import { Filter, ListFilter, Map, Search, Calendar, MapPin, X, Globe, MapPinned } from 'lucide-react';
 import { events, studentClubs } from '@/lib/data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,17 @@ import { useToast } from '@/hooks/use-toast';
 import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { Event } from '@/lib/types';
-import { format, parse } from 'date-fns';
+import { format, parse, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
+
+// Extract unique values from events for filter options
+function getUniqueValues(field: (event: Event) => string): string[] {
+  return Array.from(new Set(events.map(field))).filter(Boolean).sort();
+}
 
 function EventsPageContent() {
   const { toast } = useToast();
@@ -22,24 +30,54 @@ function EventsPageContent() {
   const [sortKey, setSortKey] = useState('date');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Filter state
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [locationTypeFilter, setLocationTypeFilter] = useState<'all' | 'Online' | 'Fiziksel'>('all');
+  const [cityFilter, setCityFilter] = useState<string[]>([]);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
   // Filters from URL
   const categoryParam = searchParams.get('category');
   const universityParam = searchParams.get('university');
   const monthParam = searchParams.get('month');
   const tagParam = searchParams.get('tag');
 
+  // Dynamic filter options from data
+  const eventTypes = useMemo(() => getUniqueValues(e => e.type), []);
+  const cities = useMemo(() => getUniqueValues(e => e.location.city), []);
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (typeFilter.length > 0) count++;
+    if (locationTypeFilter !== 'all') count++;
+    if (cityFilter.length > 0) count++;
+    if (dateFrom || dateTo) count++;
+    return count;
+  }, [typeFilter, locationTypeFilter, cityFilter, dateFrom, dateTo]);
+
+  const clearFilters = () => {
+    setTypeFilter([]);
+    setLocationTypeFilter('all');
+    setCityFilter([]);
+    setDateFrom('');
+    setDateTo('');
+  };
+
   const sortedEvents = useMemo(() => {
     let eventsToFilter = [...events];
-    
+
     // Filter by search term
     if (searchTerm.trim()) {
       const lowercased = searchTerm.toLowerCase();
-      eventsToFilter = eventsToFilter.filter(event => 
-        event.name.toLowerCase().includes(lowercased) || 
+      eventsToFilter = eventsToFilter.filter(event =>
+        event.name.toLowerCase().includes(lowercased) ||
         event.organizer.toLowerCase().includes(lowercased)
       );
     }
-    
+
     // Filter by URL params
     const activeTag = categoryParam || tagParam;
     if (activeTag) {
@@ -47,7 +85,7 @@ function EventsPageContent() {
         eventsToFilter = eventsToFilter.filter(event => {
              const club = studentClubs.find(c => c.name === event.organizer);
              const organizerCategory = (club as any)?.category;
-            
+
              return event.type.toLowerCase().includes(lowercasedTag) ||
                     (organizerCategory && organizerCategory.toLowerCase().includes(lowercasedTag)) ||
                     event.organizer.toLowerCase().includes(lowercasedTag) ||
@@ -65,6 +103,36 @@ function EventsPageContent() {
         eventsToFilter = eventsToFilter.filter(event => format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM') === monthParam);
     }
 
+    // Filter by event type
+    if (typeFilter.length > 0) {
+      eventsToFilter = eventsToFilter.filter(event => typeFilter.includes(event.type));
+    }
+
+    // Filter by location type
+    if (locationTypeFilter !== 'all') {
+      eventsToFilter = eventsToFilter.filter(event => event.location.type === locationTypeFilter);
+    }
+
+    // Filter by city
+    if (cityFilter.length > 0) {
+      eventsToFilter = eventsToFilter.filter(event => cityFilter.includes(event.location.city));
+    }
+
+    // Filter by date range
+    if (dateFrom) {
+      const from = startOfDay(new Date(dateFrom));
+      eventsToFilter = eventsToFilter.filter(event => {
+        const eventDate = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
+        return !isBefore(eventDate, from);
+      });
+    }
+    if (dateTo) {
+      const to = endOfDay(new Date(dateTo));
+      eventsToFilter = eventsToFilter.filter(event => {
+        const eventDate = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
+        return !isAfter(eventDate, to);
+      });
+    }
 
     // Sort
     return eventsToFilter.sort((a, b) => {
@@ -79,7 +147,7 @@ function EventsPageContent() {
         const dateB = parse(b.startDate, 'yyyy-MM-dd HH:mm', new Date()).getTime();
         return dateB - dateA;
     });
-  }, [sortKey, searchTerm, categoryParam, universityParam, monthParam, tagParam]);
+  }, [sortKey, searchTerm, categoryParam, universityParam, monthParam, tagParam, typeFilter, locationTypeFilter, cityFilter, dateFrom, dateTo]);
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -90,8 +158,11 @@ function EventsPageContent() {
           <Input placeholder="Etkinlik ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!'})}>
+          <Button variant="outline" className="flex-1 relative" onClick={() => setIsFilterOpen(true)}>
             <Filter className="mr-2 h-4 w-4" /> Filtrele
+            {activeFilterCount > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px] rounded-full">{activeFilterCount}</Badge>
+            )}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -110,6 +181,105 @@ function EventsPageContent() {
           </Button>
         </div>
       </div>
+
+      {/* Filter Sheet */}
+      <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-lg font-black">Filtrele</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-6 py-6">
+            {/* Event Type Filter */}
+            <div className="space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Etkinlik Türü</Label>
+              <div className="flex flex-wrap gap-2">
+                {eventTypes.map(type => (
+                  <Button
+                    key={type}
+                    variant={typeFilter.includes(type) ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full text-xs h-8"
+                    onClick={() => setTypeFilter(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
+                  >
+                    {type}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Location Type Filter */}
+            <div className="space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Konum</Label>
+              <div className="flex gap-2">
+                {([['all', 'Tümü', MapPin], ['Fiziksel', 'Fiziksel', MapPinned], ['Online', 'Online', Globe]] as const).map(([value, label, Icon]) => (
+                  <Button
+                    key={value}
+                    variant={locationTypeFilter === value ? 'default' : 'outline'}
+                    size="sm"
+                    className="flex-1 rounded-full text-xs h-9"
+                    onClick={() => setLocationTypeFilter(value)}
+                  >
+                    <Icon className="mr-1.5 h-3.5 w-3.5" /> {label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* City Filter */}
+            <div className="space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Şehir</Label>
+              <div className="space-y-2 max-h-40 overflow-y-auto">
+                {cities.map(city => (
+                  <div key={city} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`city-${city}`}
+                      checked={cityFilter.includes(city)}
+                      onCheckedChange={(checked) => {
+                        setCityFilter(prev => checked ? [...prev, city] : prev.filter(c => c !== city));
+                      }}
+                    />
+                    <label htmlFor={`city-${city}`} className="text-sm cursor-pointer">{city}</label>
+                  </div>
+                ))}
+                {cities.length === 0 && <p className="text-xs text-muted-foreground">Henüz etkinlik verisi yok</p>}
+              </div>
+            </div>
+
+            {/* Date Range Filter */}
+            <div className="space-y-3">
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tarih Aralığı</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Başlangıç</label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={e => setDateFrom(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Bitiş</label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={e => setDateTo(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <SheetFooter className="flex-row gap-2 pt-4 border-t">
+            <Button variant="outline" className="flex-1" onClick={clearFilters}>
+              <X className="mr-2 h-4 w-4" /> Temizle
+            </Button>
+            <Button className="flex-1" onClick={() => setIsFilterOpen(false)}>
+              Uygula ({sortedEvents.length})
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => (
