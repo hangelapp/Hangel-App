@@ -162,18 +162,9 @@ export default function NgoSelectionPage() {
 
     const handleNgoSelect = (ngoId: string) => {
         const isCurrentlySelected = selectedNgos.includes(ngoId);
-        if (selectedNgos.length >= 2 && !isCurrentlySelected) {
-             toast({
-                variant: 'destructive',
-                title: "Limit Aşıldı",
-                description: "En fazla 2 varsayılan STK seçebilirsiniz.",
-            });
-            return;
-        }
-
-        setSelectedNgos(prev => 
+        setSelectedNgos(prev =>
             isCurrentlySelected
-                ? prev.filter(id => id !== ngoId) 
+                ? prev.filter(id => id !== ngoId)
                 : [...prev, ngoId]
         );
     };
@@ -198,7 +189,7 @@ export default function NgoSelectionPage() {
             </Button>
             <div>
                 <h1 className="text-2xl font-bold font-headline">Bağışçı Olduğun STK'ları Değiştir</h1>
-                <p className="text-muted-foreground text-sm">Alışverişlerinizden doğan bağışların aktarılacağı varsayılan STK'ları seçin. En fazla 2 STK seçebilirsiniz.</p>
+                <p className="text-muted-foreground text-sm">Alışverişlerinizden doğan bağışların aktarılacağı varsayılan STK'ları seçin.</p>
             </div>
 
              <Alert variant="destructive">

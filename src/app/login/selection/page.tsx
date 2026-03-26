@@ -295,8 +295,38 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
         iban: '',
-        authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' }
+        authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
+        registryNo: '',
     });
+    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
+    const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
+
+    const handleRegistryNoCheck = async (value: string) => {
+        setFormData({...formData, registryNo: value});
+        setRegistryNgoFound(null);
+        if (!value || !db) return;
+        setIsCheckingRegistry(true);
+        try {
+            const { query: fsQuery, collection: fsCollection, where: fsWhere, getDocs: fsGetDocs } = await import('firebase/firestore');
+            const q = fsQuery(fsCollection(db, 'ngos'), fsWhere('registryNo', '==', value));
+            const snap = await fsGetDocs(q);
+            if (!snap.empty) {
+                const ngoData = snap.docs[0].data();
+                setRegistryNgoFound(ngoData);
+                setFormData(prev => ({
+                    ...prev,
+                    name: ngoData.name || prev.name,
+                    city: ngoData.city || prev.city,
+                    email: ngoData.email || prev.email,
+                    phone: ngoData.phone || prev.phone,
+                    website: ngoData.website || prev.website,
+                    legalTitle: ngoData.legalTitle || prev.legalTitle,
+                }));
+            }
+        } finally {
+            setIsCheckingRegistry(false);
+        }
+    };
 
     const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5' }]);
 
@@ -370,6 +400,29 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                        )}
+                        {entityType === 'NGO' && (
+                            <div className="space-y-2">
+                                <FormLabel>Kütük Numarası</FormLabel>
+                                <div className="relative">
+                                    <FormInput
+                                        placeholder="Dernek/vakıf kütük numaranızı girin"
+                                        value={formData.registryNo}
+                                        onChange={(e) => handleRegistryNoCheck(e.target.value)}
+                                    />
+                                    {isCheckingRegistry && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                        </div>
+                                    )}
+                                </div>
+                                {registryNgoFound && (
+                                    <p className="text-xs text-green-600 font-semibold flex items-center gap-1">
+                                        ✓ Kayıtlı kuruluş bulundu: <span className="font-bold">{registryNgoFound.name}</span>. Bilgiler otomatik dolduruldu.
+                                    </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">Mevcut bir dernek/vakfı sisteme bağlamak için kütük numarasını girin.</p>
                             </div>
                         )}
                         <div className="space-y-2">

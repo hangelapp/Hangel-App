@@ -50,7 +50,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { user } from '@/lib/data';
+import { useUser } from '@/firebase';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -70,6 +70,7 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 export default function AccessibilitySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { user: authUser } = useUser();
     const [isSaving, setIsSaving] = useState(false);
 
     // --- State Definition ---
@@ -191,7 +192,9 @@ export default function AccessibilitySettingsPage() {
         };
         
         localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
-        
+        // Apply settings immediately to current page
+        window.dispatchEvent(new StorageEvent('storage', { key: 'hangel-a11y-v3', newValue: JSON.stringify(settings) }));
+
         setTimeout(() => {
             setIsSaving(false);
             toast({
@@ -471,7 +474,7 @@ export default function AccessibilitySettingsPage() {
                     <CardContent className="p-4 flex items-center justify-between gap-4">
                         <div className="text-left hidden sm:block">
                             <p className="font-bold text-sm">Tercihlerinizi Kaydedin</p>
-                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-70">Aktif Profil: {user.name.split(' ')[0]}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-70">Aktif Profil: {authUser?.displayName?.split(' ')[0] || 'Kullanıcı'}</p>
                         </div>
                         <Button 
                             className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-xl shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"

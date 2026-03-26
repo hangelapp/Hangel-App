@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import { 
     Mail, 
@@ -28,15 +30,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export default function InvitePage() {
   const { toast } = useToast();
+  const { user: authUser } = useUser();
+  const db = useFirestore();
   const [inviteLink, setInviteLink] = useState('');
   const [phoneSynced, setPhoneSynced] = useState(false);
   const [sortCriteria, setSortCriteria] = useState('impactScore');
+  const [emailSynced, setEmailSynced] = useState(true); // assume email already synced for demo
+
+  // Firestore users collection
+  const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const { data: allUsers } = useCollection(usersRef);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setInviteLink(`${window.location.origin}/register?ref=ismail`);
+    if (typeof window !== 'undefined' && authUser?.uid) {
+      setInviteLink(`${window.location.origin}/register?ref=${authUser.uid}`);
     }
-  }, []);
+  }, [authUser?.uid]);
 
   const copyToClipboard = () => {
     if (!inviteLink) return;
@@ -45,7 +54,7 @@ export default function InvitePage() {
       title: "Davet linki kopyalandı!",
     });
   };
-  
+
   const handleInvite = (name: string) => {
     toast({
       title: 'Davet Gönderildi!',
@@ -53,6 +62,21 @@ export default function InvitePage() {
     });
   };
 
+  const handlePhoneSync = () => {
+    setPhoneSynced(true);
+    toast({
+      title: 'Rehber Senkronize Edildi',
+      description: 'Telefon rehberiniz başarıyla senkronize edildi.',
+    });
+  };
+
+  const handleEmailSync = () => {
+    setEmailSynced(true);
+    toast({
+      title: 'E-posta Kişileri Senkronize Edildi',
+      description: 'E-posta kişileriniz başarıyla yüklendi.',
+    });
+  };
 
   const shareOptions = [
     { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
@@ -62,35 +86,37 @@ export default function InvitePage() {
     { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
     { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
   ];
-  
-  const sampleContacts = [
-    { name: 'Ahmet Yılmaz', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact1/40/40', impactScore: 1250, joinDate: '2024-07-10' },
-    { name: 'Zeynep Kaya', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact2/40/40', impactScore: null, joinDate: null },
-    { name: 'Mustafa Demir', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact3/40/40', impactScore: 870, joinDate: '2024-06-25' },
-    { name: 'Elif Arslan', onPlatform: false, avatarUrl: 'https://picsum.photos/seed/contact4/40/40', impactScore: null, joinDate: null },
-    { name: 'Ayşe Çelik', onPlatform: true, avatarUrl: 'https://picsum.photos/seed/contact5/40/40', impactScore: 1500, joinDate: '2024-05-01' },
-  ];
+
+  // Firestore users'dan contact list oluştur
+  const firestoreContacts = useMemo(() => {
+    return (allUsers || []).map(user => ({
+      id: user.id,
+      name: user.displayName || user.email?.split('@')[0] || 'Kullanıcı',
+      onPlatform: true,
+      avatarUrl: user.photoURL || undefined,
+      impactScore: (user as any).impactScore || 0,
+      joinDate: user.createdAt || new Date().toISOString(),
+    }));
+  }, [allUsers]);
 
   const sortedContacts = useMemo(() => {
-    const onPlatform = sampleContacts.filter(c => c.onPlatform);
-    const notOnPlatform = sampleContacts.filter(c => !c.onPlatform);
-    let sortedOnPlatform = [...onPlatform];
+    let sorted = [...firestoreContacts];
 
     switch (sortCriteria) {
-        case 'impactScore':
-            sortedOnPlatform.sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
-            break;
-        case 'alphabetical':
-            sortedOnPlatform.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-        case 'joinDate':
-            sortedOnPlatform.sort((a, b) => new Date(b.joinDate!).getTime() - new Date(a.joinDate!).getTime());
-            break;
-        default:
-            break;
+      case 'impactScore':
+        sorted.sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+        break;
+      case 'alphabetical':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'joinDate':
+        sorted.sort((a, b) => new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime());
+        break;
+      default:
+        break;
     }
-    return [...sortedOnPlatform, ...notOnPlatform];
-  }, [sortCriteria]);
+    return sorted;
+  }, [firestoreContacts, sortCriteria]);
 
     
     const ContactList = ({ contacts }: { contacts: (typeof sampleContacts) }) => (
@@ -185,6 +211,7 @@ export default function InvitePage() {
                     </TabsTrigger>
                 </TabsList>
                  <TabsContent value="email" className="mt-4">
+                    {emailSynced ? (
                     <div className="text-left space-y-4">
                         <div className="flex justify-between items-center">
                             <p className="text-sm text-muted-foreground">Gmail ile bağlandınız.</p>
@@ -203,6 +230,12 @@ export default function InvitePage() {
                         </div>
                         <ContactList contacts={sortedContacts} />
                     </div>
+                    ) : (
+                        <div className="text-center space-y-4 pt-4">
+                            <p className="text-sm text-muted-foreground">E-posta kişilerinize erişim izni vererek arkadaşlarını bul.</p>
+                            <Button onClick={handleEmailSync}>E-posta Kişilerini Senkronize Et</Button>
+                        </div>
+                    )}
                 </TabsContent>
                 <TabsContent value="phone" className="mt-4">
                      {phoneSynced ? (
@@ -226,7 +259,7 @@ export default function InvitePage() {
                     ) : (
                         <div className="text-center space-y-4 pt-4">
                             <p className="text-sm text-muted-foreground">Telefon rehberine erişim izni vererek arkadaşlarını bul.</p>
-                            <Button onClick={() => setPhoneSynced(true)}>Rehberi Senkronize Et</Button>
+                            <Button onClick={handlePhoneSync}>Rehberi Senkronize Et</Button>
                         </div>
                     )}
                 </TabsContent>

@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { user as staticUser, badges, pastVolunteering, certificates } from '@/lib/data';
+import { badges, pastVolunteering, certificates } from '@/lib/data';
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
     HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2
@@ -121,16 +121,29 @@ export default function ProfilePage() {
 
     const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
 
+    const emptyUser = {
+        id: authUser?.uid || '',
+        name: authUser?.displayName || '',
+        username: '',
+        avatarUrl: authUser?.photoURL || '',
+        coverPhotoUrl: '',
+        impactScore: 0,
+        personalInfo: { email: '', phone: '', birthDate: '', gender: '', nationality: '', bloodType: '', address: { country: '', city: '', district: '', neighborhood: '', fullAddress: '' }, website: '', social: {} },
+        volunteerInfo: { skills: [], dailySkills: [], interests: [], education: [], profession: '', sector: '', languages: [], programs: [], licenses: [], documents: [], travelInfo: { domesticObstacle: false, internationalObstacle: false, visas: [] }, emergency: { available: false, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [] } },
+        stats: { totalDonation: 0, donationCount: 0, highestSingleDonation: 0, supportedNgosCount: 0, mostSupportedNgo: '', avgDonation: 0, volunteerHours: 0, completedProjects: 0, volunteerRank: {}, mostActiveVolunteerArea: '', avgVolunteerDuration: '', totalImpactValue: 0 },
+    };
+
     const currentUser = useMemo(() => {
-        if (!userData) return staticUser;
+        if (!userData) return emptyUser;
         return {
-            ...staticUser,
+            ...emptyUser,
             ...userData,
-            personalInfo: { ...staticUser.personalInfo, ...(userData.personalInfo || {}) },
-            volunteerInfo: { ...staticUser.volunteerInfo, ...(userData.volunteerInfo || {}) },
-            stats: { ...staticUser.stats, ...(userData.stats || {}) },
+            personalInfo: { ...emptyUser.personalInfo, ...(userData.personalInfo || {}) },
+            volunteerInfo: { ...emptyUser.volunteerInfo, ...(userData.volunteerInfo || {}) },
+            stats: { ...emptyUser.stats, ...(userData.stats || {}) },
         };
-    }, [userData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userData, authUser]);
     
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);

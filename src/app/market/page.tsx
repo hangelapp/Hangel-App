@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter } from 'lucide-react';
-import { marketCategories, allEntityLists } from '@/lib/data';
+import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,17 +19,17 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 
   if (hasError || !brand.logoUrl) {
     return (
-      <div className="w-full h-full rounded-2xl bg-primary/10 flex items-center justify-center p-2">
+      <div className="absolute inset-0 rounded-2xl bg-primary/10 flex items-center justify-center p-2">
         <span className="text-primary font-black text-xl">{brand.name.charAt(0)}</span>
       </div>
     );
   }
 
   return (
-    <img 
-      src={brand.logoUrl} 
-      alt={brand.name} 
-      className="w-full h-full object-contain p-3"
+    <img
+      src={brand.logoUrl}
+      alt={brand.name}
+      className="absolute inset-0 w-full h-full object-contain p-3"
       onError={() => setHasError(true)}
       loading="lazy"
     />
@@ -42,21 +42,37 @@ export default function MarketPage() {
   const [brandType, setBrandType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const brandsQuery = useMemoFirebase(() => {
-    if (!db) return null;
-    return collection(db, 'brands');
-  }, [db]);
+  // Firestore brands (manually added/approved)
+  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
 
-  const { data: firestoreBrands, isLoading } = useCollection<Brand>(brandsQuery);
+  // API brands from affiliate networks (Tune/ReklamAction + others)
+  const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+  const [apiLoading, setApiLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/offers')
+      .then(res => res.ok ? res.json() : [])
+      .then((data: Brand[]) => {
+        setApiBrands(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setApiBrands([]))
+      .finally(() => setApiLoading(false));
+  }, []);
+
+  const isLoading = firestoreLoading || apiLoading;
 
   const brandsToShow = useMemo(() => {
-    // Merge Firestore brands with static fallback brands
-    const staticBrands = allEntityLists;
-    const combined = [...(firestoreBrands || []), ...staticBrands];
-    
-    // Deduplicate by ID
+    // Merge: Firestore brands take priority over API brands
+    const combined = [...(firestoreBrands || []), ...apiBrands];
+
     const uniqueMap = new Map<string, Brand>();
-    combined.forEach(b => uniqueMap.set(b.id, b));
+    combined.forEach(b => {
+      if (!b?.name) return;
+      const key = b.id;
+      if (!uniqueMap.has(key)) uniqueMap.set(key, b);
+    });
+
     let list = Array.from(uniqueMap.values());
 
     if (searchTerm.trim()) {
@@ -67,13 +83,19 @@ export default function MarketPage() {
     if (activeCategory !== 'Tümü') {
       list = list.filter(b => b.category === activeCategory);
     }
-    
+
     if (brandType !== 'all') {
       list = list.filter(b => b.type === brandType);
     }
 
     return list.sort((a, b) => b.donationRate - a.donationRate);
-  }, [firestoreBrands, activeCategory, searchTerm, brandType]);
+  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType]);
+
+  // Derive categories dynamically from all loaded brands
+  const allCategories = useMemo(() => {
+    const cats = new Set(brandsToShow.map(b => b.category).filter(Boolean));
+    return ['Tümü', ...Array.from(cats).sort()];
+  }, [brandsToShow]);
 
   return (
     <div className="flex flex-col h-full bg-secondary/30 relative">
@@ -95,10 +117,9 @@ export default function MarketPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setActiveCategory('Tümü')}>Tüm Kategoriler</DropdownMenuItem>
-              {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => (
-                <DropdownMenuItem key={cat.mainCategory} onClick={() => setActiveCategory(cat.mainCategory)}>
-                  {cat.mainCategory}
+              {allCategories.map(cat => (
+                <DropdownMenuItem key={cat} onClick={() => setActiveCategory(cat)}>
+                  {cat}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -106,63 +127,63 @@ export default function MarketPage() {
         </div>
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">Tümü</TabsTrigger>
-                <TabsTrigger value="brand">Ticari</TabsTrigger>
-                <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-                <TabsTrigger value="social">Sosyal</TabsTrigger>
-            </TabsList>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">Tümü</TabsTrigger>
+            <TabsTrigger value="brand">Ticari</TabsTrigger>
+            <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
+            <TabsTrigger value="social">Sosyal</TabsTrigger>
+          </TabsList>
         </Tabs>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-[100px] sm:w-1/4 border-r overflow-y-auto bg-background/50">
           <nav className="flex flex-col py-2">
-            {marketCategories.map((cat) => (
+            {allCategories.map((cat) => (
               <button
-                key={cat.mainCategory}
-                onClick={() => setActiveCategory(cat.mainCategory)}
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
                 className={cn(
                   "text-left text-[11px] sm:text-sm p-4 whitespace-nowrap truncate transition-all",
-                  activeCategory === cat.mainCategory
+                  activeCategory === cat
                     ? "bg-primary/10 text-primary border-l-4 border-primary font-black"
                     : "text-muted-foreground hover:bg-accent/50"
                 )}
               >
-                {cat.mainCategory}
+                {cat}
               </button>
             ))}
           </nav>
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 pb-32">
-            {isLoading && brandsToShow.length === 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[...Array(8)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)}
-                </div>
-            ) : brandsToShow.length === 0 ? (
-                <div className="text-center py-20 text-muted-foreground italic">
-                  Aramanızla eşleşen marka bulunamadı.
-                </div>
-            ) : (
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {brandsToShow.map((brand) => (
-                    <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
-                        <div className="flex flex-col items-center text-center space-y-2">
-                            <div className="relative w-full aspect-square">
-                                <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-xl transition-all">
-                                    <BrandLogo brand={brand} />
-                                </div>
-                                <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                                    %{brand.donationRate}
-                                </div>
-                            </div>
-                            <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
-                        </div>
-                    </Link>
-                  ))}
-                </div>
-            )}
+          {isLoading && brandsToShow.length === 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(12)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)}
+            </div>
+          ) : brandsToShow.length === 0 ? (
+            <div className="text-center py-20 text-muted-foreground italic">
+              Aramanızla eşleşen marka bulunamadı.
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {brandsToShow.map((brand) => (
+                <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="relative w-full aspect-square">
+                      <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-xl transition-all relative">
+                        <BrandLogo brand={brand} />
+                      </div>
+                      <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                        %{brand.donationRate}
+                      </div>
+                    </div>
+                    <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </main>
       </div>
     </div>

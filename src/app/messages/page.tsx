@@ -1,23 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Send, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft } from 'lucide-react';
+import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 
-const mockMessages = [
-    { id: 'm1', sender: 'Uluslararası Sosyal Fayda Derneği', senderType: 'ngo', avatar: 'https://logo.clearbit.com/socialbusinessglobal.org', subject: 'Başvurunuz Hakkında', excerpt: 'Merhaba, gönüllülük başvurunuzu inceledik ve...', time: '10:30', unread: true },
-    { id: 'm2', sender: 'İTÜ Girişimcilik Kulübü', senderType: 'club', avatar: 'https://logo.clearbit.com/itu.edu.tr', subject: 'Haftalık Toplantı', excerpt: 'Bu haftaki toplantımız çarşamba günü saat 18:00\'de...', time: 'Dün', unread: false },
-    { id: 'm3', sender: 'Hangel Sistem', senderType: 'admin', avatar: '', subject: 'Yeni Rozet Kazandın!', excerpt: 'Tebrikler! Çevre Koruyucusu rozetini kazandınız.', time: '2 gün önce', unread: false },
-];
-
-const senderTypeIcons = {
+const senderTypeIcons: Record<string, React.ReactNode> = {
     ngo: <Building className="h-3 w-3" />,
     club: <School className="h-3 w-3" />,
     admin: <Shield className="h-3 w-3" />,
@@ -29,10 +25,18 @@ export default function MessagesPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
+    const { user: authUser } = useUser();
+    const db = useFirestore();
 
-    const filteredMessages = mockMessages.filter(m => 
-        m.sender.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        m.subject.toLowerCase().includes(searchTerm.toLowerCase())
+    const messagesQuery = useMemoFirebase(
+        () => authUser ? query(collection(db, 'messages'), where('recipientId', '==', authUser.uid)) : null,
+        [db, authUser?.uid]
+    );
+    const { data: messages, isLoading } = useCollection(messagesQuery);
+
+    const filteredMessages = (messages || []).filter((m: any) =>
+        m.sender?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -51,8 +55,8 @@ export default function MessagesPage() {
 
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Mesajlarda ara..." 
+                <Input
+                    placeholder="Mesajlarda ara..."
                     className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -70,23 +74,31 @@ export default function MessagesPage() {
                 </TabsList>
 
                 <TabsContent value="inbox" className="mt-4 space-y-3">
-                    {filteredMessages.length > 0 ? filteredMessages.map((msg) => (
+                    {isLoading ? (
+                        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                    ) : !authUser ? (
+                        <div className="text-center py-20 text-muted-foreground">
+                            <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                            <p>Mesajlarınızı görmek için giriş yapın.</p>
+                        </div>
+                    ) : filteredMessages.length > 0 ? filteredMessages.map((msg: any) => (
                         <Card key={msg.id} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",
                             msg.unread && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
                                 <Avatar className="h-12 w-12 border">
-                                    <AvatarImage src={msg.avatar} />
-                                    <AvatarFallback>{msg.sender[0]}</AvatarFallback>
+                                    <AvatarFallback>{(msg.sender || '?')[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1">
                                         <div className="flex items-center gap-2">
                                             <span className="font-bold text-sm truncate">{msg.sender}</span>
-                                            <div className="p-1 bg-muted rounded-full text-muted-foreground">
-                                                {senderTypeIcons[msg.senderType as keyof typeof senderTypeIcons]}
-                                            </div>
+                                            {msg.senderType && (
+                                                <div className="p-1 bg-muted rounded-full text-muted-foreground">
+                                                    {senderTypeIcons[msg.senderType] || null}
+                                                </div>
+                                            )}
                                         </div>
                                         <span className="text-[10px] text-muted-foreground">{msg.time}</span>
                                     </div>

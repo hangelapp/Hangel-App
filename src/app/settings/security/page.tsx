@@ -53,26 +53,6 @@ export default function SecuritySettingsPage() {
             <form className="space-y-6" onSubmit={handleSubmit}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Şifre Değiştir</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="current-password">Mevcut Şifre</Label>
-                            <Input id="current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="new-password">Yeni Şifre</Label>
-                            <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="confirm-password">Yeni Şifre (Tekrar)</Label>
-                            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                 <Card>
-                    <CardHeader>
                         <CardTitle>İki Adımlı Doğrulama (2FA)</CardTitle>
                         <CardDescription>Hesabınıza giriş yaparken ek bir güvenlik katmanı ekleyin.</CardDescription>
                     </CardHeader>
