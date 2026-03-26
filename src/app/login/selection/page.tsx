@@ -703,11 +703,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     {/* Yasal Belgeler & Logolar */}
                     <div className="space-y-6">
                         <SectionTitle>YASAL BELGELER {entityType === 'NGO' ? '' : '& LOGOLAR'}</SectionTitle>
-                        <FileUpload label="VERGİ LEVHASI / RESMİ BELGE *" accept=".pdf,.png,.jpg" required />
                         {entityType === 'NGO' ? (
                             <>
                                 <FileUpload label="KURULUŞ SENEDİ / TÜZÜK" accept=".pdf" hint="Dernek tüzüğü veya vakıf senedini yükleyin." />
-                                <FileUpload label="YETKİLENDİRME BELGESİ" accept=".pdf,.png,.jpg" hint="Kuruluşu temsil ettiğinizi gösteren belge." />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg" hint="Kuruluşun faaliyet durumunu gösteren resmi belge." />
                             </>
                         ) : (
                             <FileUpload label="MARKA LOGOSU *" accept=".png,.jpg" hint="Arkaplansız (transparan) .png ve en az 512x512px olmalıdır." required />
