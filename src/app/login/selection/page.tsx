@@ -408,7 +408,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel>İşletme Statüsü</FormLabel>
                                 <Select value={formData.brandStatus} onValueChange={(val) => setFormData({...formData, brandStatus: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="brand">Ticari Marka</SelectItem>
                                         <SelectItem value="cooperative">Kooperatif</SelectItem>
@@ -488,7 +488,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel>Sektör</FormLabel>
                                 <Select value={formData.sector} onValueChange={(val) => setFormData({...formData, sector: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
                                     </SelectContent>
@@ -725,11 +725,11 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormInput placeholder="Örn: Genel Sekreter, Pazarlama Md. vb." value={formData.authorized.role} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL E-POSTA' : 'KURUMSAL E-POSTA'}</FormLabel>
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL E-POSTA' : 'BİREYSEL E-POSTA'}</FormLabel>
                             <FormInput type="email" placeholder={entityType === 'NGO' ? 'ornek@example.com' : 'ornek@marka.com'} value={formData.authorized.email} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL TELEFON' : 'KURUMSAL TELEFON'}</FormLabel>
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL TELEFON' : 'BİREYSEL TELEFON'}</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={(val) => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
