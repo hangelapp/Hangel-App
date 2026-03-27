@@ -333,9 +333,23 @@ const InfoCard = ({ title, description, link, linkText, icon: Icon }: { title: s
 export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [apiBrands, setApiBrands] = useState<Brand[]>([]);
 
     useEffect(() => {
         setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        const fetchBrands = async () => {
+            try {
+                const response = await fetch('/api/offers');
+                const brands = await response.json();
+                setApiBrands(brands.slice(0, 21));
+            } catch (error) {
+                console.error('Error fetching brands:', error);
+            }
+        };
+        fetchBrands();
     }, []);
     
     const pluginBagis = useRef(
@@ -486,7 +500,7 @@ export default function LoginPage() {
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
-                                {brandsInCarousel.map((brand) => (
+                                {(apiBrands.length > 0 ? apiBrands : brandsInCarousel).map((brand) => (
                                     <CarouselItem key={brand.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                                         <div className="h-[350px] p-1">
                                             <BrandCard brand={brand} />
@@ -502,7 +516,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-primary/20 text-primary hover:bg-primary/5">
                                 <Link href="/market">
-                                    Tüm Markaları Gör ({allEntityLists.length} Marka)
+                                    Tüm Markaları Gör ({(apiBrands.length > 0 ? apiBrands : allEntityLists).length} Marka)
                                 </Link>
                             </Button>
                         </div>

@@ -126,7 +126,7 @@ const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> 
 
 // --- Individual Form Component ---
 
-const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boolean; onComplete: () => void }) => {
+const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
@@ -182,16 +182,18 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
             const userId = userCredential.user.uid;
             const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
 
-            if (isRegister && name) {
+            const { getDoc: fsGetDoc } = await import('firebase/firestore');
+            const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
+            if (!userDocSnap.exists()) {
                 setDocumentNonBlocking(doc(db, 'users', userId), {
                     id: userId,
-                    name: name,
+                    name: name || userCredential.user.displayName || '',
                     username: `@${phone.replace(/\D/g, '')}`,
                     role: 'user',
                     personalInfo: { phone: fullPhone, address: { country: 'Türkiye' } },
                     stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                 }, { merge: true });
-                await updateProfile(userCredential.user, { displayName: name });
+                if (name) await updateProfile(userCredential.user, { displayName: name });
             }
 
             onComplete();
@@ -207,12 +209,10 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
             <div id="recaptcha-container" ref={recaptchaContainerRef} />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
-                    {isRegister && (
-                        <div className="space-y-2">
-                            <FormLabel>Ad Soyad</FormLabel>
-                            <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" required value={name} onChange={(e) => setName(e.target.value)} />
-                        </div>
-                    )}
+                    <div className="space-y-2">
+                        <FormLabel>Ad Soyad</FormLabel>
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} />
+                    </div>
                     <div className="space-y-2">
                         <FormLabel>Telefon</FormLabel>
                         <div className="flex gap-2">
@@ -267,6 +267,30 @@ const IndividualForm = ({ isRegister = false, onComplete }: { isRegister?: boole
 
 // --- Corporate Form Component ---
 
+const brandCategoryOptions = [
+    'Moda',
+    'Elektronik',
+    'Ev & Yaşam',
+    'Market',
+    'Kozmetik & Kişisel Bakım',
+    'Anne, Bebek & Çocuk',
+    'Etkinlik',
+    'Seyahat Bilet',
+    'Otomotiv & Motosiklet',
+    'Spor & Outdoor',
+    'Tatil & Otel Rezervasyonu',
+    'Pazaryeri',
+    'Kitap, Kırtasiye & Hobi',
+    'Süpermarket & Pet Shop',
+    'Mücevher & Saat',
+    'Sigorta',
+    'Oyun, Film & Müzik',
+    'Yapı Market & Hırdavat',
+    'Sağlık & Medikal',
+    'Endüstriyel & Ofis',
+    'Diğer'
+];
+
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
     const router = useRouter();
@@ -277,9 +301,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     // State
     const [formData, setFormData] = useState({
         country: 'Türkiye',
-        brandStatus: 'Seçiniz...',
+        brandStatus: '',
         name: '',
-        sector: 'Seçiniz...',
+        shortName: '',
+        orgTag: '',
+        orgSubType: '',
+        communicationAddress: '',
+        slogan: '',
+        sector: '',
         affiliateId: '',
         trackingLink: '',
         pixelScript: '',
@@ -298,8 +327,15 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
     });
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
+    const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
     const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
     const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
+
+    const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
+        setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
+    };
 
     const handleRegistryNoCheck = async (value: string) => {
         setFormData({...formData, registryNo: value});
@@ -328,9 +364,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         }
     };
 
-    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5' }]);
+    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
 
-    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5' }]);
+    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
     const removeCategory = (id: string) => setDonationCategories(donationCategories.filter(c => c.id !== id));
 
     const handleFormSubmit = async (e: React.FormEvent) => {
@@ -341,6 +377,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 ...formData,
                 donationCategories,
                 entityType,
+                beneficiaries: selectedBeneficiaries,
+                serviceAreas: selectedServiceAreas,
+                platforms: selectedPlatforms,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
@@ -393,47 +432,88 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel>İşletme Statüsü</FormLabel>
                                 <Select value={formData.brandStatus} onValueChange={(val) => setFormData({...formData, brandStatus: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="brand">Ticari Marka</SelectItem>
                                         <SelectItem value="cooperative">Kooperatif</SelectItem>
                                         <SelectItem value="social-enterprise">Sosyal İşletme</SelectItem>
+                                        <SelectItem value="economic-enterprise">İktisadi İşletme</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
                         {entityType === 'NGO' && (
-                            <div className="space-y-2">
-                                <FormLabel>Kütük Numarası</FormLabel>
-                                <div className="relative">
-                                    <FormInput
-                                        placeholder="Dernek/vakıf kütük numaranızı girin"
-                                        value={formData.registryNo}
-                                        onChange={(e) => handleRegistryNoCheck(e.target.value)}
-                                    />
-                                    {isCheckingRegistry && (
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                        </div>
-                                    )}
+                            <>
+                                <div className="space-y-2">
+                                    <FormLabel>Kuruluş Alt Türü</FormLabel>
+                                    <Select value={formData.orgSubType} onValueChange={(val) => setFormData({...formData, orgSubType: val})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Dernek">Dernek</SelectItem>
+                                            <SelectItem value="Vakıf">Vakıf</SelectItem>
+                                            <SelectItem value="Spor Kulübü">Spor Kulübü</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                                {registryNgoFound && (
-                                    <p className="text-xs text-green-600 font-semibold flex items-center gap-1">
-                                        ✓ Kayıtlı kuruluş bulundu: <span className="font-bold">{registryNgoFound.name}</span>. Bilgiler otomatik dolduruldu.
-                                    </p>
-                                )}
-                                <p className="text-xs text-muted-foreground">Mevcut bir dernek/vakfı sisteme bağlamak için kütük numarasını girin.</p>
-                            </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Kütük Numarası</FormLabel>
+                                    <div className="relative">
+                                        <FormInput
+                                            placeholder="Dernek/vakıf kütük numaranızı girin"
+                                            value={formData.registryNo}
+                                            onChange={(e) => handleRegistryNoCheck(e.target.value)}
+                                        />
+                                        {isCheckingRegistry && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    {registryNgoFound && (
+                                        <p className="text-xs text-green-600 font-semibold flex items-center gap-1">
+                                            ✓ Kayıtlı kuruluş bulundu: <span className="font-bold">{registryNgoFound.name}</span>. Bilgiler otomatik dolduruldu.
+                                        </p>
+                                    )}
+                                    <p className="text-xs text-muted-foreground">Mevcut bir dernek/vakfı sisteme bağlamak için kütük numarasını girin.</p>
+                                </div>
+                            </>
                         )}
                         <div className="space-y-2">
-                            <FormLabel>{entityType === 'BRAND' ? 'Marka Adı' : 'Kuruluş Adı'}</FormLabel>
-                            <FormInput placeholder={entityType === 'BRAND' ? 'Markanın adı' : 'Kuruluşun resmi adı'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+                            <FormLabel>{entityType === 'BRAND' ? 'Marka Adı' : 'Kuruluş Adı'} *</FormLabel>
+                            <FormInput placeholder={entityType === 'BRAND' ? 'Markanın adı' : 'Kuruluşun tam resmi adı'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                         </div>
+                        {entityType === 'NGO' && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <FormLabel>Kuruluş Kısa Adı</FormLabel>
+                                        <FormInput placeholder="hangel Dernek" value={formData.shortName} onChange={(e) => setFormData({...formData, shortName: e.target.value})} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel>Kuruluş Yılı</FormLabel>
+                                        <FormInput type="date" value={formData.orgTag} onChange={(e) => setFormData({...formData, orgTag: e.target.value})} />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Slogan</FormLabel>
+                                    <div className="relative">
+                                        <Textarea
+                                            className="min-h-[80px] rounded-xl bg-muted/20 border-none shadow-sm resize-none pr-16 text-sm"
+                                            placeholder="Kuruluşunuzu anlatan kısa bir metin"
+                                            maxLength={500}
+                                            value={formData.slogan}
+                                            onChange={(e) => setFormData({...formData, slogan: e.target.value})}
+                                        />
+                                        <span className="absolute bottom-3 right-3 text-[10px] text-muted-foreground font-bold">{formData.slogan.length}/500</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                         {entityType === 'BRAND' && (
                             <div className="space-y-2">
                                 <FormLabel>Sektör</FormLabel>
                                 <Select value={formData.sector} onValueChange={(val) => setFormData({...formData, sector: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
                                     </SelectContent>
@@ -441,6 +521,61 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                         )}
                     </div>
+
+                    {entityType === 'NGO' && (
+                        <>
+                            {/* Hedef Kitleler */}
+                            <div className="space-y-4">
+                                <SectionTitle icon={Users}>HEDEF KİTLENİZDEN</SectionTitle>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {allBeneficiaries.map(item => (
+                                        <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                            <Checkbox
+                                                checked={selectedBeneficiaries.includes(item)}
+                                                onCheckedChange={() => toggleItem(selectedBeneficiaries, setSelectedBeneficiaries, item)}
+                                                className="rounded-md"
+                                            />
+                                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{item}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Hizmet Alanları (SDGs) */}
+                            <div className="space-y-4">
+                                <SectionTitle icon={Target}>HİZMET ALANLARI</SectionTitle>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {allSdgs.map(item => (
+                                        <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                            <Checkbox
+                                                checked={selectedServiceAreas.includes(item)}
+                                                onCheckedChange={() => toggleItem(selectedServiceAreas, setSelectedServiceAreas, item)}
+                                                className="rounded-md"
+                                            />
+                                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{item}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Platform Üyelikleri */}
+                            <div className="space-y-4">
+                                <SectionTitle icon={Activity}>STK OLARAK PLATFORMLAR</SectionTitle>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {allMemberships.map(item => (
+                                        <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                            <Checkbox
+                                                checked={selectedPlatforms.includes(item)}
+                                                onCheckedChange={() => toggleItem(selectedPlatforms, setSelectedPlatforms, item)}
+                                                className="rounded-md"
+                                            />
+                                            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">{item}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {entityType === 'BRAND' && (
                         <>
@@ -454,28 +589,47 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         <div className="col-span-4"><Label className="text-[9px] font-black uppercase text-muted-foreground">Oran (%)</Label></div>
                                     </div>
                                     {donationCategories.map((cat, idx) => (
-                                        <div key={cat.id} className="grid grid-cols-12 gap-2 animate-in fade-in-0 duration-300">
-                                            <div className="col-span-7">
-                                                <FormInput placeholder="Örn: Giyim, Aksesuar" value={cat.category} onChange={(e) => {
-                                                    const newCats = [...donationCategories];
-                                                    newCats[idx].category = e.target.value;
-                                                    setDonationCategories(newCats);
-                                                }} />
+                                        <div key={cat.id} className="space-y-2 animate-in fade-in-0 duration-300">
+                                            <div className="grid grid-cols-12 gap-2">
+                                                <div className="col-span-7">
+                                                    <Select value={cat.category} onValueChange={(val) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].category = val;
+                                                        newCats[idx].customCategory = val === 'Diğer' ? newCats[idx].customCategory : '';
+                                                        setDonationCategories(newCats);
+                                                    }}>
+                                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+                                                        <SelectContent className="max-h-60">
+                                                            {brandCategoryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="col-span-4 relative">
+                                                    <FormInput type="number" value={cat.rate} onChange={(e) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].rate = e.target.value;
+                                                        setDonationCategories(newCats);
+                                                    }} />
+                                                </div>
+                                                <div className="col-span-1 flex items-center justify-center">
+                                                    {donationCategories.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="col-span-4 relative">
-                                                <FormInput type="number" value={cat.rate} onChange={(e) => {
-                                                    const newCats = [...donationCategories];
-                                                    newCats[idx].rate = e.target.value;
-                                                    setDonationCategories(newCats);
-                                                }} />
-                                            </div>
-                                            <div className="col-span-1 flex items-center justify-center">
-                                                {donationCategories.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeCategory(cat.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                )}
-                                            </div>
+                                            {cat.category === 'Diğer' && (
+                                                <FormInput
+                                                    placeholder="Kategori adını yazınız"
+                                                    value={cat.customCategory}
+                                                    onChange={(e) => {
+                                                        const newCats = [...donationCategories];
+                                                        newCats[idx].customCategory = e.target.value;
+                                                        setDonationCategories(newCats);
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -592,9 +746,15 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
                     {/* Yasal Belgeler & Logolar */}
                     <div className="space-y-6">
-                        <SectionTitle>YASAL BELGELER & LOGOLAR</SectionTitle>
-                        <FileUpload label="VERGİ LEVHASI *" accept=".pdf,.png,.jpg" required />
-                        <FileUpload label="MARKA LOGOSU *" accept=".png,.jpg" hint="Arkaplansız (transparan) .png ve en az 512x512px olmalıdır." required />
+                        <SectionTitle>YASAL BELGELER {entityType === 'NGO' ? '' : '& LOGOLAR'}</SectionTitle>
+                        {entityType === 'NGO' ? (
+                            <>
+                                <FileUpload label="KURULUŞ SENEDİ / TÜZÜK" accept=".pdf" hint="Dernek tüzüğü veya vakıf senedini yükleyin." />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg" hint="Kuruluşun faaliyet durumunu gösteren resmi belge." />
+                            </>
+                        ) : (
+                            <FileUpload label="MARKA LOGOSU *" accept=".png,.jpg" hint="Arkaplansız (transparan) .png ve en az 512x512px olmalıdır." required />
+                        )}
                     </div>
 
                     {/* Yetkili Kişi Bilgileri */}
@@ -609,11 +769,11 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormInput placeholder="Örn: Genel Sekreter, Pazarlama Md. vb." value={formData.authorized.role} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>KURUMSAL E-POSTA</FormLabel>
-                            <FormInput type="email" placeholder="ornek@marka.com" value={formData.authorized.email} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} required />
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL E-POSTA' : 'BİREYSEL E-POSTA'}</FormLabel>
+                            <FormInput type="email" placeholder={entityType === 'NGO' ? 'ornek@example.com' : 'ornek@marka.com'} value={formData.authorized.email} onChange={(e) => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})} required />
                         </div>
                         <div className="space-y-2">
-                            <FormLabel>KURUMSAL TELEFON</FormLabel>
+                            <FormLabel>{entityType === 'NGO' ? 'BİREYSEL TELEFON' : 'BİREYSEL TELEFON'}</FormLabel>
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={(val) => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
@@ -631,7 +791,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="flex items-start space-x-3 text-left">
                             <Checkbox id="terms-brand" required />
                             <Label htmlFor="terms-brand" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                                <span className="text-primary font-bold">Marka Katılım Sözleşmesi</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
+                                <span className="text-primary font-bold">{entityType === 'NGO' ? 'STK Katılım Sözleşmesi' : 'Marka Katılım Sözleşmesi'}</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
                             </Label>
                         </div>
                         <div className="flex items-start space-x-3 text-left">
@@ -662,8 +822,7 @@ const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const action = searchParams.get('action') || 'login';
-    const type = searchParams.get('type') || 'individual';
+    const activeTab = searchParams.get('tab') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
 
     useEffect(() => {
@@ -694,34 +853,18 @@ const FormRenderer = () => {
                         <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 px-8 pb-10 text-center">
-                        <Tabs value={action} onValueChange={(val) => router.push(`/login/selection?action=${val}&type=${type}&entity=${initialEntity}`)}>
+                        <Tabs value={activeTab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${initialEntity}`)}>
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                                <TabsTrigger value="login" className="rounded-lg font-bold">Giriş Yap</TabsTrigger>
-                                <TabsTrigger value="register" className="rounded-lg font-bold">Kayıt Ol</TabsTrigger>
+                                <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
+                                <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
+                            <TabsContent value="individual" className="pt-4">
+                                <IndividualForm onComplete={() => router.push('/timeline')} />
+                            </TabsContent>
+                            <TabsContent value="corporate" className="pt-4">
+                                <CorporateForm initialEntity={initialEntity} />
+                            </TabsContent>
                         </Tabs>
-
-                        {action === 'login' ? (
-                            <IndividualForm onComplete={() => router.push('/timeline')} />
-                        ) : (
-                            <div className="space-y-6 pt-4">
-                                <div className="space-y-2">
-                                    <FormLabel>Hesap Tipi</FormLabel>
-                                    <Select value={type} onValueChange={(val) => router.push(`/login/selection?action=register&type=${val}&entity=${initialEntity}`)}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="individual">Bireysel</SelectItem>
-                                            <SelectItem value="corporate">Kurumsal (STK, Marka, Kulüp)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {type === 'individual' ? (
-                                    <IndividualForm isRegister={true} onComplete={() => router.push('/timeline')} />
-                                ) : (
-                                    <CorporateForm initialEntity={initialEntity} />
-                                )}
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
             </div>
