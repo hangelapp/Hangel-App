@@ -1,4 +1,3 @@
-
 import { 
     Leaf, 
     GraduationCap, 
@@ -32,86 +31,34 @@ import {
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
-// --- BM Kayıtlı Tüm Ülkeler Listesi (Filistin Dahil) ---
-export const allCountries = [
-  "Türkiye", "Filistin", "Afganistan", "Almanya", "Amerika Birleşik Devletleri", "Andorra", "Angola", "Antigua ve Barbuda", "Arjantin", "Arnavutluk", "Avustralya", "Avusturya", "Azerbaycan", "Bahamalar", "Bahreyn", "Bangladeş", "Barbados", "Batı Sahra", "Belçika", "Belize", "Benin", "Beyaz Rusya", "Bhutan", "Birleşik Arap Emirlikleri", "Birleşik Krallık", "Bolivya", "Bosna Hersek", "Botsvana", "Brezilya", "Brunei", "Bulgaristan", "Burkina Faso", "Burundi", "Cezayir", "Cibuti", "Çad", "Çek Cumhuriyeti", "Çin", "Danimarka", "Doğu Timor", "Dominik Cumhuriyeti", "Dominika", "Ekvador", "Ekvator Ginesi", "El Salvador", "Endonezya", "Eritre", "Ermenistan", "Estonya", "Esvatini", "Etiyopya", "Fas", "Fiji", "Fildişi Sahili", "Filipinler", "Finlandiya", "Fransa", "Gabon", "Gambiya", "Gana", "Gine", "Gine-Bissau", "Grenada", "Guatemala", "Guyana", "Güney Afrika", "Güney Sudan", "Gürcistan", "Haiti", "Hırvatistan", "Hindistan", "Hollanda", "Honduras", "Irak", "İran", "İrlanda", "İspanya", "İsrail", "İsveç", "İsviçre", "İtalya", "İzlanda", "Jamaika", "Japonya", "Kamboçya", "Kamerun", "Kanada", "Karadağ", "Katar", "Kazakistan", "Kenya", "Kırgızistan", "Kiribati", "Kolombiya", "Komorlar", "Kongo", "Kongo Demokratik Cumhuriyeti", "Kosta Rika", "Kuveyt", "Kuzey Kore", "Kuzey Makedonya", "Küba", "Laos", "Letonya", "Lübnan", "Liberya", "Libya", "Lihtenştayn", "Litvanya", "Lüksemburg", "Macaristan", "Madagaskar", "Malavi", "Maldivler", "Malezya", "Mali", "Malta", "Marshall Adaları", "Meksika", "Mısır", "Mikronezya", "Moğolistan", "Moldova", "Monako", "Moritanya", "Morityus", "Mozambik", "Myanmar", "Namibya", "Nauru", "Nepal", "Nijer", "Nijerya", "Nikaragua", "Norveç", "Orta Afrika Cumhuriyeti", "Özbekistan", "Pakistan", "Palau", "Panama", "Papua Yeni Gine", "Paraguay", "Peru", "Polonya", "Portekiz", "Romanya", "Ruanda", "Rusya", "Saint Kitts ve Nevis", "Saint Lucia", "Saint Vincent ve Grenadinler", "Samoa", "San Marino", "Sao Tome ve Principe", "Senegal", "Seyşeller", "Sırbistan", "Sierra Leone", "Singapur", "Slovakya", "Slovenya", "Solomon Adaları", "Somali", "Sri Lanka", "Sudan", "Surinam", "Suriye", "Suudi Arabistan", "Şili", "Tacikistan", "Tanzanya", "Tayland", "Togo", "Tonga", "Trinidad ve Tobago", "Tunus", "Tuvalu", "Türkmenistan", "Uganda", "Ukrayna", "Umman", "Uruguay", "Ürdün", "Vanuatu", "Vatikan", "Venezuela", "Vietnam", "Yemen", "Yeni Zelanda", "Yunanistan", "Zambiya", "Zimbabve"
-];
-
-// --- Tüm Dünya Telefon Kodları ---
 export const countryPhoneCodes = [
   "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
 ];
 
-// --- Türkiye İl ve İlçe Verileri (Tam Liste) ---
-export const allProvinces = [
-  "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkâri", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
-];
-
-export const districtsData: { [key: string]: string[] } = {
-  "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
-  "Ankara": ["Akyurt", "Altındağ", "Ayaş", "Balâ", "Beypazarı", "Çamlıdere", "Çankaya", "Çubuk", "Elmadağ", "Etimesgut", "Evren", "Gölbaşı", "Güdül", "Haymana", "Kahramankazan", "Kalecik", "Keçiören", "Kızılcahamam", "Mamak", "Nallıhan", "Polatlı", "Pursaklar", "Sincan", "Şereflikoçhisar", "Yenimahalle"],
-  "Antalya": ["Akseki", "Aksu", "Alanya", "Demre", "Döşemealtı", "Elmalı", "Finike", "Gazipaşa", "Gündoğmuş", "İbradı", "Kaş", "Kemer", "Kepez", "Konyaaltı", "Korkuteli", "Kumluca", "Manavgat", "Muratpaşa", "Serik"],
-  "Bursa": ["Büyükorhan", "Gemlik", "Gürsu", "Harmancık", "İnegöl", "İznik", "Karacabey", "Keles", "Kestel", "Mudanya", "Mustafakemalpaşa", "Nilüfer", "Orhaneli", "Orhangazi", "Osmangazi", "Yenişehir", "Yıldırım"],
-  "İstanbul": ["Adalar", "Arnavutköy", "Ataşehir", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy", "Başakşehir", "Bayrampaşa", "Beşiktaş", "Beykoz", "Beylikdüzü", "Beyoğlu", "Büyükçekmece", "Çatalca", "Çekmeköy", "Esenler", "Esenyurt", "Eyüpsultan", "Fatih", "Gaziosmanpaşa", "Güngören", "Kadıköy", "Kâğıthane", "Kartal", "Küçükçekmece", "Maltepe", "Pendik", "Sancaktepe", "Sarıyer", "Silivri", "Sultanbeyli", "Sultangazi", "Şile", "Şişli", "Tuzla", "Ümraniye", "Üsküdar", "Zeytinburnu"],
-  "İzmir": ["Aliağa", "Balçova", "Bayındır", "Bayraklı", "Bergama", "Beydağ", "Bornova", "Buca", "Çeşme", "Çiğli", "Dikili", "Foça", "Gaziemir", "Güzelbahçe", "Karabağlar", "Karaburun", "Karşıyaka", "Kemalpaşa", "Kınık", "Kiraz", "Konak", "Menderes", "Menemen", "Narlıdere", "Ödemiş", "Seferihisar", "Selçuk", "Tire", "Torbalı", "Urla"],
-  // Diğer iller için örnek veriler (projede dinamik olarak genişleyebilir)
-  "Konya": ["Ahırlı", "Akören", "Akşehir", "Altınekin", "Beyşehir", "Bozkır", "Cihanbeyli", "Çeltik", "Çumra", "Derbent", "Derebucak", "Doğanhisar", "Emirgazi", "Ereğli", "Güneysınır", "Hadim", "Halkapınar", "Hüyük", "Ilgın", "Kadınhanı", "Karapınar", "Karatay", "Kulu", "Meram", "Sarayönü", "Selçuklu", "Seydişehir", "Taşkent", "Tuzlukçu", "Yalıhüyük", "Yunak"],
+export const allCountries = ["Türkiye", "Almanya", "ABD", "Azerbaycan", "İngiltere", "Fransa"];
+export const allProvinces = ["İstanbul", "Ankara", "İzmir", "Bursa", "Antalya"];
+export const districtsData: Record<string, string[]> = {
+    "İstanbul": ["Kadıköy", "Beşiktaş", "Üsküdar"],
+    "Ankara": ["Çankaya", "Etimesgut"]
+};
+export const neighborhoodsData: Record<string, Record<string, string[]>> = {
+    "İstanbul": { "Kadıköy": ["Caferağa", "Moda"] }
 };
 
-export const neighborhoodsData: { [city: string]: { [district: string]: string[] } } = {
-  "İstanbul": {
-    "Kadıköy": ["Caferağa", "Osmanağa", "Rasimpaşa", "Moda", "Fenerbahçe", "Caddebostan", "Suadiye", "Göztepe", "Erenköy", "Bostancı"],
-    "Beşiktaş": ["Bebek", "Etiler", "Levazım", "Ortaköy", "Vişnezade"],
-    "Üsküdar": ["Acıbadem", "Altunizade", "Beylerbeyi", "Çengelköy", "Kuzguncuk"]
-  }
-};
-
-export const globalCitiesData: { [country: string]: string[] } = {
-  "Almanya": ["Berlin", "Münih", "Frankfurt", "Hamburg", "Köln"],
-  "ABD": ["New York", "California", "Texas", "Florida", "Illinois"],
-  "Azerbaycan": ["Bakı", "Gence", "Sumqayıt"],
-  "İngiltere": ["Londra", "Manchester", "Birmingham"]
-};
-
-export const globalDistrictsData: { [city: string]: string[] } = {
-  "Berlin": ["Mitte", "Pankow", "Spandau"],
-  "New York": ["Manhattan", "Brooklyn", "Queens"],
-  "Bakı": ["Binəqədi", "Nəsimi", "Səbail"],
-  "Londra": ["Westminster", "Camden"]
-};
-
-export const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
-export const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
-export const allDailySkills = ['Yemek Yapma', 'Temizlik', 'El Becerileri', 'Organizasyon', 'İletişim'];
-export const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İşaret Dili'];
-export const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'VS Code', 'Docker', 'Google Analytics'];
-export const allLicenses = ['B Sınıfı Ehliyet', 'A Sınıfı Ehliyet', 'D Sınıfı Ehliyet'];
-export const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'Scrum Master Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası', 'SRC Belgesi'];
-export const allVisas = ['Schengen', 'ABD (B1/B2)', 'İngiltere', 'Kanada'];
-export const allSectors = ['Teknoloji', 'Eğitim', 'Sağlık', 'Finans', 'Üretim', 'Hizmet', 'Sivil Toplum', 'Diğer'];
-export const allPositions = ['Yazılım Geliştirici', 'Proje Müdürü', 'Tasarımcı', 'Pazarlama Uzmanı', 'Satış Temsilcisi', 'İnsan Kaynakları', 'Öğrenci', 'Stajyer', 'Emekli', 'Diğer'];
-export const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre', 'Kadınlar', 'İhtiyaç Sahibi Aileler'];
-export const allSdgs = [
-    '1. Yoksulluğa Son', 
-    '2. Açlığa Son', 
-    '3. Sağlıklı ve Kaliteli Yaşam', 
-    '4. Nitelikli Eğitim', 
-    '5. Toplumsal Cinsiyet Eşitliği', 
-    '6. Temiz Su ve Sanitasyon', 
-    '7. Erişilebilir ve Temiz Enerji', 
-    '8. İnsana Yakışır İş ve Ekonomik Büyüme',
-    '9. Sanayi, Yenilikçilik ve Altyapı', 
-    '10. Eşitsizliklerin Azaltılması', 
-    '11. Sürdürülebilir Şehirler ve Topluluklar',
-    '12. Sorumlu Üretim ve Tüketim', 
-    '13. İklim Eylemi', 
-    '14. Sudaki Yaşam', 
-    '15. Karasal Yaşam',
-    '16. Barış, Adalet ve Güçlü Kurumlar',
-    '17. Amaçlar için Ortaklıklar'
-];
-export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Sivil Toplumla İlişkiler Genel Md.', 'Global Compact'];
-export const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
+export const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk'];
+export const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Yazılım Geliştirme'];
+export const allDailySkills = ['Yemek Yapma', 'Organizasyon', 'İletişim'];
+export const allLanguages = ['Türkçe', 'İngilizce', 'Almanca'];
+export const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'VS Code'];
+export const allLicenses = ['B Sınıfı Ehliyet'];
+export const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi'];
+export const allVisas = ['Schengen', 'ABD (B1/B2)'];
+export const allSectors = ['Teknoloji', 'Eğitim', 'Sağlık'];
+export const allPositions = ['Yazılım Geliştirici', 'Proje Müdürü', 'Tasarımcı'];
+export const allBeneficiaries = ['Çocuklar', 'Öğrenciler', 'Hayvanlar', 'Çevre'];
+export const allSdgs = ['1. Yoksulluğa Son', '4. Nitelikli Eğitim', '13. İklim Eylemi'];
+export const allMemberships = ['Afet Platformu', 'Açık Açık'];
+export const years = Array.from({ length: 100 }, (_, i) => (2024 - i).toString());
 
 export const user: User = {
     id: '1',
@@ -155,56 +102,23 @@ export const ngos: NGO[] = [
     { id: 'ngo-2', name: 'ÇYDD', category: 'Eğitim', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/cydd.org.tr', coverPhotoUrl: 'https://picsum.photos/seed/cydd/1200/400', stats: { followers: 150000, donors: 80000, volunteers: 40000, volunteerHours: 200000, projects: 500, totalDonation: 15000000, donationCount: 200000, avgDonation: 75, highestSingleDonation: 10000, peopleReached: 500000 }, transparencyScore: 95, about: "Çağdaş yaşamı destekleme derneği.", joinDate: "2023-01-01", supportedSDGs: ['4. Nitelikli Eğitim'], beneficiaryGroups: ['Öğrenciler'], memberOf: [], contact: { email: 'iletisim@cydd.org.tr', phone: '0212 123 45 67', website: 'https://cydd.org.tr', social: { twitter: 'cydd', instagram: 'cydd', facebook: 'cydd', linkedin: 'cydd' }, address: { fullAddress: 'Şişli', city: 'İstanbul', district: 'Şişli' } }, posts: [], opportunities: [] }
 ];
 
-export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21 }, (_, i) => ({
-    id: `opp-${i + 1}`,
-    title: ["Afet Bölgesi Lojistik Destek", "Sokak Hayvanları Besleme", "Öğrencilere Matematik Kursu", "Huzurevi Müzik Dinletisi", "Deniz Kıyısı Temizliği", "Tercüme Desteği", "Ağaç Dikme Şenliği", "Afet Bilinci Eğitmenliği", "Dijital Kütüphane Kataloglama", "Gıda Kolisi Paketleme", "Kampüs Elçisi Programı", "Grafik Tasarım Desteği", "Hukuki Danışmanlık", "Yazılım Mentörlüğü", "İşaret Dili Atölyesi", "Sesli Kitap Okuma", "Kan Bağışı Organizasyonu", "İlk Yardım Yardımcılığı", "Müze Rehberliği", "Sürdürülebilirlik Analizi", "Veri Giriş Desteği"][i % 21],
-    organization: ngos[i % ngos.length].name,
-    ngoId: ngos[i % ngos.length].id,
-    location: { city: ["İstanbul", "Ankara", "İzmir", "Hatay", "Online"][i % 5], district: "Genel", type: (i % 3 === 0 ? 'Online' : i % 3 === 1 ? 'Saha' : 'Hibrit') as any },
-    commitment: ["Tek Günlük", "Dönemsel", "Sürekli"][i % 3],
-    volunteerCount: { needed: 10 + i, applications: 2 + i },
-    dates: { applicationStart: "2024-01-01", applicationEnd: "2025-12-31", eventStart: "2025-01-01", eventEnd: "2025-12-31" },
-    hours: { start: "09:00", end: "17:00", total: 8 },
-    socialArea: ngos[i % ngos.length].category,
-    points: 100 + (i * 50),
-    ngoTransparencyScore: ngos[i % ngos.length].transparencyScore,
-    taskType: ["Tek Gün", "Dönemsel", "Sürekli"][i % 3] as any,
-    providesCertificate: i % 2 === 0,
-    earnedBadges: ["Rozet"],
-    hasPreTraining: i % 4 === 0,
-    description: "Topluma fayda sağlayacak bu projede yer alarak etki oluşturun.",
-    amenities: { transport: i % 2 === 0, food: true, accommodation: i % 10 === 0 }
-}));
+export const volunteeringOpportunities: Volunteering[] = [
+    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: 'ngo-1', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 50, applications: 12 }, dates: { applicationStart: '2024-01-01', applicationEnd: '2024-12-31', eventStart: '2024-08-01', eventEnd: '2024-08-01' }, hours: { start: '09:00', end: '17:00', total: 8 }, socialArea: 'Dayanışma', points: 500, ngoTransparencyScore: 98, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'Lojistik merkezimizde paketleme desteği.', amenities: { transport: true, food: true, accommodation: false } }
+];
 
-export const studentClubs: StudentClub[] = Array.from({ length: 10 }, (_, i) => ({
-    id: `club-${i + 1}`,
-    name: i < 5 ? `${['İTÜ', 'Boğaziçi', 'ODTÜ', 'Marmara', 'YTÜ'][i]} Girişimcilik Kulübü` : `${['Kabataş', 'IEL', 'GSL', 'CAL', 'KAL'][i-5]} Sosyal Yardımlaşma`,
-    university: i < 5 ? ['İstanbul Teknik Üniversitesi', 'Boğaziçi Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Marmara Üniversitesi', 'Yıldız Teknik Üniversitesi'][i] : ['Kabataş Erkek Lisesi', 'İstanbul Erkek Lisesi', 'Galatasaray Lisesi', 'Cağaloğlu Anadolu Lisesi', 'Kadıköy Anadolu Lisesi'][i-5],
-    type: i < 5 ? 'university' : 'high-school',
-    avatarUrl: `https://picsum.photos/seed/club${i}/200/200`,
-    coverPhotoUrl: `https://picsum.photos/seed/clubcover${i}/1200/400`,
-    members: 150 + (i * 100),
-    points: 5000 + (i * 2000),
-    description: 'Etki odaklı bir student topluluğu.',
-    vision: 'Değişimin kampüsteki adı olmak.',
-    joinDate: '2023-01-01',
-    contact: { email: `iletisim@club${i}.edu.tr`, phone: '0212 123 45 67', website: `https://club${i}.edu.tr` }
-}));
+export const studentClubs: StudentClub[] = [
+    { id: 'club-1', name: 'İTÜ Girişimcilik Kulübü', university: 'İstanbul Teknik Üniversitesi', type: 'university', avatarUrl: 'https://picsum.photos/seed/itu/200/200', coverPhotoUrl: 'https://picsum.photos/seed/itucover/1200/400', members: 1500, points: 25000, description: 'Geleceğin girişimcilerini yetiştiriyoruz.', vision: 'Ekosistemi büyütmek.', joinDate: '2023-01-01', contact: { email: 'info@itugirisim.org', phone: '0212 123 45 67', website: 'https://itugirisim.org' } }
+];
 
 export const events: Event[] = [];
 
 export const allEntityLists: Brand[] = [
-    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' },
-    { id: 'brand-2', slug: 'pazarama', name: 'Pazarama', donationRate: 2, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand', category: 'Pazar Yeri', about: 'Türkiye\'nin güvenilir pazar yeri.' },
-    { id: 'brand-3', slug: 'karaca', name: 'Karaca', donationRate: 3, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', category: 'Ev & Yaşam', about: 'Mutfak ve ev tekstili ürünleri.' }
+    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' }
 ];
 
 export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Tümü', subCategories: [] },
-    { mainCategory: 'Pazar Yeri', subCategories: [{ name: 'Genel', imageUrl: '' }] },
-    { mainCategory: 'Giyim', subCategories: [{ name: 'Spor', imageUrl: '' }] },
-    { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] },
-    { mainCategory: 'Ev & Yaşam', subCategories: [{ name: 'Mutfak', imageUrl: '' }] }
+    { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] }
 ];
 
 export const badges: Badge[] = [
@@ -231,9 +145,10 @@ export const timelinePosts: Post[] = [
     { id: '1', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Birlikte daha güçlüyüz!', timestamp: '2 saat önce', likes: 1250, comments: 45 }
 ];
 
-export const sportsFederations = ["TFF", "TBF", "TVF", "THF", "THK"];
+export const sportsFederations = ["TFF", "TBF", "TVF"];
 export const certificates = [];
 export const pastVolunteering = [];
 export const schoolRepresentatives = [];
 export const ngoHelpTopics = helpTopics;
 export const ngoFaqArticles = [];
+export const allUniversities = ["Boğaziçi", "İTÜ", "ODTÜ", "Marmara"];
