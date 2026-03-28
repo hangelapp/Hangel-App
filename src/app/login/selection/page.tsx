@@ -189,7 +189,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required />
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
                     </div>
                     <div className="space-y-2">
                         <FormLabel>Telefon</FormLabel>
@@ -204,7 +204,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" />
+                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
@@ -224,6 +224,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             className="text-center text-2xl font-black tracking-[0.5em]"
                             maxLength={6}
+                            enterKeyHint="done"
                         />
                     </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
