@@ -119,6 +119,14 @@ export const districtsData: { [key: string]: string[] } = {
   "Zonguldak": ["Alaplı", "Çaycuma", "Devrek", "Ereğli", "Gökçebey", "Kilimli", "Kozlu", "Merkez"],
 };
 
+export const allProvinces = Object.keys(districtsData);
+
+export const allCountries = [
+  "Türkiye", "ABD", "Almanya", "İngiltere", "Fransa", "Hollanda", "İsviçre",
+  "Avusturya", "Belçika", "İsveç", "Norveç", "Danimarka", "Kanada",
+  "Avustralya", "İtalya", "İspanya", "Japonya", "Güney Kore", "Azerbaycan", "Diğer"
+];
+
 export { neighborhoodsData } from './neighborhoods-data';
 
 export const globalCitiesData: { [country: string]: string[] } = {

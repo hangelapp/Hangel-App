@@ -9,9 +9,9 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-    ArrowLeft, 
-    Upload, 
+import {
+    ArrowLeft,
+    Upload,
     Loader2,
     Building2,
     CheckCircle,
@@ -22,13 +22,25 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School
+    School,
+    Trash2,
+    Users,
+    Target,
+    Activity,
+    Mail,
+    Instagram,
+    Linkedin,
+    X
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, countryPhoneCodes, allCountries, allUniversities } from '@/lib/data';
+import {
+    marketCategories, countryPhoneCodes, allCountries, allUniversities,
+    allProvinces, districtsData, neighborhoodsData,
+    allBeneficiaries, allSdgs, allMemberships
+} from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -288,6 +300,20 @@ const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
+const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: React.ComponentType<any> }) => (
+    <div className="relative">
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 pl-10", props.className)} />
+    </div>
+);
+
+const brandCategoryOptions = [
+    "Giyim & Aksesuar", "Elektronik", "Kozmetik & Kişisel Bakım",
+    "Ev & Yaşam", "Gıda & İçecek", "Spor & Outdoor",
+    "Kitap & Kırtasiye", "Oyuncak & Hobi", "Sağlık & Medikal",
+    "Otomotiv", "Mücevher & Saat", "Diğer"
+];
+
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const auth = useAuth();
     const db = useFirestore();
@@ -434,6 +460,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         addressLine: '',
         email: '',
         phone: '',
+        phoneCode: '90',
         website: '',
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
@@ -445,7 +472,49 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         clubCategory: '',
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
+        country: 'Türkiye',
+        brandStatus: '',
     });
+
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
+    const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+    const [donationCategories, setDonationCategories] = useState<{ id: string; category: string; rate: string; customCategory: string }[]>([
+        { id: '1', category: '', rate: '', customCategory: '' }
+    ]);
+    const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
+    const [registryNgoFound, setRegistryNgoFound] = useState<{ name: string } | null>(null);
+
+    const uniquePhoneCodes = useMemo(() => [...new Set(countryPhoneCodes)].sort(), []);
+
+    const toggleItem = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
+        setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
+    };
+
+    const handleRegistryNoCheck = async (value: string) => {
+        setFormData(prev => ({ ...prev, registryNo: value }));
+        if (value.length < 3) { setRegistryNgoFound(null); return; }
+        setIsCheckingRegistry(true);
+        try {
+            const { getDocs, query, where } = await import('firebase/firestore');
+            const q = query(collection(db, 'ngos'), where('registryNo', '==', value));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const ngoData = snap.docs[0].data();
+                setRegistryNgoFound({ name: ngoData.name || 'Bilinmeyen' });
+                setFormData(prev => ({ ...prev, registryNo: value, name: ngoData.name || prev.name, shortName: ngoData.shortName || prev.shortName }));
+            } else { setRegistryNgoFound(null); }
+        } catch { setRegistryNgoFound(null); }
+        finally { setIsCheckingRegistry(false); }
+    };
+
+    const addCategory = () => {
+        setDonationCategories(prev => [...prev, { id: Date.now().toString(), category: '', rate: '', customCategory: '' }]);
+    };
+
+    const removeCategory = (id: string) => {
+        setDonationCategories(prev => prev.filter(cat => cat.id !== id));
+    };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -454,6 +523,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             await addDocumentNonBlocking(collection(db, 'applications'), {
                 ...formData,
                 entityType,
+                selectedBeneficiaries,
+                selectedServiceAreas,
+                selectedPlatforms,
+                donationCategories,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
