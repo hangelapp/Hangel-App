@@ -159,14 +159,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [authUser, isUserLoading, pathname, router, isMounted]);
 
     // Native app: giriş yapmış kullanıcıyı login sayfalarından timeline'a yönlendir
-    // TODO: Test sonrası bu bloğu tekrar aktif et
-    // useEffect(() => {
-    //     if (!isUserLoading && authUser && isMounted && isNativeApp()) {
-    //         if (pathname === '/' || pathname === '/login' || pathname === '/login/selection') {
-    //             router.push('/timeline');
-    //         }
-    //     }
-    // }, [authUser, isUserLoading, pathname, router, isMounted]);
+    useEffect(() => {
+        if (!isUserLoading && authUser && isMounted && isNativeApp()) {
+            if (pathname === '/' || pathname === '/login' || pathname === '/login/selection') {
+                router.push('/timeline');
+            }
+        }
+    }, [authUser, isUserLoading, pathname, router, isMounted]);
 
     if (!isMounted) {
         return <div className="min-h-screen bg-background">{children}</div>;
