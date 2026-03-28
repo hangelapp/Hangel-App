@@ -119,13 +119,7 @@ export const districtsData: { [key: string]: string[] } = {
   "Zonguldak": ["Alaplı", "Çaycuma", "Devrek", "Ereğli", "Gökçebey", "Kilimli", "Kozlu", "Merkez"],
 };
 
-export const neighborhoodsData: { [city: string]: { [district: string]: string[] } } = {
-  "İstanbul": {
-    "Kadıköy": ["Caferağa", "Osmanağa", "Rasimpaşa", "Moda", "Fenerbahçe", "Caddebostan", "Suadiye", "Göztepe", "Erenköy", "Bostancı"],
-    "Beşiktaş": ["Bebek", "Etiler", "Levazım", "Ortaköy", "Vişnezade"],
-    "Üsküdar": ["Acıbadem", "Altunizade", "Beylerbeyi", "Çengelköy", "Kuzguncuk"]
-  }
-};
+export { neighborhoodsData } from './neighborhoods-data';
 
 export const globalCitiesData: { [country: string]: string[] } = {
   "Almanya": ["Berlin", "Münih", "Frankfurt", "Hamburg", "Köln"],
