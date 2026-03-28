@@ -15,9 +15,21 @@ import { collection } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
+  const [imgSrc, setImgSrc] = useState(brand.logoUrl);
   const [hasError, setHasError] = useState(false);
+  const [fallbackIndex, setFallbackIndex] = useState(0);
 
-  if (hasError || !brand.logoUrl) {
+  const domain = (() => {
+    try { if (brand.link) return new URL(brand.link).hostname; } catch {}
+    return `${brand.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com.tr`;
+  })();
+
+  const fallbacks = [
+    `https://logo.uplead.com/${domain}`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+  ].filter(url => url !== brand.logoUrl);
+
+  if (hasError || !imgSrc) {
     return (
       <div className="absolute inset-0 rounded-2xl bg-primary/10 flex items-center justify-center p-2">
         <span className="text-primary font-black text-xl">{brand.name.charAt(0)}</span>
@@ -25,13 +37,27 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
     );
   }
 
+  const tryNextFallback = () => {
+    if (fallbackIndex < fallbacks.length) {
+      setImgSrc(fallbacks[fallbackIndex]);
+      setFallbackIndex(i => i + 1);
+    } else {
+      setHasError(true);
+    }
+  };
+
   return (
     <img
-      src={brand.logoUrl}
+      src={imgSrc}
       alt={brand.name}
       className="absolute inset-0 w-full h-full object-contain p-3"
-      onError={() => setHasError(true)}
+      onLoad={(e) => {
+        const img = e.currentTarget;
+        if (img.naturalWidth < 10 || img.naturalHeight < 10) tryNextFallback();
+      }}
+      onError={tryNextFallback}
       loading="lazy"
+      referrerPolicy="no-referrer"
     />
   );
 };
