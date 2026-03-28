@@ -81,7 +81,7 @@ export default function CompaniesPage() {
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İl</Label>
                                     <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
                                         <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seç" /></SelectTrigger>
-                                        <SelectContent>{allProvinces.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{(allProvinces || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">

@@ -403,7 +403,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
                         <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
-                            {allCountries.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
+                            {(allCountries || []).map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -678,7 +678,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <FormLabel>İL / EYALET</FormLabel>
                                 <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: ''})}>
                                     <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                    <SelectContent className="max-h-60">{(allProvinces || []).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
