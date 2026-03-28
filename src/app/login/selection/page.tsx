@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -23,45 +22,13 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School,
-    Percent,
-    X,
-    ShieldCheck,
-    Landmark,
-    Plus,
-    Trash2,
-    Mail,
-    Phone,
-    Instagram,
-    Linkedin,
-    Code,
-    ExternalLink,
-    MousePointer2,
-    Target,
-    Users,
-    DollarSign,
-    Activity,
-    ChevronDown,
-    Link as LinkIcon
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { 
-    marketCategories, 
-    countryPhoneCodes, 
-    allCountries, 
-    allUniversities, 
-    allBeneficiaries, 
-    allSdgs, 
-    allMemberships, 
-    years, 
-    allProvinces, 
-    districtsData, 
-    neighborhoodsData,
-    allInterests 
-} from '@/lib/data';
+import { marketCategories, countryPhoneCodes, allCountries, allUniversities } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -321,17 +288,6 @@ const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
-const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: any }) => (
-    <div className="relative group">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-            <Icon className="h-4 w-4" />
-        </div>
-        <FormInput {...props} className={cn("pl-11", props.className)} />
-    </div>
-);
-
-// --- Individual Form Component ---
-
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const auth = useAuth();
     const db = useFirestore();
@@ -343,22 +299,15 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const recaptchaContainerRef = React.useRef<HTMLDivElement>(null);
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
-
-    // Initialize reCAPTCHA verifier
     const getRecaptchaVerifier = () => {
         if (!recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                size: 'invisible',
-            });
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
         }
         return recaptchaVerifierRef.current;
     };
 
-    // Step 1: Send OTP
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -370,7 +319,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
-            // Reset reCAPTCHA on error
             recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
         } finally {
@@ -378,7 +326,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         }
     };
 
-    // Step 2: Verify OTP
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!confirmationResult) return;
@@ -386,38 +333,35 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             const userCredential = await confirmationResult.confirm(otp);
             const userId = userCredential.user.uid;
-            const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
-
+            
             const { getDoc: fsGetDoc } = await import('firebase/firestore');
             const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
             if (!userDocSnap.exists()) {
                 setDocumentNonBlocking(doc(db, 'users', userId), {
                     id: userId,
                     name: name || userCredential.user.displayName || '',
-                    username: `@${phone.replace(/\D/g, '')}`,
                     role: 'user',
-                    personalInfo: { phone: fullPhone, address: { country: 'Türkiye' } },
+                    personalInfo: { phone: `+${phoneCode}${phone}` },
                     stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-
             onComplete();
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı. Lütfen tekrar deneyin." });
+            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <>
-            <div id="recaptcha-container" ref={recaptchaContainerRef} />
+        <div className="space-y-6">
+            <div id="recaptcha-container" />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} />
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
                     </div>
                     <div className="space-y-2">
                         <FormLabel>Telefon</FormLabel>
@@ -426,13 +370,13 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                                 <Select value={phoneCode} onValueChange={setPhoneCode}>
                                     <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent className="max-h-60">
-                                        {uniquePhoneCodes.map((code, idx) => (
+                                        {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
                                             <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" />
+                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
@@ -441,11 +385,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 </form>
             ) : (
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
-                    <div className="text-center space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                            <span className="font-bold text-foreground">+{phoneCode}{phone}</span> numarasına gönderilen kodu girin
-                        </p>
-                    </div>
                     <div className="space-y-2">
                         <FormLabel>Doğrulama Kodu</FormLabel>
                         <FormInput
@@ -457,45 +396,17 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             className="text-center text-2xl font-black tracking-[0.5em]"
                             maxLength={6}
+                            enterKeyHint="done"
                         />
                     </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
                     </Button>
-                    <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => { setStep('phone'); setOtp(''); recaptchaVerifierRef.current = null; }}>
-                        Numarayı Değiştir
-                    </Button>
                 </form>
             )}
-        </>
+        </div>
     );
 };
-
-// --- Corporate Form Component ---
-
-const brandCategoryOptions = [
-    'Moda',
-    'Elektronik',
-    'Ev & Yaşam',
-    'Market',
-    'Kozmetik & Kişisel Bakım',
-    'Anne, Bebek & Çocuk',
-    'Etkinlik',
-    'Seyahat Bilet',
-    'Otomotiv & Motosiklet',
-    'Spor & Outdoor',
-    'Tatil & Otel Rezervasyonu',
-    'Pazaryeri',
-    'Kitap, Kırtasiye & Hobi',
-    'Süpermarket & Pet Shop',
-    'Mücevher & Saat',
-    'Sigorta',
-    'Oyun, Film & Müzik',
-    'Yapı Market & Hırdavat',
-    'Sağlık & Medikal',
-    'Endüstriyel & Ofis',
-    'Diğer'
-];
 
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
@@ -504,10 +415,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [entityType, setEntityType] = useState<string>(initialEntity);
     
-    // State
     const [formData, setFormData] = useState({
-        country: 'Türkiye',
-        brandStatus: '',
         name: '',
         shortName: '',
         orgTag: '',
@@ -526,7 +434,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         addressLine: '',
         email: '',
         phone: '',
-        phoneCode: '90',
         website: '',
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
@@ -539,47 +446,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
     });
-    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
-    const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
-    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
-    const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
-
-    const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
-        setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
-    };
-
-    const handleRegistryNoCheck = async (value: string) => {
-        setFormData({...formData, registryNo: value});
-        setRegistryNgoFound(null);
-        if (!value || !db) return;
-        setIsCheckingRegistry(true);
-        try {
-            const { query: fsQuery, collection: fsCollection, where: fsWhere, getDocs: fsGetDocs } = await import('firebase/firestore');
-            const q = fsQuery(fsCollection(db, 'ngos'), fsWhere('registryNo', '==', value));
-            const snap = await fsGetDocs(q);
-            if (!snap.empty) {
-                const ngoData = snap.docs[0].data();
-                setRegistryNgoFound(ngoData);
-                setFormData(prev => ({
-                    ...prev,
-                    name: ngoData.name || prev.name,
-                    city: ngoData.city || prev.city,
-                    email: ngoData.email || prev.email,
-                    phone: ngoData.phone || prev.phone,
-                    website: ngoData.website || prev.website,
-                    legalTitle: ngoData.legalTitle || prev.legalTitle,
-                }));
-            }
-        } finally {
-            setIsCheckingRegistry(false);
-        }
-    };
-
-    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
-
-    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
-    const removeCategory = (id: string) => setDonationCategories(donationCategories.filter(c => c.id !== id));
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -587,15 +453,11 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         try {
             await addDocumentNonBlocking(collection(db, 'applications'), {
                 ...formData,
-                donationCategories,
                 entityType,
-                beneficiaries: selectedBeneficiaries,
-                serviceAreas: selectedServiceAreas,
-                platforms: selectedPlatforms,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
-            toast({ title: "Başvuru Alındı", description: "Kurumsal ekibimiz en kısa sürede sizinle iletişime geçecektir." });
+            toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push('/login');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Hata', description: error.message });
@@ -603,8 +465,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             setIsSubmitting(false);
         }
     };
-
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
@@ -615,7 +475,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
-                            {allCountries.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
+                            {(allCountries || []).map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -969,9 +829,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <FormLabel>İL / EYALET</FormLabel>
-                                <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: ''})}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
+                                    <SelectContent className="max-h-60">{(allProvinces || []).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
@@ -1135,38 +995,21 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-
     const activeTab = searchParams.get('tab') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
 
-    useEffect(() => {
-        if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-            const redirect = searchParams.get('redirect') || '/events';
-            router.replace(redirect);
-        }
-    }, [router, searchParams]);
-
-    if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-        return <div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
-    }
-
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
-            <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+            <div className="w-full max-w-sm">
                 <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
-                        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
-                            <HangelLogo className="text-3xl" />
-                        </div>
-                        <CardTitle className="text-3xl font-black tracking-tighter">
-                            İyiliğe İlk Adım
-                        </CardTitle>
-                        <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                        <HangelLogo className="text-3xl mx-auto mb-2" />
+                        <CardTitle className="text-3xl font-black tracking-tighter">Hoş Geldiniz</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6 px-8 pb-10 text-center">
+                    <CardContent className="space-y-6 px-8 pb-10">
                         <Tabs value={activeTab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${initialEntity}`)}>
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
                                 <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
@@ -1188,7 +1031,7 @@ const FormRenderer = () => {
 
 export default function LoginSelectionPage() {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
       <FormRenderer />
     </Suspense>
   );

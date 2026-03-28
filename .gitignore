@@ -15,7 +15,9 @@
 
 # next.js
 /.next/
-/out/
+# Next.js output (but keep Capacitor fallback)
+/out/*
+!/out/index.html
 
 # production
 /build
@@ -43,3 +45,10 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Capacitor native build artifacts
+ios/App/Pods/
+android/.gradle/
+android/.idea/
+android/app/build/
+android/build/
