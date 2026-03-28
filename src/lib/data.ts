@@ -27,25 +27,22 @@ import {
     BarChart,
     Building,
     Landmark,
-    Target
+    Target,
+    Activity
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
-// --- BM Kayıtlı Tüm Ülkeler Listesi ---
+// --- BM Kayıtlı Tüm Ülkeler Listesi (Filistin Dahil) ---
 export const allCountries = [
-  "Türkiye", "Almanya", "Amerika Birleşik Devletleri", "Fransa", "İngiltere", "İtalya", "İspanya", "Hollanda", "Belçika", "İsviçre", 
-  "Avusturya", "İsveç", "Norveç", "Danimarka", "Finlandiya", "Rusya", "Çin", "Japonya", "Güney Kore", "Hindistan", 
-  "Brezilya", "Meksika", "Arjantin", "Kanada", "Avustralya", "Yeni Zelanda", "Güney Afrika", "Mısır", "Nijerya", "Fas", 
-  "Azerbaycan", "Özbekistan", "Kazakistan", "Türkmenistan", "Kırgızistan", "Filistin", "Irak", "İran", "Suriye", "Lübnan",
-  "Ürdün", "Suudi Arabistan", "Kuveyt", "Katar", "Bae", "Umman", "Bahreyn", "Pakistan", "Afganistan", "Yunanistan"
+  "Türkiye", "Filistin", "Afganistan", "Almanya", "Amerika Birleşik Devletleri", "Andorra", "Angola", "Antigua ve Barbuda", "Arjantin", "Arnavutluk", "Avustralya", "Avusturya", "Azerbaycan", "Bahamalar", "Bahreyn", "Bangladeş", "Barbados", "Batı Sahra", "Belçika", "Belize", "Benin", "Beyaz Rusya", "Bhutan", "Birleşik Arap Emirlikleri", "Birleşik Krallık", "Bolivya", "Bosna Hersek", "Botsvana", "Brezilya", "Brunei", "Bulgaristan", "Burkina Faso", "Burundi", "Cezayir", "Cibuti", "Çad", "Çek Cumhuriyeti", "Çin", "Danimarka", "Doğu Timor", "Dominik Cumhuriyeti", "Dominika", "Ekvador", "Ekvator Ginesi", "El Salvador", "Endonezya", "Eritre", "Ermenistan", "Estonya", "Esvatini", "Etiyopya", "Fas", "Fiji", "Fildişi Sahili", "Filipinler", "Finlandiya", "Fransa", "Gabon", "Gambiya", "Gana", "Gine", "Gine-Bissau", "Grenada", "Guatemala", "Guyana", "Güney Afrika", "Güney Sudan", "Gürcistan", "Haiti", "Hırvatistan", "Hindistan", "Hollanda", "Honduras", "Irak", "İran", "İrlanda", "İspanya", "İsrail", "İsveç", "İsviçre", "İtalya", "İzlanda", "Jamaika", "Japonya", "Kamboçya", "Kamerun", "Kanada", "Karadağ", "Katar", "Kazakistan", "Kenya", "Kırgızistan", "Kiribati", "Kolombiya", "Komorlar", "Kongo", "Kongo Demokratik Cumhuriyeti", "Kosta Rika", "Kuveyt", "Kuzey Kore", "Kuzey Makedonya", "Küba", "Laos", "Letonya", "Lübnan", "Liberya", "Libya", "Lihtenştayn", "Litvanya", "Lüksemburg", "Macaristan", "Madagaskar", "Malavi", "Maldivler", "Malezya", "Mali", "Malta", "Marshall Adaları", "Meksika", "Mısır", "Mikronezya", "Moğolistan", "Moldova", "Monako", "Moritanya", "Morityus", "Mozambik", "Myanmar", "Namibya", "Nauru", "Nepal", "Nijer", "Nijerya", "Nikaragua", "Norveç", "Orta Afrika Cumhuriyeti", "Özbekistan", "Pakistan", "Palau", "Panama", "Papua Yeni Gine", "Paraguay", "Peru", "Polonya", "Portekiz", "Romanya", "Ruanda", "Rusya", "Saint Kitts ve Nevis", "Saint Lucia", "Saint Vincent ve Grenadinler", "Samoa", "San Marino", "Sao Tome ve Principe", "Senegal", "Seyşeller", "Sırbistan", "Sierra Leone", "Singapur", "Slovakya", "Slovenya", "Solomon Adaları", "Somali", "Sri Lanka", "Sudan", "Surinam", "Suriye", "Suudi Arabistan", "Şili", "Tacikistan", "Tanzanya", "Tayland", "Togo", "Tonga", "Trinidad ve Tobago", "Tunus", "Tuvalu", "Türkmenistan", "Uganda", "Ukrayna", "Umman", "Uruguay", "Ürdün", "Vanuatu", "Vatikan", "Venezuela", "Vietnam", "Yemen", "Yeni Zelanda", "Yunanistan", "Zambiya", "Zimbabve"
 ];
 
 // --- Tüm Dünya Telefon Kodları ---
 export const countryPhoneCodes = [
-  "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5 Haiti", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
-].sort((a, b) => parseInt(a) - parseInt(b));
+  "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
+];
 
-// --- Türkiye İl ve İlçe Verileri ---
+// --- Türkiye İl ve İlçe Verileri (Tam Liste) ---
 export const allProvinces = [
   "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkâri", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
 ];
@@ -54,8 +51,11 @@ export const districtsData: { [key: string]: string[] } = {
   "Adana": ["Aladağ", "Ceyhan", "Çukurova", "Feke", "İmamoğlu", "Karaisalı", "Karataş", "Kozan", "Pozantı", "Saimbeyli", "Sarıçam", "Seyhan", "Tufanbeyli", "Yumurtalık", "Yüreğir"],
   "Ankara": ["Akyurt", "Altındağ", "Ayaş", "Balâ", "Beypazarı", "Çamlıdere", "Çankaya", "Çubuk", "Elmadağ", "Etimesgut", "Evren", "Gölbaşı", "Güdül", "Haymana", "Kahramankazan", "Kalecik", "Keçiören", "Kızılcahamam", "Mamak", "Nallıhan", "Polatlı", "Pursaklar", "Sincan", "Şereflikoçhisar", "Yenimahalle"],
   "Antalya": ["Akseki", "Aksu", "Alanya", "Demre", "Döşemealtı", "Elmalı", "Finike", "Gazipaşa", "Gündoğmuş", "İbradı", "Kaş", "Kemer", "Kepez", "Konyaaltı", "Korkuteli", "Kumluca", "Manavgat", "Muratpaşa", "Serik"],
+  "Bursa": ["Büyükorhan", "Gemlik", "Gürsu", "Harmancık", "İnegöl", "İznik", "Karacabey", "Keles", "Kestel", "Mudanya", "Mustafakemalpaşa", "Nilüfer", "Orhaneli", "Orhangazi", "Osmangazi", "Yenişehir", "Yıldırım"],
   "İstanbul": ["Adalar", "Arnavutköy", "Ataşehir", "Avcılar", "Bağcılar", "Bahçelievler", "Bakırköy", "Başakşehir", "Bayrampaşa", "Beşiktaş", "Beykoz", "Beylikdüzü", "Beyoğlu", "Büyükçekmece", "Çatalca", "Çekmeköy", "Esenler", "Esenyurt", "Eyüpsultan", "Fatih", "Gaziosmanpaşa", "Güngören", "Kadıköy", "Kâğıthane", "Kartal", "Küçükçekmece", "Maltepe", "Pendik", "Sancaktepe", "Sarıyer", "Silivri", "Sultanbeyli", "Sultangazi", "Şile", "Şişli", "Tuzla", "Ümraniye", "Üsküdar", "Zeytinburnu"],
   "İzmir": ["Aliağa", "Balçova", "Bayındır", "Bayraklı", "Bergama", "Beydağ", "Bornova", "Buca", "Çeşme", "Çiğli", "Dikili", "Foça", "Gaziemir", "Güzelbahçe", "Karabağlar", "Karaburun", "Karşıyaka", "Kemalpaşa", "Kınık", "Kiraz", "Konak", "Menderes", "Menemen", "Narlıdere", "Ödemiş", "Seferihisar", "Selçuk", "Tire", "Torbalı", "Urla"],
+  // Diğer iller için örnek veriler (projede dinamik olarak genişleyebilir)
+  "Konya": ["Ahırlı", "Akören", "Akşehir", "Altınekin", "Beyşehir", "Bozkır", "Cihanbeyli", "Çeltik", "Çumra", "Derbent", "Derebucak", "Doğanhisar", "Emirgazi", "Ereğli", "Güneysınır", "Hadim", "Halkapınar", "Hüyük", "Ilgın", "Kadınhanı", "Karapınar", "Karatay", "Kulu", "Meram", "Sarayönü", "Selçuklu", "Seydişehir", "Taşkent", "Tuzlukçu", "Yalıhüyük", "Yunak"],
 };
 
 export const neighborhoodsData: { [city: string]: { [district: string]: string[] } } = {
@@ -175,66 +175,6 @@ export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21
     description: "Topluma fayda sağlayacak bu projede yer alarak etki oluşturun.",
     amenities: { transport: i % 2 === 0, food: true, accommodation: i % 10 === 0 }
 }));
-
-export const allUniversities = [
-    // İstanbul
-    'Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'İstanbul Üniversitesi',
-    'İstanbul Üniversitesi-Cerrahpaşa', 'Galatasaray Üniversitesi', 'Marmara Üniversitesi',
-    'Yıldız Teknik Üniversitesi', 'Mimar Sinan Güzel Sanatlar Üniversitesi',
-    'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Bahçeşehir Üniversitesi',
-    'İstanbul Bilgi Üniversitesi', 'Kadir Has Üniversitesi', 'Özyeğin Üniversitesi',
-    'Beykent Üniversitesi', 'Beykoz Üniversitesi', 'Fatih Sultan Mehmet Vakıf Üniversitesi',
-    'Haliç Üniversitesi', 'İstanbul 29 Mayıs Üniversitesi', 'İstanbul Aydın Üniversitesi',
-    'İstanbul Esenyurt Üniversitesi', 'İstanbul Gelişim Üniversitesi', 'İstanbul Kültür Üniversitesi',
-    'İstanbul Medeniyet Üniversitesi', 'İstanbul Okan Üniversitesi', 'İstanbul Rumeli Üniversitesi',
-    'İstanbul Sabahattin Zaim Üniversitesi', 'İstanbul Şehir Üniversitesi', 'İstanbul Ticaret Üniversitesi',
-    'Maltepe Üniversitesi', 'Nişantaşı Üniversitesi', 'Piri Reis Üniversitesi',
-    'Türk-Alman Üniversitesi', 'Uskudar Üniversitesi', 'Yeni Yüzyıl Üniversitesi',
-    // Ankara
-    'Orta Doğu Teknik Üniversitesi', 'Hacettepe Üniversitesi', 'Ankara Üniversitesi',
-    'Bilkent Üniversitesi', 'Gazi Üniversitesi', 'Atılım Üniversitesi',
-    'Başkent Üniversitesi', 'Çankaya Üniversitesi', 'TOBB Ekonomi ve Teknoloji Üniversitesi',
-    'TED Üniversitesi', 'Ankara Yıldırım Beyazıt Üniversitesi', 'Ankara Sosyal Bilimler Üniversitesi',
-    'Ankara Medipol Üniversitesi', 'Ankara Hacı Bayram Veli Üniversitesi',
-    // İzmir
-    'Ege Üniversitesi', 'Dokuz Eylül Üniversitesi', 'İzmir Yüksek Teknoloji Enstitüsü',
-    'Yaşar Üniversitesi', 'İzmir Ekonomi Üniversitesi', 'İzmir Kâtip Çelebi Üniversitesi',
-    'İzmir Demokrasi Üniversitesi', 'Izmir Tınaztepe Üniversitesi',
-    // Bursa
-    'Uludağ Üniversitesi', 'Bursa Teknik Üniversitesi', 'Bursa Uludağ Üniversitesi',
-    'Işık Üniversitesi',
-    // Diğer Büyükşehirler
-    'Selçuk Üniversitesi', 'Necmettin Erbakan Üniversitesi', 'KTO Karatay Üniversitesi', // Konya
-    'Çukurova Üniversitesi', 'Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi', // Adana
-    'Gaziantep Üniversitesi', 'Hasan Kalyoncu Üniversitesi', // Gaziantep
-    'Ondokuz Mayıs Üniversitesi', 'Samsun Üniversitesi', // Samsun
-    'Karadeniz Teknik Üniversitesi', // Trabzon
-    'Atatürk Üniversitesi', 'Erzurum Teknik Üniversitesi', // Erzurum
-    'Fırat Üniversitesi', // Elazığ
-    'İnönü Üniversitesi', // Malatya
-    'Mersin Üniversitesi', // Mersin
-    'Akdeniz Üniversitesi', // Antalya
-    'Pamukkale Üniversitesi', // Denizli
-    'Muğla Sıtkı Koçman Üniversitesi', // Muğla
-    'Kocaeli Üniversitesi', 'Gebze Teknik Üniversitesi', // Kocaeli
-    'Sakarya Üniversitesi', // Sakarya
-    'Trakya Üniversitesi', // Edirne
-    'Namık Kemal Üniversitesi', // Tekirdağ
-    'Balıkesir Üniversitesi', // Balıkesir
-    'Celal Bayar Üniversitesi', 'Manisa Celal Bayar Üniversitesi', // Manisa
-    'Afyon Kocatepe Üniversitesi', // Afyon
-    'Eskişehir Osmangazi Üniversitesi', 'Anadolu Üniversitesi', // Eskişehir
-    'Kayseri Üniversitesi', 'Erciyes Üniversitesi', // Kayseri
-    'Cumhuriyet Üniversitesi', // Sivas
-    'Sütçü İmam Üniversitesi', // Kahramanmaraş
-    'Dicle Üniversitesi', // Diyarbakır
-    'Harran Üniversitesi', // Şanlıurfa
-    'Mustafa Kemal Üniversitesi', 'İskenderun Teknik Üniversitesi', // Hatay
-    'Bülent Ecevit Üniversitesi', 'Zonguldak Bülent Ecevit Üniversitesi', // Zonguldak
-    'Kastamonu Üniversitesi', 'Sinop Üniversitesi', 'Çorum Hitit Üniversitesi',
-    'Düzce Üniversitesi', 'Bolu Abant İzzet Baysal Üniversitesi', 'Bartın Üniversitesi',
-    'Yalova Üniversitesi', 'Çanakkale Onsekiz Mart Üniversitesi',
-].sort((a, b) => a.localeCompare(b, 'tr'));
 
 export const studentClubs: StudentClub[] = Array.from({ length: 10 }, (_, i) => ({
     id: `club-${i + 1}`,
