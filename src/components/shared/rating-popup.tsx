@@ -8,9 +8,6 @@ import { Star } from 'lucide-react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
-const VISIT_COUNT_KEY = 'hangel_visit_count';
-const RATING_DONE_KEY = 'hangel_rating_done';
-
 export function RatingPopup() {
     const [open, setOpen] = useState(false);
     const [rating, setRating] = useState(0);
@@ -25,40 +22,48 @@ export function RatingPopup() {
         if (isUserLoading) return;
         if (typeof window === 'undefined') return;
 
-        const alreadyRated = localStorage.getItem(RATING_DONE_KEY);
+        // Sadece giriş yapmış kullanıcılara göster
+        if (!user) return;
+
+        const ratingDoneKey = `hangel_rating_done_${user.uid}`;
+        const visitCountKey = `hangel_visit_count_${user.uid}`;
+
+        const alreadyRated = localStorage.getItem(ratingDoneKey);
         if (alreadyRated) return;
 
-        const currentCount = parseInt(localStorage.getItem(VISIT_COUNT_KEY) || '0', 10) + 1;
-        localStorage.setItem(VISIT_COUNT_KEY, String(currentCount));
+        const currentCount = parseInt(localStorage.getItem(visitCountKey) || '0', 10) + 1;
+        localStorage.setItem(visitCountKey, String(currentCount));
 
-        // Giriş yapmış kullanıcı: 2. ziyaret, Guest: 3. ziyaret
-        const threshold = user ? 2 : 3;
+        // Yeni kullanıcı: hesap 10 dakikadan kısa süre önce oluşturulduysa
+        const creationTime = user.metadata?.creationTime ? new Date(user.metadata.creationTime).getTime() : 0;
+        const isNewUser = creationTime > 0 && (Date.now() - creationTime) < 10 * 60 * 1000;
+
+        // Yeni kayıt: 3. girişte, Eski kullanıcı: 2. girişte
+        const threshold = isNewUser ? 3 : 2;
 
         if (currentCount >= threshold) {
-            // Biraz geciktir ki sayfa yüklensin
             const timer = setTimeout(() => setOpen(true), 2000);
             return () => clearTimeout(timer);
         }
     }, [isUserLoading, user]);
 
     const handleSubmit = async () => {
-        if (!db || rating === 0) return;
+        if (!db || rating === 0 || !user) return;
 
         addDocumentNonBlocking(collection(db, 'ratings'), {
             rating,
             comment,
-            userId: user?.uid || null,
-            isGuest: !user,
+            userId: user.uid,
             createdAt: new Date().toISOString(),
         });
 
-        localStorage.setItem(RATING_DONE_KEY, 'true');
+        localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
         setSubmitted(true);
         setTimeout(() => setOpen(false), 1500);
     };
 
     const handleClose = () => {
-        localStorage.setItem(RATING_DONE_KEY, 'true');
+        if (user) localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
         setOpen(false);
     };
 
