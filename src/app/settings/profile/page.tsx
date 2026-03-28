@@ -114,7 +114,7 @@ export default function ProfileSettingsPage() {
   const isTurkey = currentCountry === 'Türkiye';
 
   const countryOptions = ["Türkiye", "Almanya", "ABD", "Azerbaycan", "İngiltere"];
-  const cityOptions = isTurkey ? allProvinces : (globalCitiesData[currentCountry] || []);
+  const cityOptions = isTurkey ? (allProvinces || []) : (globalCitiesData[currentCountry] || []);
   const districtOptions = isTurkey ? (districtsData[currentCity] || []) : (globalDistrictsData[currentCity] || []);
 
   if (isUserLoading || isUserDataLoading) {

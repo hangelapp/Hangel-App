@@ -23,7 +23,7 @@ const AddressSelection = ({ required = true }: { required?: boolean }) => {
     const [neighborhood, setNeighborhood] = useState('');
 
     const isTurkey = country === 'Türkiye';
-    const cityOptions = isTurkey ? allProvinces : (globalCitiesData[country] || []);
+    const cityOptions = isTurkey ? (allProvinces || []) : (globalCitiesData[country] || []);
     const districtOptions = isTurkey ? (districtsData[city] || []) : (globalDistrictsData[city] || []);
 
     return (

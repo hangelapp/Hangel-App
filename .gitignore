@@ -49,5 +49,6 @@ firestore-debug.log
 # Capacitor native build artifacts
 ios/App/Pods/
 android/.gradle/
+android/.idea/
 android/app/build/
 android/build/
