@@ -113,7 +113,7 @@ const YearSelect = ({ value, onChange }: { value: string; onChange: (val: string
     const filtered = yearFilter ? allYears.filter(y => y.includes(yearFilter)) : allYears;
     return (
         <Select value={value} onValueChange={onChange}>
-            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm">
+            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm">
                 <SelectValue placeholder="Yıl seçin" />
             </SelectTrigger>
             <SelectContent className="max-h-64">
@@ -146,7 +146,7 @@ const FormLabel = ({ children, required }: { children: React.ReactNode, required
 );
 
 const FormInput = (props: React.ComponentProps<typeof Input>) => (
-    <Input {...props} className={cn("h-12 rounded-xl bg-muted/20 border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
+    <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
 const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: any }) => (
@@ -252,7 +252,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                         <div className="flex gap-2">
                             <div className="w-[100px] shrink-0">
                                 <Select value={phoneCode} onValueChange={setPhoneCode}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {uniquePhoneCodes.map((code, idx) => (
                                             <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
@@ -436,7 +436,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="space-y-2">
                     <FormLabel>Ülke</FormLabel>
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
-                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {allCountries.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
@@ -482,7 +482,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="space-y-2">
                                     <FormLabel>Kuruluş Alt Türü</FormLabel>
                                     <Select value={formData.orgSubType} onValueChange={(val) => setFormData({...formData, orgSubType: val})}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Dernek">Dernek</SelectItem>
                                             <SelectItem value="Vakıf">Vakıf</SelectItem>
@@ -533,7 +533,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <FormLabel>Hakkinizda</FormLabel>
                                     <div className="relative">
                                         <Textarea
-                                            className="min-h-[80px] rounded-xl bg-muted/20 border-none shadow-sm resize-none pr-16 text-sm"
+                                            className="min-h-[80px] rounded-xl bg-card border-none shadow-sm resize-none pr-16 text-sm"
                                             placeholder="Kuruluşunuzu anlatan kısa bir metin"
                                             maxLength={500}
                                             value={formData.slogan}
@@ -633,7 +633,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                                         newCats[idx].customCategory = val === 'Diğer' ? newCats[idx].customCategory : '';
                                                         setDonationCategories(newCats);
                                                     }}>
-                                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+                                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
                                                         <SelectContent className="max-h-60">
                                                             {brandCategoryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                                                         </SelectContent>
@@ -712,14 +712,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel>İL / EYALET</FormLabel>
                                 <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
                                     <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>İLÇE / BÖLGE</FormLabel>
                                 <Select value={formData.district} onValueChange={(val) => setFormData({...formData, district: val, neighborhood: ''})} disabled={!formData.city}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="İlçe / Bölge girin" /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="İlçe / Bölge girin" /></SelectTrigger>
                                     <SelectContent className="max-h-60">{formData.city && (districtsData[formData.city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
@@ -727,7 +727,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="space-y-2">
                             <FormLabel>MAHALLE</FormLabel>
                             <Select value={formData.neighborhood} onValueChange={(val) => setFormData({...formData, neighborhood: val})} disabled={!formData.district}>
-                                <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Mahalle seçin" /></SelectTrigger>
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Mahalle seçin" /></SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).length > 0
                                         ? (neighborhoodsData[formData.city]?.[formData.district] || []).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)
@@ -755,7 +755,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="flex gap-2">
                                     <div className="w-[100px] shrink-0">
                                         <Select value={formData.phoneCode} onValueChange={(val) => setFormData({...formData, phoneCode: val})}>
-                                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                             <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
@@ -824,7 +824,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={(val) => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                         <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
