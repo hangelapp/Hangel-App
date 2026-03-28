@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -23,45 +22,13 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School,
-    Percent,
-    X,
-    ShieldCheck,
-    Landmark,
-    Plus,
-    Trash2,
-    Mail,
-    Phone,
-    Instagram,
-    Linkedin,
-    Code,
-    ExternalLink,
-    MousePointer2,
-    Target,
-    Users,
-    DollarSign,
-    Activity,
-    ChevronDown,
-    Link as LinkIcon
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { 
-    marketCategories, 
-    countryPhoneCodes, 
-    allCountries, 
-    allUniversities, 
-    allBeneficiaries, 
-    allSdgs, 
-    allMemberships, 
-    years, 
-    allProvinces, 
-    districtsData, 
-    neighborhoodsData,
-    allInterests 
-} from '@/lib/data';
+import { marketCategories, countryPhoneCodes, allCountries, allUniversities } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -83,25 +50,59 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
     </svg>
 );
 
-const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => (
-    <div className="space-y-2 text-left">
-        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
-        <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20 transition-all hover:bg-muted/30">
-            <input id={`${label.replace(/\s+/g, '-')}-upload`} type="file" className="hidden" accept={accept} required={required} />
-            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5 bg-background h-10 px-4">
-                <label htmlFor={`${label.replace(/\s+/g, '-')}-upload`} className="cursor-pointer font-bold flex items-center"><Upload className="mr-2 h-4 w-4" />Belge Seç</label>
-            </Button>
-            <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>
+const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => {
+    const [fileName, setFileName] = React.useState<string | null>(null);
+    const inputId = `${label.replace(/\s+/g, '-')}-upload`;
+    return (
+        <div className="space-y-2 text-left">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
+            <div className={cn("flex items-center gap-4 p-4 border rounded-2xl border-dashed transition-all", fileName ? "bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-600" : "bg-muted/20 border-primary/20 hover:bg-muted/30")}>
+                <input id={inputId} type="file" className="hidden" accept={accept} required={required} onChange={(e) => setFileName(e.target.files?.[0]?.name || null)} />
+                <Button asChild variant="outline" size="sm" className={cn("rounded-xl hover:bg-primary/5 bg-background h-10 px-4", fileName ? "border-green-500 text-green-700" : "border-primary/20")}>
+                    <label htmlFor={inputId} className="cursor-pointer font-bold flex items-center">
+                        {fileName ? <><CheckCircle className="mr-2 h-4 w-4 text-green-600" />Değiştir</> : <><Upload className="mr-2 h-4 w-4" />Belge Seç</>}
+                    </label>
+                </Button>
+                <div className="flex-1">
+                    {fileName
+                        ? <p className="text-[11px] font-bold text-green-700 dark:text-green-400 truncate">✓ {fileName}</p>
+                        : <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>
+                    }
+                </div>
             </div>
         </div>
-    </div>
-);
+    );
+};
+
+const YearSelect = ({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
+    const [yearFilter, setYearFilter] = React.useState('');
+    const allYears = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
+    const filtered = yearFilter ? allYears.filter(y => y.includes(yearFilter)) : allYears;
+    return (
+        <Select value={value} onValueChange={onChange}>
+            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm">
+                <SelectValue placeholder="Yıl seçin" />
+            </SelectTrigger>
+            <SelectContent className="max-h-64">
+                <div className="px-2 py-1 sticky top-0 bg-popover z-10">
+                    <input
+                        className="w-full h-8 px-2 text-sm rounded-md border border-input bg-background outline-none"
+                        placeholder="Yıl filtrele..."
+                        value={yearFilter}
+                        onChange={(e) => setYearFilter(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                </div>
+                {filtered.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+            </SelectContent>
+        </Select>
+    );
+};
 
 const SectionTitle = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
-    <div className="flex items-center gap-2 mb-4 pt-4 first:pt-0">
-        {Icon && <Icon className="h-5 w-5 text-primary" />}
-        <h3 className="text-sm font-black uppercase tracking-[0.1em] text-primary">{children}</h3>
+    <div className="flex items-start gap-2 mb-4 pt-4 first:pt-0">
+        {Icon && <Icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />}
+        <h3 className="text-sm font-black uppercase tracking-[0.1em] text-primary text-left">{children}</h3>
     </div>
 );
 
@@ -112,19 +113,8 @@ const FormLabel = ({ children, required }: { children: React.ReactNode, required
 );
 
 const FormInput = (props: React.ComponentProps<typeof Input>) => (
-    <Input {...props} className={cn("h-12 rounded-xl bg-muted/20 border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
+    <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
-
-const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: any }) => (
-    <div className="relative group">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-            <Icon className="h-4 w-4" />
-        </div>
-        <FormInput {...props} className={cn("pl-11", props.className)} />
-    </div>
-);
-
-// --- Individual Form Component ---
 
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const auth = useAuth();
@@ -137,22 +127,15 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const recaptchaContainerRef = React.useRef<HTMLDivElement>(null);
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
-
-    // Initialize reCAPTCHA verifier
     const getRecaptchaVerifier = () => {
         if (!recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                size: 'invisible',
-            });
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
         }
         return recaptchaVerifierRef.current;
     };
 
-    // Step 1: Send OTP
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -164,7 +147,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
-            // Reset reCAPTCHA on error
             recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
         } finally {
@@ -172,7 +154,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         }
     };
 
-    // Step 2: Verify OTP
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!confirmationResult) return;
@@ -180,47 +161,44 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             const userCredential = await confirmationResult.confirm(otp);
             const userId = userCredential.user.uid;
-            const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
-
+            
             const { getDoc: fsGetDoc } = await import('firebase/firestore');
             const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
             if (!userDocSnap.exists()) {
                 setDocumentNonBlocking(doc(db, 'users', userId), {
                     id: userId,
                     name: name || userCredential.user.displayName || '',
-                    username: `@${phone.replace(/\D/g, '')}`,
                     role: 'user',
-                    personalInfo: { phone: fullPhone, address: { country: 'Türkiye' } },
+                    personalInfo: { phone: `+${phoneCode}${phone}` },
                     stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-
             onComplete();
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı. Lütfen tekrar deneyin." });
+            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <>
-            <div id="recaptcha-container" ref={recaptchaContainerRef} />
+        <div className="space-y-6">
+            <div id="recaptcha-container" />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} />
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
                         <FormLabel>Telefon</FormLabel>
                         <div className="flex gap-2">
                             <div className="w-[100px] shrink-0">
                                 <Select value={phoneCode} onValueChange={setPhoneCode}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent className="max-h-60">
-                                        {uniquePhoneCodes.map((code, idx) => (
+                                        {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
                                             <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
                                         ))}
                                     </SelectContent>
@@ -235,11 +213,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 </form>
             ) : (
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
-                    <div className="text-center space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                            <span className="font-bold text-foreground">+{phoneCode}{phone}</span> numarasına gönderilen kodu girin
-                        </p>
-                    </div>
                     <div className="space-y-2">
                         <FormLabel>Doğrulama Kodu</FormLabel>
                         <FormInput
@@ -256,40 +229,11 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
                     </Button>
-                    <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => { setStep('phone'); setOtp(''); recaptchaVerifierRef.current = null; }}>
-                        Numarayı Değiştir
-                    </Button>
                 </form>
             )}
-        </>
+        </div>
     );
 };
-
-// --- Corporate Form Component ---
-
-const brandCategoryOptions = [
-    'Moda',
-    'Elektronik',
-    'Ev & Yaşam',
-    'Market',
-    'Kozmetik & Kişisel Bakım',
-    'Anne, Bebek & Çocuk',
-    'Etkinlik',
-    'Seyahat Bilet',
-    'Otomotiv & Motosiklet',
-    'Spor & Outdoor',
-    'Tatil & Otel Rezervasyonu',
-    'Pazaryeri',
-    'Kitap, Kırtasiye & Hobi',
-    'Süpermarket & Pet Shop',
-    'Mücevher & Saat',
-    'Sigorta',
-    'Oyun, Film & Müzik',
-    'Yapı Market & Hırdavat',
-    'Sağlık & Medikal',
-    'Endüstriyel & Ofis',
-    'Diğer'
-];
 
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
@@ -298,10 +242,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [entityType, setEntityType] = useState<string>(initialEntity);
     
-    // State
     const [formData, setFormData] = useState({
-        country: 'Türkiye',
-        brandStatus: '',
         name: '',
         shortName: '',
         orgTag: '',
@@ -316,58 +257,13 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         exceptions: '',
         city: '',
         district: '',
+        neighborhood: '',
         addressLine: '',
         email: '',
         phone: '',
-        phoneCode: '90',
         website: '',
-        social: { instagram: '', twitter: '', linkedin: '' },
-        legalTitle: '',
-        iban: '',
-        authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
-        registryNo: '',
+        authorized: { name: '', role: '' }
     });
-    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
-    const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
-    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
-    const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
-
-    const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
-        setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
-    };
-
-    const handleRegistryNoCheck = async (value: string) => {
-        setFormData({...formData, registryNo: value});
-        setRegistryNgoFound(null);
-        if (!value || !db) return;
-        setIsCheckingRegistry(true);
-        try {
-            const { query: fsQuery, collection: fsCollection, where: fsWhere, getDocs: fsGetDocs } = await import('firebase/firestore');
-            const q = fsQuery(fsCollection(db, 'ngos'), fsWhere('registryNo', '==', value));
-            const snap = await fsGetDocs(q);
-            if (!snap.empty) {
-                const ngoData = snap.docs[0].data();
-                setRegistryNgoFound(ngoData);
-                setFormData(prev => ({
-                    ...prev,
-                    name: ngoData.name || prev.name,
-                    city: ngoData.city || prev.city,
-                    email: ngoData.email || prev.email,
-                    phone: ngoData.phone || prev.phone,
-                    website: ngoData.website || prev.website,
-                    legalTitle: ngoData.legalTitle || prev.legalTitle,
-                }));
-            }
-        } finally {
-            setIsCheckingRegistry(false);
-        }
-    };
-
-    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
-
-    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
-    const removeCategory = (id: string) => setDonationCategories(donationCategories.filter(c => c.id !== id));
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -375,15 +271,11 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         try {
             await addDocumentNonBlocking(collection(db, 'applications'), {
                 ...formData,
-                donationCategories,
                 entityType,
-                beneficiaries: selectedBeneficiaries,
-                serviceAreas: selectedServiceAreas,
-                platforms: selectedPlatforms,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
-            toast({ title: "Başvuru Alındı", description: "Kurumsal ekibimiz en kısa sürede sizinle iletişime geçecektir." });
+            toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push('/login');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Hata', description: error.message });
@@ -392,8 +284,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         }
     };
 
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
-
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
             {/* Global Selectors */}
@@ -401,7 +291,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="space-y-2">
                     <FormLabel>Ülke</FormLabel>
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
-                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {(allCountries || []).map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
@@ -447,7 +337,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="space-y-2">
                                     <FormLabel>Kuruluş Alt Türü</FormLabel>
                                     <Select value={formData.orgSubType} onValueChange={(val) => setFormData({...formData, orgSubType: val})}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Dernek">Dernek</SelectItem>
                                             <SelectItem value="Vakıf">Vakıf</SelectItem>
@@ -491,14 +381,14 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     </div>
                                     <div className="space-y-2">
                                         <FormLabel>Kuruluş Yılı</FormLabel>
-                                        <FormInput type="date" value={formData.orgTag} onChange={(e) => setFormData({...formData, orgTag: e.target.value})} />
+                                        <YearSelect value={formData.orgTag} onChange={(val) => setFormData({...formData, orgTag: val})} />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <FormLabel>Slogan</FormLabel>
+                                    <FormLabel>Hakkinizda</FormLabel>
                                     <div className="relative">
                                         <Textarea
-                                            className="min-h-[80px] rounded-xl bg-muted/20 border-none shadow-sm resize-none pr-16 text-sm"
+                                            className="min-h-[80px] rounded-xl bg-card border-none shadow-sm resize-none pr-16 text-sm"
                                             placeholder="Kuruluşunuzu anlatan kısa bir metin"
                                             maxLength={500}
                                             value={formData.slogan}
@@ -526,7 +416,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <>
                             {/* Hedef Kitleler */}
                             <div className="space-y-4">
-                                <SectionTitle icon={Users}>HEDEF KİTLENİZDEN</SectionTitle>
+                                <SectionTitle icon={Users}>Faydalanıcılarınız</SectionTitle>
                                 <div className="grid grid-cols-2 gap-2">
                                     {allBeneficiaries.map(item => (
                                         <label key={item} className="flex items-center gap-2 cursor-pointer group">
@@ -543,7 +433,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
                             {/* Hizmet Alanları (SDGs) */}
                             <div className="space-y-4">
-                                <SectionTitle icon={Target}>HİZMET ALANLARI</SectionTitle>
+                                <SectionTitle icon={Target}>Sürdürülebilir Kalkınma Amaçlarını kapsamaktadır? (Birden fazla seçebilirsiniz)</SectionTitle>
                                 <div className="grid grid-cols-1 gap-2">
                                     {allSdgs.map(item => (
                                         <label key={item} className="flex items-center gap-2 cursor-pointer group">
@@ -560,7 +450,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
                             {/* Platform Üyelikleri */}
                             <div className="space-y-4">
-                                <SectionTitle icon={Activity}>STK OLARAK PLATFORMLAR</SectionTitle>
+                                <SectionTitle icon={Activity}>Aşağıdaki platform, ağ ve oluşumlardan hangilerinde aktif olarak yer alıyorsunuz? (Birden fazla seçebilirsiniz)</SectionTitle>
                                 <div className="grid grid-cols-2 gap-2">
                                     {allMemberships.map(item => (
                                         <label key={item} className="flex items-center gap-2 cursor-pointer group">
@@ -598,7 +488,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                                         newCats[idx].customCategory = val === 'Diğer' ? newCats[idx].customCategory : '';
                                                         setDonationCategories(newCats);
                                                     }}>
-                                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
+                                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Kategori seçin" /></SelectTrigger>
                                                         <SelectContent className="max-h-60">
                                                             {brandCategoryOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                                                         </SelectContent>
@@ -683,11 +573,23 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>İLÇE / BÖLGE</FormLabel>
-                                <Select value={formData.district} onValueChange={(val) => setFormData({...formData, district: val})} disabled={!formData.city}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="İlçe / Bölge girin" /></SelectTrigger>
+                                <Select value={formData.district} onValueChange={(val) => setFormData({...formData, district: val, neighborhood: ''})} disabled={!formData.city}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="İlçe / Bölge girin" /></SelectTrigger>
                                     <SelectContent className="max-h-60">{formData.city && (districtsData[formData.city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>MAHALLE</FormLabel>
+                            <Select value={formData.neighborhood} onValueChange={(val) => setFormData({...formData, neighborhood: val})} disabled={!formData.district}>
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Mahalle seçin" /></SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).length > 0
+                                        ? (neighborhoodsData[formData.city]?.[formData.district] || []).map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)
+                                        : <SelectItem value="_none" disabled>Bu ilçe için mahalle verisi henüz eklenmedi</SelectItem>
+                                    }
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <FormLabel>AÇIK ADRES</FormLabel>
@@ -708,7 +610,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <div className="flex gap-2">
                                     <div className="w-[100px] shrink-0">
                                         <Select value={formData.phoneCode} onValueChange={(val) => setFormData({...formData, phoneCode: val})}>
-                                            <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                             <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
@@ -777,7 +679,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="flex gap-2">
                                 <div className="w-[100px] shrink-0">
                                     <Select value={formData.authorized.phoneCode} onValueChange={(val) => setFormData({...formData, authorized: {...formData.authorized, phoneCode: val}})}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue /></SelectTrigger>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                         <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>+{c}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
@@ -821,38 +723,21 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-
     const activeTab = searchParams.get('tab') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
 
-    useEffect(() => {
-        if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-            const redirect = searchParams.get('redirect') || '/events';
-            router.replace(redirect);
-        }
-    }, [router, searchParams]);
-
-    if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-        return <div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
-    }
-
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
-            <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
+        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+            <div className="w-full max-w-sm">
                 <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
-                        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
-                            <HangelLogo className="text-3xl" />
-                        </div>
-                        <CardTitle className="text-3xl font-black tracking-tighter">
-                            İyiliğe İlk Adım
-                        </CardTitle>
-                        <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                        <HangelLogo className="text-3xl mx-auto mb-2" />
+                        <CardTitle className="text-3xl font-black tracking-tighter">Hoş Geldiniz</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6 px-8 pb-10 text-center">
+                    <CardContent className="space-y-6 px-8 pb-10">
                         <Tabs value={activeTab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${initialEntity}`)}>
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
                                 <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
@@ -874,7 +759,7 @@ const FormRenderer = () => {
 
 export default function LoginSelectionPage() {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
       <FormRenderer />
     </Suspense>
   );
