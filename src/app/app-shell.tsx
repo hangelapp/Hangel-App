@@ -13,7 +13,7 @@ import * as Icons from 'lucide-react';
 import { CircleHelp, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { user as staticUser } from '@/lib/data';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirebase, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { isNativeApp } from '@/lib/capacitor';
 
@@ -94,13 +94,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
-    const { user: authUser, isUserLoading } = useUser();
+    const { user: authUser, isUserLoading, isMockUser } = useFirebase();
     const db = useFirestore();
 
     const userDocRef = useMemoFirebase(() => {
-        if (!db || !authUser) return null;
+        if (isMockUser || !db || !authUser) return null;
         return doc(db, 'users', authUser.uid);
-    }, [db, authUser]);
+    }, [db, authUser, isMockUser]);
 
     const { data: userData } = useDoc<User>(userDocRef);
 

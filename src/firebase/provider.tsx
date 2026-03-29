@@ -30,6 +30,7 @@ export interface FirebaseContextState {
   user: User | null;
   isUserLoading: boolean; // True during initial auth check
   userError: Error | null; // Error from auth listener
+  isMockUser: boolean;
   setMockUser: (uid: string, phoneNumber: string) => void;
 }
 
@@ -41,6 +42,7 @@ export interface FirebaseServicesAndUser {
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
+  isMockUser: boolean;
   setMockUser: (uid: string, phoneNumber: string) => void;
 }
 
@@ -70,6 +72,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   });
 
   const isMockUserRef = React.useRef(false);
+  const [isMockUser, setIsMockUser] = useState(false);
 
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
@@ -97,6 +100,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
   const setMockUser = React.useCallback((uid: string, phoneNumber: string) => {
     isMockUserRef.current = true;
+    setIsMockUser(true);
     setUserAuthState({
       user: { uid, phoneNumber } as User,
       isUserLoading: false,
@@ -115,9 +119,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       user: userAuthState.user,
       isUserLoading: userAuthState.isUserLoading,
       userError: userAuthState.userError,
+      isMockUser,
       setMockUser,
     };
-  }, [firebaseApp, firestore, auth, userAuthState, setMockUser]);
+  }, [firebaseApp, firestore, auth, userAuthState, isMockUser, setMockUser]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -149,6 +154,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
+    isMockUser: context.isMockUser,
     setMockUser: context.setMockUser,
   };
 };

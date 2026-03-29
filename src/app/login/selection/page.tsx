@@ -371,15 +371,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                     toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
                     return;
                 }
-                const mockUid = 'test-user-' + Date.now();
-                setMockUser(mockUid, TEST_PHONE);
-                setDocumentNonBlocking(doc(db, 'users', mockUid), {
-                    id: mockUid,
-                    name: name || 'Test User',
-                    role: 'user',
-                    personalInfo: { phone: TEST_PHONE },
-                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                }, { merge: true });
+                setMockUser('test-user', TEST_PHONE);
                 onComplete();
             } else {
                 if (!confirmationResult) return;
