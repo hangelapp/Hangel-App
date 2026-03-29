@@ -361,25 +361,46 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!confirmationResult) return;
         setIsLoading(true);
         try {
-            const userCredential = await confirmationResult.confirm(otp);
-            const userId = userCredential.user.uid;
-            
-            const { getDoc: fsGetDoc } = await import('firebase/firestore');
-            const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
-            if (!userDocSnap.exists()) {
-                setDocumentNonBlocking(doc(db, 'users', userId), {
-                    id: userId,
-                    name: name || userCredential.user.displayName || '',
-                    role: 'user',
-                    personalInfo: { phone: `+${phoneCode}${phone}` },
-                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                }, { merge: true });
-                if (name) await updateProfile(userCredential.user, { displayName: name });
+            if (isDevTestPhone && !confirmationResult) {
+                if (otp !== process.env.NEXT_PUBLIC_DEV_TEST_OTP) {
+                    toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
+                    return;
+                }
+                const userCredential = await signInAnonymously(auth);
+                const userId = userCredential.user.uid;
+                const { getDoc: fsGetDoc } = await import('firebase/firestore');
+                const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
+                if (!userDocSnap.exists()) {
+                    setDocumentNonBlocking(doc(db, 'users', userId), {
+                        id: userId,
+                        name: name || 'Test User',
+                        role: 'user',
+                        personalInfo: { phone: process.env.NEXT_PUBLIC_DEV_TEST_PHONE },
+                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                    }, { merge: true });
+                    if (name) await updateProfile(userCredential.user, { displayName: name });
+                }
+                onComplete();
+            } else {
+                if (!confirmationResult) return;
+                const userCredential = await confirmationResult.confirm(otp);
+                const userId = userCredential.user.uid;
+                const { getDoc: fsGetDoc } = await import('firebase/firestore');
+                const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
+                if (!userDocSnap.exists()) {
+                    setDocumentNonBlocking(doc(db, 'users', userId), {
+                        id: userId,
+                        name: name || userCredential.user.displayName || '',
+                        role: 'user',
+                        personalInfo: { phone: `+${phoneCode}${phone}` },
+                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                    }, { merge: true });
+                    if (name) await updateProfile(userCredential.user, { displayName: name });
+                }
+                onComplete();
             }
-            onComplete();
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
