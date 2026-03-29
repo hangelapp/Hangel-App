@@ -43,7 +43,7 @@ import {
 } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirebase, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
@@ -315,7 +315,8 @@ const brandCategoryOptions = [
 ];
 
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
-    const { auth, firestore: db, setMockUser } = useFirebase();
+    const auth = useAuth();
+    const db = useFirestore();
     const { toast } = useToast();
     const [phone, setPhone] = useState('');
     const [phoneCode, setPhoneCode] = useState('90');
@@ -333,27 +334,16 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         return recaptchaVerifierRef.current;
     };
 
-    const TEST_PHONE = '+905554443322';
-    const TEST_OTP = '555555';
-    const [isTestMode, setIsTestMode] = useState(false);
-
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            if (fullPhone === TEST_PHONE) {
-                setIsTestMode(true);
-                setStep('otp');
-                toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
-            } else {
-                setIsTestMode(false);
-                const verifier = getRecaptchaVerifier();
-                const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
-                setConfirmationResult(result);
-                setStep('otp');
-                toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
-            }
+            const verifier = getRecaptchaVerifier();
+            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            setConfirmationResult(result);
+            setStep('otp');
+            toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
             recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
@@ -364,33 +354,25 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!confirmationResult) return;
         setIsLoading(true);
         try {
-            if (isTestMode) {
-                if (otp !== TEST_OTP) {
-                    toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
-                    return;
-                }
-                setMockUser('test-user', TEST_PHONE);
-                onComplete();
-            } else {
-                if (!confirmationResult) return;
-                const userCredential = await confirmationResult.confirm(otp);
-                const userId = userCredential.user.uid;
-                const { getDoc: fsGetDoc } = await import('firebase/firestore');
-                const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
-                if (!userDocSnap.exists()) {
-                    setDocumentNonBlocking(doc(db, 'users', userId), {
-                        id: userId,
-                        name: name || userCredential.user.displayName || '',
-                        role: 'user',
-                        personalInfo: { phone: `+${phoneCode}${phone}` },
-                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                    }, { merge: true });
-                    if (name) await updateProfile(userCredential.user, { displayName: name });
-                }
-                onComplete();
+            const userCredential = await confirmationResult.confirm(otp);
+            const userId = userCredential.user.uid;
+
+            const { getDoc: fsGetDoc } = await import('firebase/firestore');
+            const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
+            if (!userDocSnap.exists()) {
+                setDocumentNonBlocking(doc(db, 'users', userId), {
+                    id: userId,
+                    name: name || userCredential.user.displayName || '',
+                    role: 'user',
+                    personalInfo: { phone: `+${phoneCode}${phone}` },
+                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                }, { merge: true });
+                if (name) await updateProfile(userCredential.user, { displayName: name });
             }
+            onComplete();
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
