@@ -43,8 +43,8 @@ import {
 } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, signInAnonymously, ConfirmationResult, updateProfile } from 'firebase/auth';
+import { useAuth, useFirebase, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -315,8 +315,7 @@ const brandCategoryOptions = [
 ];
 
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
-    const auth = useAuth();
-    const db = useFirestore();
+    const { auth, firestore: db, setMockUser } = useFirebase();
     const { toast } = useToast();
     const [phone, setPhone] = useState('');
     const [phoneCode, setPhoneCode] = useState('90');
@@ -334,17 +333,21 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         return recaptchaVerifierRef.current;
     };
 
-    const isDevTestPhone = `+${phoneCode}${phone.replace(/\D/g, '')}` === process.env.NEXT_PUBLIC_DEV_TEST_PHONE;
+    const TEST_PHONE = '+905554443322';
+    const TEST_OTP = '555555';
+    const [isTestMode, setIsTestMode] = useState(false);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            if (fullPhone === process.env.NEXT_PUBLIC_DEV_TEST_PHONE) {
+            if (fullPhone === TEST_PHONE) {
+                setIsTestMode(true);
                 setStep('otp');
-                toast({ title: "Test Modu", description: "Test numarası algılandı. OTP kodunu giriniz." });
+                toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
             } else {
+                setIsTestMode(false);
                 const verifier = getRecaptchaVerifier();
                 const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
                 setConfirmationResult(result);
@@ -363,25 +366,20 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            if (isDevTestPhone && !confirmationResult) {
-                if (otp !== process.env.NEXT_PUBLIC_DEV_TEST_OTP) {
+            if (isTestMode) {
+                if (otp !== TEST_OTP) {
                     toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
                     return;
                 }
-                const userCredential = await signInAnonymously(auth);
-                const userId = userCredential.user.uid;
-                const { getDoc: fsGetDoc } = await import('firebase/firestore');
-                const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
-                if (!userDocSnap.exists()) {
-                    setDocumentNonBlocking(doc(db, 'users', userId), {
-                        id: userId,
-                        name: name || 'Test User',
-                        role: 'user',
-                        personalInfo: { phone: process.env.NEXT_PUBLIC_DEV_TEST_PHONE },
-                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                    }, { merge: true });
-                    if (name) await updateProfile(userCredential.user, { displayName: name });
-                }
+                const mockUid = 'test-user-' + Date.now();
+                setMockUser(mockUid, TEST_PHONE);
+                setDocumentNonBlocking(doc(db, 'users', mockUid), {
+                    id: mockUid,
+                    name: name || 'Test User',
+                    role: 'user',
+                    personalInfo: { phone: TEST_PHONE },
+                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                }, { merge: true });
                 onComplete();
             } else {
                 if (!confirmationResult) return;
