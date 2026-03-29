@@ -44,7 +44,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, signInAnonymously, ConfirmationResult, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -334,16 +334,23 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         return recaptchaVerifierRef.current;
     };
 
+    const isDevTestPhone = `+${phoneCode}${phone.replace(/\D/g, '')}` === process.env.NEXT_PUBLIC_DEV_TEST_PHONE;
+
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const verifier = getRecaptchaVerifier();
-            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
-            setConfirmationResult(result);
-            setStep('otp');
-            toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
+            if (fullPhone === process.env.NEXT_PUBLIC_DEV_TEST_PHONE) {
+                setStep('otp');
+                toast({ title: "Test Modu", description: "Test numarası algılandı. OTP kodunu giriniz." });
+            } else {
+                const verifier = getRecaptchaVerifier();
+                const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+                setConfirmationResult(result);
+                setStep('otp');
+                toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
+            }
         } catch (error: any) {
             recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
@@ -1072,11 +1079,8 @@ const FormRenderer = () => {
     const initialEntity = searchParams.get('entity') || 'NGO';
 
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+        <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">
             <div className="w-full max-w-sm">
-                <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
                         <HangelLogo className="text-3xl mx-auto mb-2" />
