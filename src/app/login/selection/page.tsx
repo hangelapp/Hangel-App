@@ -1108,6 +1108,9 @@ const FormRenderer = () => {
                         </Tabs>
                     </CardContent>
                 </Card>
+                <p className="text-[10px] leading-relaxed text-muted-foreground text-center px-4 mt-4 max-w-md mx-auto">
+                    Devam ederek <span className="underline">Aydınlatma Metni</span>'ni, <span className="underline">Açık Rıza Metni</span>'ni ve <span className="underline">Kullanıcı Sözleşmesi</span>'ni okuduğunu ve anladığını kabul etmiş olursun. <span className="underline">Ticari Elektronik İleti Aydınlatma Metni</span> kapsamında SMS, e-posta ve arama almaya rıza göstermiş olursun.
+                </p>
             </div>
         </div>
     );
