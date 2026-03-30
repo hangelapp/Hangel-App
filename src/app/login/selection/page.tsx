@@ -44,7 +44,8 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, PhoneAuthProvider, signInWithCredential, ConfirmationResult, updateProfile } from 'firebase/auth';
+import { isNativeApp } from '@/lib/capacitor';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -324,6 +325,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+    const [nativeVerificationId, setNativeVerificationId] = useState<string | null>(null);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
@@ -339,9 +341,15 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const verifier = getRecaptchaVerifier();
-            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
-            setConfirmationResult(result);
+            if (isNativeApp()) {
+                const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+                const { verificationId } = await FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber: fullPhone });
+                setNativeVerificationId(verificationId);
+            } else {
+                const verifier = getRecaptchaVerifier();
+                const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+                setConfirmationResult(result);
+            }
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
@@ -354,10 +362,16 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!confirmationResult) return;
+        if (!confirmationResult && !nativeVerificationId) return;
         setIsLoading(true);
         try {
-            const userCredential = await confirmationResult.confirm(otp);
+            let userCredential;
+            if (nativeVerificationId) {
+                const credential = PhoneAuthProvider.credential(nativeVerificationId, otp);
+                userCredential = await signInWithCredential(auth, credential);
+            } else {
+                userCredential = await confirmationResult!.confirm(otp);
+            }
             const userId = userCredential.user.uid;
 
             const { getDoc: fsGetDoc } = await import('firebase/firestore');

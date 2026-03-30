@@ -1,48 +1,41 @@
 {
   "project_info": {
-    "project_number": "681395322694",
-    "project_id": "hangel-1",
-    "storage_bucket": "hangel-1.appspot.com"
+    "project_number": "1082171206975",
+    "project_id": "hangel-new-v18-87297865-9bcc3",
+    "storage_bucket": "hangel-new-v18-87297865-9bcc3.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:681395322694:android:01a26bde4e4527b4a06f47",
+        "mobilesdk_app_id": "1:1082171206975:android:d56b547ec9bbe3db6a378a",
         "android_client_info": {
           "package_name": "com.hangel.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "681395322694-ljene7v6nks8627psmfv4d984stnrklc.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.hangel.app",
-            "certificate_hash": "893e59ee5f39605e7aa83f651628c6090c63c8e0"
-          }
-        },
-        {
-          "client_id": "681395322694-c90728481gemttq5di8buarahdcs75vd.apps.googleusercontent.com",
+          "client_id": "1082171206975-oauportlc5db4c9imffihvf1sqov6fs2.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD2QiIo1G-iinW3wkIyuyp9Rm8gIK4yFC8"
+          "current_key": "AIzaSyCLzN9-TVEq-h0h-Fnxj-kjfu5Ny5ooBiM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "681395322694-c90728481gemttq5di8buarahdcs75vd.apps.googleusercontent.com",
+              "client_id": "1082171206975-oauportlc5db4c9imffihvf1sqov6fs2.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "681395322694-p2oa843dkt8hfipn939jn2paceo5jjpm.apps.googleusercontent.com",
+              "client_id": "1082171206975-8744meejjc9549333l9rptv4sbnoueor.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.hangel.ios.app"
+                "bundle_id": "com.hangel.ios.app",
+                "app_store_id": "6664058822"
               }
             }
           ]
