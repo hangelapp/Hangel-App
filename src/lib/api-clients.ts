@@ -87,9 +87,10 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       const name = cleanBrandName(offer.name);
       if (!name) continue;
 
-      // Filter out book/ebook offers
+      // Filter out inappropriate or irrelevant offers
       const nameLower = name.toLowerCase();
       if (/e?kitap|e?book/i.test(nameLower)) continue;
+      if (/xxx|porn|adult|sex|eroti[ck]|video\s*marks?/i.test(nameLower)) continue;
 
       const thumbnailUrl = entry?.Thumbnail?.thumbnail || entry?.Thumbnail?.display;
       const previewUrl = offer.preview_url || offer.offer_url || '';
