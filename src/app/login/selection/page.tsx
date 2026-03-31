@@ -343,8 +343,18 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             if (isNativeApp()) {
                 const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
-                const { verificationId } = await FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber: fullPhone });
+                const verificationIdPromise = new Promise<string>((resolve, reject) => {
+                    FirebaseAuthentication.addListener('phoneCodeSent', (event) => {
+                        resolve(event.verificationId);
+                    });
+                    FirebaseAuthentication.addListener('phoneVerificationFailed', (event) => {
+                        reject(new Error(event.message || 'Doğrulama başarısız.'));
+                    });
+                });
+                await FirebaseAuthentication.signInWithPhoneNumber({ phoneNumber: fullPhone });
+                const verificationId = await verificationIdPromise;
                 setNativeVerificationId(verificationId);
+                await FirebaseAuthentication.removeAllListeners();
             } else {
                 const verifier = getRecaptchaVerifier();
                 const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
