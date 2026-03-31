@@ -115,9 +115,15 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       if (/xxx|porn|adult|sex|eroti[ck]|video\s*marks?/i.test(nameLower)) continue;
 
       const thumbnailUrl = entry?.Thumbnail?.thumbnail || entry?.Thumbnail?.display;
-      const previewUrl = offer.preview_url || offer.offer_url || '';
-      const domain = getDomainFromUrl(previewUrl, `${name.toLowerCase().replace(/\s+/g, '')}.com`);
+      const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
+      const domain = getDomainFromUrl(rawPreviewUrl, `${name.toLowerCase().replace(/\s+/g, '')}.com`);
       const logoUrl = thumbnailUrl || `https://logo.uplead.com/${domain}`;
+
+      // Use preview_url if it has affiliate placeholders; otherwise fall back to HasOffers tracking URL
+      const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);
+      const previewUrl = hasPlaceholder
+        ? rawPreviewUrl
+        : `https://${config.trackingDomain}/aff_c?offer_id=${offer.id}&aff_id=${config.affiliateId}`;
 
       let category = 'Genel';
       const cats = entry?.OfferCategory;
