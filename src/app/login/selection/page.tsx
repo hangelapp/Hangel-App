@@ -314,7 +314,7 @@ const brandCategoryOptions = [
     "Otomotiv", "Mücevher & Saat", "Diğer"
 ];
 
-const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
+const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
@@ -378,7 +378,8 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-            onComplete();
+            const wasNew = !userDocSnap.exists();
+            onComplete(wasNew);
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
@@ -1092,9 +1093,13 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => {
-                                    localStorage.setItem('onboardingStep', 'profile');
-                                    router.push('/settings/profile');
+                                <IndividualForm onComplete={(isNewUser) => {
+                                    if (isNewUser) {
+                                        localStorage.setItem('onboardingStep', 'profile');
+                                        router.push('/settings/profile');
+                                    } else {
+                                        router.push('/market');
+                                    }
                                 }} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
