@@ -276,13 +276,12 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`${currentUser.name} - hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <div />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
                     <UserAvatar className="w-24 h-24 mb-4" />
                     <h1 className="text-3xl font-bold">{currentUser.name}</h1>
-                    <p className="text-lg text-muted-foreground">{currentUser.username}</p>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
                     <div className="flex justify-center">
@@ -291,7 +290,6 @@ export default function ProfilePage() {
                             <TabsTrigger value="about">Hakkında</TabsTrigger>
                             <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
                             <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
-                            <TabsTrigger value="posts">Gönderi</TabsTrigger>
                             <TabsTrigger value="story">Hikaye</TabsTrigger>
                         </TabsList>
                     </div>
@@ -525,19 +523,6 @@ export default function ProfilePage() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="posts" className="p-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Gönderilerim</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-center text-muted-foreground py-16">
-                                    <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>
-                                    <p className="mt-4">Henüz bir gönderi paylaşmadınız.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
 
                     <TabsContent value="story" className="p-4 space-y-4">
                         <Card>
