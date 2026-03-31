@@ -334,6 +334,7 @@ export default function LoginPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+    const [totalBrandCount, setTotalBrandCount] = useState(0);
 
     useEffect(() => {
         setMounted(true);
@@ -344,6 +345,7 @@ export default function LoginPage() {
             try {
                 const response = await fetch('/api/offers');
                 const brands = await response.json();
+                setTotalBrandCount(brands.length);
                 setApiBrands(brands.slice(0, 21));
             } catch (error) {
                 console.error('Error fetching brands:', error);
@@ -516,7 +518,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-primary/20 text-primary hover:bg-primary/5">
                                 <Link href="/market">
-                                    Tüm Markaları Gör ({(apiBrands.length > 0 ? apiBrands : allEntityLists).length} Marka)
+                                    Tüm Markaları Gör ({totalBrandCount > 0 ? totalBrandCount : allEntityLists.length} Marka)
                                 </Link>
                             </Button>
                         </div>
