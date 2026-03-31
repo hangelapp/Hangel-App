@@ -4,7 +4,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { badges, pastVolunteering, certificates } from '@/lib/data';
+// badges, pastVolunteering, certificates will come from Firebase in future
+const badges: any[] = [];
+const pastVolunteering: any[] = [];
+const certificates: any[] = [];
 import { 
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
     HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2
@@ -58,13 +61,7 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value
     </div>
 );
 
-const pointTransactions = [
-    { type: 'Alışveriş', icon: HandCoins, description: "Doğa Dostu Giyim alışverişi", points: 120, time: "2024-07-22T14:30:00" },
-    { type: 'Gönüllülük', icon: Handshake, description: "TEMA Fidan Dikimi gönüllülüğü", points: 150, time: "2024-07-21T10:00:00" },
-    { type: 'Davet', icon: Users, description: "Ayşe Yılmaz'ı davet ettin", points: 100, time: "2024-07-19T18:45:00" },
-    { type: 'Rozet', icon: Award, description: "'Bronz Çevre Koruyucusu' rozeti", points: 250, time: "2024-07-19T11:20:00" },
-    { type: 'Alışveriş', icon: DollarSign, description: "Lezzet Köyü alışverişi", points: 45, time: "2024-07-17T09:05:00" },
-];
+const pointTransactions: { type: string; icon: React.ElementType; description: string; points: number; time: string }[] = [];
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
@@ -279,13 +276,12 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`${currentUser.name} - hangel Profili`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <div />
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
                     <UserAvatar className="w-24 h-24 mb-4" />
                     <h1 className="text-3xl font-bold">{currentUser.name}</h1>
-                    <p className="text-lg text-muted-foreground">{currentUser.username}</p>
                 </div>
                 <Tabs defaultValue="impact" className="w-full">
                     <div className="flex justify-center">
@@ -294,7 +290,6 @@ export default function ProfilePage() {
                             <TabsTrigger value="about">Hakkında</TabsTrigger>
                             <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
                             <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
-                            <TabsTrigger value="posts">Gönderi</TabsTrigger>
                             <TabsTrigger value="story">Hikaye</TabsTrigger>
                         </TabsList>
                     </div>
@@ -315,7 +310,7 @@ export default function ProfilePage() {
                                 <StatCard icon={HandCoins} value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
                                 <StatCard icon={Sparkles} value={`${currentUser.stats.totalImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
                                 <StatCard icon={Handshake} value={`${currentUser.stats.volunteerHours} Saat`} label="Gönüllülük" />
-                                <StatCard icon={Award} value={badges.filter(b => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
+                                <StatCard icon={Award} value={badges.filter((b: any) => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
                                 <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
                                 <StatCard icon={BarChart3} value={currentUser.stats.volunteerRank.country} label="Türkiye Sıralaması" />
                             </CardContent>
@@ -384,7 +379,9 @@ export default function ProfilePage() {
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {sortedAndFilteredTransactions.slice(0, 5).map((tx, index) => {
+                                {sortedAndFilteredTransactions.length === 0 ? (
+                                    <p className="text-center text-muted-foreground text-sm py-8">Henüz puan işleminiz bulunmuyor.</p>
+                                ) : sortedAndFilteredTransactions.slice(0, 5).map((tx, index) => {
                                     const Icon = tx.icon;
                                     return (
                                     <div key={index} className="flex items-center justify-between text-sm">
@@ -481,11 +478,16 @@ export default function ProfilePage() {
                     </TabsContent>
                     
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
-                        <NextBadgeGoal userProfile={currentUser} />
                         <Card>
                             <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-3 gap-4">
-                                {badges.slice(0, 6).map(badge => <BadgeDisplay key={badge.id} badge={badge} />)}
+                            <CardContent>
+                                {badges.length > 0 ? (
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {badges.slice(0, 6).map((badge: any) => <BadgeDisplay key={badge.id} badge={badge} />)}
+                                    </div>
+                                ) : (
+                                    <p className="text-center text-muted-foreground text-sm py-8">Henüz kazanılmış bir rozetiniz bulunmuyor.</p>
+                                )}
                             </CardContent>
                              <CardFooter className='pt-4'>
                                  <Button asChild variant="secondary" className='w-full'>
@@ -521,19 +523,6 @@ export default function ProfilePage() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="posts" className="p-4">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Gönderilerim</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-center text-muted-foreground py-16">
-                                    <Rss className="mx-auto h-12 w-12 text-muted-foreground/50"/>
-                                    <p className="mt-4">Henüz bir gönderi paylaşmadınız.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
 
                     <TabsContent value="story" className="p-4 space-y-4">
                         <Card>
