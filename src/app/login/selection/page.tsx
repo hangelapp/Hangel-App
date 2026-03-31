@@ -327,20 +327,26 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
-    const getRecaptchaVerifier = () => {
-        if (!recaptchaVerifierRef.current) {
+    useEffect(() => {
+        if (step === 'phone' && !recaptchaVerifierRef.current) {
             recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'normal' });
+            recaptchaVerifierRef.current.render();
         }
-        return recaptchaVerifierRef.current;
-    };
+        return () => {
+            if (recaptchaVerifierRef.current) {
+                recaptchaVerifierRef.current.clear();
+                recaptchaVerifierRef.current = null;
+            }
+        };
+    }, [auth, step]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const verifier = getRecaptchaVerifier();
-            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            if (!recaptchaVerifierRef.current) throw new Error('reCAPTCHA yüklenemedi. Sayfayı yenileyin.');
+            const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
             setConfirmationResult(result);
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
@@ -382,7 +388,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <div className="space-y-6">
-            <div id="recaptcha-container" />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
@@ -405,6 +410,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                             <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
+                    <div id="recaptcha-container" className="flex justify-center" />
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
                     </Button>
@@ -1086,7 +1092,10 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => router.push('/timeline')} />
+                                <IndividualForm onComplete={() => {
+                                    localStorage.setItem('onboardingStep', 'profile');
+                                    router.push('/settings/profile');
+                                }} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={initialEntity} />

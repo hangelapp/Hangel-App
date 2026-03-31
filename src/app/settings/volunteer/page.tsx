@@ -121,11 +121,11 @@ export default function VolunteerSettingsPage() {
 
         if (isOnboarding) {
             toast({
-                title: "Melek gibi insanlar topluluğuna hoş geldin!",
-                description: "Profilin başarıyla tamamlandı.",
+                title: "Gönüllülük Bilgilerin Kaydedildi",
+                description: "Şimdi bağış yapacağın STK'ları seçelim.",
             });
-            localStorage.removeItem('onboardingStep');
-            router.push('/market');
+            localStorage.setItem('onboardingStep', 'ngo-selection');
+            router.push('/settings/ngo-selection');
         } else {
             toast({ title: "Bilgiler Güncellendi", description: "Değişiklikler kaydedildi." });
             router.push('/settings');
@@ -212,7 +212,7 @@ export default function VolunteerSettingsPage() {
                             <Input placeholder="Ad Soyad" value={volunteerInfo.emergency.emergencyContacts[0]?.name || ''} onChange={(e) => handleEmergencyContactChange(0, 'name', e.target.value)} />
                             <div className="flex gap-2">
                                 <div className="w-[80px] shrink-0">
-                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{[...new Set(countryPhoneCodes)].map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
                                 <Input type="tel" placeholder="5XX..." value={volunteerInfo.emergency.emergencyContacts[0]?.phone || ''} onChange={(e) => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" />
                             </div>
@@ -222,7 +222,7 @@ export default function VolunteerSettingsPage() {
                             <Input placeholder="Ad Soyad" value={volunteerInfo.emergency.emergencyContacts[1]?.name || ''} onChange={(e) => handleEmergencyContactChange(1, 'name', e.target.value)} />
                             <div className="flex gap-2">
                                 <div className="w-[80px] shrink-0">
-                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{countryPhoneCodes.map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
+                                    <Select defaultValue="90"><SelectTrigger className="h-10"><SelectValue /></SelectTrigger><SelectContent>{[...new Set(countryPhoneCodes)].map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent></Select>
                                 </div>
                                 <Input type="tel" placeholder="5XX..." value={volunteerInfo.emergency.emergencyContacts[1]?.phone || ''} onChange={(e) => handleEmergencyContactChange(1, 'phone', e.target.value)} className="flex-1" />
                             </div>
