@@ -37,6 +37,28 @@ interface HasOffersConfig {
   network: string;
   idPrefix: string;
   agencyName: string;
+  affiliateId: string;
+  trackingDomain: string;
+}
+
+function buildAffiliateLink(config: HasOffersConfig, previewUrl: string): string {
+  if (!previewUrl) return '';
+  const replaced = previewUrl
+    .replace(/\{aff_id\}/g, config.affiliateId)
+    .replace(/\{affiliate_id\}/g, config.affiliateId)
+    .replace(/\{transaction_id\}/g, '');
+  // Remove query params left empty after placeholder replacement
+  try {
+    const url = new URL(replaced);
+    const cleaned = new URLSearchParams();
+    url.searchParams.forEach((value, key) => {
+      if (value) cleaned.set(key, value);
+    });
+    url.search = cleaned.toString();
+    return url.toString();
+  } catch {
+    return replaced;
+  }
 }
 
 async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
@@ -120,7 +142,7 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
         agency: config.agencyName,
         category,
         about: offer.description ? offer.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 500) : undefined,
-        link: previewUrl || undefined,
+        link: buildAffiliateLink(config, previewUrl) || undefined,
       });
     }
 
@@ -139,18 +161,24 @@ const NETWORKS: HasOffersConfig[] = [
     network: 'reklamaction',
     idPrefix: 'ra',
     agencyName: 'ReklamAction',
+    affiliateId: '35329',
+    trackingDomain: 'ad.reklm.com',
   },
   {
     apiKey: 'c908bda5f41405de7cbcb40a15db041e47a2fcc55358e8f44790db8ff2cfb35d',
     network: 'affocean',
     idPrefix: 'ao',
     agencyName: 'Affocean',
+    affiliateId: '7873',
+    trackingDomain: 'ad.afftrck.com',
   },
   {
     apiKey: '891bae449589572cc756b5fe93e182c527ef910c2137c7e1ea53a0a366ab9cd3',
     network: 'gelirortaklari',
     idPrefix: 'go',
     agencyName: 'GelirOrtaklari',
+    affiliateId: '37081',
+    trackingDomain: 'tr.rdrtr.com',
   },
 ];
 
