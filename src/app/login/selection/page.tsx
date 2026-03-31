@@ -343,11 +343,21 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             if (isNativeApp()) {
                 const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+                await FirebaseAuthentication.removeAllListeners();
                 const verificationIdPromise = new Promise<string>((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Doğrulama zaman aşımına uğradı. Lütfen tekrar deneyin.'));
+                    }, 60000);
                     FirebaseAuthentication.addListener('phoneCodeSent', (event) => {
+                        clearTimeout(timeout);
                         resolve(event.verificationId);
                     });
+                    FirebaseAuthentication.addListener('phoneVerificationCompleted', () => {
+                        clearTimeout(timeout);
+                        resolve('auto-verified');
+                    });
                     FirebaseAuthentication.addListener('phoneVerificationFailed', (event) => {
+                        clearTimeout(timeout);
                         reject(new Error(event.message || 'Doğrulama başarısız.'));
                     });
                 });
