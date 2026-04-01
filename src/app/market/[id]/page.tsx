@@ -119,6 +119,9 @@ export default function BrandProfilePage() {
             title: "Mağazaya Yönlendiriliyorsunuz",
             description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
         });
+        if (brand.link) {
+            window.open(brand.link, '_blank');
+        }
     }, 1000);
   };
 

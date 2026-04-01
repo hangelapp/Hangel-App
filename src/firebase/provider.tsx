@@ -69,16 +69,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
 
   // Effect to subscribe to Firebase auth state changes
   useEffect(() => {
-    // Dev bypass: provide a mock user without real Firebase auth
-    if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-      setUserAuthState({
-        user: { uid: 'dev-user', phoneNumber: '+905557105045' } as User,
-        isUserLoading: false,
-        userError: null,
-      });
-      return;
-    }
-
     if (!auth) { // If no Auth service instance, cannot determine user state
       setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Auth service not provided.") });
       return;

@@ -56,8 +56,12 @@ export default function VolunteerNgoSelectionPage() {
             description: "Gönüllüsü olduğunuz STK seçimleriniz başarıyla güncellendi.",
         });
         if (isOnboarding) {
-            localStorage.setItem('onboardingStep', 'profile');
-            router.push('/settings/profile');
+            toast({
+                title: "Melek gibi insanlar topluluğuna hoş geldin!",
+                description: "Profilin başarıyla tamamlandı.",
+            });
+            localStorage.removeItem('onboardingStep');
+            router.push('/market');
         } else {
             router.push('/settings/profile');
         }

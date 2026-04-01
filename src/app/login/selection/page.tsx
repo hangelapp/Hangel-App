@@ -9,9 +9,17 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-    ArrowLeft, 
-    Upload, 
+import {
+    Mail,
+    Activity,
+    Target,
+    Trash2,
+    Users,
+    Instagram,
+    Linkedin,
+    X,
+    ArrowLeft,
+    Upload,
     Loader2,
     Building2,
     CheckCircle,
@@ -22,14 +30,17 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School,
-    Mail, Activity, Target, Trash2, Instagram, Linkedin
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, countryPhoneCodes, allCountries, allUniversities, districtsData, neighborhoodsData, allBeneficiaries, allSdgs, allMemberships, allProvinces } from '@/lib/data';
+import {
+    marketCategories, countryPhoneCodes, allCountries, allUniversities,
+    allProvinces, districtsData, neighborhoodsData,
+    allBeneficiaries, allSdgs, allMemberships
+} from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -143,7 +154,6 @@ const clubCategories = [
 ];
 
 const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
-const brandCategoryOptions = ['Teknoloji', 'Giyim', 'Eğitim', 'Kitap & Hobi', 'Sağlık & Kozmetik', 'Market', 'Ev & Yaşam', 'Diğer'];
 
 // --- Shared UI Components ---
 
@@ -292,14 +302,21 @@ const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
-const IconInput = ({ icon: Icon, className, ...props }: any) => (
+const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: React.ComponentType<any> }) => (
     <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><Icon className="h-4 w-4" /></div>
-        <FormInput className={cn("pl-10", className)} {...props} />
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 pl-10", props.className)} />
     </div>
 );
 
-const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
+const brandCategoryOptions = [
+    "Giyim & Aksesuar", "Elektronik", "Kozmetik & Kişisel Bakım",
+    "Ev & Yaşam", "Gıda & İçecek", "Spor & Outdoor",
+    "Kitap & Kırtasiye", "Oyuncak & Hobi", "Sağlık & Medikal",
+    "Otomotiv", "Mücevher & Saat", "Diğer"
+];
+
+const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
@@ -312,20 +329,26 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
-    const getRecaptchaVerifier = () => {
-        if (!recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+    useEffect(() => {
+        if (step === 'phone' && !recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'normal' });
+            recaptchaVerifierRef.current.render();
         }
-        return recaptchaVerifierRef.current;
-    };
+        return () => {
+            if (recaptchaVerifierRef.current) {
+                recaptchaVerifierRef.current.clear();
+                recaptchaVerifierRef.current = null;
+            }
+        };
+    }, [auth, step]);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const verifier = getRecaptchaVerifier();
-            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            if (!recaptchaVerifierRef.current) throw new Error('reCAPTCHA yüklenemedi. Sayfayı yenileyin.');
+            const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
             setConfirmationResult(result);
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
@@ -344,7 +367,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             const userCredential = await confirmationResult.confirm(otp);
             const userId = userCredential.user.uid;
-            
+
             const { getDoc: fsGetDoc } = await import('firebase/firestore');
             const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
             if (!userDocSnap.exists()) {
@@ -357,7 +380,8 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-            onComplete();
+            const wasNew = !userDocSnap.exists();
+            onComplete(wasNew);
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
@@ -367,7 +391,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
 
     return (
         <div className="space-y-6">
-            <div id="recaptcha-container" />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
@@ -390,6 +413,7 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                             <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
+                    <div id="recaptcha-container" className="flex justify-center" />
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
                     </Button>
@@ -445,6 +469,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         addressLine: '',
         email: '',
         phone: '',
+        phoneCode: '90',
         website: '',
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
@@ -456,27 +481,46 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         clubCategory: '',
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
+        country: 'Türkiye',
         brandStatus: '',
     });
 
     const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
     const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-    const [donationCategories, setDonationCategories] = useState<{id: number, category: string, customCategory: string, rate: string}[]>([{id: Date.now(), category: '', customCategory: '', rate: ''}]);
+    const [donationCategories, setDonationCategories] = useState<{ id: string; category: string; rate: string; customCategory: string }[]>([
+        { id: '1', category: '', rate: '', customCategory: '' }
+    ]);
     const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
-    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
+    const [registryNgoFound, setRegistryNgoFound] = useState<{ name: string } | null>(null);
 
-    const toggleItem = (list: string[], setList: (val: string[]) => void, item: string) => {
-        if (list.includes(item)) setList(list.filter((i: string) => i !== item));
-        else setList([...list, item]);
+    const toggleItem = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
+        setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
     };
 
-    const addCategory = () => setDonationCategories([...donationCategories, {id: Date.now(), category: '', customCategory: '', rate: ''}]);
-    const removeCategory = (id: number) => setDonationCategories(donationCategories.filter(c => c.id !== id));
+    const handleRegistryNoCheck = async (value: string) => {
+        setFormData(prev => ({ ...prev, registryNo: value }));
+        if (value.length < 3) { setRegistryNgoFound(null); return; }
+        setIsCheckingRegistry(true);
+        try {
+            const { getDocs, query, where } = await import('firebase/firestore');
+            const q = query(collection(db, 'ngos'), where('registryNo', '==', value));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const ngoData = snap.docs[0].data();
+                setRegistryNgoFound({ name: ngoData.name || 'Bilinmeyen' });
+                setFormData(prev => ({ ...prev, registryNo: value, name: ngoData.name || prev.name, shortName: ngoData.shortName || prev.shortName }));
+            } else { setRegistryNgoFound(null); }
+        } catch { setRegistryNgoFound(null); }
+        finally { setIsCheckingRegistry(false); }
+    };
 
-    const handleRegistryNoCheck = async (no: string) => {
-        setFormData({...formData, registryNo: no});
-        // Dummy implementation for validation
+    const addCategory = () => {
+        setDonationCategories(prev => [...prev, { id: Date.now().toString(), category: '', rate: '', customCategory: '' }]);
+    };
+
+    const removeCategory = (id: string) => {
+        setDonationCategories(prev => prev.filter(cat => cat.id !== id));
     };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
@@ -486,6 +530,10 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             await addDocumentNonBlocking(collection(db, 'applications'), {
                 ...formData,
                 entityType,
+                selectedBeneficiaries,
+                selectedServiceAreas,
+                selectedPlatforms,
+                donationCategories,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
@@ -1031,11 +1079,8 @@ const FormRenderer = () => {
     const initialEntity = searchParams.get('entity') || 'NGO';
 
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4">
+        <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">
             <div className="w-full max-w-sm">
-                <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
                         <HangelLogo className="text-3xl mx-auto mb-2" />
@@ -1048,7 +1093,14 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => router.push('/timeline')} />
+                                <IndividualForm onComplete={(isNewUser) => {
+                                    if (isNewUser) {
+                                        localStorage.setItem('onboardingStep', 'profile');
+                                        router.push('/settings/profile');
+                                    } else {
+                                        router.push('/market');
+                                    }
+                                }} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={initialEntity} />
@@ -1056,6 +1108,9 @@ const FormRenderer = () => {
                         </Tabs>
                     </CardContent>
                 </Card>
+                <p className="text-[10px] leading-relaxed text-muted-foreground text-center px-4 mt-4 max-w-md mx-auto">
+                    Devam ederek <span className="underline">Aydınlatma Metni</span>'ni, <span className="underline">Açık Rıza Metni</span>'ni ve <span className="underline">Kullanıcı Sözleşmesi</span>'ni okuduğunu ve anladığını kabul etmiş olursun. <span className="underline">Ticari Elektronik İleti Aydınlatma Metni</span> kapsamında SMS, e-posta ve arama almaya rıza göstermiş olursun.
+                </p>
             </div>
         </div>
     );
