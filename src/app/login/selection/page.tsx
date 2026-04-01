@@ -22,13 +22,14 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School
+    School,
+    Mail, Activity, Target, Trash2, Instagram, Linkedin
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { marketCategories, countryPhoneCodes, allCountries, allUniversities } from '@/lib/data';
+import { marketCategories, countryPhoneCodes, allCountries, allUniversities, districtsData, neighborhoodsData, allBeneficiaries, allSdgs, allMemberships, allProvinces } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
@@ -140,6 +141,9 @@ const clubCategories = [
   "Spor & Outdoor", "Futbol", "Basketbol", "Satranç", "Voleybol",
   "Dağcılık & Trekking", "Su Sporları", "Kampçılık", "Diğer Sporlar",
 ];
+
+const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
+const brandCategoryOptions = ['Teknoloji', 'Giyim', 'Eğitim', 'Kitap & Hobi', 'Sağlık & Kozmetik', 'Market', 'Ev & Yaşam', 'Diğer'];
 
 // --- Shared UI Components ---
 
@@ -286,6 +290,13 @@ const FormLabel = ({ children, required }: { children: React.ReactNode, required
 
 const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
+);
+
+const IconInput = ({ icon: Icon, className, ...props }: any) => (
+    <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"><Icon className="h-4 w-4" /></div>
+        <FormInput className={cn("pl-10", className)} {...props} />
+    </div>
 );
 
 const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
@@ -445,7 +456,28 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         clubCategory: '',
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
+        brandStatus: '',
     });
+
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
+    const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
+    const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+    const [donationCategories, setDonationCategories] = useState<{id: number, category: string, customCategory: string, rate: string}[]>([{id: Date.now(), category: '', customCategory: '', rate: ''}]);
+    const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
+    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
+
+    const toggleItem = (list: string[], setList: (val: string[]) => void, item: string) => {
+        if (list.includes(item)) setList(list.filter((i: string) => i !== item));
+        else setList([...list, item]);
+    };
+
+    const addCategory = () => setDonationCategories([...donationCategories, {id: Date.now(), category: '', customCategory: '', rate: ''}]);
+    const removeCategory = (id: number) => setDonationCategories(donationCategories.filter(c => c.id !== id));
+
+    const handleRegistryNoCheck = async (no: string) => {
+        setFormData({...formData, registryNo: no});
+        // Dummy implementation for validation
+    };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
