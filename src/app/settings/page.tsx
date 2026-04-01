@@ -5,8 +5,8 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { 
-    Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User, 
-    HeartHandshake, PersonStanding, Wallet, Users, HandCoins
+    Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User,
+    HeartHandshake, PersonStanding, Wallet, Users, HandCoins, Store
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -100,6 +100,18 @@ export default function SettingsPage() {
                         <SettingsLink href="/settings/ngo-selection" icon={HandCoins} label="Bağışçısı Olduğun STK'ları Değiştir" iconColor="bg-amber-500" />
                         <SettingsLink href="/settings/volunteer-ngo-selection" icon={HeartHandshake} label="Gönüllüsü Olduğun STK'ları Değiştir" iconColor="bg-rose-500" />
                     </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle>Takip ettiğim Markalar</CardTitle>
+                <CardDescription>Takip ettiğiniz markaları yönetin.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="flex flex-col divide-y">
+                    <SettingsLink href="/market" icon={Store} label="Takip Ettiğim Markaları Gör" iconColor="bg-violet-500" />
+                </div>
             </CardContent>
         </Card>
 
