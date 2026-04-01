@@ -10,6 +10,14 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+    Mail,
+    Activity,
+    Target,
+    Trash2,
+    Users,
+    Instagram,
+    Linkedin,
+    X,
     ArrowLeft,
     Upload,
     Loader2,
@@ -22,15 +30,7 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School,
-    Trash2,
-    Users,
-    Target,
-    Activity,
-    Mail,
-    Instagram,
-    Linkedin,
-    X
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -152,6 +152,8 @@ const clubCategories = [
   "Spor & Outdoor", "Futbol", "Basketbol", "Satranç", "Voleybol",
   "Dağcılık & Trekking", "Su Sporları", "Kampçılık", "Diğer Sporlar",
 ];
+
+const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
 
 // --- Shared UI Components ---
 
@@ -491,8 +493,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     ]);
     const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
     const [registryNgoFound, setRegistryNgoFound] = useState<{ name: string } | null>(null);
-
-    const uniquePhoneCodes = useMemo(() => [...new Set(countryPhoneCodes)].sort(), []);
 
     const toggleItem = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
         setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
