@@ -325,7 +325,7 @@ export default function EmergencyPage() {
 
         <BloodNeedDialog open={isBloodDialogOpen} onOpenChange={setIsBloodDialogOpen} onSubmit={handleBloodNeedSubmit} />
 
-        <div className="fixed bottom-24 left-4 right-4 z-10">
+        <div className="mt-4 mx-0">
             <div className="p-4 bg-slate-900/90 backdrop-blur-lg text-white rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">
                 <div className="p-2 bg-white/10 rounded-lg">
                     <Siren className="h-5 w-5 text-destructive" />

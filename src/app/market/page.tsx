@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, ArrowDownUp } from 'lucide-react';
 import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -67,6 +67,8 @@ export default function MarketPage() {
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [brandType, setBrandType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  type SortOption = 'default' | 'donationDesc' | 'donationAsc' | 'nameAsc' | 'nameDesc';
+  const [sortBy, setSortBy] = useState<SortOption>('default');
 
   // Firestore brands (manually added/approved)
   const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
@@ -114,8 +116,15 @@ export default function MarketPage() {
       list = list.filter(b => b.type === brandType);
     }
 
-    return list.sort((a, b) => b.donationRate - a.donationRate);
-  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType]);
+    switch (sortBy) {
+      case 'donationDesc': list.sort((a, b) => b.donationRate - a.donationRate); break;
+      case 'donationAsc':  list.sort((a, b) => a.donationRate - b.donationRate); break;
+      case 'nameAsc':      list.sort((a, b) => a.name.localeCompare(b.name, 'tr')); break;
+      case 'nameDesc':     list.sort((a, b) => b.name.localeCompare(a.name, 'tr')); break;
+      default:             list.sort((a, b) => b.donationRate - a.donationRate); break;
+    }
+    return list;
+  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType, sortBy]);
 
   // Derive categories dynamically from all loaded brands
   const allCategories = useMemo(() => {
@@ -150,14 +159,29 @@ export default function MarketPage() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
+                <ArrowDownUp className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>Varsayılan</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('donationDesc')} className={sortBy === 'donationDesc' ? 'font-bold text-primary' : ''}>En çok bağış yapan</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('donationAsc')} className={sortBy === 'donationAsc' ? 'font-bold text-primary' : ''}>En az bağış yapan</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>Alfabetik (A → Z)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('nameDesc')} className={sortBy === 'nameDesc' ? 'font-bold text-primary' : ''}>Alfabetik (Z → A)</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">Tümü</TabsTrigger>
-            <TabsTrigger value="brand">Ticari</TabsTrigger>
-            <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-            <TabsTrigger value="social">Sosyal</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="all" className="text-[11px]">Tümü</TabsTrigger>
+            <TabsTrigger value="brand" className="text-[11px]">Ticari</TabsTrigger>
+            <TabsTrigger value="cooperative" className="text-[11px]">Kooperatif</TabsTrigger>
+            <TabsTrigger value="social" className="text-[11px]">Sosyal</TabsTrigger>
+            <TabsTrigger value="economic" className="text-[11px]">İktisadi</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>

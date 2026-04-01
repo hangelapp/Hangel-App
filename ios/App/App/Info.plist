@@ -47,5 +47,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>
+	<string>Rehberinizdeki arkadaşlarınızın hangel'da olup olmadığını görmek ve onları davet etmek için kişilere erişim gerekmektedir.</string>
 </dict>
 </plist>

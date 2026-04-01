@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
+import { librarySections as staticSections } from '@/lib/library';
 
 export default function LibraryPage() {
   const db = useFirestore();
@@ -26,15 +27,16 @@ export default function LibraryPage() {
   const libQuery = useMemoFirebase(() => collection(db, 'library'), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
+  const sections = (libData && libData.length > 0) ? libData : staticSections;
+
   const filteredSections = useMemo(() => {
-    if (!libData) return [];
-    if (!searchTerm.trim()) return libData;
+    if (!searchTerm.trim()) return sections;
     const lower = searchTerm.toLowerCase();
-    return libData.filter(s => 
-        s.title.toLowerCase().includes(lower) || 
+    return sections.filter(s =>
+        s.title.toLowerCase().includes(lower) ||
         s.items?.some(i => i.title.toLowerCase().includes(lower))
     );
-  }, [libData, searchTerm]);
+  }, [sections, searchTerm]);
 
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen">
