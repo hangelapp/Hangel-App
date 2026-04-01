@@ -18,6 +18,7 @@
     "cap:run:android": "npx cap run android"
   },
   "dependencies": {
+    "@capacitor-community/contacts": "^7.1.0",
     "@capacitor/android": "^8.3.0",
     "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.3.0",
