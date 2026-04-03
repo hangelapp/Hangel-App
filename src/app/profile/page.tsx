@@ -8,9 +8,9 @@ import { Button } from '@/components/ui/button';
 const badges: any[] = [];
 const pastVolunteering: any[] = [];
 const certificates: any[] = [];
-import { 
+import {
     Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2, LogOut
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -25,8 +25,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -107,9 +108,19 @@ export default function ProfilePage() {
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
-    
+
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
+    const auth = useAuth();
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            router.push('/login');
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Çıkış yapılırken bir hata oluştu.' });
+        }
+    };
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -276,7 +287,9 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <div />
+                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                    <LogOut className="h-5 w-5" />
+                </Button>
             </div>
             <div className="p-4 space-y-6">
                 <div className="flex flex-col items-center text-center">
@@ -453,7 +466,7 @@ export default function ProfilePage() {
                                 <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={currentUser.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Landmark} label="Vizeler" value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
-                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map(e => e.school).join('; ')} verified />
+                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map((e: any) => e.school).join('; ')} verified />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={currentUser.volunteerInfo.sector} />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={currentUser.volunteerInfo.profession} />
                                  <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={currentUser.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
