@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
 import {
     Mail,
@@ -90,11 +90,34 @@ export default function InvitePage() {
         toast({ title: 'Davet linki kopyalandı!' });
     };
 
-    const handleInvite = (name: string, phone?: string) => {
+    const handleInvite = async (name: string, phone?: string) => {
         if (phone && inviteLink) {
             const msg = encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`);
             window.open(`sms:${phone}?&body=${msg}`, '_blank');
         }
+
+        // Track invite in Firestore
+        if (authUser?.uid) {
+            try {
+                // Save invite record to 'invites' collection
+                await addDoc(collection(db, 'invites'), {
+                    senderId: authUser.uid,
+                    recipientName: name,
+                    recipientPhone: phone || null,
+                    sentAt: serverTimestamp(),
+                    status: 'sent',
+                });
+
+                // Update user's invite count for point tracking
+                const userRef = doc(db, 'users', authUser.uid);
+                await updateDoc(userRef, {
+                    inviteCount: increment(1),
+                });
+            } catch (error) {
+                console.error('Failed to track invite:', error);
+            }
+        }
+
         toast({
             title: 'Davet Gönderildi!',
             description: `${name} kişisine hangel davetiniz gönderildi.`,

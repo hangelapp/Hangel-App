@@ -266,7 +266,7 @@ export const certificates = [];
 export const pastVolunteering = [];
 export const schoolRepresentatives = [];
 export const ngoHelpTopics = helpTopics;
-export const ngoFaqArticles = [];
+export const ngoFaqArticles: { title: string; content: string }[] = [];
 export const allUniversities = [
   "Abant İzzet Baysal Üniversitesi",
   "Abdullah Gül Üniversitesi",

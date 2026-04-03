@@ -37,7 +37,7 @@ export default function NewMessagePage() {
                 u.name.toLowerCase().includes(lowercased) || 
                 u.username.toLowerCase().includes(lowercased) ||
                 u.phone.includes(searchTerm)
-            ).map(u => ({ id: u.id, name: u.name, sub: u.username, phone: u.phone, avatar: u.avatarUrl }));
+            ).map(u => ({ id: u.id, name: u.name, sub: u.username, avatar: u.avatarUrl }));
         }
         
         if (recipientType === 'individual-ngo') {
@@ -136,7 +136,7 @@ export default function NewMessagePage() {
                                                     </Avatar>
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium">{entity.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{entity.sub} {entity.phone && `• ${entity.phone}`}</p>
+                                                        <p className="text-xs text-muted-foreground">{entity.sub}</p>
                                                     </div>
                                                     {selectedEntityId === entity.id && <div className="w-2 h-2 rounded-full bg-primary" />}
                                                 </div>

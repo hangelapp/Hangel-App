@@ -90,9 +90,9 @@ export default function NotificationSettingsPage() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-end gap-4 pr-4">
-                    <Bell className="h-5 w-5 text-muted-foreground" title="Anlık Bildirim" />
-                    <Mail className="h-5 w-5 text-muted-foreground" title="E-posta" />
-                    <MessageSquare className="h-5 w-5 text-muted-foreground" title="SMS" />
+                    <span title="Anlık Bildirim"><Bell className="h-5 w-5 text-muted-foreground" /></span>
+                    <span title="E-posta"><Mail className="h-5 w-5 text-muted-foreground" /></span>
+                    <span title="SMS"><MessageSquare className="h-5 w-5 text-muted-foreground" /></span>
                 </div>
                 {group.items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">

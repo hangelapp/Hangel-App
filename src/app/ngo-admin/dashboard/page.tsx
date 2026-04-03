@@ -1,12 +1,13 @@
 'use client';
 import React, { Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info } from 'lucide-react';
-import { user, ngos, studentClubs, allEntityLists } from '@/lib/data';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
@@ -131,16 +132,32 @@ function NgoDashboardPageContent() {
     const searchParams = useSearchParams();
     const entityId = searchParams.get('id');
     const entityType = searchParams.get('type');
+    const firestore = useFirestore();
+    const { user: authUser } = useUser();
 
-    const activeEntity = useMemo(() => {
-        if (!entityId) return ngos[1]; // Default to SBG
-        if (entityType === 'STK') return ngos.find(n => n.id === entityId);
-        if (entityType === 'Öğrenci Kulübü') return studentClubs.find(c => c.id === entityId);
-        if (entityType === 'Marka') return allEntityLists.find(b => b.id === entityId);
-        return ngos[1];
-    }, [entityId, entityType]);
+    // Determine the collection to query based on entity type
+    const ngoDocRef = useMemoFirebase(() => {
+        if (!entityId) return null;
+        if (entityType === 'STK') return doc(firestore, 'ngos', entityId);
+        if (entityType === 'Öğrenci Kulübü') return doc(firestore, 'studentClubs', entityId);
+        if (entityType === 'Marka') return doc(firestore, 'brands', entityId);
+        return null;
+    }, [firestore, entityId, entityType]);
 
-    const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; 
+    const { data: activeEntity, isLoading } = useDoc(ngoDocRef);
+
+    // Fallback: try to load the user's own NGO profile if no entity specified
+    const userNgoDocRef = useMemoFirebase(() => {
+        if (entityId || !authUser?.uid) return null;
+        return doc(firestore, 'ngos', authUser.uid);
+    }, [firestore, entityId, authUser?.uid]);
+
+    const { data: userNgoEntity, isLoading: isUserNgoLoading } = useDoc(userNgoDocRef);
+
+    const entity = activeEntity || userNgoEntity;
+    const loading = isLoading || isUserNgoLoading;
+
+    const userRole: string = 'Genel Yönetici';
 
     const filteredGroups = useMemo(() => {
         return navGroups.map(group => ({
@@ -149,10 +166,16 @@ function NgoDashboardPageContent() {
         })).filter(group => group.items.length > 0);
     }, [userRole]);
 
-    if (!activeEntity) return null;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
-    // Use stats from the active entity if available, otherwise use defaults
-    const stats = (activeEntity as any).stats || { totalDonation: 0, volunteers: 0, followers: 0 };
+    const entityName = entity?.name || 'Kuruluşunuz';
+    const stats = entity?.stats || { totalDonation: 0, volunteers: 0, followers: 0 };
 
   return (
     <div className="space-y-6 animate-in fade-in-0 pb-8 px-4 sm:px-6">
@@ -162,7 +185,7 @@ function NgoDashboardPageContent() {
                 <Building2 className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">{activeEntity.name}</h1>
+                <h1 className="text-2xl font-bold font-headline">{entityName}</h1>
                 <p className="text-muted-foreground text-sm">Kurumsal Yönetim Paneli</p>
             </div>
         </div>
@@ -177,6 +200,12 @@ function NgoDashboardPageContent() {
             <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
+            {!entity ? (
+                <div className="p-6 text-center text-muted-foreground">
+                    <p>Henüz kuruluş verisi bulunamadı.</p>
+                    <p className="text-sm mt-1">Profilinizi oluşturduğunuzda performans verileri burada görünecektir.</p>
+                </div>
+            ) : (
             <div className="divide-y divide-black/5">
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
@@ -188,12 +217,6 @@ function NgoDashboardPageContent() {
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Kaynak</p>
                                 <p className="text-2xl font-black tracking-tighter">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) || '0,00 ₺'}</p>
                             </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xs text-green-600 font-bold flex items-center justify-end gap-1">
-                                <TrendingUp className="h-3 w-3" /> +%20.1
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">geçen aydan</p>
                         </div>
                     </div>
                 )}
@@ -209,13 +232,10 @@ function NgoDashboardPageContent() {
                                 <p className="text-2xl font-black tracking-tighter">+{stats.volunteers?.toLocaleString('tr-TR') || stats.followers?.toLocaleString('tr-TR') || '0'}</p>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xs text-muted-foreground font-semibold">Bu ay %12 artış</p>
-                            <p className="text-[10px] text-muted-foreground">kayıt gerçekleşti</p>
-                        </div>
                     </div>
                 )}
             </div>
+            )}
         </CardContent>
       </Card>
 

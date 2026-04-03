@@ -53,6 +53,11 @@ export default function LibraryPage() {
       <div className="space-y-4">
         {isLoading ? (
             [...Array(3)].map((_, i) => <Card key={i} className="h-20 animate-pulse bg-muted" />)
+        ) : filteredSections.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Search className="h-10 w-10 text-muted-foreground/50 mb-3" />
+                <p className="text-muted-foreground">Aramanızla eşleşen sonuç bulunamadı.</p>
+            </div>
         ) : filteredSections.map(section => {
             const Icon = (Icons as any)[section.icon] || BookOpen;
             return (
@@ -69,12 +74,19 @@ export default function LibraryPage() {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent className="p-0 border-t bg-background">
-                                {section.items?.map(item => (
-                                    <Link href={`/library/${item.slug}`} key={item.slug} className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/50">
-                                        <span className="text-sm font-medium">{item.title}</span>
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                                    </Link>
-                                ))}
+                                {section.items && section.items.length > 0 ? (
+                                    section.items.map(item => (
+                                        <Link href={`/library/${item.slug}`} key={item.slug} className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/50">
+                                            <span className="text-sm font-medium">{item.title}</span>
+                                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                        </Link>
+                                    ))
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                        <BookOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                                        <p className="text-sm text-muted-foreground">Bu bölümde henüz içerik bulunmuyor.</p>
+                                    </div>
+                                )}
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
