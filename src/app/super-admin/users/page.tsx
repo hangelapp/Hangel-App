@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, ShieldAlert, UserCog, Loader2 } from "lucide-react";
+import { Search, ShieldAlert, UserCog, Loader2, Trash2 } from "lucide-react";
 import React, { useState, useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -218,7 +219,7 @@ export default function UsersPage() {
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10 rounded-xl">
-                                                <Icons.Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent className="rounded-[2.5rem]">

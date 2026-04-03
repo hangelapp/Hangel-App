@@ -1,4 +1,3 @@
-
 import { 
     Leaf, 
     GraduationCap, 
@@ -27,27 +26,13 @@ import {
     BarChart,
     Building,
     Landmark,
-    Target
+    Target,
+    Activity
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
-// --- BM Kayıtlı Tüm Ülkeler Listesi ---
-export const allCountries = [
-  "Türkiye", "Almanya", "Amerika Birleşik Devletleri", "Fransa", "İngiltere", "İtalya", "İspanya", "Hollanda", "Belçika", "İsviçre", 
-  "Avusturya", "İsveç", "Norveç", "Danimarka", "Finlandiya", "Rusya", "Çin", "Japonya", "Güney Kore", "Hindistan", 
-  "Brezilya", "Meksika", "Arjantin", "Kanada", "Avustralya", "Yeni Zelanda", "Güney Afrika", "Mısır", "Nijerya", "Fas", 
-  "Azerbaycan", "Özbekistan", "Kazakistan", "Türkmenistan", "Kırgızistan", "Filistin", "Irak", "İran", "Suriye", "Lübnan",
-  "Ürdün", "Suudi Arabistan", "Kuveyt", "Katar", "Bae", "Umman", "Bahreyn", "Pakistan", "Afganistan", "Yunanistan"
-];
-
-// --- Tüm Dünya Telefon Kodları ---
 export const countryPhoneCodes = [
-  "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5 Haiti", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
-].sort((a, b) => parseInt(a) - parseInt(b));
-
-// --- Türkiye İl ve İlçe Verileri ---
-export const allProvinces = [
-  "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın", "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Düzce", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkâri", "Hatay", "Iğdır", "Isparta", "İstanbul", "İzmir", "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kırıkkale", "Kırklareli", "Kırşehir", "Kilis", "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu", "Osmaniye", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Şanlıurfa", "Şırnak", "Tekirdağ", "Tokat", "Trabzon", "Tunceli", "Uşak", "Van", "Yalova", "Yozgat", "Zonguldak"
+  "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
 ];
 
 export const districtsData: { [key: string]: string[] } = {
@@ -134,13 +119,15 @@ export const districtsData: { [key: string]: string[] } = {
   "Zonguldak": ["Alaplı", "Çaycuma", "Devrek", "Ereğli", "Gökçebey", "Kilimli", "Kozlu", "Merkez"],
 };
 
-export const neighborhoodsData: { [city: string]: { [district: string]: string[] } } = {
-  "İstanbul": {
-    "Kadıköy": ["Caferağa", "Osmanağa", "Rasimpaşa", "Moda", "Fenerbahçe", "Caddebostan", "Suadiye", "Göztepe", "Erenköy", "Bostancı"],
-    "Beşiktaş": ["Bebek", "Etiler", "Levazım", "Ortaköy", "Vişnezade"],
-    "Üsküdar": ["Acıbadem", "Altunizade", "Beylerbeyi", "Çengelköy", "Kuzguncuk"]
-  }
-};
+export const allProvinces = Object.keys(districtsData);
+
+export const allCountries = [
+  "Türkiye", "ABD", "Almanya", "İngiltere", "Fransa", "Hollanda", "İsviçre",
+  "Avusturya", "Belçika", "İsveç", "Norveç", "Danimarka", "Kanada",
+  "Avustralya", "İtalya", "İspanya", "Japonya", "Güney Kore", "Azerbaycan", "Diğer"
+];
+
+export { neighborhoodsData } from './neighborhoods-data';
 
 export const globalCitiesData: { [country: string]: string[] } = {
   "Almanya": ["Berlin", "Münih", "Frankfurt", "Hamburg", "Köln"],
@@ -231,116 +218,23 @@ export const ngos: NGO[] = [
     { id: 'ngo-2', name: 'ÇYDD', category: 'Eğitim', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/cydd.org.tr', coverPhotoUrl: 'https://picsum.photos/seed/cydd/1200/400', stats: { followers: 150000, donors: 80000, volunteers: 40000, volunteerHours: 200000, projects: 500, totalDonation: 15000000, donationCount: 200000, avgDonation: 75, highestSingleDonation: 10000, peopleReached: 500000 }, transparencyScore: 95, about: "Çağdaş yaşamı destekleme derneği.", joinDate: "2023-01-01", supportedSDGs: ['4. Nitelikli Eğitim'], beneficiaryGroups: ['Öğrenciler'], memberOf: [], contact: { email: 'iletisim@cydd.org.tr', phone: '0212 123 45 67', website: 'https://cydd.org.tr', social: { twitter: 'cydd', instagram: 'cydd', facebook: 'cydd', linkedin: 'cydd' }, address: { fullAddress: 'Şişli', city: 'İstanbul', district: 'Şişli' } }, posts: [], opportunities: [] }
 ];
 
-export const volunteeringOpportunities: Volunteering[] = Array.from({ length: 21 }, (_, i) => ({
-    id: `opp-${i + 1}`,
-    title: ["Afet Bölgesi Lojistik Destek", "Sokak Hayvanları Besleme", "Öğrencilere Matematik Kursu", "Huzurevi Müzik Dinletisi", "Deniz Kıyısı Temizliği", "Tercüme Desteği", "Ağaç Dikme Şenliği", "Afet Bilinci Eğitmenliği", "Dijital Kütüphane Kataloglama", "Gıda Kolisi Paketleme", "Kampüs Elçisi Programı", "Grafik Tasarım Desteği", "Hukuki Danışmanlık", "Yazılım Mentörlüğü", "İşaret Dili Atölyesi", "Sesli Kitap Okuma", "Kan Bağışı Organizasyonu", "İlk Yardım Yardımcılığı", "Müze Rehberliği", "Sürdürülebilirlik Analizi", "Veri Giriş Desteği"][i % 21],
-    organization: ngos[i % ngos.length].name,
-    ngoId: ngos[i % ngos.length].id,
-    location: { city: ["İstanbul", "Ankara", "İzmir", "Hatay", "Online"][i % 5], district: "Genel", type: (i % 3 === 0 ? 'Online' : i % 3 === 1 ? 'Saha' : 'Hibrit') as any },
-    commitment: ["Tek Günlük", "Dönemsel", "Sürekli"][i % 3],
-    volunteerCount: { needed: 10 + i, applications: 2 + i },
-    dates: { applicationStart: "2024-01-01", applicationEnd: "2025-12-31", eventStart: "2025-01-01", eventEnd: "2025-12-31" },
-    hours: { start: "09:00", end: "17:00", total: 8 },
-    socialArea: ngos[i % ngos.length].category,
-    points: 100 + (i * 50),
-    ngoTransparencyScore: ngos[i % ngos.length].transparencyScore,
-    taskType: ["Tek Gün", "Dönemsel", "Sürekli"][i % 3] as any,
-    providesCertificate: i % 2 === 0,
-    earnedBadges: ["Rozet"],
-    hasPreTraining: i % 4 === 0,
-    description: "Topluma fayda sağlayacak bu projede yer alarak etki oluşturun.",
-    amenities: { transport: i % 2 === 0, food: true, accommodation: i % 10 === 0 }
-}));
+export const volunteeringOpportunities: Volunteering[] = [
+    { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: 'ngo-1', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 50, applications: 12 }, dates: { applicationStart: '2024-01-01', applicationEnd: '2024-12-31', eventStart: '2024-08-01', eventEnd: '2024-08-01' }, hours: { start: '09:00', end: '17:00', total: 8 }, socialArea: 'Dayanışma', points: 500, ngoTransparencyScore: 98, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'Lojistik merkezimizde paketleme desteği.', amenities: { transport: true, food: true, accommodation: false } }
+];
 
-export const allUniversities = [
-    // İstanbul
-    'Boğaziçi Üniversitesi', 'İstanbul Teknik Üniversitesi', 'İstanbul Üniversitesi',
-    'İstanbul Üniversitesi-Cerrahpaşa', 'Galatasaray Üniversitesi', 'Marmara Üniversitesi',
-    'Yıldız Teknik Üniversitesi', 'Mimar Sinan Güzel Sanatlar Üniversitesi',
-    'Koç Üniversitesi', 'Sabancı Üniversitesi', 'Bahçeşehir Üniversitesi',
-    'İstanbul Bilgi Üniversitesi', 'Kadir Has Üniversitesi', 'Özyeğin Üniversitesi',
-    'Beykent Üniversitesi', 'Beykoz Üniversitesi', 'Fatih Sultan Mehmet Vakıf Üniversitesi',
-    'Haliç Üniversitesi', 'İstanbul 29 Mayıs Üniversitesi', 'İstanbul Aydın Üniversitesi',
-    'İstanbul Esenyurt Üniversitesi', 'İstanbul Gelişim Üniversitesi', 'İstanbul Kültür Üniversitesi',
-    'İstanbul Medeniyet Üniversitesi', 'İstanbul Okan Üniversitesi', 'İstanbul Rumeli Üniversitesi',
-    'İstanbul Sabahattin Zaim Üniversitesi', 'İstanbul Şehir Üniversitesi', 'İstanbul Ticaret Üniversitesi',
-    'Maltepe Üniversitesi', 'Nişantaşı Üniversitesi', 'Piri Reis Üniversitesi',
-    'Türk-Alman Üniversitesi', 'Uskudar Üniversitesi', 'Yeni Yüzyıl Üniversitesi',
-    // Ankara
-    'Orta Doğu Teknik Üniversitesi', 'Hacettepe Üniversitesi', 'Ankara Üniversitesi',
-    'Bilkent Üniversitesi', 'Gazi Üniversitesi', 'Atılım Üniversitesi',
-    'Başkent Üniversitesi', 'Çankaya Üniversitesi', 'TOBB Ekonomi ve Teknoloji Üniversitesi',
-    'TED Üniversitesi', 'Ankara Yıldırım Beyazıt Üniversitesi', 'Ankara Sosyal Bilimler Üniversitesi',
-    'Ankara Medipol Üniversitesi', 'Ankara Hacı Bayram Veli Üniversitesi',
-    // İzmir
-    'Ege Üniversitesi', 'Dokuz Eylül Üniversitesi', 'İzmir Yüksek Teknoloji Enstitüsü',
-    'Yaşar Üniversitesi', 'İzmir Ekonomi Üniversitesi', 'İzmir Kâtip Çelebi Üniversitesi',
-    'İzmir Demokrasi Üniversitesi', 'Izmir Tınaztepe Üniversitesi',
-    // Bursa
-    'Uludağ Üniversitesi', 'Bursa Teknik Üniversitesi', 'Bursa Uludağ Üniversitesi',
-    'Işık Üniversitesi',
-    // Diğer Büyükşehirler
-    'Selçuk Üniversitesi', 'Necmettin Erbakan Üniversitesi', 'KTO Karatay Üniversitesi', // Konya
-    'Çukurova Üniversitesi', 'Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi', // Adana
-    'Gaziantep Üniversitesi', 'Hasan Kalyoncu Üniversitesi', // Gaziantep
-    'Ondokuz Mayıs Üniversitesi', 'Samsun Üniversitesi', // Samsun
-    'Karadeniz Teknik Üniversitesi', // Trabzon
-    'Atatürk Üniversitesi', 'Erzurum Teknik Üniversitesi', // Erzurum
-    'Fırat Üniversitesi', // Elazığ
-    'İnönü Üniversitesi', // Malatya
-    'Mersin Üniversitesi', // Mersin
-    'Akdeniz Üniversitesi', // Antalya
-    'Pamukkale Üniversitesi', // Denizli
-    'Muğla Sıtkı Koçman Üniversitesi', // Muğla
-    'Kocaeli Üniversitesi', 'Gebze Teknik Üniversitesi', // Kocaeli
-    'Sakarya Üniversitesi', // Sakarya
-    'Trakya Üniversitesi', // Edirne
-    'Namık Kemal Üniversitesi', // Tekirdağ
-    'Balıkesir Üniversitesi', // Balıkesir
-    'Celal Bayar Üniversitesi', 'Manisa Celal Bayar Üniversitesi', // Manisa
-    'Afyon Kocatepe Üniversitesi', // Afyon
-    'Eskişehir Osmangazi Üniversitesi', 'Anadolu Üniversitesi', // Eskişehir
-    'Kayseri Üniversitesi', 'Erciyes Üniversitesi', // Kayseri
-    'Cumhuriyet Üniversitesi', // Sivas
-    'Sütçü İmam Üniversitesi', // Kahramanmaraş
-    'Dicle Üniversitesi', // Diyarbakır
-    'Harran Üniversitesi', // Şanlıurfa
-    'Mustafa Kemal Üniversitesi', 'İskenderun Teknik Üniversitesi', // Hatay
-    'Bülent Ecevit Üniversitesi', 'Zonguldak Bülent Ecevit Üniversitesi', // Zonguldak
-    'Kastamonu Üniversitesi', 'Sinop Üniversitesi', 'Çorum Hitit Üniversitesi',
-    'Düzce Üniversitesi', 'Bolu Abant İzzet Baysal Üniversitesi', 'Bartın Üniversitesi',
-    'Yalova Üniversitesi', 'Çanakkale Onsekiz Mart Üniversitesi',
-].sort((a, b) => a.localeCompare(b, 'tr'));
-
-export const studentClubs: StudentClub[] = Array.from({ length: 10 }, (_, i) => ({
-    id: `club-${i + 1}`,
-    name: i < 5 ? `${['İTÜ', 'Boğaziçi', 'ODTÜ', 'Marmara', 'YTÜ'][i]} Girişimcilik Kulübü` : `${['Kabataş', 'IEL', 'GSL', 'CAL', 'KAL'][i-5]} Sosyal Yardımlaşma`,
-    university: i < 5 ? ['İstanbul Teknik Üniversitesi', 'Boğaziçi Üniversitesi', 'Orta Doğu Teknik Üniversitesi', 'Marmara Üniversitesi', 'Yıldız Teknik Üniversitesi'][i] : ['Kabataş Erkek Lisesi', 'İstanbul Erkek Lisesi', 'Galatasaray Lisesi', 'Cağaloğlu Anadolu Lisesi', 'Kadıköy Anadolu Lisesi'][i-5],
-    type: i < 5 ? 'university' : 'high-school',
-    avatarUrl: `https://picsum.photos/seed/club${i}/200/200`,
-    coverPhotoUrl: `https://picsum.photos/seed/clubcover${i}/1200/400`,
-    members: 150 + (i * 100),
-    points: 5000 + (i * 2000),
-    description: 'Etki odaklı bir student topluluğu.',
-    vision: 'Değişimin kampüsteki adı olmak.',
-    joinDate: '2023-01-01',
-    contact: { email: `iletisim@club${i}.edu.tr`, phone: '0212 123 45 67', website: `https://club${i}.edu.tr` }
-}));
+export const studentClubs: StudentClub[] = [
+    { id: 'club-1', name: 'İTÜ Girişimcilik Kulübü', university: 'İstanbul Teknik Üniversitesi', type: 'university', avatarUrl: 'https://picsum.photos/seed/itu/200/200', coverPhotoUrl: 'https://picsum.photos/seed/itucover/1200/400', members: 1500, points: 25000, description: 'Geleceğin girişimcilerini yetiştiriyoruz.', vision: 'Ekosistemi büyütmek.', joinDate: '2023-01-01', contact: { email: 'info@itugirisim.org', phone: '0212 123 45 67', website: 'https://itugirisim.org' } }
+];
 
 export const events: Event[] = [];
 
 export const allEntityLists: Brand[] = [
-    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' },
-    { id: 'brand-2', slug: 'pazarama', name: 'Pazarama', donationRate: 2, logoUrl: 'https://logo.clearbit.com/pazarama.com', type: 'brand', category: 'Pazar Yeri', about: 'Türkiye\'nin güvenilir pazar yeri.' },
-    { id: 'brand-3', slug: 'karaca', name: 'Karaca', donationRate: 3, logoUrl: 'https://logo.clearbit.com/karaca.com', type: 'brand', category: 'Ev & Yaşam', about: 'Mutfak ve ev tekstili ürünleri.' }
+    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' }
 ];
 
 export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Tümü', subCategories: [] },
-    { mainCategory: 'Pazar Yeri', subCategories: [{ name: 'Genel', imageUrl: '' }] },
-    { mainCategory: 'Giyim', subCategories: [{ name: 'Spor', imageUrl: '' }] },
-    { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] },
-    { mainCategory: 'Ev & Yaşam', subCategories: [{ name: 'Mutfak', imageUrl: '' }] }
+    { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] }
 ];
 
 export const badges: Badge[] = [
@@ -367,9 +261,201 @@ export const timelinePosts: Post[] = [
     { id: '1', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Birlikte daha güçlüyüz!', timestamp: '2 saat önce', likes: 1250, comments: 45 }
 ];
 
-export const sportsFederations = ["TFF", "TBF", "TVF", "THF", "THK"];
+export const sportsFederations = ["TFF", "TBF", "TVF"];
 export const certificates = [];
 export const pastVolunteering = [];
 export const schoolRepresentatives = [];
 export const ngoHelpTopics = helpTopics;
 export const ngoFaqArticles = [];
+export const allUniversities = [
+  "Abant İzzet Baysal Üniversitesi",
+  "Abdullah Gül Üniversitesi",
+  "Acıbadem Mehmet Ali Aydınlar Üniversitesi",
+  "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
+  "Adıyaman Üniversitesi",
+  "Afyon Kocatepe Üniversitesi",
+  "Ağrı İbrahim Çeçen Üniversitesi",
+  "Akdeniz Üniversitesi",
+  "Aksaray Üniversitesi",
+  "Alanya Alaaddin Keykubat Üniversitesi",
+  "Altınbaş Üniversitesi",
+  "Amasya Üniversitesi",
+  "Anadolu Üniversitesi",
+  "Ankara Bilim Üniversitesi",
+  "Ankara Hacı Bayram Veli Üniversitesi",
+  "Ankara Medipol Üniversitesi",
+  "Ankara Müzik ve Güzel Sanatlar Üniversitesi",
+  "Ankara Sosyal Bilimler Üniversitesi",
+  "Ankara Üniversitesi",
+  "Ankara Yıldırım Beyazıt Üniversitesi",
+  "Antalya Bilim Üniversitesi",
+  "Ardahan Üniversitesi",
+  "Artvin Çoruh Üniversitesi",
+  "Atatürk Üniversitesi",
+  "Atılım Üniversitesi",
+  "Avrasya Üniversitesi",
+  "Bahçeşehir Üniversitesi",
+  "Balıkesir Üniversitesi",
+  "Bandırma Onyedi Eylül Üniversitesi",
+  "Bartın Üniversitesi",
+  "Başkent Üniversitesi",
+  "Batman Üniversitesi",
+  "Bayburt Üniversitesi",
+  "Beykent Üniversitesi",
+  "Beykoz Üniversitesi",
+  "Bezm-i Âlem Vakıf Üniversitesi",
+  "Bilecik Şeyh Edebali Üniversitesi",
+  "Bingöl Üniversitesi",
+  "Biruni Üniversitesi",
+  "Bitlis Eren Üniversitesi",
+  "Boğaziçi Üniversitesi",
+  "Burdur Mehmet Akif Ersoy Üniversitesi",
+  "Bursa Teknik Üniversitesi",
+  "Bursa Uludağ Üniversitesi",
+  "Çağ Üniversitesi",
+  "Çanakkale Onsekiz Mart Üniversitesi",
+  "Çankaya Üniversitesi",
+  "Çankırı Karatekin Üniversitesi",
+  "Çukurova Üniversitesi",
+  "Demiroğlu Bilim Üniversitesi",
+  "Dicle Üniversitesi",
+  "Doğuş Üniversitesi",
+  "Dokuz Eylül Üniversitesi",
+  "Düzce Üniversitesi",
+  "Ege Üniversitesi",
+  "Erciyes Üniversitesi",
+  "Erzincan Binali Yıldırım Üniversitesi",
+  "Erzurum Teknik Üniversitesi",
+  "Eskişehir Osmangazi Üniversitesi",
+  "Eskişehir Teknik Üniversitesi",
+  "Fatih Sultan Mehmet Vakıf Üniversitesi",
+  "Fenerbahçe Üniversitesi",
+  "Fırat Üniversitesi",
+  "Galatasaray Üniversitesi",
+  "Gazi Üniversitesi",
+  "Gaziantep Üniversitesi",
+  "Gaziantep İslam Bilim ve Teknoloji Üniversitesi",
+  "Gebze Teknik Üniversitesi",
+  "Giresun Üniversitesi",
+  "Gümüşhane Üniversitesi",
+  "Hacettepe Üniversitesi",
+  "Hakkari Üniversitesi",
+  "Haliç Üniversitesi",
+  "Harran Üniversitesi",
+  "Hasan Kalyoncu Üniversitesi",
+  "Hatay Mustafa Kemal Üniversitesi",
+  "Hitit Üniversitesi",
+  "Iğdır Üniversitesi",
+  "Isparta Uygulamalı Bilimler Üniversitesi",
+  "İbn Haldun Üniversitesi",
+  "İhsan Doğramacı Bilkent Üniversitesi",
+  "İnönü Üniversitesi",
+  "İskenderun Teknik Üniversitesi",
+  "İstanbul Arel Üniversitesi",
+  "İstanbul Atlas Üniversitesi",
+  "İstanbul Aydın Üniversitesi",
+  "İstanbul Bilgi Üniversitesi",
+  "İstanbul Esenyurt Üniversitesi",
+  "İstanbul Galata Üniversitesi",
+  "İstanbul Gedik Üniversitesi",
+  "İstanbul Gelişim Üniversitesi",
+  "İstanbul Kent Üniversitesi",
+  "İstanbul Kültür Üniversitesi",
+  "İstanbul Medeniyet Üniversitesi",
+  "İstanbul Medipol Üniversitesi",
+  "İstanbul Okan Üniversitesi",
+  "İstanbul Rumeli Üniversitesi",
+  "İstanbul Sabahattin Zaim Üniversitesi",
+  "İstanbul Sağlık ve Teknoloji Üniversitesi",
+  "İstanbul Teknik Üniversitesi",
+  "İstanbul Ticaret Üniversitesi",
+  "İstanbul Topkapı Üniversitesi",
+  "İstanbul Üniversitesi",
+  "İstanbul Üniversitesi-Cerrahpaşa",
+  "İstanbul Yeni Yüzyıl Üniversitesi",
+  "İstinye Üniversitesi",
+  "İzmir Bakırçay Üniversitesi",
+  "İzmir Demokrasi Üniversitesi",
+  "İzmir Ekonomi Üniversitesi",
+  "İzmir Kâtip Çelebi Üniversitesi",
+  "İzmir Yüksek Teknoloji Enstitüsü",
+  "Kafkas Üniversitesi",
+  "Kahramanmaraş İstiklal Üniversitesi",
+  "Kahramanmaraş Sütçü İmam Üniversitesi",
+  "Kapadokya Üniversitesi",
+  "Karabük Üniversitesi",
+  "Karadeniz Teknik Üniversitesi",
+  "Karamanoğlu Mehmetbey Üniversitesi",
+  "Kastamonu Üniversitesi",
+  "Kayseri Üniversitesi",
+  "Kırıkkale Üniversitesi",
+  "Kırklareli Üniversitesi",
+  "Kırşehir Ahi Evran Üniversitesi",
+  "Kilis 7 Aralık Üniversitesi",
+  "Koç Üniversitesi",
+  "Kocaeli Üniversitesi",
+  "Konya Gıda ve Tarım Üniversitesi",
+  "Konya Teknik Üniversitesi",
+  "KTO Karatay Üniversitesi",
+  "Kütahya Dumlupınar Üniversitesi",
+  "Kütahya Sağlık Bilimleri Üniversitesi",
+  "Lokman Hekim Üniversitesi",
+  "Malatya Turgut Özal Üniversitesi",
+  "Maltepe Üniversitesi",
+  "Manisa Celâl Bayar Üniversitesi",
+  "Mardin Artuklu Üniversitesi",
+  "Marmara Üniversitesi",
+  "Mef Üniversitesi",
+  "Mersin Üniversitesi",
+  "Mimar Sinan Güzel Sanatlar Üniversitesi",
+  "Muğla Sıtkı Koçman Üniversitesi",
+  "Munzur Üniversitesi",
+  "Muş Alparslan Üniversitesi",
+  "Necmettin Erbakan Üniversitesi",
+  "Nevşehir Hacı Bektaş Veli Üniversitesi",
+  "Niğde Ömer Halisdemir Üniversitesi",
+  "Nişantaşı Üniversitesi",
+  "Nuh Naci Yazgan Üniversitesi",
+  "Ondokuz Mayıs Üniversitesi",
+  "Ordu Üniversitesi",
+  "Orta Doğu Teknik Üniversitesi",
+  "Osmaniye Korkut Ata Üniversitesi",
+  "Ostim Teknik Üniversitesi",
+  "Özyeğin Üniversitesi",
+  "Pamukkale Üniversitesi",
+  "Pîrî Reis Üniversitesi",
+  "Recep Tayyip Erdoğan Üniversitesi",
+  "Sabancı Üniversitesi",
+  "Sağlık Bilimleri Üniversitesi",
+  "Sakarya Uygulamalı Bilimler Üniversitesi",
+  "Sakarya Üniversitesi",
+  "Samsun Üniversitesi",
+  "Sanko Üniversitesi",
+  "Selçuk Üniversitesi",
+  "Siirt Üniversitesi",
+  "Sinop Üniversitesi",
+  "Sivas Bilim ve Teknoloji Üniversitesi",
+  "Sivas Cumhuriyet Üniversitesi",
+  "Süleyman Demirel Üniversitesi",
+  "Şırnak Üniversitesi",
+  "Tarsus Üniversitesi",
+  "Ted Üniversitesi",
+  "Tekirdağ Namık Kemal Üniversitesi",
+  "TOBB Ekonomi ve Teknoloji Üniversitesi",
+  "Tokat Gaziosmanpaşa Üniversitesi",
+  "Trabzon Üniversitesi",
+  "Trakya Üniversitesi",
+  "Türk-Alman Üniversitesi",
+  "Türk Hava Kurumu Üniversitesi",
+  "Ufuk Üniversitesi",
+  "Uşak Üniversitesi",
+  "Üsküdar Üniversitesi",
+  "Van Yüzüncü Yıl Üniversitesi",
+  "Yalova Üniversitesi",
+  "Yaşar Üniversitesi",
+  "Yeditepe Üniversitesi",
+  "Yıldız Teknik Üniversitesi",
+  "Yozgat Bozok Üniversitesi",
+  "Yüksek İhtisas Üniversitesi",
+  "Zonguldak Bülent Ecevit Üniversitesi",
+];

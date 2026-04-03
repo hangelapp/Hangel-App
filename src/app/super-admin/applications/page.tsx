@@ -129,7 +129,7 @@ export default function ApplicationsPage() {
     const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
     const { data: applications, isLoading } = useCollection<Application>(appsQuery);
 
-    const handleUpdateStatus = (id: string, newStatus: 'Onaylandı' | 'Reddedildi', userId?: string) => {
+    const handleUpdateStatus = (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
         // Update application status
         const appRef = doc(db, 'applications', id);
         updateDocumentNonBlocking(appRef, { status: newStatus });

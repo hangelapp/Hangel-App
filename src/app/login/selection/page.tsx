@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, Suspense, useEffect, useMemo } from 'react';
@@ -10,9 +9,17 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-    ArrowLeft, 
-    Upload, 
+import {
+    Mail,
+    Activity,
+    Target,
+    Trash2,
+    Users,
+    Instagram,
+    Linkedin,
+    X,
+    ArrowLeft,
+    Upload,
     Loader2,
     Building2,
     CheckCircle,
@@ -23,44 +30,16 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School,
-    Percent,
-    X,
-    ShieldCheck,
-    Landmark,
-    Plus,
-    Trash2,
-    Mail,
-    Phone,
-    Instagram,
-    Linkedin,
-    Code,
-    ExternalLink,
-    MousePointer2,
-    Target,
-    Users,
-    DollarSign,
-    Activity,
-    ChevronDown,
-    Link as LinkIcon
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { 
-    marketCategories, 
-    countryPhoneCodes, 
-    allCountries, 
-    allUniversities, 
-    allBeneficiaries, 
-    allSdgs, 
-    allMemberships, 
-    years, 
-    allProvinces, 
-    districtsData, 
-    neighborhoodsData,
-    allInterests 
+import {
+    marketCategories, countryPhoneCodes, allCountries, allUniversities,
+    allProvinces, districtsData, neighborhoodsData,
+    allBeneficiaries, allSdgs, allMemberships
 } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +47,113 @@ import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking }
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
+
+// --- Static Data ---
+
+const universities = [
+  "Abdullah Gül Üniversitesi", "Acıbadem Mehmet Ali Aydınlar Üniversitesi",
+  "Adana Alparslan Türkeş Bilim Ve Teknoloji Üniversitesi", "Adıyaman Üniversitesi",
+  "Afyon Kocatepe Üniversitesi", "Afyonkarahisar Sağlık Bilimleri Üniversitesi",
+  "Ağrı İbrahim Çeçen Üniversitesi", "Akdeniz Üniversitesi", "Aksaray Üniversitesi",
+  "Alanya Alaaddin Keykubat Üniversitesi", "Alanya Üniversitesi", "Altınbaş Üniversitesi",
+  "Amasya Üniversitesi", "Anadolu Üniversitesi", "Ankara Bilim Üniversitesi",
+  "Ankara Hacı Bayram Veli Üniversitesi", "Ankara Medipol Üniversitesi",
+  "Ankara Müzik Ve Güzel Sanatlar Üniversitesi", "Ankara Sosyal Bilimler Üniversitesi",
+  "Ankara Üniversitesi", "Ankara Yıldırım Beyazıt Üniversitesi", "Antalya Belek Üniversitesi",
+  "Antalya Bilim Üniversitesi", "Ardahan Üniversitesi", "Artvin Çoruh Üniversitesi",
+  "Ataşehir Adıgüzel Meslek Yüksekokulu", "Atatürk Üniversitesi", "Atılım Üniversitesi",
+  "Avrasya Üniversitesi", "Aydın Adnan Menderes Üniversitesi", "Bahçeşehir Üniversitesi",
+  "Balıkesir Üniversitesi", "Bandırma Onyedi Eylül Üniversitesi", "Bartın Üniversitesi",
+  "Başkent Üniversitesi", "Batman Üniversitesi", "Bayburt Üniversitesi",
+  "Beykoz Üniversitesi", "Bezm-İ Âlem Vakıf Üniversitesi", "Bilecik Şeyh Edebali Üniversitesi",
+  "Bingöl Üniversitesi", "Biruni Üniversitesi", "Bitlis Eren Üniversitesi",
+  "Boğaziçi Üniversitesi", "Bolu Abant İzzet Baysal Üniversitesi",
+  "Burdur Mehmet Akif Ersoy Üniversitesi", "Bursa Teknik Üniversitesi",
+  "Bursa Uludağ Üniversitesi", "Çağ Üniversitesi", "Çanakkale Onsekiz Mart Üniversitesi",
+  "Çankaya Üniversitesi", "Çankırı Karatekin Üniversitesi", "Çukurova Üniversitesi",
+  "Demiroğlu Bilim Üniversitesi", "Dicle Üniversitesi", "Doğuş Üniversitesi",
+  "Dokuz Eylül Üniversitesi", "Düzce Üniversitesi", "Ege Üniversitesi",
+  "Erciyes Üniversitesi", "Erzincan Binali Yıldırım Üniversitesi",
+  "Erzurum Teknik Üniversitesi", "Eskişehir Osmangazi Üniversitesi",
+  "Eskişehir Teknik Üniversitesi", "Fatih Sultan Mehmet Vakıf Üniversitesi",
+  "Fenerbahçe Üniversitesi", "Fırat Üniversitesi", "Galatasaray Üniversitesi",
+  "Gazi Üniversitesi", "Gaziantep İslam Bilim Ve Teknoloji Üniversitesi",
+  "Gaziantep Üniversitesi", "Gebze Teknik Üniversitesi", "Giresun Üniversitesi",
+  "Gümüşhane Üniversitesi", "Hacettepe Üniversitesi", "Hakkari Üniversitesi",
+  "Haliç Üniversitesi", "Harran Üniversitesi", "Hasan Kalyoncu Üniversitesi",
+  "Hatay Mustafa Kemal Üniversitesi", "Hitit Üniversitesi", "Iğdır Üniversitesi",
+  "Isparta Uygulamalı Bilimler Üniversitesi", "Işık Üniversitesi",
+  "İbn Haldun Üniversitesi", "İhsan Doğramacı Bilkent Üniversitesi",
+  "İnönü Üniversitesi", "İskenderun Teknik Üniversitesi", "İstanbul 29 Mayıs Üniversitesi",
+  "İstanbul Arel Üniversitesi", "İstanbul Atlas Üniversitesi", "İstanbul Aydın Üniversitesi",
+  "İstanbul Beykent Üniversitesi", "İstanbul Bilgi Üniversitesi",
+  "İstanbul Esenyurt Üniversitesi", "İstanbul Galata Üniversitesi",
+  "İstanbul Gedik Üniversitesi", "İstanbul Gelişim Üniversitesi",
+  "İstanbul Kent Üniversitesi", "İstanbul Kültür Üniversitesi",
+  "İstanbul Medeniyet Üniversitesi", "İstanbul Medipol Üniversitesi",
+  "İstanbul Nişantaşı Üniversitesi", "İstanbul Okan Üniversitesi",
+  "İstanbul Rumeli Üniversitesi", "İstanbul Sabahattin Zaim Üniversitesi",
+  "İstanbul Sağlık Ve Sosyal Bilimler Meslek Yüksekokulu",
+  "İstanbul Sağlık Ve Teknoloji Üniversitesi", "İstanbul Şişli Meslek Yüksekokulu",
+  "İstanbul Teknik Üniversitesi", "İstanbul Ticaret Üniversitesi",
+  "İstanbul Topkapı Üniversitesi", "İstanbul Üniversitesi",
+  "İstanbul Üniversitesi-Cerrahpaşa", "İstanbul Yeni Yüzyıl Üniversitesi",
+  "İstinye Üniversitesi", "İzmir Bakırçay Üniversitesi", "İzmir Demokrasi Üniversitesi",
+  "İzmir Ekonomi Üniversitesi", "İzmir Katip Çelebi Üniversitesi",
+  "İzmir Kavram Meslek Yüksekokulu", "İzmir Tınaztepe Üniversitesi",
+  "İzmir Yüksek Teknoloji Enstitüsü", "Kadir Has Üniversitesi", "Kafkas Üniversitesi",
+  "Kahramanmaraş İstiklal Üniversitesi", "Kahramanmaraş Sütçü İmam Üniversitesi",
+  "Kapadokya Üniversitesi", "Karabük Üniversitesi", "Karadeniz Teknik Üniversitesi",
+  "Karamanoğlu Mehmetbey Üniversitesi", "Kastamonu Üniversitesi", "Kayseri Üniversitesi",
+  "Kırıkkale Üniversitesi", "Kırklareli Üniversitesi", "Kırşehir Ahi Evran Üniversitesi",
+  "Kilis 7 Aralık Üniversitesi", "Kocaeli Sağlık Ve Teknoloji Üniversitesi",
+  "Kocaeli Üniversitesi", "Koç Üniversitesi", "Konya Gıda Ve Tarım Üniversitesi",
+  "Konya Teknik Üniversitesi", "Kto Karatay Üniversitesi",
+  "Kütahya Dumlupınar Üniversitesi", "Kütahya Sağlık Bilimleri Üniversitesi",
+  "Lokman Hekim Üniversitesi", "Malatya Turgut Özal Üniversitesi",
+  "Maltepe Üniversitesi", "Manisa Celâl Bayar Üniversitesi", "Mardin Artuklu Üniversitesi",
+  "Marmara Üniversitesi", "Mef Üniversitesi", "Mersin Üniversitesi",
+  "Mimar Sinan Güzel Sanatlar Üniversitesi", "Mudanya Üniversitesi",
+  "Muğla Sıtkı Koçman Üniversitesi", "Munzur Üniversitesi", "Muş Alparslan Üniversitesi",
+  "Necmettin Erbakan Üniversitesi", "Nevşehir Hacı Bektaş Veli Üniversitesi",
+  "Niğde Ömer Halisdemir Üniversitesi", "Nuh Naci Yazgan Üniversitesi",
+  "Ondokuz Mayıs Üniversitesi", "Ordu Üniversitesi", "Orta Doğu Teknik Üniversitesi",
+  "Osmaniye Korkut Ata Üniversitesi", "Ostim Teknik Üniversitesi",
+  "Özyeğin Üniversitesi", "Pamukkale Üniversitesi", "Piri Reis Üniversitesi",
+  "Recep Tayyip Erdoğan Üniversitesi", "Sabancı Üniversitesi",
+  "Sağlık Bilimleri Üniversitesi", "Sakarya Uygulamalı Bilimler Üniversitesi",
+  "Sakarya Üniversitesi", "Samsun Üniversitesi", "Sanko Üniversitesi",
+  "Selçuk Üniversitesi", "Siirt Üniversitesi", "Sinop Üniversitesi",
+  "Sivas Bilim Ve Teknoloji Üniversitesi", "Sivas Cumhuriyet Üniversitesi",
+  "Süleyman Demirel Üniversitesi", "Şırnak Üniversitesi", "Tarsus Üniversitesi",
+  "Ted Üniversitesi", "Tekirdağ Namık Kemal Üniversitesi",
+  "Tobb Ekonomi Ve Teknoloji Üniversitesi", "Tokat Gaziosmanpaşa Üniversitesi",
+  "Toros Üniversitesi", "Trabzon Üniversitesi", "Trakya Üniversitesi",
+  "Türk Hava Kurumu Üniversitesi", "Türk-Alman Üniversitesi", "Ufuk Üniversitesi",
+  "Uşak Üniversitesi", "Üsküdar Üniversitesi", "Van Yüzüncü Yıl Üniversitesi",
+  "Yalova Üniversitesi", "Yaşar Üniversitesi", "Yeditepe Üniversitesi",
+  "Yıldız Teknik Üniversitesi", "Yozgat Bozok Üniversitesi",
+  "Yüksek İhtisas Üniversitesi", "Zonguldak Bülent Ecevit Üniversitesi",
+];
+
+const clubCategories = [
+  "Teknoloji & Bilim", "Yapay Zeka", "Siber Güvenlik", "Veri Bilimi",
+  "Yazılım Geliştirme", "Oyun Geliştirme", "Donanım / Robotik", "Bilim ve Araştırma",
+  "Sanat & Kültür", "Müzik", "Tiyatro", "Sinema", "Fotoğrafçılık",
+  "Resim ve Görsel Sanatlar", "Edebiyat", "Dans",
+  "Sosyal Etki & Toplum", "Gönüllülük", "Sosyal Sorumluluk", "Sosyal Girişimcilik",
+  "Hak Temelli Çalışmalar", "İnsan Hakları", "Mülteci ve Uyum", "Hayvan Hakları",
+  "Sürdürülebilirlik", "Afet ve Arama Kurtarma",
+  "Kariyer & Gelişim", "Girişimcilik", "Kariyer ve Gelişim", "İnovasyon",
+  "Mesleki Gelişim", "Kişisel Gelişim",
+  "Akademik & Düşünsel", "Felsefe", "Ekonomi", "Hukuk",
+  "Politika ve Kamu Yönetimi", "Münazara", "Fikir ve Tartışma",
+  "Erasmus / Uluslararası Programlar", "Yabancı Dil",
+  "Spor & Outdoor", "Futbol", "Basketbol", "Satranç", "Voleybol",
+  "Dağcılık & Trekking", "Su Sporları", "Kampçılık", "Diğer Sporlar",
+];
+
+const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
 
 // --- Shared UI Components ---
 
@@ -85,25 +171,92 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
 
 const FileUpload = ({label, accept, hint, required}: {label: string, accept?: string, hint?: string, required?: boolean}) => {
     const [fileName, setFileName] = React.useState<string | null>(null);
+    const [uploadError, setUploadError] = React.useState<string | null>(null);
     const inputId = `${label.replace(/\s+/g, '-')}-upload`;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (accept) {
+            const allowedExts = accept.split(',').map(a => a.trim().toLowerCase());
+            const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+            if (!allowedExts.includes(fileExt)) {
+                setUploadError(`Desteklenmeyen dosya türü. İzin verilenler: ${accept}`);
+                setFileName(null);
+                e.target.value = '';
+                return;
+            }
+        }
+        setUploadError(null);
+        setFileName(file.name);
+    };
+
+    const status = uploadError ? 'error' : fileName ? 'success' : 'idle';
+
     return (
         <div className="space-y-2 text-left">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
-            <div className={cn("flex items-center gap-4 p-4 border rounded-2xl border-dashed transition-all", fileName ? "bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-600" : "bg-muted/20 border-primary/20 hover:bg-muted/30")}>
-                <input id={inputId} type="file" className="hidden" accept={accept} required={required} onChange={(e) => setFileName(e.target.files?.[0]?.name || null)} />
-                <Button asChild variant="outline" size="sm" className={cn("rounded-xl hover:bg-primary/5 bg-background h-10 px-4", fileName ? "border-green-500 text-green-700" : "border-primary/20")}>
+            <div className={cn("flex items-center gap-4 p-4 border rounded-2xl border-dashed transition-all",
+                status === 'success' && "bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-600",
+                status === 'error'   && "bg-red-50 border-red-400 dark:bg-red-900/20 dark:border-red-600",
+                status === 'idle'    && "bg-muted/20 border-primary/20 hover:bg-muted/30",
+            )}>
+                <input id={inputId} type="file" className="hidden" accept={accept} required={required} onChange={handleChange} />
+                <Button asChild variant="outline" size="sm" className={cn("rounded-xl hover:bg-primary/5 bg-background h-10 px-4",
+                    status === 'success' && "border-green-500 text-green-700",
+                    status === 'error'   && "border-red-500 text-red-700",
+                    status === 'idle'    && "border-primary/20",
+                )}>
                     <label htmlFor={inputId} className="cursor-pointer font-bold flex items-center">
-                        {fileName ? <><CheckCircle className="mr-2 h-4 w-4 text-green-600" />Değiştir</> : <><Upload className="mr-2 h-4 w-4" />Belge Seç</>}
+                        {status === 'success' ? <><CheckCircle className="mr-2 h-4 w-4 text-green-600" />Değiştir</> :
+                         status === 'error'   ? <><X className="mr-2 h-4 w-4 text-red-600" />Tekrar Seç</> :
+                         <><Upload className="mr-2 h-4 w-4" />Belge Seç</>}
                     </label>
                 </Button>
                 <div className="flex-1">
-                    {fileName
-                        ? <p className="text-[11px] font-bold text-green-700 dark:text-green-400 truncate">✓ {fileName}</p>
-                        : <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>
-                    }
+                    {status === 'success' && <p className="text-[11px] font-bold text-green-700 dark:text-green-400 truncate">✓ {fileName}</p>}
+                    {status === 'error'   && <p className="text-[11px] font-bold text-red-600 leading-tight">{uploadError}</p>}
+                    {status === 'idle'    && <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>}
                 </div>
             </div>
         </div>
+    );
+};
+
+const FilteredSelect = ({
+    value, onChange, options, placeholder, triggerClassName
+}: {
+    value: string;
+    onChange: (val: string) => void;
+    options: string[];
+    placeholder?: string;
+    triggerClassName?: string;
+}) => {
+    const [filter, setFilter] = React.useState('');
+    const filtered = filter
+        ? options.filter(o => o.toLowerCase().includes(filter.toLowerCase()))
+        : options;
+    return (
+        <Select value={value} onValueChange={(v) => { onChange(v); setFilter(''); }}>
+            <SelectTrigger className={triggerClassName ?? "h-12 rounded-xl bg-primary/5 border-primary shadow-sm font-bold text-left"}>
+                <SelectValue placeholder={placeholder ?? "Seçiniz..."} />
+            </SelectTrigger>
+            <SelectContent className="max-h-72">
+                <div className="px-2 py-1 sticky top-0 bg-popover z-10">
+                    <input
+                        className="w-full h-8 px-2 text-sm rounded-md border border-input bg-background outline-none"
+                        placeholder="Filtrele..."
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        onKeyDown={(e) => e.stopPropagation()}
+                    />
+                </div>
+                {filtered.length === 0
+                    ? <div className="px-3 py-2 text-xs text-muted-foreground">Sonuç bulunamadı</div>
+                    : filtered.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)
+                }
+            </SelectContent>
+        </Select>
     );
 };
 
@@ -149,18 +302,21 @@ const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
-const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: any }) => (
-    <div className="relative group">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
-            <Icon className="h-4 w-4" />
-        </div>
-        <FormInput {...props} className={cn("pl-11", props.className)} />
+const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: React.ComponentType<any> }) => (
+    <div className="relative">
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 pl-10", props.className)} />
     </div>
 );
 
-// --- Individual Form Component ---
+const brandCategoryOptions = [
+    "Giyim & Aksesuar", "Elektronik", "Kozmetik & Kişisel Bakım",
+    "Ev & Yaşam", "Gıda & İçecek", "Spor & Outdoor",
+    "Kitap & Kırtasiye", "Oyuncak & Hobi", "Sağlık & Medikal",
+    "Otomotiv", "Mücevher & Saat", "Diğer"
+];
 
-const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
+const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
@@ -171,34 +327,32 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const recaptchaContainerRef = React.useRef<HTMLDivElement>(null);
     const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
 
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
-
-    // Initialize reCAPTCHA verifier
-    const getRecaptchaVerifier = () => {
-        if (!recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                size: 'invisible',
-            });
+    useEffect(() => {
+        if (step === 'phone' && !recaptchaVerifierRef.current) {
+            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'normal' });
+            recaptchaVerifierRef.current.render();
         }
-        return recaptchaVerifierRef.current;
-    };
+        return () => {
+            if (recaptchaVerifierRef.current) {
+                recaptchaVerifierRef.current.clear();
+                recaptchaVerifierRef.current = null;
+            }
+        };
+    }, [auth, step]);
 
-    // Step 1: Send OTP
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const verifier = getRecaptchaVerifier();
-            const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            if (!recaptchaVerifierRef.current) throw new Error('reCAPTCHA yüklenemedi. Sayfayı yenileyin.');
+            const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
             setConfirmationResult(result);
             setStep('otp');
             toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
         } catch (error: any) {
-            // Reset reCAPTCHA on error
             recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
         } finally {
@@ -206,7 +360,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         }
     };
 
-    // Step 2: Verify OTP
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!confirmationResult) return;
@@ -214,7 +367,6 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
         try {
             const userCredential = await confirmationResult.confirm(otp);
             const userId = userCredential.user.uid;
-            const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
 
             const { getDoc: fsGetDoc } = await import('firebase/firestore');
             const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
@@ -222,30 +374,28 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                 setDocumentNonBlocking(doc(db, 'users', userId), {
                     id: userId,
                     name: name || userCredential.user.displayName || '',
-                    username: `@${phone.replace(/\D/g, '')}`,
                     role: 'user',
-                    personalInfo: { phone: fullPhone, address: { country: 'Türkiye' } },
+                    personalInfo: { phone: `+${phoneCode}${phone}` },
                     stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-
-            onComplete();
+            const wasNew = !userDocSnap.exists();
+            onComplete(wasNew);
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı. Lütfen tekrar deneyin." });
+            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <>
-            <div id="recaptcha-container" ref={recaptchaContainerRef} />
+        <div className="space-y-6">
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} />
+                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
                     </div>
                     <div className="space-y-2">
                         <FormLabel>Telefon</FormLabel>
@@ -254,26 +404,22 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                                 <Select value={phoneCode} onValueChange={setPhoneCode}>
                                     <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
                                     <SelectContent className="max-h-60">
-                                        {uniquePhoneCodes.map((code, idx) => (
+                                        {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
                                             <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" />
+                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
+                    <div id="recaptcha-container" className="flex justify-center" />
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
                     </Button>
                 </form>
             ) : (
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
-                    <div className="text-center space-y-2">
-                        <p className="text-sm text-muted-foreground">
-                            <span className="font-bold text-foreground">+{phoneCode}{phone}</span> numarasına gönderilen kodu girin
-                        </p>
-                    </div>
                     <div className="space-y-2">
                         <FormLabel>Doğrulama Kodu</FormLabel>
                         <FormInput
@@ -285,45 +431,17 @@ const IndividualForm = ({ onComplete }: { onComplete: () => void }) => {
                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             className="text-center text-2xl font-black tracking-[0.5em]"
                             maxLength={6}
+                            enterKeyHint="done"
                         />
                     </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
                     </Button>
-                    <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => { setStep('phone'); setOtp(''); recaptchaVerifierRef.current = null; }}>
-                        Numarayı Değiştir
-                    </Button>
                 </form>
             )}
-        </>
+        </div>
     );
 };
-
-// --- Corporate Form Component ---
-
-const brandCategoryOptions = [
-    'Moda',
-    'Elektronik',
-    'Ev & Yaşam',
-    'Market',
-    'Kozmetik & Kişisel Bakım',
-    'Anne, Bebek & Çocuk',
-    'Etkinlik',
-    'Seyahat Bilet',
-    'Otomotiv & Motosiklet',
-    'Spor & Outdoor',
-    'Tatil & Otel Rezervasyonu',
-    'Pazaryeri',
-    'Kitap, Kırtasiye & Hobi',
-    'Süpermarket & Pet Shop',
-    'Mücevher & Saat',
-    'Sigorta',
-    'Oyun, Film & Müzik',
-    'Yapı Market & Hırdavat',
-    'Sağlık & Medikal',
-    'Endüstriyel & Ofis',
-    'Diğer'
-];
 
 const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
@@ -332,10 +450,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [entityType, setEntityType] = useState<string>(initialEntity);
     
-    // State
     const [formData, setFormData] = useState({
-        country: 'Türkiye',
-        brandStatus: '',
         name: '',
         shortName: '',
         orgTag: '',
@@ -359,50 +474,54 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         social: { instagram: '', twitter: '', linkedin: '' },
         legalTitle: '',
         iban: '',
+        posDevice: false,
+        clubType: '',
+        universityName: '',
+        cityMEB: '',
+        clubCategory: '',
         authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
         registryNo: '',
+        country: 'Türkiye',
+        brandStatus: '',
     });
+
     const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
     const [selectedServiceAreas, setSelectedServiceAreas] = useState<string[]>([]);
     const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-    const [registryNgoFound, setRegistryNgoFound] = useState<any>(null);
+    const [donationCategories, setDonationCategories] = useState<{ id: string; category: string; rate: string; customCategory: string }[]>([
+        { id: '1', category: '', rate: '', customCategory: '' }
+    ]);
     const [isCheckingRegistry, setIsCheckingRegistry] = useState(false);
+    const [registryNgoFound, setRegistryNgoFound] = useState<{ name: string } | null>(null);
 
-    const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
-        setList(list.includes(item) ? list.filter(i => i !== item) : [...list, item]);
+    const toggleItem = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, item: string) => {
+        setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
     };
 
     const handleRegistryNoCheck = async (value: string) => {
-        setFormData({...formData, registryNo: value});
-        setRegistryNgoFound(null);
-        if (!value || !db) return;
+        setFormData(prev => ({ ...prev, registryNo: value }));
+        if (value.length < 3) { setRegistryNgoFound(null); return; }
         setIsCheckingRegistry(true);
         try {
-            const { query: fsQuery, collection: fsCollection, where: fsWhere, getDocs: fsGetDocs } = await import('firebase/firestore');
-            const q = fsQuery(fsCollection(db, 'ngos'), fsWhere('registryNo', '==', value));
-            const snap = await fsGetDocs(q);
+            const { getDocs, query, where } = await import('firebase/firestore');
+            const q = query(collection(db, 'ngos'), where('registryNo', '==', value));
+            const snap = await getDocs(q);
             if (!snap.empty) {
                 const ngoData = snap.docs[0].data();
-                setRegistryNgoFound(ngoData);
-                setFormData(prev => ({
-                    ...prev,
-                    name: ngoData.name || prev.name,
-                    city: ngoData.city || prev.city,
-                    email: ngoData.email || prev.email,
-                    phone: ngoData.phone || prev.phone,
-                    website: ngoData.website || prev.website,
-                    legalTitle: ngoData.legalTitle || prev.legalTitle,
-                }));
-            }
-        } finally {
-            setIsCheckingRegistry(false);
-        }
+                setRegistryNgoFound({ name: ngoData.name || 'Bilinmeyen' });
+                setFormData(prev => ({ ...prev, registryNo: value, name: ngoData.name || prev.name, shortName: ngoData.shortName || prev.shortName }));
+            } else { setRegistryNgoFound(null); }
+        } catch { setRegistryNgoFound(null); }
+        finally { setIsCheckingRegistry(false); }
     };
 
-    const [donationCategories, setDonationCategories] = useState([{ id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
+    const addCategory = () => {
+        setDonationCategories(prev => [...prev, { id: Date.now().toString(), category: '', rate: '', customCategory: '' }]);
+    };
 
-    const addCategory = () => setDonationCategories([...donationCategories, { id: Date.now().toString(), category: '', rate: '5', customCategory: '' }]);
-    const removeCategory = (id: string) => setDonationCategories(donationCategories.filter(c => c.id !== id));
+    const removeCategory = (id: string) => {
+        setDonationCategories(prev => prev.filter(cat => cat.id !== id));
+    };
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -410,15 +529,15 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         try {
             await addDocumentNonBlocking(collection(db, 'applications'), {
                 ...formData,
-                donationCategories,
                 entityType,
-                beneficiaries: selectedBeneficiaries,
-                serviceAreas: selectedServiceAreas,
-                platforms: selectedPlatforms,
+                selectedBeneficiaries,
+                selectedServiceAreas,
+                selectedPlatforms,
+                donationCategories,
                 date: new Date().toISOString().split('T')[0],
                 status: 'Beklemede'
             });
-            toast({ title: "Başvuru Alındı", description: "Kurumsal ekibimiz en kısa sürede sizinle iletişime geçecektir." });
+            toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push('/login');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Hata', description: error.message });
@@ -426,8 +545,6 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             setIsSubmitting(false);
         }
     };
-
-    const uniquePhoneCodes = useMemo(() => Array.from(new Set(countryPhoneCodes)).sort((a, b) => parseInt(a) - parseInt(b)), []);
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
@@ -438,7 +555,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-60">
-                            {allCountries.map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
+                            {(allCountries || []).map((c, idx) => <SelectItem key={`${c}-${idx}`} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
@@ -462,12 +579,48 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     
                     {/* Kuruluş Bilgileri */}
                     <div className="space-y-6">
-                        <SectionTitle>{entityType === 'BRAND' ? 'MARKA KİMLİĞİ' : 'KURULUŞ BİLGİLERİ'}</SectionTitle>
+                        <SectionTitle>{entityType === 'BRAND' ? 'MARKA KİMLİĞİ' : entityType === 'CLUB' ? 'KULÜP BİLGİLERİ' : 'KURULUŞ BİLGİLERİ'}</SectionTitle>
+                        {entityType === 'CLUB' && (
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Kulüp Türü</FormLabel>
+                                    <Select value={formData.clubType} onValueChange={(val) => setFormData({...formData, clubType: val, universityName: '', cityMEB: ''})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-primary/5 border-primary shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="university">Üniversite</SelectItem>
+                                            <SelectItem value="highschool">Lise</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {formData.clubType === 'university' && (
+                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                        <FormLabel>Üniversite</FormLabel>
+                                        <FilteredSelect
+                                            value={formData.universityName}
+                                            onChange={(val) => setFormData({...formData, universityName: val})}
+                                            options={universities}
+                                            placeholder="Üniversite seçin..."
+                                        />
+                                    </div>
+                                )}
+                                {formData.clubType === 'highschool' && (
+                                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                                        <FormLabel>Bağlı Olduğu İl Milli Eğitim Müdürlüğü</FormLabel>
+                                        <FilteredSelect
+                                            value={formData.cityMEB}
+                                            onChange={(val) => setFormData({...formData, cityMEB: val})}
+                                            options={allProvinces}
+                                            placeholder="İl seçin..."
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         {entityType === 'BRAND' && (
                             <div className="space-y-2">
                                 <FormLabel>İşletme Statüsü</FormLabel>
                                 <Select value={formData.brandStatus} onValueChange={(val) => setFormData({...formData, brandStatus: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-primary/5 border-primary shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="brand">Ticari Marka</SelectItem>
                                         <SelectItem value="cooperative">Kooperatif</SelectItem>
@@ -514,8 +667,8 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </>
                         )}
                         <div className="space-y-2">
-                            <FormLabel>{entityType === 'BRAND' ? 'Marka Adı' : 'Kuruluş Adı'} *</FormLabel>
-                            <FormInput placeholder={entityType === 'BRAND' ? 'Markanın adı' : 'Kuruluşun tam resmi adı'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+                            <FormLabel>{entityType === 'BRAND' ? 'Marka Adı' : entityType === 'CLUB' ? 'Kulüp Adı' : 'Kuruluş Adı'} *</FormLabel>
+                            <FormInput placeholder={entityType === 'BRAND' ? 'Markanın adı' : entityType === 'CLUB' ? 'Kulübün tam adı' : 'Kuruluşun tam resmi adı'} value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
                         </div>
                         {entityType === 'NGO' && (
                             <>
@@ -544,13 +697,47 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 </div>
                             </>
                         )}
+                        {entityType === 'CLUB' && (
+                            <div className="space-y-2">
+                                <FormLabel>Kulüp Kategorisi</FormLabel>
+                                <FilteredSelect
+                                    value={formData.clubCategory}
+                                    onChange={(val) => setFormData({...formData, clubCategory: val})}
+                                    options={clubCategories}
+                                    placeholder="Kategori seçin..."
+                                />
+                            </div>
+                        )}
                         {entityType === 'BRAND' && (
                             <div className="space-y-2">
                                 <FormLabel>Sektör</FormLabel>
                                 <Select value={formData.sector} onValueChange={(val) => setFormData({...formData, sector: val})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-primary/20 shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                    <SelectTrigger className="h-12 rounded-xl bg-primary/5 border-primary shadow-sm font-bold text-left"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                     <SelectContent className="max-h-60">
-                                        {marketCategories.filter(c => c.mainCategory !== 'Tümü').map(cat => <SelectItem key={cat.mainCategory} value={cat.mainCategory}>{cat.mainCategory}</SelectItem>)}
+                                        <SelectItem value="Teknoloji & Yazılım">Teknoloji & Yazılım</SelectItem>
+                                        <SelectItem value="Finans & Bankacılık">Finans & Bankacılık</SelectItem>
+                                        <SelectItem value="Eğitim">Eğitim</SelectItem>
+                                        <SelectItem value="Sağlık">Sağlık</SelectItem>
+                                        <SelectItem value="Hukuk">Hukuk</SelectItem>
+                                        <SelectItem value="Pazarlama & Reklam">Pazarlama & Reklam</SelectItem>
+                                        <SelectItem value="Medya & İletişim">Medya & İletişim</SelectItem>
+                                        <SelectItem value="E-Ticaret">E-Ticaret</SelectItem>
+                                        <SelectItem value="Perakende">Perakende</SelectItem>
+                                        <SelectItem value="Lojistik & Tedarik Zinciri">Lojistik & Tedarik Zinciri</SelectItem>
+                                        <SelectItem value="Üretim & Sanayi">Üretim & Sanayi</SelectItem>
+                                        <SelectItem value="Enerji">Enerji</SelectItem>
+                                        <SelectItem value="İnşaat & Gayrimenkul">İnşaat & Gayrimenkul</SelectItem>
+                                        <SelectItem value="Turizm & Otelcilik">Turizm & Otelcilik</SelectItem>
+                                        <SelectItem value="Tarım & Gıda">Tarım & Gıda</SelectItem>
+                                        <SelectItem value="Kamu & Devlet">Kamu & Devlet</SelectItem>
+                                        <SelectItem value="Sivil Toplum (STK)">Sivil Toplum (STK)</SelectItem>
+                                        <SelectItem value="Uluslararası Kuruluşlar">Uluslararası Kuruluşlar</SelectItem>
+                                        <SelectItem value="Danışmanlık">Danışmanlık</SelectItem>
+                                        <SelectItem value="İnsan Kaynakları">İnsan Kaynakları</SelectItem>
+                                        <SelectItem value="Araştırma & Akademi">Araştırma & Akademi</SelectItem>
+                                        <SelectItem value="Spor">Spor</SelectItem>
+                                        <SelectItem value="Sanat & Kültür">Sanat & Kültür</SelectItem>
+                                        <SelectItem value="Sosyal Girişimcilik">Sosyal Girişimcilik</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -671,6 +858,17 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <Button type="button" variant="outline" className="w-full h-12 border-dashed border-primary/30 rounded-xl text-primary font-bold hover:bg-primary/5" onClick={addCategory}>
                                     + YENİ KATEGORİ EKLE
                                 </Button>
+                                <div className="space-y-3 pt-2">
+                                    <p className="text-[11px] font-black uppercase text-muted-foreground ml-1">Fiziksel Alışverişlerde de Bağışlar Geçerli Olsun</p>
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <Checkbox
+                                            checked={formData.posDevice}
+                                            onCheckedChange={(checked) => setFormData({...formData, posDevice: !!checked})}
+                                            className="rounded-md"
+                                        />
+                                        <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">Pos Cihazı Talep Ediyorum</span>
+                                    </label>
+                                </div>
                             </div>
 
                             {/* Affiliate Marketing & Teknik Takip */}
@@ -711,9 +909,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <FormLabel>İL / EYALET</FormLabel>
-                                <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                <Select value={formData.city} onValueChange={(val) => setFormData({...formData, city: val, district: ''})}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-muted/20 border-none"><SelectValue placeholder="Şehir / Eyalet girin" /></SelectTrigger>
+                                    <SelectContent className="max-h-60">{(allProvinces || []).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
@@ -778,7 +976,8 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Yasal & Finansal */}
+                    {/* Yasal & Finansal - sadece NGO için */}
+                    {entityType === 'NGO' && (
                     <div className="space-y-6">
                         <SectionTitle>YASAL & FİNANSAL</SectionTitle>
                         <div className="space-y-2">
@@ -790,17 +989,25 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormInput placeholder="TR..." value={formData.iban} onChange={(e) => setFormData({...formData, iban: e.target.value})} required />
                         </div>
                     </div>
+                    )}
 
                     {/* Yasal Belgeler & Logolar */}
                     <div className="space-y-6">
-                        <SectionTitle>YASAL BELGELER {entityType === 'NGO' ? '' : '& LOGOLAR'}</SectionTitle>
-                        {entityType === 'NGO' ? (
+                        <SectionTitle>YASAL BELGELER & LOGOLAR</SectionTitle>
+                        {entityType === 'NGO' && (
                             <>
                                 <FileUpload label="KURULUŞ SENEDİ / TÜZÜK" accept=".pdf" hint="Dernek tüzüğü veya vakıf senedini yükleyin." />
                                 <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg" hint="Kuruluşun faaliyet durumunu gösteren resmi belge." />
                             </>
-                        ) : (
+                        )}
+                        {entityType === 'BRAND' && (
                             <FileUpload label="MARKA LOGOSU *" accept=".png,.jpg" hint="Arkaplansız (transparan) .png ve en az 512x512px olmalıdır." required />
+                        )}
+                        {entityType === 'CLUB' && (
+                            <>
+                                <FileUpload label="KULÜP LOGOSU *" accept=".png,.jpg" hint="Arkaplansız (transparan) .png ve en az 512x512px olmalıdır." required />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg" hint="Kulübün üniversite / okul tarafından onaylı faaliyet belgesi." />
+                            </>
                         )}
                     </div>
 
@@ -838,7 +1045,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="flex items-start space-x-3 text-left">
                             <Checkbox id="terms-brand" required />
                             <Label htmlFor="terms-brand" className="text-[10px] font-medium leading-relaxed text-muted-foreground cursor-pointer">
-                                <span className="text-primary font-bold">{entityType === 'NGO' ? 'STK Katılım Sözleşmesi' : 'Marka Katılım Sözleşmesi'}</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
+                                <span className="text-primary font-bold">{entityType === 'NGO' ? 'STK Katılım Sözleşmesi' : entityType === 'CLUB' ? 'Öğrenci Kulüp Sözleşmesi' : 'Marka Katılım Sözleşmesi'}</span>'ni ve <span className="text-primary font-bold">Etik İlkeleri</span> okudum, kabul ediyorum.
                             </Label>
                         </div>
                         <div className="flex items-start space-x-3 text-left">
@@ -868,45 +1075,32 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-
     const activeTab = searchParams.get('tab') || 'individual';
     const initialEntity = searchParams.get('entity') || 'NGO';
 
-    useEffect(() => {
-        if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-            const redirect = searchParams.get('redirect') || '/events';
-            router.replace(redirect);
-        }
-    }, [router, searchParams]);
-
-    if (process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true') {
-        return <div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
-    }
-
     return (
-        <div className="min-h-screen bg-secondary flex items-center justify-center p-4 sm:p-6 pt-20 pb-20">
-            <div className="w-full max-sm:max-w-sm lg:max-w-2xl">
-                <Button onClick={() => router.push('/login')} variant="ghost" size="icon" className="absolute top-6 left-6 rounded-full bg-background/50 h-10 w-10">
-                    <ArrowLeft className="h-5 w-5" />
-                </Button>
+        <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">
+            <div className="w-full max-w-sm">
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
-                        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-2">
-                            <HangelLogo className="text-3xl" />
-                        </div>
-                        <CardTitle className="text-3xl font-black tracking-tighter">
-                            İyiliğe İlk Adım
-                        </CardTitle>
-                        <CardDescription>Toplumsal etki için aramıza katılın.</CardDescription>
+                        <HangelLogo className="text-3xl mx-auto mb-2" />
+                        <CardTitle className="text-3xl font-black tracking-tighter">Hoş Geldiniz</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6 px-8 pb-10 text-center">
+                    <CardContent className="space-y-6 px-8 pb-10">
                         <Tabs value={activeTab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${initialEntity}`)}>
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
                                 <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => router.push('/timeline')} />
+                                <IndividualForm onComplete={(isNewUser) => {
+                                    if (isNewUser) {
+                                        localStorage.setItem('onboardingStep', 'profile');
+                                        router.push('/settings/profile');
+                                    } else {
+                                        router.push('/market');
+                                    }
+                                }} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={initialEntity} />
@@ -914,6 +1108,9 @@ const FormRenderer = () => {
                         </Tabs>
                     </CardContent>
                 </Card>
+                <p className="text-[10px] leading-relaxed text-muted-foreground text-center px-4 mt-4 max-w-md mx-auto">
+                    Devam ederek <span className="underline">Aydınlatma Metni</span>'ni, <span className="underline">Açık Rıza Metni</span>'ni ve <span className="underline">Kullanıcı Sözleşmesi</span>'ni okuduğunu ve anladığını kabul etmiş olursun. <span className="underline">Ticari Elektronik İleti Aydınlatma Metni</span> kapsamında SMS, e-posta ve arama almaya rıza göstermiş olursun.
+                </p>
             </div>
         </div>
     );
@@ -921,7 +1118,7 @@ const FormRenderer = () => {
 
 export default function LoginSelectionPage() {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-secondary"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>}>
       <FormRenderer />
     </Suspense>
   );

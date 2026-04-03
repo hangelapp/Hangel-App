@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { user as staticUser } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { isNativeApp } from '@/lib/capacitor';
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -96,12 +97,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
 
-    const isDevBypass = process.env.NEXT_PUBLIC_DEV_BYPASS_AUTH === 'true';
-
     const userDocRef = useMemoFirebase(() => {
-        if (isDevBypass || !db || !authUser) return null;
+        if (!db || !authUser) return null;
         return doc(db, 'users', authUser.uid);
-    }, [db, authUser, isDevBypass]);
+    }, [db, authUser]);
 
     const { data: userData } = useDoc<User>(userDocRef);
 
@@ -144,6 +143,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             if (isProtected) {
                 const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(pathname)}`;
                 router.push(redirectUrl);
+            }
+        }
+    }, [authUser, isUserLoading, pathname, router, isMounted]);
+
+    // Native app: giriş yapmamış kullanıcıyı direkt login formuna yönlendir
+    useEffect(() => {
+        if (!isUserLoading && !authUser && isMounted && isNativeApp()) {
+            if (pathname === '/' || pathname === '/login') {
+                router.push('/login/selection');
+            }
+        }
+    }, [authUser, isUserLoading, pathname, router, isMounted]);
+
+    // Native app: giriş yapmış kullanıcıyı login sayfalarından timeline'a yönlendir
+    useEffect(() => {
+        if (!isUserLoading && authUser && isMounted && isNativeApp()) {
+            if (pathname === '/' || pathname === '/login' || pathname === '/login/selection') {
+                router.push('/timeline');
             }
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
