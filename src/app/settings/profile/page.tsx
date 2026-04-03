@@ -241,11 +241,11 @@ export default function ProfileSettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Sokak / Cadde</Label>
-                        <Input value={profile.personalInfo.address.street || ''} onChange={(e) => handleChange('personalInfo', 'address', { street: e.target.value })} placeholder="Örn: Moda Cad." required />
+                        <Input value={(profile.personalInfo.address as any).street || ''} onChange={(e) => handleChange('personalInfo', 'address', { street: e.target.value })} placeholder="Örn: Moda Cad." required />
                     </div>
                     <div className="space-y-2">
                         <Label>Bina / Kapı No</Label>
-                        <Input value={profile.personalInfo.address.doorNo || ''} onChange={(e) => handleChange('personalInfo', 'address', { doorNo: e.target.value })} placeholder="Örn: 12/4" required />
+                        <Input value={(profile.personalInfo.address as any).doorNo || ''} onChange={(e) => handleChange('personalInfo', 'address', { doorNo: e.target.value })} placeholder="Örn: 12/4" required />
                     </div>
                 </div>
             </CardContent>

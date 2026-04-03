@@ -3,43 +3,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ArrowDownUp } from 'lucide-react';
+import { Search, ArrowDownUp, Loader2, Inbox } from 'lucide-react';
 import React, { useMemo, useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 
-const donationHistory = [
-  { id: 'TXN123', brand: 'Doğa Dostu Giyim', purchaseAmount: 150, ngoShare: 12.75, date: '2024-07-20', status: 'Tamamlandı' },
-  { id: 'TXN124', brand: 'Lezzet Köyü', purchaseAmount: 80, ngoShare: 6.80, date: '2024-07-20', status: 'Tamamlandı' },
-  { id: 'TXN125', brand: 'Tekno Market', purchaseAmount: 1200, ngoShare: 42.50, date: '2024-07-19', status: 'Tamamlandı' },
-  { id: 'TXN126', brand: 'Gezgin Rotalar', purchaseAmount: 450, ngoShare: 30.60, date: '2024-07-18', status: 'Beklemede' },
-  { id: 'TXN127', brand: 'Doğa Dostu Giyim', purchaseAmount: 250, ngoShare: 21.25, date: '2024-06-15', status: 'Tamamlandı' },
-  { id: 'TXN128', brand: 'Tekno Market', purchaseAmount: 800, ngoShare: 28.33, date: '2024-05-22', status: 'Tamamlandı' },
-  { id: 'TXN129', brand: 'Lezzet Köyü', purchaseAmount: 120, ngoShare: 10.20, date: '2024-04-10', status: 'Tamamlandı' },
-];
+interface DonationTransaction {
+    id: string;
+    brand: string;
+    purchaseAmount: number;
+    ngoShare: number;
+    date: string;
+    status: string;
+}
 
-const monthlyEarnings = [
-    { month: 'Kasım 2024', amount: 135.50, status: 'Tahmini' },
-    { month: 'Ekim 2024', amount: 110.00, status: 'Tahmini' },
-    { month: 'Eylül 2024', amount: 95.75, status: 'Tahmini' },
-    { month: 'Ağustos 2024', amount: 88.20, status: 'Tahmini' },
-    { month: 'Temmuz 2024', amount: 92.65, status: 'Tahmini' },
-    { month: 'Haziran 2024', amount: 21.25, status: 'Kesinleşti' },
-    { month: 'Mayıs 2024', amount: 28.33, status: 'Kesinleşti' },
-    { month: 'Nisan 2024', amount: 10.20, status: 'Kesinleşti' },
-];
+interface MonthlyEarning {
+    id: string;
+    month: string;
+    amount: number;
+    status: string;
+}
 
 const statusVariantMap = {
     'Tamamlandı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
     'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
 } as const;
 
-const TransactionCard = ({ transaction }: { transaction: typeof donationHistory[0] }) => (
+const TransactionCard = ({ transaction }: { transaction: DonationTransaction }) => (
     <Card>
         <CardHeader className='pb-4'>
             <div className="flex justify-between items-start">
@@ -65,33 +60,73 @@ const TransactionCard = ({ transaction }: { transaction: typeof donationHistory[
     </Card>
 );
 
-const TransactionList = ({ transactions }: { transactions: typeof donationHistory }) => (
+const EmptyState = ({ message }: { message: string }) => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+        <Inbox className="h-12 w-12 text-muted-foreground/50 mb-4" />
+        <p className="text-muted-foreground">{message}</p>
+    </div>
+);
+
+const TransactionList = ({ transactions }: { transactions: DonationTransaction[] }) => (
     <div className="space-y-4">
-        {transactions.map((tx) => (
-            <TransactionCard key={tx.id} transaction={tx} />
-        ))}
+        {transactions.length === 0 ? (
+            <EmptyState message="Henüz işlem bulunmuyor." />
+        ) : (
+            transactions.map((tx) => (
+                <TransactionCard key={tx.id} transaction={tx} />
+            ))
+        )}
     </div>
 );
 
 
 export default function DonationsPage() {
     const [currentMonthYear, setCurrentMonthYear] = useState('');
+    const firestore = useFirestore();
+    const { user: authUser } = useUser();
 
     useEffect(() => {
         setCurrentMonthYear(format(new Date(), 'MMMM yyyy', { locale: tr }));
     }, []);
 
-    const pastTransactions = donationHistory.filter(tx => tx.status === 'Tamamlandı');
-    const futureTransactions = donationHistory.filter(tx => tx.status === 'Beklemede');
-    
+    // Load donations from Firestore
+    const donationsQuery = useMemoFirebase(() => {
+        if (!authUser?.uid) return null;
+        return query(
+            collection(firestore, 'donations'),
+            where('ngoId', '==', authUser.uid),
+            orderBy('date', 'desc')
+        );
+    }, [firestore, authUser?.uid]);
+
+    const { data: donationHistory, isLoading: isDonationsLoading } = useCollection<DonationTransaction>(donationsQuery);
+
+    // Load monthly earnings from Firestore
+    const earningsQuery = useMemoFirebase(() => {
+        if (!authUser?.uid) return null;
+        return query(
+            collection(firestore, 'monthlyEarnings'),
+            where('ngoId', '==', authUser.uid),
+            orderBy('month', 'desc')
+        );
+    }, [firestore, authUser?.uid]);
+
+    const { data: monthlyEarnings, isLoading: isEarningsLoading } = useCollection<MonthlyEarning>(earningsQuery);
+
+    const transactions = donationHistory || [];
+    const earnings = monthlyEarnings || [];
+
+    const pastTransactions = transactions.filter(tx => tx.status === 'Tamamlandı');
+    const futureTransactions = transactions.filter(tx => tx.status === 'Beklemede');
+
     const donationStats = useMemo(() => {
-        const totalNgoShare = donationHistory.reduce((acc, tx) => acc + tx.ngoShare, 0);
-        const totalTransactions = donationHistory.length;
-        const donationsByBrand = donationHistory.reduce((acc, tx) => {
+        const totalNgoShare = transactions.reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
+        const totalTransactions = transactions.length;
+        const donationsByBrand = transactions.reduce((acc, tx) => {
             if (!acc[tx.brand]) {
                 acc[tx.brand] = 0;
             }
-            acc[tx.brand] += tx.ngoShare;
+            acc[tx.brand] += (tx.ngoShare || 0);
             return acc;
         }, {} as Record<string, number>);
 
@@ -105,7 +140,17 @@ export default function DonationsPage() {
             averageNgoShare: totalTransactions > 0 ? totalNgoShare / totalTransactions : 0,
             brandChartData,
         };
-    }, []);
+    }, [transactions]);
+
+    const isLoading = isDonationsLoading || isEarningsLoading;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
   return (
     <div className="space-y-6">
@@ -113,16 +158,19 @@ export default function DonationsPage() {
         <h1 className="text-2xl font-bold">Bağış Takibi</h1>
         <p className="text-muted-foreground">Kuruluşunuza aktarılan bağışların geçmişini ve aylık hak edişlerinizi takip edin.</p>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Aylık Hak Edişler</CardTitle>
           <CardDescription>Geçmiş ve gelecek aylara ait kesinleşmiş ve tahmini hak edişleriniz.</CardDescription>
         </CardHeader>
         <CardContent>
+            {earnings.length === 0 ? (
+                <EmptyState message="Henüz hak ediş verisi bulunmuyor." />
+            ) : (
             <div className="space-y-3">
-                {monthlyEarnings.map(earning => (
-                    <div key={earning.month} className={cn(
+                {earnings.map(earning => (
+                    <div key={earning.id} className={cn(
                         "flex justify-between items-center p-3 rounded-lg bg-muted/50",
                         (currentMonthYear && earning.month.toLowerCase() === currentMonthYear.toLowerCase()) && "ring-2 ring-primary"
                     )}>
@@ -130,13 +178,14 @@ export default function DonationsPage() {
                             <p className="font-semibold">{earning.month}</p>
                             <p className="text-xs text-muted-foreground">{earning.status} Hak Ediş</p>
                         </div>
-                        <p className="text-lg font-bold text-primary">{earning.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
+                        <p className="text-lg font-bold text-primary">{(earning.amount || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
                     </div>
                 ))}
             </div>
+            )}
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -161,7 +210,7 @@ export default function DonationsPage() {
                     <TabsTrigger value="stats">İstatistikler</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
-                    <TransactionList transactions={donationHistory} />
+                    <TransactionList transactions={transactions} />
                 </TabsContent>
                 <TabsContent value="past" className="mt-4">
                    <TransactionList transactions={pastTransactions} />
@@ -170,6 +219,10 @@ export default function DonationsPage() {
                     <TransactionList transactions={futureTransactions} />
                 </TabsContent>
                 <TabsContent value="stats" className="mt-4 space-y-6">
+                    {transactions.length === 0 ? (
+                        <EmptyState message="Henüz istatistik oluşturacak yeterli veri bulunmuyor." />
+                    ) : (
+                    <>
                     <Card>
                         <CardHeader>
                             <CardTitle>Genel Bağış Özeti</CardTitle>
@@ -206,6 +259,8 @@ export default function DonationsPage() {
                             </ResponsiveContainer>
                         </CardContent>
                     </Card>
+                    </>
+                    )}
                 </TabsContent>
             </Tabs>
         </CardContent>
