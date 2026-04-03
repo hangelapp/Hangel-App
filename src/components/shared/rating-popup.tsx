@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -15,6 +17,7 @@ const DETAIL_REQUIRED = ['Sivil Toplum Kuruluşu', 'Arkadaşım'];
 export function RatingPopup() {
     const [open, setOpen] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [dontAskAgain, setDontAskAgain] = useState(false);
 
     // Discovery survey state
     const [discoverySource, setDiscoverySource] = useState('');
@@ -35,7 +38,11 @@ export function RatingPopup() {
 
         const discoveryKey = `hangel_discovery_done_${user.uid}`;
         const ratingKey = `hangel_rating_done_${user.uid}`;
+        const neverAskKey = `hangel_never_ask_popup_${user.uid}`;
         const visitCountKey = `hangel_visit_count_${user.uid}`;
+
+        // Check if user has opted out of surveys permanently
+        if (localStorage.getItem(neverAskKey)) return;
 
         const alreadyDiscovered = !!localStorage.getItem(discoveryKey);
         const alreadyRated = !!localStorage.getItem(ratingKey);
@@ -98,11 +105,15 @@ export function RatingPopup() {
 
     const handleClose = () => {
         if (user) {
-            if (!discoveryDone && discoverySource) {
-                localStorage.setItem(`hangel_discovery_done_${user.uid}`, 'true');
-            }
-            if (!ratingDone) {
-                localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
+            if (dontAskAgain) {
+                localStorage.setItem(`hangel_never_ask_popup_${user.uid}`, 'true');
+            } else {
+                if (!discoveryDone && discoverySource) {
+                    localStorage.setItem(`hangel_discovery_done_${user.uid}`, 'true');
+                }
+                if (!ratingDone) {
+                    localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
+                }
             }
         }
         setOpen(false);
@@ -198,17 +209,32 @@ export function RatingPopup() {
                             </div>
                         )}
 
-                        <div className="flex gap-3">
-                            <Button variant="ghost" className="flex-1 rounded-xl" onClick={handleClose}>
-                                Daha Sonra
-                            </Button>
-                            <Button
-                                className="flex-1 rounded-xl"
-                                onClick={handleSubmit}
-                                disabled={!canSubmit}
-                            >
-                                Gönder
-                            </Button>
+                        <div className="space-y-3 pt-2 border-t">
+                            <div className="flex items-center space-x-2">
+                                <Checkbox
+                                    id="dont-ask-again"
+                                    checked={dontAskAgain}
+                                    onCheckedChange={(checked) => setDontAskAgain(!!checked)}
+                                />
+                                <Label
+                                    htmlFor="dont-ask-again"
+                                    className="text-sm font-medium cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    Daha sonra sorma
+                                </Label>
+                            </div>
+                            <div className="flex gap-3">
+                                <Button variant="ghost" className="flex-1 rounded-xl" onClick={handleClose}>
+                                    Daha Sonra
+                                </Button>
+                                <Button
+                                    className="flex-1 rounded-xl"
+                                    onClick={handleSubmit}
+                                    disabled={!canSubmit}
+                                >
+                                    Gönder
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 ) : (
