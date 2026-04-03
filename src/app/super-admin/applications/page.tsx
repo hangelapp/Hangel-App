@@ -44,19 +44,19 @@ import type { Application } from '@/lib/types';
 const ApplicationDetailsDialog = ({ application }: { application: Application }) => (
     <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
         <DialogHeader>
-            <DialogTitle>Başvuru Detayları: {application.org}</DialogTitle>
+            <DialogTitle>Başvuru Detayları: {application.org || 'Bilinmeyen'}</DialogTitle>
             <DialogDescription>
-                <strong>Tür:</strong> {application.type} <br />
-                <strong>Başvuru Tarihi:</strong> {application.date}
+                <strong>Tür:</strong> {application.type || 'Belirtilmemiş'} <br />
+                <strong>Başvuru Tarihi:</strong> {application.date || 'Tarih Yok'}
             </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar">
             <Card className="rounded-2xl border-black/5 bg-muted/30">
                 <CardHeader><CardTitle className="text-base">Kuruluş Bilgileri</CardTitle></CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                    <p><strong>Yasal Adı:</strong> {application.org}</p>
-                    <p><strong>Konum:</strong> {application.location}</p>
-                    <p><strong>Başvuru Başlığı:</strong> {application.title}</p>
+                    <p><strong>Yasal Adı:</strong> {application.org || 'Belirtilmemiş'}</p>
+                    <p><strong>Konum:</strong> {application.location || 'Belirtilmemiş'}</p>
+                    <p><strong>Başvuru Başlığı:</strong> {application.title || 'Belirtilmemiş'}</p>
                     {application.userId && <p><strong>Başvuran Kullanıcı ID:</strong> {application.userId}</p>}
                 </CardContent>
             </Card>
@@ -87,11 +87,11 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Applicati
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                    {item.org[0]}
+                    {(item.org || '?')[0]}
                 </div>
                 <div>
-                    <p className="font-bold text-foreground">{item.org}</p>
-                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{item.date} • {item.type}</p>
+                    <p className="font-bold text-foreground">{item.org || 'Bilinmeyen Kuruluş'}</p>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">{item.date || 'Tarih Yok'} • {item.type || 'Tür Yok'}</p>
                 </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
@@ -152,10 +152,15 @@ export default function ApplicationsPage() {
 
     const sortedApps = useMemo(() => {
         if (!applications) return { pending: [], approved: [], rejected: [] };
+        const safeSorter = (a: Application, b: Application) => {
+            const dateA = a.date || '';
+            const dateB = b.date || '';
+            return dateB.localeCompare(dateA);
+        };
         return {
-            pending: applications.filter(a => a.status === 'Beklemede').sort((a, b) => b.date.localeCompare(a.date)),
-            approved: applications.filter(a => a.status === 'Onaylandı').sort((a, b) => b.date.localeCompare(a.date)),
-            rejected: applications.filter(a => a.status === 'Reddedildi').sort((a, b) => b.date.localeCompare(a.date)),
+            pending: applications.filter(a => a.status === 'Beklemede').sort(safeSorter),
+            approved: applications.filter(a => a.status === 'Onaylandı').sort(safeSorter),
+            rejected: applications.filter(a => a.status === 'Reddedildi').sort(safeSorter),
         };
     }, [applications]);
 
@@ -220,10 +225,10 @@ export default function ApplicationsPage() {
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-700 font-bold">
-                                        {app.org[0]}
+                                        {(app.org || '?')[0]}
                                     </div>
                                     <div>
-                                        <p className="font-bold">{app.org}</p>
+                                        <p className="font-bold">{app.org || 'Bilinmeyen Kuruluş'}</p>
                                         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{app.type} • ONAYLANDI</p>
                                     </div>
                                 </div>
@@ -239,10 +244,10 @@ export default function ApplicationsPage() {
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground font-bold">
-                                        {app.org[0]}
+                                        {(app.org || '?')[0]}
                                     </div>
                                     <div>
-                                        <p className="font-bold">{app.org}</p>
+                                        <p className="font-bold">{app.org || 'Bilinmeyen Kuruluş'}</p>
                                         <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">{app.type} • REDDEDİLDİ</p>
                                     </div>
                                 </div>
