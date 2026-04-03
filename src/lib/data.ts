@@ -136,10 +136,6 @@ export const globalCitiesData: { [country: string]: string[] } = {
   "İngiltere": ["Londra", "Manchester", "Birmingham"]
 };
 
-export const allProvinces = Object.keys(districtsData);
-export const allCountries = ["Türkiye", "Almanya", "ABD", "İngiltere", "Azerbaycan"];
-
-
 export const globalDistrictsData: { [city: string]: string[] } = {
   "Berlin": ["Mitte", "Pankow", "Spandau"],
   "New York": ["Manhattan", "Brooklyn", "Queens"],
