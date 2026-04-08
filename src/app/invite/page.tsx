@@ -108,10 +108,11 @@ export default function InvitePage() {
                     status: 'sent',
                 });
 
-                // Update user's invite count for point tracking
+                // Update user's invite count and impact score
                 const userRef = doc(db, 'users', authUser.uid);
                 await updateDoc(userRef, {
                     inviteCount: increment(1),
+                    impactScore: increment(100),
                 });
             } catch (error) {
                 console.error('Failed to track invite:', error);
@@ -119,8 +120,8 @@ export default function InvitePage() {
         }
 
         toast({
-            title: 'Davet Gönderildi!',
-            description: `${name} kişisine hangel davetiniz gönderildi.`,
+            title: 'Davet Gönderildi! +100 Puan',
+            description: `${name} kişisine davet gönderildi. Sosyal Etki Puanına 100 puan eklendi.`,
         });
     };
 

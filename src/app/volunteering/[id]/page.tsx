@@ -10,18 +10,34 @@ import Image from 'next/image';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import type { Volunteering, NGO } from '@/lib/types';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const opportunity = volunteeringOpportunities.find(e => e.id === id);
+  const db = useFirestore();
+
+  const oppDocRef = useMemoFirebase(() => {
+    if (!db || !id) return null;
+    return doc(db, 'volunteering', id);
+  }, [db, id]);
+
+  const { data: opportunity, isLoading: isOppLoading } = useDoc<Volunteering>(oppDocRef);
+
+  const ngoDocRef = useMemoFirebase(() => {
+    if (!db || !opportunity?.ngoId) return null;
+    return doc(db, 'ngos', opportunity.ngoId);
+  }, [db, opportunity?.ngoId]);
+
+  const { data: ngo, isLoading: isNgoLoading } = useDoc<NGO>(ngoDocRef);
+
   const [profileUrl, setProfileUrl] = useState('');
   const { user: authUser } = useUser();
-  const db = useFirestore();
   const { toast } = useToast();
   const [isApplying, setIsApplying] = useState(false);
 
@@ -31,13 +47,24 @@ export default function VolunteeringDetailPage() {
     }
   }, []);
   
+  if (isOppLoading) {
+    return (
+        <div className="animate-in fade-in-0 pb-20">
+            <Skeleton className="h-48 w-full" />
+            <div className="p-4 space-y-6 -mt-16">
+                <Skeleton className="h-20 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-40 w-full" />
+            </div>
+        </div>
+    );
+  }
+
   if (!opportunity) {
     notFound();
   }
 
-  const ngo = ngos.find(n => n.id === opportunity.ngoId);
-
-  const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
+  const daysRemaining = opportunity.dates?.applicationEnd ? differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date()) : -1;
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
 
   const handleApply = () => {

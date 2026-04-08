@@ -4,8 +4,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, X, Info, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck, X, Info, ShieldAlert, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { ngos, user, timelinePosts, volunteeringOpportunities } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -101,7 +103,17 @@ const NgoDetailView = ({ ngo }: { ngo: NGO; }) => {
 export default function NgoSelectionPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [selectedNgos, setSelectedNgos] = useState(['1', '2']); 
+    const { user: authUser, isUserLoading } = useUser();
+    const db = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
+
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<any>(userDocRef);
+    const [selectedNgos, setSelectedNgos] = useState<string[]>([]); 
+
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [locationFilter, setLocationFilter] = useState<LocationFilter>('country');
@@ -117,13 +129,24 @@ export default function NgoSelectionPage() {
         }
     }, []);
 
+    useEffect(() => {
+        if (userData && userData.supportedNgos) {
+            setSelectedNgos(userData.supportedNgos);
+        } else if (userData) {
+            setSelectedNgos(['1', '2']); // Fallback to mock defaults if not in DB
+        }
+    }, [userData]);
+
     const allCategories = useMemo(() => Array.from(new Set(ngos.map(n => n.category))), []);
 
     const filteredNgos = useMemo(() => {
         let filtered = [...ngos];
 
+        // Ensure user address safe access
+        const userCity = userData?.personalInfo?.address?.city || user.personalInfo.address.city;
+
         if (locationFilter === 'city') {
-            filtered = filtered.filter(ngo => ngo.contact.address?.city === user.personalInfo.address.city);
+            filtered = filtered.filter(ngo => ngo.contact.address?.city === userCity);
         }
         
         if (typeFilter !== 'Tümü') {
@@ -158,10 +181,18 @@ export default function NgoSelectionPage() {
         });
 
         return filtered;
-    }, [typeFilter, locationFilter, searchTerm, sortConfig, categoryFilter]);
+    }, [typeFilter, locationFilter, searchTerm, sortConfig, categoryFilter, userData]);
 
     const handleNgoSelect = (ngoId: string) => {
         const isCurrentlySelected = selectedNgos.includes(ngoId);
+        if (!isCurrentlySelected && selectedNgos.length >= 2) {
+            toast({
+                variant: "destructive",
+                title: "Limit Doldu",
+                description: "En fazla 2 STK seçebilirsiniz.",
+            });
+            return;
+        }
         setSelectedNgos(prev =>
             isCurrentlySelected
                 ? prev.filter(id => id !== ngoId)
@@ -170,6 +201,12 @@ export default function NgoSelectionPage() {
     };
 
     const handleSave = () => {
+        if (userDocRef) {
+            updateDocumentNonBlocking(userDocRef, {
+                supportedNgos: selectedNgos
+            });
+        }
+
         toast({
             title: "Tercihler Kaydedildi",
             description: "Varsayılan STK seçimleriniz başarıyla güncellendi.",
@@ -181,6 +218,14 @@ export default function NgoSelectionPage() {
             router.push('/settings/profile');
         }
     };
+
+    if (isUserLoading || isUserDataLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">

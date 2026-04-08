@@ -208,12 +208,75 @@ export const user: User = {
         emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }] }
     },
     stats: {
-        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 25000
+        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 1250000
     },
-    progress: { 'Çevre': 80 }
+    progress: { 'profile': 100, 'volunteer': 85, 'impact': 60 },
+    supportedNgos: ['1', '2'],
+    volunteerNgos: ['1', '4', '5']
 };
 
-export const ngos: NGO[] = [];
+export const ngos: NGO[] = [
+    {
+        id: '1',
+        name: 'Ahbap Derneği',
+        type: 'Dernek',
+        category: 'Yardımlaşma',
+        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200',
+        about: 'Dayanışma ve yardımlaşma kuruluşu.',
+        transparencyScore: 98,
+        stats: { followers: 1500000, volunteers: 45000, projects: 120 },
+        contact: { email: 'info@ahbap.org', phone: '0212 123 45 67', website: 'https://ahbap.org', address: { city: 'İstanbul', district: 'Şişli', country: 'Türkiye' } }
+    },
+    {
+        id: '2',
+        name: 'TEMA Vakfı',
+        type: 'Vakıf',
+        category: 'Çevre',
+        avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1200',
+        about: 'Türkiye Erozyonla Mücadele, Ağaçlandırma ve Doğal Varlıkları Koruma Vakfı.',
+        transparencyScore: 95,
+        stats: { followers: 850000, volunteers: 95000, projects: 450 },
+        contact: { email: 'info@tema.org.tr', phone: '0212 456 78 90', website: 'https://tema.org.tr', address: { city: 'İstanbul', district: 'Beşiktaş', country: 'Türkiye' } }
+    },
+    {
+        id: '3',
+        name: 'LÖSEV',
+        type: 'Vakıf',
+        category: 'Sağlık',
+        avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=1200',
+        about: 'Lösemili Çocuklar Sağlık ve Eğitim Vakfı.',
+        transparencyScore: 92,
+        stats: { followers: 1200000, volunteers: 35000, projects: 85 },
+        contact: { email: 'bilgi@losev.org.tr', phone: '0312 123 45 67', website: 'https://losev.org.tr', address: { city: 'Ankara', district: 'Çankaya', country: 'Türkiye' } }
+    },
+    {
+        id: '4',
+        name: 'Darüşşafaka Cemiyeti',
+        type: 'Dernek',
+        category: 'Eğitim',
+        avatarUrl: 'https://logo.clearbit.com/darussafaka.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1523050335392-93851179ae22?q=80&w=1200',
+        about: 'Eğitimde fırsat eşitliği.',
+        transparencyScore: 97,
+        stats: { followers: 450000, volunteers: 5000, projects: 45 },
+        contact: { email: 'info@darussafaka.org', phone: '0212 987 65 43', website: 'https://darussafaka.org', address: { city: 'İstanbul', district: 'Sarıyer', country: 'Türkiye' } }
+    },
+    {
+        id: '5',
+        name: 'HAYTAP',
+        type: 'Dernek',
+        category: 'Hayvan Hakları',
+        avatarUrl: 'https://logo.clearbit.com/haytap.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?q=80&w=1200',
+        about: 'Hayvan Hakları Federasyonu.',
+        transparencyScore: 88,
+        stats: { followers: 950000, volunteers: 8000, projects: 65 },
+        contact: { email: 'bilgi@haytap.org', phone: '0212 345 67 89', website: 'https://haytap.org', address: { city: 'İstanbul', district: 'Kadıköy', country: 'Türkiye' } }
+    }
+];
 
 export const volunteeringOpportunities: Volunteering[] = [
     { id: '1', title: 'Afet Bölgesi Lojistik Destek', organization: 'Ahbap Derneği', ngoId: 'ngo-1', location: { city: 'Hatay', district: 'Antakya', type: 'Saha' }, commitment: 'Tek Günlük', volunteerCount: { needed: 50, applications: 12 }, dates: { applicationStart: '2024-01-01', applicationEnd: '2024-12-31', eventStart: '2024-08-01', eventEnd: '2024-08-01' }, hours: { start: '09:00', end: '17:00', total: 8 }, socialArea: 'Dayanışma', points: 500, ngoTransparencyScore: 98, taskType: 'Tek Gün', providesCertificate: true, earnedBadges: [], hasPreTraining: true, description: 'Lojistik merkezimizde paketleme desteği.', amenities: { transport: true, food: true, accommodation: false } }

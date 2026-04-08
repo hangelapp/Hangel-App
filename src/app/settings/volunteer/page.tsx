@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -464,9 +465,18 @@ export default function VolunteerSettingsPage() {
       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
         <ArrowLeft className="h-6 w-6" />
       </Button>
-      <div>
-        <h1 className="text-2xl font-bold font-headline">Gönüllülük Bilgileri</h1>
-        <p className="text-muted-foreground text-sm">Yeteneklerinle topluma değer katmaya başla.</p>
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">
+        <div className="max-w-2xl mx-auto space-y-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#1d1d1f]">
+            Yeteneklerinle topluma değer katmaya başla.
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed font-medium">
+            Yeteneklerini ekle, hassasiyetlerine, yetkinliklerine ve konumuna uygun gönüllülük fırsatlarını keşfet. Kimse yalnız başına mücadele etmesin.
+          </p>
+          <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-6">
+            <Link href="/market">Daha Sonra</Link>
+          </Button>
+        </div>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>

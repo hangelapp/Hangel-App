@@ -165,21 +165,6 @@ export default function VolunteeringPage() {
 
   return (
     <div className="space-y-4 animate-in fade-in-0">
-      {/* Hero Banner */}
-      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 px-4 py-8 space-y-4">
-        <div className="max-w-2xl mx-auto space-y-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#1d1d1f]">
-            Yeteneklerinle topluma değer katmaya başla.
-          </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-            Yeteneklerini ekle, hassasiyetlerine, yetkinliklerine ve konumuna uygun gönüllülük fırsatlarını keşfet. Kimse yalnız başına mücadele etmesin.
-          </p>
-          <Button variant="outline" className="rounded-xl font-bold h-11 px-6">
-            Daha Sonra
-          </Button>
-        </div>
-      </div>
-
       <div className="p-4 space-y-4">
         <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2">
           <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>

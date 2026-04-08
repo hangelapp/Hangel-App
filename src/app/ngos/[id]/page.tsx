@@ -18,6 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -100,21 +102,24 @@ export default function NgoProfilePage() {
   const params = useParams();
   const { toast } = useToast();
   const id = params.id as string;
-  const [ngo, setNgo] = useState<NGO | null | undefined>(undefined);
+  const db = useFirestore();
+
+  const ngoDocRef = useMemoFirebase(() => {
+    if (!db || !id) return null;
+    return doc(db, 'ngos', id);
+  }, [db, id]);
+
+  const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
+
   const [profileUrl, setProfileUrl] = useState('');
 
   useEffect(() => {
-    const storedNgos = localStorage.getItem('managedNgos');
-    const ngosSource = storedNgos ? JSON.parse(storedNgos) : ngosData;
-    const foundNgo = ngosSource.find((n: NGO) => n.id === id);
-    setNgo(foundNgo || null);
-
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
-  }, [id]);
+  }, []);
   
-  if (ngo === undefined) {
+  if (isLoading) {
     return (
         <div className="animate-in fade-in-0">
           <Skeleton className="h-40 w-full" />

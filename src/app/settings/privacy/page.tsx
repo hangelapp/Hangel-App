@@ -127,7 +127,7 @@ export default function PrivacySettingsPage() {
                     >
                          <Switch id="hide-posts" checked={hidePosts} onCheckedChange={setHidePosts} />
                     </SettingsItem>
-                     <SettingsItem
+                    <SettingsItem
                         label="Bağış Aktivitelerimi Gizle"
                         description="Bağış ve işlem geçmişiniz profilinizde görünmez."
                         icon={Shield} 

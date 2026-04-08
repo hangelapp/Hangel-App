@@ -4,8 +4,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Search } from 'lucide-react';
+import { ArrowLeft, Search, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { ngos } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -15,9 +17,19 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function VolunteerNgoSelectionPage() {
     const router = useRouter();
-    const [selectedNgos, setSelectedNgos] = useState<string[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
     const { toast } = useToast();
+    const { user: authUser, isUserLoading } = useUser();
+    const db = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
+
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<any>(userDocRef);
+    const [selectedNgos, setSelectedNgos] = useState<string[]>([]); 
+
+    const [searchTerm, setSearchTerm] = useState('');
     const [isOnboarding, setIsOnboarding] = useState(false);
 
     useEffect(() => {
@@ -25,17 +37,15 @@ export default function VolunteerNgoSelectionPage() {
         if (onboardingStep === 'volunteer-ngo-selection') {
             setIsOnboarding(true);
         }
-        const savedNgos = localStorage.getItem('volunteerNgos');
-        if (savedNgos) {
-            try {
-                setSelectedNgos(JSON.parse(savedNgos));
-            } catch (e) {
-                setSelectedNgos(['1', '2']);
-            }
-        } else {
-            setSelectedNgos(['1', '2']);
-        }
     }, []);
+
+    useEffect(() => {
+        if (userData && userData.volunteerNgos) {
+            setSelectedNgos(userData.volunteerNgos);
+        } else if (userData) {
+            setSelectedNgos(['1', '2']); // Fallback to mock defaults
+        }
+    }, [userData]);
 
     const filteredNgos = ngos.filter(ngo => 
         ngo.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,7 +60,12 @@ export default function VolunteerNgoSelectionPage() {
     };
     
     const handleSave = () => {
-        localStorage.setItem('volunteerNgos', JSON.stringify(selectedNgos));
+        if (userDocRef) {
+            updateDocumentNonBlocking(userDocRef, {
+                volunteerNgos: selectedNgos
+            });
+        }
+
         toast({
             title: "Tercihler Kaydedildi",
             description: "Gönüllüsü olduğunuz STK seçimleriniz başarıyla güncellendi.",
@@ -66,6 +81,14 @@ export default function VolunteerNgoSelectionPage() {
             router.push('/settings/profile');
         }
     };
+
+    if (isUserLoading || isUserDataLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
