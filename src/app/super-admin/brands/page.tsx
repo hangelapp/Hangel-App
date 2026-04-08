@@ -1,34 +1,111 @@
 
 'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import React, { useMemo } from 'react';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React, { useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
-import { Loader2, Store, Trash2, Power, PowerOff, ExternalLink, Percent } from 'lucide-react';
+import { collection, doc, query, where } from 'firebase/firestore';
+import { Loader2, Store, Trash2, Power, PowerOff, Pencil, Search, Inbox } from 'lucide-react';
 import type { Brand } from "@/lib/types";
 import Link from 'next/link';
+
+type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
 
 export default function BrandsPage() {
     const { toast } = useToast();
     const db = useFirestore();
-    
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending'>('all');
+    const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
+    const [editFormData, setEditFormData] = useState<Partial<BrandItem>>({});
+
+    // Load approved brands
     const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
-    const { data: brands, isLoading } = useCollection<Brand>(brandsQuery);
+    const { data: brands, isLoading: brandsLoading } = useCollection<Brand>(brandsQuery);
+
+    // Load unapproved brand applications
+    const applicationsQuery = useMemoFirebase(() =>
+        query(collection(db, 'applications'), where('entityType', '==', 'BRAND'), where('status', '==', 'Beklemede')),
+        [db]
+    );
+    const { data: applications, isLoading: appsLoading } = useCollection(applicationsQuery);
+
+    // Combine and filter brands
+    const filteredBrands = useMemo(() => {
+        const combinedList: BrandItem[] = [];
+
+        // Add approved brands
+        if (brands) {
+            brands.forEach(brand => {
+                combinedList.push({
+                    ...brand,
+                    source: 'brands',
+                    status: (brand as any).status || 'Aktif'
+                });
+            });
+        }
+
+        // Add pending applications
+        if (applications) {
+            applications.forEach((app: any) => {
+                combinedList.push({
+                    id: app.id,
+                    name: app.name,
+                    slug: app.name?.toLowerCase().replace(/\s+/g, '-') || '',
+                    logoUrl: '',
+                    coverPhotoUrl: '',
+                    donationRate: 0,
+                    type: app.brandStatus || 'Ticari',
+                    category: app.sector || 'Diğer',
+                    source: 'applications',
+                    status: 'Beklemede',
+                    ...app
+                } as BrandItem);
+            });
+        }
+
+        // Apply filters
+        let filtered = combinedList;
+
+        // Status filter
+        if (statusFilter === 'approved') {
+            filtered = filtered.filter(b => b.source === 'brands' && b.status === 'Aktif');
+        } else if (statusFilter === 'pending') {
+            filtered = filtered.filter(b => b.status === 'Beklemede');
+        }
+
+        // Search filter
+        if (searchTerm.trim()) {
+            const q = searchTerm.toLowerCase();
+            filtered = filtered.filter(b =>
+                b.name?.toLowerCase().includes(q) ||
+                b.category?.toLowerCase().includes(q) ||
+                b.type?.toLowerCase().includes(q)
+            );
+        }
+
+        return filtered;
+    }, [brands, applications, statusFilter, searchTerm]);
 
     const handleToggleStatus = (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
         const brandRef = doc(db, 'brands', id);
         updateDocumentNonBlocking(brandRef, { status: isPassive ? 'Aktif' : 'Pasif' });
-        
-        toast({ 
-            title: isPassive ? "Marka Aktifleştirildi" : "Marka Pasife Alındı", 
-            description: "Durum değişikliği sisteme yansıtıldı." 
+
+        toast({
+            title: isPassive ? "Marka Aktifleştirildi" : "Marka Pasife Alındı",
+            description: "Durum değişikliği sisteme yansıtıldı."
         });
     };
 
@@ -38,10 +115,45 @@ export default function BrandsPage() {
         toast({
             variant: 'destructive',
             title: "Marka Kaldırıldı",
-            description: `${name} platformdan kalıcı olarak silindi.`,
+            description: `${name} platformdan kalıcı olarak silindi.`
         });
     };
-    
+
+    const handleStartEdit = (brand: BrandItem) => {
+        setEditingBrand(brand);
+        setEditFormData({
+            name: brand.name,
+            category: brand.category,
+            type: brand.type,
+            donationRate: brand.donationRate,
+            email: (brand as any).email,
+            phone: (brand as any).phone,
+            website: (brand as any).website
+        });
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingBrand || !editingBrand.id) return;
+
+        try {
+            const brandRef = doc(db, 'brands', editingBrand.id);
+            updateDocumentNonBlocking(brandRef, editFormData);
+            toast({
+                title: "Marka Güncellendi",
+                description: "Değişiklikler başarıyla kaydedildi."
+            });
+            setEditingBrand(null);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: "Hata",
+                description: "Güncellenirken bir hata oluştu."
+            });
+        }
+    };
+
+    const isLoading = brandsLoading || appsLoading;
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -55,77 +167,221 @@ export default function BrandsPage() {
         <div className="space-y-8 animate-in fade-in-0">
             <div className="space-y-1">
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Marka Yönetimi</h1>
-                <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını ve listeleme durumlarını yönetin.</p>
+                <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını, onay durumlarını ve detaylarını yönetin.</p>
             </div>
 
+            {/* Filters */}
+            <Card className="rounded-2xl border-black/5">
+                <CardContent className="p-6 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="search" className="text-sm font-semibold">Ara</Label>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="search"
+                                    placeholder="Marka adı, kategori..."
+                                    className="pl-10 h-10 rounded-xl"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="status" className="text-sm font-semibold">Durum</Label>
+                            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                                <SelectTrigger id="status" className="h-10 rounded-xl">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Tümü</SelectItem>
+                                    <SelectItem value="approved">Onaylandı</SelectItem>
+                                    <SelectItem value="pending">Beklemede</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex items-end">
+                            <p className="text-sm text-muted-foreground">
+                                <strong>{filteredBrands.length}</strong> marka gösteriliyor
+                            </p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Brands List */}
             <Card className="rounded-[2.5rem] border-black/5 shadow-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b p-8">
-                    <CardTitle className="text-xl font-bold">İş Ortağı Markalar ({brands?.length || 0})</CardTitle>
-                    <CardDescription>Platformda aktif alışveriş-bağış döngüsünde yer alan markalar.</CardDescription>
+                    <CardTitle className="text-xl font-bold">Markalar ({filteredBrands.length})</CardTitle>
+                    <CardDescription>Aktif ve beklemede olan tüm markalar.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                   <div className="divide-y border-black/5">
-                   {brands && brands.length > 0 ? brands.map(brand => {
-                       const isPassive = (brand as any).status === 'Pasif';
-                       return (
-                       <div key={brand.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", isPassive && "opacity-60 grayscale")}>
-                           <div className="flex items-center gap-5 flex-1">
-                               <Avatar className="h-14 w-14 border-2 border-white shadow-lg bg-white">
-                                   <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-1" />
-                                   <AvatarFallback className="font-black text-xl">{brand.name[0]}</AvatarFallback>
-                               </Avatar>
-                               <div className="space-y-1">
-                                   <div className="flex items-center gap-2">
-                                       <p className="font-black text-lg text-[#1d1d1f] tracking-tight">{brand.name}</p>
-                                       {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}
-                                   </div>
-                                   <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
-                                       <span className="flex items-center gap-1 font-bold text-primary"><Percent className="h-3 w-3" /> {brand.donationRate} Bağış</span>
-                                       <span>•</span>
-                                       <span className="capitalize">{brand.type}</span>
-                                       <span>•</span>
-                                       <span>{brand.category}</span>
-                                   </div>
-                               </div>
-                           </div>
-                           <div className="flex items-center gap-3 w-full md:w-auto">
-                               <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" asChild>
-                                   <Link href={`/market/${brand.slug}`}>Mağazayı Gör</Link>
-                               </Button>
-                               <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" onClick={() => handleToggleStatus(brand.id, (brand as any).status)}>
-                                 {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif Et</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife Al</>}
-                               </Button>
-                               <AlertDialog>
-                                   <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl">
-                                            <Trash2 className="h-5 w-5" />
-                                        </Button>
-                                   </AlertDialogTrigger>
-                                   <AlertDialogContent className="rounded-[2.5rem]">
-                                       <AlertDialogHeader>
-                                           <AlertDialogTitle className="text-xl font-bold">{brand.name} markasını silmek istiyor musunuz?</AlertDialogTitle>
-                                           <AlertDialogDescription className="text-base font-medium">
-                                            Bu işlem geri alınamaz. Marka ve ilişkili tüm veriler platformdan kalıcı olarak silinecektir.
-                                           </AlertDialogDescription>
-                                       </AlertDialogHeader>
-                                       <AlertDialogFooter className="gap-2">
-                                           <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
-                                           <AlertDialogAction 
-                                            className={cn(buttonVariants({ variant: "destructive" }), "rounded-2xl font-bold")} 
-                                            onClick={() => handleRemove(brand.id, brand.name)}>
-                                                Evet, Kalıcı Olarak Sil
-                                            </AlertDialogAction>
-                                       </AlertDialogFooter>
-                                   </AlertDialogContent>
-                               </AlertDialog>
-                           </div>
-                       </div>
-                   )}) : (
-                       <div className="p-20 text-center text-muted-foreground italic">Henüz kayıtlı bir marka bulunmuyor.</div>
-                   )}
-                </div>
+                    <div className="divide-y border-black/5">
+                        {filteredBrands && filteredBrands.length > 0 ? (
+                            filteredBrands.map(brand => {
+                                const isPassive = brand.status === 'Pasif';
+                                const isPending = brand.status === 'Beklemede';
+                                return (
+                                    <div key={brand.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", isPassive && "opacity-60 grayscale")}>
+                                        <div className="flex items-center gap-5 flex-1">
+                                            <Avatar className="h-14 w-14 border-2 border-white shadow-lg bg-white">
+                                                <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-1" />
+                                                <AvatarFallback className="font-black text-xl">{brand.name?.[0]}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-black text-lg text-[#1d1d1f] tracking-tight">{brand.name}</p>
+                                                    {isPending && <Badge className="bg-yellow-500 text-white text-[9px] font-black uppercase">BEKLEMEDİ</Badge>}
+                                                    {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}
+                                                </div>
+                                                <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
+                                                    {brand.donationRate ? <span className="flex items-center gap-1">%{brand.donationRate} Bağış</span> : null}
+                                                    {brand.type && <><span>•</span> <span className="capitalize">{brand.type}</span></>}
+                                                    {brand.category && <><span>•</span> <span>{brand.category}</span></>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 w-full md:w-auto">
+                                            {brand.source === 'brands' && (
+                                                <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" asChild>
+                                                    <Link href={`/market/${brand.slug}`}>Mağazayı Gör</Link>
+                                                </Button>
+                                            )}
+                                            <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" onClick={() => handleStartEdit(brand)}>
+                                                        <Pencil className="mr-2 h-4 w-4" /> Düzenle
+                                                    </Button>
+                                                </DialogTrigger>
+                                                {editingBrand?.id === brand.id && (
+                                                    <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
+                                                        <DialogHeader>
+                                                            <DialogTitle>{brand.name} - Detaylar</DialogTitle>
+                                                            <DialogDescription>Marka bilgilerini düzenleyin.</DialogDescription>
+                                                        </DialogHeader>
+                                                        <div className="space-y-4 py-4">
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="edit-name" className="text-sm font-semibold">Marka Adı</Label>
+                                                                <Input
+                                                                    id="edit-name"
+                                                                    value={editFormData.name || ''}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                                                    className="rounded-xl"
+                                                                />
+                                                            </div>
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div className="space-y-2">
+                                                                    <Label htmlFor="edit-category" className="text-sm font-semibold">Kategori</Label>
+                                                                    <Input
+                                                                        id="edit-category"
+                                                                        value={editFormData.category || ''}
+                                                                        onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                                                                        className="rounded-xl"
+                                                                    />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Label htmlFor="edit-type" className="text-sm font-semibold">Tür</Label>
+                                                                    <Input
+                                                                        id="edit-type"
+                                                                        value={editFormData.type || ''}
+                                                                        onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
+                                                                        className="rounded-xl"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="edit-donation" className="text-sm font-semibold">Bağış Oranı (%)</Label>
+                                                                <Input
+                                                                    id="edit-donation"
+                                                                    type="number"
+                                                                    value={editFormData.donationRate || 0}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, donationRate: parseFloat(e.target.value) })}
+                                                                    className="rounded-xl"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="edit-email" className="text-sm font-semibold">E-posta</Label>
+                                                                <Input
+                                                                    id="edit-email"
+                                                                    type="email"
+                                                                    value={(editFormData as any).email || ''}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                                                                    className="rounded-xl"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="edit-phone" className="text-sm font-semibold">Telefon</Label>
+                                                                <Input
+                                                                    id="edit-phone"
+                                                                    value={(editFormData as any).phone || ''}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                                                                    className="rounded-xl"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor="edit-website" className="text-sm font-semibold">Web Sitesi</Label>
+                                                                <Input
+                                                                    id="edit-website"
+                                                                    value={(editFormData as any).website || ''}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })}
+                                                                    className="rounded-xl"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <DialogFooter>
+                                                            <Button variant="outline" onClick={() => setEditingBrand(null)} className="rounded-xl font-bold">Vazgeç</Button>
+                                                            <Button onClick={handleSaveEdit} className="rounded-xl font-bold">Kaydet</Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                )}
+                                            </Dialog>
+                                            {brand.source === 'brands' && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5"
+                                                    onClick={() => handleToggleStatus(brand.id, brand.status || 'Aktif')}
+                                                >
+                                                    {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif Et</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife Al</>}
+                                                </Button>
+                                            )}
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl">
+                                                        <Trash2 className="h-5 w-5" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="rounded-[2.5rem]">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle className="text-xl font-bold">{brand.name} markasını silmek istiyor musunuz?</AlertDialogTitle>
+                                                        <AlertDialogDescription className="text-base font-medium">
+                                                            Bu işlem geri alınamaz. Marka ve ilişkili tüm veriler platformdan kalıcı olarak silinecektir.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter className="gap-2">
+                                                        <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            className={cn(buttonVariants({ variant: "destructive" }), "rounded-2xl font-bold")}
+                                                            onClick={() => handleRemove(brand.id, brand.name)}
+                                                        >
+                                                            Evet, Kalıcı Olarak Sil
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="p-20 flex flex-col items-center justify-center text-center gap-3">
+                                <Inbox className="h-12 w-12 text-muted-foreground/30" />
+                                <p className="text-muted-foreground italic">Filtrelerinize uygun marka bulunmuyor.</p>
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
