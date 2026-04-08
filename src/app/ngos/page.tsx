@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Heart, Users, ShieldCheck, X, Info } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Heart, Users, ShieldCheck, X, Info, HandCoins } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
@@ -192,8 +192,10 @@ export default function NgosPage() {
                                         <p className="text-xs text-muted-foreground">{ngo.category}</p>
                                     </div>
                                 </div>
-                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> {ngo.transparencyScore}</span>
+                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                                    <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> {ngo.transparencyScore ?? 0}</span>
+                                    <Separator orientation="vertical" className="h-3" />
+                                    <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-rose-500" /> {ngo.stats?.donors || 0} Bağışçı</span>
                                     <Separator orientation="vertical" className="h-3" />
                                     <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {ngo.stats?.volunteers || 0} Gönüllü</span>
                                 </div>

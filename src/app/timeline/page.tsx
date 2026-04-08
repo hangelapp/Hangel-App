@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +71,7 @@ export default function TimelinePage() {
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSanaOzelVisible, setIsSanaOzelVisible] = useState(true);
+  const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(true);
 
   const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
@@ -169,14 +169,21 @@ export default function TimelinePage() {
                 </TabsList>
             </div>
             <TabsContent value="special" className="mt-0">
-                {isSanaOzelVisible && (
-                    <div className="p-2 sm:p-4">
-                        <Card className="relative">
-                            <CardHeader>
-                                <CardTitle className="text-lg">Sana Özel</CardTitle>
-                                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsSanaOzelVisible(false)}><X className="h-4 w-4" /></Button>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                <div className="p-2 sm:p-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-lg">Sana Özel</CardTitle>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setIsSanaOzelExpanded(prev => !prev)}
+                            >
+                                {isSanaOzelExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            </Button>
+                        </CardHeader>
+                        {isSanaOzelExpanded && (
+                            <CardContent className="space-y-4 pt-0">
                                 <div>
                                     <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
                                     <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
@@ -198,9 +205,9 @@ export default function TimelinePage() {
                                     </Link>
                                 </div>
                             </CardContent>
-                        </Card>
-                    </div>
-                )}
+                        )}
+                    </Card>
+                </div>
                 <div className="p-2 sm:p-4 space-y-4">
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
