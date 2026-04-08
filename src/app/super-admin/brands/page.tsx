@@ -123,21 +123,52 @@ export default function BrandsPage() {
         setEditingBrand(brand);
         setEditFormData({
             name: brand.name,
+            slug: brand.slug,
             category: brand.category,
             type: brand.type,
+            logoUrl: brand.logoUrl,
+            coverPhotoUrl: brand.coverPhotoUrl,
+            about: brand.about,
             donationRate: brand.donationRate,
-            email: (brand as any).email,
-            phone: (brand as any).phone,
-            website: (brand as any).website
-        });
+            agency: brand.agency,
+            // Flatten contact fields for form state
+            _email: brand.contact?.email || (brand as any).email || '',
+            _phone: (brand as any).phone || '',
+            _website: brand.contact?.website || (brand as any).website || '',
+            _instagram: brand.contact?.social?.instagram || '',
+            _twitter: brand.contact?.social?.twitter || '',
+            _facebook: brand.contact?.social?.facebook || '',
+            _linkedin: brand.contact?.social?.linkedin || '',
+        } as any);
     };
 
     const handleSaveEdit = async () => {
         if (!editingBrand || !editingBrand.id) return;
 
         try {
+            const fd = editFormData as any;
             const brandRef = doc(db, 'brands', editingBrand.id);
-            updateDocumentNonBlocking(brandRef, editFormData);
+            updateDocumentNonBlocking(brandRef, {
+                name: fd.name,
+                slug: fd.slug,
+                category: fd.category,
+                type: fd.type,
+                logoUrl: fd.logoUrl,
+                coverPhotoUrl: fd.coverPhotoUrl,
+                about: fd.about,
+                donationRate: fd.donationRate,
+                agency: fd.agency,
+                contact: {
+                    email: fd._email || '',
+                    website: fd._website || '',
+                    social: {
+                        instagram: fd._instagram || '',
+                        twitter: fd._twitter || '',
+                        facebook: fd._facebook || '',
+                        linkedin: fd._linkedin || '',
+                    },
+                },
+            });
             toast({
                 title: "Marka Güncellendi",
                 description: "Değişiklikler başarıyla kaydedildi."
@@ -254,78 +285,199 @@ export default function BrandsPage() {
                                                     </Button>
                                                 </DialogTrigger>
                                                 {editingBrand?.id === brand.id && (
-                                                    <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
+                                                    <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
                                                         <DialogHeader>
                                                             <DialogTitle>{brand.name} - Detaylar</DialogTitle>
                                                             <DialogDescription>Marka bilgilerini düzenleyin.</DialogDescription>
                                                         </DialogHeader>
-                                                        <div className="space-y-4 py-4">
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="edit-name" className="text-sm font-semibold">Marka Adı</Label>
-                                                                <Input
-                                                                    id="edit-name"
-                                                                    value={editFormData.name || ''}
-                                                                    onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                                                                    className="rounded-xl"
-                                                                />
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div className="space-y-2">
-                                                                    <Label htmlFor="edit-category" className="text-sm font-semibold">Kategori</Label>
-                                                                    <Input
-                                                                        id="edit-category"
-                                                                        value={editFormData.category || ''}
-                                                                        onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                                                                        className="rounded-xl"
-                                                                    />
+                                                        <div className="max-h-[70vh] overflow-y-auto pr-1 space-y-6 py-4">
+
+                                                            {/* --- Genel Bilgiler --- */}
+                                                            <div className="space-y-4">
+                                                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Genel Bilgiler</p>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-name" className="text-sm font-semibold">Marka Adı</Label>
+                                                                        <Input
+                                                                            id="edit-name"
+                                                                            value={editFormData.name || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-slug" className="text-sm font-semibold">Kısa Ad / Slug</Label>
+                                                                        <Input
+                                                                            id="edit-slug"
+                                                                            value={editFormData.slug || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, slug: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                            placeholder="ornek-marka"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-category" className="text-sm font-semibold">Kategori</Label>
+                                                                        <Input
+                                                                            id="edit-category"
+                                                                            value={editFormData.category || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-type" className="text-sm font-semibold">Tür</Label>
+                                                                        <Select
+                                                                            value={editFormData.type || ''}
+                                                                            onValueChange={(v) => setEditFormData({ ...editFormData, type: v as Brand['type'] })}
+                                                                        >
+                                                                            <SelectTrigger id="edit-type" className="rounded-xl">
+                                                                                <SelectValue placeholder="Tür seçin" />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <SelectItem value="brand">Marka</SelectItem>
+                                                                                <SelectItem value="cooperative">Kooperatif</SelectItem>
+                                                                                <SelectItem value="social">Sosyal Girişim</SelectItem>
+                                                                                <SelectItem value="economic">Ekonomik Birlik</SelectItem>
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-donation" className="text-sm font-semibold">Bağış Oranı %</Label>
+                                                                        <Input
+                                                                            id="edit-donation"
+                                                                            type="number"
+                                                                            value={editFormData.donationRate ?? 0}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, donationRate: parseFloat(e.target.value) })}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-logo" className="text-sm font-semibold">Logo URL</Label>
+                                                                        <Input
+                                                                            id="edit-logo"
+                                                                            value={editFormData.logoUrl || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, logoUrl: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-cover" className="text-sm font-semibold">Kapak Fotoğrafı URL</Label>
+                                                                        <Input
+                                                                            id="edit-cover"
+                                                                            value={editFormData.coverPhotoUrl || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, coverPhotoUrl: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-about" className="text-sm font-semibold">Hakkında</Label>
+                                                                        <Textarea
+                                                                            id="edit-about"
+                                                                            value={editFormData.about || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, about: e.target.value })}
+                                                                            className="rounded-xl min-h-[80px]"
+                                                                            placeholder="Marka hakkında kısa bilgi..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-agency" className="text-sm font-semibold">Ajans</Label>
+                                                                        <Input
+                                                                            id="edit-agency"
+                                                                            value={(editFormData as any).agency || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, agency: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
                                                                 </div>
-                                                                <div className="space-y-2">
-                                                                    <Label htmlFor="edit-type" className="text-sm font-semibold">Tür</Label>
-                                                                    <Input
-                                                                        id="edit-type"
-                                                                        value={editFormData.type || ''}
-                                                                        onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
-                                                                        className="rounded-xl"
-                                                                    />
+                                                            </div>
+
+                                                            <div className="border-t border-black/5" />
+
+                                                            {/* --- İletişim --- */}
+                                                            <div className="space-y-4">
+                                                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">İletişim</p>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-email" className="text-sm font-semibold">E-posta</Label>
+                                                                        <Input
+                                                                            id="edit-email"
+                                                                            type="email"
+                                                                            value={(editFormData as any)._email || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _email: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-phone" className="text-sm font-semibold">Telefon</Label>
+                                                                        <Input
+                                                                            id="edit-phone"
+                                                                            value={(editFormData as any)._phone || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _phone: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-website" className="text-sm font-semibold">Web Sitesi</Label>
+                                                                        <Input
+                                                                            id="edit-website"
+                                                                            value={(editFormData as any)._website || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _website: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://..."
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="edit-donation" className="text-sm font-semibold">Bağış Oranı (%)</Label>
-                                                                <Input
-                                                                    id="edit-donation"
-                                                                    type="number"
-                                                                    value={editFormData.donationRate || 0}
-                                                                    onChange={(e) => setEditFormData({ ...editFormData, donationRate: parseFloat(e.target.value) })}
-                                                                    className="rounded-xl"
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="edit-email" className="text-sm font-semibold">E-posta</Label>
-                                                                <Input
-                                                                    id="edit-email"
-                                                                    type="email"
-                                                                    value={(editFormData as any).email || ''}
-                                                                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
-                                                                    className="rounded-xl"
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="edit-phone" className="text-sm font-semibold">Telefon</Label>
-                                                                <Input
-                                                                    id="edit-phone"
-                                                                    value={(editFormData as any).phone || ''}
-                                                                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
-                                                                    className="rounded-xl"
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <Label htmlFor="edit-website" className="text-sm font-semibold">Web Sitesi</Label>
-                                                                <Input
-                                                                    id="edit-website"
-                                                                    value={(editFormData as any).website || ''}
-                                                                    onChange={(e) => setEditFormData({ ...editFormData, website: e.target.value })}
-                                                                    className="rounded-xl"
-                                                                />
+
+                                                            <div className="border-t border-black/5" />
+
+                                                            {/* --- Sosyal Medya --- */}
+                                                            <div className="space-y-4">
+                                                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Sosyal Medya</p>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-instagram" className="text-sm font-semibold">Instagram</Label>
+                                                                        <Input
+                                                                            id="edit-instagram"
+                                                                            value={(editFormData as any)._instagram || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _instagram: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://instagram.com/..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-twitter" className="text-sm font-semibold">Twitter / X</Label>
+                                                                        <Input
+                                                                            id="edit-twitter"
+                                                                            value={(editFormData as any)._twitter || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _twitter: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://x.com/..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-facebook" className="text-sm font-semibold">Facebook</Label>
+                                                                        <Input
+                                                                            id="edit-facebook"
+                                                                            value={(editFormData as any)._facebook || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _facebook: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://facebook.com/..."
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-linkedin" className="text-sm font-semibold">LinkedIn</Label>
+                                                                        <Input
+                                                                            id="edit-linkedin"
+                                                                            value={(editFormData as any)._linkedin || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _linkedin: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://linkedin.com/..."
+                                                                        />
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>
