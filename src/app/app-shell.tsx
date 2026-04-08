@@ -156,11 +156,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
 
-    // Native app: giriş yapmış kullanıcıyı login sayfalarından timeline'a yönlendir
+    // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir
     useEffect(() => {
-        if (!isUserLoading && authUser && isMounted && isNativeApp()) {
+        if (!isUserLoading && authUser && isMounted) {
             if (pathname === '/' || pathname === '/login' || pathname === '/login/selection') {
-                router.push('/timeline');
+                router.push('/market');
             }
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
