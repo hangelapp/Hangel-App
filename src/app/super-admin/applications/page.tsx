@@ -27,8 +27,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { FileText, Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, Phone, Globe, MapPin, User } from "lucide-react";
-import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where, getDocs } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -198,7 +198,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: any }) =>
   );
 };
 
-const PendingApplicationCard = ({ item, onApprove, onReject }: { item: any, onApprove: (id: string, userId?: string, app?: any) => void, onReject: (id: string) => void }) => {
+const PendingApplicationCard = ({ item, onApprove, onReject }: { item: any, onApprove: (id: string, userId?: string) => void, onReject: (id: string) => void }) => {
   const name = getAppName(item);
   const type = getAppType(item);
   const date = getAppDate(item);
@@ -230,7 +230,7 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: any, onAp
             variant="outline"
             size="sm"
             className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-50 rounded-xl font-bold"
-            onClick={() => onApprove(item.id, item.userId, item)}
+            onClick={() => onApprove(item.id, item.userId)}
           >
             Onayla
           </Button>
@@ -255,77 +255,23 @@ export default function ApplicationsPage() {
   const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
   const { data: applications, isLoading } = useCollection(appsQuery);
 
-  const handleUpdateStatus = (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string, application?: any) => {
+  const handleUpdateStatus = (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
     const appRef = doc(db, 'applications', id);
     updateDocumentNonBlocking(appRef, { status: newStatus });
 
-    if (newStatus === 'Onaylandı' && userId && application) {
-      // Only create NGO if it doesn't already exist
-      if (application.entityType === 'NGO') {
-        // Create NGO entry
-        const ngoData = {
-          name: application.name,
-          shortName: application.shortName || application.name,
-          category: application.sector || 'Diğer',
-          type: application.orgSubType || 'Dernek',
-          avatarUrl: '',
-          coverPhotoUrl: '',
-          stats: {
-            followers: 0,
-            donors: 0,
-            volunteers: 0,
-            volunteerHours: 0,
-            projects: 0,
-            totalDonation: 0,
-            donationCount: 0,
-            avgDonation: 0,
-            highestSingleDonation: 0,
-            peopleReached: 0,
-          },
-          transparencyScore: 0,
-          about: '',
-          joinDate: new Date().toLocaleDateString('tr-TR'),
-          supportedSDGs: [],
-          beneficiaryGroups: application.selectedBeneficiaries || [],
-          memberOf: [],
-          contact: {
-            email: application.email || '',
-            website: application.website || '',
-            social: application.social || { instagram: '', linkedin: '', twitter: '' },
-          },
-          donationByCategory: application.donationCategories || [],
-          registryNo: application.registryNo,
-          legalTitle: application.legalTitle,
-          slogan: application.slogan,
-          userId: userId,
-          city: application.city,
-          district: application.district,
-          neighborhood: application.neighborhood,
-          addressLine: application.addressLine,
-          phone: application.phone,
-          authorized: application.authorized,
-          status: 'Aktif',
-          createdAt: new Date().toISOString(),
-        };
-
-        addDocumentNonBlocking(collection(db, 'ngos'), ngoData);
-      }
-
-      // Update user role
+    if (newStatus === 'Onaylandı' && userId) {
       const userRef = doc(db, 'users', userId);
       updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
       toast({
-        title: "Başvuru Onaylandı ✓",
-        description: application.entityType === 'NGO' ? "STK profili oluşturuldu ve yönetim paneli erişimi verildi." : "Yetkilendirme yapıldı.",
+        title: "Yetki Tanımlandı",
+        description: "Kullanıcıya Yönetim Paneli erişimi otomatik olarak verildi.",
       });
     }
 
-    if (newStatus !== 'Onaylandı') {
-      toast({
-        title: newStatus === 'Reddedildi' ? "Başvuru Reddedildi" : "Başvuru Beklemeye Alındı",
-        description: "İşlem başarıyla Firestore üzerine yansıtıldı.",
-      });
-    }
+    toast({
+      title: newStatus === 'Onaylandı' ? "Başvuru Onaylandı" : newStatus === 'Reddedildi' ? "Başvuru Reddedildi" : "Başvuru Beklemeye Alındı",
+      description: "İşlem başarıyla Firestore üzerine yansıtıldı.",
+    });
   };
 
   const sortedApps = useMemo(() => {
@@ -385,7 +331,7 @@ export default function ApplicationsPage() {
               <PendingApplicationCard
                 key={app.id}
                 item={app}
-                onApprove={(id, userId, application) => handleUpdateStatus(id, 'Onaylandı', userId, application)}
+                onApprove={(id, userId) => handleUpdateStatus(id, 'Onaylandı', userId)}
                 onReject={(id) => handleUpdateStatus(id, 'Reddedildi')}
               />
             ))
