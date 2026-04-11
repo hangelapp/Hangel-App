@@ -19,6 +19,11 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    // OTP kodları - sadece server-side erişim (Admin SDK)
+    match /otp_codes/{docId} {
+      allow read, write: if false;
+    }
+
     // Kullanıcı koleksiyonu
     match /users/{userId} {
       allow read: if isSignedIn();

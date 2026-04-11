@@ -30,7 +30,9 @@ import {
     Globe,
     UserCircle,
     MapPin,
-    School
+    School,
+    MessageCircle,
+    Smartphone
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -44,7 +46,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, updateProfile } from 'firebase/auth';
+import { signInWithCustomToken, updateProfile } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -325,35 +327,32 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const [name, setName] = useState('');
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const recaptchaVerifierRef = React.useRef<RecaptchaVerifier | null>(null);
-
-    useEffect(() => {
-        if (step === 'phone' && !recaptchaVerifierRef.current) {
-            recaptchaVerifierRef.current = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'normal' });
-            recaptchaVerifierRef.current.render();
-        }
-        return () => {
-            if (recaptchaVerifierRef.current) {
-                recaptchaVerifierRef.current.clear();
-                recaptchaVerifierRef.current = null;
-            }
-        };
-    }, [auth, step]);
+    const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            if (!recaptchaVerifierRef.current) throw new Error('reCAPTCHA yüklenemedi. Sayfayı yenileyin.');
-            const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifierRef.current);
-            setConfirmationResult(result);
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhone, name, channel }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                if (res.status === 429) {
+                    throw new Error(`Çok fazla istek. ${data.retryAfter || 60} saniye bekleyin.`);
+                }
+                throw new Error(data.error || 'Gönderim başarısız');
+            }
             setStep('otp');
-            toast({ title: "Kod Gönderildi", description: `${fullPhone} numarasına doğrulama kodu gönderildi.` });
+            toast({
+                title: "Kod Gönderildi",
+                description: `${fullPhone} numarasına ${channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} ile doğrulama kodu gönderildi.`,
+            });
         } catch (error: any) {
-            recaptchaVerifierRef.current = null;
             toast({ variant: "destructive", title: "Hata", description: error.message });
         } finally {
             setIsLoading(false);
@@ -362,26 +361,31 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
 
     const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!confirmationResult) return;
         setIsLoading(true);
+        const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const userCredential = await confirmationResult.confirm(otp);
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhone, otp, name }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Doğrulama başarısız');
+
+            const userCredential = await signInWithCustomToken(auth, data.token);
             const userId = userCredential.user.uid;
 
-            const { getDoc: fsGetDoc } = await import('firebase/firestore');
-            const userDocSnap = await fsGetDoc(doc(db, 'users', userId));
-            if (!userDocSnap.exists()) {
+            if (data.isNewUser) {
                 setDocumentNonBlocking(doc(db, 'users', userId), {
                     id: userId,
                     name: name || userCredential.user.displayName || '',
                     role: 'user',
-                    personalInfo: { phone: `+${phoneCode}${phone}` },
+                    personalInfo: { phone: fullPhone },
                     stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                 }, { merge: true });
                 if (name) await updateProfile(userCredential.user, { displayName: name });
             }
-            const wasNew = !userDocSnap.exists();
-            onComplete(wasNew);
+            onComplete(data.isNewUser);
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
@@ -413,7 +417,37 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                             <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
                         </div>
                     </div>
-                    <div id="recaptcha-container" className="flex justify-center" />
+                    <div className="space-y-2">
+                        <FormLabel>Doğrulama Yöntemi</FormLabel>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setChannel('whatsapp')}
+                                className={cn(
+                                    "flex items-center justify-center gap-2 h-12 rounded-xl border-2 transition-all font-bold text-sm",
+                                    channel === 'whatsapp'
+                                        ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
+                                        : "border-muted bg-card text-muted-foreground"
+                                )}
+                            >
+                                <MessageCircle className="h-4 w-4" />
+                                WhatsApp
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setChannel('sms')}
+                                className={cn(
+                                    "flex items-center justify-center gap-2 h-12 rounded-xl border-2 transition-all font-bold text-sm",
+                                    channel === 'sms'
+                                        ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400"
+                                        : "border-muted bg-card text-muted-foreground"
+                                )}
+                            >
+                                <Smartphone className="h-4 w-4" />
+                                SMS
+                            </button>
+                        </div>
+                    </div>
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
                     </Button>
@@ -422,6 +456,9 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Doğrulama Kodu</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                            {channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} ile gönderilen 6 haneli kodu girin
+                        </p>
                         <FormInput
                             type="text"
                             inputMode="numeric"
@@ -437,6 +474,9 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
                     </Button>
+                    <button type="button" onClick={() => { setStep('phone'); setOtp(''); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        Geri Dön
+                    </button>
                 </form>
             )}
         </div>
