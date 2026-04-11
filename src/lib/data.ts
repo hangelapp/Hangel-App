@@ -208,14 +208,74 @@ export const user: User = {
         emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }] }
     },
     stats: {
-        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 25000
+        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 1250000
     },
-    progress: { 'Çevre': 80 }
+    progress: { 'profile': 100, 'volunteer': 85, 'impact': 60 },
+    supportedNgos: ['1', '2'],
+    volunteerNgos: ['1', '4', '5']
 };
 
 export const ngos: NGO[] = [
-    { id: 'ngo-1', name: 'Ahbap Derneği', category: 'Dayanışma', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/ahbap.org', coverPhotoUrl: 'https://picsum.photos/seed/ahbap/1200/400', stats: { followers: 500000, donors: 200000, volunteers: 100000, volunteerHours: 1000000, projects: 1200, totalDonation: 50000000, donationCount: 1000000, avgDonation: 50, highestSingleDonation: 5000, peopleReached: 2000000 }, transparencyScore: 98, about: "Yardımlaşma ve dayanışma hareketi.", joinDate: "2023-01-01", supportedSDGs: ['1. Yoksulluğa Son'], beneficiaryGroups: ['İhtiyaç Sahipleri'], memberOf: ['Afet Platformu'], contact: { email: 'iletisim@ahbap.org', phone: '0850 123 45 67', website: 'https://ahbap.org', social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbap', linkedin: 'ahbap' }, address: { fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4', city: 'İstanbul', district: 'Kadıköy' } }, posts: [], opportunities: [] },
-    { id: 'ngo-2', name: 'ÇYDD', category: 'Eğitim', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/cydd.org.tr', coverPhotoUrl: 'https://picsum.photos/seed/cydd/1200/400', stats: { followers: 150000, donors: 80000, volunteers: 40000, volunteerHours: 200000, projects: 500, totalDonation: 15000000, donationCount: 200000, avgDonation: 75, highestSingleDonation: 10000, peopleReached: 500000 }, transparencyScore: 95, about: "Çağdaş yaşamı destekleme derneği.", joinDate: "2023-01-01", supportedSDGs: ['4. Nitelikli Eğitim'], beneficiaryGroups: ['Öğrenciler'], memberOf: [], contact: { email: 'iletisim@cydd.org.tr', phone: '0212 123 45 67', website: 'https://cydd.org.tr', social: { twitter: 'cydd', instagram: 'cydd', facebook: 'cydd', linkedin: 'cydd' }, address: { fullAddress: 'Şişli', city: 'İstanbul', district: 'Şişli' } }, posts: [], opportunities: [] }
+    {
+        id: '1',
+        name: 'Ahbap Derneği',
+        type: 'Dernek',
+        category: 'Yardımlaşma',
+        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200',
+        about: 'Dayanışma ve yardımlaşma kuruluşu.',
+        transparencyScore: 98,
+        stats: { followers: 1500000, volunteers: 45000, projects: 120 },
+        contact: { email: 'info@ahbap.org', phone: '0212 123 45 67', website: 'https://ahbap.org', address: { city: 'İstanbul', district: 'Şişli', country: 'Türkiye' } }
+    },
+    {
+        id: '2',
+        name: 'TEMA Vakfı',
+        type: 'Vakıf',
+        category: 'Çevre',
+        avatarUrl: 'https://logo.clearbit.com/tema.org.tr',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1200',
+        about: 'Türkiye Erozyonla Mücadele, Ağaçlandırma ve Doğal Varlıkları Koruma Vakfı.',
+        transparencyScore: 95,
+        stats: { followers: 850000, volunteers: 95000, projects: 450 },
+        contact: { email: 'info@tema.org.tr', phone: '0212 456 78 90', website: 'https://tema.org.tr', address: { city: 'İstanbul', district: 'Beşiktaş', country: 'Türkiye' } }
+    },
+    {
+        id: '3',
+        name: 'LÖSEV',
+        type: 'Vakıf',
+        category: 'Sağlık',
+        avatarUrl: 'https://logo.clearbit.com/losev.org.tr',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=1200',
+        about: 'Lösemili Çocuklar Sağlık ve Eğitim Vakfı.',
+        transparencyScore: 92,
+        stats: { followers: 1200000, volunteers: 35000, projects: 85 },
+        contact: { email: 'bilgi@losev.org.tr', phone: '0312 123 45 67', website: 'https://losev.org.tr', address: { city: 'Ankara', district: 'Çankaya', country: 'Türkiye' } }
+    },
+    {
+        id: '4',
+        name: 'Darüşşafaka Cemiyeti',
+        type: 'Dernek',
+        category: 'Eğitim',
+        avatarUrl: 'https://logo.clearbit.com/darussafaka.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1523050335392-93851179ae22?q=80&w=1200',
+        about: 'Eğitimde fırsat eşitliği.',
+        transparencyScore: 97,
+        stats: { followers: 450000, volunteers: 5000, projects: 45 },
+        contact: { email: 'info@darussafaka.org', phone: '0212 987 65 43', website: 'https://darussafaka.org', address: { city: 'İstanbul', district: 'Sarıyer', country: 'Türkiye' } }
+    },
+    {
+        id: '5',
+        name: 'HAYTAP',
+        type: 'Dernek',
+        category: 'Hayvan Hakları',
+        avatarUrl: 'https://logo.clearbit.com/haytap.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1450778869180-41d0601e046e?q=80&w=1200',
+        about: 'Hayvan Hakları Federasyonu.',
+        transparencyScore: 88,
+        stats: { followers: 950000, volunteers: 8000, projects: 65 },
+        contact: { email: 'bilgi@haytap.org', phone: '0212 345 67 89', website: 'https://haytap.org', address: { city: 'İstanbul', district: 'Kadıköy', country: 'Türkiye' } }
+    }
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [

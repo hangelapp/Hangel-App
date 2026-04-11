@@ -150,17 +150,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Native app: giriş yapmamış kullanıcıyı direkt login formuna yönlendir
     useEffect(() => {
         if (!isUserLoading && !authUser && isMounted && isNativeApp()) {
-            if (pathname === '/' || pathname === '/login') {
+            if (pathname === '/') {
                 router.push('/login/selection');
             }
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
 
-    // Native app: giriş yapmış kullanıcıyı login sayfalarından timeline'a yönlendir
+    // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir
     useEffect(() => {
-        if (!isUserLoading && authUser && isMounted && isNativeApp()) {
-            if (pathname === '/' || pathname === '/login' || pathname === '/login/selection') {
-                router.push('/timeline');
+        if (!isUserLoading && authUser && isMounted) {
+            if (pathname === '/' || pathname === '/login/selection') {
+                router.push('/market');
             }
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
@@ -174,7 +174,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const publicWebsitePaths = [
         '/',
-        '/login',
         '/onboarding',
         '/about',
         '/press',

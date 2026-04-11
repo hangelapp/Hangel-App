@@ -47,12 +47,22 @@ export default function ProfileSettingsPage() {
 
   useEffect(() => {
     if (userData) {
-        setProfile({
-            ...staticUser,
+        setProfile(prev => ({
+            ...prev,
             ...userData,
-            personalInfo: { ...staticUser.personalInfo, ...(userData.personalInfo || {}) },
-            volunteerInfo: { ...staticUser.volunteerInfo, ...(userData.volunteerInfo || {}) },
-        });
+            personalInfo: {
+                ...prev.personalInfo,
+                ...(userData.personalInfo || {}),
+                address: {
+                    ...prev.personalInfo.address,
+                    ...((userData.personalInfo && userData.personalInfo.address) || {})
+                }
+            },
+            volunteerInfo: {
+                ...prev.volunteerInfo,
+                ...(userData.volunteerInfo || {})
+            }
+        }));
     }
   }, [userData]);
 
@@ -195,7 +205,7 @@ export default function ProfileSettingsPage() {
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Ülke</Label>
-                    <Select value={currentCountry} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
+                    <Select value={currentCountry || ''} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
                         <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                         <SelectContent>{countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                     </Select>

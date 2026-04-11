@@ -164,26 +164,28 @@ export default function VolunteeringPage() {
     }, [oppsData, interestFilter, cityFilter, searchTerm]);
 
   return (
-    <div className="p-4 space-y-4 animate-in fade-in-0">
-      <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2">
-        <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
-        <div className="flex gap-2">
-            <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input placeholder="İlan ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            </div>
-            <Button variant="outline" size="icon" className="h-11 w-11"><Filter size={20} /></Button>
+    <div className="space-y-4 animate-in fade-in-0">
+      <div className="p-4 space-y-4">
+        <div className="space-y-4 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2">
+          <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
+          <div className="flex gap-2">
+              <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input placeholder="İlan ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+              </div>
+              <Button variant="outline" size="icon" className="h-11 w-11"><Filter size={20} /></Button>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-3">
-        {isLoading ? (
-            [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
-        ) : filteredOpps.length > 0 ? (
-            filteredOpps.map(opp => <OpportunityCard key={opp.id} opp={opp} />)
-        ) : (
-            <p className="text-center py-20 text-muted-foreground">İlan bulunamadı.</p>
-        )}
+        <div className="space-y-3">
+          {isLoading ? (
+              [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
+          ) : filteredOpps.length > 0 ? (
+              filteredOpps.map(opp => <OpportunityCard key={opp.id} opp={opp} />)
+          ) : (
+              <p className="text-center py-20 text-muted-foreground">İlan bulunamadı.</p>
+          )}
+        </div>
       </div>
     </div>
   );

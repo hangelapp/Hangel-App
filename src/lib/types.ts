@@ -313,7 +313,9 @@ export type User = {
     },
     progress: {
         [key: string]: number;
-    }
+    },
+    supportedNgos: string[];
+    volunteerNgos: string[];
 };
 
 export type Badge = {

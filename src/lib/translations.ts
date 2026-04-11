@@ -93,5 +93,9 @@ export const translations: Record<Language, any> = {
       start: 'Get Started',
     }
   },
-  // Other languages omitted for brevity in this manual revert
+  ru: { title: "Русский", subtitle: "", nav: {}, common: {} },
+  ar: { title: "العربية", subtitle: "", nav: {}, common: {} },
+  fa: { title: "فارسی", subtitle: "", nav: {}, common: {} },
+  es: { title: "Español", subtitle: "", nav: {}, common: {} },
+  ha: { title: "Hausa", subtitle: "", nav: {}, common: {} },
 };

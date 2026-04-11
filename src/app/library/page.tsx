@@ -27,7 +27,13 @@ export default function LibraryPage() {
   const libQuery = useMemoFirebase(() => collection(db, 'library'), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
-  const sections = (libData && libData.length > 0) ? libData : staticSections;
+  // Firestore sections ile statik sections merge edilir; statik sections her zaman dahil edilir
+  const sections = useMemo(() => {
+    if (!libData || libData.length === 0) return staticSections;
+    const firestoreSlugs = new Set(libData.map(s => s.slug));
+    const extraStatic = staticSections.filter(s => !firestoreSlugs.has(s.slug));
+    return [...libData, ...extraStatic];
+  }, [libData]);
 
   const filteredSections = useMemo(() => {
     if (!searchTerm.trim()) return sections;
