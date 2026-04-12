@@ -16,7 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
@@ -76,18 +76,47 @@ export default function BrandProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
   const [isDonating, setIsDonating] = useState(false);
 
+  // Firestore brands
+  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
+
+  // API brands
+  const [apiBrands, setApiBrands] = useState<Brand[] | undefined>(undefined);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
     fetch('/api/offers')
       .then(res => res.ok ? res.json() : [])
-      .then((data: Brand[]) => {
-        const match = Array.isArray(data) ? data.find(b => b.slug === slug) : undefined;
-        setBrand(match || null);
-      })
-      .catch(() => setBrand(null));
-  }, [slug]);
+      .then((data: Brand[]) => setApiBrands(Array.isArray(data) ? data : []))
+      .catch(() => setApiBrands([]));
+  }, []);
+
+  // Merge both sources and find brand by slug
+  useEffect(() => {
+    if (firestoreLoading || apiBrands === undefined) return;
+
+    // First try API brands (they have affiliate links)
+    const apiMatch = apiBrands.find(b => b.slug === slug);
+    if (apiMatch) {
+      setBrand(apiMatch);
+      return;
+    }
+
+    // Then try Firestore brands
+    const fsMatch = (firestoreBrands || []).find(b => b.slug === slug);
+    if (fsMatch) {
+      // Try to find matching API brand by name to get the affiliate link
+      const nameMatch = apiBrands.find(
+        b => b.name.toLowerCase().trim() === fsMatch.name.toLowerCase().trim()
+      );
+      setBrand(nameMatch ? { ...fsMatch, link: nameMatch.link } : fsMatch);
+      return;
+    }
+
+    setBrand(null);
+  }, [slug, apiBrands, firestoreBrands, firestoreLoading]);
 
   const handleStartShopping = () => {
     if (!authUser) {

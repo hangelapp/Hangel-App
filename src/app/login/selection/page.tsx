@@ -46,7 +46,8 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { signInWithCustomToken, updateProfile } from 'firebase/auth';
+import { signInWithCustomToken, signInWithPhoneNumber, RecaptchaVerifier, updateProfile, getAdditionalUserInfo } from 'firebase/auth';
+import type { ConfirmationResult } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -329,23 +330,32 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<'phone' | 'otp'>('phone');
     const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
+    const [smsConfirmation, setSmsConfirmation] = useState<ConfirmationResult | null>(null);
 
     const handleSendOtp = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const res = await fetch('/api/auth/send-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: fullPhone, name, channel }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                if (res.status === 429) {
-                    throw new Error(`Çok fazla istek. ${data.retryAfter || 60} saniye bekleyin.`);
+            if (channel === 'sms') {
+                // Firebase Phone Auth — client-side SMS
+                const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+                const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
+                setSmsConfirmation(result);
+            } else {
+                // WhatsApp — server-side custom OTP
+                const res = await fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: fullPhone, name, channel }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    if (res.status === 429) {
+                        throw new Error(`Çok fazla istek. ${data.retryAfter || 60} saniye bekleyin.`);
+                    }
+                    throw new Error(data.error || 'Gönderim başarısız');
                 }
-                throw new Error(data.error || 'Gönderim başarısız');
             }
             setStep('otp');
             toast({
@@ -364,28 +374,52 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         setIsLoading(true);
         const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
         try {
-            const res = await fetch('/api/auth/verify-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: fullPhone, otp, name }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Doğrulama başarısız');
+            let userId: string;
+            let isNewUser = false;
 
-            const userCredential = await signInWithCustomToken(auth, data.token);
-            const userId = userCredential.user.uid;
+            if (channel === 'sms' && smsConfirmation) {
+                // Firebase Phone Auth — verify client-side
+                const userCredential = await smsConfirmation.confirm(otp);
+                userId = userCredential.user.uid;
+                isNewUser = getAdditionalUserInfo(userCredential)?.isNewUser ?? false;
 
-            if (data.isNewUser) {
-                setDocumentNonBlocking(doc(db, 'users', userId), {
-                    id: userId,
-                    name: name || userCredential.user.displayName || '',
-                    role: 'user',
-                    personalInfo: { phone: fullPhone },
-                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                }, { merge: true });
-                if (name) await updateProfile(userCredential.user, { displayName: name });
+                if (isNewUser) {
+                    setDocumentNonBlocking(doc(db, 'users', userId), {
+                        id: userId,
+                        name: name || userCredential.user.displayName || '',
+                        role: 'user',
+                        personalInfo: { phone: fullPhone },
+                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                    }, { merge: true });
+                    if (name) await updateProfile(userCredential.user, { displayName: name });
+                }
+            } else {
+                // WhatsApp — verify server-side
+                const res = await fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: fullPhone, otp, name }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Doğrulama başarısız');
+
+                const userCredential = await signInWithCustomToken(auth, data.token);
+                userId = userCredential.user.uid;
+                isNewUser = data.isNewUser;
+
+                if (isNewUser) {
+                    setDocumentNonBlocking(doc(db, 'users', userId), {
+                        id: userId,
+                        name: name || userCredential.user.displayName || '',
+                        role: 'user',
+                        personalInfo: { phone: fullPhone },
+                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                    }, { merge: true });
+                    if (name) await updateProfile(userCredential.user, { displayName: name });
+                }
             }
-            onComplete(data.isNewUser);
+
+            onComplete(isNewUser);
         } catch (error: any) {
             toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
         } finally {
@@ -395,6 +429,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
 
     return (
         <div className="space-y-6">
+            <div id="recaptcha-container" />
             {step === 'phone' ? (
                 <form onSubmit={handleSendOtp} className="space-y-5">
                     <div className="space-y-2">
@@ -474,7 +509,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
                     </Button>
-                    <button type="button" onClick={() => { setStep('phone'); setOtp(''); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <button type="button" onClick={() => { setStep('phone'); setOtp(''); setSmsConfirmation(null); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
                         Geri Dön
                     </button>
                 </form>
