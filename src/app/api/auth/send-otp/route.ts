@@ -13,16 +13,28 @@ function isValidE164(phone: string): boolean {
     return /^\+[1-9]\d{6,14}$/.test(phone);
 }
 
+function generateAppSecretProof(accessToken: string, appSecret: string): string {
+    return crypto.createHmac('sha256', appSecret).update(accessToken).digest('hex');
+}
+
 async function sendWhatsAppOtp(phone: string, otp: string): Promise<void> {
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
     const templateName = process.env.WHATSAPP_AUTH_TEMPLATE_NAME || 'hangel_tr';
 
     if (!phoneNumberId || !accessToken) {
         throw new Error('WhatsApp API yapılandırması eksik');
     }
 
-    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
+    // Build URL with appsecret_proof if app secret is configured
+    let apiUrl = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;
+    if (appSecret) {
+        const proof = generateAppSecretProof(accessToken, appSecret);
+        apiUrl += `?appsecret_proof=${proof}`;
+    }
+
+    const res = await fetch(apiUrl, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,

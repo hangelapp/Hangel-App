@@ -46,7 +46,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { signInWithCustomToken, signInWithPhoneNumber, RecaptchaVerifier, updateProfile, getAdditionalUserInfo } from 'firebase/auth';
+import { signInWithCustomToken, signInWithPhoneNumber, RecaptchaVerifier, updateProfile, getAdditionalUserInfo, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import type { ConfirmationResult } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
@@ -326,102 +326,69 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const [phone, setPhone] = useState('');
     const [phoneCode, setPhoneCode] = useState('90');
     const [name, setName] = useState('');
-    const [otp, setOtp] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [step, setStep] = useState<'phone' | 'otp'>('phone');
-    const [channel, setChannel] = useState<'whatsapp' | 'sms'>('whatsapp');
-    const [smsConfirmation, setSmsConfirmation] = useState<ConfirmationResult | null>(null);
 
-    const handleSendOtp = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
-        try {
-            if (channel === 'sms') {
-                // Firebase Phone Auth — client-side SMS
-                const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
-                const result = await signInWithPhoneNumber(auth, fullPhone, recaptchaVerifier);
-                setSmsConfirmation(result);
-            } else {
-                // WhatsApp — server-side custom OTP
-                const res = await fetch('/api/auth/send-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: fullPhone, name, channel }),
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    if (res.status === 429) {
-                        throw new Error(`Çok fazla istek. ${data.retryAfter || 60} saniye bekleyin.`);
-                    }
-                    throw new Error(data.error || 'Gönderim başarısız');
-                }
-            }
-            setStep('otp');
-            toast({
-                title: "Kod Gönderildi",
-                description: `${fullPhone} numarasına ${channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} ile doğrulama kodu gönderildi.`,
-            });
-        } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: error.message });
-        } finally {
-            setIsLoading(false);
+
+        if (password.length < 6) {
+            toast({ variant: "destructive", title: "Hata", description: "Şifre en az 6 karakter olmalıdır." });
+            return;
         }
-    };
+        if (password !== passwordConfirm) {
+            toast({ variant: "destructive", title: "Hata", description: "Şifreler uyuşmuyor." });
+            return;
+        }
 
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
         setIsLoading(true);
-        const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
+        const cleanPhone = phone.replace(/\D/g, '');
+        const fullPhone = `+${phoneCode}${cleanPhone}`;
+        const pseudoEmail = `+${phoneCode}${cleanPhone}@hangel.app`;
+
         try {
-            let userId: string;
             let isNewUser = false;
 
-            if (channel === 'sms' && smsConfirmation) {
-                // Firebase Phone Auth — verify client-side
-                const userCredential = await smsConfirmation.confirm(otp);
-                userId = userCredential.user.uid;
-                isNewUser = getAdditionalUserInfo(userCredential)?.isNewUser ?? false;
+            try {
+                // Önce giriş dene
+                const userCredential = await signInWithEmailAndPassword(auth, pseudoEmail, password);
+                const userId = userCredential.user.uid;
+                isNewUser = false;
+            } catch (signInError: any) {
+                const code = signInError.code;
+                if (code === 'auth/user-not-found' || code === 'auth/invalid-credential') {
+                    // Kullanıcı yok → kayıt oluştur
+                    const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+                    const userId = userCredential.user.uid;
+                    isNewUser = true;
 
-                if (isNewUser) {
+                    // Firestore kullanıcı dokümanı oluştur
                     setDocumentNonBlocking(doc(db, 'users', userId), {
                         id: userId,
-                        name: name || userCredential.user.displayName || '',
+                        name: name || '',
                         role: 'user',
                         personalInfo: { phone: fullPhone },
                         stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
                     }, { merge: true });
-                    if (name) await updateProfile(userCredential.user, { displayName: name });
-                }
-            } else {
-                // WhatsApp — verify server-side
-                const res = await fetch('/api/auth/verify-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: fullPhone, otp, name }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Doğrulama başarısız');
 
-                const userCredential = await signInWithCustomToken(auth, data.token);
-                userId = userCredential.user.uid;
-                isNewUser = data.isNewUser;
-
-                if (isNewUser) {
-                    setDocumentNonBlocking(doc(db, 'users', userId), {
-                        id: userId,
-                        name: name || userCredential.user.displayName || '',
-                        role: 'user',
-                        personalInfo: { phone: fullPhone },
-                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                    }, { merge: true });
                     if (name) await updateProfile(userCredential.user, { displayName: name });
+                } else if (code === 'auth/wrong-password') {
+                    throw new Error('Şifre hatalı. Lütfen tekrar deneyin.');
+                } else if (code === 'auth/email-already-in-use') {
+                    throw new Error('Bu telefon numarası zaten kayıtlı. Şifrenizi kontrol edin.');
+                } else if (code === 'auth/too-many-requests') {
+                    throw new Error('Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.');
+                } else if (code === 'auth/weak-password') {
+                    throw new Error('Şifre çok zayıf. En az 6 karakter kullanın.');
+                } else {
+                    throw signInError;
                 }
             }
 
             onComplete(isNewUser);
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: "Doğrulama kodu hatalı." });
+            toast({ variant: "destructive", title: "Hata", description: error.message || 'Giriş başarısız.' });
         } finally {
             setIsLoading(false);
         }
@@ -429,91 +396,39 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
 
     return (
         <div className="space-y-6">
-            <div id="recaptcha-container" />
-            {step === 'phone' ? (
-                <form onSubmit={handleSendOtp} className="space-y-5">
-                    <div className="space-y-2">
-                        <FormLabel>Ad Soyad</FormLabel>
-                        <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
-                    </div>
-                    <div className="space-y-2">
-                        <FormLabel>Telefon</FormLabel>
-                        <div className="flex gap-2">
-                            <div className="w-[100px] shrink-0">
-                                <Select value={phoneCode} onValueChange={setPhoneCode}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
-                                            <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="send" />
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                    <FormLabel>Ad Soyad</FormLabel>
+                    <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
+                </div>
+                <div className="space-y-2">
+                    <FormLabel>Telefon</FormLabel>
+                    <div className="flex gap-2">
+                        <div className="w-[100px] shrink-0">
+                            <Select value={phoneCode} onValueChange={setPhoneCode}>
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
+                                        <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+                        <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="next" />
                     </div>
-                    <div className="space-y-2">
-                        <FormLabel>Doğrulama Yöntemi</FormLabel>
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setChannel('whatsapp')}
-                                className={cn(
-                                    "flex items-center justify-center gap-2 h-12 rounded-xl border-2 transition-all font-bold text-sm",
-                                    channel === 'whatsapp'
-                                        ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400"
-                                        : "border-muted bg-card text-muted-foreground"
-                                )}
-                            >
-                                <MessageCircle className="h-4 w-4" />
-                                WhatsApp
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setChannel('sms')}
-                                className={cn(
-                                    "flex items-center justify-center gap-2 h-12 rounded-xl border-2 transition-all font-bold text-sm",
-                                    channel === 'sms'
-                                        ? "border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400"
-                                        : "border-muted bg-card text-muted-foreground"
-                                )}
-                            >
-                                <Smartphone className="h-4 w-4" />
-                                SMS
-                            </button>
-                        </div>
-                    </div>
-                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
-                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrulama Kodu Gönder"}
-                    </Button>
-                </form>
-            ) : (
-                <form onSubmit={handleVerifyOtp} className="space-y-5">
-                    <div className="space-y-2">
-                        <FormLabel>Doğrulama Kodu</FormLabel>
-                        <p className="text-xs text-muted-foreground">
-                            {channel === 'whatsapp' ? 'WhatsApp' : 'SMS'} ile gönderilen 6 haneli kodu girin
-                        </p>
-                        <FormInput
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="123456"
-                            required
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="text-center text-2xl font-black tracking-[0.5em]"
-                            maxLength={6}
-                            enterKeyHint="done"
-                        />
-                    </div>
-                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading || otp.length < 6}>
-                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Doğrula ve Giriş Yap"}
-                    </Button>
-                    <button type="button" onClick={() => { setStep('phone'); setOtp(''); setSmsConfirmation(null); }} className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors">
-                        Geri Dön
-                    </button>
-                </form>
-            )}
+                </div>
+                <div className="space-y-2">
+                    <FormLabel>Şifre</FormLabel>
+                    <FormInput type="password" placeholder="En az 6 karakter" required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} enterKeyHint="next" />
+                </div>
+                <div className="space-y-2">
+                    <FormLabel>Şifre Tekrar</FormLabel>
+                    <FormInput type="password" placeholder="Şifrenizi tekrar girin" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} minLength={6} enterKeyHint="done" />
+                </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Kayıt Ol / Giriş Yap"}
+                </Button>
+            </form>
         </div>
     );
 };
