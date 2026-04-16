@@ -46,8 +46,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
-import { signInWithCustomToken, signInWithPhoneNumber, RecaptchaVerifier, updateProfile, getAdditionalUserInfo, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import type { ConfirmationResult } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -323,86 +322,114 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
+
+    const [step, setStep] = useState<'phone' | 'login' | 'register'>('phone');
     const [phone, setPhone] = useState('');
     const [phoneCode, setPhoneCode] = useState('90');
+    const [existingName, setExistingName] = useState('');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
+    const pseudoEmail = `${fullPhone}@hangel.app`;
+
+    const goBack = () => {
+        setStep('phone');
+        setPassword('');
+        setPasswordConfirm('');
+        setName('');
+        setExistingName('');
+    };
+
+    // Adım 1: Telefon kontrolü
+    const handleCheckPhone = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (password.length < 6) {
-            toast({ variant: "destructive", title: "Hata", description: "Şifre en az 6 karakter olmalıdır." });
-            return;
-        }
-        if (password !== passwordConfirm) {
-            toast({ variant: "destructive", title: "Hata", description: "Şifreler uyuşmuyor." });
-            return;
-        }
-
         setIsLoading(true);
-        const cleanPhone = phone.replace(/\D/g, '');
-        const fullPhone = `+${phoneCode}${cleanPhone}`;
-        const pseudoEmail = `+${phoneCode}${cleanPhone}@hangel.app`;
-
         try {
-            let isNewUser = false;
+            const res = await fetch('/api/auth/check-phone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhone }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Kontrol başarısız');
 
-            try {
-                // Önce giriş dene
-                const userCredential = await signInWithEmailAndPassword(auth, pseudoEmail, password);
-                const userId = userCredential.user.uid;
-                isNewUser = false;
-            } catch (signInError: any) {
-                const code = signInError.code;
-                if (code === 'auth/user-not-found' || code === 'auth/invalid-credential') {
-                    // Kullanıcı yok → kayıt oluştur
-                    const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
-                    const userId = userCredential.user.uid;
-                    isNewUser = true;
-
-                    // Firestore kullanıcı dokümanı oluştur
-                    setDocumentNonBlocking(doc(db, 'users', userId), {
-                        id: userId,
-                        name: name || '',
-                        role: 'user',
-                        personalInfo: { phone: fullPhone },
-                        stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
-                    }, { merge: true });
-
-                    if (name) await updateProfile(userCredential.user, { displayName: name });
-                } else if (code === 'auth/wrong-password') {
-                    throw new Error('Şifre hatalı. Lütfen tekrar deneyin.');
-                } else if (code === 'auth/email-already-in-use') {
-                    throw new Error('Bu telefon numarası zaten kayıtlı. Şifrenizi kontrol edin.');
-                } else if (code === 'auth/too-many-requests') {
-                    throw new Error('Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.');
-                } else if (code === 'auth/weak-password') {
-                    throw new Error('Şifre çok zayıf. En az 6 karakter kullanın.');
-                } else {
-                    throw signInError;
-                }
+            if (data.exists) {
+                setExistingName(data.name || '');
+                setStep('login');
+            } else {
+                setStep('register');
             }
-
-            onComplete(isNewUser);
         } catch (error: any) {
-            toast({ variant: "destructive", title: "Hata", description: error.message || 'Giriş başarısız.' });
+            toast({ variant: 'destructive', title: 'Hata', description: error.message });
         } finally {
             setIsLoading(false);
         }
     };
 
-    return (
-        <div className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+    // Adım 2a: Mevcut kullanıcı girişi
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            await signInWithEmailAndPassword(auth, pseudoEmail, password);
+            onComplete(false);
+        } catch (error: any) {
+            const msg =
+                error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential'
+                    ? 'Şifre hatalı. Lütfen tekrar deneyin.'
+                    : error.code === 'auth/too-many-requests'
+                    ? 'Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.'
+                    : error.message || 'Giriş başarısız.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Adım 2b: Yeni kullanıcı kaydı
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password.length < 6) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Şifre en az 6 karakter olmalıdır.' });
+            return;
+        }
+        if (password !== passwordConfirm) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Şifreler uyuşmuyor.' });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+            const userId = userCredential.user.uid;
+            setDocumentNonBlocking(doc(db, 'users', userId), {
+                id: userId,
+                name: name || '',
+                role: 'user',
+                personalInfo: { phone: fullPhone },
+                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+            }, { merge: true });
+            if (name) await updateProfile(userCredential.user, { displayName: name });
+            onComplete(true);
+        } catch (error: any) {
+            const msg =
+                error.code === 'auth/weak-password'
+                    ? 'Şifre çok zayıf. En az 6 karakter kullanın.'
+                    : error.message || 'Kayıt başarısız.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // — Adım 1: Sadece telefon —
+    if (step === 'phone') {
+        return (
+            <form onSubmit={handleCheckPhone} className="space-y-5">
                 <div className="space-y-2">
-                    <FormLabel>Ad Soyad</FormLabel>
-                    <FormInput placeholder="Ör.: İsmail Hilmi ADIGÜZEL" value={name} onChange={(e) => setName(e.target.value)} required enterKeyHint="next" />
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Telefon</FormLabel>
+                    <FormLabel>Telefon *</FormLabel>
                     <div className="flex gap-2">
                         <div className="w-[100px] shrink-0">
                             <Select value={phoneCode} onValueChange={setPhoneCode}>
@@ -414,19 +441,107 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                                 </SelectContent>
                             </Select>
                         </div>
-                        <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 font-bold" enterKeyHint="next" />
+                        <FormInput
+                            type="tel"
+                            placeholder="5XXXXXXXXX"
+                            required
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            className="flex-1 font-bold"
+                            enterKeyHint="done"
+                            autoFocus
+                        />
                     </div>
                 </div>
+                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Devam Et'}
+                </Button>
+            </form>
+        );
+    }
+
+    // — Adım 2a: Mevcut kullanıcı → sadece şifre —
+    if (step === 'login') {
+        return (
+            <div className="space-y-6">
+                <div className="text-center space-y-1">
+                    <p className="text-base font-black">
+                        {existingName ? `Tekrar hoş geldiniz, ${existingName.split(' ')[0]}! 👋` : 'Tekrar hoş geldiniz! 👋'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{fullPhone}</p>
+                </div>
+                <form onSubmit={handleLogin} className="space-y-5">
+                    <div className="space-y-2">
+                        <FormLabel>Şifre *</FormLabel>
+                        <FormInput
+                            type="password"
+                            placeholder="Şifrenizi girin"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            enterKeyHint="done"
+                            autoFocus
+                        />
+                    </div>
+                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Giriş Yap'}
+                    </Button>
+                    <Button type="button" variant="ghost" className="w-full" onClick={goBack} disabled={isLoading}>
+                        <ArrowLeft className="h-4 w-4 mr-2" /> Geri
+                    </Button>
+                </form>
+            </div>
+        );
+    }
+
+    // — Adım 2b: Yeni kullanıcı → ad + şifre + tekrar —
+    return (
+        <div className="space-y-6">
+            <div className="text-center space-y-1">
+                <p className="text-base font-black">Hesap oluşturun</p>
+                <p className="text-xs text-muted-foreground">{fullPhone}</p>
+            </div>
+            <form onSubmit={handleRegister} className="space-y-5">
                 <div className="space-y-2">
-                    <FormLabel>Şifre</FormLabel>
-                    <FormInput type="password" placeholder="En az 6 karakter" required value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} enterKeyHint="next" />
+                    <FormLabel>Ad Soyad *</FormLabel>
+                    <FormInput
+                        placeholder="Ör.: İsmail Hilmi ADIGÜZEL"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        enterKeyHint="next"
+                        autoFocus
+                    />
                 </div>
                 <div className="space-y-2">
-                    <FormLabel>Şifre Tekrar</FormLabel>
-                    <FormInput type="password" placeholder="Şifrenizi tekrar girin" required value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} minLength={6} enterKeyHint="done" />
+                    <FormLabel>Şifre *</FormLabel>
+                    <FormInput
+                        type="password"
+                        placeholder="En az 6 karakter"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        minLength={6}
+                        enterKeyHint="next"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <FormLabel>Şifre Tekrar *</FormLabel>
+                    <FormInput
+                        type="password"
+                        placeholder="Şifrenizi tekrar girin"
+                        required
+                        value={passwordConfirm}
+                        onChange={(e) => setPasswordConfirm(e.target.value)}
+                        minLength={6}
+                        enterKeyHint="done"
+                    />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Kayıt Ol / Giriş Yap"}
+                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Kayıt Ol'}
+                </Button>
+                <Button type="button" variant="ghost" className="w-full" onClick={goBack} disabled={isLoading}>
+                    <ArrowLeft className="h-4 w-4 mr-2" /> Geri
                 </Button>
             </form>
         </div>
