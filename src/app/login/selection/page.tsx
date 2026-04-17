@@ -47,6 +47,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { initiateEmailVerification, initiatePasswordResetEmail } from '@/firebase/non-blocking-login';
 import { doc, collection } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
@@ -318,12 +319,17 @@ const brandCategoryOptions = [
     "Otomotiv", "Mücevher & Saat", "Diğer"
 ];
 
+type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent';
+
+const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
 const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
 
-    const [step, setStep] = useState<'phone' | 'login' | 'register'>('phone');
+    const [step, setStep] = useState<IndividualStep>('email');
+    const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [phoneCode, setPhoneCode] = useState('90');
     const [existingName, setExistingName] = useState('');
@@ -332,29 +338,44 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const normalizedEmail = email.trim().toLowerCase();
     const fullPhone = `+${phoneCode}${phone.replace(/\D/g, '')}`;
-    const pseudoEmail = `${fullPhone}@hangel.app`;
 
-    const goBack = () => {
-        setStep('phone');
+    const goToEmailStep = () => {
+        setStep('email');
         setPassword('');
         setPasswordConfirm('');
         setName('');
+        setPhone('');
+        setPhoneCode('90');
         setExistingName('');
     };
 
-    // Adım 1: Telefon kontrolü
-    const handleCheckPhone = async (e: React.FormEvent) => {
+    // Adım 1: E-posta kontrolü
+    const handleCheckEmail = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isValidEmail(email)) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Geçerli bir e-posta girin.' });
+            return;
+        }
         setIsLoading(true);
         try {
-            const res = await fetch('/api/auth/check-phone', {
+            const res = await fetch('/api/auth/check-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: fullPhone }),
+                body: JSON.stringify({ email: normalizedEmail }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Kontrol başarısız');
+
+            if (data.unsupported) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Desteklenmiyor',
+                    description: 'Bu e-posta adresi desteklenmiyor. Farklı bir adres kullanın.'
+                });
+                return;
+            }
 
             if (data.exists) {
                 setExistingName(data.name || '');
@@ -374,14 +395,15 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         e.preventDefault();
         setIsLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, pseudoEmail, password);
+            await signInWithEmailAndPassword(auth, normalizedEmail, password);
             onComplete(false);
         } catch (error: any) {
+            const code = error.code;
             const msg =
-                error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential'
-                    ? 'Şifre hatalı. Lütfen tekrar deneyin.'
-                    : error.code === 'auth/too-many-requests'
-                    ? 'Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin.'
+                code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/user-not-found'
+                    ? 'E-posta veya şifre hatalı.'
+                    : code === 'auth/too-many-requests'
+                    ? 'Çok fazla deneme. Biraz sonra tekrar deneyin.'
                     : error.message || 'Giriş başarısız.';
             toast({ variant: 'destructive', title: 'Hata', description: msg });
         } finally {
@@ -400,23 +422,41 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
             toast({ variant: 'destructive', title: 'Hata', description: 'Şifreler uyuşmuyor.' });
             return;
         }
+        if (!phone.trim()) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Telefon numarası gerekli.' });
+            return;
+        }
         setIsLoading(true);
         try {
-            const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
             const userId = userCredential.user.uid;
+            if (name) {
+                try { await updateProfile(userCredential.user, { displayName: name }); } catch {}
+            }
             setDocumentNonBlocking(doc(db, 'users', userId), {
                 id: userId,
                 name: name || '',
                 role: 'user',
-                personalInfo: { phone: fullPhone },
+                personalInfo: {
+                    email: normalizedEmail,
+                    phone: fullPhone,
+                },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
             }, { merge: true });
-            if (name) await updateProfile(userCredential.user, { displayName: name });
-            onComplete(true);
+
+            try {
+                await initiateEmailVerification(userCredential.user);
+            } catch {
+                // Doğrulama maili başarısız olsa bile akışı bloklama — banner'dan tekrar gönderilebilir.
+            }
+            setStep('verify-sent');
         } catch (error: any) {
+            const code = error.code;
             const msg =
-                error.code === 'auth/weak-password'
+                code === 'auth/weak-password'
                     ? 'Şifre çok zayıf. En az 6 karakter kullanın.'
+                    : code === 'auth/email-already-in-use'
+                    ? 'Bu e-posta zaten kayıtlı. Giriş yapın.'
                     : error.message || 'Kayıt başarısız.';
             toast({ variant: 'destructive', title: 'Hata', description: msg });
         } finally {
@@ -424,34 +464,68 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         }
     };
 
-    // — Adım 1: Sadece telefon —
-    if (step === 'phone') {
+    // Şifremi unuttum: e-posta gönder
+    const handleSendReset = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isValidEmail(email)) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Geçerli bir e-posta girin.' });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            await initiatePasswordResetEmail(auth, normalizedEmail);
+            setStep('forgot-sent');
+        } catch (error: any) {
+            const code = error.code;
+            const msg =
+                code === 'auth/too-many-requests'
+                    ? 'Çok fazla deneme. Biraz sonra tekrar deneyin.'
+                    : code === 'auth/user-not-found'
+                    ? 'Bu e-posta ile kayıtlı hesap bulunamadı.'
+                    : 'E-posta gönderilemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Doğrulama e-postasını tekrar gönder
+    const handleResendVerification = async () => {
+        if (!auth.currentUser) return;
+        setIsLoading(true);
+        try {
+            await initiateEmailVerification(auth.currentUser);
+            toast({ title: 'Gönderildi', description: 'Doğrulama e-postası tekrar gönderildi.' });
+        } catch (error: any) {
+            const code = error.code;
+            const msg =
+                code === 'auth/too-many-requests'
+                    ? 'Çok fazla deneme. Biraz sonra tekrar deneyin.'
+                    : 'E-posta gönderilemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // — Adım 1: E-posta —
+    if (step === 'email') {
         return (
-            <form onSubmit={handleCheckPhone} className="space-y-5">
+            <form onSubmit={handleCheckEmail} className="space-y-5">
                 <div className="space-y-2">
-                    <FormLabel>Telefon *</FormLabel>
-                    <div className="flex gap-2">
-                        <div className="w-[100px] shrink-0">
-                            <Select value={phoneCode} onValueChange={setPhoneCode}>
-                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
-                                <SelectContent className="max-h-60">
-                                    {Array.from(new Set(countryPhoneCodes)).sort().map((code, idx) => (
-                                        <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <FormInput
-                            type="tel"
-                            placeholder="5XXXXXXXXX"
-                            required
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="flex-1 font-bold"
-                            enterKeyHint="done"
-                            autoFocus
-                        />
-                    </div>
+                    <FormLabel>E-posta *</FormLabel>
+                    <FormInput
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        placeholder="ornek@mail.com"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="font-bold"
+                        enterKeyHint="done"
+                        autoFocus
+                    />
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                     {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Devam Et'}
@@ -468,13 +542,14 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     <p className="text-base font-black">
                         {existingName ? `Tekrar hoş geldiniz, ${existingName.split(' ')[0]}! 👋` : 'Tekrar hoş geldiniz! 👋'}
                     </p>
-                    <p className="text-xs text-muted-foreground">{fullPhone}</p>
+                    <p className="text-xs text-muted-foreground">{normalizedEmail}</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-5">
                     <div className="space-y-2">
                         <FormLabel>Şifre *</FormLabel>
                         <FormInput
                             type="password"
+                            autoComplete="current-password"
                             placeholder="Şifrenizi girin"
                             required
                             value={password}
@@ -486,7 +561,160 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Giriş Yap'}
                     </Button>
-                    <Button type="button" variant="ghost" className="w-full" onClick={goBack} disabled={isLoading}>
+                    <Button type="button" variant="link" className="w-full text-sm" onClick={() => setStep('forgot')} disabled={isLoading}>
+                        Şifremi unuttum
+                    </Button>
+                    <Button type="button" variant="ghost" className="w-full" onClick={goToEmailStep} disabled={isLoading}>
+                        <ArrowLeft className="h-4 w-4 mr-2" /> E-postayı değiştir
+                    </Button>
+                </form>
+            </div>
+        );
+    }
+
+    // — Adım 2b: Yeni kullanıcı → ad + telefon + şifre + tekrar —
+    if (step === 'register') {
+        return (
+            <div className="space-y-6">
+                <div className="text-center space-y-1">
+                    <p className="text-base font-black">Hesap oluşturun</p>
+                    <p className="text-xs text-muted-foreground">{normalizedEmail}</p>
+                </div>
+                <form onSubmit={handleRegister} className="space-y-5">
+                    <div className="space-y-2">
+                        <FormLabel>Ad Soyad *</FormLabel>
+                        <FormInput
+                            placeholder="Ör.: İsmail Hilmi ADIGÜZEL"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            enterKeyHint="next"
+                            autoFocus
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <FormLabel>Telefon *</FormLabel>
+                        <div className="flex gap-2">
+                            <div className="w-[100px] shrink-0">
+                                <Select value={phoneCode} onValueChange={setPhoneCode}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {uniquePhoneCodes.map((code, idx) => (
+                                            <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <FormInput
+                                type="tel"
+                                placeholder="5XXXXXXXXX"
+                                required
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="flex-1 font-bold"
+                                enterKeyHint="next"
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <FormLabel>Şifre *</FormLabel>
+                        <FormInput
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="En az 6 karakter"
+                            required
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            minLength={6}
+                            enterKeyHint="next"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <FormLabel>Şifre Tekrar *</FormLabel>
+                        <FormInput
+                            type="password"
+                            autoComplete="new-password"
+                            placeholder="Şifrenizi tekrar girin"
+                            required
+                            value={passwordConfirm}
+                            onChange={(e) => setPasswordConfirm(e.target.value)}
+                            minLength={6}
+                            enterKeyHint="done"
+                        />
+                    </div>
+                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Kayıt Ol'}
+                    </Button>
+                    <Button type="button" variant="ghost" className="w-full" onClick={goToEmailStep} disabled={isLoading}>
+                        <ArrowLeft className="h-4 w-4 mr-2" /> E-postayı değiştir
+                    </Button>
+                </form>
+            </div>
+        );
+    }
+
+    // — Kayıt sonrası: e-posta doğrulama uyarısı —
+    if (step === 'verify-sent') {
+        return (
+            <div className="space-y-6 text-center">
+                <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mail className="h-7 w-7 text-primary" />
+                </div>
+                <div className="space-y-2">
+                    <p className="text-base font-black">E-postanızı doğrulayın</p>
+                    <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold">{normalizedEmail}</span> adresine doğrulama bağlantısı gönderdik. Linke tıklayarak hesabınızı aktifleştirin.
+                    </p>
+                </div>
+                <div className="space-y-3">
+                    <Button
+                        type="button"
+                        className="w-full h-12 rounded-2xl font-black"
+                        onClick={() => onComplete(true)}
+                    >
+                        Devam Et
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-12 rounded-2xl"
+                        onClick={handleResendVerification}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'E-postayı tekrar gönder'}
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // — Şifremi unuttum: e-posta gönder formu —
+    if (step === 'forgot') {
+        return (
+            <div className="space-y-6">
+                <div className="text-center space-y-1">
+                    <p className="text-base font-black">Şifrenizi sıfırlayın</p>
+                    <p className="text-xs text-muted-foreground">Size sıfırlama bağlantısı gönderelim.</p>
+                </div>
+                <form onSubmit={handleSendReset} className="space-y-5">
+                    <div className="space-y-2">
+                        <FormLabel>E-posta *</FormLabel>
+                        <FormInput
+                            type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                            placeholder="ornek@mail.com"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            enterKeyHint="done"
+                            autoFocus
+                        />
+                    </div>
+                    <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Sıfırlama linki gönder'}
+                    </Button>
+                    <Button type="button" variant="ghost" className="w-full" onClick={() => setStep('login')} disabled={isLoading}>
                         <ArrowLeft className="h-4 w-4 mr-2" /> Geri
                     </Button>
                 </form>
@@ -494,56 +722,21 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         );
     }
 
-    // — Adım 2b: Yeni kullanıcı → ad + şifre + tekrar —
+    // — Şifre sıfırlama: e-posta gönderildi —
     return (
-        <div className="space-y-6">
-            <div className="text-center space-y-1">
-                <p className="text-base font-black">Hesap oluşturun</p>
-                <p className="text-xs text-muted-foreground">{fullPhone}</p>
+        <div className="space-y-6 text-center">
+            <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="h-7 w-7 text-green-600" />
             </div>
-            <form onSubmit={handleRegister} className="space-y-5">
-                <div className="space-y-2">
-                    <FormLabel>Ad Soyad *</FormLabel>
-                    <FormInput
-                        placeholder="Ör.: İsmail Hilmi ADIGÜZEL"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        enterKeyHint="next"
-                        autoFocus
-                    />
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Şifre *</FormLabel>
-                    <FormInput
-                        type="password"
-                        placeholder="En az 6 karakter"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        minLength={6}
-                        enterKeyHint="next"
-                    />
-                </div>
-                <div className="space-y-2">
-                    <FormLabel>Şifre Tekrar *</FormLabel>
-                    <FormInput
-                        type="password"
-                        placeholder="Şifrenizi tekrar girin"
-                        required
-                        value={passwordConfirm}
-                        onChange={(e) => setPasswordConfirm(e.target.value)}
-                        minLength={6}
-                        enterKeyHint="done"
-                    />
-                </div>
-                <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Kayıt Ol'}
-                </Button>
-                <Button type="button" variant="ghost" className="w-full" onClick={goBack} disabled={isLoading}>
-                    <ArrowLeft className="h-4 w-4 mr-2" /> Geri
-                </Button>
-            </form>
+            <div className="space-y-2">
+                <p className="text-base font-black">Bağlantı gönderildi</p>
+                <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold">{normalizedEmail}</span> adresine şifre sıfırlama bağlantısı gönderdik. E-postanızı kontrol edin.
+                </p>
+            </div>
+            <Button type="button" variant="ghost" className="w-full" onClick={goToEmailStep}>
+                <ArrowLeft className="h-4 w-4 mr-2" /> Girişe dön
+            </Button>
         </div>
     );
 };

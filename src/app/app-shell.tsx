@@ -16,6 +16,7 @@ import { user as staticUser } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { isNativeApp } from '@/lib/capacitor';
+import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
 
 const group1Items: SideNavItem[] = [
   { href: '/market', label: 'Markalar', icon: 'store' },
@@ -156,9 +157,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
     }, [authUser, isUserLoading, pathname, router, isMounted]);
 
-    // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir
+    // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir.
+    // E-postası doğrulanmamış kullanıcı /login/selection üzerinde verify-sent
+    // adımını görebilmeli, bu yüzden redirect'i emailVerified'a koşullu tutuyoruz.
     useEffect(() => {
-        if (!isUserLoading && authUser && isMounted) {
+        if (!isUserLoading && authUser && isMounted && authUser.emailVerified) {
             if (pathname === '/' || pathname === '/login/selection') {
                 router.push('/market');
             }
@@ -192,6 +195,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/settings/contracts',
         '/contact',
         '/support/app-support',
+        '/auth/action',
     ];
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
@@ -255,6 +259,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
+            <VerifyEmailBanner />
             <main className="flex-1 pt-12 pb-24 lg:pb-24">{children}</main>
           </div>
         </div>
