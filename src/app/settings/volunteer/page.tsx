@@ -344,6 +344,7 @@ export default function VolunteerSettingsPage() {
   const [emergencyAvailable, setEmergencyAvailable] = useState(false);
   const [hasChronicIllness, setHasChronicIllness] = useState(false);
   const [usesRegularMedication, setUsesRegularMedication] = useState(false);
+  const [bloodType, setBloodType] = useState('');
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
@@ -396,6 +397,7 @@ export default function VolunteerSettingsPage() {
     if (typeof vi.emergency?.available === 'boolean') setEmergencyAvailable(vi.emergency.available);
     if (typeof vi.emergency?.hasChronicIllness === 'boolean') setHasChronicIllness(vi.emergency.hasChronicIllness);
     if (typeof vi.emergency?.usesRegularMedication === 'boolean') setUsesRegularMedication(vi.emergency.usesRegularMedication);
+    if ((userData as any).personalInfo?.bloodType) setBloodType((userData as any).personalInfo.bloodType);
   }, [userData]);
 
   const handleLevelChange = (lang: string, level: string) => {
@@ -444,7 +446,11 @@ export default function VolunteerSettingsPage() {
       },
     };
 
-    updateDocumentNonBlocking(userDocRef, { volunteerInfo });
+    const personalInfoPatch = bloodType
+      ? { personalInfo: { ...((userData as any)?.personalInfo ?? {}), bloodType } }
+      : {};
+
+    updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch });
 
     if (isOnboarding) {
       toast({ title: "Gönüllülük Bilgilerin Kaydedildi", description: "Şimdi bağış yapacağın STK'ları seçelim." });
@@ -678,6 +684,17 @@ export default function VolunteerSettingsPage() {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div className="space-y-2 p-4 border rounded-lg">
+              <Label>Kan Grubu</Label>
+              <Select value={bloodType || ''} onValueChange={setBloodType}>
+                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                <SelectContent>
+                  {['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'].map(b => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
               <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />

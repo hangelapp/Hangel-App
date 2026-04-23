@@ -11,12 +11,14 @@ import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff } from 'lucide-react';
 import type { NGO } from "@/lib/types";
 
 export default function NgosPage() {
     const { toast } = useToast();
     const db = useFirestore();
+    const router = useRouter();
     
     const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
     const { data: ngos, isLoading } = useCollection<NGO>(ngosQuery);
@@ -68,7 +70,8 @@ export default function NgosPage() {
                    {ngos && ngos.length > 0 ? ngos.map(ngo => {
                        const isPassive = (ngo as any).status === 'Pasif';
                        return (
-                       <div key={ngo.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", isPassive && "opacity-60 grayscale")}>
+                       <div key={ngo.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors cursor-pointer", isPassive && "opacity-60 grayscale")}
+                            onClick={() => router.push(`/ngos/${ngo.id}`)}>
                            <div className="flex items-center gap-5 flex-1">
                                <Avatar className="h-14 w-14 border-2 border-white shadow-lg">
                                    <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-1" />
@@ -88,9 +91,12 @@ export default function NgosPage() {
                                    </div>
                                </div>
                            </div>
-                           <div className="flex items-center gap-3 w-full md:w-auto">
+                           <div className="flex items-center gap-3 w-full md:w-auto" onClick={e => e.stopPropagation()}>
                                <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" asChild>
                                    <Link href={`/ngos/${ngo.id}`}>Profili Gör</Link>
+                               </Button>
+                               <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" asChild>
+                                   <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-2 h-4 w-4" />Düzelt</Link>
                                </Button>
                                <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" onClick={() => handleToggleStatus(ngo.id, (ngo as any).status)}>
                                  {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif Et</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife Al</>}

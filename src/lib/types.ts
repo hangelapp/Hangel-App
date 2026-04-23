@@ -138,6 +138,7 @@ export type NGO = {
     }
   };
   economicEnterpriseUrl?: string;
+  viewCount?: number;
   posts: Post[];
   opportunities: Volunteering[];
   campaigns?: Campaign[];

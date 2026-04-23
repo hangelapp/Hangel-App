@@ -12,40 +12,40 @@ import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
 import { CircleHelp, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { user as staticUser } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { isNativeApp } from '@/lib/capacitor';
 import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const group1Items: SideNavItem[] = [
-  { href: '/market', label: 'Markalar', icon: 'store' },
-  { href: '/ngos', label: 'STK\'lar', icon: 'building' },
-  { href: '/clubs', label: 'Öğrenci Kulüpleri', icon: 'users' },
-  { href: '/events', label: 'Etkinlikler', icon: 'calendar' },
-  { href: '/library', label: 'Kütüphane', icon: 'library' },
+  { href: '/market', label: 'nav.market', icon: 'store' },
+  { href: '/ngos', label: 'nav.ngos', icon: 'building' },
+  { href: '/clubs', label: 'nav.clubs', icon: 'users' },
+  { href: '/events', label: 'nav.events', icon: 'calendar' },
+  { href: '/library', label: 'nav.library', icon: 'library' },
 ];
 
 const group2Items: SideNavItem[] = [
-    { href: '/my-donations', label: 'Bağışlarım', icon: 'dollar-sign' },
-    { href: '/my-applications', label: 'Başvurularım', icon: 'file-text' },
-    { href: '/my-badges', label: 'Rozetler ve Sertifikalar', icon: 'award' },
-    { href: '/messages', label: 'Mesajlarım', icon: 'message-square' },
+    { href: '/my-donations', label: 'nav.donations', icon: 'dollar-sign' },
+    { href: '/my-applications', label: 'nav.applications', icon: 'file-text' },
+    { href: '/my-badges', label: 'nav.badges', icon: 'award' },
+    { href: '/messages', label: 'nav.messages', icon: 'message-square' },
 ];
 
 const group3Items: SideNavItem[] = [
-    { href: '/leaderboard', label: 'Liderlik Tablosu', icon: 'bar-chart' },
-    { href: '/invite', label: 'Arkadaş Davet Et', icon: 'send' },
+    { href: '/leaderboard', label: 'nav.leaderboard', icon: 'bar-chart' },
+    { href: '/invite', label: 'nav.invite', icon: 'send' },
 ];
 
 const group4Items: SideNavItem[] = [
-  { href: '/admin', label: 'Yönetim Paneli', icon: 'layout-grid' },
-  { href: '/super-admin', label: 'Admin Paneli', icon: 'shield' },
-  { href: '/settings', label: 'Ayarlar', icon: 'settings' },
-  { href: '/about', label: 'Hakkımızda', icon: 'info' },
-  { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'Üye İşyeri', icon: 'zap' },
-  { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'STK Başvurusu', icon: 'HeartHandshake' },
-  { href: '/support/app-support', label: 'App Destek', icon: 'circle-help' },
+  { href: '/admin', label: 'nav.admin', icon: 'layout-grid' },
+  { href: '/super-admin', label: 'nav.superAdmin', icon: 'shield' },
+  { href: '/settings', label: 'nav.settings', icon: 'settings' },
+  { href: '/about', label: 'nav.about', icon: 'info' },
+  { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'nav.merchant', icon: 'zap' },
+  { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'nav.ngoOnboarding', icon: 'HeartHandshake' },
+  { href: '/support/app-support', label: 'nav.support', icon: 'circle-help' },
 ];
 
 const iconColorMap: { [key: string]: string } = {
@@ -97,6 +97,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const [isMounted, setIsMounted] = useState(false);
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
+    const { t } = useTranslation();
+
+    const translateItems = (items: SideNavItem[]) => items.map(it => ({ ...it, label: t(it.label) }));
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -204,16 +207,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return <div className="min-h-screen bg-background">{children}</div>;
     }
 
-    const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || staticUser.name;
-    const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : staticUser.username;
+    const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || '';
+    const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : '';
 
     return (
         <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
-          <SideNav 
-            mainItems={group1Items} 
-            navItems={group2Items}
-            userItems={group3Items}
-            secondaryItems={filteredSecondaryItems}
+          <SideNav
+            mainItems={translateItems(group1Items)}
+            navItems={translateItems(group2Items)}
+            userItems={translateItems(group3Items)}
+            secondaryItems={translateItems(filteredSecondaryItems)}
           />
            <Sheet open={isDrawerOpen} onOpenChange={setDrawerOpen}>
               <SheetContent side="left" className="w-full max-w-sm p-0">
@@ -241,16 +244,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         </div>
                         <nav className="flex-1 space-y-4 p-4">
                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
-                                {group1Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                                {translateItems(group1Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
-                                {group2Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                                {translateItems(group2Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                              <ul className="bg-card rounded-xl border overflow-hidden divide-y">
-                                {group3Items.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                                {translateItems(group3Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
-                                {filteredSecondaryItems.map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
+                                {translateItems(filteredSecondaryItems).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                         </nav>
                    </div>

@@ -131,6 +131,7 @@ export default function BrandsPage() {
             about: brand.about,
             donationRate: brand.donationRate,
             agency: brand.agency,
+            link: brand.link || '',
             // Flatten contact fields for form state
             _email: brand.contact?.email || (brand as any).email || '',
             _phone: (brand as any).phone || '',
@@ -158,6 +159,7 @@ export default function BrandsPage() {
                 about: fd.about,
                 donationRate: fd.donationRate,
                 agency: fd.agency,
+                link: fd.link || '',
                 contact: {
                     email: fd._email || '',
                     website: fd._website || '',
@@ -388,6 +390,16 @@ export default function BrandsPage() {
                                                                             value={(editFormData as any).agency || ''}
                                                                             onChange={(e) => setEditFormData({ ...editFormData, agency: e.target.value } as any)}
                                                                             className="rounded-xl"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-link" className="text-sm font-semibold">Affiliate / Alışveriş Linki</Label>
+                                                                        <Input
+                                                                            id="edit-link"
+                                                                            value={(editFormData as any).link || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value } as any)}
+                                                                            className="rounded-xl"
+                                                                            placeholder="https://..."
                                                                         />
                                                                     </div>
                                                                 </div>

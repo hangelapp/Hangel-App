@@ -1,7 +1,6 @@
 
 'use client';
 import { usePathname } from 'next/navigation';
-
 export default function SettingsLayout({
   children,
 }: {
@@ -9,7 +8,6 @@ export default function SettingsLayout({
 }) {
   const pathname = usePathname();
 
-  // Don't apply this layout to public contracts pages
   if (pathname.startsWith('/settings/contracts')) {
     return <>{children}</>;
   }
