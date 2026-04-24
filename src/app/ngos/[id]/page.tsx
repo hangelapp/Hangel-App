@@ -19,7 +19,7 @@ import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -118,8 +118,14 @@ export default function NgoProfilePage() {
       setProfileUrl(window.location.href);
     }
   }, []);
+
+  useEffect(() => {
+    if (db && id) {
+      updateDoc(doc(db, 'ngos', id), { viewCount: increment(1) }).catch(() => {});
+    }
+  }, [db, id]);
   
-  if (isLoading) {
+  if (isLoading || !ngoDocRef) {
     return (
         <div className="animate-in fade-in-0">
           <Skeleton className="h-40 w-full" />

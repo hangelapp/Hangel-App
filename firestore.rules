@@ -40,6 +40,8 @@ service cloud.firestore {
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
     match /ngos/{ngoId} {
       allow read, list: if true; // Public for marketplace
+      // Herkes sadece viewCount alanını artırabilir (görüntülenme sayacı)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']);
     }
 
     match /brands/{brandId} {
@@ -52,6 +54,16 @@ service cloud.firestore {
 
     match /volunteering/{oppId} {
       allow read, list: if true; // Public volunteering listings
+      // NGO admins can create listings owned by their own NGO (ngoId == auth uid)
+      allow create: if isSignedIn() && request.resource.data.ngoId == request.auth.uid;
+      // Owners can update/delete their own listings; super-admin has full access via global rule
+      allow update, delete: if isSignedIn() && resource.data.ngoId == request.auth.uid;
+    }
+
+    // Transparency: each NGO admin owns one doc with id == auth uid
+    match /transparency/{userId} {
+      allow read: if true; // public — used to render transparency score on NGO profile
+      allow create, update, delete: if isSignedIn() && isOwner(userId);
     }
 
     match /events/{eventId} {

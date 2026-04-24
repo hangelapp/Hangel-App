@@ -64,8 +64,30 @@ export default function VolunteeringDetailPage() {
     notFound();
   }
 
-  const daysRemaining = opportunity.dates?.applicationEnd ? differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date()) : -1;
+  const safeFormat = (dateStr?: string): string => {
+    if (!dateStr) return '—';
+    try {
+      const d = parse(dateStr, 'yyyy-MM-dd', new Date());
+      if (isNaN(d.getTime())) return dateStr;
+      return format(d, 'dd MMMM yyyy', { locale: tr });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const daysRemaining = (() => {
+    if (!opportunity.dates?.applicationEnd) return -1;
+    try {
+      const d = parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date());
+      if (isNaN(d.getTime())) return -1;
+      return differenceInDays(d, new Date());
+    } catch {
+      return -1;
+    }
+  })();
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+  const providesCertificate = (opportunity as any).providesCertificate ?? (opportunity as any).amenities?.providesCertificate ?? false;
+  const taskType = (opportunity as any).taskType || (opportunity as any).commitment || '—';
 
   const handleApply = () => {
     if (!authUser) {
@@ -148,17 +170,17 @@ export default function VolunteeringDetailPage() {
                     <CardHeader><CardTitle className="text-lg">İlan Detayları</CardTitle></CardHeader>
                     <CardContent className="text-sm space-y-3">
                         <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
-                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
-                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {opportunity.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
+                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({taskType})</span></div>
+                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
                     </CardContent>
                 </Card>
 
                  <Card>
                     <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Son Başvuru:</span><span className='font-bold text-primary'>{format(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Başlangıç:</span><span className='font-bold'>{format(parse(opportunity.dates.eventStart, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Bitiş:</span><span className='font-bold'>{format(parse(opportunity.dates.eventEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Son Başvuru:</span><span className='font-bold text-primary'>{safeFormat(opportunity.dates?.applicationEnd)}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Başlangıç:</span><span className='font-bold'>{safeFormat(opportunity.dates?.eventStart)}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Bitiş:</span><span className='font-bold'>{safeFormat(opportunity.dates?.eventEnd)}</span></div>
                     </CardContent>
                 </Card>
 

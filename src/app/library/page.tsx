@@ -9,30 +9,36 @@ import {
 } from "@/components/ui/accordion";
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { Search, ChevronRight, BookOpen, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Search, ChevronRight, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import type { LibrarySection, LibraryItem } from '@/lib/library';
+import type { LibrarySection } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
 
 export default function LibraryPage() {
   const db = useFirestore();
-  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
   const libQuery = useMemoFirebase(() => collection(db, 'library'), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
-  // Firestore sections ile statik sections merge edilir; statik sections her zaman dahil edilir
+  // Merge: statik items her zaman dahil edilir; Firestore sadece ek item ekleyebilir
   const sections = useMemo(() => {
-    if (!libData || libData.length === 0) return staticSections;
-    const firestoreSlugs = new Set(libData.map(s => s.slug));
-    const extraStatic = staticSections.filter(s => !firestoreSlugs.has(s.slug));
-    return [...libData, ...extraStatic];
+    const firestoreMap = new Map((libData ?? []).map(s => [s.slug, s]));
+    const merged = staticSections.map(staticSec => {
+      const fsSec = firestoreMap.get(staticSec.slug);
+      if (!fsSec) return staticSec;
+      // Firestore'dan gelen ek itemları statik itemların sonuna ekle (slug çakışmasını önle)
+      const staticSlugs = new Set(staticSec.items.map(i => i.slug));
+      const extraItems = (fsSec.items ?? []).filter(i => !staticSlugs.has(i.slug));
+      return { ...staticSec, items: [...staticSec.items, ...extraItems] };
+    });
+    // Firestore'da tamamen yeni (statik olmayan) bölümler varsa ekle
+    const staticSlugs = new Set(staticSections.map(s => s.slug));
+    const extraSections = (libData ?? []).filter(s => !staticSlugs.has(s.slug));
+    return [...merged, ...extraSections];
   }, [libData]);
 
   const filteredSections = useMemo(() => {

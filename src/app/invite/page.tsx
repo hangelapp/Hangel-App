@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { isNativeApp } from '@/lib/capacitor';
+
+const INVITE_POINTS = 10;
 import { Input } from '@/components/ui/input';
 import {
     Mail,
@@ -38,28 +41,36 @@ interface PhoneContact {
 }
 
 async function getCapacitorContacts(): Promise<PhoneContact[]> {
-    try {
-        const { Contacts, 'PhoneType': PhoneType } = await import('@capacitor-community/contacts') as any;
+    const { Contacts } = await import('@capacitor-community/contacts') as any;
 
-        const { contacts } = await Contacts.getContacts({
-            projection: {
-                name: true,
-                phones: true,
-                image: false,
-            },
-        });
+    const { contacts } = await Contacts.getContacts({
+        projection: {
+            name: true,
+            phones: true,
+            image: false,
+        },
+    });
 
-        return (contacts as any[])
-            .filter((c: any) => c.name?.display)
-            .map((c: any) => ({
-                id: c.contactId || String(Math.random()),
-                name: c.name.display,
-                phones: (c.phones || []).map((p: any) => p.number).filter(Boolean),
-                onPlatform: false,
-            }));
-    } catch {
-        return [];
-    }
+    return (contacts as any[])
+        .filter((c: any) => c.name?.display)
+        .map((c: any) => ({
+            id: c.contactId || String(Math.random()),
+            name: c.name.display,
+            phones: (c.phones || []).map((p: any) => p.number).filter(Boolean),
+            onPlatform: false,
+        }));
+}
+
+async function getWebContacts(): Promise<PhoneContact[] | null> {
+    const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+    if (!nav?.contacts?.select) return null;
+    const results = await nav.contacts.select(['name', 'tel'], { multiple: true });
+    return (results || []).map((c: any, i: number) => ({
+        id: String(i),
+        name: (c.name && c.name[0]) || 'İsimsiz',
+        phones: Array.isArray(c.tel) ? c.tel : [],
+        onPlatform: false,
+    }));
 }
 
 export default function InvitePage() {
@@ -96,23 +107,24 @@ export default function InvitePage() {
             window.open(`sms:${phone}?&body=${msg}`, '_blank');
         }
 
-        // Track invite in Firestore
+        let awarded = 0;
         if (authUser?.uid) {
             try {
-                // Save invite record to 'invites' collection
                 await addDoc(collection(db, 'invites'), {
                     senderId: authUser.uid,
                     recipientName: name,
                     recipientPhone: phone || null,
                     sentAt: serverTimestamp(),
                     status: 'sent',
+                    pointsAwarded: INVITE_POINTS,
                 });
 
-                // Update user's invite count for point tracking
                 const userRef = doc(db, 'users', authUser.uid);
                 await updateDoc(userRef, {
                     inviteCount: increment(1),
+                    impactScore: increment(INVITE_POINTS),
                 });
+                awarded = INVITE_POINTS;
             } catch (error) {
                 console.error('Failed to track invite:', error);
             }
@@ -120,31 +132,70 @@ export default function InvitePage() {
 
         toast({
             title: 'Davet Gönderildi!',
-            description: `${name} kişisine hangel davetiniz gönderildi.`,
+            description: awarded
+                ? `${name} kişisine davet gönderildi. +${awarded} Etki Puanı kazandınız.`
+                : `${name} kişisine hangel davetiniz gönderildi.`,
         });
     };
 
     const handlePhoneSync = async () => {
         setPhoneLoading(true);
         try {
-            const contacts = await getCapacitorContacts();
+            let contacts: PhoneContact[] = [];
+
+            if (isNativeApp()) {
+                try {
+                    contacts = await getCapacitorContacts();
+                } catch (err) {
+                    console.error('Capacitor contacts failed:', err);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Rehbere erişilemedi',
+                        description: 'Uygulama ayarlarından rehber iznini etkinleştirin.',
+                    });
+                    return;
+                }
+            } else {
+                try {
+                    const webContacts = await getWebContacts();
+                    if (webContacts === null) {
+                        toast({
+                            variant: 'destructive',
+                            title: 'Tarayıcınız desteklemiyor',
+                            description: 'Rehber senkronizasyonu için mobil uygulamayı kullanın veya bağlantıyı manuel paylaşın.',
+                        });
+                        return;
+                    }
+                    contacts = webContacts;
+                } catch (err: any) {
+                    if (err?.name === 'InvalidStateError' || err?.name === 'AbortError') return;
+                    console.error('Web contacts failed:', err);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Rehbere erişilemedi',
+                        description: 'İzin verilmedi veya bir hata oluştu.',
+                    });
+                    return;
+                }
+            }
+
             if (contacts.length === 0) {
                 toast({
                     variant: 'destructive',
-                    title: 'Rehbere erişilemedi',
-                    description: 'Uygulama ayarlarından rehber iznini etkinleştirin.',
+                    title: 'Kişi bulunamadı',
+                    description: 'Rehberinizde kişi yok veya hiçbiri seçilmedi.',
                 });
                 return;
             }
 
-            // Firestore'daki kullanıcılarla eşleştir
             const firestorePhones = new Set(
                 (allUsers || []).flatMap((u: any) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
             );
+            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
 
             const enriched = contacts.map(c => ({
                 ...c,
-                onPlatform: c.phones.some(p => firestorePhones.has(p.replace(/\s/g, ''))),
+                onPlatform: c.phones.some(p => firestorePhones.has(normalize(p))),
             }));
 
             setPhoneContacts(enriched);
@@ -384,11 +435,11 @@ export default function InvitePage() {
                 <CardContent className="space-y-4 text-sm text-amber-900 dark:text-amber-300/80">
                     <div className="flex items-start gap-3">
                         <div className="w-4 h-4 mt-1 rounded-full bg-amber-500 flex-shrink-0" />
-                        <p>Davet linkinle üye olan her arkadaşın için <strong>100 Sosyal Etki Puanı</strong> kazanırsın.</p>
+                        <p>Gönderdiğin her davet için <strong>{INVITE_POINTS} Sosyal Etki Puanı</strong> kazanırsın.</p>
                     </div>
                     <div className="flex items-start gap-3">
                         <div className="w-4 h-4 mt-1 rounded-full bg-amber-500 flex-shrink-0" />
-                        <p>Arkadaşın ilk bağışını yaptığında ekstra <strong>50 Sosyal Etki Puanı</strong> daha kazanırsın!</p>
+                        <p>Davet ettiğin arkadaşın üye olduğunda ve ilk bağışını yaptığında ek puan kazanacaksın (yakında).</p>
                     </div>
                 </CardContent>
             </Card>

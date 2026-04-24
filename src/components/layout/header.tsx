@@ -14,7 +14,7 @@ import { useUser } from '@/firebase';
 import { HangelLogo } from '@/components/icons';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
-  const { language, changeLanguage } = useTranslation();
+  const { language, changeLanguage, t } = useTranslation();
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
@@ -58,7 +58,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                 <UserNav />
             ) : (
                 <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                    <Link href="/login/selection?action=login">Giriş Yap</Link>
+                    <Link href="/login/selection?action=login">{t('nav.login')}</Link>
                 </Button>
             )}
           </div>

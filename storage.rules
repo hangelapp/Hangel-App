@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Kullanıcı profil/profilefotoğrafları
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // STK şeffaflık belgeleri
+    match /transparency/{userId}/{allPaths=**} {
+      allow read: if true; // public — belgeler destekçilere açık
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // STK/Marka/Kulüp logoları ve kapak fotoğrafları
+    match /ngos/{ngoId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == ngoId;
+    }
+
+    match /brands/{brandId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == brandId;
+    }
+
+    match /studentClubs/{clubId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == clubId;
+    }
+
+    // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, kimse yazamaz
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+  }
+}

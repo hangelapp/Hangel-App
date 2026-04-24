@@ -107,7 +107,11 @@ export default function BrandProfilePage() {
     // Then try Firestore brands
     const fsMatch = (firestoreBrands || []).find(b => b.slug === slug);
     if (fsMatch) {
-      // Try to find matching API brand by name to get the affiliate link
+      // If Firestore brand already has a link, use it; otherwise try API by name
+      if (fsMatch.link) {
+        setBrand(fsMatch);
+        return;
+      }
       const nameMatch = apiBrands.find(
         b => b.name.toLowerCase().trim() === fsMatch.name.toLowerCase().trim()
       );
