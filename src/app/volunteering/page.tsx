@@ -186,7 +186,12 @@ export default function VolunteeringPage() {
 
     const filteredOpps = useMemo(() => {
         if (!oppsData) return [];
-        let filtered = [...oppsData];
+        // Sadece onaylanmış (Aktif) ilanlar — Beklemede/Pasif gizli
+        let filtered = oppsData.filter(opp => {
+            const status = (opp as any).status;
+            // Eski ilanlar status alanı olmayabilir — varsayılan olarak gösterilir
+            return !status || status === 'Aktif';
+        });
 
         if (interestFilter.length > 0) {
             filtered = filtered.filter(opp =>

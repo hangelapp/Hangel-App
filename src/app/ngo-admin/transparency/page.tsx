@@ -1,7 +1,8 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, AlertCircle, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink, Plus } from 'lucide-react';
+import { CheckCircle, AlertCircle, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink, Plus, Download, X as XIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,6 +60,16 @@ export default function TransparencyPage() {
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [previewItem, setPreviewItem] = useState<CriteriaItem | null>(null);
+
+  const isImageUrl = (url?: string, name?: string) => {
+    const target = (url || name || '').toLowerCase();
+    return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(target);
+  };
+  const isPdfUrl = (url?: string, name?: string) => {
+    const target = (url || name || '').toLowerCase();
+    return /\.pdf(\?|$)/.test(target);
+  };
 
   const transparencyDocRef = useMemoFirebase(() => {
     if (!authUser?.uid) return null;
@@ -231,9 +242,14 @@ export default function TransparencyPage() {
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{item.name}</p>
-                        <Badge variant={item.isCompleted ? 'default' : 'secondary'} className={cn('text-[10px]', item.isCompleted && 'bg-green-600 hover:bg-green-600')}>
-                          {item.isCompleted ? 'Tamamlandı' : `+${item.points} puan`}
-                        </Badge>
+                        {item.isCompleted ? (
+                          <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            {item.type === 'document' ? 'Yüklendi' : 'Tamamlandı'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px]">+{item.points} puan</Badge>
+                        )}
                       </div>
                       {!isEditing && item.type === 'document' && item.fileName && (
                         <a
@@ -267,17 +283,27 @@ export default function TransparencyPage() {
 
                   <div className="flex items-center gap-1 flex-shrink-0">
                     {!isEditing && item.isCompleted && item.type === 'document' && item.fileUrl && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Görüntüle">
-                        <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                          <Eye className="h-4 w-4" />
-                        </a>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setPreviewItem(item)}
+                        title="Önizle"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Önizle</span>
                       </Button>
                     )}
                     {!isEditing && item.isCompleted && item.type === 'link' && item.linkUrl && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Aç">
-                        <a href={item.linkUrl} target="_blank" rel="noopener noreferrer">
-                          <Eye className="h-4 w-4" />
-                        </a>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setPreviewItem(item)}
+                        title="Önizle"
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Önizle</span>
                       </Button>
                     )}
 
@@ -352,6 +378,85 @@ export default function TransparencyPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Belge / Bağlantı önizleme dialog'u */}
+      <Dialog open={!!previewItem} onOpenChange={open => !open && setPreviewItem(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-4 border-b shrink-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="truncate">{previewItem?.name}</DialogTitle>
+                {previewItem?.fileName && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">{previewItem.fileName}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {previewItem?.type === 'document' && previewItem?.fileUrl && (
+                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+                    <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">İndir</span>
+                    </a>
+                  </Button>
+                )}
+                {(previewItem?.fileUrl || previewItem?.linkUrl) && (
+                  <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                    <a href={previewItem.fileUrl || previewItem.linkUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4" />
+                      <span className="hidden sm:inline">Yeni Sekme</span>
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden bg-muted/30 relative">
+            {previewItem?.type === 'document' && previewItem?.fileUrl && (
+              isImageUrl(previewItem.fileUrl, previewItem.fileName) ? (
+                <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
+                  <img
+                    src={previewItem.fileUrl}
+                    alt={previewItem.name}
+                    className="max-w-full max-h-full object-contain rounded shadow-lg"
+                  />
+                </div>
+              ) : isPdfUrl(previewItem.fileUrl, previewItem.fileName) ? (
+                <iframe
+                  src={previewItem.fileUrl}
+                  className="w-full h-full border-0"
+                  title={previewItem.name}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center gap-4">
+                  <FileText className="h-16 w-16 text-muted-foreground/40" />
+                  <div className="space-y-1">
+                    <p className="font-medium">{previewItem.fileName || 'Belge'}</p>
+                    <p className="text-sm text-muted-foreground">Bu dosya türü tarayıcıda önizlenemiyor.</p>
+                  </div>
+                  <Button asChild>
+                    <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
+                      <Download className="mr-2 h-4 w-4" /> Dosyayı İndir
+                    </a>
+                  </Button>
+                </div>
+              )
+            )}
+            {previewItem?.type === 'link' && previewItem?.linkUrl && (
+              <iframe
+                src={previewItem.linkUrl}
+                className="w-full h-full border-0"
+                title={previewItem.name}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
+            )}
+          </div>
+          <DialogFooter className="p-3 border-t shrink-0">
+            <Button variant="outline" onClick={() => setPreviewItem(null)} className="gap-1.5">
+              <XIcon className="h-4 w-4" /> Kapat
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

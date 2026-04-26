@@ -1,76 +1,113 @@
-
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, UserPlus, Contact, ShieldCheck, Info } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, UserPlus, ShieldCheck, Info, CheckCircle, XCircle, Loader2, Search } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { countryPhoneCodes } from '@/lib/data';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const roles = [
-    { 
-        id: 'Genel Yönetici', 
-        label: 'Genel Yönetici', 
-        description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' 
-    },
-    { 
-        id: 'Finans Yöneticisi', 
-        label: 'Finans Yöneticisi', 
-        description: 'Sadece bağış takibi, finansal raporlar ve şeffaflık endeksi belgelerini yönetebilir.' 
-    },
-    { 
-        id: 'Gönüllü Yöneticisi', 
-        label: 'Gönüllü Yöneticisi', 
-        description: 'Gönüllülük ilanları oluşturabilir, başvuruları değerlendirebilir ve gönüllü istatistiklerini görebilir.' 
-    },
-    { 
-        id: 'Mini Blog Yöneticisi', 
-        label: 'Mini Blog Yöneticisi', 
-        description: 'Gönderi paylaşabilir, web sitesi ayarlarını düzenleyebilir ve içerik stratejisini yönetebilir.' 
-    },
+    { id: 'Genel Yönetici', label: 'Genel Yönetici', description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' },
+    { id: 'Finans Yöneticisi', label: 'Finans Yöneticisi', description: 'Sadece bağış takibi, finansal raporlar ve şeffaflık endeksi belgelerini yönetebilir.' },
+    { id: 'Gönüllü Yöneticisi', label: 'Gönüllü Yöneticisi', description: 'Gönüllülük ilanları oluşturabilir, başvuruları değerlendirebilir ve gönüllü istatistiklerini görebilir.' },
+    { id: 'Mini Blog Yöneticisi', label: 'Mini Blog Yöneticisi', description: 'Gönderi paylaşabilir, web sitesi ayarlarını düzenleyebilir ve içerik stratejisini yönetebilir.' },
 ];
+
+const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
 export default function NewUserPage() {
     const { toast } = useToast();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const db = useFirestore();
+    const { user: authUser } = useUser();
 
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [phoneCode, setPhoneCode] = useState('90');
     const [phone, setPhone] = useState('');
     const [role, setRole] = useState('Genel Yönetici');
+    const [isSending, setIsSending] = useState(false);
+
+    const ngoId = searchParams.get('id') || authUser?.uid || null;
+
+    // Tüm üyeleri çek (telefon eşleştirmesi için)
+    const usersQuery = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+    const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
+
+    const normalizedSearch = normalizePhone(phone);
+    const matchedUser = useMemo(() => {
+        if (!allUsers || normalizedSearch.length < 3) return null;
+        return allUsers.find(u => {
+            const candidates = [
+                u.personalInfo?.phone,
+                u.phoneNumber,
+                u.phone,
+            ].filter(Boolean).map(normalizePhone);
+            return candidates.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
+        }) || null;
+    }, [allUsers, normalizedSearch]);
 
     const selectedRoleInfo = roles.find(r => r.id === role);
+    const canSend = !!matchedUser && !isSending && matchedUser.id !== authUser?.uid;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (!name || !email || !phone) {
+
+        if (!ngoId) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Kuruluş bilgisi alınamadı.' });
+            return;
+        }
+        if (!matchedUser) {
             toast({
-                variant: "destructive",
-                title: "Eksik Bilgi",
-                description: "Lütfen tüm zorunlu alanları doldurun.",
+                variant: 'destructive',
+                title: 'Üye bulunamadı',
+                description: 'Bu telefon numarasıyla kayıtlı bir hangel üyesi bulunmadı. Davet sadece mevcut üyelere gönderilebilir.',
             });
             return;
         }
+        if (matchedUser.id === authUser?.uid) {
+            toast({ variant: 'destructive', title: 'Geçersiz', description: 'Kendinize davet gönderemezsiniz.' });
+            return;
+        }
 
-        setIsLoading(true);
-
-        // Simulate API call
-        setTimeout(() => {
-            toast({
-                title: "Davet Gönderildi",
-                description: `${name} için ${role} yetki başvurusu oluşturuldu. Onay bildirimi gönderildi.`,
+        setIsSending(true);
+        try {
+            await addDoc(collection(db, 'userInvitations'), {
+                ngoId,
+                inviteeUserId: matchedUser.id,
+                inviteeName: matchedUser.name || matchedUser.displayName || '',
+                inviteePhone: normalizedSearch,
+                role,
+                status: 'pending',
+                invitedBy: authUser?.uid || null,
+                invitedAt: serverTimestamp(),
             });
-            setIsLoading(false);
+
+            toast({
+                title: 'Davet Gönderildi',
+                description: `${matchedUser.name || 'Üye'} kişisine "${role}" yetkisi için davet gönderildi.`,
+            });
             router.push('/ngo-admin/users');
-        }, 1000);
+        } catch (err: any) {
+            console.error('Invitation failed:', err);
+            toast({
+                variant: 'destructive',
+                title: 'Davet gönderilemedi',
+                description: err?.code === 'permission-denied'
+                    ? 'Bu işlem için yeterli yetkiniz yok.'
+                    : (err?.message || 'Bilinmeyen bir hata oluştu.'),
+            });
+        } finally {
+            setIsSending(false);
+        }
     };
 
     return (
@@ -89,76 +126,85 @@ export default function NewUserPage() {
                         Yetkili Davet Formu
                     </CardTitle>
                     <CardDescription>
-                        Kuruluşunuza yeni bir yönetici veya editör eklemek için bilgileri doldurun.
+                        Sadece mevcut hangel üyelerine yetki daveti gönderebilirsiniz. Davet edilecek kişinin telefon numarasını girin; eşleşen üyenin bilgileri otomatik gelir.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form id="add-user-form" onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Ad Soyad</Label>
-                            <Input 
-                                id="name" 
-                                placeholder="İsmail Hilmi ADIGÜZEL" 
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email">E-posta Adresi</Label>
-                                <Input 
-                                    id="email" 
-                                    type="email" 
-                                    placeholder="eposta@kurum.org" 
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="phone">Telefon Numarası</Label>
-                                <div className="flex gap-2">
-                                    <div className="w-[100px] shrink-0">
-                                        <Select defaultValue="90" required>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Kod" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {countryPhoneCodes.map(code => (
-                                                    <SelectItem key={code} value={code}>+{code}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="relative flex-1">
-                                        <Input 
-                                            id="phone" 
-                                            type="tel" 
-                                            placeholder="5XX XXX XX XX" 
-                                            value={phone}
-                                            onChange={(e) => setPhone(e.target.value)}
-                                            required
-                                            className="pr-10"
-                                        />
-                                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground hover:text-primary">
-                                            <Contact className="h-4 w-4" />
-                                        </Button>
-                                    </div>
+                            <Label htmlFor="phone">Telefon Numarası</Label>
+                            <div className="flex gap-2">
+                                <div className="w-[100px] shrink-0">
+                                    <Select value={phoneCode} onValueChange={setPhoneCode}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {[...new Set(countryPhoneCodes)].map(code => (
+                                                <SelectItem key={code} value={code}>+{code}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        placeholder="5XX XXX XX XX"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                        className="pl-10"
+                                    />
                                 </div>
                             </div>
+                            <p className="text-xs text-muted-foreground">En az 3 hane girin. Eşleşen üye otomatik bulunur.</p>
                         </div>
 
+                        {/* Eşleşme durumu */}
+                        {usersLoading && normalizedSearch.length >= 3 && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground p-3 border rounded-lg">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Üye listesi yükleniyor...
+                            </div>
+                        )}
+
+                        {!usersLoading && normalizedSearch.length >= 3 && matchedUser && (
+                            <div className="flex items-center gap-3 p-3 border-2 border-green-500/30 bg-green-500/5 rounded-lg">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={matchedUser.avatarUrl} />
+                                    <AvatarFallback>{(matchedUser.name || 'U').charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-sm">{matchedUser.name || matchedUser.displayName || 'Üye'}</p>
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground truncate">
+                                        {matchedUser.personalInfo?.email || matchedUser.email || ''}
+                                        {matchedUser.username && ` • ${matchedUser.username}`}
+                                    </p>
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-green-700 bg-green-100 px-2 py-1 rounded">
+                                    Üye
+                                </span>
+                            </div>
+                        )}
+
+                        {!usersLoading && normalizedSearch.length >= 3 && !matchedUser && (
+                            <Alert variant="destructive">
+                                <XCircle className="h-4 w-4" />
+                                <AlertTitle>Üye bulunamadı</AlertTitle>
+                                <AlertDescription>
+                                    Bu telefon numarasıyla kayıtlı bir hangel üyesi yok. Davet gönderebilmek için kişinin önce platforma kayıt olması gerekir.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
                         <div className="space-y-2">
-                            <Label htmlFor="role">Rol</Label>
-                            <Select value={role} onValueChange={setRole} required>
-                                <SelectTrigger id="role">
-                                    <SelectValue />
-                                </SelectTrigger>
+                            <Label htmlFor="role">Verilecek Rol</Label>
+                            <Select value={role} onValueChange={setRole}>
+                                <SelectTrigger id="role"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    {roles.map(r => (
-                                        <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
-                                    ))}
+                                    {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -176,8 +222,8 @@ export default function NewUserPage() {
                 </CardContent>
                 <CardFooter className="flex justify-end gap-3 border-t pt-6 bg-muted/10">
                     <Button variant="outline" onClick={() => router.back()}>İptal</Button>
-                    <Button type="submit" form="add-user-form" disabled={isLoading}>
-                        {isLoading ? 'Gönderiliyor...' : 'Davet Gönder'}
+                    <Button type="submit" form="add-user-form" disabled={!canSend}>
+                        {isSending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor...</> : 'Davet Gönder'}
                     </Button>
                 </CardFooter>
             </Card>
@@ -185,8 +231,7 @@ export default function NewUserPage() {
             <div className="p-4 bg-muted/30 rounded-lg flex items-start gap-3">
                 <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                    Davet gönderilen kullanıcıya e-posta ve SMS yoluyla bir aktivasyon linki ulaştırılacaktır. 
-                    Kullanıcı linke tıklayıp şifresini belirlediğinde yetkisi aktif hale gelir.
+                    Davet edilen üyeye uygulama içi bildirim gönderilir. Kullanıcı daveti onayladığında ilgili rol kuruluşunuzda aktif hale gelir.
                 </p>
             </div>
         </div>
