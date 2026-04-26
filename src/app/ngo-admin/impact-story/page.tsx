@@ -12,7 +12,8 @@ import {
     TrendingUp, User, Users, Rocket, Heart, School, HeartHandshake,
     ShoppingBag, Sparkles
 } from 'lucide-react';
-import { user } from '@/lib/data';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 export type ImpactSlide = {
@@ -32,9 +33,28 @@ function StoryViewer() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const category = searchParams.get('category');
-    
+
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
+
+    const { user: authUser } = useUser();
+    const db = useFirestore();
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser?.uid) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser?.uid]);
+    const { data: userData } = useDoc<any>(userDocRef);
+
+    const user = useMemo(() => ({
+        name: userData?.name || authUser?.displayName || 'Kullanıcı',
+        avatarUrl: userData?.avatarUrl || authUser?.photoURL || '',
+        stats: {
+            totalDonation: userData?.stats?.totalDonation || 0,
+            volunteerHours: userData?.stats?.volunteerHours || 0,
+            mostSupportedNgo: userData?.stats?.mostSupportedNgo || 'destek olduğun kuruluşlar',
+            mostActiveVolunteerArea: userData?.stats?.mostActiveVolunteerArea || 'sosyal fayda',
+        },
+    }), [userData, authUser]);
 
     const hangelImpactStories: ImpactSlide[] = [
         {

@@ -9,8 +9,8 @@ import React, { useMemo } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
+import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff } from 'lucide-react';
 import type { NGO } from "@/lib/types";
@@ -19,29 +19,58 @@ export default function NgosPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const router = useRouter();
+    const { user: authUser } = useUser();
+    const myUserDocRef = useMemoFirebase(() => {
+        if (!db || !authUser?.uid) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser?.uid]);
+    const { data: myUserData } = useDoc<any>(myUserDocRef);
     
     const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
     const { data: ngos, isLoading } = useCollection<NGO>(ngosQuery);
 
-    const handleToggleStatus = (id: string, currentStatus: string) => {
+    const handleToggleStatus = async (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
         const ngoRef = doc(db, 'ngos', id);
-        updateDocumentNonBlocking(ngoRef, { status: isPassive ? 'Aktif' : 'Pasif' });
-        
-        toast({ 
-            title: isPassive ? "Kuruluş Aktifleştirildi" : "Kuruluş Pasife Alındı", 
-            description: "Değişiklik sisteme yansıtıldı." 
-        });
+        try {
+            await updateDoc(ngoRef, { status: isPassive ? 'Aktif' : 'Pasif' });
+            toast({
+                title: isPassive ? 'Kuruluş Aktifleştirildi' : 'Kuruluş Pasife Alındı',
+                description: isPassive
+                    ? 'STK platformdaki tüm listelerde tekrar görünür olacak.'
+                    : 'STK artık platformdaki public listelerde görünmeyecek.',
+            });
+        } catch (e: any) {
+            console.error('NGO status toggle failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Durum güncellenemedi',
+                description: e?.code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        }
     };
 
-    const handleRemove = (id: string, name: string) => {
+    const handleRemove = async (id: string, name: string) => {
         const ngoRef = doc(db, 'ngos', id);
-        deleteDocumentNonBlocking(ngoRef);
-        toast({
-            variant: 'destructive',
-            title: "Kuruluş Kaldırıldı",
-            description: `${name} platformdan kalıcı olarak silindi.`,
-        });
+        try {
+            await deleteDoc(ngoRef);
+            toast({
+                variant: 'destructive',
+                title: 'Kuruluş Kaldırıldı',
+                description: `${name} platformdan kalıcı olarak silindi.`,
+            });
+        } catch (e: any) {
+            console.error('NGO delete failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Silme başarısız',
+                description: e?.code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        }
     };
 
     if (isLoading) {
@@ -59,6 +88,16 @@ export default function NgosPage() {
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">STK Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">Kayıtlı sivil toplum kuruluşlarını ve şeffaflık puanlarını denetleyin.</p>
             </div>
+
+            {/* Debug paneli — auth.uid ile user doc'taki role eşleşmesini göster */}
+            <Card className="rounded-2xl border-amber-200 bg-amber-50/40 p-4">
+                <div className="text-xs font-mono space-y-1">
+                    <p><strong>auth.uid:</strong> {authUser?.uid || '(giriş yok)'}</p>
+                    <p><strong>auth.email:</strong> {authUser?.email || '(yok)'}</p>
+                    <p><strong>users/{authUser?.uid || '?'}.role:</strong> {myUserData?.role ? `"${myUserData.role}"` : '(role field yok veya doc yok)'}</p>
+                    <p><strong>Süper Admin Sayılır mı?</strong> {(authUser?.email === '5384009090@hangel.org' || myUserData?.role === 'super-admin') ? '✓ EVET' : '✗ HAYIR'}</p>
+                </div>
+            </Card>
 
             <Card className="rounded-[2.5rem] border-black/5 shadow-xl overflow-hidden">
                 <CardHeader className="bg-muted/30 border-b p-8">

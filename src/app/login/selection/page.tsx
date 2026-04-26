@@ -48,7 +48,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initiateEmailVerification, initiatePasswordResetEmail } from '@/firebase/non-blocking-login';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
 // --- Static Data ---
@@ -821,31 +821,62 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         setDonationCategories(prev => prev.filter(cat => cat.id !== id));
     };
 
+    const validateForm = (): string | null => {
+        if (!formData.name?.trim()) {
+            return entityType === 'BRAND' ? 'Marka adı zorunludur.' : entityType === 'CLUB' ? 'Kulüp adı zorunludur.' : 'Kuruluş adı zorunludur.';
+        }
+        if (!formData.email?.trim()) return 'Kurumsal e-posta zorunludur.';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return 'Geçerli bir e-posta adresi girin.';
+        if (!formData.phone?.trim()) return 'Telefon numarası zorunludur.';
+        if (!formData.authorized.name?.trim()) return 'Yetkili kişinin adı zorunludur.';
+        if (!formData.authorized.role?.trim()) return 'Yetkili kişinin görevi zorunludur.';
+        if (!formData.authorized.email?.trim()) return 'Yetkili kişinin e-postası zorunludur.';
+        if (!formData.authorized.phone?.trim()) return 'Yetkili kişinin telefonu zorunludur.';
+        if (entityType === 'CLUB' && !formData.clubType) return 'Kulüp türünü seçin.';
+        return null;
+    };
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const validationError = validateForm();
+        if (validationError) {
+            toast({ variant: 'destructive', title: 'Eksik Bilgi', description: validationError });
+            return;
+        }
+
         setIsSubmitting(true);
         try {
-            await addDocumentNonBlocking(collection(db, 'applications'), {
+            await addDoc(collection(db, 'applications'), {
                 ...formData,
                 entityType,
+                type: 'Kurumsal Başvuru',
                 selectedBeneficiaries,
                 selectedServiceAreas,
                 selectedPlatforms,
                 donationCategories,
                 date: new Date().toISOString().split('T')[0],
-                status: 'Beklemede'
+                createdAt: serverTimestamp(),
+                status: 'Beklemede',
             });
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push('/login');
         } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: error.message });
+            console.error('Application submit failed:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Başvuru Gönderilemedi',
+                description: error?.code === 'permission-denied'
+                    ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
+                    : (error?.message || 'Bilinmeyen bir hata oluştu.'),
+            });
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
+        <form onSubmit={handleFormSubmit} noValidate className="space-y-10 animate-in fade-in-0 pb-10">
             {/* Global Selectors */}
             <div className="space-y-6">
                 <div className="space-y-2">
@@ -1373,7 +1404,13 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const activeTab = searchParams.get('tab') || 'individual';
+    // "tab" is canonical; "type" is an alias kept for older links
+    // (e.g. /login/selection?action=register&type=corporate&entity=BRAND)
+    const rawTab = searchParams.get('tab') || searchParams.get('type');
+    const hasEntity = !!searchParams.get('entity');
+    const activeTab = rawTab === 'corporate' || (hasEntity && rawTab !== 'individual')
+      ? 'corporate'
+      : (rawTab || 'individual');
     const initialEntity = searchParams.get('entity') || 'NGO';
 
     return (

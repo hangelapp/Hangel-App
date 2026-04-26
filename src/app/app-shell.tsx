@@ -19,6 +19,7 @@ import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
 import { useTranslation } from '@/components/providers/language-provider';
 
 const group1Items: SideNavItem[] = [
+  { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
   { href: '/market', label: 'nav.market', icon: 'store' },
   { href: '/ngos', label: 'nav.ngos', icon: 'building' },
   { href: '/clubs', label: 'nav.clubs', icon: 'users' },
@@ -163,13 +164,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir.
     // E-postası doğrulanmamış kullanıcı /login/selection üzerinde verify-sent
     // adımını görebilmeli, bu yüzden redirect'i emailVerified'a koşullu tutuyoruz.
+    // Kurumsal kayıt (Marka/STK/Kulüp) akışı giriş yapmış kullanıcılar için de
+    // erişilebilir olmalı, bu yüzden register/corporate query paramlarında
+    // redirect uygulanmaz.
+    const isCorporateRegisterFlow = useMemo(() => {
+        if (pathname !== '/login/selection') return false;
+        const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+        return params.get('action') === 'register' && (params.get('type') === 'corporate' || !!params.get('entity'));
+    }, [pathname]);
+
     useEffect(() => {
-        if (!isUserLoading && authUser && isMounted && authUser.emailVerified) {
-            if (pathname === '/' || pathname === '/login/selection') {
+        if (!isUserLoading && authUser && isMounted) {
+            // Giriş yapmış kullanıcı ana sayfaya geldiğinde direkt market'e yönlendir.
+            if (pathname === '/') {
+                router.push('/market');
+                return;
+            }
+            // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent
+            // adımını görebilmeli — orada yalnızca emailVerified olanları yönlendiriyoruz.
+            if (authUser.emailVerified && pathname === '/login/selection' && !isCorporateRegisterFlow) {
                 router.push('/market');
             }
         }
-    }, [authUser, isUserLoading, pathname, router, isMounted]);
+    }, [authUser, isUserLoading, pathname, router, isMounted, isCorporateRegisterFlow]);
 
     if (!isMounted) {
         return <div className="min-h-screen bg-background">{children}</div>;

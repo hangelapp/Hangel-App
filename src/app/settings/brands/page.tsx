@@ -96,6 +96,12 @@ export default function FollowedBrandsPage() {
     if (categoryFilter.length > 0) filtered = filtered.filter(b => categoryFilter.includes(b.category));
 
     filtered.sort((a, b) => {
+      // Önce takip edilenler üstte
+      const aFollowed = selectedBrands.includes(a.id) ? 1 : 0;
+      const bFollowed = selectedBrands.includes(b.id) ? 1 : 0;
+      if (aFollowed !== bFollowed) return bFollowed - aFollowed;
+
+      // Sonra seçilen sıralama
       switch (sortConfig.key) {
         case 'followers': {
           const af = a.followers ?? a.stats?.supporters ?? 0;
@@ -110,7 +116,7 @@ export default function FollowedBrandsPage() {
     });
 
     return filtered;
-  }, [allBrands, typeFilter, searchTerm, sortConfig, categoryFilter]);
+  }, [allBrands, typeFilter, searchTerm, sortConfig, categoryFilter, selectedBrands]);
 
   const handleBrandSelect = (brandId: string) => {
     setSelectedBrands(prev =>

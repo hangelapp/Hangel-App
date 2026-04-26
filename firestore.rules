@@ -50,6 +50,10 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow read, list: if true; // Public for timeline
+      // Authors (NGO/brand/club admins or individual users) can post as themselves
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      // Only the author can edit or delete their own post (super-admin has global write)
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /volunteering/{oppId} {
@@ -78,7 +82,16 @@ service cloud.firestore {
     match /applications/{appId} {
       allow list: if isSignedIn();
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
-      allow create: if isSignedIn();
+      // Corporate registrations (BRAND/CLUB/NGO) can be submitted by anonymous users
+      // (onboarding flow runs before account creation). All other app types require auth.
+      allow create: if isSignedIn() || (
+        request.resource.data.entityType in ['BRAND', 'CLUB', 'NGO'] &&
+        request.resource.data.status == 'Beklemede' &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 0
+      );
       allow update, delete: if isSuperAdmin();
     }
 

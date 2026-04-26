@@ -1,54 +1,198 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState, useEffect } from 'react';
-import { Loader2, BarChart3 } from 'lucide-react';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { Loader2, BarChart3, Users, Building } from 'lucide-react';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
-const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8'];
+const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8', '#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
 
 const EmptyChartState = ({ message }: { message?: string }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
     <p className="text-muted-foreground font-medium">{message || 'Henüz yeterli veri yok'}</p>
-    <p className="text-sm text-muted-foreground/70 mt-1">Veriler toplandıkça grafikler burada görünecektir.</p>
+    <p className="text-sm text-muted-foreground/70 mt-1">Bu STK'yı destekleyen/gönüllüsü olan kullanıcılar olduğunda grafikler oluşur.</p>
   </div>
 );
 
-interface DemographicsData {
-  ageGroupData?: { age: string; 'Gonullu': number; 'Bagisci': number }[];
-  cityData?: { name: string; 'Gonullu': number; 'Bagisci': number }[];
-  volunteerInterestData?: { name: string; 'Gonullu': number }[];
-  genderAgeData?: { age: string; Kadin: number; Erkek: number; Diger: number }[];
-  schoolData?: { name: string; Destekci: number }[];
-  spendingHabitsData?: { name: string; value: number }[];
-  competencyData?: { name: string; value: number }[];
-}
+const computeAge = (birthDate?: string): number | null => {
+  if (!birthDate) return null;
+  const d = new Date(birthDate);
+  if (isNaN(d.getTime())) return null;
+  const diff = Date.now() - d.getTime();
+  return Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+};
+
+const ageBucket = (age: number): string => {
+  if (age < 18) return '< 18';
+  if (age < 25) return '18-24';
+  if (age < 35) return '25-34';
+  if (age < 45) return '35-44';
+  if (age < 55) return '45-54';
+  return '55+';
+};
+
+const AGE_ORDER = ['< 18', '18-24', '25-34', '35-44', '45-54', '55+'];
+
+const topN = <T extends { count: number }>(arr: T[], n = 10): T[] =>
+  [...arr].sort((a, b) => b.count - a.count).slice(0, n);
 
 export default function DemographicsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
   const { user: authUser } = useUser();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  useEffect(() => { setIsMounted(true); }, []);
 
-  // Load demographics data from Firestore
-  const demographicsDocRef = useMemoFirebase(() => {
-    if (!authUser?.uid) return null;
-    return doc(firestore, 'demographics', authUser.uid);
-  }, [firestore, authUser?.uid]);
+  const queryId = searchParams.get('id');
+  const entityId = queryId || null;
 
-  const { data: demographicsData, isLoading } = useDoc<DemographicsData>(demographicsDocRef);
+  const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
+  const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
 
-  if (!isMounted) return null;
+  const brandsQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'brands') : null), [firestore]);
+  const { data: allBrands } = useCollection<any>(brandsQuery);
 
-  if (isLoading) {
+  const ngosQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'ngos') : null), [firestore]);
+  const { data: allNgos } = useCollection<any>(ngosQuery);
+
+  const selectedNgo = useMemo(() => {
+    if (!entityId || !allNgos) return null;
+    return allNgos.find((n: any) => n.id === entityId) || null;
+  }, [allNgos, entityId]);
+
+  const handleSelectNgo = (id: string) => {
+    router.push(`${pathname}?id=${id}`);
+  };
+
+  const { donors, volunteers, supporters } = useMemo(() => {
+    if (!entityId || !allUsers) return { donors: [], volunteers: [], supporters: [] };
+    const donors = allUsers.filter(u => Array.isArray(u.supportedNgos) && u.supportedNgos.includes(entityId));
+    const volunteers = allUsers.filter(u => Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(entityId));
+    const supporters = Array.from(new Map([...donors, ...volunteers].map(u => [u.id, u])).values());
+    return { donors, volunteers, supporters };
+  }, [allUsers, entityId]);
+
+  const ageGroupData = useMemo(() => {
+    const counts: Record<string, { Gonullu: number; Bagisci: number }> = {};
+    AGE_ORDER.forEach(a => { counts[a] = { Gonullu: 0, Bagisci: 0 }; });
+    volunteers.forEach(u => {
+      const age = computeAge(u.personalInfo?.birthDate);
+      if (age != null) counts[ageBucket(age)].Gonullu += 1;
+    });
+    donors.forEach(u => {
+      const age = computeAge(u.personalInfo?.birthDate);
+      if (age != null) counts[ageBucket(age)].Bagisci += 1;
+    });
+    return AGE_ORDER
+      .map(age => ({ age, Gonullu: counts[age].Gonullu, Bagisci: counts[age].Bagisci }))
+      .filter(d => d.Gonullu > 0 || d.Bagisci > 0);
+  }, [volunteers, donors]);
+
+  const cityData = useMemo(() => {
+    const counts: Record<string, { Gonullu: number; Bagisci: number }> = {};
+    volunteers.forEach(u => {
+      const c = u.personalInfo?.address?.city;
+      if (!c) return;
+      counts[c] = counts[c] || { Gonullu: 0, Bagisci: 0 };
+      counts[c].Gonullu += 1;
+    });
+    donors.forEach(u => {
+      const c = u.personalInfo?.address?.city;
+      if (!c) return;
+      counts[c] = counts[c] || { Gonullu: 0, Bagisci: 0 };
+      counts[c].Bagisci += 1;
+    });
+    return Object.entries(counts)
+      .map(([name, v]) => ({ name, Gonullu: v.Gonullu, Bagisci: v.Bagisci, count: v.Gonullu + v.Bagisci }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+      .map(({ count, ...rest }) => rest);
+  }, [volunteers, donors]);
+
+  const volunteerInterestData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    volunteers.forEach(u => {
+      (u.volunteerInfo?.interests || []).forEach((interest: string) => {
+        counts[interest] = (counts[interest] || 0) + 1;
+      });
+    });
+    return topN(
+      Object.entries(counts).map(([name, count]) => ({ name, count, Gonullu: count })),
+      8,
+    ).map(({ count, ...rest }) => rest);
+  }, [volunteers]);
+
+  const genderAgeData = useMemo(() => {
+    const counts: Record<string, { Kadin: number; Erkek: number; Diger: number }> = {};
+    AGE_ORDER.forEach(a => { counts[a] = { Kadin: 0, Erkek: 0, Diger: 0 }; });
+    supporters.forEach(u => {
+      const age = computeAge(u.personalInfo?.birthDate);
+      if (age == null) return;
+      const b = ageBucket(age);
+      const g = (u.personalInfo?.gender || '').toLowerCase();
+      if (g === 'kadın' || g === 'kadin' || g === 'female') counts[b].Kadin += 1;
+      else if (g === 'erkek' || g === 'male') counts[b].Erkek += 1;
+      else counts[b].Diger += 1;
+    });
+    return AGE_ORDER
+      .map(age => ({ age, ...counts[age] }))
+      .filter(d => d.Kadin > 0 || d.Erkek > 0 || d.Diger > 0);
+  }, [supporters]);
+
+  const schoolData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    supporters.forEach(u => {
+      (u.volunteerInfo?.education || []).forEach((e: any) => {
+        const s = e?.school;
+        if (s) counts[s] = (counts[s] || 0) + 1;
+      });
+    });
+    return topN(
+      Object.entries(counts).map(([name, count]) => ({ name, count, Destekci: count })),
+      5,
+    ).map(({ count, ...rest }) => rest);
+  }, [supporters]);
+
+  const competencyData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    volunteers.forEach(u => {
+      (u.volunteerInfo?.skills || []).forEach((s: string) => {
+        counts[s] = (counts[s] || 0) + 1;
+      });
+    });
+    return topN(
+      Object.entries(counts).map(([name, count]) => ({ name, count, value: count })),
+      10,
+    ).map(({ count, ...rest }) => rest);
+  }, [volunteers]);
+
+  const spendingHabitsData = useMemo(() => {
+    if (!allBrands) return [];
+    const brandNameById = new Map(allBrands.map((b: any) => [b.id, b.name]));
+    const counts: Record<string, number> = {};
+    donors.forEach(u => {
+      (u.followedBrands || []).forEach((brandId: string) => {
+        const name = brandNameById.get(brandId);
+        if (name) counts[name] = (counts[name] || 0) + 1;
+      });
+    });
+    return topN(
+      Object.entries(counts).map(([name, count]) => ({ name, count, value: count })),
+      5,
+    ).map(({ count, ...rest }) => rest);
+  }, [donors, allBrands]);
+
+  if (!isMounted || usersLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -56,28 +200,68 @@ export default function DemographicsPage() {
     );
   }
 
-  const ageGroupData = demographicsData?.ageGroupData || [];
-  const cityData = demographicsData?.cityData || [];
-  const volunteerInterestData = demographicsData?.volunteerInterestData || [];
-  const genderAgeData = demographicsData?.genderAgeData || [];
-  const schoolData = demographicsData?.schoolData || [];
-  const spendingHabitsData = demographicsData?.spendingHabitsData || [];
-  const competencyData = demographicsData?.competencyData || [];
-
   const hasAnyData = ageGroupData.length > 0 || cityData.length > 0 || volunteerInterestData.length > 0 ||
     genderAgeData.length > 0 || schoolData.length > 0 || spendingHabitsData.length > 0 || competencyData.length > 0;
 
+  if (!entityId) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold">Demografi Analizi</h1>
+          <p className="text-muted-foreground">Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.</p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary" /> Görmek İstediğiniz STK</CardTitle>
+            <CardDescription>Demografi verilerini incelemek istediğiniz kuruluşu seçin.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Label>STK Seçin</Label>
+            <Select onValueChange={handleSelectNgo}>
+              <SelectTrigger><SelectValue placeholder={allNgos && allNgos.length > 0 ? 'Bir STK seçin...' : 'STK bulunamadı'} /></SelectTrigger>
+              <SelectContent className="max-h-80">
+                {(allNgos || []).map((n: any) => (
+                  <SelectItem key={n.id} value={n.id}>{n.name || n.id}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Demografi Analizi</h1>
-        <p className="text-muted-foreground">Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Demografi Analizi</h1>
+          <p className="text-muted-foreground">
+            {selectedNgo?.name ? `${selectedNgo.name} — destekçi topluluğu` : 'Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.'}
+          </p>
+        </div>
+        <div className="min-w-[240px]">
+          <Select value={entityId} onValueChange={handleSelectNgo}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent className="max-h-80">
+              {(allNgos || []).map((n: any) => (
+                <SelectItem key={n.id} value={n.id}>{n.name || n.id}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div><div><p className="text-2xl font-black">{supporters.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Toplam Destekçi</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-green-500/10"><Users className="h-5 w-5 text-green-600" /></div><div><p className="text-2xl font-black">{volunteers.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Gönüllü</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-blue-500/10"><Users className="h-5 w-5 text-blue-600" /></div><div><p className="text-2xl font-black">{donors.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Bağışçı</p></div></CardContent></Card>
       </div>
 
       {!hasAnyData ? (
         <Card>
           <CardContent className="py-16">
-            <EmptyChartState message="Henüz yeterli veri yok" />
+            <EmptyChartState />
           </CardContent>
         </Card>
       ) : (
@@ -94,14 +278,12 @@ export default function DemographicsPage() {
                 <CardDescription>Destekçilerinizin yaş gruplarına göre karşılaştırmalı dağılımı.</CardDescription>
               </CardHeader>
               <CardContent>
-                {ageGroupData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {ageGroupData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={ageGroupData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="age" />
-                        <YAxis />
+                        <YAxis allowDecimals={false} />
                         <Tooltip />
                         <Legend />
                         <Area type="monotone" dataKey="Gonullu" stackId="1" stroke="#f34723" fill="#f34723" />
@@ -118,14 +300,12 @@ export default function DemographicsPage() {
                 <CardDescription>Gönüllülerinizin en çok ilgi gösterdiği sosyal alanlar.</CardDescription>
               </CardHeader>
               <CardContent>
-                {volunteerInterestData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {volunteerInterestData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                    <BarChart layout="vertical" data={volunteerInterestData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" />
-                        <YAxis dataKey="name" type="category" />
+                        <XAxis type="number" allowDecimals={false} />
+                        <YAxis dataKey="name" type="category" width={100} />
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="Gonullu" fill="#f34723" />
@@ -141,14 +321,12 @@ export default function DemographicsPage() {
                 <CardDescription>Destekçilerinizin yaş ve cinsiyet kırılımı.</CardDescription>
               </CardHeader>
               <CardContent>
-                {genderAgeData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {genderAgeData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={genderAgeData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="age" />
-                    <YAxis />
+                    <YAxis allowDecimals={false} />
                     <Tooltip />
                     <Legend />
                     <Bar dataKey="Kadin" stackId="a" fill="#f34723" />
@@ -166,14 +344,12 @@ export default function DemographicsPage() {
                     <CardDescription>Gönüllü havuzunuzdaki en yaygın yetkinlikler.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {competencyData.length === 0 ? (
-                      <EmptyChartState />
-                    ) : (
+                    {competencyData.length === 0 ? <EmptyChartState /> : (
                     <ResponsiveContainer width="100%" height={300}>
                        <BarChart layout="vertical" data={competencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" />
+                            <XAxis type="number" allowDecimals={false} />
+                            <YAxis dataKey="name" type="category" width={110} />
                             <Tooltip />
                             <Legend />
                             <Bar dataKey="value" name="Kisi Sayisi" fill="#042654" />
@@ -186,12 +362,10 @@ export default function DemographicsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Bağışçı Tüketim Alışkanlıkları</CardTitle>
-                <CardDescription>Bağışçılarınızın Hangel üzerindeki marka tercihleri.</CardDescription>
+                <CardDescription>Bağışçılarınızın takip ettiği markalar.</CardDescription>
               </CardHeader>
               <CardContent>
-                {spendingHabitsData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {spendingHabitsData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie data={spendingHabitsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
@@ -212,14 +386,12 @@ export default function DemographicsPage() {
                 <CardDescription>Gönüllü ve bağışçılarınızın yoğunlaştığı ilk 5 şehir.</CardDescription>
               </CardHeader>
               <CardContent>
-                {cityData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {cityData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={cityData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis />
+                        <YAxis allowDecimals={false} />
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="Gonullu" fill="#f34723" />
@@ -233,17 +405,15 @@ export default function DemographicsPage() {
             <Card className="lg:col-span-2">
               <CardHeader>
                 <CardTitle>Destekçilerin Okullara Göre Dağılımı</CardTitle>
-                <CardDescription>Destekçilerinizin en yoğun olduğu ilk 5 üniversite.</CardDescription>
+                <CardDescription>Destekçilerinizin en yoğun olduğu ilk 5 üniversite/okul.</CardDescription>
               </CardHeader>
               <CardContent>
-                {schoolData.length === 0 ? (
-                  <EmptyChartState />
-                ) : (
+                {schoolData.length === 0 ? <EmptyChartState /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={schoolData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis />
+                        <YAxis allowDecimals={false} />
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="Destekci" fill="#f34723" />
@@ -252,16 +422,13 @@ export default function DemographicsPage() {
                 )}
               </CardContent>
             </Card>
-
           </div>
         </TabsContent>
         <TabsContent value="numbers" className="mt-6 space-y-6">
             <Card>
                 <CardHeader><CardTitle>Yaş Dağılımı (Sayısal)</CardTitle></CardHeader>
                 <CardContent>
-                    {ageGroupData.length === 0 ? (
-                      <EmptyChartState />
-                    ) : (
+                    {ageGroupData.length === 0 ? <EmptyChartState /> : (
                     <Table>
                         <TableHeader><TableRow><TableHead>Yaş Grubu</TableHead><TableHead className='text-right'>Gönüllü Sayısı</TableHead><TableHead className='text-right'>Bağışçı Sayısı</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -274,9 +441,7 @@ export default function DemographicsPage() {
             <Card>
                 <CardHeader><CardTitle>Cinsiyete Göre Yaş Dağılımı (Sayısal)</CardTitle></CardHeader>
                 <CardContent>
-                    {genderAgeData.length === 0 ? (
-                      <EmptyChartState />
-                    ) : (
+                    {genderAgeData.length === 0 ? <EmptyChartState /> : (
                     <Table>
                         <TableHeader><TableRow><TableHead>Yaş Grubu</TableHead><TableHead className='text-right'>Kadın</TableHead><TableHead className='text-right'>Erkek</TableHead><TableHead className='text-right'>Diğer</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -289,9 +454,7 @@ export default function DemographicsPage() {
             <Card>
                 <CardHeader><CardTitle>Şehirlere Göre Dağılım (Sayısal)</CardTitle></CardHeader>
                 <CardContent>
-                    {cityData.length === 0 ? (
-                      <EmptyChartState />
-                    ) : (
+                    {cityData.length === 0 ? <EmptyChartState /> : (
                     <Table>
                         <TableHeader><TableRow><TableHead>Şehir</TableHead><TableHead className='text-right'>Gönüllü Sayısı</TableHead><TableHead className='text-right'>Bağışçı Sayısı</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -301,12 +464,10 @@ export default function DemographicsPage() {
                     )}
                 </CardContent>
             </Card>
-             <Card>
+            <Card>
                 <CardHeader><CardTitle>Okullara Göre Dağılım (Sayısal)</CardTitle></CardHeader>
                 <CardContent>
-                    {schoolData.length === 0 ? (
-                      <EmptyChartState />
-                    ) : (
+                    {schoolData.length === 0 ? <EmptyChartState /> : (
                     <Table>
                         <TableHeader><TableRow><TableHead>Okul</TableHead><TableHead className='text-right'>Destekçi Sayısı</TableHead></TableRow></TableHeader>
                         <TableBody>
@@ -321,25 +482,19 @@ export default function DemographicsPage() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className='space-y-2'>
                         <h4 className='font-semibold'>Gönüllü İlgi Alanları</h4>
-                        {volunteerInterestData.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p>
-                        ) : (
+                        {volunteerInterestData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
                           volunteerInterestData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d['Gonullu']} kişi</span></div>))
                         )}
                     </div>
-                     <div className='space-y-2'>
+                    <div className='space-y-2'>
                         <h4 className='font-semibold'>Gönüllü Yetkinlikleri</h4>
-                        {competencyData.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p>
-                        ) : (
+                        {competencyData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
                           competencyData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))
                         )}
                     </div>
-                     <div className='space-y-2'>
+                    <div className='space-y-2'>
                         <h4 className='font-semibold'>Bağışçı Tüketim Alışkanlıkları</h4>
-                        {spendingHabitsData.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p>
-                        ) : (
+                        {spendingHabitsData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
                           spendingHabitsData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))
                         )}
                     </div>
