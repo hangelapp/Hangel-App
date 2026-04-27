@@ -24,6 +24,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
 import { UserNav } from '@/components/layout/user-nav';
+import { useRouter } from 'next/navigation';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -203,8 +204,18 @@ const projectCardsData = [
 ];
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
-    const { language, changeLanguage } = useTranslation();
+    const { language, changeLanguage, t } = useTranslation();
     const { user, isUserLoading } = useUser();
+    const labels: Record<string, { donation: string; volunteering: string; login: string }> = {
+        tr: { donation: 'Bağış', volunteering: 'Gönüllülük', login: 'Giriş Yap' },
+        en: { donation: 'Donation', volunteering: 'Volunteering', login: 'Log In' },
+        ru: { donation: 'Пожертвование', volunteering: 'Волонтёрство', login: 'Войти' },
+        ar: { donation: 'التبرع', volunteering: 'التطوع', login: 'تسجيل الدخول' },
+        fa: { donation: 'کمک', volunteering: 'داوطلبی', login: 'ورود' },
+        es: { donation: 'Donación', volunteering: 'Voluntariado', login: 'Iniciar Sesión' },
+        ha: { donation: 'Gudummuwa', volunteering: 'Sa Kai', login: 'Shiga' },
+    };
+    const L = labels[language] || labels.tr;
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
@@ -217,11 +228,11 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
                     <Link href="#bagis" className="hover:text-primary transition-colors flex items-center gap-2">
                         <ShoppingBag className="h-4 w-4" />
-                        <span>Bağış</span>
+                        <span>{L.donation}</span>
                     </Link>
                     <Link href="#gonulluluk" className="hover:text-primary transition-colors flex items-center gap-2">
                         <HeartHandshake className="h-4 w-4" />
-                        <span>Gönüllülük</span>
+                        <span>{L.volunteering}</span>
                     </Link>
                 </nav>
                 <div className="flex items-center gap-2">
@@ -236,14 +247,16 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80"><Link href="/emergency"><Siren className="h-5 w-5" /></Link></Button>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={user ? 'hangel Tanıtım' : 'Acil Durum'}>
+                        <Link href={user ? '/about' : '/emergency'}><Siren className="h-5 w-5" /></Link>
+                    </Button>
                     {isUserLoading ? (
                         <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
                     ) : user ? (
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">Giriş Yap</Link>
+                            <Link href="/login/selection?action=login">{L.login}</Link>
                         </Button>
                     )}
                 </div>
@@ -335,10 +348,19 @@ export default function LoginPage() {
     const [mounted, setMounted] = useState(false);
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
     const [totalBrandCount, setTotalBrandCount] = useState(0);
+    const router = useRouter();
+    const { user: rootUser, isUserLoading: isRootUserLoading } = useUser();
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Giriş yapmış kullanıcı ana sayfayı görmeden /market'e yönlendirilir
+    useEffect(() => {
+        if (!isRootUserLoading && rootUser) {
+            router.replace('/market');
+        }
+    }, [isRootUserLoading, rootUser, router]);
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -425,15 +447,15 @@ export default function LoginPage() {
             linkText2: "Daha Fazla Bilgi",
             href2: "/campus-advantages"
         },
-        { 
-            title: "Kulüplerin Etkinlikleri", 
-            description: "Kampüsteki sosyal etkinlikleri ve zirveleri keşfet, ağını genişlet.", 
-            href: "/events",
-            imageUrl: "https://picsum.photos/seed/club-events/1080/1080",
-            imageHint: "university event",
-            linkText: "Etkinlikleri Keşfet",
+        {
+            title: "Kütüphane",
+            description: "Sosyal etki, gönüllülük, sürdürülebilirlik ve daha fazlası — kapsamlı içerik koleksiyonunu keşfet.",
+            href: "/library",
+            imageUrl: "https://picsum.photos/seed/library/1080/1080",
+            imageHint: "books library shelf",
+            linkText: "Kütüphaneyi Keşfet",
             linkText2: "Daha Fazla Bilgi",
-            href2: "/campus-advantages"
+            href2: "/library"
         }
     ];
 
@@ -531,8 +553,8 @@ export default function LoginPage() {
                     title="hangel İmece"
                     subtitle="Zamanınız en değerli bağış."
                     description="Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun."
-                    cta1="İlanları Gör"
-                    cta1Href="/volunteering"
+                    cta1="Daha Fazla Bilgi"
+                    cta1Href="/imece"
                     cta2="Gönüllü Ol"
                     cta2Href="/login/selection?action=register"
                 >

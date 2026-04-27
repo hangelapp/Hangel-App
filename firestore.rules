@@ -78,6 +78,38 @@ service cloud.firestore {
       allow read, list: if true; // Public library content
     }
 
+    // Sözleşmeler ve politikalar (super-admin yönetir, herkes okur)
+    match /contracts/{contractId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Esnek site sayfaları (basın, etkinlik, duyuru — super-admin yönetir, herkes okur)
+    match /sitePages/{pageId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Acil durum talepleri (Süper Admin tarafından oluşturulur)
+    match /emergencyRequests/{reqId} {
+      allow read, list: if isSignedIn();
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Bildirimler (Süper Admin yazar; alıcı okur ve okundu işaretler)
+    match /notifications/{notifId} {
+      allow list: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSuperAdmin();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
     // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)
     match /userInvitations/{inviteId} {
       allow list: if isSignedIn();

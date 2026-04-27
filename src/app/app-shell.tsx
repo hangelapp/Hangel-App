@@ -216,6 +216,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         '/contact',
         '/support/app-support',
         '/auth/action',
+        '/imece',
+        '/social-impact',
+        '/p',
     ];
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));

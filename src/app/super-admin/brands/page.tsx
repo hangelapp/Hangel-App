@@ -26,7 +26,7 @@ export default function BrandsPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<Partial<BrandItem>>({});
 
@@ -34,9 +34,9 @@ export default function BrandsPage() {
     const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
     const { data: brands, isLoading: brandsLoading } = useCollection<Brand>(brandsQuery);
 
-    // Load unapproved brand applications
+    // Load all brand applications (any status)
     const applicationsQuery = useMemoFirebase(() =>
-        query(collection(db, 'applications'), where('entityType', '==', 'BRAND'), where('status', '==', 'Beklemede')),
+        query(collection(db, 'applications'), where('entityType', '==', 'BRAND')),
         [db]
     );
     const { data: applications, isLoading: appsLoading } = useCollection(applicationsQuery);
@@ -56,9 +56,11 @@ export default function BrandsPage() {
             });
         }
 
-        // Add pending applications
+        // Add applications (all statuses)
         if (applications) {
             applications.forEach((app: any) => {
+                // Onaylanmış başvurular zaten brands koleksiyonunda; çift göstermemek için atla
+                if (app.status === 'Onaylandı') return;
                 combinedList.push({
                     id: app.id,
                     name: app.name,
@@ -69,8 +71,9 @@ export default function BrandsPage() {
                     type: app.brandStatus || 'Ticari',
                     category: app.sector || 'Diğer',
                     source: 'applications',
-                    status: 'Beklemede',
-                    ...app
+                    status: app.status || 'Beklemede',
+                    ...app,
+                    source: 'applications', // ensure not overridden by spread
                 } as BrandItem);
             });
         }
@@ -83,6 +86,10 @@ export default function BrandsPage() {
             filtered = filtered.filter(b => b.source === 'brands' && b.status === 'Aktif');
         } else if (statusFilter === 'pending') {
             filtered = filtered.filter(b => b.status === 'Beklemede');
+        } else if (statusFilter === 'passive') {
+            filtered = filtered.filter(b => b.source === 'brands' && b.status === 'Pasif');
+        } else if (statusFilter === 'rejected') {
+            filtered = filtered.filter(b => b.status === 'Reddedildi');
         }
 
         // Search filter
@@ -196,11 +203,53 @@ export default function BrandsPage() {
         );
     }
 
+    const stats = useMemo(() => {
+        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
+        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
+        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
+        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
+    }, [brands, applications]);
+
     return (
         <div className="space-y-8 animate-in fade-in-0">
             <div className="space-y-1">
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Marka Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını, onay durumlarını ve detaylarını yönetin.</p>
+            </div>
+
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <Card className="rounded-2xl border-black/5 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('all')}>
+                    <CardContent className="p-4">
+                        <p className="text-2xl font-black">{stats.total}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Tümü</p>
+                    </CardContent>
+                </Card>
+                <Card className="rounded-2xl border-green-500/30 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('approved')}>
+                    <CardContent className="p-4">
+                        <p className="text-2xl font-black text-green-600">{stats.approved}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Yayında</p>
+                    </CardContent>
+                </Card>
+                <Card className="rounded-2xl border-amber-500/30 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('pending')}>
+                    <CardContent className="p-4">
+                        <p className="text-2xl font-black text-amber-600">{stats.pending}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Onay Bekliyor</p>
+                    </CardContent>
+                </Card>
+                <Card className="rounded-2xl border-black/5 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('passive')}>
+                    <CardContent className="p-4">
+                        <p className="text-2xl font-black text-muted-foreground">{stats.passive}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Pasif</p>
+                    </CardContent>
+                </Card>
+                <Card className="rounded-2xl border-destructive/30 cursor-pointer hover:shadow-md transition" onClick={() => setStatusFilter('rejected')}>
+                    <CardContent className="p-4">
+                        <p className="text-2xl font-black text-destructive">{stats.rejected}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Reddedildi</p>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Filters */}
@@ -228,8 +277,10 @@ export default function BrandsPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Tümü</SelectItem>
-                                    <SelectItem value="approved">Onaylandı</SelectItem>
-                                    <SelectItem value="pending">Beklemede</SelectItem>
+                                    <SelectItem value="approved">Yayında (Aktif)</SelectItem>
+                                    <SelectItem value="pending">Onay Bekleyen</SelectItem>
+                                    <SelectItem value="passive">Pasif</SelectItem>
+                                    <SelectItem value="rejected">Reddedildi</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -254,18 +305,22 @@ export default function BrandsPage() {
                             filteredBrands.map(brand => {
                                 const isPassive = brand.status === 'Pasif';
                                 const isPending = brand.status === 'Beklemede';
+                                const isRejected = brand.status === 'Reddedildi';
+                                const isApproved = brand.source === 'brands' && brand.status === 'Aktif';
                                 return (
-                                    <div key={brand.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", isPassive && "opacity-60 grayscale")}>
+                                    <div key={brand.id} className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", (isPassive || isRejected) && "opacity-60 grayscale")}>
                                         <div className="flex items-center gap-5 flex-1">
                                             <Avatar className="h-14 w-14 border-2 border-white shadow-lg bg-white">
                                                 <AvatarImage src={brand.logoUrl} alt={brand.name} className="object-contain p-1" />
                                                 <AvatarFallback className="font-black text-xl">{brand.name?.[0]}</AvatarFallback>
                                             </Avatar>
                                             <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 flex-wrap">
                                                     <p className="font-black text-lg text-[#1d1d1f] tracking-tight">{brand.name}</p>
-                                                    {isPending && <Badge className="bg-yellow-500 text-white text-[9px] font-black uppercase">BEKLEMEDİ</Badge>}
+                                                    {isApproved && <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>}
+                                                    {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
                                                     {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}
+                                                    {isRejected && <Badge variant="destructive" className="text-[9px] font-black uppercase">REDDEDİLDİ</Badge>}
                                                 </div>
                                                 <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
                                                     {brand.donationRate ? <span className="flex items-center gap-1">%{brand.donationRate} Bağış</span> : null}

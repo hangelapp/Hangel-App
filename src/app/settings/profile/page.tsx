@@ -277,29 +277,32 @@ export default function ProfileSettingsPage() {
         </Card>
 
         <Card>
-            <CardHeader><CardTitle>Kimlik Bilgileri</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Kişisel Bilgiler</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label>Ad Soyad</Label>
                     <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} required />
                 </div>
-                <div className="space-y-2">
-                    <Label>Cinsiyet</Label>
-                    <Select value={profile.personalInfo.gender || ''} onValueChange={(v) => handleChange('personalInfo', 'gender', v)} required>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Erkek">Erkek</SelectItem>
-                            <SelectItem value="Kadın">Kadın</SelectItem>
-                            <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>E-posta</Label>
+                        <Input
+                            type="email"
+                            value={profile.personalInfo.email || ''}
+                            onChange={(e) => handleChange('personalInfo', 'email', e.target.value)}
+                            placeholder="ornek@hangel.org"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Telefon</Label>
+                        <Input
+                            type="tel"
+                            value={profile.personalInfo.phone || ''}
+                            onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)}
+                            placeholder="5XX XXX XX XX"
+                        />
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres Bilgileri</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Ülke</Label>
                     <Select value={currentCountry || ''} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
@@ -312,52 +315,28 @@ export default function ProfileSettingsPage() {
                         </SelectContent>
                     </Select>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İl' : 'Şehir'}</Label>
                         {cityOptions.length > 0 ? (
-                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
+                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" required />
+                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" />
                         )}
                     </div>
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
                         {districtOptions.length > 0 ? (
-                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!currentCity}>
+                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} disabled={!currentCity}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" required />
+                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" />
                         )}
-                    </div>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label>Mahalle</Label>
-                    {isTurkey && currentCity && currentDistrict && neighborhoodsData[currentCity]?.[currentDistrict] ? (
-                        <Select value={currentNeighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">{neighborhoodsData[currentCity][currentDistrict].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                        </Select>
-                    ) : (
-                        <Input value={currentNeighborhood || ''} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle" required disabled={isTurkey && !currentDistrict} className="h-11 rounded-xl" />
-                    )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Sokak / Cadde</Label>
-                        <Input value={(profile.personalInfo.address as any).street || ''} onChange={(e) => handleChange('personalInfo', 'address', { street: e.target.value })} placeholder="Örn: Moda Cad." required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Bina / Kapı No</Label>
-                        <Input value={(profile.personalInfo.address as any).doorNo || ''} onChange={(e) => handleChange('personalInfo', 'address', { doorNo: e.target.value })} placeholder="Örn: 12/4" required />
                     </div>
                 </div>
             </CardContent>

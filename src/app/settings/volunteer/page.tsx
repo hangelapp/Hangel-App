@@ -347,6 +347,12 @@ export default function VolunteerSettingsPage() {
   const [usesRegularMedication, setUsesRegularMedication] = useState(false);
   const [bloodType, setBloodType] = useState('');
 
+  // Cinsiyet & detaylı adres (kişisel profil sayfasından taşındı)
+  const [gender, setGender] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [street, setStreet] = useState('');
+  const [doorNo, setDoorNo] = useState('');
+
   // Müsaitlik & çalışma şekli
   const [availabilityDays, setAvailabilityDays] = useState<string[]>([]);
   const [availabilityTimes, setAvailabilityTimes] = useState<string[]>([]);
@@ -416,6 +422,11 @@ export default function VolunteerSettingsPage() {
     if (typeof vi.emergency?.hasChronicIllness === 'boolean') setHasChronicIllness(vi.emergency.hasChronicIllness);
     if (typeof vi.emergency?.usesRegularMedication === 'boolean') setUsesRegularMedication(vi.emergency.usesRegularMedication);
     if ((userData as any).personalInfo?.bloodType) setBloodType((userData as any).personalInfo.bloodType);
+    const pi = (userData as any).personalInfo || {};
+    if (pi.gender) setGender(pi.gender);
+    if (pi.address?.neighborhood) setNeighborhood(pi.address.neighborhood);
+    if (pi.address?.street) setStreet(pi.address.street);
+    if (pi.address?.doorNo) setDoorNo(pi.address.doorNo);
 
     if (Array.isArray(vi.availabilityDays)) setAvailabilityDays(vi.availabilityDays);
     if (Array.isArray(vi.availabilityTimes)) setAvailabilityTimes(vi.availabilityTimes);
@@ -487,9 +498,20 @@ export default function VolunteerSettingsPage() {
       consentsAcceptedAt: new Date().toISOString(),
     };
 
-    const personalInfoPatch = bloodType
-      ? { personalInfo: { ...((userData as any)?.personalInfo ?? {}), bloodType } }
-      : {};
+    const existingPersonal = (userData as any)?.personalInfo ?? {};
+    const personalInfoPatch = {
+      personalInfo: {
+        ...existingPersonal,
+        ...(bloodType ? { bloodType } : {}),
+        ...(gender ? { gender } : {}),
+        address: {
+          ...(existingPersonal.address ?? {}),
+          neighborhood,
+          street,
+          doorNo,
+        },
+      },
+    };
 
     updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch });
 
@@ -842,10 +864,45 @@ export default function VolunteerSettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Detaylı Adres Bilgileri */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Detaylı Adres Bilgileri</CardTitle>
+            <p className="text-xs text-muted-foreground mt-2">Acil durum ve gönüllülük lojistiği için detaylı adres bilgileri.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Mahalle</Label>
+              <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Mahalle adı" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Sokak / Cadde</Label>
+                <Input value={street} onChange={e => setStreet(e.target.value)} placeholder="Sokak adı" />
+              </div>
+              <div className="space-y-2">
+                <Label>Bina / Kapı No</Label>
+                <Input value={doorNo} onChange={e => setDoorNo(e.target.value)} placeholder="Bina no / Daire" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sağlık Durumu */}
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div className="space-y-2 p-4 border rounded-lg">
+              <Label>Cinsiyet</Label>
+              <Select value={gender || ''} onValueChange={setGender}>
+                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Erkek">Erkek</SelectItem>
+                  <SelectItem value="Kadın">Kadın</SelectItem>
+                  <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2 p-4 border rounded-lg">
               <Label>Kan Grubu</Label>
               <Select value={bloodType || ''} onValueChange={setBloodType}>
