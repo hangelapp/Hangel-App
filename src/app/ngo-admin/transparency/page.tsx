@@ -1,14 +1,14 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, AlertCircle, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink } from 'lucide-react';
+import { CheckCircle, AlertCircle, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink, Plus, Download, X as XIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useCallback } from 'react';
 import { useFirestore, useUser, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
@@ -58,8 +58,18 @@ export default function TransparencyPage() {
   const { user: authUser } = useUser();
 
   const [uploadingId, setUploadingId] = useState<number | null>(null);
-  const [editingItem, setEditingItem] = useState<CriteriaItem | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [previewItem, setPreviewItem] = useState<CriteriaItem | null>(null);
+
+  const isImageUrl = (url?: string, name?: string) => {
+    const target = (url || name || '').toLowerCase();
+    return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/.test(target);
+  };
+  const isPdfUrl = (url?: string, name?: string) => {
+    const target = (url || name || '').toLowerCase();
+    return /\.pdf(\?|$)/.test(target);
+  };
 
   const transparencyDocRef = useMemoFirebase(() => {
     if (!authUser?.uid) return null;
@@ -144,36 +154,40 @@ export default function TransparencyPage() {
   }, [activeCriteria, authUser?.uid, persistCriteria, toast]);
 
   const openEditor = (item: CriteriaItem) => {
-    setEditingItem(item);
+    setEditingId(item.id);
     setEditValue(item.type === 'link' ? (item.linkUrl || '') : (item.textValue || ''));
   };
 
-  const saveEditor = () => {
-    if (!editingItem) return;
+  const cancelEditor = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const saveEditor = (item: CriteriaItem) => {
     const val = editValue.trim();
     if (!val) {
       toast({ variant: 'destructive', title: 'Boş değer girilemez' });
       return;
     }
-    if (editingItem.type === 'link' && !/^https?:\/\//i.test(val)) {
+    if (item.type === 'link' && !/^https?:\/\//i.test(val)) {
       toast({ variant: 'destructive', title: 'Geçersiz bağlantı', description: 'Bağlantı http:// veya https:// ile başlamalı.' });
       return;
     }
 
-    const next = activeCriteria.map(item =>
-      item.id === editingItem.id
+    const next = activeCriteria.map(c =>
+      c.id === item.id
         ? {
-          ...item,
+          ...c,
           isCompleted: true,
-          linkUrl: editingItem.type === 'link' ? val : item.linkUrl,
-          textValue: editingItem.type === 'text' ? val : item.textValue,
+          linkUrl: item.type === 'link' ? val : c.linkUrl,
+          textValue: item.type === 'text' ? val : c.textValue,
           updatedAt: new Date().toISOString(),
         }
-        : item,
+        : c,
     );
     persistCriteria(next);
-    toast({ title: 'Kaydedildi', description: `"${editingItem.name}" güncellendi.` });
-    setEditingItem(null);
+    toast({ title: 'Kaydedildi', description: `"${item.name}" güncellendi.` });
+    setEditingId(null);
     setEditValue('');
   };
 
@@ -211,132 +225,235 @@ export default function TransparencyPage() {
           </Alert>
 
           <div className="space-y-3 mt-6">
-            {activeCriteria.map(item => (
+            {activeCriteria.map(item => {
+              const isEditing = editingId === item.id;
+              return (
               <div key={item.id} className={cn(
-                'flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg',
+                'p-4 border rounded-lg',
                 item.isCompleted ? 'border-green-500/30 bg-green-500/5' : 'border-border',
               )}>
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  {item.isCompleted ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  ) : (
-                    <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                  )}
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{item.name}</p>
-                      <Badge variant={item.isCompleted ? 'default' : 'secondary'} className={cn('text-[10px]', item.isCompleted && 'bg-green-600 hover:bg-green-600')}>
-                        {item.isCompleted ? 'Yüklendi' : `+${item.points} puan`}
-                      </Badge>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {item.isCompleted ? (
+                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-medium">{item.name}</p>
+                        {item.isCompleted ? (
+                          <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            {item.type === 'document' ? 'Yüklendi' : 'Tamamlandı'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-[10px]">+{item.points} puan</Badge>
+                        )}
+                      </div>
+                      {!isEditing && item.type === 'document' && item.fileName && (
+                        <a
+                          href={item.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                        >
+                          <FileText className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{item.fileName}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
+                        </a>
+                      )}
+                      {!isEditing && item.type === 'link' && item.linkUrl && (
+                        <a
+                          href={item.linkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                        >
+                          <LinkIcon className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{item.linkUrl}</span>
+                          <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
+                        </a>
+                      )}
+                      {!isEditing && item.type === 'text' && item.textValue && (
+                        <p className="text-xs text-muted-foreground truncate">{item.textValue}</p>
+                      )}
                     </div>
-                    {item.type === 'document' && item.fileName && (
-                      <a
-                        href={item.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                  </div>
+
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {!isEditing && item.isCompleted && item.type === 'document' && item.fileUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setPreviewItem(item)}
+                        title="Önizle"
                       >
-                        <FileText className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{item.fileName}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
-                      </a>
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Önizle</span>
+                      </Button>
                     )}
-                    {item.type === 'link' && item.linkUrl && (
-                      <a
-                        href={item.linkUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline truncate max-w-full"
+                    {!isEditing && item.isCompleted && item.type === 'link' && item.linkUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => setPreviewItem(item)}
+                        title="Önizle"
                       >
-                        <LinkIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="truncate">{item.linkUrl}</span>
-                        <ExternalLink className="h-3 w-3 shrink-0 opacity-70" />
-                      </a>
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Önizle</span>
+                      </Button>
                     )}
-                    {item.type === 'text' && item.textValue && (
-                      <p className="text-xs text-muted-foreground truncate">{item.textValue}</p>
+
+                    {item.type === 'document' ? (
+                      <Button asChild variant={item.isCompleted ? 'outline' : 'secondary'} size="sm" disabled={uploadingId === item.id}>
+                        <label htmlFor={`upload-${item.id}`} className="cursor-pointer">
+                          {uploadingId === item.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Upload className="mr-2 h-4 w-4" />
+                          )}
+                          {item.isCompleted ? 'Güncelle' : 'Yükle'}
+                          <input
+                            id={`upload-${item.id}`}
+                            type="file"
+                            className="hidden"
+                            onChange={e => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(item.id, file);
+                              e.target.value = '';
+                            }}
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          />
+                        </label>
+                      </Button>
+                    ) : !isEditing ? (
+                      <Button
+                        variant={item.isCompleted ? 'outline' : 'secondary'}
+                        size="sm"
+                        onClick={() => openEditor(item)}
+                      >
+                        {item.type === 'link' ? <LinkIcon className="mr-2 h-4 w-4" /> : <Plus className="mr-2 h-4 w-4" />}
+                        {item.isCompleted ? 'Güncelle' : 'Ekle'}
+                      </Button>
+                    ) : null}
+
+                    {!isEditing && item.isCompleted && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title="Kaldır">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  {item.isCompleted && item.type === 'document' && item.fileUrl && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Görüntüle">
-                      <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                        <Eye className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                  {item.isCompleted && item.type === 'link' && item.linkUrl && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Aç">
-                      <a href={item.linkUrl} target="_blank" rel="noopener noreferrer">
-                        <Eye className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-
-                  {item.type === 'document' ? (
-                    <Button asChild variant={item.isCompleted ? 'outline' : 'secondary'} size="sm" disabled={uploadingId === item.id}>
-                      <label htmlFor={`upload-${item.id}`} className="cursor-pointer">
-                        {uploadingId === item.id ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Upload className="mr-2 h-4 w-4" />
-                        )}
-                        {item.isCompleted ? 'Güncelle' : 'Yükle'}
-                        <input
-                          id={`upload-${item.id}`}
-                          type="file"
-                          className="hidden"
-                          onChange={e => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(item.id, file);
-                            e.target.value = '';
-                          }}
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                        />
-                      </label>
-                    </Button>
-                  ) : (
-                    <Button
-                      variant={item.isCompleted ? 'outline' : 'secondary'}
-                      size="sm"
-                      onClick={() => openEditor(item)}
-                    >
-                      <LinkIcon className="mr-2 h-4 w-4" />
-                      {item.isCompleted ? 'Güncelle' : 'Ekle'}
-                    </Button>
-                  )}
-
-                  {item.isCompleted && (
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title="Kaldır">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                {isEditing && (
+                  <div className="mt-3 pt-3 border-t flex flex-col sm:flex-row gap-2">
+                    <Input
+                      autoFocus
+                      type={item.type === 'link' ? 'url' : 'text'}
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') { e.preventDefault(); saveEditor(item); }
+                        if (e.key === 'Escape') cancelEditor();
+                      }}
+                      placeholder={
+                        item.type === 'link' ? 'https://...' :
+                        item.name === 'E-posta Adresi' ? 'ornek@kuruluş.org' :
+                        item.name === 'Telefon Numarası' ? '+90 xxx xxx xx xx' :
+                        'Değeri girin'
+                      }
+                      className="flex-1"
+                    />
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => saveEditor(item)}>Kaydet</Button>
+                      <Button size="sm" variant="outline" onClick={cancelEditor}>İptal</Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            ))}
+            )})}
           </div>
         </CardContent>
       </Card>
 
-      <Dialog open={!!editingItem} onOpenChange={open => { if (!open) { setEditingItem(null); setEditValue(''); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingItem?.name}</DialogTitle>
+      {/* Belge / Bağlantı önizleme dialog'u */}
+      <Dialog open={!!previewItem} onOpenChange={open => !open && setPreviewItem(null)}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="p-4 border-b shrink-0">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="truncate">{previewItem?.name}</DialogTitle>
+                {previewItem?.fileName && (
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">{previewItem.fileName}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {previewItem?.type === 'document' && previewItem?.fileUrl && (
+                  <Button asChild variant="outline" size="sm" className="gap-1.5">
+                    <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
+                      <Download className="h-4 w-4" />
+                      <span className="hidden sm:inline">İndir</span>
+                    </a>
+                  </Button>
+                )}
+                {(previewItem?.fileUrl || previewItem?.linkUrl) && (
+                  <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                    <a href={previewItem.fileUrl || previewItem.linkUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4" />
+                      <span className="hidden sm:inline">Yeni Sekme</span>
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
           </DialogHeader>
-          <div className="space-y-2 py-2">
-            <Label>{editingItem?.type === 'link' ? 'Bağlantı (URL)' : 'Değer'}</Label>
-            <Input
-              value={editValue}
-              onChange={e => setEditValue(e.target.value)}
-              placeholder={editingItem?.type === 'link' ? 'https://...' : 'Değeri girin'}
-              type={editingItem?.type === 'link' ? 'url' : 'text'}
-            />
+          <div className="flex-1 overflow-hidden bg-muted/30 relative">
+            {previewItem?.type === 'document' && previewItem?.fileUrl && (
+              isImageUrl(previewItem.fileUrl, previewItem.fileName) ? (
+                <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
+                  <img
+                    src={previewItem.fileUrl}
+                    alt={previewItem.name}
+                    className="max-w-full max-h-full object-contain rounded shadow-lg"
+                  />
+                </div>
+              ) : isPdfUrl(previewItem.fileUrl, previewItem.fileName) ? (
+                <iframe
+                  src={previewItem.fileUrl}
+                  className="w-full h-full border-0"
+                  title={previewItem.name}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center gap-4">
+                  <FileText className="h-16 w-16 text-muted-foreground/40" />
+                  <div className="space-y-1">
+                    <p className="font-medium">{previewItem.fileName || 'Belge'}</p>
+                    <p className="text-sm text-muted-foreground">Bu dosya türü tarayıcıda önizlenemiyor.</p>
+                  </div>
+                  <Button asChild>
+                    <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
+                      <Download className="mr-2 h-4 w-4" /> Dosyayı İndir
+                    </a>
+                  </Button>
+                </div>
+              )
+            )}
+            {previewItem?.type === 'link' && previewItem?.linkUrl && (
+              <iframe
+                src={previewItem.linkUrl}
+                className="w-full h-full border-0"
+                title={previewItem.name}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              />
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setEditingItem(null); setEditValue(''); }}>İptal</Button>
-            <Button onClick={saveEditor}>Kaydet</Button>
+          <DialogFooter className="p-3 border-t shrink-0">
+            <Button variant="outline" onClick={() => setPreviewItem(null)} className="gap-1.5">
+              <XIcon className="h-4 w-4" /> Kapat
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -176,44 +176,6 @@ export const allSdgs = [
 export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr', 'TGSP', 'Diğer...'];
 export const years = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
 
-export const user: User = {
-    id: '1',
-    name: 'İsmail Hilmi ADIGÜZEL',
-    username: '@ismailhilmicom',
-    avatarUrl: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080',
-    coverPhotoUrl: 'https://images.unsplash.com/photo-1693902939226-449195d2698b?q=80&w=1080',
-    impactScore: 15750,
-    personalInfo: {
-        email: 'ihadiguzel@gmail.com',
-        phone: '5547007007',
-        birthDate: '1993-05-21',
-        gender: 'Erkek',
-        nationality: 'Türkiye Cumhuriyeti',
-        bloodType: '0 Rh+',
-        address: { country: 'Türkiye', city: 'İstanbul', district: 'Kadıköy', neighborhood: 'Caferağa', fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4' },
-        website: 'https://ismailhilmi.com',
-        social: { linkedin: 'ismailhilmi', github: 'ismailhilmi', instagram: 'ismailhilmi', twitter: 'ismailhilmi' }
-    },
-    volunteerInfo: {
-        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Yazılım Geliştirme'],
-        dailySkills: ['Organizasyon', 'İletişim'],
-        interests: ['Çevre', 'Eğitim', 'Sosyal Girişimcilik'],
-        education: [{ level: 'Lisans', school: 'Boğaziçi Üniversitesi' }],
-        profession: 'Yazılım Geliştirici',
-        languages: ['Türkçe', 'İngilizce'],
-        programs: ['VS Code', 'Figma'],
-        licenses: ['B Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası'],
-        travelInfo: { domesticObstacle: false, internationalObstacle: false, visas: ['Schengen'] },
-        emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }] }
-    },
-    stats: {
-        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 1250000
-    },
-    progress: { 'profile': 100, 'volunteer': 85, 'impact': 60 },
-    supportedNgos: ['1', '2'],
-    volunteerNgos: ['1', '4', '5']
-};
 
 export const ngos: NGO[] = [
     {

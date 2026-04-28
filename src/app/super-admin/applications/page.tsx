@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileText, Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, Phone, Globe, MapPin, User } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -255,22 +255,127 @@ export default function ApplicationsPage() {
   const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
   const { data: applications, isLoading } = useCollection(appsQuery);
 
-  const handleUpdateStatus = (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
-    const appRef = doc(db, 'applications', id);
-    updateDocumentNonBlocking(appRef, { status: newStatus });
+  const slugify = (s: string) =>
+    (s || '')
+      .toLowerCase()
+      .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
-    if (newStatus === 'Onaylandı' && userId) {
-      const userRef = doc(db, 'users', userId);
-      updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
-      toast({
-        title: "Yetki Tanımlandı",
-        description: "Kullanıcıya Yönetim Paneli erişimi otomatik olarak verildi.",
-      });
+  const createEntityFromApp = async (app: any): Promise<string | null> => {
+    const entityType = app.entityType;
+    const name = app.name || app.org || 'Yeni Kuruluş';
+
+    const common = {
+      name,
+      slug: slugify(name),
+      about: app.about || '',
+      logoUrl: app.logoUrl || '',
+      avatarUrl: app.avatarUrl || app.logoUrl || '',
+      coverPhotoUrl: app.coverPhotoUrl || '',
+      contact: {
+        email: app.email || '',
+        phone: app.phone || '',
+        website: app.website || '',
+        social: app.social || {},
+      },
+      location: {
+        country: app.country || 'Türkiye',
+        city: app.city || '',
+        district: app.district || '',
+        neighborhood: app.neighborhood || '',
+        fullAddress: app.addressLine || app.communicationAddress || '',
+      },
+      status: 'Aktif',
+      createdAt: serverTimestamp(),
+      sourceApplicationId: app.id,
+    };
+
+    try {
+      if (entityType === 'BRAND') {
+        const ref = await addDoc(collection(db, 'brands'), {
+          ...common,
+          type: 'brand',
+          category: app.sector || app.category || '',
+          brandStatus: app.brandStatus || '',
+          donationRate: 0,
+          donationCategories: app.donationCategories || [],
+          link: app.website || '',
+        });
+        return ref.id;
+      }
+      if (entityType === 'CLUB') {
+        const ref = await addDoc(collection(db, 'studentClubs'), {
+          ...common,
+          type: app.clubType || 'university',
+          university: app.universityName || '',
+          category: app.clubCategory || '',
+          members: 0,
+          points: 0,
+        });
+        return ref.id;
+      }
+      if (entityType === 'NGO') {
+        const ref = await addDoc(collection(db, 'ngos'), {
+          ...common,
+          type: app.orgSubType || 'Dernek',
+          category: app.sector || '',
+          registryNo: app.registryNo || '',
+          legalTitle: app.legalTitle || '',
+          slogan: app.slogan || '',
+          transparencyScore: 0,
+          selectedBeneficiaries: app.selectedBeneficiaries || [],
+          selectedServiceAreas: app.selectedServiceAreas || [],
+          stats: { followers: 0, volunteers: 0, projects: 0 },
+        });
+        return ref.id;
+      }
+    } catch (err) {
+      console.error('Failed to create entity from application:', err);
+      throw err;
+    }
+    return null;
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
+    const appRef = doc(db, 'applications', id);
+    const app = (applications || []).find((a: any) => a.id === id);
+
+    if (newStatus === 'Onaylandı' && app) {
+      try {
+        const entityId = await createEntityFromApp(app);
+        updateDocumentNonBlocking(appRef, {
+          status: newStatus,
+          approvedAt: serverTimestamp(),
+          createdEntityId: entityId,
+        });
+
+        if (userId) {
+          const userRef = doc(db, 'users', userId);
+          updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+        }
+
+        const entityTypeLabel = entityTypeLabels[app.entityType] || 'Kuruluş';
+        toast({
+          title: 'Başvuru Onaylandı',
+          description: entityId
+            ? `${entityTypeLabel} yayına alındı. ${userId ? 'Kullanıcıya yönetici yetkisi verildi.' : ''}`
+            : 'Başvuru onaylandı ancak kuruluş oluşturulamadı. Manuel kontrol gerekli.',
+        });
+      } catch (err: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Onay Başarısız',
+          description: err?.message || 'Kuruluş oluşturulurken bir hata oluştu.',
+        });
+      }
+      return;
     }
 
+    updateDocumentNonBlocking(appRef, { status: newStatus });
     toast({
-      title: newStatus === 'Onaylandı' ? "Başvuru Onaylandı" : newStatus === 'Reddedildi' ? "Başvuru Reddedildi" : "Başvuru Beklemeye Alındı",
-      description: "İşlem başarıyla Firestore üzerine yansıtıldı.",
+      title: newStatus === 'Reddedildi' ? 'Başvuru Reddedildi' : 'Başvuru Beklemeye Alındı',
+      description: 'İşlem başarıyla kaydedildi.',
     });
   };
 

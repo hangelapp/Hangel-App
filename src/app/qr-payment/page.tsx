@@ -14,7 +14,9 @@ import { useToast } from '@/hooks/use-toast';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { qrPaymentCardData, user } from '@/lib/data';
+import { qrPaymentCardData } from '@/lib/data';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import {
@@ -120,7 +122,17 @@ const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open
 
 export default function QrPaymentPage() {
   const { toast } = useToast();
-  const qrData = `https://hangel.org/pay/${user.username.replace('@', '')}`;
+  const { user: authUser } = useUser();
+  const db = useFirestore();
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return doc(db, 'users', authUser.uid);
+  }, [db, authUser?.uid]);
+  const { data: userData } = useDoc<any>(userDocRef);
+
+  const username = userData?.username || authUser?.email?.split('@')[0] || authUser?.uid || 'kullanici';
+  const qrHandle = String(username).replace(/^@/, '');
+  const qrData = `https://hangel.org/pay/${qrHandle}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
 
   const [cards, setCards] = useState(qrPaymentCardData.map((c, i) => ({ ...c, status: i === 0 ? 'Aktif' : 'Aktif Değil' })));

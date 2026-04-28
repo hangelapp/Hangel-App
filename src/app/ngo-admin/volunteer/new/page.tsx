@@ -21,14 +21,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  PROFESSIONS, SKILLS, DAILY_SKILLS, INTERESTS,
+  LANGUAGES, SIGN_LANGUAGES, DRIVER_LICENSES,
+  CERTIFICATES, PROGRAMS, VISAS,
+} from '@/lib/volunteer-data';
 
-
-const allInterests = ['Hayvan Hakları', 'Çevre', 'Eğitim', 'Sağlık', 'Afet', 'Çocuk', 'Kadın Hakları', 'Kültür & Sanat', 'İnsan Hakları', 'Yoksullukla Mücadele'];
-const allSkills = ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Grafik Tasarım', 'Web Geliştirme', 'Kaynak Geliştirme', 'Hukuki Danışmanlık', 'Tercümanlık', 'Fotoğrafçılık', 'Video Kurgu'];
-const allLanguages = ['Türkçe', 'İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İspanyolca', 'Rusça', 'İşaret Dili'];
-const allPrograms = ['MS Office', 'Google Workspace', 'Figma', 'Adobe Photoshop', 'Adobe Premiere', 'VS Code', 'Docker', 'Google Analytics'];
-const allDocuments = ['İlk Yardım Sertifikası', 'Hijyen Belgesi', 'Scrum Master Sertifikası', 'Pedagojik Formasyon', 'Afet Bilinci Eğitimi Sertifikası', 'SRC Belgesi', 'B Sınıfı Ehliyet'];
-const allVisas = ['Schengen', 'ABD (B1/B2)', 'İngiltere', 'Kanada'];
+const allInterests = INTERESTS;
+const allSkills = SKILLS;
+const allDailySkills = DAILY_SKILLS;
+const allLanguages = LANGUAGES;
+const allSignLanguages = SIGN_LANGUAGES;
+const allPrograms = PROGRAMS;
+const allCertificates = CERTIFICATES;
+const allDriverLicenses = DRIVER_LICENSES;
+const allProfessions = PROFESSIONS;
+const allVisas = VISAS;
 
 
 const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: string, options: string[], selected: string[], onSelectedChange: (selected: string[]) => void }) => {
@@ -105,9 +113,14 @@ function NewOpportunityForm() {
   const [commitmentDetail, setCommitmentDetail] = useState('');
   const [volunteerNeeded, setVolunteerNeeded] = useState('');
   const [skills, setSkills] = useState<string[]>([]);
+  const [dailySkills, setDailySkills] = useState<string[]>([]);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [professions, setProfessions] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [signLanguages, setSignLanguages] = useState<string[]>([]);
   const [programs, setPrograms] = useState<string[]>([]);
-  const [documents, setDocuments] = useState<string[]>([]);
+  const [certificates, setCertificates] = useState<string[]>([]);
+  const [driverLicenses, setDriverLicenses] = useState<string[]>([]);
   const [visas, setVisas] = useState<string[]>([]);
   const [education, setEducation] = useState('');
   const [domesticTravel, setDomesticTravel] = useState(false);
@@ -150,6 +163,7 @@ function NewOpportunityForm() {
         organization: ngoData?.name || 'Kuruluş',
         ngoId: entityId,
         socialArea,
+        interests,
         location: {
           city: city.trim(),
           district: district.trim(),
@@ -168,9 +182,14 @@ function NewOpportunityForm() {
         },
         hours: { start: '', end: '', total: 0 },
         skills,
+        dailySkills,
+        professions,
         languages,
+        signLanguages,
         programs,
-        requirements: documents,
+        certificates,
+        driverLicenses,
+        requirements: [...certificates, ...driverLicenses],
         travel: {
           domestic: domesticTravel,
           international: internationalTravel,
@@ -185,14 +204,17 @@ function NewOpportunityForm() {
         },
         education: education || null,
         points: Number(points) || 0,
-        status: 'Aktif',
+        status: 'Beklemede',
         createdAt: serverTimestamp(),
         createdBy: authUser?.uid || null,
       };
 
       await addDoc(collection(db, 'volunteering'), payload);
 
-      toast({ title: 'İlan Yayınlandı', description: 'Gönüllülük ilanınız yayında.' });
+      toast({
+        title: 'İlan Onaya Gönderildi',
+        description: 'Gönüllülük ilanınız süper admin onayından sonra yayına alınacaktır.',
+      });
       const backHref = entityId && searchParams.get('id')
         ? `/ngo-admin/volunteer?id=${searchParams.get('id')}`
         : '/ngo-admin/volunteer';
@@ -298,10 +320,15 @@ function NewOpportunityForm() {
               <Label htmlFor="volunteer-needed">Aranan Gönüllü Sayısı</Label>
               <Input id="volunteer-needed" type="number" value={volunteerNeeded} onChange={e => setVolunteerNeeded(e.target.value)} placeholder="50" />
             </div>
-            <MultiSelect title="Gerekli Yetkinlikler" options={allSkills} selected={skills} onSelectedChange={setSkills} />
+            <MultiSelect title="Hassasiyet / Sosyal Alanlar" options={allInterests} selected={interests} onSelectedChange={setInterests} />
+            <MultiSelect title="Profesyonel Yetkinlikler" options={allSkills} selected={skills} onSelectedChange={setSkills} />
+            <MultiSelect title="Günlük Hayat Yetkinlikleri" options={allDailySkills} selected={dailySkills} onSelectedChange={setDailySkills} />
+            <MultiSelect title="İstenen Meslekler" options={allProfessions} selected={professions} onSelectedChange={setProfessions} />
             <MultiSelect title="İstenen Diller" options={allLanguages} selected={languages} onSelectedChange={setLanguages} />
+            <MultiSelect title="İşaret Dilleri" options={allSignLanguages} selected={signLanguages} onSelectedChange={setSignLanguages} />
             <MultiSelect title="Bilgisi İstenen Programlar" options={allPrograms} selected={programs} onSelectedChange={setPrograms} />
-            <MultiSelect title="Gerekli Belgeler/Lisanslar" options={allDocuments} selected={documents} onSelectedChange={setDocuments} />
+            <MultiSelect title="Gerekli Sertifikalar" options={allCertificates} selected={certificates} onSelectedChange={setCertificates} />
+            <MultiSelect title="Sürücü Belgeleri" options={allDriverLicenses} selected={driverLicenses} onSelectedChange={setDriverLicenses} />
             <div className="space-y-2">
               <Label htmlFor="education">Eğitim Seviyesi (İsteğe Bağlı)</Label>
               <Select value={education} onValueChange={setEducation}>

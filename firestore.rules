@@ -50,6 +50,10 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow read, list: if true; // Public for timeline
+      // Authors (NGO/brand/club admins or individual users) can post as themselves
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      // Only the author can edit or delete their own post (super-admin has global write)
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /volunteering/{oppId} {
@@ -74,11 +78,74 @@ service cloud.firestore {
       allow read, list: if true; // Public library content
     }
 
+    // Sözleşmeler ve politikalar (super-admin yönetir, herkes okur)
+    match /contracts/{contractId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Esnek site sayfaları (basın, etkinlik, duyuru — super-admin yönetir, herkes okur)
+    match /sitePages/{pageId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Acil durum talepleri (Süper Admin tarafından oluşturulur)
+    match /emergencyRequests/{reqId} {
+      allow read, list: if isSignedIn();
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Bildirimler (Süper Admin yazar; alıcı okur ve okundu işaretler)
+    match /notifications/{notifId} {
+      allow list: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSuperAdmin();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)
+    match /userInvitations/{inviteId} {
+      allow list: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      // Davet edilen kişi var olan bir üye olmalı; ngoId davet edenin kendi UID'i olmalı
+      allow create: if isSignedIn() &&
+        request.resource.data.invitedBy == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        exists(/databases/$(database)/documents/users/$(request.resource.data.inviteeUserId));
+      // Sadece davet alan veya davet eden güncelleyebilir/silebilir
+      allow update, delete: if isSignedIn() && (
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid ||
+        isSuperAdmin()
+      );
+    }
+
     // Başvuru koleksiyonu
     match /applications/{appId} {
       allow list: if isSignedIn();
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
-      allow create: if isSignedIn();
+      // Corporate registrations (BRAND/CLUB/NGO) can be submitted by anonymous users
+      // (onboarding flow runs before account creation). All other app types require auth.
+      allow create: if isSignedIn() || (
+        request.resource.data.entityType in ['BRAND', 'CLUB', 'NGO'] &&
+        request.resource.data.status == 'Beklemede' &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 0
+      );
       allow update, delete: if isSuperAdmin();
     }
 

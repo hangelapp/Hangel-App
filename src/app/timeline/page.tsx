@@ -6,7 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,7 @@ export default function TimelinePage() {
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(true);
+  const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(false);
 
   const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
@@ -93,10 +94,24 @@ export default function TimelinePage() {
     }
     
     posts.sort((a, b) => {
-        let valA, valB;
+        let valA: any, valB: any;
         if (sortKey === 'id') {
-            valA = a.id;
-            valB = b.id;
+            // Prefer createdAt (Firestore Timestamp or ISO), fallback to id
+            const toTime = (p: any) => {
+                if (p.createdAt?.toMillis) return p.createdAt.toMillis();
+                if (p.createdAt?.seconds) return p.createdAt.seconds * 1000;
+                if (typeof p.createdAt === 'string') return new Date(p.createdAt).getTime() || 0;
+                return 0;
+            };
+            const tA = toTime(a);
+            const tB = toTime(b);
+            if (tA || tB) {
+                valA = tA;
+                valB = tB;
+            } else {
+                valA = a.id;
+                valB = b.id;
+            }
         } else { // likes
             valA = a.likes;
             valB = b.likes;
@@ -171,17 +186,20 @@ export default function TimelinePage() {
             <TabsContent value="special" className="mt-0">
                 <div className="p-2 sm:p-4">
                     <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-lg">Sana Özel</CardTitle>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => setIsSanaOzelExpanded(prev => !prev)}
-                            >
-                                {isSanaOzelExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            </Button>
-                        </CardHeader>
+                        <button
+                            type="button"
+                            onClick={() => setIsSanaOzelExpanded(prev => !prev)}
+                            className="w-full text-left"
+                            aria-expanded={isSanaOzelExpanded}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 hover:bg-accent/30 transition-colors rounded-t-xl">
+                                <CardTitle className="text-lg">Sana Özel</CardTitle>
+                                <ChevronDown className={cn(
+                                    "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                                    isSanaOzelExpanded && "rotate-180"
+                                )} />
+                            </CardHeader>
+                        </button>
                         {isSanaOzelExpanded && (
                             <CardContent className="space-y-4 pt-0">
                                 <div>

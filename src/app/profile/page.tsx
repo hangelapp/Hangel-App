@@ -440,6 +440,11 @@ export default function ProfilePage() {
                                 <InfoRow icon={Palette} label="Behance" value={currentUser.personalInfo.social?.behance} />
                                 <InfoRow icon={Instagram} label="Instagram" value={currentUser.personalInfo.social?.instagram} />
                                 <InfoRow icon={Twitter} label="X (Twitter)" value={currentUser.personalInfo.social?.twitter} />
+                                {((currentUser.personalInfo.social as any)?.custom || []).map((link: any, i: number) =>
+                                    link?.platform && link?.url ? (
+                                        <InfoRow key={`custom-${i}`} icon={Globe} label={link.platform} value={link.url} />
+                                    ) : null
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>

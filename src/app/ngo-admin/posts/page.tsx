@@ -5,14 +5,15 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { ImagePlus, Send, Heart, Share2, Trash2, Pencil, X, Check, Loader2, Inbox } from 'lucide-react';
+import { ImagePlus, Send, Heart, Share2, Trash2, Pencil, X, Check, Loader2, Inbox, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import Image from 'next/image';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, orderBy, doc, Timestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export default function PostsPage() {
     const { toast } = useToast();
@@ -65,23 +66,29 @@ export default function PostsPage() {
         };
 
         try {
-            await addDocumentNonBlocking(collection(firestore, 'posts'), newPost);
+            await addDoc(collection(firestore, 'posts'), newPost);
             setNewPostContent('');
-            toast({ title: "Gonderi paylasildi!", description: "Yeni gonderiniz zaman tunelinde yayinlandi." });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Gonderi paylasilamadi.', description: 'Bir hata olustu, lutfen tekrar deneyin.' });
+            toast({ title: 'Gönderi paylaşıldı!', description: 'Yeni gönderiniz zaman tünelinde yayınlandı.' });
+        } catch (error: any) {
+            console.error('Post create failed:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Gönderi paylaşılamadı.',
+                description: error?.code === 'permission-denied' ? 'Sunucu izin vermedi.' : (error?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
         }
 
         setIsCreating(false);
     };
 
-    const handleDeletePost = (id: string) => {
+    const handleDeletePost = async (id: string) => {
         if (!authUser?.uid) return;
         try {
-            deleteDocumentNonBlocking(doc(firestore, 'posts', id));
-            toast({ variant: 'destructive', title: "Gonderi silindi." });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Gonderi silinemedi.' });
+            await deleteDoc(doc(firestore, 'posts', id));
+            toast({ variant: 'destructive', title: 'Gönderi silindi.' });
+        } catch (error: any) {
+            console.error('Post delete failed:', error);
+            toast({ variant: 'destructive', title: 'Gönderi silinemedi.', description: error?.message });
         }
     };
 
@@ -95,32 +102,40 @@ export default function PostsPage() {
         setEditContent('');
     };
 
-    const handleSaveEdit = (id: string) => {
+    const handleSaveEdit = async (id: string) => {
         if (!editContent.trim()) {
-            toast({ variant: 'destructive', title: 'Gonderi bos olamaz.' });
+            toast({ variant: 'destructive', title: 'Gönderi boş olamaz.' });
             return;
         }
 
         try {
-            updateDocumentNonBlocking(doc(firestore, 'posts', id), {
+            await updateDoc(doc(firestore, 'posts', id), {
                 content: editContent,
                 updatedAt: Timestamp.now(),
             });
-            toast({ title: "Gonderi guncellendi!" });
+            toast({ title: 'Gönderi güncellendi!' });
             setEditingPostId(null);
             setEditContent('');
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Gonderi guncellenemedi.' });
+        } catch (error: any) {
+            console.error('Post update failed:', error);
+            toast({ variant: 'destructive', title: 'Gönderi güncellenemedi.', description: error?.message });
         }
     };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Gönderi Yönetimi</h1>
-        <p className="text-muted-foreground">
-          Toplulukla etkileşim kurmak için gönderiler oluşturun ve yönetin.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Gönderi Yönetimi</h1>
+          <p className="text-muted-foreground">
+            Toplulukla etkileşim kurmak için gönderiler oluşturun ve yönetin. Yayınlanan gönderiler zaman tünelinde görünür.
+          </p>
+        </div>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/timeline">
+            <ExternalLink className="mr-2 h-4 w-4" /> Zaman Tünelini Aç
+          </Link>
+        </Button>
       </div>
 
       <Card>

@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
+import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { Country, State, City } from 'country-state-city';
 import type { User } from '@/lib/types';
 
 const emptyUser: User = {
@@ -53,7 +54,7 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe, Linkedin, Github, Instagram, Twitter, Palette } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -138,6 +139,33 @@ export default function ProfileSettingsPage() {
     });
   };
 
+  const customLinks: { platform: string; url: string }[] =
+    (profile.personalInfo.social as any)?.custom ?? [];
+
+  const setCustomLinks = (links: { platform: string; url: string }[]) => {
+    setProfile(prev => {
+        const newProfile = JSON.parse(JSON.stringify(prev));
+        newProfile.personalInfo.social = {
+            ...(newProfile.personalInfo.social || {}),
+            custom: links,
+        };
+        return newProfile;
+    });
+  };
+
+  const addCustomLink = () => {
+    setCustomLinks([...customLinks, { platform: '', url: '' }]);
+  };
+
+  const updateCustomLink = (index: number, field: 'platform' | 'url', value: string) => {
+    const next = customLinks.map((link, i) => i === index ? { ...link, [field]: value } : link);
+    setCustomLinks(next);
+  };
+
+  const removeCustomLink = (index: number) => {
+    setCustomLinks(customLinks.filter((_, i) => i !== index));
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) {
@@ -175,11 +203,35 @@ export default function ProfileSettingsPage() {
   const currentCity = profile.personalInfo.address.city;
   const currentDistrict = profile.personalInfo.address.district;
   const currentNeighborhood = profile.personalInfo.address.neighborhood;
-  const isTurkey = currentCountry === 'Türkiye';
+  const isTurkey = currentCountry === 'Türkiye' || currentCountry === 'Turkey' || currentCountry === 'TR';
 
-  const countryOptions = ["Türkiye", "Almanya", "ABD", "Azerbaycan", "İngiltere"];
-  const cityOptions = isTurkey ? (allProvinces || []) : (globalCitiesData[currentCountry] || []);
-  const districtOptions = isTurkey ? (districtsData[currentCity] || []) : (globalDistrictsData[currentCity] || []);
+  const allCountriesList = useMemo(() => {
+    return Country.getAllCountries()
+      .map(c => ({ name: c.name, code: c.isoCode }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const countryISO = useMemo(() => {
+    if (!currentCountry) return null;
+    if (isTurkey) return 'TR';
+    return Country.getAllCountries().find(c => c.name === currentCountry || c.isoCode === currentCountry)?.isoCode || null;
+  }, [currentCountry, isTurkey]);
+
+  const cityOptions = useMemo(() => {
+    if (isTurkey) return (allProvinces || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+    if (!countryISO) return [];
+    const states = State.getStatesOfCountry(countryISO).map(s => s.name);
+    if (states.length > 0) return states.sort((a, b) => a.localeCompare(b));
+    return City.getCitiesOfCountry(countryISO)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
+  }, [isTurkey, countryISO]);
+
+  const districtOptions = useMemo(() => {
+    if (isTurkey) return (districtsData[currentCity] || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+    if (!countryISO) return [];
+    const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === currentCity);
+    if (!stateObj) return [];
+    return City.getCitiesOfState(countryISO, stateObj.isoCode)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
+  }, [isTurkey, countryISO, currentCity]);
 
   if (isUserLoading || isUserDataLoading) {
       return (
@@ -225,82 +277,66 @@ export default function ProfileSettingsPage() {
         </Card>
 
         <Card>
-            <CardHeader><CardTitle>Kimlik Bilgileri</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Kişisel Bilgiler</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label>Ad Soyad</Label>
                     <Input value={profile.name} onChange={(e) => handleChange('name', 'name', e.target.value)} required />
                 </div>
-                <div className="space-y-2">
-                    <Label>Cinsiyet</Label>
-                    <Select value={profile.personalInfo.gender || ''} onValueChange={(v) => handleChange('personalInfo', 'gender', v)} required>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Erkek">Erkek</SelectItem>
-                            <SelectItem value="Kadın">Kadın</SelectItem>
-                            <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>E-posta</Label>
+                        <Input
+                            type="email"
+                            value={profile.personalInfo.email || ''}
+                            onChange={(e) => handleChange('personalInfo', 'email', e.target.value)}
+                            placeholder="ornek@hangel.org"
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Telefon</Label>
+                        <Input
+                            type="tel"
+                            value={profile.personalInfo.phone || ''}
+                            onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)}
+                            placeholder="5XX XXX XX XX"
+                        />
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres Bilgileri</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Ülke</Label>
                     <Select value={currentCountry || ''} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                        <SelectContent>{countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
+                        <SelectContent className="max-h-72">
+                            <SelectItem value="Türkiye">Türkiye</SelectItem>
+                            {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
+                                <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+                            ))}
+                        </SelectContent>
                     </Select>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İl' : 'Şehir'}</Label>
                         {cityOptions.length > 0 ? (
-                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })} required>
+                            <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" required />
+                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" />
                         )}
                     </div>
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
                         {districtOptions.length > 0 ? (
-                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} required disabled={!currentCity}>
+                            <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} disabled={!currentCity}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" required />
+                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" />
                         )}
-                    </div>
-                </div>
-                
-                <div className="space-y-2">
-                    <Label>Mahalle</Label>
-                    {isTurkey && currentCity && currentDistrict && neighborhoodsData[currentCity]?.[currentDistrict] ? (
-                        <Select value={currentNeighborhood || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })} required>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">{neighborhoodsData[currentCity][currentDistrict].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                        </Select>
-                    ) : (
-                        <Input value={currentNeighborhood || ''} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle" required disabled={isTurkey && !currentDistrict} className="h-11 rounded-xl" />
-                    )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Sokak / Cadde</Label>
-                        <Input value={(profile.personalInfo.address as any).street || ''} onChange={(e) => handleChange('personalInfo', 'address', { street: e.target.value })} placeholder="Örn: Moda Cad." required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Bina / Kapı No</Label>
-                        <Input value={(profile.personalInfo.address as any).doorNo || ''} onChange={(e) => handleChange('personalInfo', 'address', { doorNo: e.target.value })} placeholder="Örn: 12/4" required />
                     </div>
                 </div>
             </CardContent>
@@ -336,6 +372,54 @@ export default function ProfileSettingsPage() {
                     <Label className="flex items-center gap-2"><Twitter className="h-4 w-4" /> X (Twitter)</Label>
                     <Input type="url" value={profile.personalInfo.social?.twitter || ''} onChange={(e) => handleSocialChange('twitter', e.target.value)} placeholder="https://x.com/kullaniciadi" />
                 </div>
+
+                {customLinks.length > 0 && (
+                    <div className="space-y-3 pt-2 border-t">
+                        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Diğer Bağlantılar</Label>
+                        {customLinks.map((link, index) => (
+                            <div key={index} className="flex items-end gap-2">
+                                <div className="space-y-1 flex-1">
+                                    <Label className="text-xs flex items-center gap-1.5"><LinkIcon className="h-3 w-3" /> Platform</Label>
+                                    <Input
+                                        value={link.platform}
+                                        onChange={(e) => updateCustomLink(index, 'platform', e.target.value)}
+                                        placeholder="TikTok, Threads, Mastodon..."
+                                    />
+                                </div>
+                                <div className="space-y-1 flex-[2]">
+                                    <Label className="text-xs">URL</Label>
+                                    <Input
+                                        type="url"
+                                        value={link.url}
+                                        onChange={(e) => updateCustomLink(index, 'url', e.target.value)}
+                                        placeholder="https://..."
+                                    />
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-10 text-destructive shrink-0"
+                                    onClick={() => removeCustomLink(index)}
+                                    title="Kaldır"
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-10 border-dashed gap-2 mt-2"
+                    onClick={addCustomLink}
+                >
+                    <Plus className="h-4 w-4" />
+                    Sosyal Hesap Ekle
+                </Button>
             </CardContent>
         </Card>
 

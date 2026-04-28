@@ -58,6 +58,7 @@ const iconColorMap: { [key: string]: string } = {
   'Globe': 'bg-emerald-500',
   'MessageSquare': 'bg-cyan-500',
   'DatabaseZap': 'bg-red-600',
+  'Siren': 'bg-red-700',
 };
 
 const superAdminNavItems = [
@@ -65,12 +66,15 @@ const superAdminNavItems = [
     { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
     { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
+    { href: '/super-admin/contracts', label: 'Sözleşmeler ve Politikalar', icon: 'FileText', description: 'Kullanıcı sözleşmesi, KVKK, gizlilik ve diğer hukuki metinleri düzenle veya yeni sözleşme ekle.' },
+    { href: '/super-admin/pages', label: 'İçerik Sayfaları (Basın/Etkinlik vb.)', icon: 'Newspaper', description: 'Basın, etkinlik, kariyer gibi sayfaları oluştur ve düzenle.' },
     { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
     { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
     { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
     { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
     { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
     { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla ve yönet.' },
+    { href: '/super-admin/emergency', label: 'Acil Durum Yönetimi', icon: 'Siren', description: 'Acil kan talebi ve afet bildirimlerini yönet, hedef bildirimler gönder.' },
     { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
     { href: '/super-admin/surveys', label: 'Anket & Değerlendirmeler', icon: 'Star', description: 'Kullanıcı keşif anketleri ve uygulama değerlendirmelerini görüntüle.' },
     { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Platformun genel metriklerini izle.' },
