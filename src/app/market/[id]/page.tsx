@@ -18,6 +18,7 @@ import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { openExternalUrl } from '@/lib/capacitor';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
@@ -146,15 +147,16 @@ export default function BrandProfilePage() {
         ngo: ["Varsayılan STK'nız"]
     });
 
+    if (brand.link) {
+        openExternalUrl(brand.link);
+    }
+
     setTimeout(() => {
         setIsDonating(false);
         toast({
             title: "Mağazaya Yönlendiriliyorsunuz",
             description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
         });
-        if (brand.link) {
-            window.open(brand.link, '_blank');
-        }
     }, 1000);
   };
 
