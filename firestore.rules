@@ -9,8 +9,10 @@ service cloud.firestore {
     
     function isSuperAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == '5384009090@hangel.org' || 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        request.auth.token.email == '5384009090@hangel.org' ||
+        request.auth.token.email == 'ismailhilmi@hangel.org' ||
+        request.auth.token.email == 'ihadiguzel@gmail.com' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin')
       );
     }
@@ -84,6 +86,31 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Site ayarları (anasayfa/about/dernek içerikleri — super-admin yönetir, herkes okur)
+    match /siteSettings/{docId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Destek talepleri (kullanıcı oluşturur ve okur, super-admin tüm talepleri yönetir)
+    match /supportTickets/{ticketId} {
+      allow list: if isSuperAdmin() || isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'open';
+      // Kullanıcı kendi talebini günceller (sadece message/subject); super-admin her şeyi günceller
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['subject', 'message', 'updatedAt'])
+      );
+      allow delete: if isSuperAdmin();
+    }
+
     // Esnek site sayfaları (basın, etkinlik, duyuru — super-admin yönetir, herkes okur)
     match /sitePages/{pageId} {
       allow read, list: if true;
@@ -96,7 +123,23 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
-    // Bildirimler (Süper Admin yazar; alıcı okur ve okundu işaretler)
+    // Acil durum yanıtları (kullanıcılar kendi yanıtını oluşturur, süper admin hepsini görür)
+    match /emergencyResponses/{respId} {
+      allow list: if isSuperAdmin() || isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status in ['positive', 'negative'];
+      allow update, delete: if isSuperAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid
+      );
+    }
+
+    // Bildirimler (Süper Admin + NGO admin davetleri yazar; alıcı okur ve okundu işaretler)
     match /notifications/{notifId} {
       allow list: if isSignedIn();
       allow read: if isSignedIn() && (
@@ -104,10 +147,25 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid ||
         isSuperAdmin()
       );
-      allow create: if isSuperAdmin();
+      // Süper admin her şeyi yazabilir; ayrıca imzalı kullanıcılar 'invitation'
+      // tipinde bildirim yazabilir (NGO admin → davet ettiği üyeye)
+      allow create: if isSuperAdmin() || (
+        isSignedIn() &&
+        request.resource.data.type == 'invitation' &&
+        request.resource.data.createdBy == request.auth.uid
+      );
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
       allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // E-posta kuyruğu (Cloud Function tarafından işlenir)
+    match /mailQueue/{mailId} {
+      allow list, read: if isSuperAdmin();
+      allow create: if isSignedIn() &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      allow update, delete: if isSuperAdmin();
     }
 
     // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)

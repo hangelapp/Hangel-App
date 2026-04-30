@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     const router = useRouter();
@@ -158,6 +159,7 @@ const PressSection = () => (
 
 export default function AssociationHomePage() {
     const { toast } = useToast();
+    const { get } = useAssociationContent();
 
     return (
         <div className="min-h-screen bg-white font-sans text-center text-[#1d1d1f]">
@@ -183,23 +185,23 @@ export default function AssociationHomePage() {
                     </div>
                 </section>
 
-                <ShowcaseSection 
+                <ShowcaseSection
                     id="calistay"
-                    subtitle="Küresel Diyalog"
-                    title="Uluslararası Sosyal Girişimcilik Çalıştayı."
-                    description="54 ülkeden vizyoner liderlerle ortak sorunlara kolektif çözümler üretiyoruz. Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik."
+                    subtitle={get('homepage.workshopSubtitle', 'Küresel Diyalog')}
+                    title={get('homepage.workshopTitle', 'Uluslararası Sosyal Girişimcilik Çalıştayı.')}
+                    description={get('homepage.workshopDescription', "54 ülkeden vizyoner liderlerle ortak sorunlara kolektif çözümler üretiyoruz. Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik.")}
                     cta1="Çalıştayı Keşfet"
                     cta1Href="/hangelassociation/workshop"
-                    imageUrl="https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop"
+                    imageUrl={get('homepage.heroImageUrl', 'https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop')}
                     imageHint="international conference"
                 />
 
-                <ShowcaseSection 
+                <ShowcaseSection
                     id="mevzuat"
                     theme="dark"
-                    subtitle="Hukuki Reform"
-                    title="Sosyal Girişimcilik Kanunu Teklifi."
-                    description="29 maddelik kanun teklifimizle, sosyal girişimciliğin yasal statüsünü, denetim standartlarını ve teşvik mekanizmalarını tanımlıyoruz."
+                    subtitle={get('homepage.legislationSubtitle', 'Hukuki Reform')}
+                    title={get('homepage.legislationTitle', 'Sosyal Girişimcilik Kanunu Teklifi.')}
+                    description={get('homepage.legislationDescription', '29 maddelik kanun teklifimizle, sosyal girişimciliğin yasal statüsünü, denetim standartlarını ve teşvik mekanizmalarını tanımlıyoruz.')}
                     cta1="Taslağı İncele"
                     cta1Href="/hangelassociation/legislation"
                     imageUrl="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"

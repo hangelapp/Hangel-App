@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ShieldAlert, UserCog, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, Calendar } from 'lucide-react';
+import { Search, ShieldAlert, UserCog, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, Calendar, Users as UsersIcon } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -295,6 +295,38 @@ export default function UsersPage() {
     }
   };
 
+  const [bulkEmail, setBulkEmail] = useState('');
+  const [bulkProgress, setBulkProgress] = useState<{ deleted: number; failed: number } | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const matchingByEmail = useMemo(() => {
+    if (!users || !bulkEmail.trim()) return [];
+    const target = bulkEmail.trim().toLowerCase();
+    return users.filter(u => (u.personalInfo?.email || '').toLowerCase() === target);
+  }, [users, bulkEmail]);
+
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    let deleted = 0;
+    let failed = 0;
+    for (const u of matchingByEmail) {
+      try {
+        await deleteDoc(doc(db, 'users', u.id));
+        deleted++;
+      } catch (e) {
+        console.error(`Bulk delete failed for ${u.id}:`, e);
+        failed++;
+      }
+    }
+    setBulkProgress({ deleted, failed });
+    setBulkDeleting(false);
+    toast({
+      variant: failed > 0 ? 'destructive' : 'default',
+      title: 'Toplu silme tamamlandı',
+      description: `${deleted} kayıt silindi${failed > 0 ? `, ${failed} hata` : ''}. Firebase Auth hesapları ayrıca silinmelidir.`,
+    });
+  };
+
   const handleSaveUser = async (userId: string, patch: any) => {
     try {
       await updateDoc(doc(db, 'users', userId), patch);
@@ -327,6 +359,79 @@ export default function UsersPage() {
         <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Kullanıcı Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">Platformdaki tüm kullanıcıları görüntüleyin, düzenleyin, yetki ve durumunu yönetin.</p>
       </div>
+
+      {/* E-postaya göre toplu silme — mükerrer profil temizliği için */}
+      <Card className="rounded-[2rem] border-amber-200 bg-amber-50/40">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Trash2 className="h-4 w-4 text-amber-600" /> E-postaya Göre Toplu Sil
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Aynı e-posta ile oluşturulmuş tüm mükerrer Firestore user kayıtlarını siler. Auth hesapları Console'dan ayrıca silinmelidir.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Input
+              type="email"
+              placeholder="ornek@hangel.org"
+              value={bulkEmail}
+              onChange={e => { setBulkEmail(e.target.value); setBulkProgress(null); }}
+              className="max-w-sm h-9 rounded-xl bg-background"
+            />
+            <Badge variant="outline" className="text-[11px]">
+              {matchingByEmail.length} eşleşen kayıt
+            </Badge>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={matchingByEmail.length === 0 || bulkDeleting}
+                  className="rounded-xl"
+                >
+                  {bulkDeleting && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                  Hepsini Sil
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-[2rem]">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-xl font-bold">
+                    {matchingByEmail.length} kayıt silinecek
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm">
+                    "{bulkEmail}" e-postasıyla eşleşen {matchingByEmail.length} Firestore user kaydı silinecek. Bu işlem geri alınamaz.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                {matchingByEmail.length > 0 && (
+                  <div className="max-h-48 overflow-y-auto border rounded-lg p-3 space-y-1 text-xs bg-muted/30">
+                    {matchingByEmail.map(u => (
+                      <div key={u.id} className="flex justify-between gap-2">
+                        <span className="truncate">{u.name || 'İsimsiz'}</span>
+                        <code className="text-[10px] text-muted-foreground">{u.id.slice(0, 12)}…</code>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <AlertDialogFooter className="gap-2">
+                  <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
+                  <AlertDialogAction
+                    className={cn(buttonVariants({ variant: 'destructive' }), 'rounded-xl font-bold')}
+                    onClick={handleBulkDelete}
+                  >
+                    Evet, {matchingByEmail.length} kaydı sil
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          {bulkProgress && (
+            <p className="text-xs text-muted-foreground">
+              Son işlem: {bulkProgress.deleted} silindi, {bulkProgress.failed} hata.
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="rounded-[2rem] border-black/5 shadow-xl">
         <CardHeader>

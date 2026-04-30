@@ -24,7 +24,8 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
 import { UserNav } from '@/components/layout/user-nav';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useWebContent } from '@/hooks/use-site-content';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -349,18 +350,24 @@ export default function LoginPage() {
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
     const [totalBrandCount, setTotalBrandCount] = useState(0);
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user: rootUser, isUserLoading: isRootUserLoading } = useUser();
+    const { get } = useWebContent();
+
+    // Tanıtım sayfasını görmek isteyen giriş yapmış kullanıcı ?welcome=1 ile gelir
+    const showLandingForLoggedIn = searchParams.get('welcome') === '1';
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
     // Giriş yapmış kullanıcı ana sayfayı görmeden /market'e yönlendirilir
+    // (Tanıtımı görmek için ?welcome=1 query param ile gelmeli)
     useEffect(() => {
-        if (!isRootUserLoading && rootUser) {
+        if (!isRootUserLoading && rootUser && !showLandingForLoggedIn) {
             router.replace('/market');
         }
-    }, [isRootUserLoading, rootUser, router]);
+    }, [isRootUserLoading, rootUser, router, showLandingForLoggedIn]);
 
     useEffect(() => {
         const fetchBrands = async () => {
@@ -492,12 +499,12 @@ export default function LoginPage() {
             <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
                 <section className="h-screen flex flex-col justify-center items-center text-center p-6 bg-white border-b border-black/5">
-                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.</h2>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">yok öyle yalnız başına mücadele etmek.</h1>
-                    <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">#wearehangel</p>
+                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
+                    <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{get('home.heroTagline', '#wearehangel')}</p>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
-                            <Link href="/login/selection?action=register">Hemen Katıl</Link>
+                            <Link href="/login/selection?action=register">{get('home.heroCta', 'Hemen Katıl')}</Link>
                         </Button>
                     </div>
                 </section>
@@ -506,9 +513,9 @@ export default function LoginPage() {
                     id="bagis"
                     theme="light"
                     className="bg-[#f1f1f1]"
-                    title="hangel Bağış"
-                    subtitle="Alışverişi iyiliğe dönüştürün."
-                    description="Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu."
+                    title={get('home.donationTitle', 'hangel Bağış')}
+                    subtitle={get('home.donationSubtitle', 'Alışverişi iyiliğe dönüştürün.')}
+                    description={get('home.donationDescription', "Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu.")}
                     cta1="Markaları Keşfet"
                     cta1Href="/market"
                     cta2="Daha Fazla Bilgi"
@@ -550,9 +557,9 @@ export default function LoginPage() {
                     id="gonulluluk"
                     theme="dark"
                     className="bg-[#042654]"
-                    title="hangel İmece"
-                    subtitle="Zamanınız en değerli bağış."
-                    description="Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun."
+                    title={get('home.volunteeringTitle', 'hangel İmece')}
+                    subtitle={get('home.volunteeringSubtitle', 'Zamanınız en değerli bağış.')}
+                    description={get('home.volunteeringDescription', 'Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun.')}
                     cta1="Daha Fazla Bilgi"
                     cta1Href="/imece"
                     cta2="Gönüllü Ol"
@@ -638,8 +645,8 @@ export default function LoginPage() {
                 <section id="degerler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-16 space-y-4">
-                            <h2 className="text-4xl font-bold tracking-tight">Değerlerimizle Fark Oluşturuyoruz</h2>
-                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.</p>
+                            <h2 className="text-4xl font-bold tracking-tight">{get('home.valuesTitle', 'Değerlerimizle Fark Oluşturuyoruz')}</h2>
+                            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">{get('home.valuesDescription', 'Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.')}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <InfoCard 

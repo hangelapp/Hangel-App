@@ -3,6 +3,7 @@ import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
+import AutoTranslate from '@/components/providers/auto-translate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { RatingPopup } from '@/components/shared/rating-popup';
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className="font-sans antialiased" suppressHydrationWarning>
         <FirebaseClientProvider>
           <LanguageProvider>
+            <AutoTranslate />
             <ThemeApplier />
             <OfflineBanner />
             <AppShell>

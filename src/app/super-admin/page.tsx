@@ -63,6 +63,7 @@ const iconColorMap: { [key: string]: string } = {
 
 const superAdminNavItems = [
     { href: '/super-admin/setup', label: 'Veritabanı Kurulumu (Import)', icon: 'DatabaseZap', description: 'Mock dataları veritabanına aktar ve sistemi başlat.' },
+    { href: '/super-admin/maintenance', label: 'Bakım & Migration', icon: 'Wrench', description: 'Tek seferlik veri düzeltmeleri (createdAt backfill, Filmler seed vb.).' },
     { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
     { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
@@ -173,7 +174,7 @@ export default function SuperAdminDashboard() {
             <CardContent className="p-0">
                 <div className="divide-y border-black/5">
                     {superAdminNavItems.map(item => {
-                        const Icon = Icons[item.icon as keyof typeof Icons] || Icons.HelpCircle;
+                        const Icon = ((Icons as any)[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
                         const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
                         return (
                             <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">

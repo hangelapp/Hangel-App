@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,12 +8,76 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X } from 'lucide-react';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const SETTINGS_DOC = 'siteSettings';
 const CONTENT_ID = 'webContent';
+
+function ImageUploaderCompact({
+    value,
+    onChange,
+    pathPrefix,
+}: { value: string; onChange: (url: string) => void; pathPrefix: string }) {
+    const { toast } = useToast();
+    const [uploading, setUploading] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleUpload = async (file: File) => {
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml', 'image/x-icon'].includes(file.type)) {
+            toast({ variant: 'destructive', title: 'Geçersiz format' });
+            return;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük' });
+            return;
+        }
+        setUploading(true);
+        try {
+            const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const r = storageRef(getStorage(), `${pathPrefix}/${Date.now()}-${safe}`);
+            await uploadBytes(r, file);
+            const url = await getDownloadURL(r);
+            onChange(url);
+            toast({ title: 'Yüklendi' });
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-3 p-3 border rounded-xl bg-muted/20 border-dashed">
+            <div className="h-14 w-20 rounded-lg bg-background border flex items-center justify-center overflow-hidden shrink-0">
+                {value ? <img src={value} alt="preview" className="h-full w-full object-cover" /> : <ImageIcon className="h-5 w-5 text-muted-foreground" />}
+            </div>
+            <div className="flex-1 space-y-2 min-w-0">
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept="image/*,.ico"
+                    className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(f); if (inputRef.current) inputRef.current.value = ''; }}
+                />
+                <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => inputRef.current?.click()}>
+                        {uploading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Upload className="mr-2 h-3.5 w-3.5" />}
+                        {value ? 'Değiştir' : 'Yükle'}
+                    </Button>
+                    {value && (
+                        <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => onChange('')}>
+                            <X className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+                </div>
+                <Input value={value} onChange={e => onChange(e.target.value)} placeholder="Veya URL girin..." className="text-xs h-8" />
+            </div>
+        </div>
+    );
+}
 
 export default function WebContentPage() {
     const { toast } = useToast();
@@ -38,6 +102,21 @@ export default function WebContentPage() {
     const [siteDescription, setSiteDescription] = useState('Sosyal Etki Platformu');
     const [faviconUrl, setFaviconUrl] = useState('');
 
+    // Home page sections
+    const [homeHeroTitle, setHomeHeroTitle] = useState('yok öyle yalnız başına mücadele etmek.');
+    const [homeHeroSubtitle, setHomeHeroSubtitle] = useState('Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.');
+    const [homeHeroTagline, setHomeHeroTagline] = useState('#wearehangel');
+    const [homeHeroCta, setHomeHeroCta] = useState('Hemen Katıl');
+    const [homeDonationTitle, setHomeDonationTitle] = useState('hangel Bağış');
+    const [homeDonationSubtitle, setHomeDonationSubtitle] = useState('Alışverişi iyiliğe dönüştürün.');
+    const [homeDonationDescription, setHomeDonationDescription] = useState("Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun.");
+    const [homeVolunteeringTitle, setHomeVolunteeringTitle] = useState('hangel İmece');
+    const [homeVolunteeringSubtitle, setHomeVolunteeringSubtitle] = useState('Zamanınız en değerli bağış.');
+    const [homeVolunteeringDescription, setHomeVolunteeringDescription] = useState('Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün.');
+    const [homeValuesTitle, setHomeValuesTitle] = useState('Değerlerimizle Fark Oluşturuyoruz');
+    const [homeValuesDescription, setHomeValuesDescription] = useState('Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.');
+    const [homeHeroImageUrl, setHomeHeroImageUrl] = useState('');
+
     useEffect(() => {
         if (!db) return;
         const load = async () => {
@@ -61,6 +140,21 @@ export default function WebContentPage() {
                         setSiteTitle(d.branding.siteTitle || siteTitle);
                         setSiteDescription(d.branding.siteDescription || siteDescription);
                         setFaviconUrl(d.branding.faviconUrl || '');
+                    }
+                    if (d.home) {
+                        setHomeHeroTitle(d.home.heroTitle || homeHeroTitle);
+                        setHomeHeroSubtitle(d.home.heroSubtitle || homeHeroSubtitle);
+                        setHomeHeroTagline(d.home.heroTagline || homeHeroTagline);
+                        setHomeHeroCta(d.home.heroCta || homeHeroCta);
+                        setHomeDonationTitle(d.home.donationTitle || homeDonationTitle);
+                        setHomeDonationSubtitle(d.home.donationSubtitle || homeDonationSubtitle);
+                        setHomeDonationDescription(d.home.donationDescription || homeDonationDescription);
+                        setHomeVolunteeringTitle(d.home.volunteeringTitle || homeVolunteeringTitle);
+                        setHomeVolunteeringSubtitle(d.home.volunteeringSubtitle || homeVolunteeringSubtitle);
+                        setHomeVolunteeringDescription(d.home.volunteeringDescription || homeVolunteeringDescription);
+                        setHomeValuesTitle(d.home.valuesTitle || homeValuesTitle);
+                        setHomeValuesDescription(d.home.valuesDescription || homeValuesDescription);
+                        setHomeHeroImageUrl(d.home.heroImageUrl || '');
                     }
                 }
             } catch (e) {
@@ -114,6 +208,33 @@ export default function WebContentPage() {
         }
     };
 
+    const handleSaveHome = async () => {
+        if (!db) return;
+        setIsSaving(true);
+        try {
+            setDocumentNonBlocking(doc(db, SETTINGS_DOC, CONTENT_ID), {
+                home: {
+                    heroTitle: homeHeroTitle,
+                    heroSubtitle: homeHeroSubtitle,
+                    heroTagline: homeHeroTagline,
+                    heroCta: homeHeroCta,
+                    donationTitle: homeDonationTitle,
+                    donationSubtitle: homeDonationSubtitle,
+                    donationDescription: homeDonationDescription,
+                    volunteeringTitle: homeVolunteeringTitle,
+                    volunteeringSubtitle: homeVolunteeringSubtitle,
+                    volunteeringDescription: homeVolunteeringDescription,
+                    valuesTitle: homeValuesTitle,
+                    valuesDescription: homeValuesDescription,
+                    heroImageUrl: homeHeroImageUrl,
+                }
+            }, { merge: true });
+            toast({ title: 'Kaydedildi', description: 'Anasayfa içerikleri güncellendi.' });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     if (isLoading) {
         return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin h-8 w-8 text-muted-foreground" /></div>;
     }
@@ -126,8 +247,9 @@ export default function WebContentPage() {
             </div>
 
             <Tabs defaultValue="branding" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="branding">Logo & Marka</TabsTrigger>
+                    <TabsTrigger value="home">Anasayfa</TabsTrigger>
                     <TabsTrigger value="about">Hakkımızda</TabsTrigger>
                 </TabsList>
 
@@ -142,12 +264,8 @@ export default function WebContentPage() {
                             <div className="space-y-4 p-4 border rounded-lg">
                                 <h4 className="font-semibold">Logo</h4>
                                 <div className="space-y-2">
-                                    <Label>Logo URL (CDN veya harici bağlantı)</Label>
-                                    <Input
-                                        value={logoUrl}
-                                        onChange={e => setLogoUrl(e.target.value)}
-                                        placeholder="https://example.com/logo.svg"
-                                    />
+                                    <Label>Logo Görseli</Label>
+                                    <ImageUploaderCompact value={logoUrl} onChange={setLogoUrl} pathPrefix="siteContent/web/logo" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Logo Metni (Logo yoksa gösterilir)</Label>
@@ -157,13 +275,6 @@ export default function WebContentPage() {
                                         placeholder="hangel"
                                     />
                                 </div>
-                                {logoUrl && (
-                                    <div className="p-3 border rounded-lg bg-muted/30">
-                                        <p className="text-xs text-muted-foreground mb-2">Önizleme:</p>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={logoUrl} alt="Logo önizleme" className="h-12 object-contain" />
-                                    </div>
-                                )}
                             </div>
 
                             <div className="space-y-4 p-4 border rounded-lg">
@@ -177,12 +288,8 @@ export default function WebContentPage() {
                                     <Input value={siteDescription} onChange={e => setSiteDescription(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Favicon URL</Label>
-                                    <Input
-                                        value={faviconUrl}
-                                        onChange={e => setFaviconUrl(e.target.value)}
-                                        placeholder="https://example.com/favicon.ico"
-                                    />
+                                    <Label>Favicon</Label>
+                                    <ImageUploaderCompact value={faviconUrl} onChange={setFaviconUrl} pathPrefix="siteContent/web/favicon" />
                                 </div>
                             </div>
 
@@ -208,6 +315,49 @@ export default function WebContentPage() {
                             <Button onClick={handleSaveBranding} disabled={isSaving} className="rounded-xl">
                                 {isSaving && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
                                 Marka Ayarlarını Kaydet
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                </TabsContent>
+
+                {/* Anasayfa */}
+                <TabsContent value="home" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Anasayfa İçerikleri</CardTitle>
+                            <CardDescription>hangel.org.tr anasayfasının (/) tüm bölümlerini düzenleyin.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-4 p-4 border rounded-lg">
+                                <h4 className="font-semibold">Hero / Üst Bölüm</h4>
+                                <div className="space-y-2"><Label>Üst Slogan</Label><Input value={homeHeroSubtitle} onChange={e => setHomeHeroSubtitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Ana Başlık</Label><Textarea value={homeHeroTitle} onChange={e => setHomeHeroTitle(e.target.value)} rows={2} /></div>
+                                <div className="space-y-2"><Label>Hashtag / Etiket</Label><Input value={homeHeroTagline} onChange={e => setHomeHeroTagline(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>CTA Buton Metni</Label><Input value={homeHeroCta} onChange={e => setHomeHeroCta(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Hero Görseli</Label><ImageUploaderCompact value={homeHeroImageUrl} onChange={setHomeHeroImageUrl} pathPrefix="siteContent/web/home/hero" /></div>
+                            </div>
+                            <div className="space-y-4 p-4 border rounded-lg">
+                                <h4 className="font-semibold">Bağış Bölümü (hangel Bağış)</h4>
+                                <div className="space-y-2"><Label>Başlık</Label><Input value={homeDonationTitle} onChange={e => setHomeDonationTitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Alt Başlık</Label><Input value={homeDonationSubtitle} onChange={e => setHomeDonationSubtitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Açıklama</Label><Textarea value={homeDonationDescription} onChange={e => setHomeDonationDescription(e.target.value)} rows={3} /></div>
+                            </div>
+                            <div className="space-y-4 p-4 border rounded-lg">
+                                <h4 className="font-semibold">Gönüllülük Bölümü (hangel İmece)</h4>
+                                <div className="space-y-2"><Label>Başlık</Label><Input value={homeVolunteeringTitle} onChange={e => setHomeVolunteeringTitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Alt Başlık</Label><Input value={homeVolunteeringSubtitle} onChange={e => setHomeVolunteeringSubtitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Açıklama</Label><Textarea value={homeVolunteeringDescription} onChange={e => setHomeVolunteeringDescription(e.target.value)} rows={3} /></div>
+                            </div>
+                            <div className="space-y-4 p-4 border rounded-lg">
+                                <h4 className="font-semibold">Değerlerimiz Bölümü</h4>
+                                <div className="space-y-2"><Label>Başlık</Label><Input value={homeValuesTitle} onChange={e => setHomeValuesTitle(e.target.value)} /></div>
+                                <div className="space-y-2"><Label>Açıklama</Label><Textarea value={homeValuesDescription} onChange={e => setHomeValuesDescription(e.target.value)} rows={3} /></div>
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                            <Button onClick={handleSaveHome} disabled={isSaving} className="rounded-xl">
+                                {isSaving && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+                                Anasayfa İçeriklerini Kaydet
                             </Button>
                         </CardFooter>
                     </Card>

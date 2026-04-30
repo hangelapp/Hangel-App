@@ -104,14 +104,16 @@ export default function ClubsPage() {
       ) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>;
     }
 
-    if (contentType === 'events') {
+    if (contentType === 'library') {
       return (
         <div className='space-y-4'>
-          <div className="text-center text-muted-foreground py-16">Etkinlik bulunamadı.</div>
-          <div className="text-center text-muted-foreground pt-8">
-            <p>Yakında daha fazla etkinlik burada olacak.</p>
-            <Button variant="link" asChild>
-              <Link href="/settings">Bildirim almak için etkinlik bildirim ayarlarını aç</Link>
+          <div className="text-center py-12 space-y-4">
+            <p className="text-base font-semibold">Kulüplere ve sosyal etkiye dair kaynaklar</p>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Kitaplar, akademik makaleler, filmler ve sözlüklerle gönüllülük, liderlik ve sivil toplum bilgini derinleştir.
+            </p>
+            <Button asChild className="rounded-full px-6 h-11 font-bold">
+              <Link href="/library">Kütüphaneye Git</Link>
             </Button>
           </div>
         </div>
@@ -180,7 +182,7 @@ export default function ClubsPage() {
         <Tabs value={contentType} onValueChange={setContentType}>
           <TabsList className="grid w-full grid-cols-2 p-1 h-12 rounded-2xl bg-muted/50">
             <TabsTrigger value="clubs" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Kulüpler</TabsTrigger>
-            <TabsTrigger value="events" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Etkinlikler</TabsTrigger>
+            <TabsTrigger value="library" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Kütüphane</TabsTrigger>
           </TabsList>
         </Tabs>
 

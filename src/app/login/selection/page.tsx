@@ -441,7 +441,9 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     email: normalizedEmail,
                     phone: fullPhone,
                 },
-                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 }
+                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                createdAt: serverTimestamp(),
+                joinDate: new Date().toISOString().split('T')[0],
             }, { merge: true });
 
             try {

@@ -70,10 +70,9 @@ export default function BrandsPage() {
                     donationRate: 0,
                     type: app.brandStatus || 'Ticari',
                     category: app.sector || 'Diğer',
-                    source: 'applications',
                     status: app.status || 'Beklemede',
                     ...app,
-                    source: 'applications', // ensure not overridden by spread
+                    source: 'applications' as const, // spread'den sonra override garantili
                 } as BrandItem);
             });
         }
@@ -194,6 +193,15 @@ export default function BrandsPage() {
 
     const isLoading = brandsLoading || appsLoading;
 
+    // useMemo, conditional return'den ÖNCE çağrılmalı (Rules of Hooks)
+    const stats = useMemo(() => {
+        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
+        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
+        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
+        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
+    }, [brands, applications]);
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -202,14 +210,6 @@ export default function BrandsPage() {
             </div>
         );
     }
-
-    const stats = useMemo(() => {
-        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
-        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
-        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
-        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
-        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
-    }, [brands, applications]);
 
     return (
         <div className="space-y-8 animate-in fade-in-0">

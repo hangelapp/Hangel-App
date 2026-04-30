@@ -127,35 +127,45 @@ export default function BrandProfilePage() {
         toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Bağış sürecini başlatmak için lütfen oturum açın." });
         return;
     }
-    
+
     if (!brand) return;
 
+    if (!brand.link) {
+        toast({ variant: 'destructive', title: 'Bağlantı eksik', description: `${brand.name} için affiliate bağlantısı tanımlı değil.` });
+        return;
+    }
+
+    // ÖNEMLİ: window.open() click handler içinde SYNCHRONOUS çağrılmalı.
+    // Aksi halde mobil tarayıcılar (özellikle iOS Safari) popup engelleyiciye takılır.
+    // Bu nedenle önce yeni sekme aç, ardından Firestore yazımını fire-and-forget yap.
+    const newWindow = window.open(brand.link, '_blank', 'noopener,noreferrer');
+
+    // Eğer popup engellendiyse (newWindow null), aynı sekmede yönlendir
+    if (!newWindow) {
+        window.location.href = brand.link;
+    }
+
     setIsDonating(true);
-    const transRef = collection(db, 'donations');
-    
-    addDocumentNonBlocking(transRef, {
+    addDocumentNonBlocking(collection(db, 'donations'), {
         userId: authUser.uid,
         brandId: brand.id,
         brandName: brand.name,
-        purchaseAmount: "0.00", 
-        donationAmount: "0.00", 
+        purchaseAmount: '0.00',
+        donationAmount: '0.00',
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         type: 'expense',
         status: 'Yönlendirildi',
-        ngo: ["Varsayılan STK'nız"]
+        ngo: ["Varsayılan STK'nız"],
     });
 
-    setTimeout(() => {
-        setIsDonating(false);
-        toast({
-            title: "Mağazaya Yönlendiriliyorsunuz",
-            description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
-        });
-        if (brand.link) {
-            window.open(brand.link, '_blank');
-        }
-    }, 1000);
+    toast({
+        title: 'Mağazaya Yönlendirildi',
+        description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
+    });
+
+    // Geri dönüldüğünde butonu sıfırla
+    setTimeout(() => setIsDonating(false), 1500);
   };
 
   if (brand === undefined) {

@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit } from 'firebase/firestore';
@@ -56,6 +56,12 @@ export default function EmergencyManagementPage() {
     return query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'), limit(50));
   }, [db]);
   const { data: requests, isLoading: requestsLoading } = useCollection<any>(requestsQuery);
+
+  // Yanıtlar (kullanıcıların kan taleplerine verdikleri cevaplar)
+  const responsesQuery = useMemoFirebase(() => {
+    return query(collection(db, 'emergencyResponses'), orderBy('respondedAt', 'desc'), limit(200));
+  }, [db]);
+  const { data: responses, isLoading: responsesLoading } = useCollection<any>(responsesQuery);
 
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
@@ -200,12 +206,18 @@ export default function EmergencyManagementPage() {
       </div>
 
       <Tabs defaultValue="blood" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="blood" className="gap-2">
             <Droplet className="h-4 w-4" /> Kan İlanları
           </TabsTrigger>
+          <TabsTrigger value="responses" className="gap-2">
+            <MessageCircle className="h-4 w-4" /> Yanıtlar
+            {responses && responses.length > 0 && (
+              <Badge className="ml-1 bg-green-600 text-[10px] h-4 px-1.5">{responses.filter(r => r.status === 'positive').length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="disaster" className="gap-2">
-            <AlertCircle className="h-4 w-4" /> Afet Bildirimleri
+            <AlertCircle className="h-4 w-4" /> Afet
           </TabsTrigger>
         </TabsList>
 
@@ -380,6 +392,88 @@ export default function EmergencyManagementPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* YANITLAR — Kullanıcı geri dönüşleri */}
+        <TabsContent value="responses" className="mt-6 space-y-6">
+          <Card className="border-green-200 bg-green-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700">
+                <MessageCircle className="h-5 w-5" /> Talebe Cevap Veren Kullanıcılar
+              </CardTitle>
+              <CardDescription>
+                Acil kan taleplerine bildirim üzerinden yanıt veren kullanıcıları takip edin. Olumlu yanıt verenlerle iletişime geçebilirsiniz.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {responsesLoading ? (
+                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+              ) : !responses || responses.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Henüz yanıt yok</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Kullanıcılar kan talebi bildirimlerine yanıt verdiğinde burada görünecek.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {/* Talep bazında grupla */}
+                  {Array.from(new Set(responses.map(r => r.requestId))).map(reqId => {
+                    const reqResponses = responses.filter(r => r.requestId === reqId);
+                    const positives = reqResponses.filter(r => r.status === 'positive');
+                    const negatives = reqResponses.filter(r => r.status === 'negative');
+                    const sample = reqResponses[0];
+                    return (
+                      <div key={reqId} className="border rounded-xl overflow-hidden">
+                        <div className="p-3 bg-muted/30 border-b flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-red-600 text-[10px]">{sample.bloodType || '?'}</Badge>
+                          <p className="font-bold text-sm">{sample.hospitalName || 'Hastane'}</p>
+                          <Badge variant="outline" className="text-[10px]">
+                            <ThumbsUp className="h-3 w-3 mr-1 text-green-600" /> {positives.length} olumlu
+                          </Badge>
+                          {negatives.length > 0 && (
+                            <Badge variant="outline" className="text-[10px]">
+                              <ThumbsDown className="h-3 w-3 mr-1 text-muted-foreground" /> {negatives.length} olumsuz
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="divide-y">
+                          {reqResponses.map(r => (
+                            <div key={r.id} className="p-3 flex items-start justify-between gap-3 hover:bg-muted/20">
+                              <div className="flex items-start gap-3 flex-1 min-w-0">
+                                {r.status === 'positive' ? (
+                                  <div className="p-2 rounded-full bg-green-100 shrink-0">
+                                    <ThumbsUp className="h-4 w-4 text-green-700" />
+                                  </div>
+                                ) : (
+                                  <div className="p-2 rounded-full bg-gray-100 shrink-0">
+                                    <ThumbsDown className="h-4 w-4 text-gray-500" />
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="font-bold text-sm truncate">{r.userName || 'Kullanıcı'}</p>
+                                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                                    {r.userEmail && (
+                                      <a href={`mailto:${r.userEmail}`} className="flex items-center gap-1 hover:text-primary">
+                                        <Mail className="h-3 w-3" /> {r.userEmail}
+                                      </a>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(r.respondedAt)}</p>
+                                </div>
+                              </div>
+                              <Badge variant={r.status === 'positive' ? 'default' : 'secondary'} className={r.status === 'positive' ? 'bg-green-600 text-[10px]' : 'text-[10px]'}>
+                                {r.status === 'positive' ? 'Yardım Edebilirim' : 'Edemiyorum'}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

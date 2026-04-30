@@ -12,7 +12,7 @@ import { ArrowLeft, UserPlus, ShieldCheck, Info, CheckCircle, XCircle, Loader2, 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { countryPhoneCodes } from '@/lib/data';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const roles = [
@@ -80,20 +80,112 @@ export default function NewUserPage() {
 
         setIsSending(true);
         try {
-            await addDoc(collection(db, 'userInvitations'), {
+            // Kuruluş türünü ve adını bul (NGO / Brand / Student Club)
+            let entityName = 'Kuruluş';
+            let entityKind: 'STK' | 'Marka' | 'Öğrenci Kulübü' | 'Kuruluş' = 'Kuruluş';
+            let entityKindAccusative = 'kuruluşu'; // "...yönetmek üzere"
+
+            try {
+                const ngoSnap = await getDoc(doc(db, 'ngos', ngoId));
+                if (ngoSnap.exists()) {
+                    entityName = (ngoSnap.data() as any).name || 'STK';
+                    entityKind = 'STK';
+                    entityKindAccusative = "STK'yı";
+                } else {
+                    const brandSnap = await getDoc(doc(db, 'brands', ngoId));
+                    if (brandSnap.exists()) {
+                        entityName = (brandSnap.data() as any).name || 'Marka';
+                        entityKind = 'Marka';
+                        entityKindAccusative = 'markayı';
+                    } else {
+                        const clubSnap = await getDoc(doc(db, 'studentClubs', ngoId));
+                        if (clubSnap.exists()) {
+                            entityName = (clubSnap.data() as any).name || 'Öğrenci Kulübü';
+                            entityKind = 'Öğrenci Kulübü';
+                            entityKindAccusative = 'öğrenci kulübünü';
+                        }
+                    }
+                }
+            } catch {}
+
+            // Rol kısa ad eşlemesi (mesaj için)
+            const roleShort: Record<string, string> = {
+                'Genel Yönetici': 'genel yönetici',
+                'Finans Yöneticisi': 'Finans Yöneticisi',
+                'Gönüllü Yöneticisi': 'Gönüllü Yöneticisi',
+                'Mini Blog Yöneticisi': 'İçerik Yöneticisi',
+            };
+            const rolePhrase = roleShort[role] || role;
+
+            const invitationMessage = `Sizi ${entityName} ${entityKindAccusative} ${rolePhrase} olarak yönetmek üzere davet edildiniz.`;
+
+            // 1. Davet kaydı
+            const invitationRef = await addDoc(collection(db, 'userInvitations'), {
                 ngoId,
+                entityKind,
+                entityName,
                 inviteeUserId: matchedUser.id,
                 inviteeName: matchedUser.name || matchedUser.displayName || '',
                 inviteePhone: normalizedSearch,
+                inviteeEmail: matchedUser.personalInfo?.email || null,
                 role,
                 status: 'pending',
                 invitedBy: authUser?.uid || null,
                 invitedAt: serverTimestamp(),
+                message: invitationMessage,
             });
+
+            // 2. Uygulama içi bildirim
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    userId: matchedUser.id,
+                    type: 'invitation',
+                    title: `🤝 ${entityName} Yetkili Daveti`,
+                    body: invitationMessage,
+                    data: {
+                        invitationId: invitationRef.id,
+                        ngoId,
+                        entityName,
+                        entityKind,
+                        role,
+                    },
+                    read: false,
+                    createdAt: serverTimestamp(),
+                    createdBy: authUser?.uid || null,
+                });
+            } catch (notifErr) {
+                console.warn('Bildirim oluşturulamadı (rules?):', notifErr);
+            }
+
+            // 3. Mail kuyruğu (sunucu tarafı/Cloud Function tarafından işlenecek)
+            const inviteeEmail = matchedUser.personalInfo?.email;
+            if (inviteeEmail) {
+                try {
+                    await addDoc(collection(db, 'mailQueue'), {
+                        to: inviteeEmail,
+                        toName: matchedUser.name || '',
+                        subject: `${entityName} - Yetkili Daveti`,
+                        body: invitationMessage,
+                        template: 'invitation',
+                        templateData: {
+                            recipientName: matchedUser.name || 'Sayın üye',
+                            entityName,
+                            entityKind,
+                            role: rolePhrase,
+                            invitationId: invitationRef.id,
+                        },
+                        status: 'pending',
+                        createdAt: serverTimestamp(),
+                        createdBy: authUser?.uid || null,
+                    });
+                } catch (mailErr) {
+                    console.warn('Mail kuyruğu yazılamadı:', mailErr);
+                }
+            }
 
             toast({
                 title: 'Davet Gönderildi',
-                description: `${matchedUser.name || 'Üye'} kişisine "${role}" yetkisi için davet gönderildi.`,
+                description: `${matchedUser.name || 'Üye'} kişisine bildirim ve e-posta gönderildi.`,
             });
             router.push('/ngo-admin/users');
         } catch (err: any) {
