@@ -16,3 +16,18 @@ export function getPlatform(): 'ios' | 'android' | 'web' {
   if (!cap?.isNativePlatform()) return 'web';
   return cap.getPlatform();
 }
+
+// On iOS WKWebView, window.open is blocked unless called from a synchronous
+// user gesture; on native we route through Capacitor's Browser plugin instead,
+// which opens SFSafariViewController on iOS and a Chrome Custom Tab on Android.
+export function openExternalUrl(url: string): void {
+  if (isNativeApp()) {
+    void import('@capacitor/browser').then(({ Browser }) =>
+      Browser.open({ url })
+    );
+    return;
+  }
+  if (typeof window !== 'undefined') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}

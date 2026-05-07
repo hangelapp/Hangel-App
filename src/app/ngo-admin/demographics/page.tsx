@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import { Loader2, BarChart3, Users, Building } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -43,7 +43,7 @@ const AGE_ORDER = ['< 18', '18-24', '25-34', '35-44', '45-54', '55+'];
 const topN = <T extends { count: number }>(arr: T[], n = 10): T[] =>
   [...arr].sort((a, b) => b.count - a.count).slice(0, n);
 
-export default function DemographicsPage() {
+function DemographicsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
   const { user: authUser } = useUser();
@@ -504,5 +504,13 @@ export default function DemographicsPage() {
       </Tabs>
       )}
     </div>
+  );
+}
+
+export default function DemographicsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+      <DemographicsPageContent />
+    </Suspense>
   );
 }

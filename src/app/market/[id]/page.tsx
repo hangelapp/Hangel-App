@@ -18,6 +18,7 @@ import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
+import { openExternalUrl } from '@/lib/capacitor';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
@@ -135,16 +136,6 @@ export default function BrandProfilePage() {
         return;
     }
 
-    // ÖNEMLİ: window.open() click handler içinde SYNCHRONOUS çağrılmalı.
-    // Aksi halde mobil tarayıcılar (özellikle iOS Safari) popup engelleyiciye takılır.
-    // Bu nedenle önce yeni sekme aç, ardından Firestore yazımını fire-and-forget yap.
-    const newWindow = window.open(brand.link, '_blank', 'noopener,noreferrer');
-
-    // Eğer popup engellendiyse (newWindow null), aynı sekmede yönlendir
-    if (!newWindow) {
-        window.location.href = brand.link;
-    }
-
     setIsDonating(true);
     // 1) Bağış kaydı (durum: İşleme Alındı — turuncu)
     addDocumentNonBlocking(collection(db, 'donations'), {
@@ -181,12 +172,14 @@ export default function BrandProfilePage() {
         createdBy: authUser.uid,
     });
 
+    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
+    openExternalUrl(brand.link);
+
     toast({
         title: 'Mağazaya Yönlendirildi',
         description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek. Bağışlarım sayfasında işleme alındı olarak görünecek.`,
     });
 
-    // Geri dönüldüğünde butonu sıfırla
     setTimeout(() => setIsDonating(false), 1500);
   };
 
