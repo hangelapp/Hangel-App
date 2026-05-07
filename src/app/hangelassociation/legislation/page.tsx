@@ -28,6 +28,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -53,6 +54,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
 
 export default function AssociationLegislationPage() {
     const { toast } = useToast();
+    const { get } = useAssociationContent();
 
     const handleDownload = () => {
         toast({
@@ -77,10 +79,10 @@ export default function AssociationLegislationPage() {
                 <div className="relative z-10 space-y-6 px-6 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] mb-4 px-4 py-1.5 rounded-full">TBMM Kanun Teklifi Taslağı</Badge>
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.95] text-[#1d1d1f]">
-                        Yok artık, öyle yalnız başına mücadele etmek!
+                        {get('legislation.title', 'Yok artık, öyle yalnız başına mücadele etmek!')}
                     </h1>
                     <p className="text-xl md:text-3xl font-medium text-muted-foreground max-w-3xl mx-auto leading-tight">
-                        Sosyal Fayda ve Sürdürülebilirlik Odaklı Sosyal Girişimcilik Kanunu Teklifi.
+                        {get('legislation.subtitle', 'Sosyal Fayda ve Sürdürülebilirlik Odaklı Sosyal Girişimcilik Kanunu Teklifi.')}
                     </p>
                     <div className="pt-12 flex flex-col md:flex-row items-center justify-center gap-6">
                         <div className="text-left max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-xl border border-black/5">

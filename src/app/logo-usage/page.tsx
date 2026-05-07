@@ -46,6 +46,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
+import { useWebPage } from '@/hooks/use-site-content';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -185,6 +186,7 @@ const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string
 export default function LogoUsagePage() {
     const router = useRouter();
     const { toast } = useToast();
+    const cms = useWebPage('logo-usage');
 
     const handleDownload = (file: string) => {
         toast({
@@ -298,12 +300,18 @@ export default function LogoUsagePage() {
 
             <main className="pt-24">
                 <Section className="text-center pt-24 pb-20 md:pt-32 md:pb-28">
+                    {cms.subtitle && (
+                        <p className="text-sm font-bold uppercase tracking-widest text-primary mb-4">{cms.subtitle}</p>
+                    )}
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-none">
-                       Dayanışmayı Görünür Kılalım.
+                        {cms.title || 'Dayanışmayı Görünür Kılalım.'}
                     </h1>
                     <p className="text-base text-muted-foreground max-w-2xl mx-auto mt-4">
-                        Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür. Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar. Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.
+                        {cms.description || 'Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür. Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar. Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.'}
                     </p>
+                    {cms.body && (
+                        <div className="prose prose-lg max-w-3xl mx-auto mt-8 text-left" dangerouslySetInnerHTML={{ __html: cms.body }} />
+                    )}
                 </Section>
                 
                 <Section id="mimari" className="bg-white">

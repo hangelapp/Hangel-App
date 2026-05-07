@@ -1,9 +1,9 @@
 import { ImageResponse } from 'next/og';
 
-export const size = { width: 256, height: 256 };
+export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
-export default function Icon() {
+export default function AppleIcon() {
   return new ImageResponse(
     (
       <div
@@ -16,12 +16,12 @@ export default function Icon() {
           background: '#e85a3a',
           color: 'white',
           fontWeight: 900,
-          fontSize: 196,
+          fontSize: 138,
           lineHeight: 1,
-          letterSpacing: -8,
+          letterSpacing: -6,
           fontFamily: 'system-ui, -apple-system, sans-serif',
-          borderRadius: 48,
-          paddingBottom: 24,
+          // iOS apple-touch-icon yuvarlatmayı kendisi uygular, biz düz bırakıyoruz
+          paddingBottom: 16,
         }}
       >
         h

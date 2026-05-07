@@ -7,9 +7,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 export default function InformationSocietyServicesPage() {
   const router = useRouter();
+  const cms = useWebPage('bilgi-toplumu-hizmetleri');
 
   const boardMembers = [
     { name: 'İsmail Hilmi Adıgüzel', role: 'Yönetim Kurulu Başkanı' },
@@ -37,10 +39,16 @@ export default function InformationSocietyServicesPage() {
 
       <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-12">
         <div className="text-left space-y-4">
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">Şeffaf Ticaret.</h1>
+          {cms.subtitle && (
+            <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
+          )}
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{cms.title || 'Şeffaf Ticaret.'}</h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl">
-            5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.
+            {cms.description || '5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.'}
           </p>
+          {cms.body && (
+            <div className="prose prose-lg max-w-3xl mt-4" dangerouslySetInnerHTML={{ __html: cms.body }} />
+          )}
         </div>
 
         <Card className="rounded-[2.5rem] border-black/5 shadow-xl">

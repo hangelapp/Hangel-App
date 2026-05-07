@@ -44,6 +44,7 @@ const group4Items: SideNavItem[] = [
   { href: '/super-admin', label: 'nav.superAdmin', icon: 'shield' },
   { href: '/settings', label: 'nav.settings', icon: 'settings' },
   { href: '/about', label: 'nav.about', icon: 'info' },
+  { href: '/?welcome=1', label: 'nav.website', icon: 'globe' },
   { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'nav.merchant', icon: 'zap' },
   { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'nav.ngoOnboarding', icon: 'HeartHandshake' },
   { href: '/support/app-support', label: 'nav.support', icon: 'circle-help' },
@@ -176,9 +177,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!isUserLoading && authUser && isMounted) {
             // Giriş yapmış kullanıcı ana sayfaya geldiğinde direkt market'e yönlendir.
+            // ?welcome=1 query param varsa redirect atlanır (tanıtım sayfasını görme imkânı).
             if (pathname === '/') {
-                router.push('/market');
-                return;
+                const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+                if (params.get('welcome') !== '1') {
+                    router.push('/market');
+                    return;
+                }
             }
             // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent
             // adımını görebilmeli — orada yalnızca emailVerified olanları yönlendiriyoruz.

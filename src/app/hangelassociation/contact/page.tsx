@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 export default function AssociationContactPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { get } = useAssociationContent();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,8 +41,8 @@ export default function AssociationContactPage() {
                 <div className="container mx-auto px-6 max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-20">
                     <div className="space-y-12">
                         <div className="space-y-4">
-                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">Bize Ulaşın.</h1>
-                            <p className="text-xl text-muted-foreground font-medium">İş birlikleri, projeler ve kurumsal talepleriniz için buradayız.</p>
+                            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">{get('contact.title', 'Bize Ulaşın.')}</h1>
+                            <p className="text-xl text-muted-foreground font-medium">{get('contact.description', 'İş birlikleri, projeler ve kurumsal talepleriniz için buradayız.')}</p>
                         </div>
 
                         <div className="space-y-6">

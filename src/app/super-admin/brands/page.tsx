@@ -15,12 +15,117 @@ import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
-import { Loader2, Store, Trash2, Power, PowerOff, Pencil, Search, Inbox } from 'lucide-react';
+import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Loader2, Store, Trash2, Power, PowerOff, Pencil, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3 } from 'lucide-react';
 import type { Brand } from "@/lib/types";
 import Link from 'next/link';
 
 type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
+
+const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
+
+const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: {
+    brand: BrandItem;
+    allUsers: any[] | null;
+    onAssign: (brandId: string, userId: string, userName: string) => Promise<void>;
+}) => {
+    const [open, setOpen] = useState(false);
+    const [phone, setPhone] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const normalizedSearch = normalizePhone(phone);
+    const matchedUser = useMemo(() => {
+        if (!allUsers || normalizedSearch.length < 3) return null;
+        return allUsers.find(u => {
+            const cands = [u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean).map(normalizePhone);
+            return cands.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
+        }) || null;
+    }, [allUsers, normalizedSearch]);
+
+    const handleAssign = async () => {
+        if (!matchedUser) return;
+        setSubmitting(true);
+        try {
+            await onAssign(brand.id, matchedUser.id, matchedUser.name || matchedUser.displayName || 'Üye');
+            setOpen(false);
+            setPhone('');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4">
+                    <UserCog className="mr-2 h-4 w-4" /> Yetkili
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Yetkili Kişi Değiştir</DialogTitle>
+                    <DialogDescription>
+                        <strong>{brand.name}</strong> markası için yeni yöneticiyi telefon numarasıyla bulun ve atayın.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2">
+                    <div className="space-y-2">
+                        <Label>Telefon Numarası</Label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="tel"
+                                value={phone}
+                                onChange={e => setPhone(e.target.value)}
+                                placeholder="5XX XXX XX XX"
+                                className="pl-10"
+                                autoFocus
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">En az 3 hane girin.</p>
+                    </div>
+
+                    {normalizedSearch.length >= 3 && matchedUser && (
+                        <div className="flex items-center gap-3 p-3 border-2 border-green-500/30 bg-green-500/5 rounded-lg">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={matchedUser.avatarUrl} />
+                                <AvatarFallback>{(matchedUser.name || 'U').charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <p className="font-bold text-sm">{matchedUser.name || matchedUser.displayName || 'Üye'}</p>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate">
+                                    {matchedUser.personalInfo?.email || ''}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {normalizedSearch.length >= 3 && !matchedUser && (
+                        <div className="flex items-center gap-2 p-3 border border-destructive/30 bg-destructive/5 rounded-lg text-sm text-destructive">
+                            <XCircle className="h-4 w-4" />
+                            <span>Bu telefon numarasıyla kayıtlı üye bulunamadı.</span>
+                        </div>
+                    )}
+
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        Atanan kullanıcı <strong>"ngo-admin"</strong> rolüyle yetkilendirilir ve bu marka için yönetim panelini kullanabilir.
+                        Süper admin'in rolü değişmez.
+                    </p>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>İptal</Button>
+                    <Button disabled={!matchedUser || submitting} onClick={handleAssign}>
+                        {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Yetki Ata
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 export default function BrandsPage() {
     const { toast } = useToast();
@@ -40,6 +145,10 @@ export default function BrandsPage() {
         [db]
     );
     const { data: applications, isLoading: appsLoading } = useCollection(applicationsQuery);
+
+    // Yetkili atama için tüm kullanıcılar
+    const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+    const { data: allUsers } = useCollection<any>(usersQuery);
 
     // Combine and filter brands
     const filteredBrands = useMemo(() => {
@@ -70,10 +179,9 @@ export default function BrandsPage() {
                     donationRate: 0,
                     type: app.brandStatus || 'Ticari',
                     category: app.sector || 'Diğer',
-                    source: 'applications',
                     status: app.status || 'Beklemede',
                     ...app,
-                    source: 'applications', // ensure not overridden by spread
+                    source: 'applications' as const, // spread'den sonra override garantili
                 } as BrandItem);
             });
         }
@@ -124,6 +232,49 @@ export default function BrandsPage() {
             title: "Marka Kaldırıldı",
             description: `${name} platformdan kalıcı olarak silindi.`
         });
+    };
+
+    const handleAssignBrandAdmin = async (brandId: string, newUserId: string, newUserName: string) => {
+        try {
+            // 1. Brand doc'una yetkili kullanıcıyı işaretle
+            await updateDoc(doc(db, 'brands', brandId), { adminUserId: newUserId });
+
+            // 2. Kullanıcıya ngo-admin rolü ver + bağlı brand ID'sini sakla
+            //    Super-admin'lerin rolü değişmez (yetkisini kaybetmesin)
+            const userSnap = await getDoc(doc(db, 'users', newUserId));
+            const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
+            const updatePayload: any = { managedBrandId: brandId };
+            if (currentRole !== 'super-admin') {
+                updatePayload.role = 'ngo-admin';
+            }
+            await updateDoc(doc(db, 'users', newUserId), updatePayload);
+
+            // 3. Davet kaydı (audit + bildirim için)
+            await addDoc(collection(db, 'userInvitations'), {
+                brandId,
+                inviteeUserId: newUserId,
+                inviteeName: newUserName,
+                role: 'Marka Yöneticisi',
+                status: 'accepted',
+                invitedBy: 'super-admin',
+                invitedAt: serverTimestamp(),
+                autoAcceptedBy: 'super-admin',
+            });
+
+            toast({
+                title: 'Yetkili Atandı',
+                description: `${newUserName} bu markanın yöneticisi olarak işaretlendi.`,
+            });
+        } catch (e: any) {
+            console.error('Brand admin assign failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Atama başarısız',
+                description: e?.code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        }
     };
 
     const handleStartEdit = (brand: BrandItem) => {
@@ -194,6 +345,15 @@ export default function BrandsPage() {
 
     const isLoading = brandsLoading || appsLoading;
 
+    // useMemo, conditional return'den ÖNCE çağrılmalı (Rules of Hooks)
+    const stats = useMemo(() => {
+        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
+        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
+        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
+        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
+    }, [brands, applications]);
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -202,14 +362,6 @@ export default function BrandsPage() {
             </div>
         );
     }
-
-    const stats = useMemo(() => {
-        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
-        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
-        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
-        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
-        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
-    }, [brands, applications]);
 
     return (
         <div className="space-y-8 animate-in fade-in-0">
@@ -329,16 +481,20 @@ export default function BrandsPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3 w-full md:w-auto">
+                                        <div className="flex items-center gap-2 w-full md:w-auto flex-wrap" onClick={e => e.stopPropagation()}>
                                             {brand.source === 'brands' && (
-                                                <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" asChild>
-                                                    <Link href={`/market/${brand.slug}`}>Mağazayı Gör</Link>
-                                                </Button>
+                                                <>
+                                                    <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
+                                                        <Link href={`/market/${brand.slug}`}>
+                                                            <Eye className="mr-2 h-4 w-4" /> Profili Gör
+                                                        </Link>
+                                                    </Button>
+                                                </>
                                             )}
                                             <Dialog>
                                                 <DialogTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5" onClick={() => handleStartEdit(brand)}>
-                                                        <Pencil className="mr-2 h-4 w-4" /> Düzenle
+                                                    <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" onClick={() => handleStartEdit(brand)}>
+                                                        <Edit3 className="mr-2 h-4 w-4" /> Düzelt
                                                     </Button>
                                                 </DialogTrigger>
                                                 {editingBrand?.id === brand.id && (
@@ -555,14 +711,17 @@ export default function BrandsPage() {
                                                 )}
                                             </Dialog>
                                             {brand.source === 'brands' && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="flex-1 md:flex-none rounded-xl font-bold h-10 px-5"
-                                                    onClick={() => handleToggleStatus(brand.id, brand.status || 'Aktif')}
-                                                >
-                                                    {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif Et</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife Al</>}
-                                                </Button>
+                                                <>
+                                                    <TransferBrandAdminDialog brand={brand} allUsers={allUsers || null} onAssign={handleAssignBrandAdmin} />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="rounded-xl font-bold h-10 px-4"
+                                                        onClick={() => handleToggleStatus(brand.id, brand.status || 'Aktif')}
+                                                    >
+                                                        {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife</>}
+                                                    </Button>
+                                                </>
                                             )}
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>

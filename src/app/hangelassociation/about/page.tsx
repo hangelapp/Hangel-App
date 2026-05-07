@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationContent } from '@/hooks/use-site-content';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
@@ -62,6 +63,7 @@ const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: any, title: 
 
 export default function AssociationAboutPage() {
     const { toast } = useToast();
+    const { get } = useAssociationContent();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -70,13 +72,13 @@ export default function AssociationAboutPage() {
             {/* Hero Section */}
             <section className="relative pt-32 pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden">
                 <div className="container mx-auto max-w-5xl space-y-12 relative z-10">
-                    <SectionHeading 
-                        badge="BİZ KİMİZ?"
-                        title="Daha İyi Bir Dünya İçin Kolektif Bir Bilinç."
-                        desc="Biz, dünyayı daha iyi bir yer haline getirme vizyonumuzu ve ideallerimizi paylaşan insanları dünyanın dört bir yanından bir araya getiriyoruz. Zorluklardan kaçmıyor, onları fırsata dönüştürmek için harekete geçiyoruz."
+                    <SectionHeading
+                        badge={get('about.heroBadge', 'BİZ KİMİZ?')}
+                        title={get('about.heroTitle', 'Daha İyi Bir Dünya İçin Kolektif Bir Bilinç.')}
+                        desc={get('about.heroDescription', 'Biz, dünyayı daha iyi bir yer haline getirme vizyonumuzu ve ideallerimizi paylaşan insanları dünyanın dört bir yanından bir araya getiriyoruz. Zorluklardan kaçmıyor, onları fırsata dönüştürmek için harekete geçiyoruz.')}
                     />
                     <div className="relative w-full aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl mt-12 group">
-                        <Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Team" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
+                        <Image src={get('about.coverImageUrl', 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')} alt="Team" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" />
                         <div className="absolute inset-0 bg-black/10" />
                     </div>
                 </div>
@@ -88,16 +90,16 @@ export default function AssociationAboutPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
                         <div className="space-y-8">
                             <div className="p-4 bg-primary/10 rounded-2xl w-fit"><Target className="h-8 w-8 text-primary" /></div>
-                            <h3 className="text-4xl font-black tracking-tighter">Misyonumuz.</h3>
+                            <h3 className="text-4xl font-black tracking-tighter">{get('about.missionTitle', 'Misyonumuz.')}</h3>
                             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-                                hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden, kurum ve sivil toplumdan herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. Alışveriş yoluyla bağış, yetkinlik bazlı gönüllülük ve sosyal girişimcilik gibi yenilikçi modellerle sürdürülebilir dönüşüme hayat veriyoruz.
+                                {get('about.missionDescription', 'hangel ve Social Business Global olarak misyonumuz; hayatın her kesiminden, kurum ve sivil toplumdan herkesin iyilik yapmaya katılabildiği adil ve kapsayıcı bir sistem inşa etmektir. Alışveriş yoluyla bağış, yetkinlik bazlı gönüllülük ve sosyal girişimcilik gibi yenilikçi modellerle sürdürülebilir dönüşüme hayat veriyoruz.')}
                             </p>
                         </div>
                         <div className="space-y-8">
                             <div className="p-4 bg-primary/10 rounded-2xl w-fit"><Globe className="h-8 w-8 text-primary" /></div>
-                            <h3 className="text-4xl font-black tracking-tighter">Küresel Ağ Hedefimiz.</h3>
+                            <h3 className="text-4xl font-black tracking-tighter">{get('about.visionTitle', 'Küresel Ağ Hedefimiz.')}</h3>
                             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-                                Ulusal ve uluslararası paydaşlarımız ile hayata sosyal fayda odaklı bakan sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını sağlayacak doğal bir ağ oluşturuyoruz. Ülke temsilcilerimizi acıları yarıştırmadan, ortak sorunlara kolektif çözümler üretmek üzere birleştiriyoruz.
+                                {get('about.visionDescription', 'Ulusal ve uluslararası paydaşlarımız ile hayata sosyal fayda odaklı bakan sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını sağlayacak doğal bir ağ oluşturuyoruz. Ülke temsilcilerimizi acıları yarıştırmadan, ortak sorunlara kolektif çözümler üretmek üzere birleştiriyoruz.')}
                             </p>
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Country, State, City } from 'country-state-city';
+import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import {
   PROFESSIONS, SKILLS, DAILY_SKILLS, INTERESTS,
   LANGUAGES, SIGN_LANGUAGES, DRIVER_LICENSES,
@@ -105,10 +107,16 @@ function NewOpportunityForm() {
   const [description, setDescription] = useState('');
   const [socialArea, setSocialArea] = useState('');
   const [locationType, setLocationType] = useState('');
+  const [country, setCountry] = useState('Türkiye');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
   const [applicationEnd, setApplicationEnd] = useState('');
+  const [applicationEndTime, setApplicationEndTime] = useState('');
   const [eventStart, setEventStart] = useState('');
+  const [eventStartTime, setEventStartTime] = useState('');
+  const [eventEnd, setEventEnd] = useState('');
+  const [eventEndTime, setEventEndTime] = useState('');
   const [commitment, setCommitment] = useState('');
   const [commitmentDetail, setCommitmentDetail] = useState('');
   const [volunteerNeeded, setVolunteerNeeded] = useState('');
@@ -133,6 +141,41 @@ function NewOpportunityForm() {
   const [points, setPoints] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isTurkey = country === 'Türkiye' || country === 'Turkey' || country === 'TR';
+
+  const allCountriesList = useMemo(() => {
+    return Country.getAllCountries()
+      .map(c => ({ name: c.name, code: c.isoCode }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
+
+  const countryISO = useMemo(() => {
+    if (!country) return null;
+    if (isTurkey) return 'TR';
+    return Country.getAllCountries().find(c => c.name === country || c.isoCode === country)?.isoCode || null;
+  }, [country, isTurkey]);
+
+  const cityOptions = useMemo(() => {
+    if (isTurkey) return (allProvinces || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+    if (!countryISO) return [];
+    const states = State.getStatesOfCountry(countryISO).map(s => s.name);
+    if (states.length > 0) return states.sort((a, b) => a.localeCompare(b));
+    return City.getCitiesOfCountry(countryISO)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
+  }, [isTurkey, countryISO]);
+
+  const districtOptions = useMemo(() => {
+    if (isTurkey) return (districtsData[city] || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+    if (!countryISO) return [];
+    const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === city);
+    if (!stateObj) return [];
+    return City.getCitiesOfState(countryISO, stateObj.isoCode)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
+  }, [isTurkey, countryISO, city]);
+
+  const neighborhoodOptions = useMemo(() => {
+    if (!isTurkey || !city || !district) return [];
+    return ((neighborhoodsData as any)?.[city]?.[district] ?? []) as string[];
+  }, [isTurkey, city, district]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,8 +208,10 @@ function NewOpportunityForm() {
         socialArea,
         interests,
         location: {
+          country: country.trim(),
           city: city.trim(),
           district: district.trim(),
+          neighborhood: neighborhood.trim(),
           type: locationTypeMap[locationType] || 'Saha',
         },
         commitment: [commitmentMap[commitment], commitmentDetail.trim()].filter(Boolean).join(' — '),
@@ -177,10 +222,17 @@ function NewOpportunityForm() {
         dates: {
           applicationStart: new Date().toISOString().slice(0, 10),
           applicationEnd,
+          applicationEndTime: applicationEndTime || null,
           eventStart: eventStart || applicationEnd,
-          eventEnd: eventStart || applicationEnd,
+          eventStartTime: eventStartTime || null,
+          eventEnd: eventEnd || eventStart || applicationEnd,
+          eventEndTime: eventEndTime || null,
         },
-        hours: { start: '', end: '', total: 0 },
+        hours: {
+          start: eventStartTime || '',
+          end: eventEndTime || '',
+          total: 0,
+        },
         skills,
         dailySkills,
         professions,
@@ -277,22 +329,94 @@ function NewOpportunityForm() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">Şehir</Label>
-                <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="İstanbul" />
+                <Label htmlFor="country">Ülke</Label>
+                <Select
+                  value={country}
+                  onValueChange={(v) => { setCountry(v); setCity(''); setDistrict(''); setNeighborhood(''); }}
+                >
+                  <SelectTrigger id="country"><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="Türkiye">Türkiye</SelectItem>
+                    {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
+                      <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="district">İlçe</Label>
-                <Input id="district" value={district} onChange={e => setDistrict(e.target.value)} placeholder="Kadıköy" />
+                <Label htmlFor="city">{isTurkey ? 'İl' : 'Şehir'}</Label>
+                {cityOptions.length > 0 ? (
+                  <Select
+                    value={city}
+                    onValueChange={(v) => { setCity(v); setDistrict(''); setNeighborhood(''); }}
+                  >
+                    <SelectTrigger id="city"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="Şehir girin" />
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="district">{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                {districtOptions.length > 0 ? (
+                  <Select
+                    value={district}
+                    onValueChange={(v) => { setDistrict(v); setNeighborhood(''); }}
+                    disabled={!city}
+                  >
+                    <SelectTrigger id="district"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="district" value={district} onChange={e => setDistrict(e.target.value)} placeholder="İlçe girin" />
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="neighborhood">Mahalle</Label>
+                {isTurkey && neighborhoodOptions.length > 0 ? (
+                  <Select
+                    value={neighborhood}
+                    onValueChange={setNeighborhood}
+                    disabled={!district}
+                  >
+                    <SelectTrigger id="neighborhood"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input id="neighborhood" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Mahalle girin" />
+                )}
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="applicationEnd">Son Başvuru Tarihi</Label>
-                <Input id="applicationEnd" type="date" value={applicationEnd} onChange={e => setApplicationEnd(e.target.value)} required />
+                <div className="grid grid-cols-2 gap-2">
+                  <Input id="applicationEnd" type="date" value={applicationEnd} onChange={e => setApplicationEnd(e.target.value)} required />
+                  <Input id="applicationEndTime" type="time" value={applicationEndTime} onChange={e => setApplicationEndTime(e.target.value)} placeholder="Saat" />
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="eventStart">Gönüllülük Başlangıç Tarihi &amp; Saati</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input id="eventStart" type="date" value={eventStart} onChange={e => setEventStart(e.target.value)} />
+                  <Input id="eventStartTime" type="time" value={eventStartTime} onChange={e => setEventStartTime(e.target.value)} placeholder="Saat" />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="eventStart">Gönüllülük Başlangıç Tarihi</Label>
-                <Input id="eventStart" type="date" value={eventStart} onChange={e => setEventStart(e.target.value)} />
+                <Label htmlFor="eventEnd">Gönüllülük Bitiş Tarihi &amp; Saati</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input id="eventEnd" type="date" value={eventEnd} onChange={e => setEventEnd(e.target.value)} min={eventStart || undefined} />
+                  <Input id="eventEndTime" type="time" value={eventEndTime} onChange={e => setEventEndTime(e.target.value)} placeholder="Saat" />
+                </div>
               </div>
             </div>
             <div className="space-y-2">

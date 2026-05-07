@@ -10,10 +10,12 @@ import { ArrowLeft, Star, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 export default function AssociationFeedbackPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { get } = useAssociationContent();
     const [rating, setRating] = useState(0);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -40,8 +42,8 @@ export default function AssociationFeedbackPage() {
                 <section className="container mx-auto px-6 max-w-3xl space-y-12">
                     <div className="space-y-4">
                         <Heart className="h-16 w-16 text-primary mx-auto mb-6 animate-pulse" />
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">Fikirleriniz Geleceğimiz.</h1>
-                        <p className="text-xl text-muted-foreground font-medium">SBG ekosistemini geliştirmemize yardımcı olun.</p>
+                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-[#1d1d1f]">{get('feedback.title', 'Fikirleriniz Geleceğimiz.')}</h1>
+                        <p className="text-xl text-muted-foreground font-medium">{get('feedback.description', 'SBG ekosistemini geliştirmemize yardımcı olun.')}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-10 text-left bg-[#f5f5f7] p-8 md:p-16 rounded-[3rem] border border-black/5">

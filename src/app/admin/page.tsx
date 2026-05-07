@@ -1,13 +1,14 @@
 'use client';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusCircle } from 'lucide-react';
+import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { managedItems } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 
 const statusVariantMap = {
     'approved': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
@@ -22,25 +23,99 @@ const iconMap: { [key: string]: any } = {
     'store': Store
 };
 
+type ManagedEntity = {
+  id: string;
+  name: string;
+  type: 'STK' | 'Marka' | 'Kulüp';
+  icon: string;
+  href: string;
+  logoUrl?: string;
+  status: 'approved' | 'pending';
+};
+
 export default function AdminPage() {
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+
+  // Kullanıcının yönettiği varlıkları Firestore'dan bul
+  const ngosQ = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid));
+  }, [db, authUser?.uid]);
+  const brandsQ = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return query(collection(db, 'brands'), where('adminUserId', '==', authUser.uid));
+  }, [db, authUser?.uid]);
+  const clubsQ = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid));
+  }, [db, authUser?.uid]);
+
+  const { data: managedNgos, isLoading: ngosLoading } = useCollection<any>(ngosQ);
+  const { data: managedBrands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
+  const { data: managedClubs, isLoading: clubsLoading } = useCollection<any>(clubsQ);
+
+  const isLoading = ngosLoading || brandsLoading || clubsLoading;
+
+  const managedItems: ManagedEntity[] = useMemo(() => {
+    const items: ManagedEntity[] = [];
+    (managedNgos || []).forEach((n: any) => items.push({
+      id: n.id,
+      name: n.name || 'STK',
+      type: 'STK',
+      icon: 'heart',
+      href: '/ngo-admin/dashboard',
+      logoUrl: n.avatarUrl || n.logoUrl,
+      status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
+    }));
+    (managedBrands || []).forEach((b: any) => items.push({
+      id: b.id,
+      name: b.name || 'Marka',
+      type: 'Marka',
+      icon: 'shopping-bag',
+      href: '/ngo-admin/dashboard',
+      logoUrl: b.logoUrl,
+      status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
+    }));
+    (managedClubs || []).forEach((c: any) => items.push({
+      id: c.id,
+      name: c.name || 'Kulüp',
+      type: 'Kulüp',
+      icon: 'school',
+      href: '/ngo-admin/dashboard',
+      logoUrl: c.avatarUrl || c.logoUrl,
+      status: (c.status === 'Pasif' || c.status === 'Beklemede') ? 'pending' : 'approved',
+    }));
+    return items;
+  }, [managedNgos, managedBrands, managedClubs]);
+
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">
       <div className="space-y-1 px-1">
         <h1 className="text-3xl font-bold font-headline">Yönetim Paneli</h1>
         <p className="text-muted-foreground text-sm">Varlıklarınızı ve yönetim araçlarınızı buradan yönetin.</p>
       </div>
-      
+
       <Card className="shadow-sm border-black/5 rounded-[2rem] overflow-hidden">
         <CardHeader className="bg-muted/20 p-8 border-b border-black/5">
             <CardTitle className="text-xl font-bold">Yönettiğim Varlıklar</CardTitle>
             <CardDescription>Aktif olarak yönetiminde bulunduğunuz STK, Marka, Vakıf, Kulüp ve Kooperatifler.</CardDescription>
         </CardHeader>
         <CardContent className='p-0'>
+          {isLoading ? (
+            <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+          ) : managedItems.length === 0 ? (
+            <div className="py-16 text-center text-muted-foreground space-y-2 px-6">
+              <Building2 className="h-10 w-10 mx-auto opacity-30" />
+              <p className="font-medium">Henüz yönettiğin bir varlık yok.</p>
+              <p className="text-xs">Aşağıdan yeni başvuru yapabilir veya bir kuruluştan davet bekleyebilirsin.</p>
+            </div>
+          ) : (
             <div className="divide-y divide-black/5">
-            {managedItems.map((item, index) => {
+            {managedItems.map((item) => {
                 const Icon = iconMap[item.icon] || Building2;
                 return (
-                <Link href={item.href} key={index} className="block hover:bg-muted/30 transition-all group">
+                <Link href={item.href} key={item.id} className="block hover:bg-muted/30 transition-all group">
                     <div className="flex items-center p-6">
                         <div className="relative mr-6">
                             <Avatar className="h-16 w-16 border-2 border-white shadow-lg bg-white">
@@ -68,6 +143,7 @@ export default function AdminPage() {
                 </Link>
             )})}
             </div>
+          )}
         </CardContent>
       </Card>
 

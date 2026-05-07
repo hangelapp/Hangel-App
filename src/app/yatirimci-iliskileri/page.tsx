@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const InvestorSection = ({ 
     title, 
@@ -54,6 +55,7 @@ const InvestorSection = ({
 
 export default function InvestorRelationsPage() {
     const router = useRouter();
+    const cms = useWebPage('yatirimci-iliskileri');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -71,11 +73,11 @@ export default function InvestorRelationsPage() {
             </header>
 
             {/* Hero */}
-            <InvestorSection 
-                title="Şeffaf Finansal Gelecek."
-                subtitle="Sosyal etkinin ekonomik değeri."
-                description="hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır."
-                imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
+            <InvestorSection
+                title={cms.title || 'Şeffaf Finansal Gelecek.'}
+                subtitle={cms.subtitle || 'Sosyal etkinin ekonomik değeri.'}
+                description={cms.description || "hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır."}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop'}
                 imageHint="abstract data stock market graph"
             />
 

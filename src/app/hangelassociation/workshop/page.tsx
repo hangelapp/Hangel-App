@@ -16,6 +16,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -62,17 +63,18 @@ const MetricSection = ({ title, stat, subtitle, desc, image, theme = 'light' }: 
 
 export default function AssociationWorkshopPage() {
     const { toast } = useToast();
+    const { get } = useAssociationContent();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="workshop" />
 
-            <MetricSection 
-                title="Sınırları Aşan Diyalog."
+            <MetricSection
+                title={get('workshop.title', 'Sınırları Aşan Diyalog.')}
                 stat="54"
-                subtitle="Farklı ülkeden vizyoner katılımcı."
-                desc="Uluslararası Sosyal Girişimcilik Çalıştayı, 4 yıldır küresel sorunlara kolektif çözümler üretmek için dünyayı Türkiye'de buluşturuyor. İstanbul, Mersin, İzmir ve Tunceli'de düzenlenen oturumlarda sosyal etki modellerini tartıştık."
-                image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
+                subtitle={get('workshop.subtitle', 'Farklı ülkeden vizyoner katılımcı.')}
+                desc={get('workshop.description', "Uluslararası Sosyal Girişimcilik Çalıştayı, 4 yıldır küresel sorunlara kolektif çözümler üretmek için dünyayı Türkiye'de buluşturuyor. İstanbul, Mersin, İzmir ve Tunceli'de düzenlenen oturumlarda sosyal etki modellerini tartıştık.")}
+                image={get('workshop.coverImageUrl', 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop')}
             />
 
             {/* Big Data Section */}

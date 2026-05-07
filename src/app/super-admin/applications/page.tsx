@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileText, Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, Phone, Globe, MapPin, User } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -305,7 +305,7 @@ export default function ApplicationsPage() {
         return ref.id;
       }
       if (entityType === 'CLUB') {
-        const ref = await addDoc(collection(db, 'studentClubs'), {
+        const ref = await addDoc(collection(db, 'clubs'), {
           ...common,
           type: app.clubType || 'university',
           university: app.universityName || '',
@@ -352,7 +352,17 @@ export default function ApplicationsPage() {
 
         if (userId) {
           const userRef = doc(db, 'users', userId);
-          updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+          // Super-admin'in rolünü ngo-admin'e düşürme; sadece henüz super-admin olmayanları yükselt.
+          try {
+            const userSnap = await getDoc(userRef);
+            const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
+            if (currentRole !== 'super-admin') {
+              updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+            }
+          } catch {
+            // Hata durumunda yine de ngo-admin yap (eski davranış)
+            updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+          }
         }
 
         const entityTypeLabel = entityTypeLabels[app.entityType] || 'Kuruluş';
