@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
+import { useAssociationProject } from '@/hooks/use-site-content';
 
 const projectContents: Record<string, any> = {
     'istihdam-protokolu': {
@@ -42,10 +43,25 @@ export default function ProjectSlugPage() {
     const router = useRouter();
     const { toast } = useToast();
     const slug = params.slug as string;
-    const content = projectContents[slug];
+    const cms = useAssociationProject(slug);
+    const staticContent = projectContents[slug];
 
-    if (!content) return <div>Proje bulunamadı.</div>;
+    // CMS varsa onu önceliklendir; yoksa statik fallback'a dön; ikisi de yoksa 404 mesajı.
+    const hasCms = !!(cms.title || cms.description || cms.body);
+    if (!hasCms && !staticContent) {
+        if (cms.isLoading) return <div className="min-h-screen flex items-center justify-center">Yükleniyor...</div>;
+        return <div className="min-h-screen flex items-center justify-center">Proje bulunamadı.</div>;
+    }
 
+    const content = {
+        title: cms.title || staticContent?.title || 'Proje',
+        subtitle: cms.subtitle || staticContent?.subtitle || '',
+        desc: cms.description || staticContent?.desc || '',
+        imageUrl: cms.heroImageUrl || staticContent?.imageUrl,
+        hint: staticContent?.hint || '',
+        icon: staticContent?.icon || Target,
+        body: cms.body,
+    };
     const Icon = content.icon;
 
     return (
@@ -81,9 +97,15 @@ export default function ProjectSlugPage() {
                             </Button>
                         </div>
                         <div className="flex-1 relative aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl">
-                            <Image src={content.imageUrl} alt={content.title} fill className="object-cover" data-ai-hint={content.hint} />
+                            {content.imageUrl && (
+                                <Image src={content.imageUrl} alt={content.title} fill className="object-cover" data-ai-hint={content.hint} />
+                            )}
                         </div>
                     </div>
+
+                    {content.body && (
+                        <div className="prose prose-lg max-w-3xl mx-auto" dangerouslySetInnerHTML={{ __html: content.body }} />
+                    )}
                 </section>
             </main>
 

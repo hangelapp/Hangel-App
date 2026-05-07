@@ -7,9 +7,7 @@ service firebase.storage {
     // Sadece email allowlist + Firebase Auth custom claims (role: 'super-admin').
     function isSuperAdmin() {
       return request.auth != null && (
-        request.auth.token.email == '5384009090@hangel.org' ||
         request.auth.token.email == 'ismailhilmi@hangel.org' ||
-        request.auth.token.email == 'ihadiguzel@gmail.com' ||
         request.auth.token.role == 'super-admin'
       );
     }

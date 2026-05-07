@@ -7,17 +7,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Loader2, Upload, ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Upload, ImageIcon, X, Plus, Pencil, Trash2, ExternalLink, FolderOpen } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+type ProjectPage = {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    heroImageUrl?: string;
+    body?: string;
+};
 
 const SETTINGS_DOC = 'siteSettings';
 const CONTENT_ID = 'associationContent';
 
-type SectionKey = 'homepage' | 'about' | 'events' | 'workshop' | 'legislation' | 'projects';
+type SectionKey = 'homepage' | 'about' | 'events' | 'workshop' | 'legislation' | 'projects' | 'contact' | 'feedback';
 
 type ContentMap = Record<string, any>;
 
@@ -65,6 +77,18 @@ const DEFAULTS: ContentMap = {
     projects: {
         title: 'Projelerimiz',
         description: 'Sosyal etki yaratan girişimlerimiz.',
+        coverImageUrl: '',
+    },
+    contact: {
+        title: 'Bize Ulaşın.',
+        subtitle: 'Sorularınız, iş birlikleri ve geri bildirimleriniz için.',
+        description: 'Hangel ekibiyle iletişime geçmek için aşağıdaki kanalları kullanabilirsiniz.',
+        coverImageUrl: '',
+    },
+    feedback: {
+        title: 'Fikirleriniz Geleceğimiz.',
+        subtitle: 'Görüşleriniz bize yol gösterir.',
+        description: 'Dernek faaliyetlerimiz, web sitemiz ve iş birliği önerileriniz için aşağıdaki formu kullanabilirsiniz.',
         coverImageUrl: '',
     },
 };
@@ -255,6 +279,18 @@ const SECTION_FIELDS: Record<SectionKey, { key: string; label: string; type: 'te
         { key: 'description', label: 'Açıklama', type: 'textarea' },
         { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
     ],
+    contact: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
+    feedback: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
 };
 
 export default function AssociationContentPage() {
@@ -263,6 +299,11 @@ export default function AssociationContentPage() {
     const db = useFirestore();
 
     const [content, setContent] = useState<ContentMap>(DEFAULTS);
+    const [projectPages, setProjectPages] = useState<Record<string, ProjectPage>>({});
+    const [editingProjectSlug, setEditingProjectSlug] = useState<string | null>(null);
+    const [editingProjectIsNew, setEditingProjectIsNew] = useState(false);
+    const [editProjectData, setEditProjectData] = useState<ProjectPage & { slug?: string }>({});
+    const [savingProject, setSavingProject] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [savingSection, setSavingSection] = useState<SectionKey | null>(null);
 
@@ -281,6 +322,10 @@ export default function AssociationContentPage() {
                         merged[k] = { ...DEFAULTS[k], ...(d[k] || {}) };
                     }
                     setContent(merged);
+                    // Project pages (dynamic /hangelassociation/projects/[slug])
+                    if (d.projectPages && typeof d.projectPages === 'object') {
+                        setProjectPages(d.projectPages as Record<string, ProjectPage>);
+                    }
                 }
             } catch (e) {
                 console.error('Load failed', e);
@@ -315,6 +360,68 @@ export default function AssociationContentPage() {
         }
     };
 
+    // ------- Proje Sayfaları (dynamic /hangelassociation/projects/[slug]) -------
+
+    const handleStartEditProject = (slug: string) => {
+        setEditingProjectSlug(slug);
+        setEditingProjectIsNew(false);
+        setEditProjectData({ slug, ...(projectPages[slug] || {}) });
+    };
+
+    const handleStartNewProject = () => {
+        setEditingProjectSlug('__new__');
+        setEditingProjectIsNew(true);
+        setEditProjectData({ slug: '', title: '', subtitle: '', description: '', heroImageUrl: '', body: '' });
+    };
+
+    const handleSaveProject = async () => {
+        if (!db) return;
+        const slug = (editProjectData.slug || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        if (!slug) {
+            toast({ variant: 'destructive', title: 'Slug gerekli', description: 'URL için kısa bir slug girin (örn: etki-atlasi).' });
+            return;
+        }
+        if (editingProjectIsNew && projectPages[slug]) {
+            toast({ variant: 'destructive', title: 'Slug zaten var', description: 'Farklı bir slug seçin.' });
+            return;
+        }
+        setSavingProject(true);
+        try {
+            const { slug: _s, ...payload } = editProjectData;
+            await setDoc(
+                doc(db, SETTINGS_DOC, CONTENT_ID),
+                { projectPages: { [slug]: payload } },
+                { merge: true },
+            );
+            setProjectPages(prev => ({ ...prev, [slug]: payload }));
+            toast({ title: 'Kaydedildi', description: `Proje sayfası "${slug}" güncellendi.` });
+            setEditingProjectSlug(null);
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } finally {
+            setSavingProject(false);
+        }
+    };
+
+    const handleDeleteProject = async (slug: string) => {
+        if (!db) return;
+        if (!confirm(`"${slug}" projesi silinecek. Emin misiniz?`)) return;
+        try {
+            await updateDoc(
+                doc(db, SETTINGS_DOC, CONTENT_ID),
+                { [`projectPages.${slug}`]: deleteField() },
+            );
+            setProjectPages(prev => {
+                const next = { ...prev };
+                delete next[slug];
+                return next;
+            });
+            toast({ title: 'Silindi', description: `Proje "${slug}" silindi.` });
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'Silinemedi', description: e?.message });
+        }
+    };
+
     if (isLoading) {
         return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin h-8 w-8 text-muted-foreground" /></div>;
     }
@@ -325,7 +432,9 @@ export default function AssociationContentPage() {
         { key: 'events', label: 'Etkinlikler', description: '/hangelassociation/events sayfası.' },
         { key: 'workshop', label: 'Çalıştay', description: '/hangelassociation/workshop sayfası.' },
         { key: 'legislation', label: 'Mevzuat', description: '/hangelassociation/legislation sayfası.' },
-        { key: 'projects', label: 'Projeler', description: '/hangelassociation/projects sayfası.' },
+        { key: 'projects', label: 'Projeler', description: '/hangelassociation/projects bölümü.' },
+        { key: 'contact', label: 'İletişim', description: '/hangelassociation/contact sayfası.' },
+        { key: 'feedback', label: 'Geri Bildirim', description: '/hangelassociation/feedback sayfası.' },
     ];
 
     return (
@@ -382,6 +491,132 @@ export default function AssociationContentPage() {
                     </TabsContent>
                 ))}
             </Tabs>
+
+            {/* Proje Sayfaları yönetimi — /hangelassociation/projects/[slug] */}
+            <Card className="rounded-2xl">
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2"><FolderOpen className="h-5 w-5" /> Proje Sayfaları</CardTitle>
+                        <CardDescription>
+                            /hangelassociation/projects/[slug] altındaki bireysel proje sayfalarını yönet — yeni proje ekle, mevcudu düzenle/sil.
+                        </CardDescription>
+                    </div>
+                    <Button onClick={handleStartNewProject} className="rounded-xl">
+                        <Plus className="h-4 w-4 mr-1" /> Yeni Proje
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    {Object.keys(projectPages).length === 0 ? (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                            Henüz CMS'te proje yok. (Statik fallback'lar: <code>etki-atlasi</code>, <code>istihdam-protokolu</code>, <code>gelir-modeli</code> hâlâ kodda.)
+                        </div>
+                    ) : (
+                        <div className="border rounded-xl overflow-hidden divide-y">
+                            {Object.entries(projectPages).map(([slug, p]) => (
+                                <div key={slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="font-bold text-sm">{p.title || slug}</p>
+                                            <Badge variant="outline" className="text-[10px]">/projects/{slug}</Badge>
+                                            <Link
+                                                href={`/hangelassociation/projects/${slug}`}
+                                                target="_blank"
+                                                className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+                                            >
+                                                aç <ExternalLink className="h-3 w-3" />
+                                            </Link>
+                                        </div>
+                                        {p.subtitle && <p className="text-xs text-muted-foreground truncate">{p.subtitle}</p>}
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <Button variant="outline" size="sm" onClick={() => handleStartEditProject(slug)} className="rounded-xl">
+                                            <Pencil className="h-3.5 w-3.5 mr-1" /> Düzenle
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => handleDeleteProject(slug)}
+                                            className="text-destructive hover:bg-destructive/10 rounded-xl"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Proje Düzenle / Yeni Proje dialog */}
+            <Dialog open={!!editingProjectSlug} onOpenChange={(o) => !o && setEditingProjectSlug(null)}>
+                <DialogContent className="max-w-2xl rounded-[2rem] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>{editingProjectIsNew ? 'Yeni Proje Sayfası' : 'Projeyi Düzenle'}</DialogTitle>
+                        <DialogDescription>
+                            URL: <code>/hangelassociation/projects/{editProjectData.slug || '...'}</code>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>Slug (URL parçası)</Label>
+                            <Input
+                                value={editProjectData.slug || ''}
+                                onChange={e => setEditProjectData({ ...editProjectData, slug: e.target.value })}
+                                placeholder="ornek: etki-atlasi"
+                                disabled={!editingProjectIsNew}
+                            />
+                            {editingProjectIsNew && (
+                                <p className="text-[10px] text-muted-foreground">Sadece harf, rakam, tire. Kayıttan sonra değişmez.</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Başlık</Label>
+                            <Input
+                                value={editProjectData.title || ''}
+                                onChange={e => setEditProjectData({ ...editProjectData, title: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Alt Başlık</Label>
+                            <Input
+                                value={editProjectData.subtitle || ''}
+                                onChange={e => setEditProjectData({ ...editProjectData, subtitle: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Açıklama</Label>
+                            <Textarea
+                                value={editProjectData.description || ''}
+                                onChange={e => setEditProjectData({ ...editProjectData, description: e.target.value })}
+                                rows={3}
+                            />
+                        </div>
+                        <ImageUploader
+                            label="Kapak Görseli"
+                            value={editProjectData.heroImageUrl || ''}
+                            onChange={(url) => setEditProjectData({ ...editProjectData, heroImageUrl: url })}
+                            pathPrefix={`siteContent/association/projects/${editProjectData.slug || 'new'}`}
+                        />
+                        <div className="space-y-2">
+                            <Label>İçerik</Label>
+                            <RichTextEditor
+                                value={editProjectData.body || ''}
+                                onChange={(html) => setEditProjectData({ ...editProjectData, body: html })}
+                                placeholder="Proje detaylarını buraya yazın..."
+                                minHeight={280}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setEditingProjectSlug(null)}>İptal</Button>
+                        <Button onClick={handleSaveProject} disabled={savingProject} className="font-bold">
+                            {savingProject && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Kaydet
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <Card className="rounded-2xl border-amber-200 bg-amber-50/50">
                 <CardContent className="p-4 text-sm space-y-2">

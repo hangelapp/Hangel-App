@@ -8,6 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const faqArticles = [
   {
@@ -31,6 +32,7 @@ const faqArticles = [
 export default function AppSupportPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const cms = useWebPage('support-app-support');
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleSearch = (e: React.FormEvent) => {
@@ -49,8 +51,8 @@ export default function AppSupportPage() {
                   <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold font-headline">Uygulama Destek Merkezi</h1>
-                    <p className="mt-2 text-muted-foreground">Sıkça sorulan sorulara göz atın veya bizimle iletişime geçin.</p>
+                    <h1 className="text-3xl font-bold font-headline">{cms.title || 'Uygulama Destek Merkezi'}</h1>
+                    <p className="mt-2 text-muted-foreground">{cms.description || cms.subtitle || 'Sıkça sorulan sorulara göz atın veya bizimle iletişime geçin.'}</p>
                 </div>
             </div>
 

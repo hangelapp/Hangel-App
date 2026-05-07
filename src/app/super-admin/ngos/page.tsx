@@ -20,7 +20,7 @@ import React, { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDocs, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
@@ -322,10 +322,14 @@ export default function NgosPage() {
       await updateDoc(doc(db, 'ngos', ngoId), { adminUserId: newUserId });
 
       // 2. Kullanıcıya ngo-admin rolü ver + bağlı STK ID'sini sakla
-      await updateDoc(doc(db, 'users', newUserId), {
-        role: 'ngo-admin',
-        managedNgoId: ngoId,
-      });
+      //    AMA super-admin'ler için role'u DEĞİŞTİRME (yetkisini kaybetmesin)
+      const userSnap = await getDoc(doc(db, 'users', newUserId));
+      const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
+      const updatePayload: any = { managedNgoId: ngoId };
+      if (currentRole !== 'super-admin') {
+        updatePayload.role = 'ngo-admin';
+      }
+      await updateDoc(doc(db, 'users', newUserId), updatePayload);
 
       // 3. Davet kaydı (audit + bildirim için)
       await addDoc(collection(db, 'userInvitations'), {

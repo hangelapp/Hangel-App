@@ -3,14 +3,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Search, ArrowDownUp, Filter, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 
 
 const ClubCard = ({ club }: { club: StudentClub }) => (
@@ -37,91 +38,72 @@ const ClubCard = ({ club }: { club: StudentClub }) => (
 
 export default function ClubsPage() {
   const db = useFirestore();
-  const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
+  const { user: authUser } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
-  const [universityFilter, setUniversityFilter] = useState<string[]>([]);
-  const [contentType, setContentType] = useState('clubs');
-  const [locationFilter, setLocationFilter] = useState('all');
-  const [schoolTypeFilter, setSchoolTypeFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState<'global' | 'country' | 'city'>('global');
+  const [sortMode, setSortMode] = useState<'name' | 'members' | 'clubCount'>('clubCount');
+  const [expandedUniversity, setExpandedUniversity] = useState<string | null>(null);
 
   const clubsRef = useMemoFirebase(() => collection(db, 'clubs'), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
 
-  const allUniversities = useMemo(() => {
-    if (!clubs) return [];
-    return [...new Set(clubs.map(club => club.university))].sort((a, b) => a.localeCompare(b, 'tr'));
-  }, [clubs]);
+  // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
+  const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null), [db, authUser?.uid]);
+  const { data: userData } = useDoc<any>(userDocRef);
+  const userCountry = userData?.personalInfo?.address?.country || '';
+  const userCity = userData?.personalInfo?.address?.city || '';
 
-  const finalClubs = useMemo(() => {
+  const filteredClubs = useMemo(() => {
     if (!clubs) return [];
     let result = [...clubs];
 
-    if (universityFilter.length > 0) {
-      result = result.filter(club => universityFilter.includes(club.university));
+    // Konum filtresi: club.location.country / club.location.city
+    if (locationFilter === 'country' && userCountry) {
+      result = result.filter(c => (c as any).location?.country === userCountry);
+    } else if (locationFilter === 'city' && userCity) {
+      result = result.filter(c => (c as any).location?.city === userCity);
     }
 
-    if (schoolTypeFilter !== 'all') {
-      result = result.filter(club => club.type === schoolTypeFilter);
-    }
-
+    // Arama
     if (searchTerm.trim()) {
-      const lowercased = searchTerm.toLowerCase();
-      result = result.filter(club =>
-        club.name.toLowerCase().includes(lowercased) ||
-        club.university.toLowerCase().includes(lowercased)
+      const q = searchTerm.toLowerCase();
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.university.toLowerCase().includes(q),
       );
     }
-
-    result.sort((a, b) => {
-      const key = sortConfig.key as keyof StudentClub;
-      if (sortConfig.key === 'members' || sortConfig.key === 'points') {
-        const valA = a[sortConfig.key] as number;
-        const valB = b[sortConfig.key] as number;
-        return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
-      }
-      if (a[key] < b[key]) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (a[key] > b[key]) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
-    });
-
     return result;
-  }, [clubs, searchTerm, universityFilter, schoolTypeFilter, sortConfig]);
+  }, [clubs, searchTerm, locationFilter, userCountry, userCity]);
 
-  const renderContent = () => {
-    if (locationFilter === 'school' || locationFilter === 'city') {
-      return <div className="text-center text-muted-foreground py-16">Bu özellik yakında aktif olacaktır.</div>;
+  // Üniversiteye göre grupla
+  const universitiesGrouped = useMemo(() => {
+    const map = new Map<string, StudentClub[]>();
+    for (const c of filteredClubs) {
+      const uni = c.university || 'Diğer';
+      if (!map.has(uni)) map.set(uni, []);
+      map.get(uni)!.push(c);
     }
+    let list = Array.from(map.entries()).map(([university, clubsArr]) => ({
+      university,
+      clubs: clubsArr,
+      memberTotal: clubsArr.reduce((s, c) => s + (c.members || 0), 0),
+    }));
 
-    if (isLoading) {
-      return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    if (sortMode === 'name') {
+      list.sort((a, b) => a.university.localeCompare(b.university, 'tr'));
+    } else if (sortMode === 'members') {
+      list.sort((a, b) => b.memberTotal - a.memberTotal);
+    } else {
+      list.sort((a, b) => b.clubs.length - a.clubs.length);
     }
+    return list;
+  }, [filteredClubs, sortMode]);
 
-    if (contentType === 'clubs') {
-      return finalClubs.length > 0 ? (
-        <div className='space-y-3'>
-          {finalClubs.map((club) => <ClubCard key={club.id} club={club} />)}
-        </div>
-      ) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>;
-    }
-
-    if (contentType === 'library') {
-      return (
-        <div className='space-y-4'>
-          <div className="text-center py-12 space-y-4">
-            <p className="text-base font-semibold">Kulüplere ve sosyal etkiye dair kaynaklar</p>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Kitaplar, akademik makaleler, filmler ve sözlüklerle gönüllülük, liderlik ve sivil toplum bilgini derinleştir.
-            </p>
-            <Button asChild className="rounded-full px-6 h-11 font-bold">
-              <Link href="/library">Kütüphaneye Git</Link>
-            </Button>
-          </div>
-        </div>
-      );
-    }
-
-    return null;
-  };
+  const locationTabs: { value: 'global' | 'country' | 'city'; label: string; icon: any; sublabel?: string }[] = [
+    { value: 'global', label: 'Global', icon: Globe },
+    { value: 'country', label: 'Ülkemde', icon: MapPin, sublabel: userCountry || undefined },
+    { value: 'city', label: 'Şehrimde', icon: MapPin, sublabel: userCity || undefined },
+  ];
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -131,7 +113,7 @@ export default function ClubsPage() {
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Kulüp ara..."
+            placeholder="Üniversite veya kulüp ara..."
             className="pl-10 h-11"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,72 +122,101 @@ export default function ClubsPage() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="h-11 w-11">
-              <Filter className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Okula Göre Filtrele</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {allUniversities.map(uni => (
-              <DropdownMenuCheckboxItem
-                key={uni}
-                checked={universityFilter.includes(uni)}
-                onCheckedChange={(checked) => {
-                  setUniversityFilter(prev =>
-                    checked ? [...prev, uni] : prev.filter(u => u !== uni)
-                  );
-                }}
-              >
-                {uni}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11">
               <ArrowDownUp className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>İsme Göre (Z-A)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'members', direction: 'desc' })}>Üye Sayısı (Çoktan Aza)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'members', direction: 'asc' })}>Üye Sayısı (Azdan Çoğa)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>Puan (Yüksekten Düşüğe)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>Puan (Düşükten Yükseğe)</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('clubCount')}>Kulüp Sayısı (Çok → Az)</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('members')}>Toplam Üye (Çok → Az)</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('name')}>İsme Göre (A → Z)</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <div className="space-y-3">
-        <Tabs value={contentType} onValueChange={setContentType}>
-          <TabsList className="grid w-full grid-cols-2 p-1 h-12 rounded-2xl bg-muted/50">
-            <TabsTrigger value="clubs" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Kulüpler</TabsTrigger>
-            <TabsTrigger value="library" className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Kütüphane</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      {/* Konum tabları: Global / Ülkemde / Şehrimde */}
+      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as any)}>
+        <TabsList className="grid w-full grid-cols-3 p-1 h-12 rounded-2xl bg-muted/50">
+          {locationTabs.map(t => {
+            const Icon = t.icon;
+            return (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Icon className="h-3.5 w-3.5" /> {t.label}
+                </span>
+                {t.sublabel && (
+                  <span className="text-[9px] text-muted-foreground font-normal mt-0.5 truncate max-w-[80px]">
+                    {t.sublabel}
+                  </span>
+                )}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </Tabs>
 
-        <Tabs value={locationFilter} onValueChange={setLocationFilter}>
-          <TabsList className="grid w-full grid-cols-4 p-1 h-11 rounded-2xl bg-muted/50">
-            <TabsTrigger value="all" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Tümü</TabsTrigger>
-            <TabsTrigger value="country" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Ülkemde</TabsTrigger>
-            <TabsTrigger value="school" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Okulumda</TabsTrigger>
-            <TabsTrigger value="city" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Şehrimde</TabsTrigger>
-          </TabsList>
-        </Tabs>
+      {/* Login bilgi mesajı */}
+      {locationFilter === 'country' && !userCountry && authUser && (
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          Ülke bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+        </div>
+      )}
+      {locationFilter === 'city' && !userCity && authUser && (
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          Şehir bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+        </div>
+      )}
+      {!authUser && locationFilter !== 'global' && (
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          Konum bazlı filtre için giriş yapmanız gerekir.
+        </div>
+      )}
 
-        <Tabs value={schoolTypeFilter} onValueChange={setSchoolTypeFilter}>
-          <TabsList className="grid w-full grid-cols-3 p-1 h-11 rounded-2xl bg-muted/50">
-            <TabsTrigger value="all" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Tümü</TabsTrigger>
-            <TabsTrigger value="university" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Üniversite</TabsTrigger>
-            <TabsTrigger value="high-school" className="rounded-[0.8rem] h-full text-xs font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">Lise</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
-      <div className="mt-6">
-        {renderContent()}
+      {/* Üniversite Listesi */}
+      <div className="mt-2">
+        {isLoading ? (
+          <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        ) : universitiesGrouped.length === 0 ? (
+          <div className="text-center text-muted-foreground p-12">Bu filtreyle eşleşen üniversite bulunamadı.</div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
+              Üniversite Listesi ({universitiesGrouped.length})
+            </p>
+            {universitiesGrouped.map(({ university, clubs: uClubs, memberTotal }) => {
+              const isOpen = expandedUniversity === university;
+              return (
+                <Card key={university} className="overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedUniversity(isOpen ? null : university)}
+                    className="w-full p-4 flex items-center gap-3 hover:bg-accent/40 transition-colors text-left"
+                  >
+                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+                      <GraduationCap className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{university}</p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        <Badge variant="secondary" className="text-[10px]">{uClubs.length} kulüp</Badge>
+                        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {memberTotal} üye</span>
+                      </div>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isOpen && (
+                    <div className="border-t bg-muted/20 p-3 space-y-2">
+                      {uClubs.map(club => <ClubCard key={club.id} club={club} />)}
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

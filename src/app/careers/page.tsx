@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { volunteeringOpportunities } from '@/lib/data';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const CareerSection = ({ 
     title, 
@@ -55,6 +56,7 @@ const CareerSection = ({
 
 export default function CareersPage() {
     const router = useRouter();
+    const cms = useWebPage('careers');
 
     const hangelVolunteerOps = volunteeringOpportunities.filter(
         (op) => op.organization === 'hangel Derneği'
@@ -74,11 +76,11 @@ export default function CareersPage() {
             </header>
 
             {/* Hero */}
-            <CareerSection 
-                title="Geleceği Bizimle İnşa Edin."
-                subtitle="Etki odaklı bir kariyer yolculuğuna başlayın."
-                description="Hangel'de sadece kod yazmıyor veya kampanya yönetmiyoruz; toplumsal bir dönüşümün mimarları oluyoruz. Yeteneklerinizi dünya için kullanmaya hazır mısınız?"
-                imageUrl="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
+            <CareerSection
+                title={cms.title || 'Geleceği Bizimle İnşa Edin.'}
+                subtitle={cms.subtitle || 'Etki odaklı bir kariyer yolculuğuna başlayın.'}
+                description={cms.description || "Hangel'de sadece kod yazmıyor veya kampanya yönetmiyoruz; toplumsal bir dönüşümün mimarları oluyoruz. Yeteneklerinizi dünya için kullanmaya hazır mısınız?"}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="young professionals working happy"
             />
 

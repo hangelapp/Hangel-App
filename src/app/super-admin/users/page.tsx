@@ -245,14 +245,33 @@ export default function UsersPage() {
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
-    if (!searchTerm) return users;
     const lower = searchTerm.toLowerCase();
-    return users.filter(u =>
-      (u.name || '').toLowerCase().includes(lower) ||
-      (u.personalInfo?.email || '').toLowerCase().includes(lower) ||
-      (u.username || '').toLowerCase().includes(lower) ||
-      (u.personalInfo?.phone || '').includes(lower),
-    );
+    const matched = !searchTerm
+      ? [...users]
+      : users.filter(u =>
+        (u.name || '').toLowerCase().includes(lower) ||
+        (u.personalInfo?.email || '').toLowerCase().includes(lower) ||
+        (u.username || '').toLowerCase().includes(lower) ||
+        (u.personalInfo?.phone || '').includes(lower),
+      );
+
+    // En yeni kullanıcı en üstte: createdAt → joinDate → fallback (eklenme sırası)
+    const ts = (u: any): number => {
+      const c = u.createdAt;
+      if (c?.toDate) {
+        try { return c.toDate().getTime(); } catch { /* ignore */ }
+      }
+      if (typeof c === 'string') {
+        const t = Date.parse(c);
+        if (!Number.isNaN(t)) return t;
+      }
+      if (typeof u.joinDate === 'string') {
+        const t = Date.parse(u.joinDate);
+        if (!Number.isNaN(t)) return t;
+      }
+      return 0;
+    };
+    return matched.sort((a, b) => ts(b) - ts(a));
   }, [searchTerm, users]);
 
   const handleToggleStatus = async (userId: string, name: string, currentStatus: string) => {

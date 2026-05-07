@@ -93,7 +93,7 @@ export default function EventDetailPage() {
 
   const clubQuery = useMemoFirebase(() => {
     if (!db || !event?.organizer) return null;
-    return query(collection(db, 'studentClubs'), where('name', '==', event.organizer), limit(1));
+    return query(collection(db, 'clubs'), where('name', '==', event.organizer), limit(1));
   }, [db, event?.organizer]);
   const { data: orgClub } = useCollection<StudentClub>(clubQuery);
 

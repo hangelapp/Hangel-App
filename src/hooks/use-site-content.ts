@@ -40,9 +40,50 @@ export function useWebContent() {
     return { data, isLoading, get: buildGetter(data) };
 }
 
+/**
+ * Belirli bir slug'lı tanıtım/kurumsal sayfa için içeriği döner.
+ * /super-admin/web-content "Sayfalar" sekmesinde düzenlenir.
+ *
+ * Kullanım:
+ *   const page = useWebPage('press');
+ *   <h1>{page.title || 'Basın Odası'}</h1>
+ *   {page.body && <div dangerouslySetInnerHTML={{ __html: page.body }} />}
+ */
+export function useWebPage(slug: string) {
+    const { data, isLoading } = useWebContent();
+    const page = (data?.pages?.[slug] || {}) as {
+        title?: string;
+        subtitle?: string;
+        description?: string;
+        heroImageUrl?: string;
+        body?: string;
+    };
+    return { ...page, isLoading };
+}
+
 export function useAssociationContent() {
     const db = useFirestore();
     const ref = useMemoFirebase(() => (db ? doc(db, SETTINGS_DOC, 'associationContent') : null), [db]);
     const { data, isLoading } = useDoc<any>(ref);
     return { data, isLoading, get: buildGetter(data) };
+}
+
+/**
+ * Belirli bir slug'lı dernek proje sayfası içeriğini döner.
+ * /super-admin/association-content "Proje Sayfaları" bölümünde düzenlenir.
+ *
+ * Kullanım:
+ *   const project = useAssociationProject('etki-atlasi');
+ *   <h1>{project.title || fallback}</h1>
+ */
+export function useAssociationProject(slug: string) {
+    const { data, isLoading } = useAssociationContent();
+    const project = (data?.projectPages?.[slug] || {}) as {
+        title?: string;
+        subtitle?: string;
+        description?: string;
+        heroImageUrl?: string;
+        body?: string;
+    };
+    return { ...project, isLoading };
 }

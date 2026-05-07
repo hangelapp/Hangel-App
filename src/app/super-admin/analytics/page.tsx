@@ -26,7 +26,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area,
 } from 'recharts';
-import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle } from "lucide-react";
+import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock } from "lucide-react";
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 
@@ -87,31 +87,59 @@ export default function AnalyticsPage() {
     const usersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
     const ngosQ = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
     const brandsQ = useMemoFirebase(() => (db ? collection(db, 'brands') : null), [db]);
+    const clubsQ = useMemoFirebase(() => (db ? collection(db, 'clubs') : null), [db]);
     const postsQ = useMemoFirebase(() => (db ? query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(2000)) : null), [db]);
     const appsQ = useMemoFirebase(() => (db ? collection(db, 'applications') : null), [db]);
     const volunteeringQ = useMemoFirebase(() => (db ? collection(db, 'volunteering') : null), [db]);
     const emergencyQ = useMemoFirebase(() => (db ? collection(db, 'emergencyRequests') : null), [db]);
     const responsesQ = useMemoFirebase(() => (db ? collection(db, 'emergencyResponses') : null), [db]);
+    const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
+    const supportQ = useMemoFirebase(() => (db ? collection(db, 'supportTickets') : null), [db]);
+    const fundsQ = useMemoFirebase(() => (db ? collection(db, 'funds') : null), [db]);
+    const ratingsQ = useMemoFirebase(() => (db ? collection(db, 'ratings') : null), [db]);
+    const surveysQ = useMemoFirebase(() => (db ? collection(db, 'surveys') : null), [db]);
 
     const { data: users, isLoading: usersLoading } = useCollection<any>(usersQ);
     const { data: ngos, isLoading: ngosLoading } = useCollection<any>(ngosQ);
     const { data: brands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
+    const { data: clubs } = useCollection<any>(clubsQ);
     const { data: posts, isLoading: postsLoading } = useCollection<any>(postsQ);
     const { data: apps, isLoading: appsLoading } = useCollection<any>(appsQ);
     const { data: opportunities, isLoading: oppLoading } = useCollection<any>(volunteeringQ);
     const { data: emergencies } = useCollection<any>(emergencyQ);
     const { data: responses } = useCollection<any>(responsesQ);
+    const { data: donations } = useCollection<any>(donationsQ);
+    const { data: supportTickets } = useCollection<any>(supportQ);
+    const { data: funds } = useCollection<any>(fundsQ);
+    const { data: ratings } = useCollection<any>(ratingsQ);
+    const { data: surveys } = useCollection<any>(surveysQ);
 
     const isLoading = usersLoading || ngosLoading || brandsLoading || postsLoading || appsLoading || oppLoading;
 
-    // KPI'lar
+    // KPI'lar — gerçek Firestore verileri
     const totalUsers = users?.length ?? 0;
     const activeNgos = (ngos ?? []).filter((n: any) => !n.status || n.status === 'Aktif').length;
     const activeBrands = (brands ?? []).filter((b: any) => !b.status || b.status === 'Aktif').length;
-    const totalDonation = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.totalDonation || 0), 0);
+    const activeClubs = (clubs ?? []).filter((c: any) => !c.status || c.status === 'Aktif').length;
+
+    // Gerçek bağış toplamları (donations koleksiyonundan)
+    const realDonations = (donations ?? []).filter((d: any) => d.type !== 'income');
+    const totalDonationActual = realDonations.reduce((s: number, d: any) =>
+        s + (parseFloat(d.donationAmount || '0') || 0), 0);
+    const paidDonationTotal = realDonations
+        .filter((d: any) => d.status === 'Yatırıldı' || d.status === 'Tamamlandı')
+        .reduce((s: number, d: any) => s + (parseFloat(d.donationAmount || '0') || 0), 0);
+    const pendingDonationTotal = totalDonationActual - paidDonationTotal;
+    const totalPurchase = realDonations.reduce((s: number, d: any) =>
+        s + (parseFloat(d.purchaseAmount || '0') || 0), 0);
+
     const totalVolunteerHours = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.volunteerHours || 0), 0);
     const totalProjects = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.projects || 0), 0);
     const totalPosts = posts?.length ?? 0;
+    const openTickets = (supportTickets ?? []).filter((t: any) => (t.status || 'open') === 'open').length;
+    const avgRating = (ratings && ratings.length > 0)
+        ? (ratings.reduce((s: number, r: any) => s + (r.rating || 0), 0) / ratings.length)
+        : 0;
 
     // Aylık kullanıcı büyümesi (joinDate / createdAt'a göre)
     const monthBuckets = useMemo(buildLast7Months, []);
@@ -248,19 +276,58 @@ export default function AnalyticsPage() {
                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <HandCoins className="h-8 w-8 text-muted-foreground" />
                     <p className="text-3xl font-bold mt-2">
-                        {totalDonation >= 1_000_000
-                            ? `${(totalDonation / 1_000_000).toFixed(1)}M ₺`
-                            : totalDonation >= 1000
-                                ? `${(totalDonation / 1000).toFixed(0)}K ₺`
-                                : `${totalDonation.toLocaleString('tr-TR')} ₺`}
+                        {totalDonationActual >= 1_000_000
+                            ? `${(totalDonationActual / 1_000_000).toFixed(1)}M ₺`
+                            : totalDonationActual >= 1000
+                                ? `${(totalDonationActual / 1000).toFixed(0)}K ₺`
+                                : `${totalDonationActual.toLocaleString('tr-TR')} ₺`}
                     </p>
                     <CardTitle className="text-sm font-medium mt-1">Toplam Bağış</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">{totalProjects.toLocaleString('tr-TR')} proje</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {realDonations.length} işlem · {paidDonationTotal.toLocaleString('tr-TR')} ₺ yatırıldı
+                    </p>
                 </Card>
             </div>
 
-            {/* İkincil KPI'lar */}
+            {/* İkincil KPI'lar — gerçek Firestore verileri */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-purple-100"><GraduationCap className="h-4 w-4 text-purple-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{activeClubs.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Aktif Öğrenci Kulübü</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-orange-100"><ShoppingBag className="h-4 w-4 text-orange-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{realDonations.length.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Bağış İşlemi (Toplam)</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-amber-100"><Clock className="h-4 w-4 text-amber-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{pendingDonationTotal.toLocaleString('tr-TR')} ₺</p>
+                            <p className="text-xs text-muted-foreground">Bekleyen Bağış</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-green-100"><CheckCircle2 className="h-4 w-4 text-green-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{paidDonationTotal.toLocaleString('tr-TR')} ₺</p>
+                            <p className="text-xs text-muted-foreground">Yatırılan Bağış</p>
+                        </div>
+                    </div>
+                </Card>
+
                 <Card className="p-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-pink-100"><Heart className="h-4 w-4 text-pink-600" /></div>
@@ -281,7 +348,7 @@ export default function AnalyticsPage() {
                 </Card>
                 <Card className="p-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-amber-100"><Bell className="h-4 w-4 text-amber-600" /></div>
+                        <div className="p-2 rounded-lg bg-red-100"><Bell className="h-4 w-4 text-red-600" /></div>
                         <div>
                             <p className="text-2xl font-bold">{(emergencies?.length ?? 0).toLocaleString('tr-TR')}</p>
                             <p className="text-xs text-muted-foreground">Acil Durum Talebi</p>
@@ -290,10 +357,47 @@ export default function AnalyticsPage() {
                 </Card>
                 <Card className="p-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-green-100"><CheckCircle2 className="h-4 w-4 text-green-600" /></div>
+                        <div className="p-2 rounded-lg bg-emerald-100"><CheckCircle2 className="h-4 w-4 text-emerald-600" /></div>
                         <div>
                             <p className="text-2xl font-bold">{((responses ?? []).filter((r: any) => r.status === 'positive').length).toLocaleString('tr-TR')}</p>
                             <p className="text-xs text-muted-foreground">Olumlu Acil Yanıt</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-cyan-100"><MessageSquare className="h-4 w-4 text-cyan-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{openTickets.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Açık Destek Talebi</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-yellow-100"><Star className="h-4 w-4 text-yellow-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{avgRating.toFixed(1)}</p>
+                            <p className="text-xs text-muted-foreground">{(ratings?.length || 0)} değerlendirme ort.</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-indigo-100"><FileText className="h-4 w-4 text-indigo-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(funds?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">{(funds ?? []).filter((f: any) => f.status === 'Açık').length} açık fon</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-rose-100"><Trophy className="h-4 w-4 text-rose-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(surveys?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Anket Cevabı</p>
                         </div>
                     </div>
                 </Card>

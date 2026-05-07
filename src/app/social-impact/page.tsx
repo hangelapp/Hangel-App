@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const ImpactSection = ({ 
     title, 
@@ -57,6 +58,7 @@ const ImpactSection = ({
 
 export default function SocialImpactPage() {
     const router = useRouter();
+    const cms = useWebPage('social-impact');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -74,12 +76,12 @@ export default function SocialImpactPage() {
             </header>
 
             {/* Total Reach */}
-            <ImpactSection 
-                title="Milyonlara Ulaştık."
+            <ImpactSection
+                title={cms.title || 'Milyonlara Ulaştık.'}
                 stat="1.2M+"
-                subtitle="Hayata doğrudan dokunuş."
-                description="Türkiye genelinde yürüttüğümüz projeler ve desteklediğimiz sivil toplum kuruluşları ile toplumsal kalkınmanın lokomotifi oluyoruz."
-                imageUrl="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
+                subtitle={cms.subtitle || 'Hayata doğrudan dokunuş.'}
+                description={cms.description || 'Türkiye genelinde yürüttüğümüz projeler ve desteklediğimiz sivil toplum kuruluşları ile toplumsal kalkınmanın lokomotifi oluyoruz.'}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop'}
                 imageHint="happy group people support"
             />
 

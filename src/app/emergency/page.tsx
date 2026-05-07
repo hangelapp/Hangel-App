@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { countryPhoneCodes } from '@/lib/data';
+import { useFirestore, useUser } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -137,6 +139,8 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
 
 export default function EmergencyPage() {
     const { toast } = useToast();
+    const db = useFirestore();
+    const { user: authUser } = useUser();
     const [activeCalls, setActiveCalls] = useState(initialActiveCalls);
     const [pastApplications, setPastApplications] = useState(initialPastApplications);
     const [isReporting, setIsReporting] = useState<string | null>(null);
@@ -154,11 +158,43 @@ export default function EmergencyPage() {
         }, 2000);
     };
 
-    const handleBloodNeedSubmit = (data: any) => {
-        toast({
-            title: 'Kan İhtiyacı Bildirimi Alındı',
-            description: `${data.hospital} için ${data.bloodType} kan ihtiyacı bildirimi yapıldı.`,
-        });
+    const handleBloodNeedSubmit = async (data: any) => {
+        if (!authUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Giriş gerekli',
+                description: 'Acil kan talebi göndermek için giriş yapmalısınız.',
+            });
+            return;
+        }
+        try {
+            await addDoc(collection(db, 'emergencyRequests'), {
+                type: 'blood',
+                hospitalName: data.hospital || '',
+                bloodType: data.bloodType || '',
+                contactName: data.contactName || '',
+                contactPhone: data.contactPhone || '',
+                message: data.notes || '',
+                status: 'pending', // süper admin onayı bekleniyor
+                requestedBy: authUser.uid,
+                requestedByName: authUser.displayName || authUser.email || '',
+                requestedByEmail: authUser.email || '',
+                createdAt: serverTimestamp(),
+            });
+            toast({
+                title: '✅ Kan İhtiyacı Bildirimi Alındı',
+                description: 'Talebiniz süper admin onayından sonra yakındaki kullanıcılara bildirim olarak gönderilecek.',
+            });
+        } catch (e: any) {
+            console.error('Blood request submit failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Gönderilemedi',
+                description: e?.code === 'permission-denied'
+                    ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
+                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        }
     };
 
     const handleHelpClick = (call: typeof initialActiveCalls[0]) => {

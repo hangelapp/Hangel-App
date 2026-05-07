@@ -10,10 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail } from 'lucide-react';
+import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -33,6 +33,8 @@ export default function EmergencyManagementPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user: authUser } = useUser();
+
+  const [activeTab, setActiveTab] = useState<string>('pending');
 
   // Form state
   const [hospitalName, setHospitalName] = useState('');
@@ -63,6 +65,12 @@ export default function EmergencyManagementPage() {
   }, [db]);
   const { data: responses, isLoading: responsesLoading } = useCollection<any>(responsesQuery);
 
+  // Kullanıcı tarafından gönderilmiş, super-admin onayı bekleyen talepler
+  const pendingRequestsQuery = useMemoFirebase(() => {
+    return query(collection(db, 'emergencyRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+  }, [db]);
+  const { data: pendingRequests } = useCollection<any>(pendingRequestsQuery);
+
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
   const neighborhoodOptions = (city && district) ? ((neighborhoodsData as any)[city]?.[district] ?? []) : [];
@@ -81,6 +89,41 @@ export default function EmergencyManagementPage() {
       return false;
     });
   }, [allUsers, bloodType, scope, city, district, neighborhood]);
+
+  // Kullanıcı talebini forma yükle (preview & onayla)
+  const loadIntoForm = (req: any) => {
+    setHospitalName(req.hospitalName || '');
+    setHospitalAddress(req.hospitalAddress || '');
+    setBloodType(req.bloodType || '');
+    setMessage(req.message || '');
+    setContactPhone(req.contactPhone || '');
+    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
+    setScope(req.scope || 'city');
+    setCity(req.city || '');
+    setDistrict(req.district || '');
+    setNeighborhood(req.neighborhood || '');
+    // Forma gönderilen kullanıcı talebinin id'sini sakla — onay sonrası güncellenecek
+    (window as any).__pendingApprovalId = req.id;
+    setActiveTab('blood');
+    toast({ title: 'Talep yüklendi', description: 'İl/ilçe/mahalle seçip "Acil Talep Gönder"e basarak yayınlayabilirsiniz.' });
+    // Form bölümüne kaydır
+    setTimeout(() => document.getElementById('emergency-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  };
+
+  // Kullanıcı talebini reddet
+  const handleRejectRequest = async (reqId: string) => {
+    if (!confirm('Bu talep reddedilsin mi?')) return;
+    try {
+      await updateDoc(doc(db, 'emergencyRequests', reqId), {
+        status: 'rejected',
+        rejectedAt: serverTimestamp(),
+        rejectedBy: authUser?.uid || null,
+      });
+      toast({ title: 'Talep reddedildi' });
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+    }
+  };
 
   const handleSendRequest = async () => {
     if (!hospitalName.trim() || !bloodType) {
@@ -155,6 +198,26 @@ export default function EmergencyManagementPage() {
         await Promise.all(batches.map(b => b.commit()));
       }
 
+      // Eğer kullanıcı talebinden geliyorsa, orijinal kaydı 'sent' olarak işaretle
+      const pendingId = (window as any).__pendingApprovalId;
+      if (pendingId) {
+        try {
+          await updateDoc(doc(db, 'emergencyRequests', pendingId), {
+            status: 'sent',
+            approvedAt: serverTimestamp(),
+            approvedBy: authUser?.uid || null,
+            broadcastRequestId: requestRef.id,
+            scope,
+            city: city || null,
+            district: district || null,
+            neighborhood: neighborhood || null,
+          });
+        } catch (e) {
+          console.warn('Pending request update failed:', e);
+        }
+        (window as any).__pendingApprovalId = null;
+      }
+
       toast({
         title: '✅ Acil Talep Gönderildi',
         description: `${matchingUsers.length} kullanıcıya bildirim ulaştırıldı.`,
@@ -205,8 +268,14 @@ export default function EmergencyManagementPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="blood" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+          <TabsTrigger value="pending" className="gap-2">
+            <Inbox className="h-4 w-4" /> Kullanıcı Talepleri
+            {pendingRequests && pendingRequests.length > 0 && (
+              <Badge className="ml-1 bg-amber-500 text-[10px] h-4 px-1.5">{pendingRequests.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="blood" className="gap-2">
             <Droplet className="h-4 w-4" /> Kan İlanları
           </TabsTrigger>
@@ -221,9 +290,86 @@ export default function EmergencyManagementPage() {
           </TabsTrigger>
         </TabsList>
 
+        {/* KULLANICI TALEPLERİ — onay bekleyen talepler */}
+        <TabsContent value="pending" className="mt-6 space-y-3">
+          <Card className="border-amber-200 bg-amber-50/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-amber-700">
+                <Inbox className="h-5 w-5" /> Onay Bekleyen Kullanıcı Talepleri
+              </CardTitle>
+              <CardDescription>
+                Kullanıcılar /emergency sayfasından kan talebi gönderdiğinde burada listelenir.
+                "Form'a Yükle" → il/ilçe/mahalle seçip yayınla, ya da reddet.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!pendingRequests || pendingRequests.length === 0 ? (
+                <div className="py-12 text-center text-muted-foreground">
+                  <Inbox className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                  <p>Onay bekleyen kullanıcı talebi yok.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {pendingRequests.map((req: any) => (
+                    <div key={req.id} className="border rounded-xl p-4 bg-background space-y-3">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-red-600 text-[11px]">{req.bloodType || '?'}</Badge>
+                          <p className="font-bold text-sm">{req.hospitalName || 'Hastane'}</p>
+                          <Badge variant="outline" className="text-[10px]">Onay Bekliyor</Badge>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">{formatDate(req.createdAt)}</div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <UserIcon className="h-3 w-3" />
+                          <span>{req.requestedByName || req.contactName || 'Kullanıcı'}</span>
+                        </div>
+                        {req.contactPhone && (
+                          <a href={`tel:${req.contactPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-primary">
+                            <Phone className="h-3 w-3" /> {req.contactPhone}
+                          </a>
+                        )}
+                        {req.requestedByEmail && (
+                          <a href={`mailto:${req.requestedByEmail}`} className="flex items-center gap-1 text-muted-foreground hover:text-primary">
+                            <Mail className="h-3 w-3" /> {req.requestedByEmail}
+                          </a>
+                        )}
+                      </div>
+
+                      {req.message && (
+                        <p className="text-sm bg-muted/40 p-3 rounded-lg border whitespace-pre-wrap">{req.message}</p>
+                      )}
+
+                      <div className="flex items-center gap-2 flex-wrap pt-1">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 rounded-xl"
+                          onClick={() => loadIntoForm(req)}
+                        >
+                          <Send className="mr-2 h-3.5 w-3.5" /> Form'a Yükle &amp; Yayınla
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl text-destructive hover:bg-destructive/10 border-destructive/30"
+                          onClick={() => handleRejectRequest(req.id)}
+                        >
+                          <XCircle className="mr-2 h-3.5 w-3.5" /> Reddet
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* KAN İLANLARI */}
         <TabsContent value="blood" className="mt-6 space-y-6">
-          <Card className="border-red-200 bg-red-50/30">
+          <Card id="emergency-form-card" className="border-red-200 bg-red-50/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-700">
                 <Droplet className="h-5 w-5" /> Yeni Acil Kan Talebi

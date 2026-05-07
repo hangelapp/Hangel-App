@@ -18,6 +18,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, Save, Download, Upload as UploadIcon, Info } from 'lucide-react';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
@@ -89,7 +90,7 @@ const ContractEditDialog = ({ contract, onSave }: { contract?: Contract; onSave:
         <DialogHeader>
           <DialogTitle>{isNew ? 'Yeni Sözleşme / Politika Ekle' : `Düzenle: ${contract?.title}`}</DialogTitle>
           <DialogDescription>
-            HTML formatı destekleniyor (<code>&lt;h3&gt;</code>, <code>&lt;p&gt;</code>, <code>&lt;ul&gt;</code> vb.). Slug değiştirilirse eski URL bozulur.
+            Görsel düzenleyici ile yazın; istersen sağ üstten <code>HTML</code> moduna geçip kaynak kodu görebilirsin. Slug değiştirilirse eski URL bozulur.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
@@ -114,24 +115,14 @@ const ContractEditDialog = ({ contract, onSave }: { contract?: Contract; onSave:
             <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="A. Ana Sözleşmeler / B. Gizlilik Politikaları / vb." />
           </div>
           <div className="space-y-2">
-            <Label>İçerik (HTML) *</Label>
-            <Textarea
+            <Label>İçerik *</Label>
+            <RichTextEditor
               value={content}
-              onChange={e => setContent(e.target.value)}
-              rows={16}
-              className="font-mono text-xs"
-              placeholder={`<h3>Madde 1</h3>\n<p>Açıklama metni...</p>`}
+              onChange={setContent}
+              placeholder="Sözleşme metnini buraya yazın. Toolbar'dan başlık, liste, bağlantı vb. ekleyebilirsiniz."
+              minHeight={320}
             />
           </div>
-          {content && (
-            <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Önizleme</Label>
-              <div
-                className="prose prose-sm max-w-none p-4 border rounded-lg bg-muted/30 max-h-60 overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </div>
-          )}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>İptal</Button>

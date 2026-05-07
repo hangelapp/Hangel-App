@@ -16,6 +16,7 @@ import {
 import { Loader2, Send } from 'lucide-react';
 import { useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useWebPage } from '@/hooks/use-site-content';
 import { 
   Search,
   ChevronRight,
@@ -65,6 +66,7 @@ export default function SupportPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const { user: authUser } = useUser();
+    const cms = useWebPage('support');
     const [searchTerm, setSearchTerm] = useState('');
 
     // Yeni destek talebi formu
@@ -174,8 +176,8 @@ export default function SupportPage() {
         {/* Hero Section */}
         <section className="text-center space-y-6">
             <HangelLogo className="text-6xl mx-auto" />
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">hangel Destek</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium">Yardıma mı ihtiyacınız var? Buradan başlayın.</p>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{cms.title || 'hangel Destek'}</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">{cms.description || cms.subtitle || 'Yardıma mı ihtiyacınız var? Buradan başlayın.'}</p>
         </section>
 
         {/* Categories Section */}

@@ -45,7 +45,7 @@ import {
 } from '@/lib/data';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initiateEmailVerification, initiatePasswordResetEmail } from '@/firebase/non-blocking-login';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -747,6 +747,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
+    const { user: authUser } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [entityType, setEntityType] = useState<string>(initialEntity);
     
@@ -849,10 +850,23 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
         setIsSubmitting(true);
         try {
+            // /my-applications sayfası type='Kulüpler' / 'STK' / 'Marka' filtresiyle çalışır.
+            // Onlara uyacak şekilde entityType'tan tab type'ı türetiyoruz.
+            const tabType =
+                entityType === 'NGO' ? 'STK' :
+                entityType === 'BRAND' ? 'Marka' :
+                entityType === 'CLUB' ? 'Kulüpler' : 'Kurumsal Başvuru';
+
             await addDoc(collection(db, 'applications'), {
                 ...formData,
                 entityType,
-                type: 'Kurumsal Başvuru',
+                type: tabType,
+                title: formData.name || 'Kurumsal Başvuru',
+                org: formData.name || '',
+                location: [formData.city, formData.country].filter(Boolean).join(', ') || '',
+                userId: authUser?.uid || null, // Login'liyse /my-applications'da görünür
+                userName: authUser?.displayName || formData.authorized?.name || '',
+                userEmail: authUser?.email || formData.email || '',
                 selectedBeneficiaries,
                 selectedServiceAreas,
                 selectedPlatforms,
@@ -862,7 +876,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 status: 'Beklemede',
             });
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
-            router.push('/login');
+            router.push(authUser ? '/my-applications' : '/login');
         } catch (error: any) {
             console.error('Application submit failed:', error);
             toast({

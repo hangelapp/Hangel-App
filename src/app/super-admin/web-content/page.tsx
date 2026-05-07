@@ -1,17 +1,50 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, ImageIcon, X } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X, FileText, Pencil, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+
+type SitePageMeta = { slug: string; label: string; href: string };
+
+const SITE_PAGES: SitePageMeta[] = [
+    { slug: 'press', label: 'Basın Odası', href: '/press' },
+    { slug: 'yatirimci-iliskileri', label: 'Yatırımcı İlişkileri', href: '/yatirimci-iliskileri' },
+    { slug: 'careers', label: 'Kariyer', href: '/careers' },
+    { slug: 'social-entrepreneurship', label: 'Sosyal Girişimcilik', href: '/social-entrepreneurship' },
+    { slug: 'social-impact', label: 'Sürdürülebilirlik (Sosyal Etki)', href: '/social-impact' },
+    { slug: 'bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', href: '/bilgi-toplumu-hizmetleri' },
+    { slug: 'accessibility', label: 'Erişilebilirlik Beyanı', href: '/accessibility' },
+    { slug: 'standards', label: 'Kalite Standartlarımız', href: '/standards' },
+    { slug: 'logo-usage', label: 'Logo ve Marka Kullanımı', href: '/logo-usage' },
+    { slug: 'support', label: 'Destek Merkezi', href: '/support' },
+    { slug: 'support-app-support', label: 'Uygulama Desteği (SSS)', href: '/support/app-support' },
+    { slug: 'feedback', label: 'Geri Bildirim', href: '/feedback' },
+    { slug: 'merchant', label: 'Üye İşyeri Avantajları', href: '/merchant' },
+    { slug: 'ngo-onboarding', label: 'STK Kayıt Bilgileri', href: '/ngo-onboarding' },
+    { slug: 'campus-advantages', label: 'Kampüs Avantajları', href: '/campus-advantages' },
+    { slug: 'corporate', label: 'Kamu İş Birliği', href: '/corporate' },
+];
+
+type PageContent = {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    heroImageUrl?: string;
+    body?: string;
+};
 
 const SETTINGS_DOC = 'siteSettings';
 const CONTENT_ID = 'webContent';
@@ -102,6 +135,12 @@ export default function WebContentPage() {
     const [siteDescription, setSiteDescription] = useState('Sosyal Etki Platformu');
     const [faviconUrl, setFaviconUrl] = useState('');
 
+    // Generic page editor state
+    const [pages, setPages] = useState<Record<string, PageContent>>({});
+    const [editingSlug, setEditingSlug] = useState<string | null>(null);
+    const [editPage, setEditPage] = useState<PageContent>({});
+    const [savingPage, setSavingPage] = useState(false);
+
     // Home page sections
     const [homeHeroTitle, setHomeHeroTitle] = useState('yok öyle yalnız başına mücadele etmek.');
     const [homeHeroSubtitle, setHomeHeroSubtitle] = useState('Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.');
@@ -140,6 +179,9 @@ export default function WebContentPage() {
                         setSiteTitle(d.branding.siteTitle || siteTitle);
                         setSiteDescription(d.branding.siteDescription || siteDescription);
                         setFaviconUrl(d.branding.faviconUrl || '');
+                    }
+                    if (d.pages) {
+                        setPages(d.pages);
                     }
                     if (d.home) {
                         setHomeHeroTitle(d.home.heroTitle || homeHeroTitle);
@@ -235,6 +277,30 @@ export default function WebContentPage() {
         }
     };
 
+    const handleStartEditPage = (slug: string) => {
+        setEditingSlug(slug);
+        setEditPage(pages[slug] || {});
+    };
+
+    const handleSavePage = async () => {
+        if (!db || !editingSlug) return;
+        setSavingPage(true);
+        try {
+            await setDoc(
+                doc(db, SETTINGS_DOC, CONTENT_ID),
+                { pages: { [editingSlug]: editPage } },
+                { merge: true },
+            );
+            setPages(prev => ({ ...prev, [editingSlug]: editPage }));
+            toast({ title: 'Kaydedildi', description: 'Sayfa içeriği güncellendi.' });
+            setEditingSlug(null);
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } finally {
+            setSavingPage(false);
+        }
+    };
+
     if (isLoading) {
         return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin h-8 w-8 text-muted-foreground" /></div>;
     }
@@ -247,10 +313,11 @@ export default function WebContentPage() {
             </div>
 
             <Tabs defaultValue="branding" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="branding">Logo & Marka</TabsTrigger>
                     <TabsTrigger value="home">Anasayfa</TabsTrigger>
                     <TabsTrigger value="about">Hakkımızda</TabsTrigger>
+                    <TabsTrigger value="pages">Sayfalar</TabsTrigger>
                 </TabsList>
 
                 {/* Logo & Marka */}
@@ -417,7 +484,126 @@ export default function WebContentPage() {
                         </CardFooter>
                     </Card>
                 </TabsContent>
+
+                {/* Sayfalar — generic editor for all WEB section pages */}
+                <TabsContent value="pages" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Web Sayfaları</CardTitle>
+                            <CardDescription>
+                                Tanıtım/kurumsal sayfaların başlık, açıklama, kapak görseli ve içeriklerini düzenleyin.
+                                Sayfaların kendi yapısı (örn. tablolar, accordion'lar) korunur — buradaki alanlar başlık ve hero bölümlerinde kullanılır.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="border rounded-2xl overflow-hidden divide-y">
+                                {SITE_PAGES.map(p => {
+                                    const stored = pages[p.slug] || {};
+                                    const hasContent = !!(stored.title || stored.subtitle || stored.description || stored.heroImageUrl || stored.body);
+                                    return (
+                                        <div key={p.slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
+                                            <div className="flex-1 min-w-0 space-y-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <p className="font-bold text-sm">{p.label}</p>
+                                                    {hasContent ? (
+                                                        <Badge className="bg-green-600 text-[10px]">Düzenlendi</Badge>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
+                                                    )}
+                                                    <Link href={p.href} target="_blank" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+                                                        {p.href} <ExternalLink className="h-3 w-3" />
+                                                    </Link>
+                                                </div>
+                                                {stored.title && (
+                                                    <p className="text-xs text-muted-foreground truncate">{stored.title}</p>
+                                                )}
+                                            </div>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleStartEditPage(p.slug)}
+                                                className="rounded-xl shrink-0"
+                                            >
+                                                <Pencil className="mr-2 h-3.5 w-3.5" /> Düzenle
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
+
+            {/* Page edit dialog */}
+            <Dialog open={!!editingSlug} onOpenChange={(o) => !o && setEditingSlug(null)}>
+                <DialogContent className="max-w-2xl rounded-[2rem] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {SITE_PAGES.find(p => p.slug === editingSlug)?.label || 'Sayfa'} — Düzenle
+                        </DialogTitle>
+                        <DialogDescription>
+                            <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded">
+                                {SITE_PAGES.find(p => p.slug === editingSlug)?.href}
+                            </code>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>Ana Başlık</Label>
+                            <Input
+                                value={editPage.title || ''}
+                                onChange={e => setEditPage({ ...editPage, title: e.target.value })}
+                                placeholder="Sayfa başlığı"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Alt Başlık / Etiket</Label>
+                            <Input
+                                value={editPage.subtitle || ''}
+                                onChange={e => setEditPage({ ...editPage, subtitle: e.target.value })}
+                                placeholder="Hero üstündeki kısa etiket veya alt başlık"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Açıklama</Label>
+                            <Textarea
+                                value={editPage.description || ''}
+                                onChange={e => setEditPage({ ...editPage, description: e.target.value })}
+                                rows={3}
+                                placeholder="Hero bölümünün altında yer alan kısa açıklama"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Kapak / Hero Görseli</Label>
+                            <ImageUploaderCompact
+                                value={editPage.heroImageUrl || ''}
+                                onChange={(url) => setEditPage({ ...editPage, heroImageUrl: url })}
+                                pathPrefix={`siteContent/web/pages/${editingSlug}`}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>İçerik</Label>
+                            <RichTextEditor
+                                value={editPage.body || ''}
+                                onChange={(html) => setEditPage({ ...editPage, body: html })}
+                                placeholder="Sayfa içeriğini buraya yazın..."
+                                minHeight={280}
+                            />
+                            <p className="text-[10px] text-muted-foreground">
+                                Boş bırakılırsa sayfanın varsayılan içeriği gösterilir.
+                            </p>
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setEditingSlug(null)}>İptal</Button>
+                        <Button onClick={handleSavePage} disabled={savingPage} className="font-bold">
+                            {savingPage && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Kaydet
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
