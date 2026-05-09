@@ -433,6 +433,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
             if (name) {
                 try { await updateProfile(userCredential.user, { displayName: name }); } catch {}
             }
+            const referrerId = searchParams.get('ref') || null;
             setDocumentNonBlocking(doc(db, 'users', userId), {
                 id: userId,
                 name: name || '',
@@ -442,6 +443,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     phone: fullPhone,
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                ...(referrerId ? { invitedBy: referrerId } : {}),
                 createdAt: serverTimestamp(),
                 joinDate: new Date().toISOString().split('T')[0],
             }, { merge: true });

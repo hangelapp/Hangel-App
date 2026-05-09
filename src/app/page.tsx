@@ -350,24 +350,11 @@ export default function LoginPage() {
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
     const [totalBrandCount, setTotalBrandCount] = useState(0);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const { user: rootUser, isUserLoading: isRootUserLoading } = useUser();
     const { get } = useWebContent();
-
-    // Tanıtım sayfasını görmek isteyen giriş yapmış kullanıcı ?welcome=1 ile gelir
-    const showLandingForLoggedIn = searchParams.get('welcome') === '1';
 
     useEffect(() => {
         setMounted(true);
     }, []);
-
-    // Giriş yapmış kullanıcı ana sayfayı görmeden /market'e yönlendirilir
-    // (Tanıtımı görmek için ?welcome=1 query param ile gelmeli)
-    useEffect(() => {
-        if (!isRootUserLoading && rootUser && !showLandingForLoggedIn) {
-            router.replace('/market');
-        }
-    }, [isRootUserLoading, rootUser, router, showLandingForLoggedIn]);
 
     useEffect(() => {
         const fetchBrands = async () => {

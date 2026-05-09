@@ -319,11 +319,13 @@ export type User = {
     volunteerNgos: string[];
 };
 
+export type BadgeLevel = 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 'Platin';
+
 export type Badge = {
   id: string;
   name: string;
   iconName: LucideIcon;
-  level: 'Bronz' | 'Gümüş' | 'Altın' | 'Platin' | 'Elmas';
+  level: BadgeLevel;
   socialArea: string;
   pointsRequired: number;
   currentPoints: number;

@@ -108,9 +108,9 @@ function NewOpportunityForm() {
   const [socialArea, setSocialArea] = useState('');
   const [locationType, setLocationType] = useState('');
   const [country, setCountry] = useState('Türkiye');
-  const [city, setCity] = useState('');
-  const [district, setDistrict] = useState('');
-  const [neighborhood, setNeighborhood] = useState('');
+  const [cities, setCities] = useState<string[]>([]);
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
   const [applicationEnd, setApplicationEnd] = useState('');
   const [applicationEndTime, setApplicationEndTime] = useState('');
   const [eventStart, setEventStart] = useState('');
@@ -165,17 +165,39 @@ function NewOpportunityForm() {
   }, [isTurkey, countryISO]);
 
   const districtOptions = useMemo(() => {
-    if (isTurkey) return (districtsData[city] || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
-    if (!countryISO) return [];
-    const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === city);
-    if (!stateObj) return [];
-    return City.getCitiesOfState(countryISO, stateObj.isoCode)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
-  }, [isTurkey, countryISO, city]);
+    if (cities.length === 0) return [];
+    const set = new Set<string>();
+    if (isTurkey) {
+      cities.forEach(c => (districtsData[c] || []).forEach(d => set.add(d)));
+    } else if (countryISO) {
+      cities.forEach(cName => {
+        const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === cName);
+        if (stateObj) {
+          City.getCitiesOfState(countryISO, stateObj.isoCode)?.forEach(c => set.add(c.name));
+        }
+      });
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, isTurkey ? 'tr' : undefined));
+  }, [isTurkey, countryISO, cities]);
 
   const neighborhoodOptions = useMemo(() => {
-    if (!isTurkey || !city || !district) return [];
-    return ((neighborhoodsData as any)?.[city]?.[district] ?? []) as string[];
-  }, [isTurkey, city, district]);
+    if (!isTurkey || cities.length === 0 || districts.length === 0) return [];
+    const set = new Set<string>();
+    cities.forEach(c => {
+      districts.forEach(d => {
+        ((neighborhoodsData as any)?.[c]?.[d] || []).forEach((n: string) => set.add(n));
+      });
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [isTurkey, cities, districts]);
+
+  // Üst seviye seçim değişince geçersiz alt seçimleri temizle
+  React.useEffect(() => {
+    setDistricts(prev => prev.filter(d => districtOptions.includes(d)));
+  }, [districtOptions]);
+  React.useEffect(() => {
+    setNeighborhoods(prev => prev.filter(n => neighborhoodOptions.includes(n)));
+  }, [neighborhoodOptions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,9 +231,13 @@ function NewOpportunityForm() {
         interests,
         location: {
           country: country.trim(),
-          city: city.trim(),
-          district: district.trim(),
-          neighborhood: neighborhood.trim(),
+          // Geriye dönük uyumluluk için virgülle birleştirilmiş string + multi-select array'ler
+          city: cities.join(', '),
+          district: districts.join(', '),
+          neighborhood: neighborhoods.join(', '),
+          cities,
+          districts,
+          neighborhoods,
           type: locationTypeMap[locationType] || 'Saha',
         },
         commitment: [commitmentMap[commitment], commitmentDetail.trim()].filter(Boolean).join(' — '),
@@ -332,7 +358,7 @@ function NewOpportunityForm() {
                 <Label htmlFor="country">Ülke</Label>
                 <Select
                   value={country}
-                  onValueChange={(v) => { setCountry(v); setCity(''); setDistrict(''); setNeighborhood(''); }}
+                  onValueChange={(v) => { setCountry(v); setCities([]); setDistricts([]); setNeighborhoods([]); }}
                 >
                   <SelectTrigger id="country"><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
                   <SelectContent className="max-h-72">
@@ -343,56 +369,45 @@ function NewOpportunityForm() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">{isTurkey ? 'İl' : 'Şehir'}</Label>
-                {cityOptions.length > 0 ? (
-                  <Select
-                    value={city}
-                    onValueChange={(v) => { setCity(v); setDistrict(''); setNeighborhood(''); }}
-                  >
-                    <SelectTrigger id="city"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input id="city" value={city} onChange={e => setCity(e.target.value)} placeholder="Şehir girin" />
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="district">{isTurkey ? 'İlçe' : 'Bölge'}</Label>
-                {districtOptions.length > 0 ? (
-                  <Select
-                    value={district}
-                    onValueChange={(v) => { setDistrict(v); setNeighborhood(''); }}
-                    disabled={!city}
-                  >
-                    <SelectTrigger id="district"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input id="district" value={district} onChange={e => setDistrict(e.target.value)} placeholder="İlçe girin" />
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="neighborhood">Mahalle</Label>
-                {isTurkey && neighborhoodOptions.length > 0 ? (
-                  <Select
-                    value={neighborhood}
-                    onValueChange={setNeighborhood}
-                    disabled={!district}
-                  >
-                    <SelectTrigger id="neighborhood"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input id="neighborhood" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Mahalle girin" />
-                )}
-              </div>
+              {cityOptions.length > 0 ? (
+                <MultiSelect
+                  title={isTurkey ? 'İl' : 'Şehir'}
+                  options={cityOptions}
+                  selected={cities}
+                  onSelectedChange={setCities}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="city">{isTurkey ? 'İl' : 'Şehir'}</Label>
+                  <Input id="city" value={cities[0] || ''} onChange={e => setCities(e.target.value ? [e.target.value] : [])} placeholder="Şehir girin" />
+                </div>
+              )}
+              {districtOptions.length > 0 ? (
+                <MultiSelect
+                  title={isTurkey ? 'İlçe' : 'Bölge'}
+                  options={districtOptions}
+                  selected={districts}
+                  onSelectedChange={setDistricts}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="district">{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                  <Input id="district" value={districts[0] || ''} onChange={e => setDistricts(e.target.value ? [e.target.value] : [])} placeholder="İlçe girin" />
+                </div>
+              )}
+              {isTurkey && neighborhoodOptions.length > 0 ? (
+                <MultiSelect
+                  title="Mahalle"
+                  options={neighborhoodOptions}
+                  selected={neighborhoods}
+                  onSelectedChange={setNeighborhoods}
+                />
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="neighborhood">Mahalle</Label>
+                  <Input id="neighborhood" value={neighborhoods[0] || ''} onChange={e => setNeighborhoods(e.target.value ? [e.target.value] : [])} placeholder="Mahalle girin" />
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

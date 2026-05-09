@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export default function PostsPage() {
     const { toast } = useToast();
@@ -25,19 +25,30 @@ export default function PostsPage() {
     const [editContent, setEditContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
 
-    // Load posts from Firestore
+    // Load posts from Firestore (client-side sort to avoid composite index requirement
+    // and to include legacy posts that may be missing the createdAt field)
     const postsQuery = useMemoFirebase(() => {
         if (!authUser?.uid) return null;
         return query(
             collection(firestore, 'posts'),
             where('authorId', '==', authUser.uid),
-            orderBy('createdAt', 'desc')
         );
     }, [firestore, authUser?.uid]);
 
     const { data: firestorePosts, isLoading } = useCollection<Post & { authorId: string; createdAt: any }>(postsQuery);
 
-    const posts = firestorePosts || [];
+    const posts = useMemo(() => {
+        const list = firestorePosts || [];
+        const ts = (p: any): number => {
+            const c = p.createdAt;
+            if (c?.toDate) { try { return c.toDate().getTime(); } catch {} }
+            if (typeof c === 'number') return c;
+            if (typeof c === 'string') { const t = Date.parse(c); if (!Number.isNaN(t)) return t; }
+            if (p.timestamp) { const t = Date.parse(p.timestamp); if (!Number.isNaN(t)) return t; }
+            return 0;
+        };
+        return [...list].sort((a, b) => ts(b) - ts(a));
+    }, [firestorePosts]);
 
     const handleCreatePost = async () => {
         if (!newPostContent.trim()) {

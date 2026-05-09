@@ -19,6 +19,7 @@ import { format, parse, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns
 import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { EventMapDialog } from '@/components/events/event-map-dialog';
 
 function EventsPageContent() {
   const { toast } = useToast();
@@ -29,6 +30,7 @@ function EventsPageContent() {
 
   // Filter state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
   const [locationTypeFilter, setLocationTypeFilter] = useState<'all' | 'Online' | 'Fiziksel'>('all');
   const [cityFilter, setCityFilter] = useState<string[]>([]);
@@ -167,7 +169,7 @@ function EventsPageContent() {
                 <DropdownMenuItem onClick={() => setSortKey('capacity')}>Kalan Kapasite</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" onClick={() => toast({ title: 'Harita özelliği yakında gelecek!'})}>
+          <Button variant="outline" onClick={() => setIsMapOpen(true)}>
             <Map className="mr-2 h-4 w-4" /> Harita
           </Button>
         </div>
@@ -272,6 +274,8 @@ function EventsPageContent() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <EventMapDialog open={isMapOpen} onOpenChange={setIsMapOpen} events={sortedEvents} />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => (

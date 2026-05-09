@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
@@ -67,6 +67,49 @@ export default function EventDetailPage() {
   const { user: authUser } = useUser();
   const [profileUrl, setProfileUrl] = useState('');
   const { toast } = useToast();
+  const cardFrontRef = useRef<HTMLDivElement>(null);
+  const cardBackRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadBadgePdf = async () => {
+    if (!cardFrontRef.current || !cardBackRef.current) return;
+    setIsGeneratingPdf(true);
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+
+      const opts = { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false };
+      const frontCanvas = await html2canvas(cardFrontRef.current, opts);
+      const backCanvas = await html2canvas(cardBackRef.current, opts);
+
+      // A4 portre, iki kart yan yana ortalanır
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      // Kart oranı 105/148 (A6). Genişlik 70mm, yükseklik = 70*148/105 ≈ 98.67mm
+      const cardW = 70;
+      const cardH = (cardW * 148) / 105;
+      const gap = 8;
+      const totalW = cardW * 2 + gap;
+      const startX = (pageW - totalW) / 2;
+      const startY = (pageH - cardH) / 2;
+
+      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', startX, startY, cardW, cardH);
+      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', startX + cardW + gap, startY, cardW, cardH);
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(120);
+      pdf.text('hangel — etkinlik yaka kartı', pageW / 2, pageH - 10, { align: 'center' });
+
+      pdf.save(`yaka-karti-${event?.id || 'hangel'}.pdf`);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'PDF oluşturulamadı', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   // Fetch event by slug (falls back to doc id lookup if no slug match)
   const eventsQuery = useMemoFirebase(() => {
@@ -338,7 +381,7 @@ export default function EventDetailPage() {
                 <div className="my-6 flex flex-col items-center gap-8">
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
-                    <div className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
+                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
                             <span className="text-xl font-black text-primary">hangel</span>
                             {organizerLogo && (
@@ -372,7 +415,7 @@ export default function EventDetailPage() {
 
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Arka Yüzü</h3>
-                    <div className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
+                    <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
                             <span className="text-xl font-black text-primary">hangel</span>
                             {organizerLogo && (
@@ -401,10 +444,17 @@ export default function EventDetailPage() {
                 </div>
                 <AlertDialogFooter className="flex-col sm:flex-row gap-3">
                 <AlertDialogCancel className="rounded-xl h-12 font-bold">Kapat</AlertDialogCancel>
-                <Button asChild className="rounded-xl h-12 font-bold">
-                    <a href={nameQrCodeUrl} download={`yaka-karti-qr-${event.id}.png`}>
-                        <Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir
-                    </a>
+                <Button
+                    type="button"
+                    onClick={handleDownloadBadgePdf}
+                    disabled={isGeneratingPdf}
+                    className="rounded-xl h-12 font-bold"
+                >
+                    {isGeneratingPdf ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> PDF hazırlanıyor…</>
+                    ) : (
+                        <><Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir</>
+                    )}
                 </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>

@@ -4,12 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Suspense, useState, useEffect, useMemo } from 'react';
-import { Loader2, BarChart3, Users, Building } from 'lucide-react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { Loader2, BarChart3, Users, Building, ShieldAlert } from 'lucide-react';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, where } from 'firebase/firestore';
 
 const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8', '#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
 
@@ -17,7 +14,7 @@ const EmptyChartState = ({ message }: { message?: string }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
     <p className="text-muted-foreground font-medium">{message || 'Henüz yeterli veri yok'}</p>
-    <p className="text-sm text-muted-foreground/70 mt-1">Bu STK'yı destekleyen/gönüllüsü olan kullanıcılar olduğunda grafikler oluşur.</p>
+    <p className="text-sm text-muted-foreground/70 mt-1">Bu varlığı destekleyen/gönüllüsü olan kullanıcılar olduğunda grafikler oluşur.</p>
   </div>
 );
 
@@ -43,44 +40,106 @@ const AGE_ORDER = ['< 18', '18-24', '25-34', '35-44', '45-54', '55+'];
 const topN = <T extends { count: number }>(arr: T[], n = 10): T[] =>
   [...arr].sort((a, b) => b.count - a.count).slice(0, n);
 
+type EntityKind = 'ngo' | 'brand' | 'club';
+type ManagedEntity = { kind: EntityKind; id: string; name: string };
+
 function DemographicsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
   const { user: authUser } = useUser();
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => { setIsMounted(true); }, []);
 
-  const queryId = searchParams.get('id');
-  const entityId = queryId || null;
+  // 1) Kullanıcının yönettiği varlığı tespit et: önce NGO/Brand/Club query, sonra user doc fallback
+  const adminNgosQ = useMemoFirebase(
+    () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+    [firestore, authUser?.uid],
+  );
+  const adminBrandsQ = useMemoFirebase(
+    () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+    [firestore, authUser?.uid],
+  );
+  const adminClubsQ = useMemoFirebase(
+    () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+    [firestore, authUser?.uid],
+  );
 
+  const { data: adminNgos, isLoading: ngosLoading } = useCollection<any>(adminNgosQ);
+  const { data: adminBrands, isLoading: brandsLoading } = useCollection<any>(adminBrandsQ);
+  const { data: adminClubs, isLoading: clubsLoading } = useCollection<any>(adminClubsQ);
+
+  // Fallback: user doc'taki managed*Id
+  const userDocRef = useMemoFirebase(
+    () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+    [firestore, authUser?.uid],
+  );
+  const { data: userData } = useDoc<any>(userDocRef);
+
+  const fallbackNgoRef = useMemoFirebase(
+    () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+    [firestore, userData?.managedNgoId],
+  );
+  const fallbackBrandRef = useMemoFirebase(
+    () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+    [firestore, userData?.managedBrandId],
+  );
+  const fallbackClubRef = useMemoFirebase(
+    () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+    [firestore, userData?.managedClubId],
+  );
+  const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
+  const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
+  const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+
+  // Yönetici olduğu varlıkları topla (NGO > Brand > Club önceliği)
+  const managedEntities = useMemo<ManagedEntity[]>(() => {
+    const list: ManagedEntity[] = [];
+    const seen = new Set<string>();
+    const push = (kind: EntityKind, e: any) => {
+      if (!e?.id) return;
+      const key = `${kind}:${e.id}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      list.push({ kind, id: e.id, name: e.name || (kind === 'ngo' ? 'STK' : kind === 'brand' ? 'Marka' : 'Kulüp') });
+    };
+    (adminNgos || []).forEach(e => push('ngo', e));
+    if (fallbackNgo) push('ngo', fallbackNgo);
+    (adminBrands || []).forEach(e => push('brand', e));
+    if (fallbackBrand) push('brand', fallbackBrand);
+    (adminClubs || []).forEach(e => push('club', e));
+    if (fallbackClub) push('club', fallbackClub);
+    return list;
+  }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+
+  const activeEntity = managedEntities[0] || null;
+
+  // Tüm kullanıcıları + tüm markaları oku (filtreleme için)
   const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
   const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
 
   const brandsQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'brands') : null), [firestore]);
   const { data: allBrands } = useCollection<any>(brandsQuery);
 
-  const ngosQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'ngos') : null), [firestore]);
-  const { data: allNgos } = useCollection<any>(ngosQuery);
-
-  const selectedNgo = useMemo(() => {
-    if (!entityId || !allNgos) return null;
-    return allNgos.find((n: any) => n.id === entityId) || null;
-  }, [allNgos, entityId]);
-
-  const handleSelectNgo = (id: string) => {
-    router.push(`${pathname}?id=${id}`);
-  };
-
   const { donors, volunteers, supporters } = useMemo(() => {
-    if (!entityId || !allUsers) return { donors: [], volunteers: [], supporters: [] };
-    const donors = allUsers.filter(u => Array.isArray(u.supportedNgos) && u.supportedNgos.includes(entityId));
-    const volunteers = allUsers.filter(u => Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(entityId));
+    if (!activeEntity || !allUsers) return { donors: [], volunteers: [], supporters: [] };
+    const id = activeEntity.id;
+    let donors: any[] = [];
+    let volunteers: any[] = [];
+    if (activeEntity.kind === 'ngo') {
+      donors = allUsers.filter(u => Array.isArray(u.supportedNgos) && u.supportedNgos.includes(id));
+      volunteers = allUsers.filter(u => Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id));
+    } else if (activeEntity.kind === 'brand') {
+      // Marka için: takip eden kullanıcılar = destekçi/bağışçı (gönüllü kavramı geçerli değil)
+      donors = allUsers.filter(u => Array.isArray(u.followedBrands) && u.followedBrands.includes(id));
+      volunteers = [];
+    } else {
+      // Kulüp için: ileride membership eklendiğinde buradan filtrelenecek
+      donors = [];
+      volunteers = [];
+    }
     const supporters = Array.from(new Map([...donors, ...volunteers].map(u => [u.id, u])).values());
     return { donors, volunteers, supporters };
-  }, [allUsers, entityId]);
+  }, [allUsers, activeEntity]);
 
   const ageGroupData = useMemo(() => {
     const counts: Record<string, { Gonullu: number; Bagisci: number }> = {};
@@ -192,7 +251,9 @@ function DemographicsPageContent() {
     ).map(({ count, ...rest }) => rest);
   }, [donors, allBrands]);
 
-  if (!isMounted || usersLoading) {
+  const initialLoading = !isMounted || usersLoading || ngosLoading || brandsLoading || clubsLoading;
+
+  if (initialLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -200,36 +261,31 @@ function DemographicsPageContent() {
     );
   }
 
-  const hasAnyData = ageGroupData.length > 0 || cityData.length > 0 || volunteerInterestData.length > 0 ||
-    genderAgeData.length > 0 || schoolData.length > 0 || spendingHabitsData.length > 0 || competencyData.length > 0;
-
-  if (!entityId) {
+  if (!activeEntity) {
     return (
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold">Demografi Analizi</h1>
-          <p className="text-muted-foreground">Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.</p>
+          <p className="text-muted-foreground">Yönettiğiniz STK, marka ya da kulüp için destekçi demografisini görün.</p>
         </div>
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Building className="h-5 w-5 text-primary" /> Görmek İstediğiniz STK</CardTitle>
-            <CardDescription>Demografi verilerini incelemek istediğiniz kuruluşu seçin.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Label>STK Seçin</Label>
-            <Select onValueChange={handleSelectNgo}>
-              <SelectTrigger><SelectValue placeholder={allNgos && allNgos.length > 0 ? 'Bir STK seçin...' : 'STK bulunamadı'} /></SelectTrigger>
-              <SelectContent className="max-h-80">
-                {(allNgos || []).map((n: any) => (
-                  <SelectItem key={n.id} value={n.id}>{n.name || n.id}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <CardContent className="py-16">
+            <div className="flex flex-col items-center justify-center text-center">
+              <ShieldAlert className="h-12 w-12 text-muted-foreground/40 mb-4" />
+              <p className="text-muted-foreground font-medium">Yönetici olduğunuz bir varlık bulunamadı.</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">Lütfen sistem yöneticinize danışın.</p>
+            </div>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  const entityTypeLabel = activeEntity.kind === 'ngo' ? 'STK' : activeEntity.kind === 'brand' ? 'Marka' : 'Kulüp';
+  const supportersLabel = activeEntity.kind === 'brand' ? 'Toplam Takipçi' : 'Toplam Destekçi';
+
+  const hasAnyData = ageGroupData.length > 0 || cityData.length > 0 || volunteerInterestData.length > 0 ||
+    genderAgeData.length > 0 || schoolData.length > 0 || spendingHabitsData.length > 0 || competencyData.length > 0;
 
   return (
     <div className="space-y-6">
@@ -237,25 +293,17 @@ function DemographicsPageContent() {
         <div>
           <h1 className="text-2xl font-bold">Demografi Analizi</h1>
           <p className="text-muted-foreground">
-            {selectedNgo?.name ? `${selectedNgo.name} — destekçi topluluğu` : 'Gönüllü ve bağışçı topluluğunuzu daha yakından tanıyarak stratejilerinizi geliştirin.'}
+            <span className="font-semibold text-foreground">{activeEntity.name}</span>
+            <span className="mx-2 text-muted-foreground/40">·</span>
+            <span className="text-xs uppercase tracking-widest font-bold">{entityTypeLabel}</span>
           </p>
-        </div>
-        <div className="min-w-[240px]">
-          <Select value={entityId} onValueChange={handleSelectNgo}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent className="max-h-80">
-              {(allNgos || []).map((n: any) => (
-                <SelectItem key={n.id} value={n.id}>{n.name || n.id}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div><div><p className="text-2xl font-black">{supporters.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Toplam Destekçi</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div><div><p className="text-2xl font-black">{supporters.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{supportersLabel}</p></div></CardContent></Card>
         <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-green-500/10"><Users className="h-5 w-5 text-green-600" /></div><div><p className="text-2xl font-black">{volunteers.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Gönüllü</p></div></CardContent></Card>
-        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-blue-500/10"><Users className="h-5 w-5 text-blue-600" /></div><div><p className="text-2xl font-black">{donors.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Bağışçı</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-blue-500/10"><Users className="h-5 w-5 text-blue-600" /></div><div><p className="text-2xl font-black">{donors.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{activeEntity.kind === 'brand' ? 'Takipçi' : 'Bağışçı'}</p></div></CardContent></Card>
       </div>
 
       {!hasAnyData ? (

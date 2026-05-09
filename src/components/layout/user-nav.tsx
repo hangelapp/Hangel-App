@@ -62,6 +62,8 @@ export function UserNav() {
             alt="Profile"
             className="object-cover"
             onError={() => setImageBroken(true)}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
           />
         )}
         <AvatarFallback className="bg-primary/10 text-primary font-bold">
