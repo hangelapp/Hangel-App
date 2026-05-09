@@ -3,6 +3,40 @@
 import { useEffect } from 'react';
 import { useTranslation } from '@/components/providers/language-provider';
 
+// Google Translate, sayfadaki metinleri <font> etiketlerine sarar. Bu işlem
+// React'ın virtual DOM kayıtlarıyla çakışır; navigasyon sırasında React,
+// "kendi child'ı olmayan" bir node'u kaldırmaya çalışır ve şu hatayı atar:
+//   NotFoundError: Failed to execute 'removeChild' on 'Node'
+// Bu hatadan kaçınmak için Node.prototype.removeChild ve insertBefore'u bir kere
+// patch'liyoruz: parent eşleşmiyorsa sessizce fallback davranış uyguluyoruz.
+// Ref: https://github.com/facebook/react/issues/11538
+let domPatched = false;
+function patchDomMethodsForGoogleTranslate() {
+  if (domPatched) return;
+  if (typeof Node === 'undefined' || !Node.prototype) return;
+  const origRemoveChild = Node.prototype.removeChild;
+  // @ts-ignore — runtime patch
+  Node.prototype.removeChild = function (child: any) {
+    if (child?.parentNode !== this) {
+      if (child?.parentNode) return child.parentNode.removeChild(child);
+      return child;
+    }
+    // @ts-ignore
+    return origRemoveChild.apply(this, arguments as any);
+  };
+  const origInsertBefore = Node.prototype.insertBefore;
+  // @ts-ignore — runtime patch
+  Node.prototype.insertBefore = function (newNode: any, refNode: any) {
+    if (refNode && refNode.parentNode !== this) {
+      // @ts-ignore
+      return origInsertBefore.call(this, newNode, null);
+    }
+    // @ts-ignore
+    return origInsertBefore.apply(this, arguments as any);
+  };
+  domPatched = true;
+}
+
 // Google Translate widget'ını yükler ve seçilen dile göre tüm sayfa içeriğini
 // canlı olarak çevirir. Türkçe seçiliyse çeviri devre dışı bırakılır.
 //
@@ -37,9 +71,19 @@ const deleteCookie = (name: string, domain?: string) => {
 };
 
 export default function AutoTranslate() {
-  const { language } = useTranslation();
+  const { language, isHydrated } = useTranslation();
 
   useEffect(() => {
+    // Hydration'dan önce cookie'ye dokunma — aksi halde localStorage'dan
+    // okunan dilden önce 'tr' default'u ile cookie silinir, sonsuz reload döngüsüne girer.
+    if (!isHydrated) return;
+
+    // Türkçe dışında bir dil seçiliyse Google Translate DOM'u değiştireceği için
+    // navigasyonda React'ın çakışmaması adına Node.prototype'ı patch'le.
+    if ((GTRANSLATE_LANG_MAP[language] || 'tr') !== 'tr') {
+      patchDomMethodsForGoogleTranslate();
+    }
+
     const target = GTRANSLATE_LANG_MAP[language] || 'tr';
     const isTurkish = target === 'tr';
     const host = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -67,7 +111,7 @@ export default function AutoTranslate() {
     }
     // Reload — Google runtime cookie'yi okuyup hedef dile çevirir
     window.location.reload();
-  }, [language]);
+  }, [language, isHydrated]);
 
   return (
     <>

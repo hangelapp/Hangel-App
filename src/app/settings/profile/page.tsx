@@ -25,10 +25,11 @@ const emptyUser: User = {
         gender: '',
         nationality: '',
         bloodType: '',
+        bloodNotifications: false,
         address: { country: '', city: '', district: '', neighborhood: '', fullAddress: '' },
         website: null,
         social: { linkedin: null, github: null, behance: null, instagram: null, twitter: null }
-    },
+    } as any,
     volunteerInfo: {
         skills: [],
         dailySkills: [],
@@ -54,7 +55,8 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, Calendar, UserCircle, Droplets, Bell } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -338,6 +340,84 @@ export default function ProfileSettingsPage() {
                             <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" />
                         )}
                     </div>
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary" /> Demografik Bilgiler</CardTitle>
+                <CardDescription>Doğum tarihin, uyruğun, cinsiyetin ve kan grubun. Sadece sen ve süper admin görür.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Doğum Tarihi</Label>
+                        <Input
+                            type="date"
+                            value={profile.personalInfo.birthDate || ''}
+                            onChange={(e) => handleChange('personalInfo', 'birthDate', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Uyruk</Label>
+                        <Select
+                            value={profile.personalInfo.nationality || ''}
+                            onValueChange={(v) => handleChange('personalInfo', 'nationality', v)}
+                        >
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Uyruk seçin..." /></SelectTrigger>
+                            <SelectContent className="max-h-72">
+                                <SelectItem value="Türkiye">Türkiye</SelectItem>
+                                {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
+                                    <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Cinsiyet</Label>
+                        <Select
+                            value={profile.personalInfo.gender || ''}
+                            onValueChange={(v) => handleChange('personalInfo', 'gender', v)}
+                        >
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Kadın">Kadın</SelectItem>
+                                <SelectItem value="Erkek">Erkek</SelectItem>
+                                <SelectItem value="Diğer">Diğer</SelectItem>
+                                <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><Droplets className="h-4 w-4" /> Kan Grubu</Label>
+                        <Select
+                            value={profile.personalInfo.bloodType || ''}
+                            onValueChange={(v) => handleChange('personalInfo', 'bloodType', v)}
+                        >
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                            <SelectContent>
+                                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', '0+', '0-'].map(t => (
+                                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-xl bg-muted/30">
+                    <div className="flex items-start gap-3">
+                        <Bell className="h-4 w-4 text-primary mt-0.5" />
+                        <div>
+                            <p className="font-semibold text-sm">Kan ilanlarında bildirim al</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                Senin kan grubuna uygun acil kan ihtiyacı bildirimleri telefonuna ve uygulamaya iletilir.
+                            </p>
+                        </div>
+                    </div>
+                    <Switch
+                        checked={!!(profile.personalInfo as any).bloodNotifications}
+                        onCheckedChange={(checked) => handleChange('personalInfo', 'bloodNotifications', checked)}
+                    />
                 </div>
             </CardContent>
         </Card>

@@ -7,8 +7,8 @@ import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusC
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
 
 const statusVariantMap = {
     'approved': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
@@ -55,39 +55,87 @@ export default function AdminPage() {
   const { data: managedBrands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
   const { data: managedClubs, isLoading: clubsLoading } = useCollection<any>(clubsQ);
 
+  // User doc — fallback için: super-admin atadığında users/{uid}.managedNgoId vs.
+  // de yazılıyor. adminUserId query'si herhangi bir nedenle eşleşmezse,
+  // bu field'lardan direkt fetch ederek varlığı yine de gösteriyoruz.
+  const userDocRef = useMemoFirebase(
+    () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+    [db, authUser?.uid],
+  );
+  const { data: userData } = useDoc<any>(userDocRef);
+
+  const fallbackNgoRef = useMemoFirebase(
+    () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+    [db, userData?.managedNgoId],
+  );
+  const fallbackBrandRef = useMemoFirebase(
+    () => (db && userData?.managedBrandId ? doc(db, 'brands', userData.managedBrandId) : null),
+    [db, userData?.managedBrandId],
+  );
+  const fallbackClubRef = useMemoFirebase(
+    () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
+    [db, userData?.managedClubId],
+  );
+  const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
+  const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
+  const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+
   const isLoading = ngosLoading || brandsLoading || clubsLoading;
 
   const managedItems: ManagedEntity[] = useMemo(() => {
     const items: ManagedEntity[] = [];
-    (managedNgos || []).forEach((n: any) => items.push({
-      id: n.id,
-      name: n.name || 'STK',
-      type: 'STK',
-      icon: 'heart',
-      href: '/ngo-admin/dashboard',
-      logoUrl: n.avatarUrl || n.logoUrl,
-      status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
-    }));
-    (managedBrands || []).forEach((b: any) => items.push({
-      id: b.id,
-      name: b.name || 'Marka',
-      type: 'Marka',
-      icon: 'shopping-bag',
-      href: '/ngo-admin/dashboard',
-      logoUrl: b.logoUrl,
-      status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
-    }));
-    (managedClubs || []).forEach((c: any) => items.push({
-      id: c.id,
-      name: c.name || 'Kulüp',
-      type: 'Kulüp',
-      icon: 'school',
-      href: '/ngo-admin/dashboard',
-      logoUrl: c.avatarUrl || c.logoUrl,
-      status: (c.status === 'Pasif' || c.status === 'Beklemede') ? 'pending' : 'approved',
-    }));
+    const seen = new Set<string>();
+    const pushNgo = (n: any) => {
+      if (!n || seen.has(`ngo:${n.id}`)) return;
+      seen.add(`ngo:${n.id}`);
+      items.push({
+        id: n.id,
+        name: n.name || 'STK',
+        type: 'STK',
+        icon: 'heart',
+        href: '/ngo-admin/dashboard',
+        logoUrl: n.avatarUrl || n.logoUrl,
+        status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
+      });
+    };
+    const pushBrand = (b: any) => {
+      if (!b || seen.has(`brand:${b.id}`)) return;
+      seen.add(`brand:${b.id}`);
+      items.push({
+        id: b.id,
+        name: b.name || 'Marka',
+        type: 'Marka',
+        icon: 'shopping-bag',
+        href: '/ngo-admin/dashboard',
+        logoUrl: b.logoUrl,
+        status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
+      });
+    };
+    const pushClub = (c: any) => {
+      if (!c || seen.has(`club:${c.id}`)) return;
+      seen.add(`club:${c.id}`);
+      items.push({
+        id: c.id,
+        name: c.name || 'Kulüp',
+        type: 'Kulüp',
+        icon: 'school',
+        href: '/ngo-admin/dashboard',
+        logoUrl: c.avatarUrl || c.logoUrl,
+        status: (c.status === 'Pasif' || c.status === 'Beklemede') ? 'pending' : 'approved',
+      });
+    };
+
+    (managedNgos || []).forEach(pushNgo);
+    (managedBrands || []).forEach(pushBrand);
+    (managedClubs || []).forEach(pushClub);
+
+    // Fallback: user doc'daki managed*Id field'larından eklenmemişleri ekle
+    if (fallbackNgo) pushNgo(fallbackNgo);
+    if (fallbackBrand) pushBrand(fallbackBrand);
+    if (fallbackClub) pushClub(fallbackClub);
+
     return items;
-  }, [managedNgos, managedBrands, managedClubs]);
+  }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub]);
 
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">

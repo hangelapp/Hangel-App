@@ -36,7 +36,7 @@ import {
     Trash2,
     Plus
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
@@ -47,6 +47,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 
 const analyticsProviders = [
     { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
@@ -75,12 +77,52 @@ const transparencyDocs = [
     { id: 'etki', label: 'Sosyal Etki Raporu' },
 ];
 
+const REQUIRED_NS = ['ns1.hangel.org', 'ns2.hangel.org'];
+
+async function checkDnsRecords(domain: string): Promise<{ ok: boolean; foundNS: string[]; error?: string }> {
+    try {
+        const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=NS`, { cache: 'no-store' });
+        if (!res.ok) return { ok: false, foundNS: [], error: `DNS sorgusu başarısız: HTTP ${res.status}` };
+        const data = await res.json();
+        const answers: any[] = data?.Answer || [];
+        const foundNS = answers
+            .filter(a => a?.type === 2)
+            .map(a => String(a.data || '').toLowerCase().replace(/\.$/, ''));
+        const ok = REQUIRED_NS.every(ns => foundNS.some(found => found.endsWith(ns)));
+        return { ok, foundNS };
+    } catch (e: any) {
+        return { ok: false, foundNS: [], error: e?.message || 'DNS sorgusu başarısız' };
+    }
+}
+
 export default function WebsiteBuilderPage() {
     const router = useRouter();
     const { toast } = useToast();
-    
+    const db = useFirestore();
+    const { user: authUser } = useUser();
+
+    // Yönetici olduğu varlığı tespit et (NGO öncelikli)
+    const adminNgosQ = useMemoFirebase(
+        () => (db && authUser?.uid ? query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: adminNgos } = useCollection<any>(adminNgosQ);
+    const userDocRef = useMemoFirebase(
+        () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+        [db, authUser?.uid],
+    );
+    const { data: userData } = useDoc<any>(userDocRef);
+    const fallbackNgoRef = useMemoFirebase(
+        () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+        [db, userData?.managedNgoId],
+    );
+    const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
+
+    const ngoData = useMemo(() => (adminNgos && adminNgos[0]) || fallbackNgo || null, [adminNgos, fallbackNgo]);
+    const ngoId: string | null = ngoData?.id || null;
+
     // Website Section Visibility States
-    const [sections, setSections] = useState({
+    const defaultSections = {
         domain: true,
         colors: true,
         banners: true,
@@ -95,48 +137,106 @@ export default function WebsiteBuilderPage() {
         sdg: true,
         transparency: true,
         contact: true,
-        analytics: true
-    });
+        analytics: true,
+    };
+    const [sections, setSections] = useState(defaultSections);
 
     // Content States
     const [primaryColor, setPrimaryColor] = useState('#f34723');
     const [selectedRegistrar, setSelectedRegistrar] = useState('');
     const [domainName, setDomainName] = useState('');
-    const [presidentName, setPresidentName] = useState('Haluk Levent');
-    const [presidentsMessage, setPresidentsMessage] = useState('Geleceğe dair vizyonumuz, dayanışmanın gücüyle her bir ihtiyaç sahibine ulaşmak ve toplumsal faydayı kalıcı hale getirmektir.');
+    const [presidentName, setPresidentName] = useState('');
+    const [presidentsMessage, setPresidentsMessage] = useState('');
+    const [stats, setStats] = useState({ volunteers: '', donors: '', foundedYear: '', activeCampaigns: '' });
     const [isSaving, setIsSaving] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-    
+    const [hydrated, setHydrated] = useState(false);
+
     // Banner State
-    const [banners, setBanners] = useState([
-        { id: '1', url: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop', isPrimary: true }
-    ]);
+    const [banners, setBanners] = useState<Array<{ id: string; url: string; isPrimary: boolean }>>([]);
 
     const MESSAGE_LIMIT = 1000;
 
+    // NGO verisi gelince state'i hydrate et (yalnızca bir kere)
     useEffect(() => {
-        setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
-    }, []);
+        if (!ngoData || hydrated) return;
+        const s = ngoData.siteSettings || {};
+        setSections(prev => ({ ...prev, ...(s.sections || {}) }));
+        setPrimaryColor(s.primaryColor || ngoData.primaryColor || '#f34723');
+        setSelectedRegistrar(s.registrar || '');
+        setDomainName(s.domain || ngoData.website || '');
+        setPresidentName(s.presidentName || ngoData.presidentName || '');
+        setPresidentsMessage(s.presidentMessage || ngoData.presidentMessage || '');
+        setStats({
+            volunteers: String(s.stats?.volunteers ?? ngoData.stats?.volunteers ?? ''),
+            donors: String(s.stats?.donors ?? ngoData.stats?.donors ?? ''),
+            foundedYear: String(s.stats?.foundedYear ?? ngoData.foundedYear ?? ''),
+            activeCampaigns: String(s.stats?.activeCampaigns ?? ngoData.stats?.activeCampaigns ?? ''),
+        });
+        if (Array.isArray(s.banners) && s.banners.length > 0) {
+            setBanners(s.banners.map((b: any, i: number) => ({
+                id: b.id || String(i + 1),
+                url: b.url,
+                isPrimary: !!b.isPrimary || i === 0,
+            })));
+        } else if (ngoData.coverUrl) {
+            setBanners([{ id: '1', url: ngoData.coverUrl, isPrimary: true }]);
+        }
+        if (s.publishedAt) {
+            try {
+                const d = s.publishedAt.toDate ? s.publishedAt.toDate() : new Date(s.publishedAt);
+                setLastUpdated(d.toLocaleTimeString('tr-TR'));
+            } catch {}
+        }
+        setHydrated(true);
+    }, [ngoData, hydrated]);
 
-    const toggleSection = (key: keyof typeof sections) => {
+    const toggleSection = (key: keyof typeof defaultSections) => {
         setSections(prev => ({ ...prev, [key]: !prev[key] }));
         toast({
             title: "Görünüm Güncellendi",
-            description: `${key.toUpperCase()} bölümü ${!sections[key as keyof typeof sections] ? 'aktif' : 'pasif'} hale getirildi.`
+            description: `${String(key).toUpperCase()} bölümü ${!sections[key] ? 'aktif' : 'pasif'} hale getirildi.`,
         });
     };
 
+    const buildPayload = () => ({
+        siteSettings: {
+            domain: domainName.trim(),
+            registrar: selectedRegistrar,
+            primaryColor,
+            presidentName: presidentName.trim(),
+            presidentMessage: presidentsMessage.trim(),
+            banners: banners.map(b => ({ id: b.id, url: b.url, isPrimary: b.isPrimary })),
+            sections,
+            stats: {
+                volunteers: Number(stats.volunteers) || 0,
+                donors: Number(stats.donors) || 0,
+                foundedYear: Number(stats.foundedYear) || 0,
+                activeCampaigns: Number(stats.activeCampaigns) || 0,
+            },
+            updatedAt: serverTimestamp(),
+        },
+    });
+
     const handleSave = async (silent = false) => {
+        if (!db || !ngoId) {
+            toast({ variant: 'destructive', title: 'Yönetici varlık bulunamadı', description: 'Kaydetmek için yönettiğiniz bir STK olmalı.' });
+            return false;
+        }
         setIsSaving(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setIsSaving(false);
-        setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
-        
-        if (!silent) {
-            toast({
-                title: "Tüm Değişiklikler Kaydedildi",
-                description: "Web siteniz güncel bilgilerle yayına hazır.",
-            });
+        try {
+            await updateDoc(doc(db, 'ngos', ngoId), buildPayload() as any);
+            setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
+            if (!silent) {
+                toast({ title: 'Tüm Değişiklikler Kaydedildi', description: 'Web siteniz güncel bilgilerle yayına hazır.' });
+            }
+            return true;
+        } catch (err: any) {
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+            return false;
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -170,7 +270,13 @@ export default function WebsiteBuilderPage() {
             </Button>
             <div>
                 <h1 className="text-2xl font-bold font-headline">Web Sitesi Yönetimi</h1>
-                <p className="text-muted-foreground text-sm">Kuruluşunuza özel web sitesinin tüm görünüm ve içerik ayarlarını yönetin.</p>
+                <p className="text-muted-foreground text-sm">
+                    {ngoData?.name ? (
+                        <><span className="font-semibold text-foreground">{ngoData.name}</span> için web sitesinin görünüm ve içerik ayarları.</>
+                    ) : (
+                        'Kuruluşunuza özel web sitesinin tüm görünüm ve içerik ayarlarını yönetin.'
+                    )}
+                </p>
             </div>
 
             <div className="space-y-6">
@@ -233,6 +339,9 @@ export default function WebsiteBuilderPage() {
                                         </Button>
                                     </div>
                                 </div>
+                                <p className="mt-3 text-xs text-indigo-900/80 leading-relaxed">
+                                    Lütfen Domain sağlayıcınıza DNS bilgilerimizi kaydediniz. Yayına alma işlemi için NS kayıtlarının yukarıdaki değerlerle eşleşmesi gerekir.
+                                </p>
                             </div>
                         </CardContent>
                     )}
@@ -477,19 +586,19 @@ export default function WebsiteBuilderPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Gönüllü Sayısı</Label>
-                                    <Input type="number" defaultValue="150000" />
+                                    <Input type="number" value={stats.volunteers} onChange={e => setStats(s => ({ ...s, volunteers: e.target.value }))} placeholder="0" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Bağışçı Sayısı</Label>
-                                    <Input type="number" defaultValue="250000" />
+                                    <Input type="number" value={stats.donors} onChange={e => setStats(s => ({ ...s, donors: e.target.value }))} placeholder="0" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Kuruluş Yılı</Label>
-                                    <Input type="number" defaultValue="2017" />
+                                    <Input type="number" value={stats.foundedYear} onChange={e => setStats(s => ({ ...s, foundedYear: e.target.value }))} placeholder="2020" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Aktif Kampanya</Label>
-                                    <Input type="number" defaultValue="12" />
+                                    <Input type="number" value={stats.activeCampaigns} onChange={e => setStats(s => ({ ...s, activeCampaigns: e.target.value }))} placeholder="0" />
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -885,21 +994,59 @@ export default function WebsiteBuilderPage() {
                             <p className="font-bold text-sm">Site Yayınlanmaya Hazır</p>
                             <p className="text-[10px] text-muted-foreground">Son güncelleme: {lastUpdated || '--:--:--'}</p>
                         </div>
-                        <Button 
+                        <Button
                             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl"
-                            disabled={isSaving}
+                            disabled={isSaving || isVerifying}
                             onClick={async () => {
-                                await handleSave(true);
-                                toast({ title: "Siteniz Yayınlandı!", description: "Önizleme yeni sekmede açılıyor..." });
-                                window.open(`/ngo-admin/website/preview?primary=${primaryColor.replace('#', '')}`, '_blank');
+                                if (!ngoId) {
+                                    toast({ variant: 'destructive', title: 'Yönetici varlık bulunamadı' });
+                                    return;
+                                }
+                                if (!domainName.trim()) {
+                                    toast({ variant: 'destructive', title: 'Alan adı eksik', description: 'Yayına almak için Alan Adınızı girin.' });
+                                    return;
+                                }
+                                // 1) DNS doğrulaması
+                                setIsVerifying(true);
+                                const dns = await checkDnsRecords(domainName.trim());
+                                setIsVerifying(false);
+                                if (!dns.ok) {
+                                    toast({
+                                        variant: 'destructive',
+                                        title: 'DNS doğrulanamadı',
+                                        description: dns.error
+                                            ? dns.error
+                                            : `Alan adınızın NS kayıtları henüz ns1.hangel.org / ns2.hangel.org değerlerini göstermiyor. Bulunan: ${dns.foundNS.join(', ') || 'kayıt yok'}.`,
+                                    });
+                                    return;
+                                }
+                                // 2) Verileri kaydet ve yayın bilgisini ekle
+                                setIsSaving(true);
+                                try {
+                                    await updateDoc(doc(db!, 'ngos', ngoId), {
+                                        ...buildPayload(),
+                                        'siteSettings.published': true,
+                                        'siteSettings.publishedAt': serverTimestamp(),
+                                        'siteSettings.dnsVerified': true,
+                                        'siteSettings.dnsVerifiedAt': serverTimestamp(),
+                                    } as any);
+                                    setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
+                                    toast({ title: 'Siteniz Yayınlandı!', description: 'DNS doğrulandı, içerikler kaydedildi. Önizleme yeni sekmede açılıyor...' });
+                                    window.open(`/ngo-admin/website/preview?primary=${primaryColor.replace('#', '')}&id=${ngoId}`, '_blank');
+                                } catch (err: any) {
+                                    toast({ variant: 'destructive', title: 'Yayınlama başarısız', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+                                } finally {
+                                    setIsSaving(false);
+                                }
                             }}
                         >
-                            {isSaving ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            {isVerifying ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> DNS doğrulanıyor…</>
+                            ) : isSaving ? (
+                                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yayınlanıyor…</>
                             ) : (
-                                <Globe className="mr-2 h-4 w-4" />
+                                <><Globe className="mr-2 h-4 w-4" /> Siteyi Yayınla ve Görüntüle</>
                             )}
-                            Siteyi Yayınla ve Görüntüle
                         </Button>
                     </CardContent>
                 </Card>

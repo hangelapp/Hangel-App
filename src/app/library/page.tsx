@@ -156,7 +156,8 @@ function isFilmSection(section: LibrarySection): boolean {
 }
 
 function isBookSection(section: LibrarySection): boolean {
-  return section.slug === 'kitaplar';
+  const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
+  return t.includes('kitap') || t.includes('book');
 }
 
 function getFilterDefs(section: LibrarySection): FilterDef[] {

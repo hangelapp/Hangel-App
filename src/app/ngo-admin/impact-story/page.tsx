@@ -1,184 +1,264 @@
-
 'use client';
 
 import React, { Suspense, useCallback, useEffect, useState, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { 
-    TrendingUp, User, Users, Rocket, Heart, School, HeartHandshake,
-    ShoppingBag, Sparkles
+import {
+    TrendingUp, Users, Heart, HeartHandshake,
+    Newspaper, ShieldCheck, Building2, Loader2,
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, where } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 export type ImpactSlide = {
-  id: number;
+  id: string;
   title: string;
   subtitle: string;
   content: string;
   icon: any;
-  image: string;
-  imageHint: string;
   stat?: string;
+  background?: string;
 };
 
 const STORY_DURATION = 5000;
 
+type EntityKind = 'ngo' | 'brand' | 'club';
+type ManagedEntity = { kind: EntityKind; id: string; name: string; data: any };
+
 function StoryViewer() {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const category = searchParams.get('category');
 
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
 
     const { user: authUser } = useUser();
     const db = useFirestore();
-    const userDocRef = useMemoFirebase(() => {
-        if (!db || !authUser?.uid) return null;
-        return doc(db, 'users', authUser.uid);
-    }, [db, authUser?.uid]);
+
+    // Yönetici olduğu varlığı tespit et
+    const adminNgosQ = useMemoFirebase(
+      () => (db && authUser?.uid ? query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+      [db, authUser?.uid],
+    );
+    const adminBrandsQ = useMemoFirebase(
+      () => (db && authUser?.uid ? query(collection(db, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+      [db, authUser?.uid],
+    );
+    const adminClubsQ = useMemoFirebase(
+      () => (db && authUser?.uid ? query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+      [db, authUser?.uid],
+    );
+    const { data: adminNgos, isLoading: ngosLoading } = useCollection<any>(adminNgosQ);
+    const { data: adminBrands, isLoading: brandsLoading } = useCollection<any>(adminBrandsQ);
+    const { data: adminClubs, isLoading: clubsLoading } = useCollection<any>(adminClubsQ);
+
+    const userDocRef = useMemoFirebase(
+      () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+      [db, authUser?.uid],
+    );
     const { data: userData } = useDoc<any>(userDocRef);
 
-    const user = useMemo(() => ({
-        name: userData?.name || authUser?.displayName || 'Kullanıcı',
-        avatarUrl: userData?.avatarUrl || authUser?.photoURL || '',
-        stats: {
-            totalDonation: userData?.stats?.totalDonation || 0,
-            volunteerHours: userData?.stats?.volunteerHours || 0,
-            mostSupportedNgo: userData?.stats?.mostSupportedNgo || 'destek olduğun kuruluşlar',
-            mostActiveVolunteerArea: userData?.stats?.mostActiveVolunteerArea || 'sosyal fayda',
-        },
-    }), [userData, authUser]);
+    const fallbackNgoRef = useMemoFirebase(
+      () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+      [db, userData?.managedNgoId],
+    );
+    const fallbackBrandRef = useMemoFirebase(
+      () => (db && userData?.managedBrandId ? doc(db, 'brands', userData.managedBrandId) : null),
+      [db, userData?.managedBrandId],
+    );
+    const fallbackClubRef = useMemoFirebase(
+      () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
+      [db, userData?.managedClubId],
+    );
+    const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
+    const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
+    const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
 
-    const hangelImpactStories: ImpactSlide[] = [
-        {
-            id: 1,
-            title: "2024 Sosyal Etki Raporu",
-            subtitle: "hangel A.Ş.",
-            content: "Birlikte büyüttüğümüz iyilik hareketinin somut sonuçlarını keşfedin. Her adımda daha güçlüyüz.",
+    const activeEntity = useMemo<ManagedEntity | null>(() => {
+        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
+        if (ngo?.id) return { kind: 'ngo', id: ngo.id, name: ngo.name || 'STK', data: ngo };
+        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
+        if (brand?.id) return { kind: 'brand', id: brand.id, name: brand.name || 'Marka', data: brand };
+        const club = (adminClubs && adminClubs[0]) || fallbackClub;
+        if (club?.id) return { kind: 'club', id: club.id, name: club.name || 'Kulüp', data: club };
+        return null;
+    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+
+    // İlgili koleksiyonları topla
+    const allUsersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+    const { data: allUsers } = useCollection<any>(allUsersQ);
+
+    const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
+    const { data: allDonations } = useCollection<any>(donationsQ);
+
+    const volunteeringQ = useMemoFirebase(
+      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'volunteering'), where('ngoId', '==', activeEntity.id)) : null),
+      [db, activeEntity?.kind, activeEntity?.id],
+    );
+    const { data: opportunities } = useCollection<any>(volunteeringQ);
+
+    const postsQ = useMemoFirebase(
+      () => (db && authUser?.uid ? query(collection(db, 'posts'), where('authorId', '==', authUser.uid)) : null),
+      [db, authUser?.uid],
+    );
+    const { data: posts } = useCollection<any>(postsQ);
+
+    const transparencyQ = useMemoFirebase(
+      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'transparency'), where('ngoId', '==', activeEntity.id)) : null),
+      [db, activeEntity?.kind, activeEntity?.id],
+    );
+    const { data: transparencyItems } = useCollection<any>(transparencyQ);
+
+    // İstatistikleri hesapla
+    const stats = useMemo(() => {
+        const id = activeEntity?.id;
+        if (!id) return null;
+
+        // Bu varlığa yapılan bağışlar
+        const matchingDonations = (allDonations || []).filter((d: any) => {
+            if (Array.isArray(d.ngoIds) && d.ngoIds.includes(id)) return true;
+            if (activeEntity?.kind === 'brand' && (d.brandId === id || d.brandName === activeEntity.name)) return true;
+            return false;
+        });
+        const totalDonationAmount = matchingDonations.reduce((sum: number, d: any) => {
+            const amt = parseFloat(d.donationAmount || d.amount || '0');
+            return sum + (isNaN(amt) ? 0 : amt);
+        }, 0);
+        const donorIds = new Set(matchingDonations.map((d: any) => d.userId).filter(Boolean));
+
+        // Destekçi & gönüllüler
+        const supporterCount = (allUsers || []).filter((u: any) => {
+            if (activeEntity?.kind === 'ngo') {
+              return (Array.isArray(u.supportedNgos) && u.supportedNgos.includes(id))
+                || (Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id));
+            }
+            if (activeEntity?.kind === 'brand') {
+              return Array.isArray(u.followedBrands) && u.followedBrands.includes(id);
+            }
+            return false;
+        }).length;
+        const volunteerCount = (allUsers || []).filter((u: any) =>
+            Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id),
+        ).length;
+
+        // Açık ilanlar
+        const openOpportunities = (opportunities || []).filter((o: any) =>
+            o.status === 'Aktif' || o.status === 'Yayında',
+        ).length;
+        const totalOpportunities = (opportunities || []).length;
+        const totalApplications = (opportunities || []).reduce((s: number, o: any) =>
+            s + (o.volunteerCount?.applications || 0), 0);
+
+        const postsCount = (posts || []).length;
+        const transparencyCount = (transparencyItems || []).length;
+
+        return {
+            totalDonationAmount,
+            donorCount: donorIds.size,
+            supporterCount,
+            volunteerCount,
+            openOpportunities,
+            totalOpportunities,
+            totalApplications,
+            postsCount,
+            transparencyCount,
+        };
+    }, [activeEntity, allUsers, allDonations, opportunities, posts, transparencyItems]);
+
+    // Story slide'larını oluştur
+    const stories = useMemo<ImpactSlide[]>(() => {
+        if (!activeEntity || !stats) return [];
+
+        const slides: ImpactSlide[] = [];
+
+        // 1) Kapak — varlığın adı
+        slides.push({
+            id: 'cover',
+            title: activeEntity.name,
+            subtitle: activeEntity.kind === 'ngo' ? 'STK Etki Raporu' : activeEntity.kind === 'brand' ? 'Marka Etki Raporu' : 'Kulüp Etki Raporu',
+            content: 'Birlikte yarattığımız değişimi rakamlarla anlatıyoruz.',
+            icon: Building2,
+            background: activeEntity.data?.coverUrl || activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl,
+        });
+
+        // 2) Bağış toplam tutarı
+        if (stats.totalDonationAmount > 0) {
+            slides.push({
+                id: 'donations',
+                title: 'Toplam Bağış',
+                subtitle: 'Finansal Destek',
+                content: `${stats.donorCount.toLocaleString('tr-TR')} bağışçı aracılığıyla toplam ${stats.totalDonationAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺ destek aldık.`,
+                stat: `₺${stats.totalDonationAmount.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`,
+                icon: Heart,
+            });
+        }
+
+        // 3) Destekçi/gönüllü sayısı
+        if (stats.supporterCount > 0 || stats.volunteerCount > 0) {
+            slides.push({
+                id: 'supporters',
+                title: activeEntity.kind === 'brand' ? 'Takipçilerimiz' : 'Destekçilerimiz',
+                subtitle: 'Topluluğumuz',
+                content: activeEntity.kind === 'brand'
+                    ? `${stats.supporterCount.toLocaleString('tr-TR')} kişi sizi takip ediyor.`
+                    : `${stats.supporterCount.toLocaleString('tr-TR')} destekçi, bunların ${stats.volunteerCount.toLocaleString('tr-TR')}'i aktif gönüllü.`,
+                stat: stats.supporterCount.toLocaleString('tr-TR'),
+                icon: Users,
+            });
+        }
+
+        // 4) Gönüllülük ilanları (yalnızca NGO)
+        if (activeEntity.kind === 'ngo' && stats.totalOpportunities > 0) {
+            slides.push({
+                id: 'opportunities',
+                title: 'Gönüllülük İlanları',
+                subtitle: 'Sahada İhtiyaç',
+                content: `Toplam ${stats.totalOpportunities} ilan yayınladık, ${stats.totalApplications.toLocaleString('tr-TR')} başvuru aldık. Şu anda ${stats.openOpportunities} aktif ilan var.`,
+                stat: stats.openOpportunities.toString(),
+                icon: HeartHandshake,
+            });
+        }
+
+        // 5) Gönderiler
+        if (stats.postsCount > 0) {
+            slides.push({
+                id: 'posts',
+                title: 'Paylaşımlarımız',
+                subtitle: 'Topluluk İletişimi',
+                content: `Topluluğumuzla ${stats.postsCount.toLocaleString('tr-TR')} gönderi paylaştık.`,
+                stat: stats.postsCount.toString(),
+                icon: Newspaper,
+            });
+        }
+
+        // 6) Şeffaflık (yalnızca NGO)
+        if (activeEntity.kind === 'ngo' && stats.transparencyCount > 0) {
+            slides.push({
+                id: 'transparency',
+                title: 'Şeffaflık Endeksi',
+                subtitle: 'Hesap Veriyoruz',
+                content: `${stats.transparencyCount} kayıtlı şeffaflık girişimiz ile hesap verme sorumluluğumuzu sürdürüyoruz.`,
+                stat: stats.transparencyCount.toString(),
+                icon: ShieldCheck,
+            });
+        }
+
+        // 7) Kapanış — kayda değer veri yoksa bile en az bu görünür
+        slides.push({
+            id: 'closing',
+            title: 'Birlikte Daha Güçlüyüz',
+            subtitle: activeEntity.name,
+            content: 'Hangel topluluğuyla iyiliği büyütmeye devam ediyoruz.',
             icon: TrendingUp,
-            image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
-            imageHint: "data charts analysis"
-        },
-        {
-            id: 2,
-            title: "1 Milyon+ Hayata Dokunduk",
-            subtitle: "Toplumsal Erişim",
-            content: "Türkiye'nin dört bir yanında projelerimizle umudu yeşerttik. Bu başarı hepimizin.",
-            stat: "1.240.000",
-            icon: Users,
-            image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
-            imageHint: "happy group people"
-        },
-        {
-            id: 3,
-            title: "Seninle Daha Güçlüyüz",
-            subtitle: "Birlikte Başaralım",
-            content: "Bu başarı hikayesinin en önemli parçası sensin. İyiliği paylaşmaya ve büyütmeye devam edelim.",
-            icon: Rocket,
-            image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "team high five"
-        }
-    ];
+        });
 
-    const userImpactStories: ImpactSlide[] = [
-        {
-            id: 1,
-            title: "Senin Etki Raporun",
-            subtitle: user.name,
-            content: "Bu yılki yolculuğunda yarattığın pozitif değişime yakından bakalım.",
-            icon: User,
-            image: user.avatarUrl,
-            imageHint: "person portrait"
-        },
-        {
-            id: 2,
-            title: user.stats.totalDonation.toLocaleString('tr-TR') + " ₺ Bağış Yaptın",
-            subtitle: "Finansal Destek",
-            content: "Yaptığın alışverişlerle " + user.stats.mostSupportedNgo + " gibi kurumlara destek oldun.",
-            stat: "₺" + user.stats.totalDonation.toLocaleString('tr-TR'),
-            icon: Heart,
-            image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "donation concept"
-        },
-        {
-            id: 3,
-            title: user.stats.volunteerHours + " Saat Gönüllülük Yaptın",
-            subtitle: "Zamanın Değeri",
-            content: "En çok " + user.stats.mostActiveVolunteerArea + " alanında aktif olarak topluma zamanını ve yeteneğini ayırdın.",
-            stat: user.stats.volunteerHours + " Saat",
-            icon: HeartHandshake,
-            image: "https://images.unsplash.com/photo-1618423417959-c8c7f9c73331?q=80&w=1974&auto=format&fit=crop",
-            imageHint: "volunteers hands"
-        },
-    ];
+        return slides;
+    }, [activeEntity, stats]);
 
-    const communityImpactStories: ImpactSlide[] = [
-        {
-            id: 1,
-            title: "Gönüllüler Sahada",
-            subtitle: "Ahbap Derneği",
-            content: "Hatay'daki gıda dağıtımında gönüllülerimiz harikalar yarattı. Her birine minnettarız!",
-            icon: Users,
-            image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "food donation"
-        },
-        {
-            id: 2,
-            title: "Geleceğe Nefes",
-            subtitle: "TEMA Vakfı",
-            content: "Balıkesir'de gerçekleştirdiğimiz fidan dikme etkinliği ile 200 yeni ağacı toprakla buluşturduk.",
-            icon: Heart,
-            image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2013&auto=format&fit=crop",
-            imageHint: "planting trees"
-        },
-    ];
-
-    const opportunityStories: ImpactSlide[] = [
-        {
-            id: 1,
-            title: "Sosyal Etki Temsilcisi Ol",
-            subtitle: "hangel Kampüs",
-            content: "Kampüsünde sosyal etki rüzgarı estir. Üniversite temsilcimiz olarak liderlik yeteneklerini geliştir.",
-            icon: School,
-            image: "https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "university students"
-        },
-        {
-            id: 2,
-            title: "Okul Alışverişiyle Destek Ol",
-            subtitle: "TEGV & Hepsiburada",
-            content: "Kırtasiye ihtiyaçlarınızı Hepsiburada'dan alın, TEGV'e bağış yapın. Eğitime bir ışık da siz yakın!",
-            icon: ShoppingBag,
-            image: "https://images.unsplash.com/photo-1503676260728-1c00da096a0b?q=80&w=2022&auto=format&fit=crop",
-            imageHint: "student school supplies"
-        },
-        {
-            id: 3,
-            title: "Afet Bölgesi Lojistik Destek",
-            subtitle: "Ahbap Derneği",
-            content: "Hatay ve Adıyaman'da yardım kolilerinin dağıtımında görev alacak gönüllüler arıyoruz.",
-            icon: HeartHandshake,
-            image: "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "food donation"
-        },
-    ];
-
-    const stories = useMemo(() => {
-        switch (category) {
-            case 'user': return userImpactStories;
-            case 'community': return communityImpactStories;
-            case 'opportunities': return opportunityStories;
-            default: return hangelImpactStories;
-        }
-    }, [category]);
-    
     const handleClose = useCallback(() => router.back(), [router]);
 
     useEffect(() => {
@@ -191,17 +271,37 @@ function StoryViewer() {
 
     const handleNext = useCallback(() => {
         if (!api) return;
-        if (api.canScrollNext()) {
-            api.scrollNext();
-        } else {
-            handleClose();
-        }
+        if (api.canScrollNext()) api.scrollNext();
+        else handleClose();
     }, [api, handleClose]);
 
     const handlePrev = useCallback(() => {
         if (!api) return;
         api.scrollPrev();
     }, [api]);
+
+    const isLoading = ngosLoading || brandsLoading || clubsLoading;
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center h-full bg-white">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    if (!activeEntity) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full bg-white p-8 text-center">
+                <Sparkles className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                <p className="font-bold text-lg mb-2">Etki Hikayesi Hazır Değil</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                    Etki hikayesi oluşturulabilmesi için bir varlığın yöneticisi olmanız gerekiyor.
+                </p>
+                <Button onClick={handleClose} variant="outline">Kapat</Button>
+            </div>
+        );
+    }
 
     return (
         <div className="relative w-full h-full bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-500">
@@ -230,28 +330,28 @@ function StoryViewer() {
             <div className="absolute top-10 inset-x-4 px-2 flex justify-between items-center z-50">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur-xl flex items-center justify-center border shadow-sm overflow-hidden">
-                        {category === 'user' ? (
-                            <Image src={user.avatarUrl} alt={user.name} width={40} height={40} className="object-cover h-full w-full" />
+                        {activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl ? (
+                            <Image src={activeEntity.data.avatarUrl || activeEntity.data.logoUrl} alt={activeEntity.name} width={40} height={40} className="object-cover h-full w-full" />
                         ) : (
                             <HangelLogo className="text-xl" />
                         )}
                     </div>
                     <div className="text-left drop-shadow-sm">
                         <p className="font-black text-xs uppercase tracking-widest text-foreground">
-                            {stories[current - 1]?.subtitle || 'hangel'}
+                            {stories[current - 1]?.subtitle || activeEntity.name}
                         </p>
                     </div>
                 </div>
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm" 
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
                     onClick={handleClose}
                 >
                     <X className="h-5 w-5" />
                 </Button>
             </div>
-            
+
             {/* Click Nav Regions */}
             <div className="absolute inset-0 z-30 flex">
                 <div className="w-1/3 h-full cursor-pointer" onClick={handlePrev} />
@@ -265,15 +365,16 @@ function StoryViewer() {
                         return (
                             <CarouselItem key={slide.id} className="h-full">
                                 <div className="w-full h-full flex flex-col bg-white">
-                                    <div className="relative flex-1 w-full min-h-0 bg-[#f5f5f7]">
-                                        <Image
-                                            src={slide.image}
-                                            alt={slide.title}
-                                            fill
-                                            className="object-cover"
-                                            priority
-                                            data-ai-hint={slide.imageHint}
-                                        />
+                                    <div className="relative flex-1 w-full min-h-0 bg-gradient-to-br from-primary/15 via-primary/5 to-background">
+                                        {slide.background && (
+                                            <Image
+                                                src={slide.background}
+                                                alt={slide.title}
+                                                fill
+                                                className="object-cover"
+                                                priority
+                                            />
+                                        )}
                                         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white" />
                                     </div>
                                     <div className="p-8 md:p-12 text-foreground bg-white border-t border-black/5 relative z-10">
@@ -308,7 +409,7 @@ export default function ImpactStoryPage() {
     return (
         <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-0 md:p-8 backdrop-blur-sm">
             <div className="relative w-full max-w-[450px] h-full max-h-full md:max-h-[850px] aspect-[9/16] bg-white rounded-none md:rounded-[3rem] overflow-hidden">
-                <Suspense fallback={<div className="flex items-center justify-center h-full bg-white">Yükleniyor...</div>}>
+                <Suspense fallback={<div className="flex items-center justify-center h-full bg-white"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
                     <StoryViewer />
                 </Suspense>
             </div>
