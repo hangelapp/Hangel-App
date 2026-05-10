@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const ProductSection = ({ 
     title, 
@@ -75,6 +76,7 @@ const ProductSection = ({
 
 export default function CorporateShowcasePage() {
     const router = useRouter();
+    const cms = useWebPage('corporate');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -94,15 +96,15 @@ export default function CorporateShowcasePage() {
             </header>
 
             {/* Hero Section */}
-            <ProductSection 
-                title="Kamu ve Özel Sektör için Değer Yaratıyoruz."
-                subtitle="hangel Kurumsal Çözümler"
-                description="Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz."
+            <ProductSection
+                title={cms.title || 'Kamu ve Özel Sektör için Değer Yaratıyoruz.'}
+                subtitle={cms.subtitle || 'hangel Kurumsal Çözümler'}
+                description={cms.description || 'Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz.'}
                 cta1="İşbirliği Başlat"
                 cta1Href="/contact"
                 cta2="Tüm Çözümler"
                 cta2Href="#universiteler"
-                imageUrl="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="corporate team working"
             />
 

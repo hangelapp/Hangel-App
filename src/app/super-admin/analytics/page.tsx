@@ -1,14 +1,13 @@
-
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -16,140 +15,422 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs"
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
-import { Users, Building, Store, HandCoins, Bot, Filter, ArrowDownUp, BarChart3 } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+} from "@/components/ui/tabs";
+import {
+  BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area,
+} from 'recharts';
+import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock } from "lucide-react";
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 
+const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b'];
 
-// Data for charts and tables
-const userGrowthData = [
-  { month: 'Ocak', users: 4000 },
-  { month: 'Şubat', users: 3000 },
-  { month: 'Mart', users: 2000 },
-  { month: 'Nisan', users: 2780 },
-  { month: 'Mayıs', users: 1890 },
-  { month: 'Haziran', users: 2390 },
-  { month: 'Temmuz', users: 3490 },
-];
+const TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-const engagementData = userGrowthData.map(d => ({ month: d.month, Gonderi: d.users * 2.1, Yorum: d.users * 1.6, Begeni: d.users * 5.3 }));
+function toDate(value: any): Date | null {
+    if (!value) return null;
+    if (value?.toDate) {
+        try { return value.toDate(); } catch { return null; }
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+        const d = new Date(value);
+        return Number.isNaN(d.getTime()) ? null : d;
+    }
+    if (value instanceof Date) return value;
+    return null;
+}
 
-const ageGroupData = [
-  { name: '18-24', value: 400 },
-  { name: '25-34', value: 300 },
-  { name: '35-44', value: 300 },
-  { name: '45+', value: 200 },
-];
-const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8'];
+function monthKey(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
 
+function buildLast7Months() {
+    const now = new Date();
+    const buckets: { key: string; label: string }[] = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        buckets.push({ key: monthKey(d), label: TR_MONTHS[d.getMonth()] });
+    }
+    return buckets;
+}
 
-const donationVolunteerData = [
-  { name: 'Ocak', Bagis: 4000, Gonulluluk: 2400 },
-  { name: 'Şubat', Bagis: 3000, Gonulluluk: 1398 },
-  { name: 'Mart', Bagis: 2000, Gonulluluk: 9800 },
-  { name: 'Nisan', Bagis: 2780, Gonulluluk: 3908 },
-  { name: 'Mayıs', Bagis: 1890, Gonulluluk: 4800 },
-  { name: 'Haziran', Bagis: 2390, Gonulluluk: 3800 },
-  { name: 'Temmuz', Bagis: 3490, Gonulluluk: 4300 },
-];
+function ageFromBirthDate(birthDate: any): number | null {
+    const d = toDate(birthDate);
+    if (!d) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age >= 0 && age < 130 ? age : null;
+}
 
-const aiProjectionData = [
-    { period: 'Mevcut', users: 14234, donation: 1.2 },
-    { period: '6 Ay', users: 18000, donation: 1.8 },
-    { period: '1 Yıl', users: 25000, donation: 2.5 },
-    { period: '3 Yıl', users: 60000, donation: 8 },
-    { period: '5 Yıl', users: 110000, donation: 22 },
-];
-
+function ageBucket(age: number): string {
+    if (age < 18) return '<18';
+    if (age <= 24) return '18-24';
+    if (age <= 34) return '25-34';
+    if (age <= 44) return '35-44';
+    if (age <= 54) return '45-54';
+    return '55+';
+}
 
 export default function AnalyticsPage() {
-    const { toast } = useToast();
-    const [userGrowthSort, setUserGrowthSort] = useState({ key: 'users', direction: 'desc' });
-    const [donationSort, setDonationSort] = useState({ key: 'Bagis', direction: 'desc' });
-    const [isMounted, setIsMounted] = useState(false);
+    const db = useFirestore();
+    const [growthSort, setGrowthSort] = useState<'desc' | 'asc'>('desc');
 
-    useEffect(() => {
-      setIsMounted(true);
-    }, []);
+    const usersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+    const ngosQ = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
+    const brandsQ = useMemoFirebase(() => (db ? collection(db, 'brands') : null), [db]);
+    const clubsQ = useMemoFirebase(() => (db ? collection(db, 'clubs') : null), [db]);
+    const postsQ = useMemoFirebase(() => (db ? query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(2000)) : null), [db]);
+    const appsQ = useMemoFirebase(() => (db ? collection(db, 'applications') : null), [db]);
+    const volunteeringQ = useMemoFirebase(() => (db ? collection(db, 'volunteering') : null), [db]);
+    const emergencyQ = useMemoFirebase(() => (db ? collection(db, 'emergencyRequests') : null), [db]);
+    const responsesQ = useMemoFirebase(() => (db ? collection(db, 'emergencyResponses') : null), [db]);
+    const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
+    const supportQ = useMemoFirebase(() => (db ? collection(db, 'supportTickets') : null), [db]);
+    const fundsQ = useMemoFirebase(() => (db ? collection(db, 'funds') : null), [db]);
+    const ratingsQ = useMemoFirebase(() => (db ? collection(db, 'ratings') : null), [db]);
+    const surveysQ = useMemoFirebase(() => (db ? collection(db, 'surveys') : null), [db]);
 
-    const showComingSoon = () => toast({ title: 'Bu özellik yakında gelecek!' });
+    const { data: users, isLoading: usersLoading } = useCollection<any>(usersQ);
+    const { data: ngos, isLoading: ngosLoading } = useCollection<any>(ngosQ);
+    const { data: brands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
+    const { data: clubs } = useCollection<any>(clubsQ);
+    const { data: posts, isLoading: postsLoading } = useCollection<any>(postsQ);
+    const { data: apps, isLoading: appsLoading } = useCollection<any>(appsQ);
+    const { data: opportunities, isLoading: oppLoading } = useCollection<any>(volunteeringQ);
+    const { data: emergencies } = useCollection<any>(emergencyQ);
+    const { data: responses } = useCollection<any>(responsesQ);
+    const { data: donations } = useCollection<any>(donationsQ);
+    const { data: supportTickets } = useCollection<any>(supportQ);
+    const { data: funds } = useCollection<any>(fundsQ);
+    const { data: ratings } = useCollection<any>(ratingsQ);
+    const { data: surveys } = useCollection<any>(surveysQ);
 
-    const sortedUserGrowthData = useMemo(() => {
-        return [...userGrowthData].sort((a, b) => {
-            const valA = a[userGrowthSort.key as keyof typeof a];
-            const valB = b[userGrowthSort.key as keyof typeof b];
-            if (userGrowthSort.direction === 'asc') return valA - valB;
-            return valB - valA;
+    const isLoading = usersLoading || ngosLoading || brandsLoading || postsLoading || appsLoading || oppLoading;
+
+    // KPI'lar — gerçek Firestore verileri
+    const totalUsers = users?.length ?? 0;
+    const activeNgos = (ngos ?? []).filter((n: any) => !n.status || n.status === 'Aktif').length;
+    const activeBrands = (brands ?? []).filter((b: any) => !b.status || b.status === 'Aktif').length;
+    const activeClubs = (clubs ?? []).filter((c: any) => !c.status || c.status === 'Aktif').length;
+
+    // Gerçek bağış toplamları (donations koleksiyonundan)
+    const realDonations = (donations ?? []).filter((d: any) => d.type !== 'income');
+    const totalDonationActual = realDonations.reduce((s: number, d: any) =>
+        s + (parseFloat(d.donationAmount || '0') || 0), 0);
+    const paidDonationTotal = realDonations
+        .filter((d: any) => d.status === 'Yatırıldı' || d.status === 'Tamamlandı')
+        .reduce((s: number, d: any) => s + (parseFloat(d.donationAmount || '0') || 0), 0);
+    const pendingDonationTotal = totalDonationActual - paidDonationTotal;
+    const totalPurchase = realDonations.reduce((s: number, d: any) =>
+        s + (parseFloat(d.purchaseAmount || '0') || 0), 0);
+
+    const totalVolunteerHours = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.volunteerHours || 0), 0);
+    const totalProjects = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.projects || 0), 0);
+    const totalPosts = posts?.length ?? 0;
+    const openTickets = (supportTickets ?? []).filter((t: any) => (t.status || 'open') === 'open').length;
+    const avgRating = (ratings && ratings.length > 0)
+        ? (ratings.reduce((s: number, r: any) => s + (r.rating || 0), 0) / ratings.length)
+        : 0;
+
+    // Aylık kullanıcı büyümesi (joinDate / createdAt'a göre)
+    const monthBuckets = useMemo(buildLast7Months, []);
+    const userGrowthData = useMemo(() => {
+        const counts: Record<string, number> = {};
+        monthBuckets.forEach(b => { counts[b.key] = 0; });
+        (users ?? []).forEach((u: any) => {
+            const d = toDate(u.createdAt) || toDate(u.joinDate);
+            if (!d) return;
+            const key = monthKey(d);
+            if (key in counts) counts[key]++;
         });
-    }, [userGrowthSort]);
+        return monthBuckets.map(b => ({ month: b.label, key: b.key, users: counts[b.key] }));
+    }, [users, monthBuckets]);
 
-    const sortedDonationVolunteerData = useMemo(() => {
-        return [...donationVolunteerData].sort((a, b) => {
-            const valA = a[donationSort.key as keyof typeof a];
-            const valB = b[donationSort.key as keyof typeof b];
-            if (donationSort.direction === 'asc') return valA - valB;
-            return valB - valA;
+    // Aylık gönderi etkileşimi
+    const engagementData = useMemo(() => {
+        const grouped: Record<string, { posts: number; likes: number; comments: number }> = {};
+        monthBuckets.forEach(b => { grouped[b.key] = { posts: 0, likes: 0, comments: 0 }; });
+        (posts ?? []).forEach((p: any) => {
+            const d = toDate(p.createdAt);
+            if (!d) return;
+            const key = monthKey(d);
+            if (key in grouped) {
+                grouped[key].posts++;
+                grouped[key].likes += p.likes || 0;
+                grouped[key].comments += p.comments || 0;
+            }
         });
-    }, [donationSort]);
+        return monthBuckets.map(b => ({
+            month: b.label,
+            Gonderi: grouped[b.key].posts,
+            Begeni: grouped[b.key].likes,
+            Yorum: grouped[b.key].comments,
+        }));
+    }, [posts, monthBuckets]);
 
-    const ChartToolbar = () => (
-        <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={showComingSoon}><Filter className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={showComingSoon}><ArrowDownUp className="h-4 w-4" /></Button>
-        </div>
-    );
+    // Yaş demografisi (kullanıcılardan)
+    const ageGroupData = useMemo(() => {
+        const counts: Record<string, number> = { '<18': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
+        (users ?? []).forEach((u: any) => {
+            const age = ageFromBirthDate(u?.personalInfo?.birthDate);
+            if (age == null) return;
+            counts[ageBucket(age)]++;
+        });
+        return Object.entries(counts)
+            .filter(([, v]) => v > 0)
+            .map(([name, value]) => ({ name, value }));
+    }, [users]);
 
-    if (!isMounted) return null;
+    const usersWithBirthDate = ageGroupData.reduce((sum, d) => sum + d.value, 0);
+
+    // Cinsiyet dağılımı
+    const genderData = useMemo(() => {
+        const counts: Record<string, number> = {};
+        (users ?? []).forEach((u: any) => {
+            const g = (u?.personalInfo?.gender || '').trim();
+            if (!g) return;
+            counts[g] = (counts[g] || 0) + 1;
+        });
+        return Object.entries(counts).map(([name, value]) => ({ name, value }));
+    }, [users]);
+
+    // Top STK'lar (bağışa göre)
+    const topNgosByDonation = useMemo(() => {
+        return [...(ngos ?? [])]
+            .map((n: any) => ({
+                name: n.shortName || n.name || 'Adsız',
+                Bagis: n?.stats?.totalDonation || 0,
+                Gonulluluk: n?.stats?.volunteerHours || 0,
+            }))
+            .sort((a, b) => b.Bagis - a.Bagis)
+            .slice(0, 7);
+    }, [ngos]);
+
+    // Başvuru durumu dağılımı
+    const applicationStatus = useMemo(() => {
+        const counts = { pending: 0, approved: 0, rejected: 0 };
+        (apps ?? []).forEach((a: any) => {
+            const s = a.status;
+            if (s === 'Beklemede') counts.pending++;
+            else if (s === 'Onaylandı' || s === 'Onaylandi' || s === 'approved') counts.approved++;
+            else if (s === 'Reddedildi' || s === 'rejected') counts.rejected++;
+        });
+        return counts;
+    }, [apps]);
+
+    // Sıralanmış aylık kullanıcı tablosu
+    const sortedUserGrowth = useMemo(() => {
+        return [...userGrowthData].sort((a, b) =>
+            growthSort === 'asc' ? a.users - b.users : b.users - a.users,
+        );
+    }, [userGrowthData, growthSort]);
+
+    const formatTL = (v: number) => v.toLocaleString('tr-TR') + ' ₺';
+
+    if (isLoading && !users && !ngos) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold font-headline tracking-tight">Platform Analizleri ve Raporlar</h1>
-                <p className="text-muted-foreground text-sm">Büyüme metriklerini, kullanıcı etkileşimini ve bağış hacmini gerçek zamanlı verilerle takip edin.</p>
+                <p className="text-muted-foreground text-sm">
+                    Firestore'dan gerçek zamanlı veriler. Toplam {totalUsers.toLocaleString('tr-TR')} kullanıcı, {(ngos?.length ?? 0).toLocaleString('tr-TR')} STK, {(brands?.length ?? 0).toLocaleString('tr-TR')} marka taranıyor.
+                </p>
             </div>
 
+            {/* Ana KPI'lar */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <Users className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-3xl font-bold mt-2">14,234</p>
+                    <p className="text-3xl font-bold mt-2">{totalUsers.toLocaleString('tr-TR')}</p>
                     <CardTitle className="text-sm font-medium mt-1">Toplam Kullanıcı</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">+%20.1 geçen aydan</p>
+                    <p className="text-xs text-muted-foreground mt-1">{usersWithBirthDate} kişi yaş bilgisi paylaşmış</p>
                 </Card>
-                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <Building className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-3xl font-bold mt-2">128</p>
+                    <p className="text-3xl font-bold mt-2">{activeNgos.toLocaleString('tr-TR')}</p>
                     <CardTitle className="text-sm font-medium mt-1">Aktif STK</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">+12 geçen aydan</p>
+                    <p className="text-xs text-muted-foreground mt-1">{(ngos?.length ?? 0) - activeNgos} pasif kayıt</p>
                 </Card>
-                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <Store className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-3xl font-bold mt-2">542</p>
+                    <p className="text-3xl font-bold mt-2">{activeBrands.toLocaleString('tr-TR')}</p>
                     <CardTitle className="text-sm font-medium mt-1">Aktif Marka</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">+45 geçen aydan</p>
+                    <p className="text-xs text-muted-foreground mt-1">{(brands?.length ?? 0) - activeBrands} pasif kayıt</p>
                 </Card>
-                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <HandCoins className="h-8 w-8 text-muted-foreground" />
-                    <p className="text-3xl font-bold mt-2">1.2M ₺</p>
+                    <p className="text-3xl font-bold mt-2">
+                        {totalDonationActual >= 1_000_000
+                            ? `${(totalDonationActual / 1_000_000).toFixed(1)}M ₺`
+                            : totalDonationActual >= 1000
+                                ? `${(totalDonationActual / 1000).toFixed(0)}K ₺`
+                                : `${totalDonationActual.toLocaleString('tr-TR')} ₺`}
+                    </p>
                     <CardTitle className="text-sm font-medium mt-1">Toplam Bağış</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1">+%15 geçen aydan</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {realDonations.length} işlem · {paidDonationTotal.toLocaleString('tr-TR')} ₺ yatırıldı
+                    </p>
                 </Card>
             </div>
-            
+
+            {/* İkincil KPI'lar — gerçek Firestore verileri */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-purple-100"><GraduationCap className="h-4 w-4 text-purple-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{activeClubs.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Aktif Öğrenci Kulübü</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-orange-100"><ShoppingBag className="h-4 w-4 text-orange-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{realDonations.length.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Bağış İşlemi (Toplam)</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-amber-100"><Clock className="h-4 w-4 text-amber-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{pendingDonationTotal.toLocaleString('tr-TR')} ₺</p>
+                            <p className="text-xs text-muted-foreground">Bekleyen Bağış</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-green-100"><CheckCircle2 className="h-4 w-4 text-green-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{paidDonationTotal.toLocaleString('tr-TR')} ₺</p>
+                            <p className="text-xs text-muted-foreground">Yatırılan Bağış</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-pink-100"><Heart className="h-4 w-4 text-pink-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{totalVolunteerHours.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Toplam Gönüllülük Saati</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100"><FileText className="h-4 w-4 text-blue-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(opportunities?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Açık Gönüllülük İlanı</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-red-100"><Bell className="h-4 w-4 text-red-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(emergencies?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Acil Durum Talebi</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-emerald-100"><CheckCircle2 className="h-4 w-4 text-emerald-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{((responses ?? []).filter((r: any) => r.status === 'positive').length).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Olumlu Acil Yanıt</p>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-cyan-100"><MessageSquare className="h-4 w-4 text-cyan-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{openTickets.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Açık Destek Talebi</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-yellow-100"><Star className="h-4 w-4 text-yellow-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{avgRating.toFixed(1)}</p>
+                            <p className="text-xs text-muted-foreground">{(ratings?.length || 0)} değerlendirme ort.</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-indigo-100"><FileText className="h-4 w-4 text-indigo-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(funds?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">{(funds ?? []).filter((f: any) => f.status === 'Açık').length} açık fon</p>
+                        </div>
+                    </div>
+                </Card>
+                <Card className="p-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-rose-100"><Trophy className="h-4 w-4 text-rose-600" /></div>
+                        <div>
+                            <p className="text-2xl font-bold">{(surveys?.length ?? 0).toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">Anket Cevabı</p>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
+            {/* Başvurular durumu */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-base">Başvurular</CardTitle>
+                    <CardDescription>{(apps?.length ?? 0)} toplam başvuru, durum kırılımı.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 flex items-center gap-3">
+                            <Hourglass className="h-5 w-5 text-amber-600" />
+                            <div><p className="text-xl font-bold">{applicationStatus.pending}</p><p className="text-xs text-amber-700">Beklemede</p></div>
+                        </div>
+                        <div className="p-4 rounded-xl border border-green-200 bg-green-50/50 flex items-center gap-3">
+                            <CheckCircle2 className="h-5 w-5 text-green-600" />
+                            <div><p className="text-xl font-bold">{applicationStatus.approved}</p><p className="text-xs text-green-700">Onaylandı</p></div>
+                        </div>
+                        <div className="p-4 rounded-xl border border-red-200 bg-red-50/50 flex items-center gap-3">
+                            <XCircle className="h-5 w-5 text-red-600" />
+                            <div><p className="text-xl font-bold">{applicationStatus.rejected}</p><p className="text-xs text-red-700">Reddedildi</p></div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Büyüme ve Etkileşim Trendleri</CardTitle>
-                    <CardDescription>Platformun son 6 aydaki performans grafikleri.</CardDescription>
+                    <CardDescription>Son 7 ayın gerçek verileri.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="graphs">
@@ -160,185 +441,157 @@ export default function AnalyticsPage() {
                         <TabsContent value="graphs" className="mt-4">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
-                                    <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Kullanıcı Büyümesi</CardTitle>
-                                        <ChartToolbar />
-                                    </CardHeader>
+                                    <CardHeader><CardTitle className="text-base">Aylık Yeni Kullanıcı</CardTitle></CardHeader>
                                     <CardContent>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <LineChart data={userGrowthData}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="month" />
-                                                <YAxis />
+                                                <YAxis allowDecimals={false} />
                                                 <Tooltip />
                                                 <Legend />
-                                                <Line type="monotone" dataKey="users" name="Yeni Kullanıcı" stroke="#f34723" />
+                                                <Line type="monotone" dataKey="users" name="Yeni Kullanıcı" stroke="#f34723" strokeWidth={2} />
                                             </LineChart>
                                         </ResponsiveContainer>
                                     </CardContent>
                                 </Card>
-                                 <Card>
-                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Bağış ve Gönüllülük</CardTitle>
-                                        <ChartToolbar />
-                                    </CardHeader>
+                                <Card>
+                                    <CardHeader><CardTitle className="text-base">Top STK'lar — Bağış &amp; Gönüllülük</CardTitle></CardHeader>
                                     <CardContent>
-                                         <ResponsiveContainer width="100%" height={300}>
-                                            <BarChart data={donationVolunteerData}>
-                                                <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="name" />
-                                                <YAxis />
-                                                <Tooltip />
-                                                <Legend />
-                                                <Bar dataKey="Bagis" name="Bağış (₺)" fill="#f34723" />
-                                                <Bar dataKey="Gonulluluk" name="Gönüllülük (Saat)" fill="#042654" />
-                                            </BarChart>
-                                        </ResponsiveContainer>
-                                    </CardContent>
-                                </Card>
-                                 <Card>
-                                    <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Demografik Dağılım (Yaş)</CardTitle>
-                                        <ChartToolbar />
-                                    </CardHeader>
-                                    <CardContent>
-                                         <ResponsiveContainer width="100%" height={300}>
-                                            <PieChart>
-                                                <Pie data={ageGroupData} cx="50%" cy="50%" labelLine={false} outerRadius={80} fill="#8884d8" dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                                                    {ageGroupData.map((entry, index) => (<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />))}
-                                                </Pie>
-                                                <Tooltip />
-                                            </PieChart>
-                                        </ResponsiveContainer>
+                                        {topNgosByDonation.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground text-center py-12">STK verisi bulunamadı.</p>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height={300}>
+                                                <BarChart data={topNgosByDonation}>
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-25} textAnchor="end" height={60} />
+                                                    <YAxis />
+                                                    <Tooltip />
+                                                    <Legend />
+                                                    <Bar dataKey="Bagis" name="Bağış (₺)" fill="#f34723" />
+                                                    <Bar dataKey="Gonulluluk" name="Gönüllülük (Saat)" fill="#042654" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        )}
                                     </CardContent>
                                 </Card>
                                 <Card>
-                                    <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Sosyal Etkileşim</CardTitle>
-                                        <ChartToolbar />
-                                    </CardHeader>
+                                    <CardHeader><CardTitle className="text-base">Yaş Demografisi</CardTitle></CardHeader>
+                                    <CardContent>
+                                        {ageGroupData.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground text-center py-12">
+                                                Kullanıcılar henüz doğum tarihi paylaşmadı.
+                                            </p>
+                                        ) : (
+                                            <ResponsiveContainer width="100%" height={300}>
+                                                <PieChart>
+                                                    <Pie
+                                                        data={ageGroupData}
+                                                        cx="50%" cy="50%"
+                                                        labelLine={false}
+                                                        outerRadius={90}
+                                                        dataKey="value"
+                                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                                    >
+                                                        {ageGroupData.map((_, i) => (
+                                                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                                                        ))}
+                                                    </Pie>
+                                                    <Tooltip />
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader><CardTitle className="text-base">Aylık Sosyal Etkileşim</CardTitle></CardHeader>
                                     <CardContent>
                                         <ResponsiveContainer width="100%" height={300}>
                                             <AreaChart data={engagementData}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis dataKey="month" />
-                                                <YAxis />
+                                                <YAxis allowDecimals={false} />
                                                 <Tooltip />
                                                 <Legend />
-                                                <Area type="monotone" dataKey="Gonderi" stackId="1" stroke="#8884d8" fill="#8884d8" />
-                                                <Area type="monotone" dataKey="Yorum" stackId="1" stroke="#82ca9d" fill="#82ca9d" />
-                                                <Area type="monotone" dataKey="Begeni" stackId="1" stroke="#ffc658" fill="#ffc658" />
+                                                <Area type="monotone" dataKey="Gonderi" stackId="1" stroke="#f34723" fill="#f34723" fillOpacity={0.6} />
+                                                <Area type="monotone" dataKey="Yorum" stackId="1" stroke="#0ea5e9" fill="#0ea5e9" fillOpacity={0.6} />
+                                                <Area type="monotone" dataKey="Begeni" stackId="1" stroke="#a855f7" fill="#a855f7" fillOpacity={0.4} />
                                             </AreaChart>
                                         </ResponsiveContainer>
                                     </CardContent>
                                 </Card>
+                                {genderData.length > 0 && (
+                                    <Card className="xl:col-span-2">
+                                        <CardHeader><CardTitle className="text-base">Cinsiyet Dağılımı</CardTitle></CardHeader>
+                                        <CardContent>
+                                            <ResponsiveContainer width="100%" height={260}>
+                                                <BarChart data={genderData} layout="vertical">
+                                                    <CartesianGrid strokeDasharray="3 3" />
+                                                    <XAxis type="number" allowDecimals={false} />
+                                                    <YAxis type="category" dataKey="name" width={100} />
+                                                    <Tooltip />
+                                                    <Bar dataKey="value" name="Kullanıcı Sayısı" fill="#042654" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </div>
                         </TabsContent>
                         <TabsContent value="numbers" className="mt-4">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Veri Tablosu: Kullanıcılar</CardTitle>
-                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => setUserGrowthSort({ key: 'users', direction: 'desc' })}>Yeni Kullanıcı (En Yüksek)</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setUserGrowthSort({ key: 'users', direction: 'asc' })}>Yeni Kullanıcı (En Düşük)</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <CardTitle className="text-base">Aylık Kullanıcı Tablosu</CardTitle>
+                                        <button
+                                            className="text-xs text-muted-foreground hover:text-foreground"
+                                            onClick={() => setGrowthSort(s => (s === 'desc' ? 'asc' : 'desc'))}
+                                        >
+                                            Sırala: {growthSort === 'desc' ? 'Yüksek → Düşük' : 'Düşük → Yüksek'}
+                                        </button>
                                     </CardHeader>
-                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Yeni Kullanıcı</TableHead></TableRow></TableHeader><TableBody>{sortedUserGrowthData.map(d => (<TableRow key={d.month}><TableCell>{d.month}</TableCell><TableCell className="text-right">{d.users.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
+                                    <CardContent>
+                                        <Table>
+                                            <TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Yeni Kullanıcı</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {sortedUserGrowth.map(d => (
+                                                    <TableRow key={d.key}>
+                                                        <TableCell>{d.month}</TableCell>
+                                                        <TableCell className="text-right">{d.users.toLocaleString('tr-TR')}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
                                 </Card>
                                 <Card>
                                     <CardHeader className="flex-row items-center justify-between">
-                                        <CardTitle className="text-base">Veri Tablosu: Finansal & Operasyonel</CardTitle>
-                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><ArrowDownUp className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Bagis', direction: 'desc' })}>Bağış (En Yüksek)</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Bagis', direction: 'asc' })}>Bağış (En Düşük)</DropdownMenuItem>
-                                                 <DropdownMenuItem onClick={() => setDonationSort({ key: 'Gonulluluk', direction: 'desc' })}>Gönüllülük (En Yüksek)</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setDonationSort({ key: 'Gonulluluk', direction: 'asc' })}>Gönüllülük (En Düşük)</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <CardTitle className="text-base flex items-center gap-2"><Trophy className="h-4 w-4 text-amber-500" /> Top STK Tablosu</CardTitle>
                                     </CardHeader>
-                                    <CardContent><Table><TableHeader><TableRow><TableHead>Ay</TableHead><TableHead className="text-right">Bağış (₺)</TableHead><TableHead className="text-right">Gönüllülük (Saat)</TableHead></TableRow></TableHeader><TableBody>{sortedDonationVolunteerData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className="text-right">{d.Bagis.toLocaleString()}</TableCell><TableCell className="text-right">{d.Gonulluluk.toLocaleString()}</TableCell></TableRow>))}</TableBody></Table></CardContent>
+                                    <CardContent>
+                                        <Table>
+                                            <TableHeader><TableRow><TableHead>STK</TableHead><TableHead className="text-right">Bağış (₺)</TableHead><TableHead className="text-right">Saat</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {topNgosByDonation.length === 0 ? (
+                                                    <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-8">STK verisi bulunamadı.</TableCell></TableRow>
+                                                ) : (
+                                                    topNgosByDonation.map(n => (
+                                                        <TableRow key={n.name}>
+                                                            <TableCell className="truncate max-w-[200px]">{n.name}</TableCell>
+                                                            <TableCell className="text-right">{formatTL(n.Bagis)}</TableCell>
+                                                            <TableCell className="text-right">{n.Gonulluluk.toLocaleString('tr-TR')}</TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
                                 </Card>
                             </div>
                         </TabsContent>
                     </Tabs>
                 </CardContent>
             </Card>
-
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Bot className="h-5 w-5"/> Yapay Zeka Tahminleri</CardTitle>
-                    <CardDescription>Mevcut verilere dayalı gelecek projeksiyonlarını görüntüleyin veya yeni bir tahmin talebinde bulunun.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Tabs defaultValue="graph">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="graph">Tahmin Grafiği</TabsTrigger>
-                            <TabsTrigger value="numbers">Tahmin Rakamları</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="graph" className="mt-4">
-                             <ResponsiveContainer width="100%" height={300}>
-                                <LineChart data={aiProjectionData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="period" />
-                                    <YAxis yAxisId="left" label={{ value: 'Kullanıcı Sayısı', angle: -90, position: 'insideLeft' }} />
-                                    <YAxis yAxisId="right" orientation="right" label={{ value: 'Bağış (Milyon ₺)', angle: -90, position: 'insideRight' }} />
-                                    <Tooltip formatter={(value, name) => `${(value as number).toLocaleString()} ${name === 'Kullanıcı' ? '' : 'M ₺'}`} />
-                                    <Legend />
-                                    <Line yAxisId="left" type="monotone" dataKey="users" name="Kullanıcı" stroke="#f34723" strokeWidth={2} />
-                                    <Line yAxisId="right" type="monotone" dataKey="donation" name="Bağış" stroke="#042654" strokeWidth={2} />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </TabsContent>
-                        <TabsContent value="numbers" className="mt-4">
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Dönem</TableHead>
-                                        <TableHead className="text-right">Tahmini Kullanıcı Sayısı</TableHead>
-                                        <TableHead className="text-right">Tahmini Toplam Bağış</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {aiProjectionData.map(d => (
-                                    <TableRow key={d.period}>
-                                        <TableCell>{d.period}</TableCell>
-                                        <TableCell className="text-right">{d.users.toLocaleString()}</TableCell>
-                                        <TableCell className="text-right">{d.donation.toLocaleString()} Milyon ₺</TableCell>
-                                    </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TabsContent>
-                    </Tabs>
-                </CardContent>
-                <CardFooter className="border-t pt-6">
-                    <div className="w-full space-y-4">
-                        <h4 className="font-semibold text-base">Yeni Tahmin Talebi Oluştur</h4>
-                        <div className="space-y-2">
-                            <Label htmlFor="prediction-request">Tahmin İsteğiniz</Label>
-                            <Textarea 
-                                id="prediction-request" 
-                                placeholder="Örn: Gelecek 2 yıl içinde gönüllü sayısındaki artışın, bağış miktarına etkisini tahmin et." 
-                            />
-                        </div>
-                        <Button className="w-full" onClick={() => {
-                            toast({
-                                title: "Tahmin İsteği Gönderildi",
-                                description: "Yapay zeka, istediğiniz tahmini oluşturmak için çalışıyor. Sonuçlar bu ekranda görüntülenecektir.",
-                            });
-                        }}>
-                            <Bot className="mr-2 h-4 w-4" />
-                            Tahmin Oluştur
-                        </Button>
-                    </div>
-                </CardFooter>
-            </Card>
         </div>
-    )
+    );
 }

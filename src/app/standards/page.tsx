@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useWebPage } from '@/hooks/use-site-content';
 import {
     Table,
     TableBody,
@@ -136,6 +137,7 @@ const regions = [
 
 export default function StandardsPage() {
     const router = useRouter();
+    const cms = useWebPage('standards');
     const plugin = React.useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
@@ -272,10 +274,10 @@ export default function StandardsPage() {
                         <span className="text-[10px] font-black uppercase tracking-widest">Global Güven Standartları</span>
                     </div>
                     <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        Standartlarına Uyum sağladığımız <br className="hidden md:block" /> Sertifikasyon Kurumları.
+                        {cms.title || (<>Standartlarına Uyum sağladığımız <br className="hidden md:block" /> Sertifikasyon Kurumları.</>)}
                     </h1>
                     <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed opacity-80">
-                        hangel, teknoloji ve sosyal fayda arasındaki köprüyü uluslararası otoritelerin belirlediği en sıkı standartlarla inşaa eder. Güvenimiz, uyum sağladığımız bu ilkelerden gelir.
+                        {cms.description || 'hangel, teknoloji ve sosyal fayda arasındaki köprüyü uluslararası otoritelerin belirlediği en sıkı standartlarla inşaa eder. Güvenimiz, uyum sağladığımız bu ilkelerden gelir.'}
                     </p>
                 </section>
 

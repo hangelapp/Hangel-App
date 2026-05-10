@@ -1,36 +1,70 @@
 'use client';
 
 import { librarySections } from '@/lib/library';
+import type { LibrarySection } from '@/lib/library';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 
 export default function LibraryItemPage() {
   const router = useRouter();
   const params = useParams();
   const slug = params.slug as string;
   const { toast } = useToast();
-  
-  const itemWithSection = librarySections.flatMap(section => 
-    section.items.map(item => ({ ...item, sectionSlug: section.slug }))
-  ).find(i => i.slug === slug);
+  const db = useFirestore();
 
-  const item = itemWithSection;
+  // Statik + Firestore section'ları birleştir, slug'ı her iki kaynakta ara
+  const libQuery = useMemoFirebase(() => (db ? collection(db, 'library') : null), [db]);
+  const { data: fsSections, isLoading: fsLoading } = useCollection<LibrarySection>(libQuery);
 
-  if (!item) {
-    notFound();
-  }
+  const itemWithSection = useMemo(() => {
+    const fsMap = new Map((fsSections ?? []).map(s => [s.slug, s]));
+    // Statik section'ları Firestore extra item'larıyla zenginleştir
+    const merged: LibrarySection[] = librarySections.map(staticSec => {
+      const fsSec = fsMap.get(staticSec.slug);
+      if (!fsSec) return staticSec;
+      const staticSlugs = new Set(staticSec.items.map(i => i.slug));
+      const extra = (fsSec.items ?? []).filter(i => !staticSlugs.has(i.slug));
+      return { ...staticSec, items: [...staticSec.items, ...extra] };
+    });
+    const staticSlugs = new Set(librarySections.map(s => s.slug));
+    const extraSections = (fsSections ?? []).filter(s => !staticSlugs.has(s.slug));
+    const all = [...merged, ...extraSections];
+
+    for (const section of all) {
+      const found = (section.items ?? []).find(i => i.slug === slug);
+      if (found) return { ...found, sectionSlug: section.slug };
+    }
+    return null;
+  }, [fsSections, slug]);
 
   const [isCompleted, setIsCompleted] = useState(false);
   const [recommendation, setRecommendation] = useState<'up' | 'down' | null>(null);
 
-  const isViewable = item.sectionSlug === 'filmler' || item.sectionSlug === 'belgeseller';
+  // Firestore yüklenirken bekleyen ekran (statik section'da yoksa fs gelene kadar 404 gösterme)
+  if (fsLoading && !itemWithSection) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!itemWithSection) {
+    notFound();
+  }
+
+  const item = itemWithSection;
+  const sectionSlugLower = (item.sectionSlug || '').toLowerCase();
+  const isViewable = sectionSlugLower.includes('film') || sectionSlugLower.includes('belges') || sectionSlugLower.includes('sinema');
   const completionText = isViewable ? 'İzledim' : 'Okudum';
   const CompletionIcon = isViewable ? Film : Book;
-  
+
   const handleToggleComplete = () => {
     const newStatus = !isCompleted;
     setIsCompleted(newStatus);
@@ -68,10 +102,10 @@ export default function LibraryItemPage() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <p className="font-medium flex items-center gap-2">
-                <CompletionIcon className="h-5 w-5 text-muted-foreground"/> 
+                <CompletionIcon className="h-5 w-5 text-muted-foreground"/>
                 Bu içeriği tamamladın mı?
             </p>
-            <Button 
+            <Button
               variant={isCompleted ? 'default' : 'outline'}
               onClick={handleToggleComplete}
               className="w-28"
@@ -83,16 +117,16 @@ export default function LibraryItemPage() {
           <div className="flex items-center justify-between p-4 border rounded-lg">
              <p className="font-medium">Bu içeriği yararlı buldun mu?</p>
              <div className="flex gap-2">
-                <Button 
-                  variant={recommendation === 'up' ? 'default' : 'outline'} 
+                <Button
+                  variant={recommendation === 'up' ? 'default' : 'outline'}
                   size="sm"
                   className="gap-2"
                   onClick={() => handleRecommend('up')}
                 >
                   <ThumbsUp className="h-4 w-4" /> Yararlı
                 </Button>
-                <Button 
-                  variant={recommendation === 'down' ? 'destructive' : 'outline'} 
+                <Button
+                  variant={recommendation === 'down' ? 'destructive' : 'outline'}
                   size="sm"
                   className="gap-2"
                   onClick={() => handleRecommend('down')}
@@ -100,10 +134,6 @@ export default function LibraryItemPage() {
                   <ThumbsDown className="h-4 w-4" /> Yararsız
                 </Button>
              </div>
-          </div>
-          <div className="text-center pt-4">
-            <p className="font-bold text-lg text-primary">%87</p>
-            <p className="text-sm text-muted-foreground">oranında yararlı bulunuyor.</p>
           </div>
         </CardContent>
       </Card>

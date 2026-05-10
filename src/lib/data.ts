@@ -1,11 +1,11 @@
-import { 
-    Leaf, 
-    GraduationCap, 
-    Heart, 
-    Code, 
-    Palette, 
-    Globe, 
-    ShieldCheck, 
+import {
+    Leaf,
+    GraduationCap,
+    Heart,
+    Code,
+    Palette,
+    Globe,
+    ShieldCheck,
     Handshake,
     Star,
     Laptop,
@@ -28,7 +28,17 @@ import {
     Landmark,
     Target,
     Activity,
-    Siren
+    PawPrint,
+    Siren,
+    Stethoscope,
+    HandHeart,
+    Accessibility,
+    Baby,
+    Scale,
+    Plane,
+    ShieldX,
+    UserRoundCog,
+    Sprout,
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
@@ -243,9 +253,55 @@ export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] }
 ];
 
-export const badges: Badge[] = [
-    { id: "1", name: "Çevre Koruyucusu", level: "Bronz", iconName: Leaf, socialArea: "Çevre", pointsRequired: 500, currentPoints: 800 }
+// 20 sosyal alan × 5 seviye = 100 rozet
+// Eşikler: Bakır 100 → Bronz 250 → Gümüş 500 → Altın 1000 → Platin 2500
+const BADGE_LEVELS: Array<{ level: 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 'Platin'; points: number }> = [
+    { level: 'Bakır', points: 100 },
+    { level: 'Bronz', points: 250 },
+    { level: 'Gümüş', points: 500 },
+    { level: 'Altın', points: 1000 },
+    { level: 'Platin', points: 2500 },
 ];
+
+const BADGE_CATEGORIES: Array<{ name: string; socialArea: string; iconName: any }> = [
+    { name: 'Çevre Koruyucusu',           socialArea: 'Çevre',                iconName: Leaf },
+    { name: 'Eğitim Destekçisi',          socialArea: 'Eğitim',               iconName: GraduationCap },
+    { name: 'Hayvan Dostu',               socialArea: 'Hayvanlar',            iconName: PawPrint },
+    { name: 'Afet Kahramanı',             socialArea: 'Afet',                 iconName: Siren },
+    { name: 'Topluluk Lideri',            socialArea: 'Topluluk',             iconName: Users },
+    { name: 'Gönüllülük Elçisi',          socialArea: 'Gönüllülük',           iconName: Handshake },
+    { name: 'Kan Bağışı Destekçisi',      socialArea: 'Sağlık',               iconName: Droplets },
+    { name: 'Hayvan Koruyucusu',          socialArea: 'Hayvanlar',            iconName: ShieldCheck },
+    { name: 'Gençlik Mentoru',            socialArea: 'Gençlik',              iconName: Sprout },
+    { name: 'Kültür ve Sanat Destekçisi', socialArea: 'Kültür ve Sanat',      iconName: Palette },
+    { name: 'Sağlık Gönüllüsü',           socialArea: 'Sağlık',               iconName: Stethoscope },
+    { name: 'Eğitim Gönüllüsü',           socialArea: 'Eğitim',               iconName: BookOpen },
+    { name: 'Sosyal Yardım Destekçisi',   socialArea: 'Sosyal Yardım',        iconName: HandHeart },
+    { name: 'Engelsiz Yaşam Destekçisi',  socialArea: 'Engelsiz Yaşam',       iconName: Accessibility },
+    { name: 'Çocuk Destekçisi',           socialArea: 'Çocuklar',             iconName: Baby },
+    { name: 'Hak Temelli Çalışmalar',     socialArea: 'Hak Temelli',          iconName: Scale },
+    { name: 'Göç ve Mülteci Destekçisi',  socialArea: 'Göç ve Mülteciler',    iconName: Plane },
+    { name: 'İstihdam Destekçisi',        socialArea: 'İstihdam',             iconName: Briefcase },
+    { name: 'Bağımlılıkla Mücadele',      socialArea: 'Bağımlılıkla Mücadele', iconName: ShieldX },
+    { name: 'Yaşlı Destekçisi',           socialArea: 'Yaşlılar',             iconName: UserRoundCog },
+];
+
+const slugifyTr = (s: string) => s.toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i')
+    .replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+export const badges: Badge[] = BADGE_CATEGORIES.flatMap(cat =>
+    BADGE_LEVELS.map(({ level, points }) => ({
+        id: `${slugifyTr(cat.name)}-${slugifyTr(level)}`,
+        name: `${cat.name} — ${level}`,
+        level,
+        iconName: cat.iconName,
+        socialArea: cat.socialArea,
+        pointsRequired: points,
+        currentPoints: 0, // Çalışma anında userData.areaPoints'ten doldurulur
+    })),
+);
 
 export const managedItems: ManagedItem[] = [
     { name: "Ahbap Derneği", type: "STK", icon: "heart", status: "approved", href: "/ngo-admin/dashboard" }

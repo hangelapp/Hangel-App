@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { useWebPage } from '@/hooks/use-site-content';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 
@@ -64,6 +65,7 @@ const FeedbackValueSection = ({
 export default function FeedbackPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const cms = useWebPage('feedback');
     const [rating, setRating] = useState<number>(0);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -90,9 +92,12 @@ export default function FeedbackPage() {
             <main>
                 {/* Hero Section */}
                 <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-[#f5f5f7]">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">Fikirleriniz Değerli.</h1>
+                    {cms.subtitle && (
+                        <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
+                    )}
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{cms.title || 'Fikirleriniz Değerli.'}</h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto">
-                        Platformumuzu her geçen gün sizinle birlikte geliştiriyoruz. Deneyimlerinizi bizimle paylaşın.
+                        {cms.description || 'Platformumuzu her geçen gün sizinle birlikte geliştiriyoruz. Deneyimlerinizi bizimle paylaşın.'}
                     </p>
                 </section>
 

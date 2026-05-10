@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { openExternalUrl } from '@/lib/capacitor';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
@@ -128,36 +128,59 @@ export default function BrandProfilePage() {
         toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Bağış sürecini başlatmak için lütfen oturum açın." });
         return;
     }
-    
+
     if (!brand) return;
 
+    if (!brand.link) {
+        toast({ variant: 'destructive', title: 'Bağlantı eksik', description: `${brand.name} için affiliate bağlantısı tanımlı değil.` });
+        return;
+    }
+
     setIsDonating(true);
-    const transRef = collection(db, 'donations');
-    
-    addDocumentNonBlocking(transRef, {
+    // 1) Bağış kaydı (durum: İşleme Alındı — turuncu)
+    addDocumentNonBlocking(collection(db, 'donations'), {
         userId: authUser.uid,
+        userName: authUser.displayName || authUser.email || 'Kullanıcı',
+        userEmail: authUser.email || null,
+        brand: brand.name,
         brandId: brand.id,
         brandName: brand.name,
-        purchaseAmount: "0.00", 
-        donationAmount: "0.00", 
+        brandSlug: brand.slug || '',
+        brandLogoUrl: brand.logoUrl || '',
+        purchaseAmount: '0.00',
+        donationAmount: '0.00',
+        donationRate: brand.donationRate || 0,
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         type: 'expense',
-        status: 'Yönlendirildi',
-        ngo: ["Varsayılan STK'nız"]
+        status: 'İşleme Alındı', // turuncu — 72 gün sonra Yatırıldı (yeşil) yapılır
+        ngo: ["Varsayılan STK'nız"],
+        ngoIds: [],
+        createdAt: serverTimestamp(),
+        clearableAt: new Date(Date.now() + 72 * 24 * 60 * 60 * 1000).toISOString(), // 72 gün sonrası
     });
 
-    if (brand.link) {
-        openExternalUrl(brand.link);
-    }
+    // 2) Kullanıcıya bildirim (talep işleme alındı)
+    addDocumentNonBlocking(collection(db, 'notifications'), {
+        userId: authUser.uid,
+        type: 'donation',
+        title: 'Bağışınız işleme alınmıştır',
+        body: `${brand.name} üzerinden yaptığınız alışveriş kaydedildi. 72 gün içinde STK'ya aktarılacak.`,
+        data: { brandId: brand.id, brandName: brand.name },
+        read: false,
+        createdAt: serverTimestamp(),
+        createdBy: authUser.uid,
+    });
 
-    setTimeout(() => {
-        setIsDonating(false);
-        toast({
-            title: "Mağazaya Yönlendiriliyorsunuz",
-            description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
-        });
-    }, 1000);
+    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
+    openExternalUrl(brand.link);
+
+    toast({
+        title: 'Mağazaya Yönlendirildi',
+        description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek. Bağışlarım sayfasında işleme alındı olarak görünecek.`,
+    });
+
+    setTimeout(() => setIsDonating(false), 1500);
   };
 
   if (brand === undefined) {

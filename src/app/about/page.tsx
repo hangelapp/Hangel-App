@@ -12,6 +12,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
+import { useWebContent } from '@/hooks/use-site-content';
 
 const AppleSection = ({ 
     title, 
@@ -93,6 +94,7 @@ const FeatureCard = ({ icon: Icon, title, description }: { icon: any, title: str
 
 export default function AboutPage() {
     const router = useRouter();
+    const { get } = useWebContent();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -113,11 +115,11 @@ export default function AboutPage() {
             </header>
 
             {/* Hero */}
-            <AppleSection 
-                title="İyiliği Dijitalleştirdik."
-                subtitle="Geleceğin dayanışma modelini inşa ediyoruz."
-                description="Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, dünyanın en kapsayıcı sosyal etki platformuyuz."
-                imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
+            <AppleSection
+                title={get('about.title', 'İyiliği Dijitalleştirdik.')}
+                subtitle={get('about.subtitle', 'Geleceğin dayanışma modelini inşa ediyoruz.')}
+                description={get('about.description', 'Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, dünyanın en kapsayıcı sosyal etki platformuyuz.')}
+                imageUrl={get('about.heroImageUrl', 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')}
                 imageHint="university students working together"
             >
                 <div className="mt-4 flex justify-center">
@@ -157,8 +159,8 @@ export default function AboutPage() {
             {/* Social Enterprise Section */}
             <AppleSection
                 theme="dark"
-                title="Bir Sosyal Girişim Hikayesi."
-                description="Hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır."
+                title={get('about.socialTitle', 'Bir Sosyal Girişim Hikayesi.')}
+                description={get('about.socialDesc', 'Hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır.')}
                 cta1="Sosyal Girişimcilik Nedir?"
                 cta1Href="/social-entrepreneurship"
                 imageUrl="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop"
@@ -190,11 +192,11 @@ export default function AboutPage() {
             </section>
             
             {/* Philosophy */}
-            <AppleSection 
+            <AppleSection
                 theme="light"
                 className="bg-[#fafafa]"
-                title="Kuruluş Felsefemiz."
-                description="Yola çıkarken tek bir mottomuz vardı: 'Yok öyle yalnız başına mücadele etmek'. Toplumsal sorunların kolektif bir bilinç ve teknoloji destekli bir altyapı ile çözüleceğine inanıyoruz."
+                title={get('about.foundationTitle', 'Kuruluş Felsefemiz.')}
+                description={get('about.foundationDesc', "Yola çıkarken tek bir mottomuz vardı: 'Yok öyle yalnız başına mücadele etmek'. Toplumsal sorunların kolektif bir bilinç ve teknoloji destekli bir altyapı ile çözüleceğine inanıyoruz.")}
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="students working together library"
             />

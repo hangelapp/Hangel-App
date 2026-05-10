@@ -8,12 +8,14 @@ export { languages };
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [language, setLanguage] = useState<Language>('tr');
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('app-language') as Language;
     if (saved && translations[saved]) {
       setLanguage(saved);
     }
+    setIsHydrated(true);
   }, []);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   };
 
   return (
-    <LanguageContext.Provider value={{ language, changeLanguage, t }}>
+    <LanguageContext.Provider value={{ language, changeLanguage, t, isHydrated }}>
       {children}
     </LanguageContext.Provider>
   );

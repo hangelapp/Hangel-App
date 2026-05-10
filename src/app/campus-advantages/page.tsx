@@ -23,6 +23,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const AdvantageCard = ({ 
     title, 
@@ -74,6 +75,7 @@ const AdvantageCard = ({
 
 export default function CampusAdvantagesPage() {
     const router = useRouter();
+    const cms = useWebPage('campus-advantages');
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30 pb-24">
@@ -91,10 +93,10 @@ export default function CampusAdvantagesPage() {
                     <span className="text-xs font-bold uppercase tracking-widest">hangel Kampüs Programı</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto">
-                    Kulübünüzle <br className="hidden md:block" /> Geleceğin Etkisini Şekillendirin.
+                    {cms.title || (<>Kulübünüzle <br className="hidden md:block" /> Geleceğin Etkisini Şekillendirin.</>)}
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    Üniversite kulübünüzü dijital dünyaya taşıyın. Hangel Kampüs, sosyal etki odaklı kulüplerin büyümesi, yönetilmesi ve değer oluşturması için tasarlandı.
+                    {cms.description || 'Üniversite kulübünüzü dijital dünyaya taşıyın. Hangel Kampüs, sosyal etki odaklı kulüplerin büyümesi, yönetilmesi ve değer oluşturması için tasarlandı.'}
                 </p>
                 <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">

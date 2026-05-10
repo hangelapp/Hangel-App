@@ -4,6 +4,19 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Loader2, Send } from 'lucide-react';
+import { useFirestore, useUser } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useWebPage } from '@/hooks/use-site-content';
 import { 
   Search,
   ChevronRight,
@@ -51,9 +64,67 @@ const QuickActionCard = ({ title, href }: { title: string; href: string }) => (
 
 export default function SupportPage() {
     const { toast } = useToast();
+    const db = useFirestore();
+    const { user: authUser } = useUser();
+    const cms = useWebPage('support');
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Yeni destek talebi formu
+    const [ticketSubject, setTicketSubject] = useState('');
+    const [ticketMessage, setTicketMessage] = useState('');
+    const [ticketPriority, setTicketPriority] = useState<'low' | 'normal' | 'high'>('normal');
+    const [ticketEmail, setTicketEmail] = useState('');
+    const [ticketName, setTicketName] = useState('');
+    const [submittingTicket, setSubmittingTicket] = useState(false);
+
     const popularArticles = helpTopics.flatMap(t => t.subtopics).slice(0,3);
+
+    const handleCreateTicket = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!ticketSubject.trim() || !ticketMessage.trim()) {
+            toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Konu ve mesaj alanları gerekli.' });
+            return;
+        }
+        if (!authUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Giriş gerekli',
+                description: 'Destek talebi oluşturmak için giriş yapmalısınız.',
+            });
+            return;
+        }
+        setSubmittingTicket(true);
+        try {
+            await addDoc(collection(db, 'supportTickets'), {
+                userId: authUser.uid,
+                userName: ticketName.trim() || authUser.displayName || 'Kullanıcı',
+                userEmail: ticketEmail.trim() || authUser.email || null,
+                subject: ticketSubject.trim(),
+                message: ticketMessage.trim(),
+                priority: ticketPriority,
+                status: 'open',
+                createdAt: serverTimestamp(),
+            });
+            toast({
+                title: 'Talebiniz alındı',
+                description: 'Destek ekibimiz en kısa sürede yanıt verecektir.',
+            });
+            setTicketSubject('');
+            setTicketMessage('');
+            setTicketPriority('normal');
+        } catch (err: any) {
+            console.error('Ticket create failed:', err);
+            toast({
+                variant: 'destructive',
+                title: 'Talep oluşturulamadı',
+                description: err?.code === 'permission-denied'
+                    ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
+                    : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        } finally {
+            setSubmittingTicket(false);
+        }
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -105,8 +176,8 @@ export default function SupportPage() {
         {/* Hero Section */}
         <section className="text-center space-y-6">
             <HangelLogo className="text-6xl mx-auto" />
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">hangel Destek</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium">Yardıma mı ihtiyacınız var? Buradan başlayın.</p>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{cms.title || 'hangel Destek'}</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">{cms.description || cms.subtitle || 'Yardıma mı ihtiyacınız var? Buradan başlayın.'}</p>
         </section>
 
         {/* Categories Section */}
@@ -228,6 +299,94 @@ export default function SupportPage() {
         </section>
         
         {faqSection}
+
+        {/* Bize Ulaşın - Yeni destek talebi oluştur */}
+        <section className="max-w-3xl mx-auto">
+            <Card className="rounded-[2.5rem] overflow-hidden shadow-xl">
+                <CardHeader className="bg-primary/5">
+                    <CardTitle className="text-2xl">Bize Ulaşın</CardTitle>
+                    <CardDescription>
+                        Sorununuzu yazın, destek ekibimiz size hızlıca dönüş yapsın.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                    <form onSubmit={handleCreateTicket} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="ticket-name">Adınız (opsiyonel)</Label>
+                                <Input
+                                    id="ticket-name"
+                                    placeholder={authUser?.displayName || 'Adınız'}
+                                    value={ticketName}
+                                    onChange={(e) => setTicketName(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ticket-email">E-posta (opsiyonel)</Label>
+                                <Input
+                                    id="ticket-email"
+                                    type="email"
+                                    placeholder={authUser?.email || 'ornek@hangel.org'}
+                                    value={ticketEmail}
+                                    onChange={(e) => setTicketEmail(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ticket-subject">Konu *</Label>
+                            <Input
+                                id="ticket-subject"
+                                required
+                                placeholder="Örn: Bağışım STK profilinde görünmüyor"
+                                value={ticketSubject}
+                                onChange={(e) => setTicketSubject(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ticket-priority">Öncelik</Label>
+                            <Select value={ticketPriority} onValueChange={(v: any) => setTicketPriority(v)}>
+                                <SelectTrigger id="ticket-priority"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="low">Düşük</SelectItem>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="high">Yüksek (acil)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ticket-message">Mesajınız *</Label>
+                            <Textarea
+                                id="ticket-message"
+                                required
+                                rows={6}
+                                placeholder="Sorununuzu detaylı olarak açıklayın..."
+                                value={ticketMessage}
+                                onChange={(e) => setTicketMessage(e.target.value)}
+                                className="resize-none"
+                            />
+                        </div>
+                        {!authUser && (
+                            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                Talep oluşturmak için giriş yapmanız gerekir.
+                                <Link href="/login/selection?action=login" className="ml-1 underline font-bold">Giriş yap</Link>
+                            </p>
+                        )}
+                        <Button
+                            type="submit"
+                            disabled={submittingTicket || !authUser}
+                            className="w-full h-12 rounded-full font-bold text-base"
+                        >
+                            {submittingTicket ? (
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                            ) : (
+                                <Send className="mr-2 h-5 w-5" />
+                            )}
+                            Destek Talebi Gönder
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </section>
 
         <section className="max-w-4xl mx-auto pt-16 text-center">
             <h4 className="text-xl font-bold">Toplumsal Fayda için Tasarım</h4>

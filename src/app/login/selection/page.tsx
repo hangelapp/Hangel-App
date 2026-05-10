@@ -44,7 +44,7 @@ import {
     allBeneficiaries, allSdgs, allMemberships
 } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initiateEmailVerification, initiatePasswordResetEmail } from '@/firebase/non-blocking-login';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -208,8 +208,10 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
             const userId = userCredential.user.uid;
-            await updateProfile(userCredential.user, { displayName: name });
-            
+            if (name) {
+                try { await updateProfile(userCredential.user, { displayName: name }); } catch {}
+            }
+            const referrerId = searchParams.get('ref') || null;
             setDocumentNonBlocking(doc(db, 'users', userId), {
                 id: userId,
                 name: name,
@@ -217,9 +219,10 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                     email: email.trim().toLowerCase(),
                     phone: `+${phoneCode}${phone.replace(/\D/g, '')}`,
                 },
-                impactScore: 0,
-                role: 'user',
-                createdAt: new Date().toISOString()
+                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                ...(referrerId ? { invitedBy: referrerId } : {}),
+                createdAt: serverTimestamp(),
+                joinDate: new Date().toISOString().split('T')[0],
             }, { merge: true });
 
             await initiateEmailVerification(userCredential.user);
@@ -320,6 +323,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const db = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
+    const { user: authUser } = useUser();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [entityType, setEntityType] = useState<string>(initialEntity);
     
@@ -359,9 +363,23 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
+            // /my-applications sayfası type='Kulüpler' / 'STK' / 'Marka' filtresiyle çalışır.
+            // Onlara uyacak şekilde entityType'tan tab type'ı türetiyoruz.
+            const tabType =
+                entityType === 'NGO' ? 'STK' :
+                entityType === 'BRAND' ? 'Marka' :
+                entityType === 'CLUB' ? 'Kulüpler' : 'Kurumsal Başvuru';
+
             await addDoc(collection(db, 'applications'), {
                 ...formData,
                 entityType,
+                type: tabType,
+                title: formData.name || 'Kurumsal Başvuru',
+                org: formData.name || '',
+                location: [formData.city, formData.country].filter(Boolean).join(', ') || '',
+                userId: authUser?.uid || null, // Login'liyse /my-applications'da görünür
+                userName: authUser?.displayName || formData.authorized?.name || '',
+                userEmail: authUser?.email || formData.email || '',
                 selectedBeneficiaries,
                 selectedSdgs,
                 selectedNetworks,
@@ -370,7 +388,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 createdAt: serverTimestamp(),
             });
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
-            router.push('/login');
+            router.push(authUser ? '/my-applications' : '/login');
         } catch (error: any) {
             toast({ variant: 'destructive', title: 'Hata', description: error.message });
         } finally {

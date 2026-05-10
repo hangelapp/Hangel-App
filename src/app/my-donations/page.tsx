@@ -3,7 +3,8 @@
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2, Loader2 } from 'lucide-react';
+import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2, Loader2, Clock, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -201,16 +202,39 @@ export default function MyDonationsPage() {
                 const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
                 const hangelShare = ngoShare * 0.10;
 
+                const status = (donation as any).status as string | undefined;
+                const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
+                const isPending = !isPaid && status !== 'Reddedildi';
+                const statusBadge = isPaid
+                  ? { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: 'Yatırıldı' }
+                  : status === 'Reddedildi'
+                    ? { class: 'bg-red-100 text-red-700 border-red-200', icon: Clock, label: 'Reddedildi' }
+                    : { class: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: status || 'İşleme Alındı' };
+                const StatusIcon = statusBadge.icon;
+                const rowAccent = isPaid
+                  ? 'border-l-4 border-l-green-500'
+                  : isPending
+                    ? 'border-l-4 border-l-orange-400'
+                    : 'border-l-4 border-l-red-400';
+
                 return (
-                  <AccordionItem key={donation.id} value={`item-${donation.id}`} className="border-b last:border-b-0">
+                  <AccordionItem key={donation.id} value={`item-${donation.id}`} className={`border-b last:border-b-0 ${rowAccent}`}>
                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="p-2 bg-muted rounded-full">
-                          <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+                        <div className={`p-2 rounded-full ${isPaid ? 'bg-green-100' : isPending ? 'bg-orange-100' : 'bg-muted'}`}>
+                          <ShoppingBag className={`h-5 w-5 ${isPaid ? 'text-green-700' : isPending ? 'text-orange-700' : 'text-muted-foreground'}`} />
                         </div>
-                        <div className="flex-1 text-left">
-                          <p>{donation.brand}</p>
-                          <p className="text-xs text-muted-foreground">
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="truncate">{donation.brand}</p>
+                            {donation.type === 'expense' && (
+                              <Badge variant="outline" className={`text-[10px] font-bold uppercase ${statusBadge.class}`}>
+                                <StatusIcon className="h-3 w-3 mr-1" />
+                                {statusBadge.label}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
                             {donation.ngo && donation.ngo.length > 0 ? donation.ngo.join(', ') : `${format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - ${donation.time}`}
                           </p>
                         </div>
