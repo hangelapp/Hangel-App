@@ -9,14 +9,19 @@ service cloud.firestore {
     
     function isSuperAdmin() {
       return isSignedIn() && (
-        request.auth.token.email == '5384009090@hangel.org' || 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        request.auth.token.email == 'ismailhilmi@hangel.org' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin')
       );
     }
 
     function isOwner(userId) {
       return request.auth.uid == userId;
+    }
+
+    // OTP kodları - sadece server-side erişim (Admin SDK)
+    match /otp_codes/{docId} {
+      allow read, write: if false;
     }
 
     // Kullanıcı koleksiyonu
@@ -35,18 +40,46 @@ service cloud.firestore {
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
     match /ngos/{ngoId} {
       allow read, list: if true; // Public for marketplace
+      // Herkes sadece viewCount alanını artırabilir (görüntülenme sayacı)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']);
     }
 
     match /brands/{brandId} {
       allow read, list: if true; // Public read access for marketplace
     }
 
+    // Öğrenci kulüpleri (public read, super-admin global write)
+    match /clubs/{clubId} {
+      allow read, list: if true;
+      // Owners (kulüp admin) kendi kulübünü güncelleyebilir
+      allow update: if isSignedIn() && resource.data.adminUserId == request.auth.uid;
+    }
+
+    // Eski adlandırma — uyumluluk için (boşalsın diye)
+    match /studentClubs/{clubId} {
+      allow read, list: if true;
+    }
+
     match /posts/{postId} {
       allow read, list: if true; // Public for timeline
+      // Authors (NGO/brand/club admins or individual users) can post as themselves
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      // Only the author can edit or delete their own post (super-admin has global write)
+      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
     }
 
     match /volunteering/{oppId} {
       allow read, list: if true; // Public volunteering listings
+      // NGO admins can create listings owned by their own NGO (ngoId == auth uid)
+      allow create: if isSignedIn() && request.resource.data.ngoId == request.auth.uid;
+      // Owners can update/delete their own listings; super-admin has full access via global rule
+      allow update, delete: if isSignedIn() && resource.data.ngoId == request.auth.uid;
+    }
+
+    // Transparency: each NGO admin owns one doc with id == auth uid
+    match /transparency/{userId} {
+      allow read: if true; // public — used to render transparency score on NGO profile
+      allow create, update, delete: if isSignedIn() && isOwner(userId);
     }
 
     match /events/{eventId} {
@@ -57,11 +90,176 @@ service cloud.firestore {
       allow read, list: if true; // Public library content
     }
 
+    // Sözleşmeler ve politikalar (super-admin yönetir, herkes okur)
+    match /contracts/{contractId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Hibe programları ve fonlar (super-admin yönetir, herkes okur)
+    match /funds/{fundId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Site ayarları (anasayfa/about/dernek içerikleri — super-admin yönetir, herkes okur)
+    match /siteSettings/{docId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Anket cevapları (kullanıcı kendi cevabını yazar; super-admin hepsini görür)
+    match /surveys/{surveyId} {
+      allow list, read: if isSuperAdmin();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Uygulama değerlendirmeleri / yıldızlar (kullanıcı kendi rating'ini yazar; super-admin hepsini görür)
+    match /ratings/{ratingId} {
+      allow list, read: if isSuperAdmin();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Bağışlar (kullanıcı kendi alışverişini yazar, kendi bağışlarını okur, super-admin tümünü yönetir)
+    match /donations/{donationId} {
+      allow list: if isSuperAdmin() || isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      // Super-admin tüm alanları günceller (status, amounts, payoutDate vb.)
+      // Kullanıcı sadece kendi okuma durumunu (read) günceller
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Destek talepleri (kullanıcı oluşturur ve okur, super-admin tüm talepleri yönetir)
+    match /supportTickets/{ticketId} {
+      allow list: if isSuperAdmin() || isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status == 'open';
+      // Kullanıcı kendi talebini günceller (sadece message/subject); super-admin her şeyi günceller
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['subject', 'message', 'updatedAt'])
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // Esnek site sayfaları (basın, etkinlik, duyuru — super-admin yönetir, herkes okur)
+    match /sitePages/{pageId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Acil durum talepleri
+    //  - Kullanıcılar: 'pending' status ile kendi taleplerini oluşturabilir
+    //  - Süper Admin: tüm CRUD (onay → 'sent' broadcasts notifications)
+    match /emergencyRequests/{reqId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSuperAdmin() || (
+        isSignedIn() &&
+        request.resource.data.status == 'pending' &&
+        request.resource.data.requestedBy == request.auth.uid
+      );
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Acil durum yanıtları (kullanıcılar kendi yanıtını oluşturur, süper admin hepsini görür)
+    match /emergencyResponses/{respId} {
+      allow list: if isSuperAdmin() || isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.status in ['positive', 'negative'];
+      allow update, delete: if isSuperAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid
+      );
+    }
+
+    // Bildirimler (Süper Admin + NGO admin davetleri yazar; alıcı okur ve okundu işaretler)
+    match /notifications/{notifId} {
+      allow list: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.userId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      // Süper admin her şeyi yazabilir; ayrıca imzalı kullanıcılar:
+      //  - 'invitation' tipi (NGO admin → davet ettiği üyeye)
+      //  - 'donation' tipi (alışveriş sonrası kendi bildirimi)
+      allow create: if isSuperAdmin() || (
+        isSignedIn() &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.type in ['invitation', 'donation']
+      );
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // E-posta kuyruğu (Cloud Function tarafından işlenir)
+    match /mailQueue/{mailId} {
+      allow list, read: if isSuperAdmin();
+      allow create: if isSignedIn() &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)
+    match /userInvitations/{inviteId} {
+      allow list: if isSignedIn();
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid ||
+        isSuperAdmin()
+      );
+      // Davet edilen kişi var olan bir üye olmalı; ngoId davet edenin kendi UID'i olmalı
+      allow create: if isSignedIn() &&
+        request.resource.data.invitedBy == request.auth.uid &&
+        request.resource.data.status == 'pending' &&
+        exists(/databases/$(database)/documents/users/$(request.resource.data.inviteeUserId));
+      // Sadece davet alan veya davet eden güncelleyebilir/silebilir
+      allow update, delete: if isSignedIn() && (
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid ||
+        isSuperAdmin()
+      );
+    }
+
     // Başvuru koleksiyonu
     match /applications/{appId} {
       allow list: if isSignedIn();
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
-      allow create: if isSignedIn();
+      // Corporate registrations (BRAND/CLUB/NGO) can be submitted by anonymous users
+      // (onboarding flow runs before account creation). All other app types require auth.
+      allow create: if isSignedIn() || (
+        request.resource.data.entityType in ['BRAND', 'CLUB', 'NGO'] &&
+        request.resource.data.status == 'Beklemede' &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() > 0
+      );
       allow update, delete: if isSuperAdmin();
     }
 

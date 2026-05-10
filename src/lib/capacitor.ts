@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Capacitor platform detection utilities.
  * Used to conditionally render native-specific UI or behavior.
@@ -15,4 +17,27 @@ export function getPlatform(): 'ios' | 'android' | 'web' {
   const cap = (window as any).Capacitor;
   if (!cap?.isNativePlatform()) return 'web';
   return cap.getPlatform();
+}
+
+/**
+ * Opens an external URL safely using Capacitor Browser on native
+ * or window.open on web.
+ */
+export async function openExternalUrl(url: string): Promise<void> {
+  if (isNativeApp()) {
+    try {
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url });
+    } catch (error) {
+      console.error('Capacitor Browser error:', error);
+      if (typeof window !== 'undefined') {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    }
+    return;
+  }
+  
+  if (typeof window !== 'undefined') {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
 }

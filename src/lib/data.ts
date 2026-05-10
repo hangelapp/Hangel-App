@@ -1,11 +1,11 @@
-import { 
-    Leaf, 
-    GraduationCap, 
-    Heart, 
-    Code, 
-    Palette, 
-    Globe, 
-    ShieldCheck, 
+import {
+    Leaf,
+    GraduationCap,
+    Heart,
+    Code,
+    Palette,
+    Globe,
+    ShieldCheck,
     Handshake,
     Star,
     Laptop,
@@ -27,10 +27,22 @@ import {
     Building,
     Landmark,
     Target,
-    Activity
+    Activity,
+    PawPrint,
+    Siren,
+    Stethoscope,
+    HandHeart,
+    Accessibility,
+    Baby,
+    Scale,
+    Plane,
+    ShieldX,
+    UserRoundCog,
+    Sprout,
 } from 'lucide-react';
 import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
 
+// Full list of unique country phone codes
 export const countryPhoneCodes = [
   "93", "355", "213", "376", "244", "1", "54", "374", "61", "43", "994", "973", "880", "375", "32", "501", "229", "975", "591", "387", "267", "55", "673", "359", "226", "257", "855", "237", "1", "238", "236", "235", "56", "86", "57", "269", "242", "243", "682", "506", "385", "53", "357", "420", "45", "253", "1", "1", "593", "20", "503", "240", "291", "372", "251", "500", "298", "679", "358", "33", "594", "689", "241", "220", "995", "49", "233", "350", "30", "299", "1", "590", "1", "502", "224", "245", "592", "5", "504", "852", "36", "354", "91", "62", "98", "964", "353", "972", "39", "225", "1", "81", "962", "7", "254", "686", "850", "82", "965", "996", "856", "371", "961", "266", "231", "218", "423", "370", "352", "853", "389", "261", "265", "60", "960", "223", "356", "692", "596", "222", "230", "262", "52", "691", "373", "377", "976", "382", "1", "212", "258", "95", "264", "674", "977", "31", "599", "687", "64", "505", "227", "234", "683", "672", "670", "47", "968", "92", "680", "970", "507", "675", "595", "51", "63", "48", "351", "1", "974", "262", "40", "7", "250", "290", "1", "1", "1", "508", "1", "685", "378", "239", "966", "221", "381", "248", "232", "65", "421", "386", "677", "252", "27", "34", "94", "249", "597", "268", "46", "41", "963", "886", "992", "255", "66", "228", "690", "676", "1", "216", "90", "993", "1", "688", "256", "380", "971", "44", "1", "598", "998", "678", "379", "58", "84", "681", "967", "260", "263"
 ];
@@ -122,9 +134,33 @@ export const districtsData: { [key: string]: string[] } = {
 export const allProvinces = Object.keys(districtsData);
 
 export const allCountries = [
-  "Türkiye", "ABD", "Almanya", "İngiltere", "Fransa", "Hollanda", "İsviçre",
+  "Türkiye", "Filistin", "ABD", "Almanya", "İngiltere", "Fransa", "Hollanda", "İsviçre",
   "Avusturya", "Belçika", "İsveç", "Norveç", "Danimarka", "Kanada",
-  "Avustralya", "İtalya", "İspanya", "Japonya", "Güney Kore", "Azerbaycan", "Diğer"
+  "Avustralya", "İtalya", "İspanya", "Japonya", "Güney Kore", "Azerbaycan", "Afganistan",
+  "Arnavutluk", "Cezayir", "Andorra", "Angola", "Arjantin", "Ermenistan", "Bahamalar", "Bahreyn",
+  "Bangladeş", "Barbados", "Beyaz Rusya", "Belize", "Benin", "Bhutan", "Bolivya", "Bosna Hersek",
+  "Botsvana", "Brezilya", "Brunei", "Bulgaristan", "Burkina Faso", "Burundi", "Kamboçya",
+  "Kamerun", "Yeşil Burun", "Orta Afrika Cumhuriyeti", "Çad", "Şili", "Çin", "Kolombiya",
+  "Komorlar", "Kongo", "Kosta Rika", "Hırvatistan", "Küba", "Kıbrıs", "Çek Cumhuriyeti",
+  "Kongo Demokratik Cumhuriyeti", "Cibuti", "Dominika", "Dominik Cumhuriyeti", "Ekvador",
+  "Mısır", "El Salvador", "Ekvator Ginesi", "Eritre", "Estonya", "Etiyopya", "Fiji", "Finlandiya",
+  "Gabon", "Gambiya", "Gürcistan", "Gana", "Yunanistan", "Grenada", "Guatemala", "Gine",
+  "Gine-Bissau", "Guyana", "Haiti", "Honduras", "Macaristan", "İzlanda", "Hindistan",
+  "Endonezya", "İran", "Irak", "İrlanda", "İsrail", "Fildişi Sahili", "Jamaika", "Ürdün",
+  "Kazakistan", "Kenya", "Kiribati", "Kuzey Kore", "Kuveyt", "Kırgızistan", "Laos", "Letonya",
+  "Lübnan", "Lesotho", "Liberya", "Libya", "Liechtenstein", "Litvanya", "Lüksemburg",
+  "Makedonya", "Madagaskar", "Malavi", "Malezya", "Maldivler", "Mali", "Malta", "Marshall Adaları",
+  "Moritanya", "Mauritius", "Meksika", "Mikronezya", "Moldova", "Monako", "Moğolistan",
+  "Karadağ", "Fas", "Mozambik", "Myanmar", "Namibya", "Nauru", "Nepal", "Yeni Zelanda",
+  "Nikaragua", "Nijer", "Nijerya", "Umman", "Pakistan", "Palau", "Panama", "Papua Yeni Gine",
+  "Paraguay", "Peru", "Filipinler", "Polonya", "Portekiz", "Katar", "Romanya", "Rusya", "Ruanda",
+  "Saint Kitts ve Nevis", "Saint Lucia", "Saint Vincent ve Grenadinler", "Samoa", "San Marino",
+  "Sao Tome ve Principe", "Suudi Arabistan", "Senegal", "Sırbistan", "Seyşeller", "Sierra Leone",
+  "Singapur", "Slovakya", "Slovenya", "Solomon Adaları", "Somali", "Güney Afrika", "Güney Sudan",
+  "Sri Lanka", "Sudan", "Surinam", "Svaziland", "Suriye", "Tacikistan", "Tanzanya", "Tayland",
+  "Doğu Timor", "Togo", "Tonga", "Trinidad ve Tobago", "Tunus", "Türkmenistan", "Tuvalu",
+  "Uganda", "Ukrayna", "Birleşik Arap Emirlikleri", "Uruguay", "Özbekistan", "Vanuatu",
+  "Vatikan", "Venezuela", "Vietnam", "Yemen", "Zambiya", "Zimbabve", "Diğer"
 ];
 
 export { neighborhoodsData } from './neighborhoods-data';
@@ -176,46 +212,26 @@ export const allSdgs = [
 export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr', 'TGSP', 'Diğer...'];
 export const years = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
 
-export const user: User = {
-    id: '1',
-    name: 'İsmail Hilmi ADIGÜZEL',
-    username: '@ismailhilmicom',
-    avatarUrl: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080',
-    coverPhotoUrl: 'https://images.unsplash.com/photo-1693902939226-449195d2698b?q=80&w=1080',
-    impactScore: 15750,
-    personalInfo: {
-        email: 'ihadiguzel@gmail.com',
-        phone: '5547007007',
-        birthDate: '1993-05-21',
-        gender: 'Erkek',
-        nationality: 'Türkiye Cumhuriyeti',
-        bloodType: '0 Rh+',
-        address: { country: 'Türkiye', city: 'İstanbul', district: 'Kadıköy', neighborhood: 'Caferağa', fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4' },
-        website: 'https://ismailhilmi.com',
-        social: { linkedin: 'ismailhilmi', github: 'ismailhilmi', instagram: 'ismailhilmi', twitter: 'ismailhilmi' }
-    },
-    volunteerInfo: {
-        skills: ['Proje Yönetimi', 'Sosyal Medya Yönetimi', 'Yazılım Geliştirme'],
-        dailySkills: ['Organizasyon', 'İletişim'],
-        interests: ['Çevre', 'Eğitim', 'Sosyal Girişimcilik'],
-        education: [{ level: 'Lisans', school: 'Boğaziçi Üniversitesi' }],
-        profession: 'Yazılım Geliştirici',
-        languages: ['Türkçe', 'İngilizce'],
-        programs: ['VS Code', 'Figma'],
-        licenses: ['B Sınıfı Ehliyet'],
-        documents: ['İlk Yardım Sertifikası'],
-        travelInfo: { domesticObstacle: false, internationalObstacle: false, visas: ['Schengen'] },
-        emergency: { available: true, hasChronicIllness: false, usesRegularMedication: false, hasPhysicalLimitation: false, emergencyContacts: [{ name: "Ayşe Yılmaz", phone: "+90 555 987 65 43" }] }
-    },
-    stats: {
-        totalDonation: 1250, donationCount: 42, highestSingleDonation: 150, supportedNgosCount: 7, mostSupportedNgo: 'TEMA Vakfı', avgDonation: 29.76, volunteerHours: 48, completedProjects: 5, volunteerRank: { country: 'İlk %5', city: 'İlk %2', school: 'İlk %1', interest: 'İlk %10' }, mostActiveVolunteerArea: 'Hayvan Hakları', avgVolunteerDuration: '3 Hafta', totalImpactValue: 25000
-    },
-    progress: { 'Çevre': 80 }
-};
 
 export const ngos: NGO[] = [
-    { id: 'ngo-1', name: 'Ahbap Derneği', category: 'Dayanışma', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/ahbap.org', coverPhotoUrl: 'https://picsum.photos/seed/ahbap/1200/400', stats: { followers: 500000, donors: 200000, volunteers: 100000, volunteerHours: 1000000, projects: 1200, totalDonation: 50000000, donationCount: 1000000, avgDonation: 50, highestSingleDonation: 5000, peopleReached: 2000000 }, transparencyScore: 98, about: "Yardımlaşma ve dayanışma hareketi.", joinDate: "2023-01-01", supportedSDGs: ['1. Yoksulluğa Son'], beneficiaryGroups: ['İhtiyaç Sahipleri'], memberOf: ['Afet Platformu'], contact: { email: 'iletisim@ahbap.org', phone: '0850 123 45 67', website: 'https://ahbap.org', social: { twitter: 'ahbap', instagram: 'ahbap', facebook: 'ahbap', linkedin: 'ahbap' }, address: { fullAddress: 'Caferağa Mah. Moda Cad. No: 123 D:4', city: 'İstanbul', district: 'Kadıköy' } }, posts: [], opportunities: [] },
-    { id: 'ngo-2', name: 'ÇYDD', category: 'Eğitim', type: 'Dernek', avatarUrl: 'https://logo.clearbit.com/cydd.org.tr', coverPhotoUrl: 'https://picsum.photos/seed/cydd/1200/400', stats: { followers: 150000, donors: 80000, volunteers: 40000, volunteerHours: 200000, projects: 500, totalDonation: 15000000, donationCount: 200000, avgDonation: 75, highestSingleDonation: 10000, peopleReached: 500000 }, transparencyScore: 95, about: "Çağdaş yaşamı destekleme derneği.", joinDate: "2023-01-01", supportedSDGs: ['4. Nitelikli Eğitim'], beneficiaryGroups: ['Öğrenciler'], memberOf: [], contact: { email: 'iletisim@cydd.org.tr', phone: '0212 123 45 67', website: 'https://cydd.org.tr', social: { twitter: 'cydd', instagram: 'cydd', facebook: 'cydd', linkedin: 'cydd' }, address: { fullAddress: 'Şişli', city: 'İstanbul', district: 'Şişli' } }, posts: [], opportunities: [] }
+    {
+        id: '1',
+        name: 'Ahbap Derneği',
+        type: 'Dernek',
+        category: 'Yardımlaşma',
+        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        coverPhotoUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200',
+        about: 'Dayanışma ve yardımlaşma kuruluşu.',
+        transparencyScore: 98,
+        stats: { followers: 1500000, volunteers: 45000, projects: 120, donors: 25000, totalDonation: 5000000, donationCount: 1500, avgDonation: 150, highestSingleDonation: 5000, peopleReached: 1000000, volunteerHours: 50000 },
+        contact: { email: 'info@ahbap.org', phone: '0212 123 45 67', website: 'https://ahbap.org', address: { city: 'İstanbul', district: 'Şişli', country: 'Türkiye', fullAddress: 'Mecidiyeköy' }, social: { twitter: '@ahbap', instagram: '@ahbap', facebook: 'ahbap', linkedin: 'ahbap' } },
+        joinDate: '2023-01-01',
+        supportedSDGs: ['1. Yoksulluğa Son'],
+        beneficiaryGroups: ['İhtiyaç Sahipleri'],
+        memberOf: ['Afet Platformu'],
+        posts: [],
+        opportunities: []
+    }
 ];
 
 export const volunteeringOpportunities: Volunteering[] = [
@@ -237,9 +253,55 @@ export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] }
 ];
 
-export const badges: Badge[] = [
-    { id: "1", name: "Çevre Koruyucusu", level: "Bronz", iconName: Leaf, socialArea: "Çevre", pointsRequired: 500, currentPoints: 800 }
+// 20 sosyal alan × 5 seviye = 100 rozet
+// Eşikler: Bakır 100 → Bronz 250 → Gümüş 500 → Altın 1000 → Platin 2500
+const BADGE_LEVELS: Array<{ level: 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 'Platin'; points: number }> = [
+    { level: 'Bakır', points: 100 },
+    { level: 'Bronz', points: 250 },
+    { level: 'Gümüş', points: 500 },
+    { level: 'Altın', points: 1000 },
+    { level: 'Platin', points: 2500 },
 ];
+
+const BADGE_CATEGORIES: Array<{ name: string; socialArea: string; iconName: any }> = [
+    { name: 'Çevre Koruyucusu',           socialArea: 'Çevre',                iconName: Leaf },
+    { name: 'Eğitim Destekçisi',          socialArea: 'Eğitim',               iconName: GraduationCap },
+    { name: 'Hayvan Dostu',               socialArea: 'Hayvanlar',            iconName: PawPrint },
+    { name: 'Afet Kahramanı',             socialArea: 'Afet',                 iconName: Siren },
+    { name: 'Topluluk Lideri',            socialArea: 'Topluluk',             iconName: Users },
+    { name: 'Gönüllülük Elçisi',          socialArea: 'Gönüllülük',           iconName: Handshake },
+    { name: 'Kan Bağışı Destekçisi',      socialArea: 'Sağlık',               iconName: Droplets },
+    { name: 'Hayvan Koruyucusu',          socialArea: 'Hayvanlar',            iconName: ShieldCheck },
+    { name: 'Gençlik Mentoru',            socialArea: 'Gençlik',              iconName: Sprout },
+    { name: 'Kültür ve Sanat Destekçisi', socialArea: 'Kültür ve Sanat',      iconName: Palette },
+    { name: 'Sağlık Gönüllüsü',           socialArea: 'Sağlık',               iconName: Stethoscope },
+    { name: 'Eğitim Gönüllüsü',           socialArea: 'Eğitim',               iconName: BookOpen },
+    { name: 'Sosyal Yardım Destekçisi',   socialArea: 'Sosyal Yardım',        iconName: HandHeart },
+    { name: 'Engelsiz Yaşam Destekçisi',  socialArea: 'Engelsiz Yaşam',       iconName: Accessibility },
+    { name: 'Çocuk Destekçisi',           socialArea: 'Çocuklar',             iconName: Baby },
+    { name: 'Hak Temelli Çalışmalar',     socialArea: 'Hak Temelli',          iconName: Scale },
+    { name: 'Göç ve Mülteci Destekçisi',  socialArea: 'Göç ve Mülteciler',    iconName: Plane },
+    { name: 'İstihdam Destekçisi',        socialArea: 'İstihdam',             iconName: Briefcase },
+    { name: 'Bağımlılıkla Mücadele',      socialArea: 'Bağımlılıkla Mücadele', iconName: ShieldX },
+    { name: 'Yaşlı Destekçisi',           socialArea: 'Yaşlılar',             iconName: UserRoundCog },
+];
+
+const slugifyTr = (s: string) => s.toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ı/g, 'i')
+    .replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+export const badges: Badge[] = BADGE_CATEGORIES.flatMap(cat =>
+    BADGE_LEVELS.map(({ level, points }) => ({
+        id: `${slugifyTr(cat.name)}-${slugifyTr(level)}`,
+        name: `${cat.name} — ${level}`,
+        level,
+        iconName: cat.iconName,
+        socialArea: cat.socialArea,
+        pointsRequired: points,
+        currentPoints: 0, // Çalışma anında userData.areaPoints'ten doldurulur
+    })),
+);
 
 export const managedItems: ManagedItem[] = [
     { name: "Ahbap Derneği", type: "STK", icon: "heart", status: "approved", href: "/ngo-admin/dashboard" }
@@ -262,200 +324,6 @@ export const timelinePosts: Post[] = [
 ];
 
 export const sportsFederations = ["TFF", "TBF", "TVF"];
-export const certificates = [];
-export const pastVolunteering = [];
 export const schoolRepresentatives = [];
 export const ngoHelpTopics = helpTopics;
-export const ngoFaqArticles = [];
-export const allUniversities = [
-  "Abant İzzet Baysal Üniversitesi",
-  "Abdullah Gül Üniversitesi",
-  "Acıbadem Mehmet Ali Aydınlar Üniversitesi",
-  "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
-  "Adıyaman Üniversitesi",
-  "Afyon Kocatepe Üniversitesi",
-  "Ağrı İbrahim Çeçen Üniversitesi",
-  "Akdeniz Üniversitesi",
-  "Aksaray Üniversitesi",
-  "Alanya Alaaddin Keykubat Üniversitesi",
-  "Altınbaş Üniversitesi",
-  "Amasya Üniversitesi",
-  "Anadolu Üniversitesi",
-  "Ankara Bilim Üniversitesi",
-  "Ankara Hacı Bayram Veli Üniversitesi",
-  "Ankara Medipol Üniversitesi",
-  "Ankara Müzik ve Güzel Sanatlar Üniversitesi",
-  "Ankara Sosyal Bilimler Üniversitesi",
-  "Ankara Üniversitesi",
-  "Ankara Yıldırım Beyazıt Üniversitesi",
-  "Antalya Bilim Üniversitesi",
-  "Ardahan Üniversitesi",
-  "Artvin Çoruh Üniversitesi",
-  "Atatürk Üniversitesi",
-  "Atılım Üniversitesi",
-  "Avrasya Üniversitesi",
-  "Bahçeşehir Üniversitesi",
-  "Balıkesir Üniversitesi",
-  "Bandırma Onyedi Eylül Üniversitesi",
-  "Bartın Üniversitesi",
-  "Başkent Üniversitesi",
-  "Batman Üniversitesi",
-  "Bayburt Üniversitesi",
-  "Beykent Üniversitesi",
-  "Beykoz Üniversitesi",
-  "Bezm-i Âlem Vakıf Üniversitesi",
-  "Bilecik Şeyh Edebali Üniversitesi",
-  "Bingöl Üniversitesi",
-  "Biruni Üniversitesi",
-  "Bitlis Eren Üniversitesi",
-  "Boğaziçi Üniversitesi",
-  "Burdur Mehmet Akif Ersoy Üniversitesi",
-  "Bursa Teknik Üniversitesi",
-  "Bursa Uludağ Üniversitesi",
-  "Çağ Üniversitesi",
-  "Çanakkale Onsekiz Mart Üniversitesi",
-  "Çankaya Üniversitesi",
-  "Çankırı Karatekin Üniversitesi",
-  "Çukurova Üniversitesi",
-  "Demiroğlu Bilim Üniversitesi",
-  "Dicle Üniversitesi",
-  "Doğuş Üniversitesi",
-  "Dokuz Eylül Üniversitesi",
-  "Düzce Üniversitesi",
-  "Ege Üniversitesi",
-  "Erciyes Üniversitesi",
-  "Erzincan Binali Yıldırım Üniversitesi",
-  "Erzurum Teknik Üniversitesi",
-  "Eskişehir Osmangazi Üniversitesi",
-  "Eskişehir Teknik Üniversitesi",
-  "Fatih Sultan Mehmet Vakıf Üniversitesi",
-  "Fenerbahçe Üniversitesi",
-  "Fırat Üniversitesi",
-  "Galatasaray Üniversitesi",
-  "Gazi Üniversitesi",
-  "Gaziantep Üniversitesi",
-  "Gaziantep İslam Bilim ve Teknoloji Üniversitesi",
-  "Gebze Teknik Üniversitesi",
-  "Giresun Üniversitesi",
-  "Gümüşhane Üniversitesi",
-  "Hacettepe Üniversitesi",
-  "Hakkari Üniversitesi",
-  "Haliç Üniversitesi",
-  "Harran Üniversitesi",
-  "Hasan Kalyoncu Üniversitesi",
-  "Hatay Mustafa Kemal Üniversitesi",
-  "Hitit Üniversitesi",
-  "Iğdır Üniversitesi",
-  "Isparta Uygulamalı Bilimler Üniversitesi",
-  "İbn Haldun Üniversitesi",
-  "İhsan Doğramacı Bilkent Üniversitesi",
-  "İnönü Üniversitesi",
-  "İskenderun Teknik Üniversitesi",
-  "İstanbul Arel Üniversitesi",
-  "İstanbul Atlas Üniversitesi",
-  "İstanbul Aydın Üniversitesi",
-  "İstanbul Bilgi Üniversitesi",
-  "İstanbul Esenyurt Üniversitesi",
-  "İstanbul Galata Üniversitesi",
-  "İstanbul Gedik Üniversitesi",
-  "İstanbul Gelişim Üniversitesi",
-  "İstanbul Kent Üniversitesi",
-  "İstanbul Kültür Üniversitesi",
-  "İstanbul Medeniyet Üniversitesi",
-  "İstanbul Medipol Üniversitesi",
-  "İstanbul Okan Üniversitesi",
-  "İstanbul Rumeli Üniversitesi",
-  "İstanbul Sabahattin Zaim Üniversitesi",
-  "İstanbul Sağlık ve Teknoloji Üniversitesi",
-  "İstanbul Teknik Üniversitesi",
-  "İstanbul Ticaret Üniversitesi",
-  "İstanbul Topkapı Üniversitesi",
-  "İstanbul Üniversitesi",
-  "İstanbul Üniversitesi-Cerrahpaşa",
-  "İstanbul Yeni Yüzyıl Üniversitesi",
-  "İstinye Üniversitesi",
-  "İzmir Bakırçay Üniversitesi",
-  "İzmir Demokrasi Üniversitesi",
-  "İzmir Ekonomi Üniversitesi",
-  "İzmir Kâtip Çelebi Üniversitesi",
-  "İzmir Yüksek Teknoloji Enstitüsü",
-  "Kafkas Üniversitesi",
-  "Kahramanmaraş İstiklal Üniversitesi",
-  "Kahramanmaraş Sütçü İmam Üniversitesi",
-  "Kapadokya Üniversitesi",
-  "Karabük Üniversitesi",
-  "Karadeniz Teknik Üniversitesi",
-  "Karamanoğlu Mehmetbey Üniversitesi",
-  "Kastamonu Üniversitesi",
-  "Kayseri Üniversitesi",
-  "Kırıkkale Üniversitesi",
-  "Kırklareli Üniversitesi",
-  "Kırşehir Ahi Evran Üniversitesi",
-  "Kilis 7 Aralık Üniversitesi",
-  "Koç Üniversitesi",
-  "Kocaeli Üniversitesi",
-  "Konya Gıda ve Tarım Üniversitesi",
-  "Konya Teknik Üniversitesi",
-  "KTO Karatay Üniversitesi",
-  "Kütahya Dumlupınar Üniversitesi",
-  "Kütahya Sağlık Bilimleri Üniversitesi",
-  "Lokman Hekim Üniversitesi",
-  "Malatya Turgut Özal Üniversitesi",
-  "Maltepe Üniversitesi",
-  "Manisa Celâl Bayar Üniversitesi",
-  "Mardin Artuklu Üniversitesi",
-  "Marmara Üniversitesi",
-  "Mef Üniversitesi",
-  "Mersin Üniversitesi",
-  "Mimar Sinan Güzel Sanatlar Üniversitesi",
-  "Muğla Sıtkı Koçman Üniversitesi",
-  "Munzur Üniversitesi",
-  "Muş Alparslan Üniversitesi",
-  "Necmettin Erbakan Üniversitesi",
-  "Nevşehir Hacı Bektaş Veli Üniversitesi",
-  "Niğde Ömer Halisdemir Üniversitesi",
-  "Nişantaşı Üniversitesi",
-  "Nuh Naci Yazgan Üniversitesi",
-  "Ondokuz Mayıs Üniversitesi",
-  "Ordu Üniversitesi",
-  "Orta Doğu Teknik Üniversitesi",
-  "Osmaniye Korkut Ata Üniversitesi",
-  "Ostim Teknik Üniversitesi",
-  "Özyeğin Üniversitesi",
-  "Pamukkale Üniversitesi",
-  "Pîrî Reis Üniversitesi",
-  "Recep Tayyip Erdoğan Üniversitesi",
-  "Sabancı Üniversitesi",
-  "Sağlık Bilimleri Üniversitesi",
-  "Sakarya Uygulamalı Bilimler Üniversitesi",
-  "Sakarya Üniversitesi",
-  "Samsun Üniversitesi",
-  "Sanko Üniversitesi",
-  "Selçuk Üniversitesi",
-  "Siirt Üniversitesi",
-  "Sinop Üniversitesi",
-  "Sivas Bilim ve Teknoloji Üniversitesi",
-  "Sivas Cumhuriyet Üniversitesi",
-  "Süleyman Demirel Üniversitesi",
-  "Şırnak Üniversitesi",
-  "Tarsus Üniversitesi",
-  "Ted Üniversitesi",
-  "Tekirdağ Namık Kemal Üniversitesi",
-  "TOBB Ekonomi ve Teknoloji Üniversitesi",
-  "Tokat Gaziosmanpaşa Üniversitesi",
-  "Trabzon Üniversitesi",
-  "Trakya Üniversitesi",
-  "Türk-Alman Üniversitesi",
-  "Türk Hava Kurumu Üniversitesi",
-  "Ufuk Üniversitesi",
-  "Uşak Üniversitesi",
-  "Üsküdar Üniversitesi",
-  "Van Yüzüncü Yıl Üniversitesi",
-  "Yalova Üniversitesi",
-  "Yaşar Üniversitesi",
-  "Yeditepe Üniversitesi",
-  "Yıldız Teknik Üniversitesi",
-  "Yozgat Bozok Üniversitesi",
-  "Yüksek İhtisas Üniversitesi",
-  "Zonguldak Bülent Ecevit Üniversitesi",
-];
+export const ngoFaqArticles: { title: string; content: string }[] = [];

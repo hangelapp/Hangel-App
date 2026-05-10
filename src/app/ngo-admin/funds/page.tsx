@@ -27,8 +27,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 
-const funds = [
+const fallbackFunds: any[] = [
     { 
         id: '1', 
         name: 'Avrupa Birliği Sivil Toplum Destek Programı', 
@@ -79,19 +81,34 @@ const funds = [
     },
 ];
 
-const allPossibleAreas = Array.from(new Set(funds.flatMap(f => f.areas))).sort();
-
 export default function FundsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedFund, setSelectedFund] = useState<typeof funds[0] | null>(null);
+    const [selectedFund, setSelectedFund] = useState<any | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-    
+
     // Filtering and Sorting States
-    const [statusFilter, setStatusFilter] = useState<string | null>(null); // 'Açık' or 'Kapandı'
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [areaFilters, setAreaFilters] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: 'deadline' | 'name', direction: 'asc' | 'desc' }>({ key: 'deadline', direction: 'asc' });
+
+    // Firestore'dan fon listesi (super-admin tarafından yönetilen). Boşsa fallback hardcoded liste.
+    const fundsQuery = useMemoFirebase(
+        () => (db ? query(collection(db, 'funds'), orderBy('deadline', 'asc')) : null),
+        [db],
+    );
+    const { data: cmsFunds } = useCollection<any>(fundsQuery);
+    const funds = useMemo(() => {
+        if (cmsFunds && cmsFunds.length > 0) return cmsFunds;
+        return fallbackFunds;
+    }, [cmsFunds]);
+
+    const allPossibleAreas = useMemo(
+        () => Array.from(new Set((funds as any[]).flatMap((f: any) => f.areas || []))).sort(),
+        [funds],
+    );
 
     const filteredAndSortedFunds = useMemo(() => {
         let result = [...funds];
@@ -113,7 +130,7 @@ export default function FundsPage() {
 
         // 3. Area Filter
         if (areaFilters.length > 0) {
-            result = result.filter(f => f.areas.some(area => areaFilters.includes(area)));
+            result = result.filter(f => (f.areas || []).some((area: string) => areaFilters.includes(area)));
         }
 
         // 4. Sort
@@ -283,7 +300,7 @@ export default function FundsPage() {
                             </CardHeader>
                             <CardContent className="p-6 pt-2 space-y-4">
                                 <div className="flex flex-wrap gap-2">
-                                    {fund.areas.map(area => (
+                                    {(fund.areas || []).map((area: string) => (
                                         <Badge key={area} variant="secondary" className="rounded-lg font-bold text-[10px] bg-[#f5f5f7] border-none text-[#1d1d1f]/70">
                                             {area}
                                         </Badge>
@@ -374,7 +391,7 @@ export default function FundsPage() {
                                         <CheckCircle2 className="h-3.5 w-3.5" /> Odak Alanları
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {selectedFund.areas.map(area => (
+                                        {(selectedFund.areas || []).map((area: string) => (
                                             <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-white border border-black/5 text-[#1d1d1f]/80">{area}</Badge>
                                         ))}
                                     </div>

@@ -17,22 +17,46 @@ export default function LeaderboardPage() {
   const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
   const { data: allUsers, isLoading } = useCollection(usersRef);
 
+  // Veri farklı yerlerde olabiliyor: stats.* (yeni şema) veya top-level (eski/invite akışı). İkisini de okuyup maks alıyoruz.
+  const getValue = (u: any, key: 'impactScore' | 'volunteerHours' | 'totalDonation'): number => {
+    const fromStats = Number(u?.stats?.[key]) || 0;
+    const fromTop = Number(u?.[key]) || 0;
+    return Math.max(fromStats, fromTop);
+  };
+
+  const userSchools = (u: any): string[] => {
+    const list: string[] = [];
+    if (u?.personalInfo?.address?.school) list.push(u.personalInfo.address.school);
+    if (Array.isArray(u?.volunteerInfo?.education)) {
+      u.volunteerInfo.education.forEach((e: any) => {
+        if (e?.school) list.push(e.school);
+      });
+    }
+    return list;
+  };
+
   const LeaderboardTable = ({ valueKey, unit }: { valueKey: 'impactScore' | 'volunteerHours' | 'totalDonation', unit: string }) => {
     const sortedData = useMemo(() => {
       if (!allUsers) return [];
       let dataToFilter = allUsers as any[];
+      const me = authUser ? dataToFilter.find(u => u.id === authUser.uid) : null;
 
-      if (scope === 'city' && authUser) {
-        const city = (allUsers as any[]).find(u => u.id === authUser.uid)?.personalInfo?.address?.city;
+      if (scope === 'city' && me) {
+        const city = me.personalInfo?.address?.city;
         if (city) dataToFilter = dataToFilter.filter(u => u.personalInfo?.address?.city === city);
-      } else if (scope === 'school' && authUser) {
-        const school = (allUsers as any[]).find(u => u.id === authUser.uid)?.personalInfo?.address?.school;
-        if (school) dataToFilter = dataToFilter.filter(u => u.personalInfo?.address?.school === school);
+      } else if (scope === 'school' && me) {
+        const mySchools = userSchools(me);
+        if (mySchools.length > 0) {
+          dataToFilter = dataToFilter.filter(u => userSchools(u).some(s => mySchools.includes(s)));
+        }
       }
 
       return [...dataToFilter]
-        .filter(u => u[valueKey] !== undefined)
-        .sort((a, b) => (b[valueKey] || 0) - (a[valueKey] || 0));
+        .map(u => ({ user: u, value: getValue(u, valueKey) }))
+        .filter(x => x.value > 0)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 100)
+        .map(x => ({ ...x.user, _value: x.value }));
     }, [allUsers, valueKey, scope]);
 
     const headerLabel = unit === 'Puan' ? 'Puan' : (unit === 'Saat' ? 'Saat' : 'Tutar');
@@ -65,17 +89,17 @@ export default function LeaderboardPage() {
                   <div>
                     <p className="font-medium">{userItem.name}</p>
                     <p className="text-sm text-muted-foreground">{userItem.username}</p>
-                    {valueKey !== 'impactScore' && userItem.impactScore && (
+                    {valueKey !== 'impactScore' && getValue(userItem, 'impactScore') > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Star className="h-3 w-3 text-amber-500" />
-                        <span>{(userItem.impactScore || 0).toLocaleString('tr-TR')} Puan</span>
+                        <span>{getValue(userItem, 'impactScore').toLocaleString('tr-TR')} Puan</span>
                       </div>
                     )}
                   </div>
                 </div>
               </TableCell>
               <TableCell className="text-right font-bold text-base">
-                {(userItem[valueKey] || 0).toLocaleString('tr-TR')} {unit}
+                {(userItem._value ?? getValue(userItem, valueKey)).toLocaleString('tr-TR')} {unit}
               </TableCell>
             </TableRow>
           )) : (

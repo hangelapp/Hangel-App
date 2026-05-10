@@ -8,13 +8,23 @@ export { languages };
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [language, setLanguage] = useState<Language>('tr');
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('app-language') as Language;
     if (saved && translations[saved]) {
       setLanguage(saved);
     }
+    setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = language;
+      const isRtl = language === 'ar' || language === 'fa';
+      document.documentElement.dir = isRtl ? 'rtl' : 'ltr';
+    }
+  }, [language]);
 
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
@@ -23,15 +33,18 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
 
   const t = (key: string) => {
     const keys = key.split('.');
-    let result = translations[language];
-    for (const k of keys) {
-      result = result?.[k];
-    }
-    return result || key;
+    const lookup = (lang: Language) => {
+      let result = translations[lang];
+      for (const k of keys) {
+        result = result?.[k];
+      }
+      return typeof result === 'string' ? result : undefined;
+    };
+    return lookup(language) ?? lookup('tr') ?? key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, changeLanguage, t }}>
+    <LanguageContext.Provider value={{ language, changeLanguage, t, isHydrated }}>
       {children}
     </LanguageContext.Provider>
   );

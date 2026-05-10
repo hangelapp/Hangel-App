@@ -10,18 +10,34 @@ import Image from 'next/image';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import type { Volunteering, NGO } from '@/lib/types';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const opportunity = volunteeringOpportunities.find(e => e.id === id);
+  const db = useFirestore();
+
+  const oppDocRef = useMemoFirebase(() => {
+    if (!db || !id) return null;
+    return doc(db, 'volunteering', id);
+  }, [db, id]);
+
+  const { data: opportunity, isLoading: isOppLoading } = useDoc<Volunteering>(oppDocRef);
+
+  const ngoDocRef = useMemoFirebase(() => {
+    if (!db || !opportunity?.ngoId) return null;
+    return doc(db, 'ngos', opportunity.ngoId);
+  }, [db, opportunity?.ngoId]);
+
+  const { data: ngo, isLoading: isNgoLoading } = useDoc<NGO>(ngoDocRef);
+
   const [profileUrl, setProfileUrl] = useState('');
   const { user: authUser } = useUser();
-  const db = useFirestore();
   const { toast } = useToast();
   const [isApplying, setIsApplying] = useState(false);
 
@@ -31,14 +47,47 @@ export default function VolunteeringDetailPage() {
     }
   }, []);
   
+  if (isOppLoading) {
+    return (
+        <div className="animate-in fade-in-0 pb-20">
+            <Skeleton className="h-48 w-full" />
+            <div className="p-4 space-y-6 -mt-16">
+                <Skeleton className="h-20 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-40 w-full" />
+            </div>
+        </div>
+    );
+  }
+
   if (!opportunity) {
     notFound();
   }
 
-  const ngo = ngos.find(n => n.id === opportunity.ngoId);
+  const safeFormat = (dateStr?: string): string => {
+    if (!dateStr) return '—';
+    try {
+      const d = parse(dateStr, 'yyyy-MM-dd', new Date());
+      if (isNaN(d.getTime())) return dateStr;
+      return format(d, 'dd MMMM yyyy', { locale: tr });
+    } catch {
+      return dateStr;
+    }
+  };
 
-  const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
+  const daysRemaining = (() => {
+    if (!opportunity.dates?.applicationEnd) return -1;
+    try {
+      const d = parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date());
+      if (isNaN(d.getTime())) return -1;
+      return differenceInDays(d, new Date());
+    } catch {
+      return -1;
+    }
+  })();
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+  const providesCertificate = (opportunity as any).providesCertificate ?? (opportunity as any).amenities?.providesCertificate ?? false;
+  const taskType = (opportunity as any).taskType || (opportunity as any).commitment || '—';
 
   const handleApply = () => {
     if (!authUser) {
@@ -121,17 +170,17 @@ export default function VolunteeringDetailPage() {
                     <CardHeader><CardTitle className="text-lg">İlan Detayları</CardTitle></CardHeader>
                     <CardContent className="text-sm space-y-3">
                         <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
-                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({opportunity.taskType})</span></div>
-                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {opportunity.providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
+                        <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({taskType})</span></div>
+                        <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
                     </CardContent>
                 </Card>
 
                  <Card>
                     <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Son Başvuru:</span><span className='font-bold text-primary'>{format(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Başlangıç:</span><span className='font-bold'>{format(parse(opportunity.dates.eventStart, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
-                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Bitiş:</span><span className='font-bold'>{format(parse(opportunity.dates.eventEnd, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Son Başvuru:</span><span className='font-bold text-primary'>{safeFormat(opportunity.dates?.applicationEnd)}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Başlangıç:</span><span className='font-bold'>{safeFormat(opportunity.dates?.eventStart)}</span></div>
+                        <div className='flex justify-between text-sm'><span className='text-muted-foreground font-medium'>Bitiş:</span><span className='font-bold'>{safeFormat(opportunity.dates?.eventEnd)}</span></div>
                     </CardContent>
                 </Card>
 

@@ -4,14 +4,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { isNativeApp } from '@/lib/capacitor';
+
+const INVITE_POINTS = 10;
 import { Input } from '@/components/ui/input';
 import {
     Mail,
     Send,
     MessageSquare,
     Copy,
-    Star,
     Twitter,
     Linkedin,
     Gift,
@@ -19,7 +21,10 @@ import {
     Contact,
     ArrowDownUp,
     Loader2,
-    Users,
+    AtSign,
+    Plus,
+    X,
+    Upload,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,29 +42,96 @@ interface PhoneContact {
     joinDate?: string;
 }
 
+const buildInviteText = (link: string) =>
+    `Bugün hiçbir ekstra ödeme yapmadan bağış yaptım. Aynısını sen de yapabilirsin. Gel birlikte büyütelim: ${link}`;
+
 async function getCapacitorContacts(): Promise<PhoneContact[]> {
-    try {
-        const { Contacts, 'PhoneType': PhoneType } = await import('@capacitor-community/contacts') as any;
+    const { Contacts } = await import('@capacitor-community/contacts') as any;
 
-        const { contacts } = await Contacts.getContacts({
-            projection: {
-                name: true,
-                phones: true,
-                image: false,
-            },
-        });
+    const { contacts } = await Contacts.getContacts({
+        projection: {
+            name: true,
+            phones: true,
+            image: false,
+        },
+    });
 
-        return (contacts as any[])
-            .filter((c: any) => c.name?.display)
-            .map((c: any) => ({
-                id: c.contactId || String(Math.random()),
-                name: c.name.display,
-                phones: (c.phones || []).map((p: any) => p.number).filter(Boolean),
+    return (contacts as any[])
+        .filter((c: any) => c.name?.display)
+        .map((c: any) => ({
+            id: c.contactId || String(Math.random()),
+            name: c.name.display,
+            phones: (c.phones || []).map((p: any) => p.number).filter(Boolean),
+            onPlatform: false,
+        }));
+}
+
+async function getWebContacts(): Promise<PhoneContact[] | null> {
+    const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+    if (!nav?.contacts?.select) return null;
+    const results = await nav.contacts.select(['name', 'tel'], { multiple: true });
+    return (results || []).map((c: any, i: number) => ({
+        id: String(i),
+        name: (c.name && c.name[0]) || 'İsimsiz',
+        phones: Array.isArray(c.tel) ? c.tel : [],
+        onPlatform: false,
+    }));
+}
+
+// vCard (.vcf) basit parse — FN/N, TEL satırları
+function parseVCard(text: string): PhoneContact[] {
+    const cards = text.split(/END:VCARD/i);
+    const contacts: PhoneContact[] = [];
+    for (const raw of cards) {
+        if (!/BEGIN:VCARD/i.test(raw)) continue;
+        const lines = raw.split(/\r?\n/);
+        let name = '';
+        const phones: string[] = [];
+        for (const line of lines) {
+            const m = line.match(/^([A-Z]+)(;[^:]*)?:(.*)$/);
+            if (!m) continue;
+            const tag = m[1].toUpperCase();
+            const value = m[3].trim();
+            if (!value) continue;
+            if (tag === 'FN' && !name) name = value;
+            if (tag === 'N' && !name) name = value.replace(/;/g, ' ').trim();
+            if (tag === 'TEL') phones.push(value);
+        }
+        if (phones.length > 0) {
+            contacts.push({
+                id: `vcf-${contacts.length}-${name}`,
+                name: name || 'İsimsiz',
+                phones,
                 onPlatform: false,
-            }));
-    } catch {
-        return [];
+            });
+        }
     }
+    return contacts;
+}
+
+// CSV: ilk satır header (name,phone veya isim,telefon vb.) — esnek
+function parseCSV(text: string): PhoneContact[] {
+    const rows = text.split(/\r?\n/).map(r => r.trim()).filter(Boolean);
+    if (rows.length === 0) return [];
+    const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+    const nameIdx = headers.findIndex(h => /(name|isim|ad)/i.test(h));
+    const phoneIdx = headers.findIndex(h => /(phone|tel|telefon|gsm|mobile|cep)/i.test(h));
+    if (nameIdx === -1 && phoneIdx === -1) {
+        // Header yoksa: ilk sütun isim, ikinci telefon varsay
+        return rows.map((r, i) => {
+            const cells = r.split(',').map(c => c.trim());
+            return { id: `csv-${i}`, name: cells[0] || 'İsimsiz', phones: cells[1] ? [cells[1]] : [], onPlatform: false };
+        }).filter(c => c.phones.length > 0);
+    }
+    return rows.slice(1).map((r, i) => {
+        const cells = r.split(',').map(c => c.trim());
+        return {
+            id: `csv-${i}`,
+            name: (nameIdx >= 0 ? cells[nameIdx] : '') || 'İsimsiz',
+            phones: phoneIdx >= 0 && cells[phoneIdx] ? [cells[phoneIdx]] : [],
+            onPlatform: false,
+        };
+    }).filter(c => c.phones.length > 0);
 }
 
 export default function InvitePage() {
@@ -67,22 +139,30 @@ export default function InvitePage() {
     const { user: authUser } = useUser();
     const db = useFirestore();
     const [inviteLink, setInviteLink] = useState('');
-    const [sortCriteria, setSortCriteria] = useState('impactScore');
+    const [sortCriteria, setSortCriteria] = useState('alphabetical');
 
-    // Phone contacts state
+    // Telefon rehberi state
     const [phoneContacts, setPhoneContacts] = useState<PhoneContact[]>([]);
     const [phoneLoading, setPhoneLoading] = useState(false);
     const [phoneSynced, setPhoneSynced] = useState(false);
 
-    // Firestore users
+    // Mail davet state
+    const [emailInput, setEmailInput] = useState('');
+    const [emailList, setEmailList] = useState<string[]>([]);
+    const [emailSending, setEmailSending] = useState(false);
+
+    // Platformdaki telefon eşleşmesi için (sadece "hangel'da" rozetini göstermek amacıyla)
     const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
     const { data: allUsers } = useCollection(usersRef);
 
     useEffect(() => {
         if (typeof window !== 'undefined' && authUser?.uid) {
-            setInviteLink(`${window.location.origin}/register?ref=${authUser.uid}`);
+            // Hedef sayfa: kayıt akışını başlatan login/selection
+            setInviteLink(`${window.location.origin}/login/selection?ref=${authUser.uid}`);
         }
     }, [authUser?.uid]);
+
+    const inviteMessage = useMemo(() => buildInviteText(inviteLink), [inviteLink]);
 
     const copyToClipboard = () => {
         if (!inviteLink) return;
@@ -90,38 +170,152 @@ export default function InvitePage() {
         toast({ title: 'Davet linki kopyalandı!' });
     };
 
-    const handleInvite = (name: string, phone?: string) => {
+    const recordInvite = async (recipientName: string, recipientPhone?: string | null, recipientEmail?: string | null) => {
+        if (!authUser?.uid) return 0;
+        try {
+            await addDoc(collection(db, 'invites'), {
+                senderId: authUser.uid,
+                recipientName,
+                recipientPhone: recipientPhone || null,
+                recipientEmail: recipientEmail || null,
+                sentAt: serverTimestamp(),
+                status: 'sent',
+                pointsAwarded: INVITE_POINTS,
+            });
+            await updateDoc(doc(db, 'users', authUser.uid), {
+                inviteCount: increment(1),
+                impactScore: increment(INVITE_POINTS),
+            });
+            return INVITE_POINTS;
+        } catch (error) {
+            console.error('Failed to track invite:', error);
+            return 0;
+        }
+    };
+
+    const handleInvitePhone = async (name: string, phone?: string) => {
         if (phone && inviteLink) {
-            const msg = encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`);
+            const msg = encodeURIComponent(inviteMessage);
             window.open(`sms:${phone}?&body=${msg}`, '_blank');
         }
+        const awarded = await recordInvite(name, phone, null);
         toast({
             title: 'Davet Gönderildi!',
-            description: `${name} kişisine hangel davetiniz gönderildi.`,
+            description: awarded
+                ? `${name} kişisine davet gönderildi. +${awarded} Etki Puanı kazandınız.`
+                : `${name} kişisine hangel davetiniz gönderildi.`,
         });
+    };
+
+    const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+
+    const handleEmailAdd = () => {
+        const value = emailInput.trim();
+        if (!value) return;
+        // virgül/boşluk ile ayrılmış birden çok adresi destekle
+        const candidates = value.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+        const valid: string[] = [];
+        const invalid: string[] = [];
+        candidates.forEach(c => (isValidEmail(c) ? valid.push(c) : invalid.push(c)));
+        if (invalid.length > 0) {
+            toast({ variant: 'destructive', title: 'Geçersiz adres', description: invalid.join(', ') });
+        }
+        if (valid.length > 0) {
+            setEmailList(prev => Array.from(new Set([...prev, ...valid])));
+            setEmailInput('');
+        }
+    };
+
+    const handleEmailRemove = (email: string) => {
+        setEmailList(prev => prev.filter(e => e !== email));
+    };
+
+    const handleEmailSend = async () => {
+        if (!inviteLink) return;
+        if (emailList.length === 0) {
+            toast({ variant: 'destructive', title: 'Adres ekleyin', description: 'En az bir mail adresi ekleyin.' });
+            return;
+        }
+        setEmailSending(true);
+        try {
+            const subject = encodeURIComponent('hangel daveti');
+            const body = encodeURIComponent(inviteMessage);
+            const bcc = encodeURIComponent(emailList.join(','));
+            window.open(`mailto:?bcc=${bcc}&subject=${subject}&body=${body}`, '_blank');
+
+            let total = 0;
+            for (const email of emailList) {
+                const awarded = await recordInvite(email, null, email);
+                total += awarded;
+            }
+            toast({
+                title: 'Mail Davetleri Hazırlandı',
+                description: `${emailList.length} adrese davet açıldı.${total ? ` +${total} Etki Puanı kazandınız.` : ''}`,
+            });
+            setEmailList([]);
+        } finally {
+            setEmailSending(false);
+        }
     };
 
     const handlePhoneSync = async () => {
         setPhoneLoading(true);
         try {
-            const contacts = await getCapacitorContacts();
+            let contacts: PhoneContact[] = [];
+
+            if (isNativeApp()) {
+                try {
+                    contacts = await getCapacitorContacts();
+                } catch (err) {
+                    console.error('Capacitor contacts failed:', err);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Rehbere erişilemedi',
+                        description: 'Uygulama ayarlarından rehber iznini etkinleştirin.',
+                    });
+                    return;
+                }
+            } else {
+                try {
+                    const webContacts = await getWebContacts();
+                    if (webContacts === null) {
+                        toast({
+                            variant: 'destructive',
+                            title: 'Tarayıcınız desteklemiyor',
+                            description: 'Rehber senkronizasyonu için mobil uygulamayı kullanın veya bağlantıyı manuel paylaşın.',
+                        });
+                        return;
+                    }
+                    contacts = webContacts;
+                } catch (err: any) {
+                    if (err?.name === 'InvalidStateError' || err?.name === 'AbortError') return;
+                    console.error('Web contacts failed:', err);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Rehbere erişilemedi',
+                        description: 'İzin verilmedi veya bir hata oluştu.',
+                    });
+                    return;
+                }
+            }
+
             if (contacts.length === 0) {
                 toast({
                     variant: 'destructive',
-                    title: 'Rehbere erişilemedi',
-                    description: 'Uygulama ayarlarından rehber iznini etkinleştirin.',
+                    title: 'Kişi bulunamadı',
+                    description: 'Rehberinizde kişi yok veya hiçbiri seçilmedi.',
                 });
                 return;
             }
 
-            // Firestore'daki kullanıcılarla eşleştir
             const firestorePhones = new Set(
                 (allUsers || []).flatMap((u: any) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
             );
+            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
 
             const enriched = contacts.map(c => ({
                 ...c,
-                onPlatform: c.phones.some(p => firestorePhones.has(p.replace(/\s/g, ''))),
+                onPlatform: c.phones.some(p => firestorePhones.has(normalize(p))),
             }));
 
             setPhoneContacts(enriched);
@@ -135,37 +329,50 @@ export default function InvitePage() {
         }
     };
 
-    const shareOptions = [
-        { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
-        { name: 'SMS', icon: Smartphone, href: `sms:?&body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
-        { name: 'Telegram', icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
-        { name: 'E-posta', icon: Mail, href: `mailto:?body=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
-        { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Seni de hangel'a bekliyorum! ${inviteLink}`)}` },
-        { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent("Seni de hangel'a bekliyorum!")}` },
-    ];
+    // vCard veya CSV dosya import (desktop fallback)
+    const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = ''; // reset
 
-    // Firestore users list
-    const firestoreContacts = useMemo(() => {
-        return (allUsers || []).map((user: any) => ({
-            id: user.id,
-            name: user.displayName || user.email?.split('@')[0] || 'Kullanıcı',
-            phones: [],
-            onPlatform: true,
-            avatarUrl: user.photoURL || undefined,
-            impactScore: user.impactScore || 0,
-            joinDate: user.createdAt || new Date().toISOString(),
-        }));
-    }, [allUsers]);
+        setPhoneLoading(true);
+        try {
+            const text = await file.text();
+            const parsed = file.name.toLowerCase().endsWith('.vcf') || /BEGIN:VCARD/i.test(text)
+                ? parseVCard(text)
+                : parseCSV(text);
 
-    const sortedFirestoreContacts = useMemo(() => {
-        let sorted = [...firestoreContacts];
-        switch (sortCriteria) {
-            case 'impactScore': sorted.sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0)); break;
-            case 'alphabetical': sorted.sort((a, b) => a.name.localeCompare(b.name, 'tr')); break;
-            case 'joinDate': sorted.sort((a, b) => new Date(b.joinDate!).getTime() - new Date(a.joinDate!).getTime()); break;
+            if (parsed.length === 0) {
+                toast({ variant: 'destructive', title: 'Kişi bulunamadı', description: 'Dosya boş veya geçersiz format.' });
+                return;
+            }
+
+            const firestorePhones = new Set(
+                (allUsers || []).flatMap((u: any) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
+            );
+            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
+            const enriched = parsed.map(c => ({
+                ...c,
+                onPlatform: c.phones.some(p => firestorePhones.has(normalize(p))),
+            }));
+            setPhoneContacts(enriched);
+            setPhoneSynced(true);
+            toast({ title: 'Dosyadan İçe Aktarıldı', description: `${enriched.length} kişi yüklendi.` });
+        } catch (err: any) {
+            toast({ variant: 'destructive', title: 'Dosya okunamadı', description: err?.message || 'Beklenmeyen bir hata.' });
+        } finally {
+            setPhoneLoading(false);
         }
-        return sorted;
-    }, [firestoreContacts, sortCriteria]);
+    };
+
+    const shareOptions = [
+        { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'SMS', icon: Smartphone, href: `sms:?&body=${encodeURIComponent(inviteMessage)}` },
+        { name: 'Telegram', icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'E-posta', icon: Mail, href: `mailto:?subject=${encodeURIComponent('hangel daveti')}&body=${encodeURIComponent(inviteMessage)}` },
+        { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent(inviteMessage)}` },
+    ];
 
     const sortedPhoneContacts = useMemo(() => {
         const onPlatform = phoneContacts.filter(c => c.onPlatform);
@@ -184,12 +391,7 @@ export default function InvitePage() {
                 </Avatar>
                 <div>
                     <p className="font-medium text-sm">{contact.name}</p>
-                    {contact.onPlatform && contact.impactScore ? (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Star className="h-3 w-3 text-primary" />
-                            {contact.impactScore.toLocaleString('tr-TR')} Puan
-                        </p>
-                    ) : contact.phones[0] ? (
+                    {contact.phones[0] ? (
                         <p className="text-xs text-muted-foreground">{contact.phones[0]}</p>
                     ) : null}
                 </div>
@@ -197,7 +399,7 @@ export default function InvitePage() {
             {contact.onPlatform ? (
                 <Badge variant="secondary" className="font-normal">hangel'da</Badge>
             ) : (
-                <Button size="sm" onClick={() => handleInvite(contact.name, contact.phones[0])}>
+                <Button size="sm" onClick={() => handleInvitePhone(contact.name, contact.phones[0])}>
                     Davet Et
                 </Button>
             )}
@@ -238,6 +440,10 @@ export default function InvitePage() {
                             <Copy className="h-5 w-5" />
                         </Button>
                     </div>
+                    <div className="rounded-lg border bg-muted/30 p-3">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Davet metni</p>
+                        <p className="text-sm leading-relaxed">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
                         {shareOptions.map(option => (
                             <Button key={option.name} asChild variant="outline" className="h-12">
@@ -253,20 +459,20 @@ export default function InvitePage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Arkadaşlarını Bul</CardTitle>
-                    <CardDescription>Rehberini bağlayarak hangi arkadaşlarının hangel'da olduğunu gör.</CardDescription>
+                    <CardDescription>Rehberini ya da mail adresini bağlayarak arkadaşlarına hızlıca davet gönder.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="phone" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="phone">
-                                <Contact className="mr-2 h-4 w-4" /> Telefon Rehberi
+                                <Contact className="mr-2 h-4 w-4" /> Rehberini Bağla
                             </TabsTrigger>
-                            <TabsTrigger value="platform">
-                                <Users className="mr-2 h-4 w-4" /> Platformdaki Kişiler
+                            <TabsTrigger value="email">
+                                <AtSign className="mr-2 h-4 w-4" /> Mail Adresini Bağla
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Telefon Rehberi */}
+                        {/* Rehberini Bağla */}
                         <TabsContent value="phone" className="mt-4">
                             {!phoneSynced ? (
                                 <div className="text-center space-y-4 py-6">
@@ -286,6 +492,28 @@ export default function InvitePage() {
                                             : <><Contact className="mr-2 h-4 w-4" /> Rehberimi Bağla</>
                                         }
                                     </Button>
+                                    <div className="flex items-center gap-2 my-2">
+                                        <div className="h-px flex-1 bg-border" />
+                                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">veya</span>
+                                        <div className="h-px flex-1 bg-border" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <input
+                                            type="file"
+                                            accept=".vcf,.csv,text/vcard,text/csv"
+                                            id="vcard-csv-upload"
+                                            className="hidden"
+                                            onChange={handleFileImport}
+                                        />
+                                        <Button asChild variant="outline" disabled={phoneLoading} className="w-full">
+                                            <label htmlFor="vcard-csv-upload" className="cursor-pointer">
+                                                <Upload className="mr-2 h-4 w-4" /> vCard/CSV Yükle
+                                            </label>
+                                        </Button>
+                                        <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+                                            Masaüstünde rehbere doğrudan erişim mümkün değil. Telefonundan vCard (.vcf) ya da CSV olarak dışa aktarıp yükleyebilirsin.
+                                        </p>
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -303,7 +531,7 @@ export default function InvitePage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => setSortCriteria('platform')}>Platformda Olanlar Önce</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                             <Button variant="ghost" size="sm" onClick={() => { setPhoneSynced(false); setPhoneContacts([]); }}>
@@ -322,53 +550,66 @@ export default function InvitePage() {
                             )}
                         </TabsContent>
 
-                        {/* Platformdaki Kişiler */}
-                        <TabsContent value="platform" className="mt-4">
+                        {/* Mail Adresini Bağla */}
+                        <TabsContent value="email" className="mt-4">
                             <div className="space-y-4">
-                                <div className="flex justify-end">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" size="icon" className="h-9 w-9">
-                                                <ArrowDownUp className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => setSortCriteria('impactScore')}>Etki Puanı (En Yüksek)</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setSortCriteria('joinDate')}>Katılım Tarihi</DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                <div className="text-center space-y-2 py-2">
+                                    <div className="inline-block bg-primary/10 p-3 rounded-full">
+                                        <AtSign className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <p className="font-semibold text-sm">Mail Adresleriyle Davet</p>
+                                    <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                                        Davet etmek istediğin mail adreslerini ekle. Hazırlandığında varsayılan mail uygulaman açılır;
+                                        davet metni ve linkin otomatik doldurulur.
+                                    </p>
                                 </div>
-                                <div className="space-y-3 max-h-80 overflow-y-auto">
-                                    {sortedFirestoreContacts.length === 0 ? (
-                                        <p className="text-center text-muted-foreground text-sm py-8">Henüz kimse yok.</p>
-                                    ) : sortedFirestoreContacts.map(c => (
-                                        <ContactCard key={c.id} contact={c} />
-                                    ))}
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="email"
+                                        placeholder="ornek@email.com"
+                                        value={emailInput}
+                                        onChange={e => setEmailInput(e.target.value)}
+                                        onKeyDown={e => {
+                                            if (e.key === 'Enter') { e.preventDefault(); handleEmailAdd(); }
+                                        }}
+                                    />
+                                    <Button type="button" variant="outline" onClick={handleEmailAdd}>
+                                        <Plus className="h-4 w-4" />
+                                    </Button>
                                 </div>
+                                {emailList.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-muted/30">
+                                        {emailList.map(email => (
+                                            <Badge key={email} variant="secondary" className="font-normal pl-3 pr-1 py-1 gap-1">
+                                                {email}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleEmailRemove(email)}
+                                                    className="ml-1 rounded-full hover:bg-muted p-0.5"
+                                                    aria-label={`${email} adresini kaldır`}
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                                <Button
+                                    onClick={handleEmailSend}
+                                    disabled={emailSending || emailList.length === 0}
+                                    className="w-full"
+                                >
+                                    {emailSending
+                                        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor...</>
+                                        : <><Send className="mr-2 h-4 w-4" /> {emailList.length} Adrese Davet Gönder</>
+                                    }
+                                </Button>
                             </div>
                         </TabsContent>
                     </Tabs>
                 </CardContent>
             </Card>
 
-            <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
-                        <Star className="h-5 w-5" /> Kazanç Programı
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm text-amber-900 dark:text-amber-300/80">
-                    <div className="flex items-start gap-3">
-                        <div className="w-4 h-4 mt-1 rounded-full bg-amber-500 flex-shrink-0" />
-                        <p>Davet linkinle üye olan her arkadaşın için <strong>100 Sosyal Etki Puanı</strong> kazanırsın.</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                        <div className="w-4 h-4 mt-1 rounded-full bg-amber-500 flex-shrink-0" />
-                        <p>Arkadaşın ilk bağışını yaptığında ekstra <strong>50 Sosyal Etki Puanı</strong> daha kazanırsın!</p>
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
 }

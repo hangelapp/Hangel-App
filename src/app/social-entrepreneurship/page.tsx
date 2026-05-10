@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const InfoSection = ({ 
     title, 
@@ -55,6 +56,7 @@ const InfoSection = ({
 
 export default function SocialEntrepreneurshipPage() {
     const router = useRouter();
+    const cms = useWebPage('social-entrepreneurship');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -72,11 +74,11 @@ export default function SocialEntrepreneurshipPage() {
             </header>
 
             {/* Hero */}
-            <InfoSection 
-                title="Kârın Amacı: Toplumsal Fayda."
-                subtitle="Sosyal Girişim Nedir?"
-                description="Bir sosyal girişim, ticari faaliyetlerden elde ettiği geliri öncelikli olarak toplumsal veya çevresel bir sorunu çözmek için kullanan bir iş modelidir. Geleneksel şirketlerden farkı, kârı maksimize etmek yerine etkiyi maksimize etmesidir."
-                imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
+            <InfoSection
+                title={cms.title || 'Kârın Amacı: Toplumsal Fayda.'}
+                subtitle={cms.subtitle || 'Sosyal Girişim Nedir?'}
+                description={cms.description || 'Bir sosyal girişim, ticari faaliyetlerden elde ettiği geliri öncelikli olarak toplumsal veya çevresel bir sorunu çözmek için kullanan bir iş modelidir. Geleneksel şirketlerden farkı, kârı maksimize etmek yerine etkiyi maksimize etmesidir.'}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="collaborative meeting brainstorming"
             />
 

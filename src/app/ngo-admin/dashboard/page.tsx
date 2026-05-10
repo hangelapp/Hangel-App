@@ -1,12 +1,14 @@
 'use client';
 import React, { Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info } from 'lucide-react';
-import { user, ngos, studentClubs, allEntityLists } from '@/lib/data';
+import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info, Loader2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
@@ -45,20 +47,48 @@ const iconColorMap: { [key: string]: string } = {
   'line-chart': 'bg-amber-600',
 };
 
-const NavLink = ({ href, icon, label }: { href: string, icon: string, label: string }) => {
+const NavLink = ({ href, icon, label, comingSoon }: { href: string, icon: string, label: string, comingSoon?: boolean }) => {
   const iconName = icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
   const Icon = (Icons as any)[iconName] || Info;
   const color = iconColorMap[icon] || 'bg-gray-500';
+  const { toast } = useToast();
+
+  const body = (
+    <>
+      <div className={cn('p-1.5 rounded-lg mr-4', color)}>
+        <Icon className="h-5 w-5 text-white" />
+      </div>
+      <span className="flex-1 font-medium">{label}</span>
+      {comingSoon ? (
+        <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <Clock className="h-3 w-3" /> Yakında
+        </span>
+      ) : (
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      )}
+    </>
+  );
+
+  if (comingSoon) {
+    return (
+      <button
+        type="button"
+        onClick={() => toast({
+          title: 'Çok Yakında!',
+          description: `"${label}" özelliği çok yakında hizmete girecektir.`,
+        })}
+        className="flex items-center p-4 hover:bg-accent transition-colors w-full text-sm sm:text-base border-b last:border-b-0 text-left opacity-80"
+      >
+        {body}
+      </button>
+    );
+  }
 
   return (
     <Link href={href} className="flex items-center p-4 hover:bg-accent transition-colors w-full text-sm sm:text-base border-b last:border-b-0">
-      <div className={cn("p-1.5 rounded-lg mr-4", color)}>
-          <Icon className="h-5 w-5 text-white" />
-      </div>
-      <span className="flex-1 font-medium">{label}</span>
-      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      {body}
     </Link>
-  )
+  );
 }
 
 const navGroups = [
@@ -96,25 +126,25 @@ const navGroups = [
         title: "Entegrasyon ve Yönetim",
         items: [
             { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'] },
-            { id: 'mail', href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: 'mail', roles: ['Genel Yönetici'] },
-            { id: 'ads', href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'events', href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: 'video', roles: ['Genel Yönetici'] },
-            { id: 'design-tools', href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-            { id: 'marketing', href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'accounting', href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-            { id: 'crm', href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'virtual-pbx', href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: 'phone-call', roles: ['Genel Yönetici'] },
-            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: 'building-2', roles: ['Genel Yönetici'] },
-            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'field-team', href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: 'briefcase', roles: ['Genel Yönetici'] },
-            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'mail', href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: 'mail', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'ads', href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
+            { id: 'events', href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: 'video', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'design-tools', href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
+            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
+            { id: 'marketing', href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
+            { id: 'accounting', href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
+            { id: 'crm', href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'virtual-pbx', href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: 'phone-call', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: 'building-2', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'field-team', href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
+            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: 'briefcase', roles: ['Genel Yönetici'], comingSoon: true },
+            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
+            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
         ]
     },
     {
@@ -131,16 +161,32 @@ function NgoDashboardPageContent() {
     const searchParams = useSearchParams();
     const entityId = searchParams.get('id');
     const entityType = searchParams.get('type');
+    const firestore = useFirestore();
+    const { user: authUser } = useUser();
 
-    const activeEntity = useMemo(() => {
-        if (!entityId) return ngos[1]; // Default to SBG
-        if (entityType === 'STK') return ngos.find(n => n.id === entityId);
-        if (entityType === 'Öğrenci Kulübü') return studentClubs.find(c => c.id === entityId);
-        if (entityType === 'Marka') return allEntityLists.find(b => b.id === entityId);
-        return ngos[1];
-    }, [entityId, entityType]);
+    // Determine the collection to query based on entity type
+    const ngoDocRef = useMemoFirebase(() => {
+        if (!entityId) return null;
+        if (entityType === 'STK') return doc(firestore, 'ngos', entityId);
+        if (entityType === 'Öğrenci Kulübü') return doc(firestore, 'studentClubs', entityId);
+        if (entityType === 'Marka') return doc(firestore, 'brands', entityId);
+        return null;
+    }, [firestore, entityId, entityType]);
 
-    const userRole = (user as any).currentNgoRole || 'Genel Yönetici'; 
+    const { data: activeEntity, isLoading } = useDoc(ngoDocRef);
+
+    // Fallback: try to load the user's own NGO profile if no entity specified
+    const userNgoDocRef = useMemoFirebase(() => {
+        if (entityId || !authUser?.uid) return null;
+        return doc(firestore, 'ngos', authUser.uid);
+    }, [firestore, entityId, authUser?.uid]);
+
+    const { data: userNgoEntity, isLoading: isUserNgoLoading } = useDoc(userNgoDocRef);
+
+    const entity = activeEntity || userNgoEntity;
+    const loading = isLoading || isUserNgoLoading;
+
+    const userRole: string = 'Genel Yönetici';
 
     const filteredGroups = useMemo(() => {
         return navGroups.map(group => ({
@@ -149,10 +195,16 @@ function NgoDashboardPageContent() {
         })).filter(group => group.items.length > 0);
     }, [userRole]);
 
-    if (!activeEntity) return null;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-20">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
-    // Use stats from the active entity if available, otherwise use defaults
-    const stats = (activeEntity as any).stats || { totalDonation: 0, volunteers: 0, followers: 0 };
+    const entityName = entity?.name || 'Kuruluşunuz';
+    const stats = entity?.stats || { totalDonation: 0, volunteers: 0, followers: 0 };
 
   return (
     <div className="space-y-6 animate-in fade-in-0 pb-8 px-4 sm:px-6">
@@ -162,7 +214,7 @@ function NgoDashboardPageContent() {
                 <Building2 className="h-8 w-8 text-primary" />
             </div>
             <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">{activeEntity.name}</h1>
+                <h1 className="text-2xl font-bold font-headline">{entityName}</h1>
                 <p className="text-muted-foreground text-sm">Kurumsal Yönetim Paneli</p>
             </div>
         </div>
@@ -177,6 +229,12 @@ function NgoDashboardPageContent() {
             <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
+            {!entity ? (
+                <div className="p-6 text-center text-muted-foreground">
+                    <p>Henüz kuruluş verisi bulunamadı.</p>
+                    <p className="text-sm mt-1">Profilinizi oluşturduğunuzda performans verileri burada görünecektir.</p>
+                </div>
+            ) : (
             <div className="divide-y divide-black/5">
                 {(userRole === 'Finans Yöneticisi' || userRole === 'Genel Yönetici') && (
                     <div className="flex items-center justify-between p-6 transition-colors hover:bg-accent/30">
@@ -188,12 +246,6 @@ function NgoDashboardPageContent() {
                                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Toplam Kaynak</p>
                                 <p className="text-2xl font-black tracking-tighter">{stats.totalDonation?.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) || '0,00 ₺'}</p>
                             </div>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-xs text-green-600 font-bold flex items-center justify-end gap-1">
-                                <TrendingUp className="h-3 w-3" /> +%20.1
-                            </p>
-                            <p className="text-[10px] text-muted-foreground">geçen aydan</p>
                         </div>
                     </div>
                 )}
@@ -209,13 +261,10 @@ function NgoDashboardPageContent() {
                                 <p className="text-2xl font-black tracking-tighter">+{stats.volunteers?.toLocaleString('tr-TR') || stats.followers?.toLocaleString('tr-TR') || '0'}</p>
                             </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-xs text-muted-foreground font-semibold">Bu ay %12 artış</p>
-                            <p className="text-[10px] text-muted-foreground">kayıt gerçekleşti</p>
-                        </div>
                     </div>
                 )}
             </div>
+            )}
         </CardContent>
       </Card>
 

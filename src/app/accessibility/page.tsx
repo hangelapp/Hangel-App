@@ -56,6 +56,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useWebPage } from '@/hooks/use-site-content';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import {
     Table,
@@ -68,7 +69,6 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { user } from '@/lib/data';
 
 const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, title: string, description: string, badge?: string }) => (
     <Card className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group h-full">
@@ -128,6 +128,7 @@ export default function AccessibilityPublicPage() {
     const router = useRouter();
     const { toast } = useToast();
     const heroImage = PlaceHolderImages.find(img => img.id === 'accessibility-hero');
+    const cms = useWebPage('accessibility');
 
     const [isSaving, setIsSaving] = useState(false);
 
@@ -280,11 +281,14 @@ export default function AccessibilityPublicPage() {
                 {/* Hero Section */}
                 <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-6 text-center bg-[#f5f5f7] overflow-hidden border-b border-black/5">
                     <div className="container mx-auto max-w-4xl space-y-6 relative z-10 animate-in fade-in-0 slide-in-from-bottom-4 duration-1000">
+                        {cms.subtitle && (
+                            <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
+                        )}
                         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
-                            Herkes İçin <br /> Erişilebilir.
+                            {cms.title || (<>Herkes İçin <br /> Erişilebilir.</>)}
                         </h1>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
-                            İyilikte engel tanımaz. hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.
+                            {cms.description || 'İyilikte engel tanımaz. hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.'}
                         </p>
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">

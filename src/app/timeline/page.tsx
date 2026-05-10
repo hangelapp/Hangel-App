@@ -6,7 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, X } from 'lucide-react';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +72,7 @@ export default function TimelinePage() {
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSanaOzelVisible, setIsSanaOzelVisible] = useState(true);
+  const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(false);
 
   const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
@@ -93,10 +94,24 @@ export default function TimelinePage() {
     }
     
     posts.sort((a, b) => {
-        let valA, valB;
+        let valA: any, valB: any;
         if (sortKey === 'id') {
-            valA = a.id;
-            valB = b.id;
+            // Prefer createdAt (Firestore Timestamp or ISO), fallback to id
+            const toTime = (p: any) => {
+                if (p.createdAt?.toMillis) return p.createdAt.toMillis();
+                if (p.createdAt?.seconds) return p.createdAt.seconds * 1000;
+                if (typeof p.createdAt === 'string') return new Date(p.createdAt).getTime() || 0;
+                return 0;
+            };
+            const tA = toTime(a);
+            const tB = toTime(b);
+            if (tA || tB) {
+                valA = tA;
+                valB = tB;
+            } else {
+                valA = a.id;
+                valB = b.id;
+            }
         } else { // likes
             valA = a.likes;
             valB = b.likes;
@@ -169,14 +184,24 @@ export default function TimelinePage() {
                 </TabsList>
             </div>
             <TabsContent value="special" className="mt-0">
-                {isSanaOzelVisible && (
-                    <div className="p-2 sm:p-4">
-                        <Card className="relative">
-                            <CardHeader>
+                <div className="p-2 sm:p-4">
+                    <Card>
+                        <button
+                            type="button"
+                            onClick={() => setIsSanaOzelExpanded(prev => !prev)}
+                            className="w-full text-left"
+                            aria-expanded={isSanaOzelExpanded}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between pb-2 hover:bg-accent/30 transition-colors rounded-t-xl">
                                 <CardTitle className="text-lg">Sana Özel</CardTitle>
-                                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsSanaOzelVisible(false)}><X className="h-4 w-4" /></Button>
+                                <ChevronDown className={cn(
+                                    "h-5 w-5 text-muted-foreground transition-transform duration-200",
+                                    isSanaOzelExpanded && "rotate-180"
+                                )} />
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                        </button>
+                        {isSanaOzelExpanded && (
+                            <CardContent className="space-y-4 pt-0">
                                 <div>
                                     <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
                                     <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
@@ -198,9 +223,9 @@ export default function TimelinePage() {
                                     </Link>
                                 </div>
                             </CardContent>
-                        </Card>
-                    </div>
-                )}
+                        )}
+                    </Card>
+                </div>
                 <div className="p-2 sm:p-4 space-y-4">
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)

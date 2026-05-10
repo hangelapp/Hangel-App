@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useWebPage } from '@/hooks/use-site-content';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,6 +62,7 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
 
 export default function PressPage() {
     const router = useRouter();
+    const cms = useWebPage('press');
     const { toast } = useToast();
 
     const handleDownload = (file: string) => {
@@ -115,13 +117,31 @@ export default function PressPage() {
             <main className="pt-24">
                 {/* Hero */}
                 <section className="container mx-auto px-4 pt-16 pb-24 text-center space-y-6">
+                    {cms.subtitle && (
+                        <p className="text-sm md:text-base font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
+                    )}
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                       hangel'in Hikayesi. <br /> Dünyayla Paylaşın.
+                        {cms.title || (<>hangel'in Hikayesi. <br /> Dünyayla Paylaşın.</>)}
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                        Resmi duyurular, medya kaynakları ve kurumsal kimlik materyallerimiz.
+                        {cms.description || 'Resmi duyurular, medya kaynakları ve kurumsal kimlik materyallerimiz.'}
                     </p>
+                    {cms.heroImageUrl && (
+                        <div className="relative w-full max-w-5xl mx-auto aspect-[21/9] rounded-3xl overflow-hidden mt-8 shadow-xl">
+                            <Image src={cms.heroImageUrl} alt={cms.title || 'Basın Odası'} fill className="object-cover" />
+                        </div>
+                    )}
                 </section>
+
+                {cms.body && (
+                    <section className="container mx-auto px-4 mb-16 max-w-4xl">
+                        <Card className="rounded-[2.5rem] border-none shadow-lg bg-white">
+                            <CardContent className="p-8 prose prose-lg max-w-none">
+                                <div dangerouslySetInnerHTML={{ __html: cms.body }} />
+                            </CardContent>
+                        </Card>
+                    </section>
+                )}
 
                 {/* Stats */}
                 <section className="container mx-auto px-4 mb-24">

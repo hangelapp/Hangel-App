@@ -110,7 +110,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <div className="flex flex-col divide-y">
-                    <SettingsLink href="/market" icon={Store} label="Takip Ettiğim Markaları Gör" iconColor="bg-violet-500" />
+                    <SettingsLink href="/settings/brands" icon={Store} label="Takip Ettiğim Markaları Gör" iconColor="bg-violet-500" />
                 </div>
             </CardContent>
         </Card>

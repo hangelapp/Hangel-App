@@ -1,6 +1,9 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { events, user, ngos, studentClubs } from '@/lib/data';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, where, limit } from 'firebase/firestore';
+import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
+import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
@@ -60,52 +63,155 @@ export default function EventDetailPage() {
   const router = useRouter();
   const params = useParams();
   const slug = params.id as string;
-  const event = events.find(e => e.slug === slug);
+  const db = useFirestore();
+  const { user: authUser } = useUser();
   const [profileUrl, setProfileUrl] = useState('');
   const { toast } = useToast();
+  const cardFrontRef = useRef<HTMLDivElement>(null);
+  const cardBackRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handleDownloadBadgePdf = async () => {
+    if (!cardFrontRef.current || !cardBackRef.current) return;
+    setIsGeneratingPdf(true);
+    try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+
+      const opts = { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false };
+      const frontCanvas = await html2canvas(cardFrontRef.current, opts);
+      const backCanvas = await html2canvas(cardBackRef.current, opts);
+
+      // A4 portre, iki kart yan yana ortalanır
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      // Kart oranı 105/148 (A6). Genişlik 70mm, yükseklik = 70*148/105 ≈ 98.67mm
+      const cardW = 70;
+      const cardH = (cardW * 148) / 105;
+      const gap = 8;
+      const totalW = cardW * 2 + gap;
+      const startX = (pageW - totalW) / 2;
+      const startY = (pageH - cardH) / 2;
+
+      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', startX, startY, cardW, cardH);
+      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', startX + cardW + gap, startY, cardW, cardH);
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(120);
+      pdf.text('hangel — etkinlik yaka kartı', pageW / 2, pageH - 10, { align: 'center' });
+
+      pdf.save(`yaka-karti-${event?.id || 'hangel'}.pdf`);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'PDF oluşturulamadı', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  // Fetch event by slug (falls back to doc id lookup if no slug match)
+  const eventsQuery = useMemoFirebase(() => {
+    if (!db || !slug) return null;
+    return query(collection(db, 'events'), where('slug', '==', slug), limit(1));
+  }, [db, slug]);
+  const { data: eventsBySlug, isLoading: isEventsBySlugLoading } = useCollection<EventType>(eventsQuery);
+
+  const eventByIdRef = useMemoFirebase(() => {
+    if (!db || !slug) return null;
+    return doc(db, 'events', slug);
+  }, [db, slug]);
+  const { data: eventById, isLoading: isEventByIdLoading } = useDoc<EventType>(eventByIdRef);
+
+  const event = (eventsBySlug && eventsBySlug[0]) || eventById || null;
+  const isEventLoading = isEventsBySlugLoading || isEventByIdLoading;
+
+  // Fetch organizer (NGO or student club) by name
+  const ngoQuery = useMemoFirebase(() => {
+    if (!db || !event?.organizer) return null;
+    return query(collection(db, 'ngos'), where('name', '==', event.organizer), limit(1));
+  }, [db, event?.organizer]);
+  const { data: orgNgo } = useCollection<NGO>(ngoQuery);
+
+  const clubQuery = useMemoFirebase(() => {
+    if (!db || !event?.organizer) return null;
+    return query(collection(db, 'clubs'), where('name', '==', event.organizer), limit(1));
+  }, [db, event?.organizer]);
+  const { data: orgClub } = useCollection<StudentClub>(clubQuery);
+
+  // Fetch current authenticated user profile for QR / contact info
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return doc(db, 'users', authUser.uid);
+  }, [db, authUser?.uid]);
+  const { data: userData } = useDoc<UserType>(userDocRef);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && event) {
-      setProfileUrl(`${window.location.origin}/events/${event.slug}`);
+      setProfileUrl(`${window.location.origin}/events/${event.slug || slug}`);
     }
-  }, [event]);
+  }, [event, slug]);
+
+  if (isEventLoading) {
+    return <div className="flex items-center justify-center py-32"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+  }
 
   if (!event) {
     notFound();
   }
 
-  const organizerEntity = ngos.find(n => n.name === event.organizer) || studentClubs.find(c => c.name === event.organizer);
+  const organizerEntity = (orgNgo && orgNgo[0]) || (orgClub && orgClub[0]) || null;
   const organizerCategory = (organizerEntity as any)?.category;
   const organizerLogo = organizerEntity?.avatarUrl;
 
   let organizerLink = '#';
   if (organizerEntity) {
-    if ('transparencyScore' in organizerEntity) { // It's an NGO
+    if ('transparencyScore' in organizerEntity) {
       organizerLink = `/ngos/${organizerEntity.id}`;
-    } else if ('university' in organizerEntity) { // It's a Student Club
+    } else if ('university' in organizerEntity) {
       organizerLink = `/clubs/profile/${organizerEntity.id}`;
     }
   }
-  
+
+  const user = userData || {
+    name: authUser?.displayName || authUser?.email?.split('@')[0] || 'Katılımcı',
+    personalInfo: {
+      email: authUser?.email || '',
+      phone: '',
+      social: {} as any,
+    },
+    volunteerInfo: { education: [] as any[] },
+  } as any;
+
   const nameQrData = user.name;
   const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(nameQrData)}`;
 
   const socialLinks = [];
-    if (user.personalInfo.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);
+    if (user.personalInfo?.social?.linkedin) socialLinks.push(`URL;TYPE=linkedin:https://linkedin.com/in/${user.personalInfo.social.linkedin}`);
 
   const backQrData = [
     'BEGIN:VCARD',
     'VERSION:3.0',
     `FN:${user.name}`,
-    `TEL;TYPE=CELL:${user.personalInfo.phone}`,
-    `EMAIL:${user.personalInfo.email}`,
+    `TEL;TYPE=CELL:${user.personalInfo?.phone || ''}`,
+    `EMAIL:${user.personalInfo?.email || ''}`,
     ...socialLinks,
     'END:VCARD'
   ].join('\n');
     
   const backQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(backQrData)}`;
   
-  const eventHashtag = `#hangel${event.name.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yy')}`;
+  const eventHashtag = (() => {
+    const base = `#hangel${(event.name || '').replace(/[^a-zA-Z0-9]/g, '').slice(0, 10)}`;
+    try {
+      const d = parse(event.startDate || '', 'yyyy-MM-dd HH:mm', new Date());
+      if (isNaN(d.getTime())) return base;
+      return `${base}${format(d, 'yy')}`;
+    } catch {
+      return base;
+    }
+  })();
   
   const handleCopy = () => {
     navigator.clipboard.writeText(profileUrl);
@@ -122,7 +228,7 @@ export default function EventDetailPage() {
   };
 
   return (
-    <div className="animate-in fade-in-0 max-w-5xl mx-auto">
+    <div className="animate-in fade-in-0 w-full px-4 sm:px-6 lg:px-8">
         <div className="p-4 bg-background">
             <div className="flex justify-between items-center mb-6">
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
@@ -137,9 +243,9 @@ export default function EventDetailPage() {
         </div>
 
       <div className="p-4 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-8">
             {/* Info Section (Left or Top) */}
-            <div className="md:col-span-3 space-y-6">
+            <div className="md:col-span-3 lg:col-span-5 space-y-6">
                 <Tabs defaultValue="details" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl bg-muted/50 p-1">
                         <TabsTrigger value="details" className="rounded-xl font-bold">Etkinlik Detayları</TabsTrigger>
@@ -246,8 +352,8 @@ export default function EventDetailPage() {
             </div>
 
             {/* Poster Section (Right or Bottom) */}
-            <div className="md:col-span-2">
-                <div className="relative aspect-[210/297] w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/5 bg-muted">
+            <div className="md:col-span-2 lg:col-span-2">
+                <div className="relative aspect-[210/297] w-full max-w-md lg:max-w-none mx-auto rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/5 bg-muted sticky top-20">
                     <Image 
                         src={event.imageUrl} 
                         alt={event.name} 
@@ -275,7 +381,7 @@ export default function EventDetailPage() {
                 <div className="my-6 flex flex-col items-center gap-8">
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
-                    <div className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
+                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
                             <span className="text-xl font-black text-primary">hangel</span>
                             {organizerLogo && (
@@ -297,7 +403,7 @@ export default function EventDetailPage() {
                                 </div>
                                 <p className="text-xl font-black pt-2 truncate">{user.name}</p>
                                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
-                                    {user.volunteerInfo.education[0]?.school || 'Eğitim Bilgisi Yok'}
+                                    {user.volunteerInfo?.education?.[0]?.school || 'Eğitim Bilgisi Yok'}
                                 </p>
                             </div>
                         </div>
@@ -309,7 +415,7 @@ export default function EventDetailPage() {
 
                     <div>
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Arka Yüzü</h3>
-                    <div className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
+                    <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
                             <span className="text-xl font-black text-primary">hangel</span>
                             {organizerLogo && (
@@ -326,8 +432,8 @@ export default function EventDetailPage() {
                             </div>
                             <div className="text-left w-full space-y-3">
                                 <div className="flex items-center gap-3"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold text-sm">{user.name}</span></div>
-                                <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{user.personalInfo.email}</span></div>
-                                <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{user.personalInfo.phone}</span></div>
+                                <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{user.personalInfo?.email || ''}</span></div>
+                                <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{user.personalInfo?.phone || ''}</span></div>
                             </div>
                         </div>
                         <div className='bg-primary/5 p-3 text-[10px] text-primary font-black border-t text-center uppercase tracking-widest'>
@@ -338,10 +444,17 @@ export default function EventDetailPage() {
                 </div>
                 <AlertDialogFooter className="flex-col sm:flex-row gap-3">
                 <AlertDialogCancel className="rounded-xl h-12 font-bold">Kapat</AlertDialogCancel>
-                <Button asChild className="rounded-xl h-12 font-bold">
-                    <a href={nameQrCodeUrl} download={`yaka-karti-qr-${event.id}.png`}>
-                        <Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir
-                    </a>
+                <Button
+                    type="button"
+                    onClick={handleDownloadBadgePdf}
+                    disabled={isGeneratingPdf}
+                    className="rounded-xl h-12 font-bold"
+                >
+                    {isGeneratingPdf ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> PDF hazırlanıyor…</>
+                    ) : (
+                        <><Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir</>
+                    )}
                 </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>

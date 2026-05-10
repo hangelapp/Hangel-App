@@ -15,6 +15,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useAssociationContent } from '@/hooks/use-site-content';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -92,6 +93,7 @@ const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: any
 
 export default function AssociationEventsPage() {
     const { toast } = useToast();
+    const { get } = useAssociationContent();
     
     const networkData = {
         universities: [
@@ -136,16 +138,16 @@ export default function AssociationEventsPage() {
             <AssociationHeader currentPage="events" />
 
             <section className="pt-32 pb-20 px-6 text-center space-y-6 bg-[#f5f5f7]">
-                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f]">Etkinlikler.</h1>
+                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f]">{get('events.title', 'Etkinlikler.')}</h1>
                 <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-tight">
-                    Türkiye genelinde 126 farkındalık konferansı ve zirve ile sosyal inovasyon bilincini yaygınlaştırıyoruz.
+                    {get('events.description', 'Türkiye genelinde 126 farkındalık konferansı ve zirve ile sosyal inovasyon bilincini yaygınlaştırıyoruz.')}
                 </p>
             </section>
 
             <div className="container mx-auto max-w-6xl py-24 px-6 space-y-8">
                 <div className="flex items-center gap-4 mb-10 border-b pb-6">
                     <Calendar className="h-10 w-10 text-primary" />
-                    <h2 className="text-4xl font-bold tracking-tight">Öne Çıkan Etkinlikler</h2>
+                    <h2 className="text-4xl font-bold tracking-tight">{get('events.upcomingTitle', 'Öne Çıkan Etkinlikler')}</h2>
                 </div>
                 
                 <div className="grid grid-cols-1 gap-6">

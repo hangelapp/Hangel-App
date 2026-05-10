@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -23,6 +24,7 @@ import {
   ArrowLeft, Loader2, Sparkles, Languages as LanguagesIcon,
   FileText, Plane, Briefcase, HeartPulse, Phone,
   Car, Award, MapPin, ChevronDown, Search, X,
+  Clock, ShieldCheck, Heart,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -343,6 +345,30 @@ export default function VolunteerSettingsPage() {
   const [emergencyAvailable, setEmergencyAvailable] = useState(false);
   const [hasChronicIllness, setHasChronicIllness] = useState(false);
   const [usesRegularMedication, setUsesRegularMedication] = useState(false);
+  const [bloodType, setBloodType] = useState('');
+
+  // Cinsiyet & detaylı adres (kişisel profil sayfasından taşındı)
+  const [gender, setGender] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [street, setStreet] = useState('');
+  const [doorNo, setDoorNo] = useState('');
+
+  // Müsaitlik & çalışma şekli
+  const [availabilityDays, setAvailabilityDays] = useState<string[]>([]);
+  const [availabilityTimes, setAvailabilityTimes] = useState<string[]>([]);
+  const [workModes, setWorkModes] = useState<string[]>([]);
+
+  // Motivasyonlar (çok seçimli)
+  const [motivations, setMotivations] = useState<string[]>([]);
+
+  // Onaylar (zorunlu)
+  const [consents, setConsents] = useState({
+    contract: false,
+    rights: false,
+    ethics: false,
+    socialImpact: false,
+    privacy: false,
+  });
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
@@ -395,6 +421,18 @@ export default function VolunteerSettingsPage() {
     if (typeof vi.emergency?.available === 'boolean') setEmergencyAvailable(vi.emergency.available);
     if (typeof vi.emergency?.hasChronicIllness === 'boolean') setHasChronicIllness(vi.emergency.hasChronicIllness);
     if (typeof vi.emergency?.usesRegularMedication === 'boolean') setUsesRegularMedication(vi.emergency.usesRegularMedication);
+    if ((userData as any).personalInfo?.bloodType) setBloodType((userData as any).personalInfo.bloodType);
+    const pi = (userData as any).personalInfo || {};
+    if (pi.gender) setGender(pi.gender);
+    if (pi.address?.neighborhood) setNeighborhood(pi.address.neighborhood);
+    if (pi.address?.street) setStreet(pi.address.street);
+    if (pi.address?.doorNo) setDoorNo(pi.address.doorNo);
+
+    if (Array.isArray(vi.availabilityDays)) setAvailabilityDays(vi.availabilityDays);
+    if (Array.isArray(vi.availabilityTimes)) setAvailabilityTimes(vi.availabilityTimes);
+    if (Array.isArray(vi.workModes)) setWorkModes(vi.workModes);
+    if (Array.isArray(vi.motivations)) setMotivations(vi.motivations);
+    if (vi.consents) setConsents(prev => ({ ...prev, ...vi.consents }));
   }, [userData]);
 
   const handleLevelChange = (lang: string, level: string) => {
@@ -419,6 +457,17 @@ export default function VolunteerSettingsPage() {
     e.preventDefault();
     if (!userDocRef) return;
 
+    const requiredConsents: (keyof typeof consents)[] = ['contract', 'rights', 'ethics', 'socialImpact', 'privacy'];
+    const missingConsent = requiredConsents.find(k => !consents[k]);
+    if (missingConsent) {
+      toast({
+        variant: 'destructive',
+        title: 'Onaylar Eksik',
+        description: 'Tüm zorunlu Gönüllülük Beyanı maddelerini onaylamanız gerekir.',
+      });
+      return;
+    }
+
     const finalProfession = profession === 'Diğer' ? professionOther : profession;
 
     const volunteerInfo = {
@@ -441,9 +490,30 @@ export default function VolunteerSettingsPage() {
         hasChronicIllness,
         usesRegularMedication,
       },
+      availabilityDays,
+      availabilityTimes,
+      workModes,
+      motivations,
+      consents,
+      consentsAcceptedAt: new Date().toISOString(),
     };
 
-    updateDocumentNonBlocking(userDocRef, { volunteerInfo });
+    const existingPersonal = (userData as any)?.personalInfo ?? {};
+    const personalInfoPatch = {
+      personalInfo: {
+        ...existingPersonal,
+        ...(bloodType ? { bloodType } : {}),
+        ...(gender ? { gender } : {}),
+        address: {
+          ...(existingPersonal.address ?? {}),
+          neighborhood,
+          street,
+          doorNo,
+        },
+      },
+    };
+
+    updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch });
 
     if (isOnboarding) {
       toast({ title: "Gönüllülük Bilgilerin Kaydedildi", description: "Şimdi bağış yapacağın STK'ları seçelim." });
@@ -464,9 +534,18 @@ export default function VolunteerSettingsPage() {
       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
         <ArrowLeft className="h-6 w-6" />
       </Button>
-      <div>
-        <h1 className="text-2xl font-bold font-headline">Gönüllülük Bilgileri</h1>
-        <p className="text-muted-foreground text-sm">Yeteneklerinle topluma değer katmaya başla.</p>
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">
+        <div className="max-w-2xl mx-auto space-y-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#1d1d1f]">
+            Yeteneklerinle topluma değer katmaya başla.
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed font-medium">
+            Yeteneklerini ekle, hassasiyetlerine, yetkinliklerine ve konumuna uygun gönüllülük fırsatlarını keşfet. Kimse yalnız başına mücadele etmesin.
+          </p>
+          <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-6">
+            <Link href="/market">Daha Sonra</Link>
+          </Button>
+        </div>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
@@ -583,6 +662,127 @@ export default function VolunteerSettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Müsaitlik & Çalışma Şekli */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Müsaitlik & Çalışma Şekli</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Hangi günlerde uygunsun?</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {['Hafta içi', 'Hafta sonu'].map(d => (
+                  <label key={d} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
+                    <Checkbox
+                      checked={availabilityDays.includes(d)}
+                      onCheckedChange={c => setAvailabilityDays(prev => c ? [...prev, d] : prev.filter(x => x !== d))}
+                    />
+                    <span className="text-sm">{d}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Hangi saatlerde uygunsun?</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {['Gündüz', 'Akşam'].map(t => (
+                  <label key={t} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
+                    <Checkbox
+                      checked={availabilityTimes.includes(t)}
+                      onCheckedChange={c => setAvailabilityTimes(prev => c ? [...prev, t] : prev.filter(x => x !== t))}
+                    />
+                    <span className="text-sm">{t}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Çalışma Şekli</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {['Sahada', 'Online', 'Hibrit'].map(m => (
+                  <label key={m} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
+                    <Checkbox
+                      checked={workModes.includes(m)}
+                      onCheckedChange={c => setWorkModes(prev => c ? [...prev, m] : prev.filter(x => x !== m))}
+                    />
+                    <span className="text-sm">{m}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Motivasyonlar */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Heart className="h-5 w-5 text-primary" /> Bir Projede Seni Ne Motive Eder?</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {[
+              {
+                title: 'İnsanlara dokunmak',
+                subtitle: 'Etki odaklı',
+                items: [
+                  'Sahada aktif görev', 'Birebir insan teması', 'Hızlı sonuç beklentisi',
+                  'Somut fayda üretme', 'Duygusal bağlılık yüksek', 'Bürokrasiye düşük tolerans',
+                  'Hikaye ve sonuç odaklı projeler', 'Sosyal hassasiyet uyumu kritik',
+                  'Uzun vadeli bağlılık potansiyeli',
+                ],
+              },
+              {
+                title: 'Yeni şeyler öğrenmek',
+                subtitle: 'Gelişim odaklı',
+                items: [
+                  'Deneyim kazanma motivasyonu', 'Farklı alanlara açıklık', 'Yenilik ve keşif isteği',
+                  'Proje kurulum süreçlerine yatkınlık', 'Dinamik ortamlarda yüksek performans',
+                  'Tekrara düşük tolerans', 'Eğitim ve mentorluk ilgisi',
+                  'Çok yönlü beceri geliştirme', 'Gelecekte yön değiştirme eğilimi',
+                ],
+              },
+              {
+                title: 'Sosyal çevre edinmek',
+                subtitle: 'Bağlantı odaklı',
+                items: [
+                  'Ekip içinde çalışma isteği', 'İletişim gücü yüksek',
+                  'Etkinlik ve organizasyon ilgisi', 'Topluluk içinde motivasyon',
+                  'Yalnız çalışmaya düşük ilgi', 'Sosyal görünürlük isteği',
+                  'Network oluşturma hedefi', 'Grup enerjisiyle performans artışı',
+                  'Aidiyet duygusu önemli',
+                ],
+              },
+              {
+                title: 'Kariyer katkısı',
+                subtitle: 'Stratejik odaklı',
+                items: [
+                  'CV ve deneyim geliştirme', 'Profesyonel gönüllülük ilgisi', 'Networking hedefi',
+                  'Kurumsal projelere yatkınlık', 'Sonuç ve çıktı odaklı',
+                  'Planlı ve yapılandırılmış iş tercihi', 'Yetkinlik geliştirme motivasyonu',
+                  'Mentorluk ve danışmanlık ilgisi', 'Uzun vadeli kariyer entegrasyonu',
+                ],
+              },
+            ].map(group => (
+              <div key={group.title} className="border rounded-xl p-4 bg-muted/20">
+                <div className="mb-3">
+                  <p className="font-bold text-sm">{group.title}</p>
+                  <p className="text-xs text-muted-foreground">{group.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {group.items.map(item => (
+                    <label key={item} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent/30 cursor-pointer">
+                      <Checkbox
+                        checked={motivations.includes(item)}
+                        onCheckedChange={c => setMotivations(prev => c ? [...prev, item] : prev.filter(x => x !== item))}
+                      />
+                      <span className="text-xs">{item}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
         {/* Mahalle Muhtarıyım */}
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Mahalle Muhtarıyım</CardTitle></CardHeader>
@@ -664,10 +864,56 @@ export default function VolunteerSettingsPage() {
           </CardContent>
         </Card>
 
+        {/* Detaylı Adres Bilgileri */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Detaylı Adres Bilgileri</CardTitle>
+            <p className="text-xs text-muted-foreground mt-2">Acil durum ve gönüllülük lojistiği için detaylı adres bilgileri.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Mahalle</Label>
+              <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Mahalle adı" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Sokak / Cadde</Label>
+                <Input value={street} onChange={e => setStreet(e.target.value)} placeholder="Sokak adı" />
+              </div>
+              <div className="space-y-2">
+                <Label>Bina / Kapı No</Label>
+                <Input value={doorNo} onChange={e => setDoorNo(e.target.value)} placeholder="Bina no / Daire" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Sağlık Durumu */}
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div className="space-y-2 p-4 border rounded-lg">
+              <Label>Cinsiyet</Label>
+              <Select value={gender || ''} onValueChange={setGender}>
+                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Erkek">Erkek</SelectItem>
+                  <SelectItem value="Kadın">Kadın</SelectItem>
+                  <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 p-4 border rounded-lg">
+              <Label>Kan Grubu</Label>
+              <Select value={bloodType || ''} onValueChange={setBloodType}>
+                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                <SelectContent>
+                  {['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'].map(b => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
               <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />
@@ -680,6 +926,34 @@ export default function VolunteerSettingsPage() {
               <Checkbox id="regular-medication" checked={usesRegularMedication} onCheckedChange={c => setUsesRegularMedication(!!c)} />
               <Label htmlFor="regular-medication" className="text-sm">Düzenli ilaç kullanıyorum.</Label>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Hangel Gönüllülük Katılım ve Onay Beyanı */}
+        <Card className="border-primary/30 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Hangel Gönüllülük Katılım ve Onay Beyanı</CardTitle>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+              Hangel topluluğunun bir parçası olarak, kolektif bilinç ile hareket etmeyi, hangel etik değerlerine bağlı kalmayı, tüm canlılara saygıyla yaklaşmayı ve sosyal fayda üretirken sorumluluk almayı kabul ediyorum.
+            </p>
+            <p className="text-[11px] font-bold text-primary uppercase tracking-widest mt-1">Tüm maddeler zorunludur</p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              { key: 'contract', label: 'Gönüllülük Sözleşmesi\'ni okudum ve kabul ediyorum.' },
+              { key: 'rights', label: 'Gönüllü Hakları ve Sorumluluklarını kabul ediyorum.' },
+              { key: 'ethics', label: 'Etik İlkeler ve İnsan Hakları Politikası\'na uyacağımı beyan ederim.' },
+              { key: 'socialImpact', label: 'Sosyal Etki yaklaşımını ve katkı modelini anladım.' },
+              { key: 'privacy', label: 'Gizlilik ve KVKK kapsamında verilerimin işlenmesini kabul ediyorum.' },
+            ].map(({ key, label }) => (
+              <label key={key} className="flex items-start gap-3 p-3 border bg-background rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
+                <Checkbox
+                  checked={consents[key as keyof typeof consents]}
+                  onCheckedChange={c => setConsents(prev => ({ ...prev, [key]: !!c }))}
+                />
+                <span className="text-sm leading-snug">{label}</span>
+              </label>
+            ))}
           </CardContent>
         </Card>
 

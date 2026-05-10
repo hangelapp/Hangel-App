@@ -16,8 +16,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { openExternalUrl } from '@/lib/capacitor';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
@@ -76,53 +77,110 @@ export default function BrandProfilePage() {
   const [profileUrl, setProfileUrl] = useState('');
   const [isDonating, setIsDonating] = useState(false);
 
+  // Firestore brands
+  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
+
+  // API brands
+  const [apiBrands, setApiBrands] = useState<Brand[] | undefined>(undefined);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
     fetch('/api/offers')
       .then(res => res.ok ? res.json() : [])
-      .then((data: Brand[]) => {
-        const match = Array.isArray(data) ? data.find(b => b.slug === slug) : undefined;
-        setBrand(match || null);
-      })
-      .catch(() => setBrand(null));
-  }, [slug]);
+      .then((data: Brand[]) => setApiBrands(Array.isArray(data) ? data : []))
+      .catch(() => setApiBrands([]));
+  }, []);
+
+  // Merge both sources and find brand by slug
+  useEffect(() => {
+    if (firestoreLoading || apiBrands === undefined) return;
+
+    // First try API brands (they have affiliate links)
+    const apiMatch = apiBrands.find(b => b.slug === slug);
+    if (apiMatch) {
+      setBrand(apiMatch);
+      return;
+    }
+
+    // Then try Firestore brands
+    const fsMatch = (firestoreBrands || []).find(b => b.slug === slug);
+    if (fsMatch) {
+      // If Firestore brand already has a link, use it; otherwise try API by name
+      if (fsMatch.link) {
+        setBrand(fsMatch);
+        return;
+      }
+      const nameMatch = apiBrands.find(
+        b => b.name.toLowerCase().trim() === fsMatch.name.toLowerCase().trim()
+      );
+      setBrand(nameMatch ? { ...fsMatch, link: nameMatch.link } : fsMatch);
+      return;
+    }
+
+    setBrand(null);
+  }, [slug, apiBrands, firestoreBrands, firestoreLoading]);
 
   const handleStartShopping = () => {
     if (!authUser) {
         toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Bağış sürecini başlatmak için lütfen oturum açın." });
         return;
     }
-    
+
     if (!brand) return;
 
+    if (!brand.link) {
+        toast({ variant: 'destructive', title: 'Bağlantı eksik', description: `${brand.name} için affiliate bağlantısı tanımlı değil.` });
+        return;
+    }
+
     setIsDonating(true);
-    const transRef = collection(db, 'donations');
-    
-    addDocumentNonBlocking(transRef, {
+    // 1) Bağış kaydı (durum: İşleme Alındı — turuncu)
+    addDocumentNonBlocking(collection(db, 'donations'), {
         userId: authUser.uid,
+        userName: authUser.displayName || authUser.email || 'Kullanıcı',
+        userEmail: authUser.email || null,
+        brand: brand.name,
         brandId: brand.id,
         brandName: brand.name,
-        purchaseAmount: "0.00", 
-        donationAmount: "0.00", 
+        brandSlug: brand.slug || '',
+        brandLogoUrl: brand.logoUrl || '',
+        purchaseAmount: '0.00',
+        donationAmount: '0.00',
+        donationRate: brand.donationRate || 0,
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         type: 'expense',
-        status: 'Yönlendirildi',
-        ngo: ["Varsayılan STK'nız"]
+        status: 'İşleme Alındı', // turuncu — 72 gün sonra Yatırıldı (yeşil) yapılır
+        ngo: ["Varsayılan STK'nız"],
+        ngoIds: [],
+        createdAt: serverTimestamp(),
+        clearableAt: new Date(Date.now() + 72 * 24 * 60 * 60 * 1000).toISOString(), // 72 gün sonrası
     });
 
-    setTimeout(() => {
-        setIsDonating(false);
-        toast({
-            title: "Mağazaya Yönlendiriliyorsunuz",
-            description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek.`,
-        });
-        if (brand.link) {
-            window.open(brand.link, '_blank');
-        }
-    }, 1000);
+    // 2) Kullanıcıya bildirim (talep işleme alındı)
+    addDocumentNonBlocking(collection(db, 'notifications'), {
+        userId: authUser.uid,
+        type: 'donation',
+        title: 'Bağışınız işleme alınmıştır',
+        body: `${brand.name} üzerinden yaptığınız alışveriş kaydedildi. 72 gün içinde STK'ya aktarılacak.`,
+        data: { brandId: brand.id, brandName: brand.name },
+        read: false,
+        createdAt: serverTimestamp(),
+        createdBy: authUser.uid,
+    });
+
+    // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
+    openExternalUrl(brand.link);
+
+    toast({
+        title: 'Mağazaya Yönlendirildi',
+        description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek. Bağışlarım sayfasında işleme alındı olarak görünecek.`,
+    });
+
+    setTimeout(() => setIsDonating(false), 1500);
   };
 
   if (brand === undefined) {

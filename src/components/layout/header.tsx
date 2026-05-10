@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Menu, Siren, Globe
+  Menu, Siren, Globe, Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
@@ -10,14 +10,28 @@ import { usePathname } from 'next/navigation';
 import * as Icons from 'lucide-react';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
-  const { language, changeLanguage } = useTranslation();
+  const { language, changeLanguage, t } = useTranslation();
   const pathname = usePathname();
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
+
+  // Okunmamış bildirim sayısı (kullanıcı giriş yaptığında)
+  const notifQuery = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return query(
+      collection(db, 'notifications'),
+      where('userId', '==', user.uid),
+      where('read', '==', false),
+    );
+  }, [db, user?.uid]);
+  const { data: unreadNotifs } = useCollection<any>(notifQuery);
+  const unreadCount = (unreadNotifs || []).length;
 
   if (isAuthPage) return null;
   
@@ -51,14 +65,28 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                 </Select>
             </div>
             <Button asChild variant="ghost" size="icon"><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
-            
+
+            {/* Bildirim ikonu — sadece giriş yapmış kullanıcılar görür */}
+            {user && (
+              <Button asChild variant="ghost" size="icon" className="relative">
+                <Link href="/notifications">
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+            )}
+
             {isUserLoading ? (
                 <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
             ) : user ? (
                 <UserNav />
             ) : (
                 <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                    <Link href="/login/selection?action=login">Giriş Yap</Link>
+                    <Link href="/login/selection?action=login">{t('nav.login')}</Link>
                 </Button>
             )}
           </div>

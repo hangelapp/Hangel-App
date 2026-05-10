@@ -26,6 +26,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useWebPage } from '@/hooks/use-site-content';
 
 const ProductSection = ({ 
     title, 
@@ -84,6 +85,7 @@ const ProductSection = ({
 
 export default function MerchantAdvantagesPage() {
     const router = useRouter();
+    const cms = useWebPage('merchant');
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -103,11 +105,11 @@ export default function MerchantAdvantagesPage() {
             </header>
 
             {/* Hero Section */}
-            <ProductSection 
-                title="İşletmenizi İyiliğe Açın."
-                subtitle="hangel Üye İşyeri ile ticaretin yeni nesil hali."
-                description="Müşterilerinize modern bir ödeme deneyimi sunarken, her işlemi toplumsal bir faydaya dönüştürün. Ek masraf yok, sadece etki var."
-                imageUrl="https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop"
+            <ProductSection
+                title={cms.title || 'İşletmenizi İyiliğe Açın.'}
+                subtitle={cms.subtitle || 'hangel Üye İşyeri ile ticaretin yeni nesil hali.'}
+                description={cms.description || 'Müşterilerinize modern bir ödeme deneyimi sunarken, her işlemi toplumsal bir faydaya dönüştürün. Ek masraf yok, sadece etki var.'}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="modern minimalist retail store interior"
             />
 

@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
+import { useWebPage } from '@/hooks/use-site-content';
 import {
   Carousel,
   CarouselContent,
@@ -132,6 +133,7 @@ const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: any
 
 export default function NgoOnboardingPage() {
     const router = useRouter();
+    const cms = useWebPage('ngo-onboarding');
     const plugin = React.useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
@@ -249,10 +251,10 @@ export default function NgoOnboardingPage() {
                     <span className="text-[10px] font-bold tracking-widest uppercase">hangel STK</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                    STK yöneticisi, müjde!
+                    {cms.title || 'STK yöneticisi, müjde!'}
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.
+                    {cms.description || 'Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.'}
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">

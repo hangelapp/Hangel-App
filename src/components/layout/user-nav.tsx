@@ -2,6 +2,7 @@
 'use client';
 
 import { useRouter, usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
@@ -12,6 +13,7 @@ export function UserNav() {
   const router = useRouter();
   const pathname = usePathname();
   const db = useFirestore();
+  const [imageBroken, setImageBroken] = useState(false);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -20,13 +22,18 @@ export function UserNav() {
 
   const { data: userData } = useDoc(userDocRef);
 
+  // userData / photoURL değiştiğinde "broken" durumunu sıfırla
+  const docAvatar = (userData as any)?.avatarUrl;
+  const avatarUrl = docAvatar || user?.photoURL || undefined;
+
+  useEffect(() => { setImageBroken(false); }, [avatarUrl]);
+
   if (!user) return null;
 
-  const avatarUrl = (userData as any)?.avatarUrl || user.photoURL || undefined;
-
   const getInitials = () => {
-    if (user.displayName) {
-      return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+    const source = (userData as any)?.name || user.displayName;
+    if (source) {
+      return source.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
     }
     if (user.email) {
       return user.email[0].toUpperCase();
@@ -40,14 +47,25 @@ export function UserNav() {
     }
   };
 
+  const showImage = !!avatarUrl && !imageBroken;
+
   return (
     <Button
       variant="ghost"
-      className="relative h-9 w-9 rounded-full border shadow-sm"
+      className="relative h-9 w-9 rounded-full border shadow-sm p-0 overflow-hidden"
       onClick={handleClick}
     >
       <Avatar className="h-full w-full">
-        <AvatarImage src={avatarUrl} alt="Profile" className="object-cover" />
+        {showImage && (
+          <AvatarImage
+            src={avatarUrl}
+            alt="Profile"
+            className="object-cover"
+            onError={() => setImageBroken(true)}
+            referrerPolicy="no-referrer"
+            crossOrigin="anonymous"
+          />
+        )}
         <AvatarFallback className="bg-primary/10 text-primary font-bold">
           {getInitials()}
         </AvatarFallback>

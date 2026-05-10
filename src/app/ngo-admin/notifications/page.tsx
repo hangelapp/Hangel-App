@@ -76,11 +76,11 @@ export default function NgoNotificationsPage() {
                         
                         <TabsContent value="all" className="mt-6 space-y-3">
                             {data.map(notification => {
-                                const Icon = Icons[notification.icon as keyof typeof Icons] || Icons.Bell;
+                                const IconComp = (Icons[notification.icon as keyof typeof Icons] || Icons.Bell) as React.ElementType;
                                 return (
                                 <div key={notification.id} className={`p-4 bg-background border rounded-xl flex items-start gap-4 transition-all hover:border-primary/30 group ${notification.read ? 'opacity-70' : 'border-l-4 border-l-primary shadow-sm'}`}>
                                     <div className={`p-2 rounded-lg ${notification.read ? 'bg-muted' : 'bg-primary/10 text-primary'}`}>
-                                        <Icon className="h-5 w-5" />
+                                        <IconComp className="h-5 w-5" />
                                     </div>
                                     <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
                                         <p className="font-bold text-sm text-foreground">{notification.title}</p>
@@ -98,11 +98,11 @@ export default function NgoNotificationsPage() {
 
                         <TabsContent value="unread" className="mt-6 space-y-3">
                             {data.filter(n => !n.read).map(notification => {
-                                const Icon = Icons[notification.icon as keyof typeof Icons] || Icons.Bell;
+                                const IconComp = (Icons[notification.icon as keyof typeof Icons] || Icons.Bell) as React.ElementType;
                                 return (
                                 <div key={notification.id} className="p-4 bg-background border border-l-4 border-l-primary rounded-xl flex items-start gap-4 shadow-sm">
                                     <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                                        <Icon className="h-5 w-5" />
+                                        <IconComp className="h-5 w-5" />
                                     </div>
                                     <div className="flex-1 cursor-pointer" onClick={() => notification.link && router.push(notification.link)}>
                                         <p className="font-bold text-sm text-foreground">{notification.title}</p>

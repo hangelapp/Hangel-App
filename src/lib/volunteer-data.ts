@@ -6,7 +6,7 @@ export const PROFESSIONS = [
   "Akademisyen","Aşçı","Avukat","Bankacı","Bilgisayar Mühendisi","Boyacı",
   "Çiftçi","Dış Ticaret Uzmanı","Depo Görevlisi","Diş Hekimi","Doktor",
   "Eczacı","Elektrik Mühendisi","Elektrikçi","Elektronik Mühendisi",
-  "Endüstri Mühendisi","E-Ticaret","Fotoğrafçı / Videographer",
+  "Endüstri Mühendisi","Esnaf","E-Ticaret","Fotoğrafçı / Videographer",
   "Gazeteci / Medya Çalışanı","Girişimci","Güvenlik Görevlisi","Hakim / Savcı",
   "Hayvancılık Çalışanı","Hemşire / Hasta Bakım","İnsan Kaynakları",
   "İnşaat Mühendisi","İnşaat İşçisi","İtfaiyeci","İşletmeci / Yönetici",

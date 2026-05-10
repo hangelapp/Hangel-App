@@ -433,7 +433,6 @@ export default function ProfilePage() {
                                 <InfoRow icon={Cake} label="Doğum Tarihi" value={currentUser.personalInfo.birthDate ? format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr }) : '-'} />
                                  <InfoRow icon={Globe} label="Uyruk" value={currentUser.personalInfo.nationality} />
                                 <InfoRow icon={UserIcon} label="Cinsiyet" value={currentUser.personalInfo.gender} />
-                                <InfoRow icon={HeartPulse} label="Kan Grubu" value={currentUser.personalInfo.bloodType} />
                                 <InfoRow icon={MapPin} label="Adres" value={`${currentUser.personalInfo.address.district}, ${currentUser.personalInfo.address.city}`} />
                                 <InfoRow icon={Globe} label="Web Sitesi" value={currentUser.personalInfo.website} />
                                 <InfoRow icon={Linkedin} label="LinkedIn" value={currentUser.personalInfo.social?.linkedin} />
@@ -441,6 +440,11 @@ export default function ProfilePage() {
                                 <InfoRow icon={Palette} label="Behance" value={currentUser.personalInfo.social?.behance} />
                                 <InfoRow icon={Instagram} label="Instagram" value={currentUser.personalInfo.social?.instagram} />
                                 <InfoRow icon={Twitter} label="X (Twitter)" value={currentUser.personalInfo.social?.twitter} />
+                                {((currentUser.personalInfo.social as any)?.custom || []).map((link: any, i: number) =>
+                                    link?.platform && link?.url ? (
+                                        <InfoRow key={`custom-${i}`} icon={Globe} label={link.platform} value={link.url} />
+                                    ) : null
+                                )}
                             </CardContent>
                         </Card>
                     </TabsContent>
