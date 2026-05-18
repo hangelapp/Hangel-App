@@ -21,9 +21,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Progress } from '@/components/ui/progress';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { Post } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -66,11 +67,54 @@ const AdCarousel = () => {
 
 export default function TimelinePage() {
   const db = useFirestore();
+  const { user: authUser } = useUser();
+  const { toast } = useToast();
   const [sortKey, setSortKey] = useState('id');
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(false);
+  const [pendingPostId, setPendingPostId] = useState<string | null>(null);
+
+  const handleLike = async (post: Post) => {
+    if (!authUser?.uid) {
+      toast({ title: 'Beğenmek için giriş yapmalısın', variant: 'destructive' });
+      return;
+    }
+    if (!db) return;
+    const likedBy = ((post as Post & { likedBy?: string[] }).likedBy) || [];
+    const isLiked = likedBy.includes(authUser.uid);
+    setPendingPostId(post.id);
+    try {
+      await updateDoc(doc(db, 'posts', post.id), {
+        likedBy: isLiked ? arrayRemove(authUser.uid) : arrayUnion(authUser.uid),
+      });
+    } catch {
+      toast({ title: 'Beğeni kaydedilemedi', variant: 'destructive' });
+    } finally {
+      setPendingPostId(null);
+    }
+  };
+
+  const handleShare = async (post: Post) => {
+    const url = `https://hangel.org.tr/posts/${post.id}`;
+    const shareData = { title: post.author?.name || 'Hangel', text: post.content?.slice(0, 120) || '', url };
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+    } catch {
+      // user cancelled
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: 'Bağlantı kopyalandı' });
+    } catch {
+      toast({ title: 'Bağlantı kopyalanamadı', variant: 'destructive' });
+    }
+  };
 
   const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
@@ -228,7 +272,11 @@ export default function TimelinePage() {
                 <div className="p-2 sm:p-4 space-y-4">
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
-                    ) : sortedAndFilteredPosts.map((post, index) => (
+                    ) : sortedAndFilteredPosts.map((post, index) => {
+                    const likedBy = ((post as Post & { likedBy?: string[] }).likedBy) || [];
+                    const isLiked = !!(authUser?.uid && likedBy.includes(authUser.uid));
+                    const likeCount = likedBy.length > 0 ? likedBy.length : (post.likes || 0);
+                    return (
                     <React.Fragment key={post.id}>
                         <Card className="overflow-hidden shadow-none rounded-xl">
                             <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">
@@ -260,18 +308,33 @@ export default function TimelinePage() {
                             )}
                             </CardContent>
                             <CardFooter className="flex justify-start gap-0 border-t p-0">
-                                <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
-                                    <Heart className="h-5 w-5" /> <span>Beğen</span>
+                                <Button
+                                    variant="ghost"
+                                    className={cn(
+                                        "flex-1 flex items-center gap-2 h-12 text-base",
+                                        isLiked ? "text-red-500" : "text-muted-foreground"
+                                    )}
+                                    onClick={() => handleLike(post)}
+                                    disabled={pendingPostId === post.id}
+                                    aria-pressed={isLiked}
+                                >
+                                    <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
+                                    <span>Beğen{likeCount > 0 ? ` (${likeCount})` : ''}</span>
                                 </Button>
                                 <div className="w-[1px] h-6 bg-border self-center" />
-                                <Button variant="ghost" className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base">
+                                <Button
+                                    variant="ghost"
+                                    className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base"
+                                    onClick={() => handleShare(post)}
+                                >
                                     <Share2 className="h-5 w-5" /> <span>Paylaş</span>
                                 </Button>
                             </CardFooter>
                         </Card>
                         {(index + 1) % 5 === 0 && <AdCarousel />}
                      </React.Fragment>
-                    ))}
+                    );
+                    })}
                 </div>
             </TabsContent>
         </Tabs>

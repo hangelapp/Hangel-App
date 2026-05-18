@@ -28,9 +28,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useCollection } from '@/firebase';
+import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -157,6 +158,33 @@ export default function ProfilePage() {
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData, authUser]);
+
+    const supportedNgoIds: string[] = Array.isArray((userData as { supportedNgos?: string[] } | null)?.supportedNgos) ? (userData as { supportedNgos?: string[] }).supportedNgos! : [];
+    const volunteerNgoIds: string[] = Array.isArray((userData as { volunteerNgos?: string[] } | null)?.volunteerNgos) ? (userData as { volunteerNgos?: string[] }).volunteerNgos! : [];
+    const followedBrandIds: string[] = Array.isArray((userData as { followedBrands?: string[] } | null)?.followedBrands) ? (userData as { followedBrands?: string[] }).followedBrands! : [];
+    const joinedClubIds: string[] = Array.isArray((userData as { joinedClubs?: string[] } | null)?.joinedClubs) ? (userData as { joinedClubs?: string[] }).joinedClubs! : [];
+
+    const supportedNgosQuery = useMemoFirebase(() => {
+        if (!db || supportedNgoIds.length === 0) return null;
+        return query(collection(db, 'ngos'), where(documentId(), 'in', supportedNgoIds.slice(0, 10)));
+    }, [db, supportedNgoIds.join(',')]);
+    const volunteerNgosQuery = useMemoFirebase(() => {
+        if (!db || volunteerNgoIds.length === 0) return null;
+        return query(collection(db, 'ngos'), where(documentId(), 'in', volunteerNgoIds.slice(0, 10)));
+    }, [db, volunteerNgoIds.join(',')]);
+    const followedBrandsQuery = useMemoFirebase(() => {
+        if (!db || followedBrandIds.length === 0) return null;
+        return query(collection(db, 'brands'), where(documentId(), 'in', followedBrandIds.slice(0, 10)));
+    }, [db, followedBrandIds.join(',')]);
+    const joinedClubsQuery = useMemoFirebase(() => {
+        if (!db || joinedClubIds.length === 0) return null;
+        return query(collection(db, 'clubs'), where(documentId(), 'in', joinedClubIds.slice(0, 10)));
+    }, [db, joinedClubIds.join(',')]);
+
+    const { data: supportedNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(supportedNgosQuery);
+    const { data: volunteerNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(volunteerNgosQuery);
+    const { data: followedBrandsData } = useCollection<{ name?: string; logoUrl?: string; slug?: string }>(followedBrandsQuery);
+    const { data: joinedClubsData } = useCollection<{ name?: string; avatarUrl?: string }>(joinedClubsQuery);
     
     const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
@@ -547,6 +575,105 @@ export default function ProfilePage() {
                                 <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={currentUser.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
                                 <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.name} />
                                 <InfoRow icon={Phone} label="Acil Durum Tel 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                            </CardContent>
+                        </Card>
+                        <Card className="rounded-2xl">
+                            <CardHeader><CardTitle className='text-lg'>Bağlantılarım</CardTitle></CardHeader>
+                            <CardContent>
+                                <div className="divide-y">
+                                    <div className="py-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="font-bold text-sm">Bağışçı Olduğun STK'lar</p>
+                                            <span className="text-xs text-muted-foreground">{supportedNgoIds.length}</span>
+                                        </div>
+                                        {supportedNgoIds.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">Henüz bağış yaptığın STK yok.</p>
+                                        ) : (
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {(supportedNgosData || []).slice(0, 5).map((ngo) => (
+                                                    <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
+                                                            <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </Link>
+                                                ))}
+                                                {supportedNgoIds.length > 5 && (
+                                                    <span className="text-xs text-muted-foreground">+{supportedNgoIds.length - 5} daha</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="py-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="font-bold text-sm">Gönüllü Olduğun STK'lar</p>
+                                            <span className="text-xs text-muted-foreground">{volunteerNgoIds.length}</span>
+                                        </div>
+                                        {volunteerNgoIds.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">Henüz gönüllü olduğun STK yok.</p>
+                                        ) : (
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {(volunteerNgosData || []).slice(0, 5).map((ngo) => (
+                                                    <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
+                                                            <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </Link>
+                                                ))}
+                                                {volunteerNgoIds.length > 5 && (
+                                                    <span className="text-xs text-muted-foreground">+{volunteerNgoIds.length - 5} daha</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="py-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="font-bold text-sm">Takip Ettiğin Markalar</p>
+                                            <span className="text-xs text-muted-foreground">{followedBrandIds.length}</span>
+                                        </div>
+                                        {followedBrandIds.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">Henüz takip ettiğin marka yok.</p>
+                                        ) : (
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {(followedBrandsData || []).slice(0, 5).map((brand) => (
+                                                    <Link key={brand.id} href={`/market/${brand.slug || brand.id}`} aria-label={brand.name || 'Marka'}>
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={brand.logoUrl} alt={brand.name || ''} />
+                                                            <AvatarFallback>{(brand.name || '?').charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </Link>
+                                                ))}
+                                                {followedBrandIds.length > 5 && (
+                                                    <span className="text-xs text-muted-foreground">+{followedBrandIds.length - 5} daha</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="py-3">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <p className="font-bold text-sm">Üye Olduğun Kulüpler</p>
+                                            <span className="text-xs text-muted-foreground">{joinedClubIds.length}</span>
+                                        </div>
+                                        {joinedClubIds.length === 0 ? (
+                                            <p className="text-sm text-muted-foreground">Henüz üye olduğun kulüp yok.</p>
+                                        ) : (
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {(joinedClubsData || []).slice(0, 5).map((club) => (
+                                                    <Link key={club.id} href={`/clubs/profile/${club.id}`} aria-label={club.name || 'Kulüp'}>
+                                                        <Avatar className="h-8 w-8">
+                                                            <AvatarImage src={club.avatarUrl} alt={club.name || ''} />
+                                                            <AvatarFallback>{(club.name || '?').charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                    </Link>
+                                                ))}
+                                                {joinedClubIds.length > 5 && (
+                                                    <span className="text-xs text-muted-foreground">+{joinedClubIds.length - 5} daha</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </CardContent>
                         </Card>
                         <Card>

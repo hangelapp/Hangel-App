@@ -45,7 +45,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label="Menüyü aç">
                 <Menu className="h-6 w-6" />
             </Button>
-            <Link href="/market" className="flex items-center">
+            <Link href="/home" className="flex items-center">
               <HangelLogo className="text-xl" />
             </Link>
           </div>

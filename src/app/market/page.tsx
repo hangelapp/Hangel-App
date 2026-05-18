@@ -14,7 +14,7 @@ import { collection } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
-  const [imgSrc, setImgSrc] = useState(brand.logoUrl);
+  const [imgSrc, setImgSrc] = useState(brand.logoUrl || '');
   const [hasError, setHasError] = useState(false);
   const [fallbackIndex, setFallbackIndex] = useState(0);
 
@@ -216,21 +216,24 @@ export default function MarketPage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {brandsToShow.map((brand) => (
-                <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
-                  <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="relative w-full aspect-square">
-                      <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-xl transition-all relative">
-                        <BrandLogo brand={brand} />
+              {brandsToShow.map((brand) => {
+                const safeDonationRate = Math.max(0, Math.min(100, brand.donationRate || 0));
+                return (
+                  <Link href={`/market/${brand.slug}`} key={brand.id} className="group">
+                    <div className="flex flex-col items-center text-center space-y-2">
+                      <div className="relative w-full aspect-square">
+                        <div className="w-full h-full rounded-[1.5rem] bg-white border border-gray-100 overflow-hidden shadow-sm group-hover:shadow-xl transition-all relative">
+                          <BrandLogo brand={brand} />
+                        </div>
+                        <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
+                          %{safeDonationRate}
+                        </div>
                       </div>
-                      <div className="absolute -top-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-black text-white border-2 border-white">
-                        %{brand.donationRate}
-                      </div>
+                      <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
                     </div>
-                    <p className="text-[10px] sm:text-xs font-bold leading-tight text-foreground group-hover:text-primary line-clamp-2">{brand.name}</p>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </main>

@@ -4,11 +4,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, type LucideIcon } from 'lucide-react';
+import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, Filter, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
@@ -49,9 +49,36 @@ export default function ClubsPage() {
   const [locationFilter, setLocationFilter] = useState<'global' | 'country' | 'city'>('global');
   const [sortMode, setSortMode] = useState<'name' | 'members' | 'clubCount'>('clubCount');
   const [expandedUniversity, setExpandedUniversity] = useState<string | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
   const clubsRef = useMemoFirebase(() => collection(db, 'clubs'), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
+
+  type ClubWithMeta = StudentClub & {
+    location?: { country?: string; city?: string };
+    skills?: string[];
+    interests?: string[];
+    socialAreas?: string[];
+  };
+
+  // Veriden unique yetkinlik ve hassasiyet değerleri
+  const { availableSkills, availableInterests } = useMemo(() => {
+    const skillsSet = new Set<string>();
+    const interestsSet = new Set<string>();
+    for (const c of (clubs || []) as ClubWithMeta[]) {
+      (c.skills || []).forEach(s => s && skillsSet.add(s));
+      (c.interests || c.socialAreas || []).forEach(i => i && interestsSet.add(i));
+    }
+    return {
+      availableSkills: Array.from(skillsSet).sort((a, b) => a.localeCompare(b, 'tr')),
+      availableInterests: Array.from(interestsSet).sort((a, b) => a.localeCompare(b, 'tr')),
+    };
+  }, [clubs]);
+
+  const toggleSkill = (s: string) => setSelectedSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  const toggleInterest = (s: string) => setSelectedInterests(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  const filterCount = selectedSkills.length + selectedInterests.length;
 
   // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
   const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null), [db, authUser?.uid]);
@@ -65,9 +92,26 @@ export default function ClubsPage() {
 
     // Konum filtresi: club.location.country / club.location.city
     if (locationFilter === 'country' && userCountry) {
-      result = result.filter(c => (c as StudentClub & { location?: { country?: string; city?: string } }).location?.country === userCountry);
+      result = result.filter(c => (c as ClubWithMeta).location?.country === userCountry);
     } else if (locationFilter === 'city' && userCity) {
-      result = result.filter(c => (c as StudentClub & { location?: { country?: string; city?: string } }).location?.city === userCity);
+      result = result.filter(c => (c as ClubWithMeta).location?.city === userCity);
+    }
+
+    // Yetkinlik filtresi (multi-select, AND mantığı)
+    if (selectedSkills.length > 0) {
+      result = result.filter(c => {
+        const skills = (c as ClubWithMeta).skills || [];
+        return selectedSkills.every(s => skills.includes(s));
+      });
+    }
+
+    // Hassasiyet filtresi (interests veya socialAreas)
+    if (selectedInterests.length > 0) {
+      result = result.filter(c => {
+        const cm = c as ClubWithMeta;
+        const ints = cm.interests || cm.socialAreas || [];
+        return selectedInterests.every(s => ints.includes(s));
+      });
     }
 
     // Arama
@@ -79,7 +123,7 @@ export default function ClubsPage() {
       );
     }
     return result;
-  }, [clubs, searchTerm, locationFilter, userCountry, userCity]);
+  }, [clubs, searchTerm, locationFilter, userCountry, userCity, selectedSkills, selectedInterests]);
 
   // Üniversiteye göre grupla
   const universitiesGrouped = useMemo(() => {
@@ -125,6 +169,62 @@ export default function ClubsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-11 w-11 relative" aria-label="Filtrele">
+              <Filter className="h-5 w-5" />
+              {filterCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-4 min-w-[1rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                  {filterCount}
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="max-h-[60vh] overflow-y-auto w-56">
+            {availableSkills.length > 0 && (
+              <>
+                <DropdownMenuLabel>Yetkinlikler</DropdownMenuLabel>
+                {availableSkills.map(s => (
+                  <DropdownMenuCheckboxItem
+                    key={`skill-${s}`}
+                    checked={selectedSkills.includes(s)}
+                    onCheckedChange={() => toggleSkill(s)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    {s}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            {availableInterests.length > 0 && (
+              <>
+                <DropdownMenuLabel>Hassasiyetler</DropdownMenuLabel>
+                {availableInterests.map(s => (
+                  <DropdownMenuCheckboxItem
+                    key={`int-${s}`}
+                    checked={selectedInterests.includes(s)}
+                    onCheckedChange={() => toggleInterest(s)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    {s}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            {availableSkills.length === 0 && availableInterests.length === 0 && (
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                Henüz filtre verisi yok
+              </DropdownMenuLabel>
+            )}
+            {filterCount > 0 && (
+              <DropdownMenuItem onSelect={() => { setSelectedSkills([]); setSelectedInterests([]); }}>
+                Filtreleri Temizle
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala">

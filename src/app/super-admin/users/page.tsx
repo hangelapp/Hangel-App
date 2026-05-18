@@ -853,11 +853,21 @@ export default function UsersPage() {
 
   const handleDelete = async (user: UserRow) => {
     try {
+      // Önce `disabled: true` flag'i yaz ki tekrar giriş engellensin,
+      // ardından Firestore dokümanını sil. (Auth hesabı manuel silinmelidir.)
+      try {
+        await updateDoc(doc(db, 'users', user.id), {
+          disabled: true,
+          disabledAt: serverTimestamp(),
+        });
+      } catch (flagErr) {
+        console.warn('disabled flag yazılamadı:', flagErr);
+      }
       await deleteDoc(doc(db, 'users', user.id));
       toast({
         variant: 'destructive',
         title: 'Kullanıcı Silindi',
-        description: `${user.name || 'Kullanıcı'} kaydı silindi. Not: Firebase Auth hesabı ayrıca silinmelidir.`,
+        description: `${user.name || 'Kullanıcı'} kaydı silindi ve disabled flag işlendi. Firebase Auth hesabı Console üzerinden ayrıca silinmelidir.`,
       });
     } catch (e) {
       console.error('Delete failed:', e);
@@ -1228,7 +1238,7 @@ export default function UsersPage() {
                           <AlertDialogTitle className="text-xl font-bold">{user.name || 'Kullanıcı'} siliniyor</AlertDialogTitle>
                           <AlertDialogDescription className="text-base font-medium">
                             Bu işlem geri alınamaz. Firestore'daki kullanıcı dokümanı silinir.
-                            Firebase Authentication hesabı ayrıca elle silinmelidir (Console &gt; Auth).
+                            Bu işlem kullanıcının erişimini engeller (<code className="text-[11px] bg-muted px-1 py-0.5 rounded">disabled: true</code> flag) ancak Firebase Auth hesabı manuel silinmelidir (Console &gt; Auth).
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="gap-2">

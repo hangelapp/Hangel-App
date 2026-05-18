@@ -12,9 +12,10 @@ import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { isNativeApp } from '@/lib/capacitor';
 import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -100,6 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isMounted, setIsMounted] = useState(false);
     const { user: authUser, isUserLoading } = useUser();
+    const auth = useAuth();
     const db = useFirestore();
     const { t } = useTranslation();
     const { toast } = useToast();
@@ -181,13 +183,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!isUserLoading && authUser && isMounted) {
+            // Erişimi engellenmiş kullanıcı (super-admin tarafından disabled) — auth'tan çıkar
+            const userIsDisabled = (userData as { disabled?: boolean } | null)?.disabled === true;
+            if (userIsDisabled) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Erişiminiz Kısıtlandı',
+                    description: 'Hesabınız yönetici tarafından devre dışı bırakıldı. Lütfen destek ile iletişime geçin.',
+                });
+                signOut(auth).catch(() => undefined);
+                return;
+            }
             // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent
             // adımını görebilmeli — orada yalnızca emailVerified olanları yönlendiriyoruz.
             if (authUser.emailVerified && pathname === '/login/selection' && !isCorporateRegisterFlow) {
                 router.push('/market');
             }
         }
-    }, [authUser, isUserLoading, pathname, router, isMounted, isCorporateRegisterFlow]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authUser, isUserLoading, pathname, router, isMounted, isCorporateRegisterFlow, userData]);
 
     // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
     // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma

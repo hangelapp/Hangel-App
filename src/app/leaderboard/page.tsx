@@ -53,7 +53,8 @@ type LeaderboardTableProps = {
 const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading }: LeaderboardTableProps) => {
   const sortedData = useMemo(() => {
     if (!allUsers) return [];
-    let dataToFilter = allUsers;
+    // Min 10 etki puanı şartı: leaderboard sadece nitelikli kullanıcıları gösterir
+    let dataToFilter = allUsers.filter(u => getValue(u, 'impactScore') >= 10);
     const me = authUserId ? dataToFilter.find(u => u.id === authUserId) : null;
 
       if (scope === 'city' && me) {

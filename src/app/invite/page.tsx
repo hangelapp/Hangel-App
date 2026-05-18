@@ -403,12 +403,23 @@ export default function InvitePage() {
         return sorted;
     }, [phoneContacts, sortCriteria]);
 
-    // Stub: telefon rehberi web destek bilgisi (PDF fallback)
-    const handlePhoneStubInfo = () => {
-        toast({
-            title: 'Mobil uygulamada aktif olur',
-            description: "Web'de henüz desteklenmiyor. Mobil uygulamadan rehberini bağlayabilirsin.",
-        });
+    // Telefon Rehberini Bağla — Web Contacts API; desteklenmeyen tarayıcıda toast.
+    const handlePhoneConnect = async () => {
+        // Native uygulamada Capacitor; web'de Contacts API.
+        if (isNativeApp()) {
+            await handlePhoneSync();
+            return;
+        }
+        const nav = typeof navigator !== 'undefined' ? (navigator as unknown as { contacts?: { select?: unknown } }) : null;
+        if (!nav?.contacts?.select) {
+            toast({
+                variant: 'destructive',
+                title: 'Bu tarayıcı rehber erişimi desteklemiyor.',
+                description: 'Mobil uygulamayı kullanın ya da aşağıdan vCard/CSV yükleyin.',
+            });
+            return;
+        }
+        await handlePhoneSync();
     };
 
     // E-posta sağlayıcı OAuth stub (Gmail / Outlook / IMAP)
@@ -526,11 +537,12 @@ export default function InvitePage() {
                         <Button
                             variant="outline"
                             className="h-auto py-4 flex flex-col items-center gap-2"
-                            onClick={handlePhoneStubInfo}
+                            onClick={handlePhoneConnect}
+                            disabled={phoneLoading}
                         >
                             <Smartphone className="h-6 w-6 text-primary" />
                             <span className="text-xs font-semibold">Telefon Rehberini Bağla</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Mobil uygulamada aktif</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Web Contacts API / Mobil</span>
                         </Button>
 
                         <Button
@@ -645,9 +657,55 @@ export default function InvitePage() {
                                 <span className="text-[10px] text-muted-foreground">İş veya okul mailini bağla</span>
                             </div>
                         </Button>
+
+                        <div className="flex items-center gap-2 my-1">
+                            <div className="h-px flex-1 bg-border" />
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">veya</span>
+                            <div className="h-px flex-1 bg-border" />
+                        </div>
+
+                        <input
+                            type="file"
+                            accept=".vcf,.csv,text/vcard,text/csv"
+                            id="email-vcard-csv-upload"
+                            className="hidden"
+                            onChange={(e) => { setEmailProviderDialogOpen(false); handleFileImport(e); }}
+                        />
+                        <Button
+                            asChild
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-12"
+                            disabled={phoneLoading}
+                        >
+                            <label htmlFor="email-vcard-csv-upload" className="cursor-pointer flex items-center w-full">
+                                <Upload className="mr-3 h-5 w-5 text-primary" />
+                                <div className="flex flex-col items-start">
+                                    <span className="text-sm font-semibold">vCard / CSV Yükle</span>
+                                    <span className="text-[10px] text-muted-foreground">Kişileri içe aktar, her birine davet gönder</span>
+                                </div>
+                            </label>
+                        </Button>
+
+                        {emailList.length > 0 && (
+                            <div className="rounded-lg border bg-muted/30 p-2 space-y-1 max-h-40 overflow-y-auto">
+                                {emailList.map((email) => (
+                                    <div key={email} className="flex items-center justify-between text-xs px-2 py-1">
+                                        <span className="truncate">{email}</span>
+                                        <a
+                                            href={`mailto:${email}?subject=${encodeURIComponent('hangel daveti')}&body=${encodeURIComponent(inviteMessage)}`}
+                                            className="inline-flex items-center gap-1 text-primary hover:underline font-semibold"
+                                            onClick={() => recordInvite(email, null, email)}
+                                        >
+                                            <Send className="h-3 w-3" /> Davet Gönder
+                                        </a>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
-                        OAuth bağlantısı için backend gerekli. Şu an manuel davet linkini aşağıdan kullanabilirsin.
+                        OAuth bağlantısı için backend gerekli. Şimdilik vCard/CSV yükleyerek veya manuel davet linkiyle paylaşabilirsin.
                     </p>
                 </DialogContent>
             </Dialog>

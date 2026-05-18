@@ -18,17 +18,39 @@ interface SurveyUser {
     id: string;
     name?: string;
     displayName?: string;
+    fullName?: string;
+    username?: string;
     avatarUrl?: string;
+    photoURL?: string;
     profilePhoto?: string;
+    personalInfo?: { email?: string; phone?: string };
+    email?: string;
 }
 
 const UserCell = ({ userId, userMap }: { userId: string; userMap: Map<string, SurveyUser> }) => {
     const user = userMap.get(userId);
-    const name = user?.name || user?.displayName || 'Bilinmeyen Kullanıcı';
-    const avatar = user?.avatarUrl || user?.profilePhoto;
+    // Önce doğrudan eşleşme, yoksa email/phone üzerinden ikinci tur arama
+    let resolvedUser: SurveyUser | undefined = user;
+    if (!resolvedUser && userId) {
+        // userId bazen e-posta gibi gelebilir
+        for (const u of userMap.values()) {
+            if (u.email === userId || u.personalInfo?.email === userId || u.personalInfo?.phone === userId) {
+                resolvedUser = u;
+                break;
+            }
+        }
+    }
+    const name = resolvedUser?.name
+        || resolvedUser?.displayName
+        || resolvedUser?.fullName
+        || resolvedUser?.username
+        || resolvedUser?.personalInfo?.email
+        || resolvedUser?.email
+        || (userId ? `Kullanıcı ${userId.slice(0, 8)}` : 'Anonim');
+    const avatar = resolvedUser?.avatarUrl || resolvedUser?.photoURL || resolvedUser?.profilePhoto;
     const initial = (name || 'U').charAt(0).toUpperCase();
     return (
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0" title={userId}>
             <Avatar className="h-8 w-8 shrink-0">
                 <AvatarImage src={avatar} alt={name} />
                 <AvatarFallback className="text-xs font-bold">{initial}</AvatarFallback>
