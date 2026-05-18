@@ -1,7 +1,21 @@
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Copy, Twitter, Linkedin, ShieldAlert, Loader2 } from 'lucide-react';
+import {
+  Download,
+  Copy,
+  Twitter,
+  Linkedin,
+  ShieldAlert,
+  Loader2,
+  MessageCircle,
+  MessageSquare,
+  Send,
+  Mail,
+  BookUser,
+  AtSign,
+  Upload,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -96,7 +110,13 @@ export default function QrPage() {
   const qrCodeUrl = profileUrl
     ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`
     : '';
-  const shareText = activeEntity ? `Hangel'de ${activeEntity.name} profilini incele!` : '';
+  const shareUrl = profileUrl;
+  const entityName = activeEntity?.name ?? '';
+  const shareText = activeEntity ? `${entityName} - hangel'de bizi destekleyin` : '';
+  const shareSubject = activeEntity ? `hangel'de ${entityName}'i destekleyin` : '';
+  const shareMessage = activeEntity
+    ? `${entityName} - hangel platformunda toplumsal etki yaratıyoruz. Bizi keşfedin: ${shareUrl}`
+    : '';
   const entityTypeLabel = activeEntity?.kind === 'ngo' ? 'STK' : activeEntity?.kind === 'brand' ? 'Marka' : activeEntity?.kind === 'club' ? 'Kulüp' : '';
 
   const copyToClipboard = () => {
@@ -170,19 +190,149 @@ export default function QrPage() {
                 </a>
               </Button>
             </div>
-            <div className="flex justify-center gap-2 pt-2">
-              <Button asChild variant="outline" size="icon" aria-label="Twitter'da paylaş">
-                <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-5 w-5" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" size="icon" aria-label="LinkedIn'de paylaş">
-                <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(profileUrl)}&title=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-5 w-5" />
-                </a>
-              </Button>
+            <div className="pt-2">
+              <p className="text-sm font-bold text-left mb-2">Paylaş</p>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-green-500/30 hover:bg-green-500/10 hover:text-green-600"
+                  aria-label="WhatsApp'ta paylaş"
+                >
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-[11px] font-bold">WhatsApp</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-600"
+                  aria-label="SMS ile paylaş"
+                >
+                  <a href={`sms:?body=${encodeURIComponent(shareMessage)}`}>
+                    <MessageSquare className="h-5 w-5 text-blue-600" />
+                    <span className="text-[11px] font-bold">SMS</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-sky-400/30 hover:bg-sky-400/10 hover:text-sky-500"
+                  aria-label="Telegram'da paylaş"
+                >
+                  <a
+                    href={`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Send className="h-5 w-5 text-sky-500" />
+                    <span className="text-[11px] font-bold">Telegram</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-muted-foreground/30 hover:bg-muted"
+                  aria-label="E-posta ile paylaş"
+                >
+                  <a
+                    href={`mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(shareMessage)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[11px] font-bold">E-posta</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-foreground/30 hover:bg-foreground hover:text-background"
+                  aria-label="X (Twitter) üzerinde paylaş"
+                >
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Twitter className="h-5 w-5" />
+                    <span className="text-[11px] font-bold">X</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="rounded-2xl flex-col h-auto py-3 gap-1 border-blue-700/30 hover:bg-blue-700/10 hover:text-blue-700"
+                  aria-label="LinkedIn'de paylaş"
+                >
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Linkedin className="h-5 w-5 text-blue-700" />
+                    <span className="text-[11px] font-bold">LinkedIn</span>
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-sm w-full text-left">
+        <CardHeader>
+          <CardTitle className="text-base">Kişi Listesinden Davet Et</CardTitle>
+          <CardDescription>
+            Rehberini bağla, e-postanı eşle veya bir vCard/CSV dosyası yükleyerek toplu davet gönder.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Button
+            variant="outline"
+            className="rounded-2xl w-full justify-start font-bold"
+            onClick={() =>
+              toast({
+                title: 'Telefon Rehberini Bağla',
+                description: 'Mobil uygulamada aktif olur.',
+              })
+            }
+          >
+            <BookUser className="mr-2 h-4 w-4" />
+            Telefon Rehberini Bağla
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-2xl w-full justify-start font-bold"
+            onClick={() =>
+              toast({
+                title: 'E-posta Adresimi Bağla',
+                description:
+                  'OAuth bağlantısı için backend gerekli. Şu an manuel davet linki kullanabilirsiniz.',
+              })
+            }
+          >
+            <AtSign className="mr-2 h-4 w-4" />
+            E-posta Adresimi Bağla
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-2xl w-full justify-start font-bold"
+            onClick={() =>
+              toast({
+                title: 'vCard/CSV Yükle',
+                description: 'Yakında — şu an manuel olarak paylaşım butonlarını kullanabilirsiniz.',
+              })
+            }
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            vCard/CSV Yükle
+          </Button>
         </CardContent>
       </Card>
     </div>

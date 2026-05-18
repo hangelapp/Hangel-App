@@ -1,15 +1,76 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar, Plus, Users, MapPin, Landmark, Store, Building2, Info, CheckCircle2, ChevronRight, Building } from 'lucide-react';
+import {
+    ArrowLeft,
+    Calendar,
+    Plus,
+    Users,
+    MapPin,
+    Landmark,
+    Store,
+    Building2,
+    Info,
+    CheckCircle2,
+    ChevronRight,
+    Building,
+    ShieldAlert,
+    Loader2,
+    Hourglass,
+    XCircle,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, doc, query, where } from 'firebase/firestore';
+
+type EntityKind = 'ngo' | 'brand' | 'club';
+
+interface EntityDoc {
+    id: string;
+    name?: string;
+    adminUserId?: string;
+}
+
+interface UserDocData {
+    id: string;
+    managedNgoId?: string;
+    managedBrandId?: string;
+    managedClubId?: string;
+}
+
+type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
+
+interface ClubEventDoc {
+    id: string;
+    name?: string;
+    slug?: string;
+    organizer?: string;
+    organizerId?: string;
+    date?: string;
+    startDate?: string;
+    location?: { type?: string; address?: string; city?: string; district?: string };
+    description?: string;
+    status?: EventStatus;
+    createdAt?: number;
+}
 
 const organizations = [
     {
@@ -44,9 +105,172 @@ const organizations = [
     },
 ];
 
+function StatusBadge({ status }: { status?: EventStatus }) {
+    const s = status || 'Beklemede';
+    if (s === 'Beklemede') {
+        return (
+            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-bold uppercase tracking-wider">
+                <Hourglass className="mr-1 h-3 w-3" /> Onay Bekliyor
+            </Badge>
+        );
+    }
+    if (s === 'Reddedildi') {
+        return (
+            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 text-[10px] font-bold uppercase tracking-wider">
+                <XCircle className="mr-1 h-3 w-3" /> Reddedildi
+            </Badge>
+        );
+    }
+    return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] font-bold uppercase tracking-wider">
+            <CheckCircle2 className="mr-1 h-3 w-3" /> Yayında
+        </Badge>
+    );
+}
+
 export default function EventManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const firestore = useFirestore();
+    const { user: authUser } = useUser();
+
+    // ---- Resolve activeEntity (same pattern from manage-profile) ----
+    const adminNgosQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const adminBrandsQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const adminClubsQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
+    const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
+    const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
+
+    const userDocRef = useMemoFirebase(
+        () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+        [firestore, authUser?.uid],
+    );
+    const { data: userData } = useDoc<UserDocData>(userDocRef);
+
+    const fallbackNgoRef = useMemoFirebase(
+        () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+        [firestore, userData?.managedNgoId],
+    );
+    const fallbackBrandRef = useMemoFirebase(
+        () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+        [firestore, userData?.managedBrandId],
+    );
+    const fallbackClubRef = useMemoFirebase(
+        () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+        [firestore, userData?.managedClubId],
+    );
+    const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
+    const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
+    const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
+
+    const activeEntity = useMemo<{ kind: EntityKind; data: EntityDoc } | null>(() => {
+        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
+        if (ngo?.id) return { kind: 'ngo', data: ngo };
+        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
+        if (brand?.id) return { kind: 'brand', data: brand };
+        const club = (adminClubs && adminClubs[0]) || fallbackClub;
+        if (club?.id) return { kind: 'club', data: club };
+        return null;
+    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+
+    const initialLoading = ngosLoading || brandsLoading || clubsLoading;
+    const isClub = activeEntity?.kind === 'club';
+
+    // ---- Existing events for this club ----
+    const myEventsQ = useMemoFirebase(
+        () =>
+            firestore && isClub && activeEntity?.data.id
+                ? query(collection(firestore, 'events'), where('organizerId', '==', activeEntity.data.id))
+                : null,
+        [firestore, isClub, activeEntity?.data.id],
+    );
+    const { data: myEvents } = useCollection<ClubEventDoc>(myEventsQ);
+
+    // ---- New event dialog state ----
+    const [createOpen, setCreateOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [evName, setEvName] = useState('');
+    const [evDate, setEvDate] = useState('');
+    const [evCity, setEvCity] = useState('');
+    const [evAddress, setEvAddress] = useState('');
+    const [evDescription, setEvDescription] = useState('');
+
+    const resetForm = () => {
+        setEvName('');
+        setEvDate('');
+        setEvCity('');
+        setEvAddress('');
+        setEvDescription('');
+    };
+
+    const handleCreateEvent = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!firestore || !activeEntity || activeEntity.kind !== 'club') return;
+        if (!evName.trim() || !evDate.trim()) {
+            toast({ title: 'Eksik alan', description: 'Etkinlik adı ve tarihi zorunludur.', variant: 'destructive' });
+            return;
+        }
+        setSubmitting(true);
+        try {
+            const slug = evName
+                .toLowerCase()
+                .replace(/[ıİ]/g, 'i')
+                .replace(/[şŞ]/g, 's')
+                .replace(/[ğĞ]/g, 'g')
+                .replace(/[üÜ]/g, 'u')
+                .replace(/[öÖ]/g, 'o')
+                .replace(/[çÇ]/g, 'c')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/(^-|-$)/g, '');
+
+            // Force status='Beklemede' regardless of any other inputs
+            await addDoc(collection(firestore, 'events'), {
+                name: evName.trim(),
+                slug: `${slug}-${Date.now().toString(36)}`,
+                organizer: activeEntity.data.name || 'Öğrenci Kulübü',
+                organizerId: activeEntity.data.id,
+                organizerKind: 'club',
+                date: evDate,
+                startDate: evDate,
+                location: {
+                    type: 'Fiziksel' as const,
+                    address: evAddress.trim(),
+                    city: evCity.trim(),
+                    district: '',
+                },
+                description: evDescription.trim(),
+                status: 'Beklemede' as EventStatus,
+                createdAt: Date.now(),
+                createdBy: authUser?.uid || null,
+            });
+
+            toast({
+                title: 'Talebiniz alındı',
+                description: 'Etkinlik onay sürecine alındı. Süper admin onayından sonra yayınlanacak.',
+            });
+            resetForm();
+            setCreateOpen(false);
+        } catch (err) {
+            console.error('Event create failed', err);
+            toast({
+                title: 'Hata',
+                description: 'Etkinlik oluşturulamadı. Lütfen tekrar deneyin.',
+                variant: 'destructive',
+            });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
@@ -61,6 +285,24 @@ export default function EventManagementPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Restrictive banner when not a club */}
+            {!initialLoading && activeEntity && !isClub && (
+                <Card className="border-2 border-amber-200 bg-amber-50/60 rounded-2xl">
+                    <CardHeader className="flex flex-row items-start gap-3 p-4">
+                        <div className="p-2 rounded-xl bg-amber-100 text-amber-700">
+                            <ShieldAlert className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-base font-bold">Etkinlik oluşturma özelliği yalnızca Öğrenci Kulüpleri içindir.</CardTitle>
+                            <CardDescription className="text-xs mt-1">
+                                Hesabınız bir {activeEntity.kind === 'ngo' ? 'STK' : 'Marka'} olarak tanımlı. Yeni etkinlik açma yetkisi yalnızca Öğrenci Kulübü profillerine verilmiştir.
+                                Mekan keşfetme ve mevcut rezervasyon görüntüleme özellikleri kullanılabilir durumdadır.
+                            </CardDescription>
+                        </div>
+                    </CardHeader>
+                </Card>
+            )}
 
             <Tabs defaultValue="venues">
                 <TabsList className="grid w-full grid-cols-3 max-w-lg">
@@ -128,7 +370,7 @@ export default function EventManagementPage() {
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
                             <p className="text-xs text-muted-foreground leading-relaxed">
-                                Hangel iş ortağı olan belediyeler ve şirketler, atıl durumdaki veya destek amaçlı ayırdıkları mekanları STK'ların kullanımına sunar. 
+                                Hangel iş ortağı olan belediyeler ve şirketler, atıl durumdaki veya destek amaçlı ayırdıkları mekanları STK&apos;ların kullanımına sunar.
                                 Kurum pencerelerinden seçeceğiniz mekanlar için yapacağınız talepler, kurum yetkilisi tarafından onaylandığında rezervasyonunuz kesinleşir.
                             </p>
                         </CardContent>
@@ -136,23 +378,65 @@ export default function EventManagementPage() {
                 </TabsContent>
 
                 <TabsContent value="my-events" className="mt-6 space-y-6">
-                    <Card>
+                    <Card className="rounded-2xl">
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Yaklaşan Etkinlikler</CardTitle>
-                            <Button size="sm"><Plus className="mr-2 h-4 w-4" /> Yeni Etkinlik</Button>
+                            <div>
+                                <CardTitle>Mevcut Etkinlikler</CardTitle>
+                                <CardDescription className="text-xs mt-1">
+                                    {isClub
+                                        ? 'Açtığınız etkinlikler süper admin onayından sonra yayınlanır.'
+                                        : 'Etkinlik oluşturma özelliği yalnızca Öğrenci Kulüpleri içindir.'}
+                                </CardDescription>
+                            </div>
+                            <Button
+                                size="sm"
+                                disabled={!isClub}
+                                onClick={() => isClub && setCreateOpen(true)}
+                                aria-disabled={!isClub}
+                            >
+                                <Plus className="mr-2 h-4 w-4" /> Yeni Etkinlik Oluştur
+                            </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {[
-                                { title: 'Dayanışma Galası', date: '12.08.2024', location: 'Hilton Otel' }
-                            ].map((event, i) => (
-                                <div key={i} className="p-4 border rounded-xl flex items-center justify-between group hover:bg-accent/50 transition-colors">
-                                    <div className="space-y-1">
-                                        <h4 className="font-bold">{event.title}</h4>
-                                        <p className="text-xs text-muted-foreground">{event.date} • {event.location}</p>
-                                    </div>
-                                    <Button variant="ghost" size="sm">Düzenle</Button>
+                            {initialLoading && (
+                                <div className="flex items-center justify-center py-8 text-muted-foreground">
+                                    <Loader2 className="h-5 w-5 animate-spin mr-2" /> Yükleniyor…
                                 </div>
-                            ))}
+                            )}
+
+                            {!initialLoading && isClub && (myEvents?.length ?? 0) === 0 && (
+                                <p className="text-sm text-muted-foreground py-6 text-center">
+                                    Henüz bir etkinlik açmadınız. &quot;Yeni Etkinlik Oluştur&quot; ile başlayın.
+                                </p>
+                            )}
+
+                            {!initialLoading && (myEvents?.length ?? 0) > 0 && (
+                                <div className="space-y-3">
+                                    {myEvents!.map((event) => (
+                                        <div
+                                            key={event.id}
+                                            className="p-4 border rounded-2xl flex items-center justify-between group hover:bg-accent/50 transition-colors"
+                                        >
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-bold">{event.name || 'Adsız etkinlik'}</h4>
+                                                    <StatusBadge status={event.status} />
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {event.date || event.startDate || '—'}
+                                                    {event.location?.city ? ` • ${event.location.city}` : ''}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {!initialLoading && !isClub && activeEntity && (
+                                <p className="text-xs text-muted-foreground py-4">
+                                    Bu hesabın etkinlik açma yetkisi bulunmuyor.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -161,6 +445,48 @@ export default function EventManagementPage() {
                     <Card><CardContent className="p-12 text-center text-muted-foreground"><CheckCircle2 className="h-12 w-12 mx-auto mb-4 opacity-20" /><p>Aktif bir mekan rezervasyonunuz bulunmuyor.</p></CardContent></Card>
                 </TabsContent>
             </Tabs>
+
+            {/* Create-event dialog (clubs only) */}
+            <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetForm(); }}>
+                <DialogContent className="sm:max-w-lg rounded-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-bold">Yeni Etkinlik Oluştur</DialogTitle>
+                        <DialogDescription className="text-xs">
+                            Etkinliğiniz oluşturulduktan sonra süper admin onayından geçince herkese yayınlanır.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateEvent} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-name">Etkinlik Adı *</Label>
+                            <Input id="ev-name" value={evName} onChange={(e) => setEvName(e.target.value)} placeholder="Örn: Bahar Konseri" required />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-date">Tarih *</Label>
+                                <Input id="ev-date" type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-city">Şehir</Label>
+                                <Input id="ev-city" value={evCity} onChange={(e) => setEvCity(e.target.value)} placeholder="İstanbul" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-address">Adres / Mekan</Label>
+                            <Input id="ev-address" value={evAddress} onChange={(e) => setEvAddress(e.target.value)} placeholder="Kampüs / Salon adı" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-desc">Açıklama</Label>
+                            <Textarea id="ev-desc" rows={3} value={evDescription} onChange={(e) => setEvDescription(e.target.value)} placeholder="Etkinlik hakkında kısa bilgi" />
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting}>İptal</Button>
+                            <Button type="submit" disabled={submitting}>
+                                {submitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor…</>) : 'Onaya Gönder'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
