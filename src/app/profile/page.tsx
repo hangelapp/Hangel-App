@@ -527,9 +527,19 @@ export default function ProfilePage() {
                                             <p className='font-semibold mt-1'>{cert.title}</p>
                                         </div>
                                         <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
-                                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika Görüntüleme", description: "Bu özellik yakında eklenecektir." })}><Eye className="h-4 w-4"/></Button>
-                                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika İndirme", description: "Bu özellik yakında eklenecektir." })}><Download className="h-4 w-4"/></Button>
-                                            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika Paylaşma", description: "Bu özellik yakında eklenecektir." })}><Share2 className="h-4 w-4"/></Button>
+                                            <Button aria-label="Sertifikayı görüntüle" size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika", description: `${cert.title} — ${cert.organization} (${cert.date})` })}><Eye className="h-4 w-4"/></Button>
+                                            <Button aria-label="Sertifikayı indir" size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "İndirme", description: "Sertifika dosya URL'i henüz tanımlı değil. STK sertifika dosyalarını yüklediğinde indirilebilir olacak." })}><Download className="h-4 w-4"/></Button>
+                                            <Button aria-label="Sertifikayı paylaş" size="icon" variant="ghost" className="h-7 w-7" onClick={async () => {
+                                                const shareData = { title: cert.title, text: `${cert.title} — ${cert.organization} (${cert.date}) sertifikamı hangel üzerinden paylaşıyorum.`, url: typeof window !== 'undefined' ? window.location.href : '' };
+                                                if (typeof navigator !== 'undefined' && navigator.share) {
+                                                    try { await navigator.share(shareData); } catch { /* user cancelled */ }
+                                                } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                                                    await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+                                                    toast({ title: 'Kopyalandı', description: 'Paylaşım metni panoya kopyalandı.' });
+                                                } else {
+                                                    toast({ title: 'Paylaşım', description: 'Tarayıcınız paylaşımı desteklemiyor.' });
+                                                }
+                                            }}><Share2 className="h-4 w-4"/></Button>
                                         </div>
                                         </div>
                                     ))}

@@ -12,7 +12,13 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import type { CampaignStats, CampaignStatus, Channel, JobStatus, UseCase } from '../types';
+import type {
+  CampaignStats,
+  CampaignStatus,
+  Channel,
+  JobStatus,
+  UseCase,
+} from '../types';
 
 const BATCH_SIZE = 450;
 

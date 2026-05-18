@@ -10,9 +10,10 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import type { CanonicalErrorCode, JobStatus, SendResult } from '../types';
+import type { CanonicalErrorCode, JobStatus, SendResult, WhatsAppConversationCategory, WhatsAppTemplateComponent } from '../types';
 import { getSmsProvider } from '../providers/sms';
 import { getEmailProvider } from '../providers/email';
+import { getWhatsAppProvider } from '../providers/whatsapp';
 import { takeToken } from './rateLimiter';
 import { isTerminal, MAX_ATTEMPTS, nextAttemptAt } from './retry';
 import { render } from '../template';
@@ -25,7 +26,8 @@ interface JobDoc {
   campaignId: string;
   recipientPath: string;
   userId?: string | null;
-  channel: 'sms' | 'email';
+  ngoId?: string | null;
+  channel: 'sms' | 'email' | 'whatsapp';
   driver: string;
   to: string;
   payload: {
@@ -36,6 +38,12 @@ interface JobDoc {
     fromName?: string | null;
     replyTo?: string | null;
     vars?: Record<string, string>;
+    // WhatsApp-specific
+    templateName?: string;
+    templateLanguage?: string;
+    components?: WhatsAppTemplateComponent[];
+    conversationCategory?: WhatsAppConversationCategory;
+    wabaPhoneNumberId?: string;
   };
   useCase: 'transactional' | 'marketing' | 'emergency';
   status: JobStatus;
@@ -137,6 +145,21 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
 async function dispatch(job: JobDoc): Promise<SendResult> {
   const vars = job.payload.vars ?? {};
   const isMarketing = job.useCase === 'marketing';
+
+  if (job.channel === 'whatsapp') {
+    if (!job.payload.templateName || !job.payload.templateLanguage || !job.payload.wabaPhoneNumberId) {
+      return { ok: false, errorCode: 'provider_4xx', errorMessage: 'WA payload eksik (template/language/wabaPhoneNumberId)' };
+    }
+    return getWhatsAppProvider().send({
+      to: job.to,
+      templateName: job.payload.templateName,
+      templateLanguage: job.payload.templateLanguage,
+      components: job.payload.components,
+      conversationCategory: job.payload.conversationCategory ?? (isMarketing ? 'marketing' : 'utility'),
+      useCase: job.useCase,
+      wabaPhoneNumberId: job.payload.wabaPhoneNumberId,
+    });
+  }
 
   if (job.channel === 'sms') {
     let body = render(job.payload.body, vars);

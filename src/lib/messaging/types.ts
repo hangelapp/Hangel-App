@@ -3,8 +3,9 @@
  * UI ve provider adapter'ları bu kontrat üzerinden konuşur.
  */
 
-export type Channel = 'sms' | 'email';
+export type Channel = 'sms' | 'email' | 'whatsapp';
 export type UseCase = 'transactional' | 'marketing' | 'emergency';
+export type WhatsAppConversationCategory = 'marketing' | 'utility' | 'authentication' | 'service';
 
 export type CanonicalErrorCode =
   | 'invalid_address'
@@ -63,6 +64,39 @@ export interface EmailProvider {
   readonly driver: string;
   send(input: EmailSendInput): Promise<SendResult>;
   parseWebhook?(req: Request): Promise<DeliveryEventInput[]>;
+}
+
+export interface WhatsAppTemplateComponent {
+  type: 'header' | 'body' | 'button';
+  parameters?: Array<{ type: 'text' | 'currency' | 'date_time'; text?: string }>;
+  sub_type?: 'quick_reply' | 'url';
+  index?: number;
+}
+
+export interface WhatsAppSendInput {
+  to: string; // E.164 (no leading +)
+  templateName: string;
+  templateLanguage: string; // 'tr', 'en_US'
+  components?: WhatsAppTemplateComponent[];
+  conversationCategory: WhatsAppConversationCategory;
+  useCase: UseCase;
+  wabaPhoneNumberId: string;
+}
+
+export interface WhatsAppTemplateInfo {
+  name: string;
+  language: string;
+  category: 'MARKETING' | 'UTILITY' | 'AUTHENTICATION';
+  status: 'APPROVED' | 'PENDING' | 'REJECTED' | 'PAUSED' | 'DISABLED';
+  body?: string;
+  raw?: unknown;
+}
+
+export interface WhatsAppProvider {
+  readonly driver: string;
+  send(input: WhatsAppSendInput): Promise<SendResult>;
+  parseWebhook?(req: Request): Promise<DeliveryEventInput[]>;
+  syncTemplates?(wabaId: string): Promise<WhatsAppTemplateInfo[]>;
 }
 
 export interface ResolvedRecipient {

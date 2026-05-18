@@ -102,3 +102,9 @@ src/
 - **Mock providers:** `EMAIL_DRIVER=mock` / `SMS_DRIVER=mock` olduğunda gerçek mesaj gitmez, payload Firestore `_devOutbox` koleksiyonuna yazılır.
 - **Messaging worker:** `MESSAGING_WORKER_KEY` env değişkeniyle korunan `/api/messaging/worker/run` rotası Cloud Scheduler tarafından tetiklenir.
 - **iOS/Android:** `npm run cap:sync` build sonrası native projeyi günceller. iOS için `cd ios && pod install` ilk kurulumda.
+
+## Bilinen Teknik Borç
+
+- **A11y:** ~160 ikon-only `<Button>` `aria-label` taşımıyor (back/filter/sort/share). Erişilebilirlik audit'i ileri bir round'da yapılacak.
+- **Yakında özellikleri:** 23 buton/sekme `toast({ description: '... yakında' })` ile yer tutuyor (Wallet kart ekleme, Sertifika indirme/görüntüleme, etkinlik filtreleme, "Okulumda/Şehrimde" tab içerikleri, vs.). Her biri ayrı feature work gerektiriyor.
+- **npm vulnerabilities:** 27 transitive bağımlılık açığı (OpenTelemetry/Genkit ağacında). `npm audit fix --force` Next.js'i 16-canary'e zorlardı, riskli. Genkit upstream güncellemesi beklenebilir.

@@ -1,4 +1,5 @@
 import './globals.css';
+import type { Metadata, Viewport } from 'next';
 import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from './app-shell';
@@ -17,6 +18,56 @@ const poppins = Poppins({
   variable: '--font-poppins',
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://hangel.org';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: 'hangel — Toplumsal Etki Platformu',
+    template: '%s · hangel',
+  },
+  description:
+    'STK\'lar, gönüllüler, öğrenci kulüpleri ve markalar için tek platform. Bağış, gönüllülük, sosyal etki.',
+  applicationName: 'hangel',
+  authors: [{ name: 'hangel' }],
+  keywords: ['STK', 'gönüllülük', 'bağış', 'sosyal etki', 'öğrenci kulüpleri', 'hangel'],
+  formatDetection: { email: false, address: false, telephone: false },
+  openGraph: {
+    type: 'website',
+    locale: 'tr_TR',
+    url: APP_URL,
+    siteName: 'hangel',
+    title: 'hangel — Toplumsal Etki Platformu',
+    description:
+      'STK\'lar, gönüllüler, öğrenci kulüpleri ve markalar için tek platform.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'hangel — Toplumsal Etki Platformu',
+    description: 'STK, gönüllülük ve sosyal etki için tek platform.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b0d12' },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,9 +75,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className={`${poppins.variable}`} suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-      </head>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <FirebaseClientProvider>
           <LanguageProvider>
