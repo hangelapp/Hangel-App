@@ -20,7 +20,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
 import { UserNav } from '@/components/layout/user-nav';
 import { useRouter } from 'next/navigation';
 import { useWebContent } from '@/hooks/use-site-content';
@@ -350,6 +351,13 @@ export default function LoginPage() {
     const _router = useRouter();
     const { get } = useWebContent();
 
+    const db = useFirestore();
+    const volunteeringQuery = useMemoFirebase(
+        () => (db ? collection(db, 'volunteering') : null),
+        [db]
+    );
+    const { data: fsVolunteering } = useCollection<Volunteering>(volunteeringQuery);
+
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -397,6 +405,28 @@ export default function LoginPage() {
         }
         return result.slice(0, 15);
     }, []);
+
+    // "mavi zemin" gönüllülük alanı: Firestore'dan aktif ilanları rastgele sıralıyoruz.
+    // Yayında / Aktif olmayan ilanlar veya status alanı olmayan eski kayıtlar da gösterilir.
+    const randomActiveVolunteering = useMemo<Volunteering[]>(() => {
+        const source: Volunteering[] = (Array.isArray(fsVolunteering) && fsVolunteering.length > 0)
+            ? fsVolunteering as Volunteering[]
+            : volunteeringOpportunities;
+        const active = source.filter((opp) => {
+            const status = (opp as Volunteering & { status?: string }).status;
+            // status alanı yoksa "yayında" varsay; varsa yalnızca Yayında/Aktif olanları kabul et
+            if (!status) return true;
+            const normalized = String(status).toLowerCase();
+            return normalized === 'yayında' || normalized === 'yayinda' || normalized === 'aktif' || normalized === 'active';
+        });
+        // Fisher-Yates karıştırma (her sayfa yüklemesinde farklı sıralama)
+        const arr = [...active];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr.slice(0, 15);
+    }, [fsVolunteering]);
 
     const publicNavItems = [
       { href: '#bagis', label: 'Bağış Yap' },
@@ -560,7 +590,7 @@ export default function LoginPage() {
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
-                                {volunteeringOpportunities.slice(0, 15).map((opp) => (
+                                {randomActiveVolunteering.map((opp) => (
                                     <CarouselItem key={opp.id} className="pl-4 basis-[45%] sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
                                         <VolunteeringCard opportunity={opp} />
                                     </CarouselItem>
@@ -574,7 +604,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white hover:text-black">
                                 <Link href="/volunteering">
-                                    Tüm İlanları Gör ({volunteeringOpportunities.length} İlan)
+                                    Tüm İlanları Gör ({(fsVolunteering && fsVolunteering.length > 0 ? fsVolunteering.length : volunteeringOpportunities.length)} İlan)
                                 </Link>
                             </Button>
                         </div>

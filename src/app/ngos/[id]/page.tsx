@@ -15,8 +15,8 @@ import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -108,8 +108,73 @@ export default function NgoProfilePage() {
 
   const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
 
+  const { user: authUser } = useUser();
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, 'users', authUser.uid);
+  }, [db, authUser]);
+  const { data: userData } = useDoc<{ supportedNgos?: string[]; volunteerNgos?: string[] }>(userDocRef);
+
+  const isSupporter = Array.isArray(userData?.supportedNgos) && userData!.supportedNgos!.includes(id);
+  const isVolunteer = Array.isArray(userData?.volunteerNgos) && userData!.volunteerNgos!.includes(id);
+
   const [profileUrl, setProfileUrl] = useState('');
   const [isPosInfoOpen, setIsPosInfoOpen] = useState(false);
+  const [donorBusy, setDonorBusy] = useState(false);
+  const [volunteerBusy, setVolunteerBusy] = useState(false);
+
+  const handleToggleDonor = async () => {
+    if (!authUser || !userDocRef) {
+      router.push('/login/selection?action=login');
+      return;
+    }
+    if (donorBusy) return;
+    setDonorBusy(true);
+    try {
+      if (isSupporter) {
+        await updateDoc(userDocRef, { supportedNgos: arrayRemove(id) });
+        toast({ title: 'Bağışçılıktan çıkıldı', description: `${ngo?.name} artık desteklediğin STK'lar arasında değil.` });
+      } else {
+        const current = Array.isArray(userData?.supportedNgos) ? userData!.supportedNgos! : [];
+        if (current.length >= 2) {
+          toast({
+            variant: 'destructive',
+            title: 'Limit doldu',
+            description: 'En fazla 2 STK seçebilirsiniz. Değiştirmek için /settings/ngo-selection sayfasına gidin.',
+          });
+          return;
+        }
+        await updateDoc(userDocRef, { supportedNgos: arrayUnion(id) });
+        toast({ title: 'Bağışçı oldun', description: `Artık ${ngo?.name} bağışçılarındansın. Teşekkürler!` });
+      }
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Bir hata oluştu', description: (e as Error)?.message || 'Lütfen tekrar deneyin.' });
+    } finally {
+      setDonorBusy(false);
+    }
+  };
+
+  const handleToggleVolunteer = async () => {
+    if (!authUser || !userDocRef) {
+      router.push('/login/selection?action=login');
+      return;
+    }
+    if (volunteerBusy) return;
+    setVolunteerBusy(true);
+    try {
+      if (isVolunteer) {
+        await updateDoc(userDocRef, { volunteerNgos: arrayRemove(id) });
+        toast({ title: 'Gönüllülükten çıkıldı', description: `${ngo?.name} artık gönüllü olduğun STK'lar arasında değil.` });
+      } else {
+        await updateDoc(userDocRef, { volunteerNgos: arrayUnion(id) });
+        toast({ title: 'Gönüllü oldun', description: `Artık ${ngo?.name} gönüllülerindensin. Hoş geldin!` });
+      }
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Bir hata oluştu', description: (e as Error)?.message || 'Lütfen tekrar deneyin.' });
+    } finally {
+      setVolunteerBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -229,11 +294,23 @@ export default function NgoProfilePage() {
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button asChild className="flex-1">
-                    <Link href="/market">Bağışçı Ol</Link>
+                <Button
+                    onClick={handleToggleDonor}
+                    disabled={donorBusy}
+                    variant={isSupporter ? 'secondary' : 'default'}
+                    className="flex-1"
+                >
+                    {isSupporter ? <CheckCircle className="mr-2 h-4 w-4" /> : null}
+                    {isSupporter ? 'Bağışçısısın' : 'Bağışçı Ol'}
                 </Button>
-                <Button asChild variant="outline" className="flex-1">
-                    <Link href="/volunteering"><Heart className="mr-2 h-4 w-4" /> Gönüllü Ol</Link>
+                <Button
+                    onClick={handleToggleVolunteer}
+                    disabled={volunteerBusy}
+                    variant={isVolunteer ? 'secondary' : 'outline'}
+                    className="flex-1"
+                >
+                    {isVolunteer ? <CheckCircle className="mr-2 h-4 w-4" /> : <Heart className="mr-2 h-4 w-4" />}
+                    {isVolunteer ? 'Gönüllüsün' : 'Gönüllü Ol'}
                 </Button>
             </div>
         </div>

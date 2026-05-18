@@ -2,8 +2,9 @@
 
 import { librarySections } from '@/lib/library';
 import type { LibrarySection } from '@/lib/library';
-import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2 } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useMemo, useState } from 'react';
@@ -56,7 +57,36 @@ export default function LibraryItemPage() {
   }
 
   if (!itemWithSection) {
-    notFound();
+    // Film veya başka bir bölümde içerik henüz Firestore'a aktarılmamış olabilir.
+    // notFound() yerine kullanıcıya nazik bir geri dönüş ekranı gösteriyoruz.
+    const isLikelyFilm = (slug || '').toLowerCase().includes('film')
+      || (slug || '').toLowerCase().includes('belges')
+      || (slug || '').toLowerCase().includes('sinema');
+    const FallbackIcon = isLikelyFilm ? Film : BookOpen;
+    return (
+      <div className="p-4 space-y-6 animate-in fade-in-0">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <FallbackIcon className="h-5 w-5 text-muted-foreground" />
+              İçerik henüz hazır değil
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              Aradığın içerik şu anda kütüphanede bulunamadı.
+              {isLikelyFilm ? ' Film detay sayfası için içerik kısa süre içinde eklenecek.' : ''}
+            </p>
+            <Button asChild variant="outline">
+              <Link href="/library">Kütüphaneye dön</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const item = itemWithSection;
