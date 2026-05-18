@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection, serverTimestamp } from 'firebase/firestore';
@@ -12,9 +12,12 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import type { NGO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +52,10 @@ export default function NgoSelectionPage() {
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+    const [cityFilter, setCityFilter] = useState<string>('');
+    const [platformFilter, setPlatformFilter] = useState<string[]>([]);
+    const [beneficiaryFilter, setBeneficiaryFilter] = useState<string[]>([]);
+    const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [isOnboarding, setIsOnboarding] = useState(false);
 
     // 30 günlük değişim sayacı
@@ -84,7 +91,38 @@ export default function NgoSelectionPage() {
         [ngosData]
     );
 
-    const allCategories = useMemo(() => Array.from(new Set(activeNgos.map(n => n.category))), [activeNgos]);
+    const allCategories = useMemo(() => Array.from(new Set(activeNgos.map(n => n.category).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'tr')), [activeNgos]);
+
+    type NgoWithLocation = NGO & {
+        address?: { city?: string; district?: string };
+        headquarters?: { city?: string; district?: string };
+    };
+
+    const getNgoCity = (n: NGO): string | undefined => {
+        const ext = n as NgoWithLocation;
+        return n.contact?.address?.city || ext.address?.city || ext.headquarters?.city;
+    };
+
+    const allCities = useMemo(
+        () => Array.from(new Set(activeNgos.map(n => getNgoCity(n)).filter((c): c is string => !!c))).sort((a, b) => a.localeCompare(b, 'tr')),
+        [activeNgos]
+    );
+
+    const allPlatforms = useMemo(
+        () => Array.from(new Set(activeNgos.flatMap(n => n.memberOf ?? []).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'tr')),
+        [activeNgos]
+    );
+
+    const allBeneficiaries = useMemo(
+        () => Array.from(new Set(activeNgos.flatMap(n => n.beneficiaryGroups ?? []).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'tr')),
+        [activeNgos]
+    );
+
+    const activeFilterCount =
+        categoryFilter.length +
+        (cityFilter ? 1 : 0) +
+        platformFilter.length +
+        beneficiaryFilter.length;
 
     const filteredNgos = useMemo(() => {
         let filtered = [...activeNgos];
@@ -99,6 +137,21 @@ export default function NgoSelectionPage() {
         }
 
         if (categoryFilter.length > 0) filtered = filtered.filter(n => categoryFilter.includes(n.category));
+
+        if (cityFilter) {
+            filtered = filtered.filter(n => {
+                const city = getNgoCity(n);
+                return city ? city === cityFilter : false;
+            });
+        }
+
+        if (platformFilter.length > 0) {
+            filtered = filtered.filter(n => (n.memberOf ?? []).some(p => platformFilter.includes(p)));
+        }
+
+        if (beneficiaryFilter.length > 0) {
+            filtered = filtered.filter(n => (n.beneficiaryGroups ?? []).some(b => beneficiaryFilter.includes(b)));
+        }
 
         filtered.sort((a, b) => {
             // Seçili STK'lar her zaman üstte
@@ -115,7 +168,26 @@ export default function NgoSelectionPage() {
         });
 
         return filtered;
-    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, selectedNgos]);
+    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, cityFilter, platformFilter, beneficiaryFilter, selectedNgos]);
+
+    const clearAllFilters = () => {
+        setCategoryFilter([]);
+        setCityFilter('');
+        setPlatformFilter([]);
+        setBeneficiaryFilter([]);
+    };
+
+    const togglePlatform = (p: string) => {
+        setPlatformFilter(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+    };
+
+    const toggleBeneficiary = (b: string) => {
+        setBeneficiaryFilter(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b]);
+    };
+
+    const toggleCategory = (c: string) => {
+        setCategoryFilter(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+    };
 
     const handleNgoSelect = (ngoId: string) => {
         const isSelected = selectedNgos.includes(ngoId);
@@ -180,22 +252,144 @@ export default function NgoSelectionPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input placeholder="STK ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {allCategories.map(cat => (
-                            <DropdownMenuCheckboxItem
-                                key={cat}
-                                checked={categoryFilter.includes(cat)}
-                                onCheckedChange={checked => setCategoryFilter(checked ? [...categoryFilter, cat] : categoryFilter.filter(c => c !== cat))}
-                            >{cat}</DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-11 w-11 relative rounded-2xl" aria-label="Filtrele">
+                            <Filter className="h-5 w-5" />
+                            {activeFilterCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
+                        <SheetHeader className="p-4 border-b">
+                            <SheetTitle className="font-black tracking-tight">Filtreler</SheetTitle>
+                            <SheetDescription>STK listesini ihtiyaca göre daralt.</SheetDescription>
+                        </SheetHeader>
+
+                        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                            {/* Kategori */}
+                            <section className="space-y-2">
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Filter className="h-4 w-4 text-primary" /> Kategori</h3>
+                                {allCategories.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">Kategori bulunamadı.</p>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {allCategories.map(cat => (
+                                            <label key={cat} className="flex items-center gap-2 rounded-2xl border bg-card p-2 cursor-pointer hover:bg-accent">
+                                                <Checkbox
+                                                    checked={categoryFilter.includes(cat)}
+                                                    onCheckedChange={() => toggleCategory(cat)}
+                                                />
+                                                <span className="text-xs font-medium truncate">{cat}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+
+                            {/* Il / Sehir */}
+                            <section className="space-y-2">
+                                <h3 className="font-bold text-sm flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> İl</h3>
+                                {allCities.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">Konum bilgisi olan STK bulunamadı.</p>
+                                ) : (
+                                    <>
+                                        <Label htmlFor="ngo-city-filter" className="sr-only">İl seç</Label>
+                                        <select
+                                            id="ngo-city-filter"
+                                            value={cityFilter}
+                                            onChange={e => setCityFilter(e.target.value)}
+                                            className="w-full rounded-2xl border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                                        >
+                                            <option value="">Tüm İller</option>
+                                            {allCities.map(c => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </>
+                                )}
+                            </section>
+
+                            {/* Uye Olunan Platformlar */}
+                            <section className="space-y-2">
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Network className="h-4 w-4 text-primary" /> Üye Olunan Platformlar</h3>
+                                {allPlatforms.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">Platform bilgisi bulunamadı.</p>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {allPlatforms.map(p => {
+                                            const active = platformFilter.includes(p);
+                                            return (
+                                                <button
+                                                    key={p}
+                                                    type="button"
+                                                    onClick={() => togglePlatform(p)}
+                                                    className={cn(
+                                                        "px-3 py-1.5 rounded-full border text-xs font-bold transition-colors",
+                                                        active
+                                                            ? "bg-primary text-primary-foreground border-primary"
+                                                            : "bg-card hover:bg-accent"
+                                                    )}
+                                                >
+                                                    {p}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </section>
+
+                            {/* Faydalanici Gruplar */}
+                            <section className="space-y-2">
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Faydalanıcı Gruplar</h3>
+                                {allBeneficiaries.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">Faydalanıcı grubu bilgisi bulunamadı.</p>
+                                ) : (
+                                    <div className="flex flex-wrap gap-2">
+                                        {allBeneficiaries.map(b => {
+                                            const active = beneficiaryFilter.includes(b);
+                                            return (
+                                                <button
+                                                    key={b}
+                                                    type="button"
+                                                    onClick={() => toggleBeneficiary(b)}
+                                                    className={cn(
+                                                        "px-3 py-1.5 rounded-full border text-xs font-bold transition-colors",
+                                                        active
+                                                            ? "bg-primary text-primary-foreground border-primary"
+                                                            : "bg-card hover:bg-accent"
+                                                    )}
+                                                >
+                                                    {b}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </section>
+                        </div>
+
+                        <SheetFooter className="p-4 border-t flex flex-row gap-2 sm:flex-row">
+                            <Button
+                                variant="outline"
+                                className="flex-1 rounded-2xl font-bold"
+                                onClick={clearAllFilters}
+                                disabled={activeFilterCount === 0}
+                            >
+                                Temizle
+                            </Button>
+                            <Button
+                                className="flex-1 rounded-2xl font-bold"
+                                onClick={() => setIsFilterSheetOpen(false)}
+                            >
+                                Uygula{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                            </Button>
+                        </SheetFooter>
+                    </SheetContent>
+                </Sheet>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>

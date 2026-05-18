@@ -34,87 +34,130 @@ export function RatingPopup() {
     const db = useFirestore();
 
     useEffect(() => {
-        if (isUserLoading || typeof window === 'undefined' || !user) return;
+        if (isUserLoading || typeof window === 'undefined' || !user?.uid) return;
 
-        const discoveryKey = `hangel_discovery_done_${user.uid}`;
-        const ratingKey = `hangel_rating_done_${user.uid}`;
-        const neverAskKey = `hangel_never_ask_popup_${user.uid}`;
-        const visitCountKey = `hangel_visit_count_${user.uid}`;
+        // Safe localStorage helpers — Safari private mode / quota errors should never crash render
+        const safeGet = (k: string): string | null => {
+            try { return window.localStorage.getItem(k); } catch { return null; }
+        };
+        const safeSet = (k: string, v: string): void => {
+            try { window.localStorage.setItem(k, v); } catch { /* ignore */ }
+        };
 
-        // Check if user has opted out of surveys permanently
-        if (localStorage.getItem(neverAskKey)) return;
+        try {
+            const discoveryKey = `hangel_discovery_done_${user.uid}`;
+            const ratingKey = `hangel_rating_done_${user.uid}`;
+            const neverAskKey = `hangel_never_ask_popup_${user.uid}`;
+            const visitCountKey = `hangel_visit_count_${user.uid}`;
+            const shownAtKey = `hangel_survey_shown_at_${user.uid}`;
 
-        const alreadyDiscovered = !!localStorage.getItem(discoveryKey);
-        const alreadyRated = !!localStorage.getItem(ratingKey);
+            // Check if user has opted out of surveys permanently
+            if (safeGet(neverAskKey)) return;
 
-        setDiscoveryDone(alreadyDiscovered);
-        setRatingDone(alreadyRated);
+            // Rate limit: don't show again within 24h of a previous appearance
+            const lastShownRaw = safeGet(shownAtKey);
+            if (lastShownRaw) {
+                const lastShown = Number(lastShownRaw);
+                if (Number.isFinite(lastShown) && Date.now() - lastShown < 24 * 60 * 60 * 1000) {
+                    return;
+                }
+            }
 
-        if (alreadyDiscovered && alreadyRated) return;
+            const alreadyDiscovered = !!safeGet(discoveryKey);
+            const alreadyRated = !!safeGet(ratingKey);
 
-        const currentCount = parseInt(localStorage.getItem(visitCountKey) || '0', 10) + 1;
-        localStorage.setItem(visitCountKey, String(currentCount));
+            setDiscoveryDone(alreadyDiscovered);
+            setRatingDone(alreadyRated);
 
-        const creationTime = user.metadata?.creationTime
-            ? new Date(user.metadata.creationTime).getTime()
-            : 0;
-        const isNewUser = creationTime > 0 && Date.now() - creationTime < 10 * 60 * 1000;
-        const threshold = isNewUser ? 3 : 2;
+            if (alreadyDiscovered && alreadyRated) return;
 
-        if (currentCount >= threshold) {
-            const timer = setTimeout(() => setOpen(true), 2000);
-            return () => clearTimeout(timer);
+            const parsed = parseInt(safeGet(visitCountKey) || '0', 10);
+            const currentCount = (Number.isFinite(parsed) ? parsed : 0) + 1;
+            safeSet(visitCountKey, String(currentCount));
+
+            const creationTime = user.metadata?.creationTime
+                ? new Date(user.metadata.creationTime).getTime()
+                : 0;
+            const isNewUser = creationTime > 0 && Date.now() - creationTime < 10 * 60 * 1000;
+            const threshold = isNewUser ? 3 : 2;
+
+            if (currentCount >= threshold) {
+                const timer = setTimeout(() => {
+                    setOpen(true);
+                    safeSet(shownAtKey, String(Date.now()));
+                }, 2000);
+                return () => clearTimeout(timer);
+            }
+        } catch (e) {
+            console.warn('RatingPopup init failed:', e);
         }
     }, [isUserLoading, user]);
 
+    const safeSetLS = (k: string, v: string) => {
+        if (typeof window === 'undefined') return;
+        try { window.localStorage.setItem(k, v); } catch { /* ignore */ }
+    };
+
     const handleSubmit = async () => {
-        if (!user || !db) return;
-
-        if (!discoveryDone && discoverySource) {
-            try {
-                await addDoc(collection(db, 'surveys'), {
-                    type: 'discovery',
-                    source: discoverySource,
-                    detail: discoveryDetail,
-                    userId: user.uid,
-                    createdAt: new Date().toISOString(),
-                });
-            } catch (e) {
-                console.error('Discovery survey save failed:', e);
-            }
-            localStorage.setItem(`hangel_discovery_done_${user.uid}`, 'true');
+        if (!user?.uid) {
+            setOpen(false);
+            return;
         }
 
-        if (!ratingDone && rating > 0) {
-            try {
-                await addDoc(collection(db, 'ratings'), {
-                    rating,
-                    comment,
-                    userId: user.uid,
-                    createdAt: new Date().toISOString(),
-                });
-            } catch (e) {
-                console.error('Rating save failed:', e);
+        try {
+            if (!discoveryDone && discoverySource && db) {
+                try {
+                    await addDoc(collection(db, 'surveys'), {
+                        type: 'discovery',
+                        source: discoverySource,
+                        detail: discoveryDetail || '',
+                        userId: user.uid,
+                        createdAt: new Date().toISOString(),
+                    });
+                } catch (e) {
+                    console.warn('Discovery survey save failed:', e);
+                }
+                safeSetLS(`hangel_discovery_done_${user.uid}`, 'true');
             }
-            localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
-        }
 
-        setSubmitted(true);
-        setTimeout(() => setOpen(false), 1500);
+            if (!ratingDone && rating > 0 && db) {
+                try {
+                    await addDoc(collection(db, 'ratings'), {
+                        rating,
+                        comment: comment || '',
+                        userId: user.uid,
+                        createdAt: new Date().toISOString(),
+                    });
+                } catch (e) {
+                    console.warn('Rating save failed:', e);
+                }
+                safeSetLS(`hangel_rating_done_${user.uid}`, 'true');
+            }
+
+            setSubmitted(true);
+            setTimeout(() => setOpen(false), 1500);
+        } catch (e) {
+            console.warn('RatingPopup submit failed:', e);
+            setOpen(false);
+        }
     };
 
     const handleClose = () => {
-        if (user) {
-            if (dontAskAgain) {
-                localStorage.setItem(`hangel_never_ask_popup_${user.uid}`, 'true');
-            } else {
-                if (!discoveryDone && discoverySource) {
-                    localStorage.setItem(`hangel_discovery_done_${user.uid}`, 'true');
-                }
-                if (!ratingDone) {
-                    localStorage.setItem(`hangel_rating_done_${user.uid}`, 'true');
+        try {
+            if (user?.uid) {
+                if (dontAskAgain) {
+                    safeSetLS(`hangel_never_ask_popup_${user.uid}`, 'true');
+                } else {
+                    if (!discoveryDone && discoverySource) {
+                        safeSetLS(`hangel_discovery_done_${user.uid}`, 'true');
+                    }
+                    if (!ratingDone) {
+                        safeSetLS(`hangel_rating_done_${user.uid}`, 'true');
+                    }
                 }
             }
+        } catch (e) {
+            console.warn('RatingPopup close failed:', e);
         }
         setOpen(false);
     };
