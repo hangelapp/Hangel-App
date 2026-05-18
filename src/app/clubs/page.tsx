@@ -14,27 +14,33 @@ import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@
 import { collection, doc } from 'firebase/firestore';
 
 
-const ClubCard = ({ club }: { club: StudentClub }) => (
-    <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
-        <Card className="hover:bg-accent transition-colors">
-            <CardContent className="p-3 flex gap-3 items-center">
-                <Avatar className="h-12 w-12">
-                    <AvatarImage src={club.avatarUrl} alt={club.name} />
-                    <AvatarFallback>{club.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden">
-                    <p className="font-semibold text-sm truncate">{club.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{club.university}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {club.members} Üye</span>
-                        <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {club.points} Puan</span>
+const ClubCard = ({ club }: { club: StudentClub }) => {
+    const name = club?.name || 'İsimsiz Kulüp';
+    const university = club?.university || '—';
+    const members = Number(club?.members) || 0;
+    const points = Number(club?.points) || 0;
+    return (
+        <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
+            <Card className="hover:bg-accent transition-colors">
+                <CardContent className="p-3 flex gap-3 items-center">
+                    <Avatar className="h-12 w-12">
+                        <AvatarImage src={club?.avatarUrl} alt={name} />
+                        <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden">
+                        <p className="font-semibold text-sm truncate">{name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{university}</p>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {members} Üye</span>
+                            <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {points} Puan</span>
+                        </div>
                     </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-        </Card>
-    </Link>
-);
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </CardContent>
+            </Card>
+        </Link>
+    );
+};
 
 export default function ClubsPage() {
   const db = useFirestore();
@@ -68,8 +74,8 @@ export default function ClubsPage() {
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       result = result.filter(c =>
-        c.name.toLowerCase().includes(q) ||
-        c.university.toLowerCase().includes(q),
+        (c?.name || '').toLowerCase().includes(q) ||
+        (c?.university || '').toLowerCase().includes(q),
       );
     }
     return result;

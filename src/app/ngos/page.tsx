@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Heart, Users, ShieldCheck } from 'lucide-react';
+import { Search, Filter, Heart, Users, ShieldCheck, ArrowDownUp } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
@@ -13,14 +13,17 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 
 type NgoType = NGO['type'] | 'Tümü';
+type SortKey = 'viewCount' | 'name-asc' | 'name-desc' | 'transparency-desc' | 'donors-desc' | 'volunteers-desc';
 
 export default function NgosPage() {
     const db = useFirestore();
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig] = useState({ key: 'viewCount', direction: 'desc' });
+    const [sortKey, setSortKey] = useState<SortKey>('viewCount');
+    const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
 
     const ngosQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -28,6 +31,11 @@ export default function NgosPage() {
     }, [db]);
 
     const { data: ngosData, isLoading } = useCollection<NGO>(ngosQuery);
+
+    const allCategories = useMemo(() => {
+        if (!ngosData) return [];
+        return Array.from(new Set(ngosData.map(n => n.category).filter(Boolean))).sort();
+    }, [ngosData]);
 
     const filteredNgos = useMemo(() => {
         if (!ngosData) return [];
@@ -38,28 +46,32 @@ export default function NgosPage() {
             filtered = filtered.filter(ngo => ngo.type === typeFilter);
         }
 
+        if (categoryFilter.length > 0) {
+            filtered = filtered.filter(ngo => categoryFilter.includes(ngo.category));
+        }
+
         if (searchTerm) {
             const lowercased = searchTerm.toLowerCase();
-            filtered = filtered.filter(ngo => 
-                ngo.name.toLowerCase().includes(lowercased) || 
+            filtered = filtered.filter(ngo =>
+                ngo.name.toLowerCase().includes(lowercased) ||
                 ngo.category.toLowerCase().includes(lowercased)
             );
         }
 
         filtered.sort((a, b) => {
-            if (sortConfig.key === 'viewCount') {
-                const av = a.viewCount ?? 0;
-                const bv = b.viewCount ?? 0;
-                return sortConfig.direction === 'desc' ? bv - av : av - bv;
+            switch (sortKey) {
+                case 'name-asc': return a.name.localeCompare(b.name);
+                case 'name-desc': return b.name.localeCompare(a.name);
+                case 'transparency-desc': return (b.transparencyScore ?? 0) - (a.transparencyScore ?? 0);
+                case 'donors-desc': return (b.stats?.donors ?? 0) - (a.stats?.donors ?? 0);
+                case 'volunteers-desc': return (b.stats?.volunteers ?? 0) - (a.stats?.volunteers ?? 0);
+                case 'viewCount':
+                default: return (b.viewCount ?? 0) - (a.viewCount ?? 0);
             }
-            if (sortConfig.key === 'name') {
-                return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-            }
-            return 0;
         });
 
         return filtered;
-    }, [ngosData, typeFilter, searchTerm, sortConfig]);
+    }, [ngosData, typeFilter, searchTerm, sortKey, categoryFilter]);
 
     return (
         <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -78,9 +90,59 @@ export default function NgosPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Filtrele">
-                    <Filter className="h-5 w-5" />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Filtrele">
+                            <Filter className="h-5 w-5" />
+                            {categoryFilter.length > 0 && (
+                                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                                    {categoryFilter.length}
+                                </span>
+                            )}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+                        <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {allCategories.length === 0 && (
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground italic">Henüz kategori yok</div>
+                        )}
+                        {allCategories.map(cat => (
+                            <DropdownMenuCheckboxItem
+                                key={cat}
+                                checked={categoryFilter.includes(cat)}
+                                onCheckedChange={(checked) => setCategoryFilter(prev =>
+                                    checked ? [...prev, cat] : prev.filter(c => c !== cat)
+                                )}
+                            >{cat}</DropdownMenuCheckboxItem>
+                        ))}
+                        {categoryFilter.length > 0 && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setCategoryFilter([])} className="text-destructive">
+                                    Filtreleri Temizle
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Sırala">
+                            <ArrowDownUp className="h-5 w-5" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Sırala</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSortKey('viewCount')}>En Çok Görüntülenen</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('transparency-desc')}>En Yüksek Şeffaflık</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('donors-desc')}>En Çok Bağışçı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('volunteers-desc')}>En Çok Gönüllü</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('name-asc')}>İsme Göre (A-Z)</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('name-desc')}>İsme Göre (Z-A)</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setTypeFilter(value as NgoType)}>

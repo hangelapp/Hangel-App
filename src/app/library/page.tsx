@@ -518,7 +518,47 @@ export default function LibraryPage() {
     });
     const staticSlugs = new Set(staticSections.map(s => s.slug));
     const extraSections = (libData ?? []).filter(s => !staticSlugs.has(s.slug));
-    return [...merged, ...extraSections];
+
+    // Yeni statik bölüm başlıkları (içerik Firestore'dan beslenecek; yoksa boş durum gösterilir)
+    const placeholderSections: LibrarySection[] = [
+      {
+        slug: 'akademik-makaleler',
+        title: 'Akademik Makaleler',
+        description: 'Hakemli dergilerde yayımlanmış akademik kaynaklar.',
+        icon: 'FileText',
+        items: [],
+      },
+      {
+        slug: 'hangel-sozlugu',
+        title: 'Hangel Sözlüğü',
+        description: 'Hangel ekosistemine özel kavramların açıklamaları.',
+        icon: 'BookA',
+        items: [],
+      },
+      {
+        slug: 'sivil-toplum-sozlugu',
+        title: 'Sivil Toplum Sözlüğü',
+        description: 'Sivil toplum alanında sık kullanılan kavramlar.',
+        icon: 'Library',
+        items: [],
+      },
+    ];
+
+    // Firestore'da aynı slug ile veri varsa onu kullan, yoksa placeholder göster
+    const combinedFromPlaceholders = placeholderSections.map(ph => {
+      const fs = firestoreMap.get(ph.slug);
+      if (fs) return { ...ph, items: fs.items ?? [] };
+      return ph;
+    });
+
+    // Henüz herhangi bir listede yoksa ekle
+    const allKnownSlugs = new Set([
+      ...merged.map(m => m.slug),
+      ...extraSections.map(e => e.slug),
+    ]);
+    const toAppend = combinedFromPlaceholders.filter(p => !allKnownSlugs.has(p.slug));
+
+    return [...merged, ...extraSections, ...toAppend];
   }, [libData]);
 
   const filteredSections = useMemo(() => {

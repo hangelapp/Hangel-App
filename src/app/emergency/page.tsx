@@ -41,16 +41,10 @@ import {
 } from "@/components/ui/select";
 
 
-const initialActiveCalls = [
-    { id: 1, type: 'Kan İhtiyacı', details: 'A Rh+ (Acil)', location: 'Ankara Şehir Hastanesi', time: '5 dk önce' },
-    { id: 2, type: 'Kan İhtiyacı', details: '0 Rh- (Kritik)', location: 'İstanbul Çapa Tıp Fakültesi', time: '18 dk önce' },
-    { id: 3, type: 'Kan İhtiyacı', details: 'B Rh+', location: 'Antalya Akdeniz Üniv. Hastanesi', time: '32 dk önce' },
-    { id: 4, type: 'Kan İhtiyacı', details: 'AB Rh-', location: 'İzmir Ege Üniv. Hastanesi', time: '1 saat önce' },
-];
+// Demo veriler kaldırıldı — gerçek çağrılar Firestore'dan beslenecek (henüz bağlanmadıysa boş gösterilir).
+const initialActiveCalls: Array<{ id: number; type: string; details: string; location: string; time: string }> = [];
 
-const initialPastApplications = [
-    { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
-];
+const initialPastApplications: Array<{ id: number; type: string; details: string; location: string; status: 'Başvuruldu' }> = [];
 
 interface BloodNeedFormData {
     hospital: string;
@@ -287,14 +281,14 @@ export default function EmergencyPage() {
     };
 
   return (
-    <div className="h-[calc(100vh-144px)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
-        <div className="px-6 pt-6 pb-3 space-y-1 shrink-0">
-            <h1 className="text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
+    <div className="min-h-[calc(100vh-144px)] bg-secondary/30 animate-in fade-in-0 flex flex-col">
+        <div className="px-4 sm:px-6 pt-6 pb-3 space-y-1 shrink-0">
+            <h1 className="text-3xl sm:text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
             <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
         </div>
-        
-        <div className="px-4 flex-1 overflow-hidden flex flex-col">
-            <Tabs defaultValue="report" className="w-full h-full flex flex-col">
+
+        <div className="px-4 flex-1 flex flex-col">
+            <Tabs defaultValue="report" className="w-full flex-1 flex flex-col">
                 <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
                     <TabsTrigger value="report" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
                         Bildirimde Bulun
@@ -304,7 +298,7 @@ export default function EmergencyPage() {
                     </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="report" className="mt-0 flex-1 overflow-y-auto no-scrollbar">
+                <TabsContent value="report" className="mt-0 flex-1">
                     <ReportTabContent
                         isReporting={isReporting}
                         onReportClick={handleReportClick}
@@ -312,7 +306,7 @@ export default function EmergencyPage() {
                     />
                 </TabsContent>
 
-                <TabsContent value="calls" className="mt-4 flex-1 overflow-y-auto no-scrollbar space-y-6 pb-20">
+                <TabsContent value="calls" className="mt-4 flex-1 space-y-6 pb-6">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
@@ -378,7 +372,7 @@ export default function EmergencyPage() {
 
         <BloodNeedDialog open={isBloodDialogOpen} onOpenChange={setIsBloodDialogOpen} onSubmit={handleBloodNeedSubmit} />
 
-        <div className="mt-4 mx-0">
+        <div className="mt-4 mx-4 mb-4">
             <div className="p-4 bg-slate-900/90 backdrop-blur-lg text-white rounded-2xl shadow-2xl flex items-center gap-4 border border-white/10">
                 <div className="p-2 bg-white/10 rounded-lg">
                     <Siren className="h-5 w-5 text-destructive" />
