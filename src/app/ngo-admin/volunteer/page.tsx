@@ -74,8 +74,8 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
                                     </div>
                                 </div>
                                 <div className="flex gap-2 basis-full sm:basis-auto justify-end">
-                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
-                                    <Link href={`/profile/${app.userId}`}>Profil</Link>
+                                  <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => toast({ title: 'Gönüllü Profili', description: 'Bu gönüllünün profil detay sayfası yakında.' })}>
+                                    Profil
                                   </Button>
                                   <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app.id, 'approved')}>Onayla</Button>
                                   <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app.id, 'rejected')}>Reddet</Button>

@@ -22,8 +22,6 @@ export async function POST(request: Request) {
     const status = response.status;
     const responseText = await response.text();
 
-    console.log(`[Proxy Log] Agency: ${agency}, Status: ${status}`);
-
     if (!response.ok) {
       console.error(`[Proxy Error Detail] ${agency}: ${status} - ${responseText.slice(0, 500)}`);
     }

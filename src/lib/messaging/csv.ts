@@ -13,7 +13,8 @@ export interface CsvParseResult {
 const MAX_ROWS = 100_000;
 
 export function parseCsv(text: string, opts: { delimiter?: ',' | '\t' | ';' | 'auto' } = {}): CsvParseResult {
-  const cleaned = text.replace(/^﻿/, ''); // BOM strip
+  // eslint-disable-next-line no-irregular-whitespace
+  const cleaned = text.replace(/^﻿/, ''); // BOM strip (U+FEFF)
   const lines = splitCsvLines(cleaned);
   if (lines.length === 0) return { columns: [], rows: [], rowCount: 0, invalidLines: 0 };
 

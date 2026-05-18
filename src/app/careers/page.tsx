@@ -123,7 +123,7 @@ export default function CareersPage() {
                         <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
                       </div>
                       <Button asChild className="shrink-0">
-                        <Link href="#">İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
+                        <a href={`mailto:kariyer@hangel.org?subject=${encodeURIComponent('Başvuru: ' + job.title)}`}>İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></a>
                       </Button>
                     </div>
                   ))}
