@@ -123,18 +123,43 @@ function useResolvedEntityKind(): { kind: EntityKind | null; isLoading: boolean 
   );
   const { data: userData, isLoading: userDocLoading } = useDoc<UserDocData>(userDocRef);
 
-  // 2) Fallback: query each collection by adminUserId
+  // Fast-path resolution from users/{uid}.managed*
+  const fastPathKind = useMemo<EntityKind | null>(() => {
+    if (userData?.managedNgoId) return 'ngo';
+    if (userData?.managedBrandId) return 'brand';
+    if (userData?.managedClubId) return 'club';
+    return null;
+  }, [userData?.managedNgoId, userData?.managedBrandId, userData?.managedClubId]);
+
+  // Only run fallback queries when:
+  //   - auth + firestore are ready
+  //   - the user doc has loaded
+  //   - the fast path did NOT resolve a kind
+  // This keeps the listener count at 1 (userDoc) for the common case,
+  // and only spins up the 3 adminUserId scans for users without a managed* link.
+  const needsFallback = !userDocLoading && !fastPathKind && Boolean(authUser?.uid);
+
+  // 2) Fallback: query each collection by adminUserId (gated)
   const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
+    () =>
+      firestore && authUser?.uid && needsFallback
+        ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid))
+        : null,
+    [firestore, authUser?.uid, needsFallback],
   );
   const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
+    () =>
+      firestore && authUser?.uid && needsFallback
+        ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid))
+        : null,
+    [firestore, authUser?.uid, needsFallback],
   );
   const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
+    () =>
+      firestore && authUser?.uid && needsFallback
+        ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid))
+        : null,
+    [firestore, authUser?.uid, needsFallback],
   );
 
   const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityRef>(adminNgosQ);
@@ -144,14 +169,12 @@ function useResolvedEntityKind(): { kind: EntityKind | null; isLoading: boolean 
   const isLoading = isUserLoading || userDocLoading || ngosLoading || brandsLoading || clubsLoading;
 
   const kind = useMemo<EntityKind | null>(() => {
-    if (userData?.managedNgoId) return 'ngo';
-    if (userData?.managedBrandId) return 'brand';
-    if (userData?.managedClubId) return 'club';
+    if (fastPathKind) return fastPathKind;
     if (adminNgos && adminNgos.length > 0) return 'ngo';
     if (adminBrands && adminBrands.length > 0) return 'brand';
     if (adminClubs && adminClubs.length > 0) return 'club';
     return null;
-  }, [userData, adminNgos, adminBrands, adminClubs]);
+  }, [fastPathKind, adminNgos, adminBrands, adminClubs]);
 
   return { kind, isLoading };
 }

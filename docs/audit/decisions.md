@@ -16,6 +16,31 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — P2-8e: super-admin dashboard listeners → count aggregates
+- **ID**: P2-8e
+- **Lead**: backend-lead
+- **Değişiklik**: `src/app/super-admin/page.tsx`'in 4 full-collection `useCollection` listener'ı (users / ngos / brands / applications) bir `useEffect` içinde `Promise.all([getCountFromServer(...) × 4])` ile değiştirildi. UI yalnız sayaç gösteriyordu (4 metric card); list / sort / group / iteration yok. Applications için pending filtresi server-side: `query(collection(db, 'applications'), where('status', '==', 'Beklemede'))`.
+- **Listener-by-listener karar**:
+  - `users` (sadece `.length`) → aggregate count
+  - `ngos` (sadece `.length`) → aggregate count
+  - `brands` (sadece `.length`) → aggregate count
+  - `applications` (filter `status=='Beklemede'` → length) → aggregate count over `where('status', '==', 'Beklemede')`
+- **Dosyalar**: `src/app/super-admin/page.tsx` (yalnız bu)
+- **Tasarım notları**:
+  - `useFirestore` + `getCountFromServer` + `query` + `where` Firebase v11 SDK; `useMemoFirebase` / `useCollection` importları kaldırıldı.
+  - `cancelled` flag ile unmount/strict-mode-safe.
+  - Hata `console.error` ile yutulur; UI `0` gösterir (dashboard'da bloke etmemek için kasıtlı).
+- **Trade-off**: Sayılar artık canlı (snapshot) değil; her sayfa açılışında tek-seferlik fetch. Operasyonel panel ziyaret kalıbı için kabul edildi; auto-refresh isterse pull-to-refresh veya manual button eklenir (yeni follow-up gerek yok, scope dışı).
+- **Listener-audit etkisi**: `docs/audit/listener-audit.md` Sıra-3 risk dosyası (4 full-collection listener) artık 0 snapshot tutuyor.
+- **Risk**: L — UI'da bilgi kaybı yok; aggregate query rules tarafında `list` yetkisine bağlı, super-admin için zaten `allow list: if isSignedIn()` mevcut (line `firestore.rules:454`).
+- **Rollback**: tek dosya, git revert.
+- **Test sonucu**:
+  - `npm run typecheck`: PASS (no output).
+  - `npm run lint`: 0 errors, 11 pre-existing warnings (hiçbiri `super-admin/page.tsx`'den kaynaklı değil — grep boş).
+- **Notlar**: Tasks.md `P2-8e` ✅ Done işaretlendi. Diğer P2-8 follow-up'lar (`P2-8b`, `P2-8d`, `P2-8f`) bekliyor.
+
+---
+
 ## 2026-05-18 — P2-5a: i18n migration (header + settings + landing scope)
 - **ID**: P2-5 (scope a)
 - **Lead**: frontend-lead
@@ -524,6 +549,31 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — P2-8f Done (audited): drilldown listeners in `super-admin/messaging/campaigns/[id]/page.tsx`
+
+- **ID**: P2-8f (✅ Done — audited, no code change)
+- **Lead**: hangel-backend-lead
+- **Scope**: Listener audit of `src/app/super-admin/messaging/campaigns/[id]/page.tsx` (ranked #5 in `listener-audit.md` top-5 risk files).
+- **Hook inventory** (2 total):
+  1. `useDoc<CampaignDoc>(campRef)` line 69 — ref `doc(db, 'campaigns', params.id)` memoized with `[db, params.id]`. Single campaign doc.
+  2. `useCollection<RecipientDoc>(recipientsQuery)` line 75 — ref `query(collection(db, 'campaigns', params.id, 'recipients'), orderBy('createdAt', 'desc'), limit(50))` memoized with `[db, params.id]`. Sub-collection, capped at 50.
+- **Decisions per hook**:
+  - `useDoc(campRef)` → **keep live**. Page surfaces `status` badge + `stats.{queued, sent, delivered, failed}` cards that update as the worker progresses through `enqueuing` → `sending` → `completed`. Live UX is the point of the drilldown.
+  - `useCollection(recipientsQuery)` → **keep live**. Recipients' `status` + `sentAt` transition while campaign is sending; `limit(50)` already caps cost. Bounded by `campaignId` sub-collection scope — not a full-collection listener.
+- **One-shot fetch candidates**: None. Theoretical option was "if campaign already `completed`, swap to `getDocs`" but (a) the user opens this drilldown specifically to watch progression, (b) terminal-state behavior is rare relative to live observation, (c) dynamic listener swapping adds bug surface for negligible win.
+- **Limit / TODO**: Already has `limit(50)`. No TODO needed.
+- **Code change**: None. File untouched.
+- **Test sonucu**:
+  - `npm run typecheck`: 4 pre-existing errors in OTHER files (`super-admin/page.tsx` × 3 `Cannot find name 'usersData/ngosData/brandsData'`, `header.tsx:56 Cannot find name 'Icons'`). Campaign drilldown file: 0 errors.
+  - `npm run lint`: 11 pre-existing warnings across `settings/ngo-selection`, `settings/volunteer`, `super-admin/surveys`. Campaign drilldown file: 0 warnings. 0 errors total.
+- **Risk**: L — audit-only, no code change.
+- **Rollback**: N/A (no code changes); revert docs only if needed: `git checkout HEAD -- docs/audit/tasks.md docs/audit/decisions.md`.
+- **Notlar**:
+  - P2-8f scope was repurposed from "add `useDoc` `__memo` guard" (now P2-8g) to "audit drilldown listeners" per the actual top-5 risk file follow-up. The defense-in-depth guard task continues as P2-8g.
+  - This file is listed in `listener-audit.md` as a vigilance entry, not a bug — audit confirms zero issue.
+
+---
+
 ## 2026-05-18 — Wave 4 quick wins: P2-7d + P2-5d + P2-8c (orchestrator)
 
 - **Lead**: orchestrator (single-session surgical fixes)
@@ -534,3 +584,52 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Test sonucu**: `npm run typecheck` PASS (clean). `npm run lint` 0 errors, 11 pre-existing warnings. `npm run build` PASS (exit 0).
 - **Risk**: L — üç değişiklik de küçük yüzeyli ve daraltıcı (constant migration, daha sıkı lookup, daha sıkı dep array).
 - **Rollback**: `git diff HEAD -- src/firebase/collections.ts src/lib/messaging/webhook-replay.ts src/components/providers/language-provider.tsx src/app/profile/page.tsx` → revert per file.
+
+---
+
+## 2026-05-18 — P2-8d: ngo-admin layout listener gating (hangel-backend-lead)
+
+- **Scope**: `src/app/ngo-admin/layout.tsx` (single-file surgical edit).
+- **Problem**: `useResolvedEntityKind()` opens **4 concurrent Firestore listeners** on every ngo-admin route: 1× `useDoc(users/{uid})` fast path + 3× `useCollection(query(<ngos|brands|clubs>, where adminUserId == uid))` fallback. Deps were already correctly memoized (no leak), but the fallback listeners ran unconditionally even when the fast path resolved the entity kind.
+- **Hook inventory (4 total)**:
+  1. `useDoc<UserDocData>(userDocRef)` — `users/{uid}` for `managed{Ngo,Brand,Club}Id`.
+  2. `useCollection<EntityRef>(adminNgosQ)` — `ngos where adminUserId == uid`.
+  3. `useCollection<EntityRef>(adminBrandsQ)` — `brands where adminUserId == uid`.
+  4. `useCollection<EntityRef>(adminClubsQ)` — `clubs where adminUserId == uid`.
+- **Decisions per hook**:
+  - **Combine?** No. Three top-level collections (`ngos`, `brands`, `clubs`) with no shared parent → no collection-group or shared query can replace them. Each is a structurally separate listener.
+  - **Push down?** No. `SideMenu` rendered in the layout shell needs `kind` to pick NGO_MENU vs BRAND_MENU vs CLUB_MENU and to toggle the Events item visibility. Resolution must happen at layout level.
+  - **Gate?** YES. The 3 fallback queries are only needed when the fast path returns `null` (i.e., `users/{uid}.managed*Id` is unset — legacy admins). The `useCollection` hook already no-ops when passed `null`, so conditional construction avoids subscribing.
+- **Change**: Extracted `fastPathKind` memo. Added `needsFallback = !userDocLoading && !fastPathKind && Boolean(authUser?.uid)` and gated each of the 3 fallback query factories on it. When the user doc resolves a `managed*Id`, the 3 fallback `useMemoFirebase` factories return `null` → `useCollection` early-returns without subscribing. `needsFallback` is added to each memo dep array so transitions (e.g., user doc loads after a refresh) re-evaluate cleanly.
+- **Result**:
+  - Common case (user has `managed{Ngo|Brand|Club}Id`): **1 active listener** (userDoc) instead of 4. -75% concurrent listener count on every ngo-admin route.
+  - Fallback case (legacy admin without `managed*Id`): 1 userDoc + 3 query listeners = same as before. No regression.
+  - UX unchanged: same `{ kind, isLoading }` contract, same default-to-NGO menu while resolving.
+- **Files modified**: `src/app/ngo-admin/layout.tsx` only (~25 lines diff in `useResolvedEntityKind`).
+- **Test sonucu**:
+  - `npm run typecheck`: 9 pre-existing errors in `src/app/super-admin/page.tsx` from in-flight P2-8e patch by a parallel agent — confirmed not caused by this change (errors persist with my changes stashed; main was clean before P2-8e began). My patched file: 0 errors.
+  - `npm run lint`: 11 pre-existing warnings across unrelated files (`settings/ngo-selection`, `settings/volunteer`, `super-admin/surveys`). My patched file: 0 warnings, 0 errors.
+- **Risk**: L — gated path is opt-in (fallback now skipped when fast path succeeds); fast-path users never depended on fallback data anyway since `kind` memo already preferred `userData?.managed*Id` first. Pre-existing fallback path untouched.
+- **Rollback**: `git checkout HEAD -- src/app/ngo-admin/layout.tsx`.
+- **Notlar**:
+  - The `isLoading` aggregate still ORs in `ngosLoading || brandsLoading || clubsLoading`, but those flags stay `false` when the query ref is `null` (per `useCollection` hook contract `:67-71`). Correct loading semantics preserved.
+  - Did **not** factor into a shared hook (original task wording) — pulling the logic into `src/hooks/` was out of scope and would require a follow-up audit of who else consumes managed-entity resolution; the gating fix alone delivers the listener-count win without that ripple.
+
+---
+
+## 2026-05-18 — P2-4b: lucide wildcard finishing (library/page.tsx + header.tsx)
+- **ID**: P2-4b
+- **Lead**: frontend-lead
+- **Değişiklik**: P2-4'te ertelenen son iki `import * as Icons from 'lucide-react'` migrasyonu tamamlandı; repo'da artık 0 lucide wildcard import var.
+- **Dosyalar**:
+  - `src/app/library/page.tsx` — wildcard kaldırıldı; 9-entry kapalı küme `LIBRARY_ICONS` map'i + `HelpCircle` fallback eklendi. Allow-list: `Library, GraduationCap, BookMarked, BookOpen, FileText, BookA, Globe, Database, Film`. Resolution: `LIBRARY_ICONS[section.icon] ?? HelpCircle` (önceki: `Icons[section.icon] || BookOpen`). İkonlar şu kaynaklardan toplandı: `src/lib/library.ts` (`Library, GraduationCap, BookMarked, BookOpen`), `src/lib/hangel-impact-inventory.json` (`Globe`), `docs/database-exports/library.json` (`Database, Film, Library`), `LibraryPage`'in `placeholderSections` literal'i (`FileText, BookA, Library`). `library/page.tsx:25-28` yorum: yeni icon eklenmesi gerektiğinde hem named import hem `LIBRARY_ICONS` entry'si güncellenmeli.
+  - `src/components/layout/header.tsx` — tek static `Icons.Globe` kullanımı (line 57) → named `Globe` import'a çevrildi; wildcard satırı silindi. Dynamic icon kullanımı yoktu.
+- **Risk**: L — `library/page.tsx`'te eski kod `BookOpen`'a, yeni kod `HelpCircle`'a düşüyor (bilinmeyen icon string'i için). Bilinen string'ler tamamı map'te. `header.tsx` semantik değişim yok.
+- **Rollback**: `git checkout HEAD -- src/app/library/page.tsx src/components/layout/header.tsx`.
+- **Test sonucu**:
+  - `npm run typecheck`: PASS (0 error).
+  - `npm run lint`: 0 errors / 11 pre-existing warnings unrelated files (`app/page.tsx`, `settings/ngo-selection`, `settings/volunteer`, `super-admin/surveys`); modified iki dosyada 0 yeni warning.
+  - `grep -rn "import \* as Icons from 'lucide-react'" src/` → 0 hit (sadece `app-shell.tsx:36` historical comment).
+- **Notlar**:
+  - **Maintenance note** (`library/page.tsx:25-28`, `LIBRARY_ICONS` block): Firestore `library/{slug}` doc'larında yeni bir `icon` değeri kullanılacaksa (örn. yeni bölüm seed'i), önce (a) `lucide-react`'tan named import ekle, (b) `LIBRARY_ICONS` map'ine ekle. Eksik kalan değer çalışma zamanında `HelpCircle` ile yumuşak fallback yapar, çökmez. Bilinen 9 entry kuralın açık dokümantasyonu.
+  - P2-4 + P2-4b ile toplam **11/11 lucide wildcard** elimine edildi. Recharts wildcard'ları hâlâ bilinçli SKIP (P2-4 notları).

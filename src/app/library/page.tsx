@@ -21,13 +21,32 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import * as Icons from 'lucide-react';
-import { Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2 } from 'lucide-react';
+import {
+  Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2,
+  // LIBRARY_ICONS allow-list — bu map'e yeni icon eklerken hem import hem `LIBRARY_ICONS` entry'si gerekir.
+  Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
+
+// Kütüphane bölüm icon allow-list'i. Bölüm icon'ları Firestore'dan runtime string
+// olarak gelir; lucide wildcard import yerine kapalı küme map kullanıyoruz.
+// Yeni bir bölüm icon'u eklemek için: (1) named import'a ekle, (2) burayı güncelle.
+// (P2-4b, decisions.md 2026-05-18.)
+const LIBRARY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  Library,
+  GraduationCap,
+  BookMarked,
+  BookOpen,
+  FileText,
+  BookA,
+  Globe,
+  Database,
+  Film,
+};
 
 type FilterDef =
   | { key: string; label: string; type: 'select'; options: string[] }
@@ -445,7 +464,7 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
     });
   }, [section.items, query, filters, filterDefs]);
 
-  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[section.icon] || BookOpen;
+  const Icon = LIBRARY_ICONS[section.icon] ?? HelpCircle;
 
   return (
     <Card key={section.slug} className="overflow-hidden">

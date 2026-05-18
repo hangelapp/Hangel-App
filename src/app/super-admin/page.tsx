@@ -59,8 +59,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   Users,
 };
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { collection, getCountFromServer, query, where } from 'firebase/firestore';
 
 const iconColorMap: { [key: string]: string } = {
   'FileText': 'bg-sky-500',
@@ -125,17 +125,56 @@ const superAdminNavItems = [
 export default function SuperAdminDashboard() {
   const db = useFirestore();
 
-  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-  const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
-  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
-  const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
+  // P2-8e: Replaced 4 full-collection useCollection listeners (users, ngos, brands,
+  // applications) with one-shot getCountFromServer aggregates. The dashboard only
+  // renders counts — no list iteration / sort / filter beyond `status == 'Beklemede'`.
+  // Aggregate cost: 1 read per 1000 docs vs. full doc downloads + live re-renders on
+  // every write. Trade-off: counts no longer auto-refresh (acceptable for an ops panel
+  // re-opened per session).
+  const [counts, setCounts] = React.useState<{
+    users: number | null;
+    ngos: number | null;
+    brands: number | null;
+    pendingApps: number | null;
+  }>({ users: null, ngos: null, brands: null, pendingApps: null });
+  const [countsLoading, setCountsLoading] = React.useState(true);
 
-  const { data: usersData, isLoading: usersLoading } = useCollection(usersQuery);
-  const { data: ngosData, isLoading: ngosLoading } = useCollection(ngosQuery);
-  const { data: brandsData, isLoading: brandsLoading } = useCollection(brandsQuery);
-  const { data: appsData, isLoading: appsLoading } = useCollection(appsQuery);
+  React.useEffect(() => {
+    if (!db) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [usersSnap, ngosSnap, brandsSnap, pendingAppsSnap] = await Promise.all([
+          getCountFromServer(collection(db, 'users')),
+          getCountFromServer(collection(db, 'ngos')),
+          getCountFromServer(collection(db, 'brands')),
+          getCountFromServer(
+            query(collection(db, 'applications'), where('status', '==', 'Beklemede'))
+          ),
+        ]);
+        if (cancelled) return;
+        setCounts({
+          users: usersSnap.data().count,
+          ngos: ngosSnap.data().count,
+          brands: brandsSnap.data().count,
+          pendingApps: pendingAppsSnap.data().count,
+        });
+      } catch (err) {
+        if (!cancelled) console.error('[super-admin] count aggregate failed', err);
+      } finally {
+        if (!cancelled) setCountsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [db]);
 
-  const pendingAppsCount = appsData?.filter(a => a.status === 'Beklemede').length || 0;
+  const usersLoading = countsLoading;
+  const ngosLoading = countsLoading;
+  const brandsLoading = countsLoading;
+  const appsLoading = countsLoading;
+  const pendingAppsCount = counts.pendingApps ?? 0;
 
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
@@ -156,7 +195,7 @@ export default function SuperAdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-black tracking-tighter">{usersLoading ? '...' : (usersData?.length || 0)}</div>
+              <div className="text-3xl font-black tracking-tighter">{usersLoading ? '...' : (counts.users ?? 0)}</div>
               <p className="text-[10px] text-muted-foreground mt-1">Aktif kayıtlı üye</p>
             </CardContent>
           </Card>
@@ -183,7 +222,7 @@ export default function SuperAdminDashboard() {
               <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-black tracking-tighter">{ngosLoading ? '...' : (ngosData?.length || 0)}</div>
+              <div className="text-3xl font-black tracking-tighter">{ngosLoading ? '...' : (counts.ngos ?? 0)}</div>
               <p className="text-[10px] text-muted-foreground mt-1">Bağışçı kabul eden dernekler</p>
             </CardContent>
           </Card>
@@ -194,7 +233,7 @@ export default function SuperAdminDashboard() {
               <Store className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-black tracking-tighter">{brandsLoading ? '...' : (brandsData?.length || 0)}</div>
+              <div className="text-3xl font-black tracking-tighter">{brandsLoading ? '...' : (counts.brands ?? 0)}</div>
               <p className="text-[10px] text-muted-foreground mt-1">İş ortağı işletmeler</p>
             </CardContent>
           </Card>
