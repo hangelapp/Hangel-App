@@ -249,6 +249,9 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
             setDocumentNonBlocking(doc(db, 'users', userId), {
                 id: userId,
                 name: name,
+                // Yeni kullanıcılarda demo profil fotoğrafı olmasın; boş bırakıldığında
+                // arayüzde AvatarFallback (baş harfler) gösterilir.
+                avatarUrl: '',
                 personalInfo: {
                     email: email.trim().toLowerCase(),
                     phone: `+${phoneCode}${phone.replace(/\D/g, '')}`,

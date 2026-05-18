@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface PhoneContact {
     id: string;
@@ -164,6 +165,10 @@ export default function InvitePage() {
     const [emailInput, setEmailInput] = useState('');
     const [emailList, setEmailList] = useState<string[]>([]);
     const [emailSending, setEmailSending] = useState(false);
+
+    // Dialog state — WhatsApp / E-posta sağlayıcı
+    const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
+    const [emailProviderDialogOpen, setEmailProviderDialogOpen] = useState(false);
 
     // Platformdaki telefon eşleşmesi için (sadece "hangel'da" rozetini göstermek amacıyla)
     const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
@@ -398,6 +403,44 @@ export default function InvitePage() {
         return sorted;
     }, [phoneContacts, sortCriteria]);
 
+    // Stub: telefon rehberi web destek bilgisi (PDF fallback)
+    const handlePhoneStubInfo = () => {
+        toast({
+            title: 'Mobil uygulamada aktif olur',
+            description: "Web'de henüz desteklenmiyor. Mobil uygulamadan rehberini bağlayabilirsin.",
+        });
+    };
+
+    // E-posta sağlayıcı OAuth stub (Gmail / Outlook / IMAP)
+    const handleEmailProviderStub = (provider: 'gmail' | 'outlook' | 'imap') => {
+        const labels: Record<typeof provider, string> = {
+            gmail: 'Gmail',
+            outlook: 'Outlook',
+            imap: 'Kurumsal / Özel IMAP',
+        };
+        toast({
+            title: `${labels[provider]} bağlantısı`,
+            description: 'OAuth bağlantısı için backend gerekli. Şu an manuel davet linki kullanabilirsiniz.',
+        });
+        setEmailProviderDialogOpen(false);
+    };
+
+    // WhatsApp davet metnini kopyala
+    const handleCopyWhatsappMessage = async () => {
+        if (!inviteMessage) return;
+        try {
+            await navigator.clipboard.writeText(inviteMessage);
+            toast({ title: 'Mesaj kopyalandı!', description: "Şimdi WhatsApp'ta yapıştırıp gönderebilirsin." });
+        } catch {
+            toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Tarayıcı izin vermedi.' });
+        }
+    };
+
+    const whatsappShareUrl = useMemo(
+        () => `https://wa.me/?text=${encodeURIComponent(inviteMessage)}`,
+        [inviteMessage]
+    );
+
     const ContactCard = ({ contact }: { contact: PhoneContact }) => (
         <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
             <div className="flex items-center gap-3">
@@ -472,6 +515,142 @@ export default function InvitePage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Hızlı Davet Yolları</CardTitle>
+                    <CardDescription>Telefon rehberin, e-posta kişilerin veya WhatsApp üzerinden arkadaşlarını davet et.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <Button
+                            variant="outline"
+                            className="h-auto py-4 flex flex-col items-center gap-2"
+                            onClick={handlePhoneStubInfo}
+                        >
+                            <Smartphone className="h-6 w-6 text-primary" />
+                            <span className="text-xs font-semibold">Telefon Rehberini Bağla</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Mobil uygulamada aktif</span>
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            className="h-auto py-4 flex flex-col items-center gap-2"
+                            onClick={() => setEmailProviderDialogOpen(true)}
+                        >
+                            <Mail className="h-6 w-6 text-primary" />
+                            <span className="text-xs font-semibold">E-posta Kişilerini İçe Aktar</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Gmail / Outlook / IMAP</span>
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            className="h-auto py-4 flex flex-col items-center gap-2"
+                            onClick={() => setWhatsappDialogOpen(true)}
+                        >
+                            <MessageSquare className="h-6 w-6 text-primary" />
+                            <span className="text-xs font-semibold">WhatsApp ile Davet</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Kopyala veya paylaş</span>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* WhatsApp Davet Dialog */}
+            <Dialog open={whatsappDialogOpen} onOpenChange={setWhatsappDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5 text-primary" /> WhatsApp ile Davet
+                        </DialogTitle>
+                        <DialogDescription>
+                            Davet metnini kopyala veya doğrudan WhatsApp&apos;ta paylaş.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <div className="rounded-lg border bg-muted/30 p-3">
+                            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Davet metni</p>
+                            <p className="text-sm leading-relaxed">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
+                        </div>
+                    </div>
+                    <DialogFooter className="flex-row gap-2 sm:gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={handleCopyWhatsappMessage}
+                            disabled={!inviteMessage}
+                        >
+                            <Copy className="mr-2 h-4 w-4" /> Mesajı Kopyala
+                        </Button>
+                        <Button asChild className="flex-1" disabled={!inviteMessage}>
+                            <a
+                                href={whatsappShareUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setWhatsappDialogOpen(false)}
+                            >
+                                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp&apos;ta Paylaş
+                            </a>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* E-posta Sağlayıcı Dialog */}
+            <Dialog open={emailProviderDialogOpen} onOpenChange={setEmailProviderDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Mail className="h-5 w-5 text-primary" /> E-posta Kişilerini İçe Aktar
+                        </DialogTitle>
+                        <DialogDescription>
+                            Mail kişilerini içe aktarmak için bir sağlayıcı seç. Hangel kullanan arkadaşların otomatik işaretlenir.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-12"
+                            onClick={() => handleEmailProviderStub('gmail')}
+                        >
+                            <Mail className="mr-3 h-5 w-5 text-red-500" />
+                            <div className="flex flex-col items-start">
+                                <span className="text-sm font-semibold">Gmail</span>
+                                <span className="text-[10px] text-muted-foreground">Google hesabıyla bağlan</span>
+                            </div>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-12"
+                            onClick={() => handleEmailProviderStub('outlook')}
+                        >
+                            <Mail className="mr-3 h-5 w-5 text-blue-500" />
+                            <div className="flex flex-col items-start">
+                                <span className="text-sm font-semibold">Outlook / Hotmail</span>
+                                <span className="text-[10px] text-muted-foreground">Microsoft hesabıyla bağlan</span>
+                            </div>
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start h-12"
+                            onClick={() => handleEmailProviderStub('imap')}
+                        >
+                            <AtSign className="mr-3 h-5 w-5 text-muted-foreground" />
+                            <div className="flex flex-col items-start">
+                                <span className="text-sm font-semibold">Kurumsal / Özel IMAP</span>
+                                <span className="text-[10px] text-muted-foreground">İş veya okul mailini bağla</span>
+                            </div>
+                        </Button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
+                        OAuth bağlantısı için backend gerekli. Şu an manuel davet linkini aşağıdan kullanabilirsin.
+                    </p>
+                </DialogContent>
+            </Dialog>
 
             <Card>
                 <CardHeader>

@@ -1,20 +1,38 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Building2, Store, School, HeartHandshake, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Building2, Store, School, HeartHandshake, ChevronRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useUser } from '@/firebase';
 
 /**
  * @fileOverview Yeni Başvuru Seçim Sayfası
  * Kullanıcıların Gönüllülük, Kulüp, STK veya Marka kategorilerinde yeni bir başvuru başlatmasını sağlar.
+ * Oturum açık değilse şifresiz kurumsal kayıt akışına yönlendirilir.
  */
 
 export default function NewApplicationPage() {
   const router = useRouter();
+  const { user, isUserLoading } = useUser();
+
+  // Oturumsuz kullanıcıyı şifresiz başvuru akışına (kurumsal sekme) yönlendir.
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.replace('/login/selection?tab=corporate');
+    }
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center" aria-busy="true">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const applicationTypes = [
     {

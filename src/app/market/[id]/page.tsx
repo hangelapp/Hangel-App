@@ -135,7 +135,14 @@ export default function BrandProfilePage() {
     }
 
     setIsDonating(true);
-    // 1) Bağış kaydı (durum: İşleme Alındı — turuncu)
+    // 1) Bağış kaydı oluştur — sadece "Başlatıldı" olarak işaretle.
+    //    Asıl "İşleme Alındı" geçişi, affiliate webhook'u alışverişi
+    //    doğruladıktan sonra (henüz uygulanmadı) yapılmalı.
+    // TODO(affiliate-webhook): Marka tarafından alışveriş doğrulandığında
+    //    bu kaydın status'ünü 'İşleme Alındı' (turuncu) yapacak ve
+    //    "Bağışınız işleme alınmıştır" bildirimini gönderecek bir webhook
+    //    handler'ı ekle (örn. /api/webhooks/affiliate). 72 gün sonrası için
+    //    clearableAt mantığı orada güncellenecek.
     addDocumentNonBlocking(collection(db, 'donations'), {
         userId: authUser.uid,
         userName: authUser.displayName || authUser.email || 'Kullanıcı',
@@ -151,19 +158,22 @@ export default function BrandProfilePage() {
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
         type: 'expense',
-        status: 'İşleme Alındı', // turuncu — 72 gün sonra Yatırıldı (yeşil) yapılır
+        // Henüz alışveriş tamamlanmadı — webhook gelene kadar "Başlatıldı".
+        status: 'Başlatıldı',
         ngo: ["Varsayılan STK'nız"],
         ngoIds: [],
         createdAt: serverTimestamp(),
-        clearableAt: new Date(Date.now() + 72 * 24 * 60 * 60 * 1000).toISOString(), // 72 gün sonrası
+        // clearableAt webhook geldiğinde hesaplanacak; şimdilik boş.
     });
 
-    // 2) Kullanıcıya bildirim (talep işleme alındı)
+    // 2) Kullanıcıya yönlendirme bildirimi — yanıltıcı "işleme alındı" YOK.
+    //    Asıl "Bağışınız işleme alınmıştır" bildirimi affiliate webhook
+    //    tetiklendikten sonra gönderilmeli.
     addDocumentNonBlocking(collection(db, 'notifications'), {
         userId: authUser.uid,
         type: 'donation',
-        title: 'Bağışınız işleme alınmıştır',
-        body: `${brand.name} üzerinden yaptığınız alışveriş kaydedildi. 72 gün içinde STK'ya aktarılacak.`,
+        title: 'Marka sitesi açıldı',
+        body: `${brand.name} sitesi açıldı. Alışverişin tamamlandıktan sonra bağışın işleme alınacak.`,
         data: { brandId: brand.id, brandName: brand.name },
         read: false,
         createdAt: serverTimestamp(),
@@ -175,7 +185,7 @@ export default function BrandProfilePage() {
 
     toast({
         title: 'Mağazaya Yönlendirildi',
-        description: `${brand.name} üzerinden yapacağınız harcamanın bir kısmı iyiliğe dönüşecek. Bağışlarım sayfasında işleme alındı olarak görünecek.`,
+        description: `${brand.name} sitesi açıldı. Alışverişini tamamladıktan sonra bağışın işleme alınacak.`,
     });
 
     setTimeout(() => setIsDonating(false), 1500);

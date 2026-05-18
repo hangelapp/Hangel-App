@@ -276,47 +276,52 @@ function EventsPageContent() {
       <EventMapDialog open={isMapOpen} onOpenChange={setIsMapOpen} events={sortedEvents} />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {sortedEvents.map((event: Event) => (
-          <Card key={event.id} className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow">
-            <Link href={`/events/${event.slug}`} className="relative aspect-[210/297] w-full bg-muted block">
-              <Image
-                src={event.imageUrl}
-                alt={event.name}
-                fill
-                className="object-cover"
-                data-ai-hint="event poster a4"
-              />
-              <div className="absolute top-2 left-2">
-                <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
-              </div>
+        {sortedEvents.map((event: Event) => {
+          const detailHref = `/events/${event.slug || event.id}`;
+          return (
+            <Link key={event.id} href={detailHref} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-[1.5rem]">
+              <Card className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer">
+                <div className="relative aspect-[210/297] w-full bg-muted block">
+                  <Image
+                    src={event.imageUrl}
+                    alt={event.name}
+                    fill
+                    className="object-cover"
+                    data-ai-hint="event poster a4"
+                  />
+                  <div className="absolute top-2 left-2">
+                    <Badge className="bg-white/90 backdrop-blur-md text-primary border-none font-black uppercase text-[8px] tracking-widest px-2 py-0.5 rounded-lg shadow-sm">{event.type}</Badge>
+                  </div>
+                </div>
+                <CardContent className="p-3 flex-1 space-y-2">
+                  <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">{event.name}</h2>
+                  <p className="text-[10px] font-bold text-primary truncate">{event.organizer}</p>
+                  <div className="space-y-1 pt-1 border-t border-dashed">
+                    <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
+                        <Calendar className='h-3 w-3 text-primary'/>
+                        <span>{format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'dd MMM yy, HH:mm', {locale: tr})}</span>
+                    </div>
+                    <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
+                        <MapPin className='h-3 w-3 text-primary'/>
+                        <span className="truncate">{event.location?.type === 'Online' ? 'Online' : event.location?.city}</span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="px-3 pb-3 pt-0 mt-auto flex flex-col gap-2">
+                  <div className="flex justify-between items-center w-full">
+                    <div className="space-y-0">
+                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Kapasite</p>
+                        <p className="text-[10px] font-black">{event.capacity?.current}/{event.capacity?.max}</p>
+                    </div>
+                    <Button size="sm" className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none">
+                      İncele
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
             </Link>
-            <CardContent className="p-3 flex-1 space-y-2">
-              <h2 className="text-sm font-bold font-headline leading-tight line-clamp-2 min-h-[2.5rem]">{event.name}</h2>
-              <p className="text-[10px] font-bold text-primary truncate">{event.organizer}</p>
-              <div className="space-y-1 pt-1 border-t border-dashed">
-                <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
-                    <Calendar className='h-3 w-3 text-primary'/>
-                    <span>{format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'dd MMM yy, HH:mm', {locale: tr})}</span>
-                </div>
-                <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
-                    <MapPin className='h-3 w-3 text-primary'/>
-                    <span className="truncate">{event.location?.type === 'Online' ? 'Online' : event.location?.city}</span>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="px-3 pb-3 pt-0 mt-auto flex flex-col gap-2">
-              <div className="flex justify-between items-center w-full">
-                <div className="space-y-0">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Kapasite</p>
-                    <p className="text-[10px] font-black">{event.capacity?.current}/{event.capacity?.max}</p>
-                </div>
-                <Button asChild size="sm" className="rounded-lg font-black text-[10px] h-7 px-3">
-                    <Link href={`/events/${event.slug}`}>İncele</Link>
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
