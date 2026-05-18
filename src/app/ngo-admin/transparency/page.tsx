@@ -275,10 +275,18 @@ export default function TransparencyPage() {
                         {item.isCompleted ? (
                           <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
                             <CheckCircle className="h-3 w-3" />
-                            {item.type === 'document' ? 'Yüklendi' : 'Tamamlandı'}
+                            {item.type === 'document' || (item.type === 'document-link' && item.fileName) ? 'Yüklendi ✓' : 'Tamamlandı'}
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px]">+{item.points} puan</Badge>
+                          <>
+                            {(item.type === 'document' || item.type === 'document-link') && (
+                              <Badge variant="outline" className="text-[10px] text-muted-foreground border-muted-foreground/30 gap-1">
+                                <AlertCircle className="h-3 w-3" />
+                                Yüklenmedi
+                              </Badge>
+                            )}
+                            <Badge variant="secondary" className="text-[10px]">+{item.points} puan</Badge>
+                          </>
                         )}
                       </div>
                       {!isEditing && (item.type === 'document' || item.type === 'document-link') && item.fileName && (
