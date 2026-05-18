@@ -633,3 +633,29 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Notlar**:
   - **Maintenance note** (`library/page.tsx:25-28`, `LIBRARY_ICONS` block): Firestore `library/{slug}` doc'larında yeni bir `icon` değeri kullanılacaksa (örn. yeni bölüm seed'i), önce (a) `lucide-react`'tan named import ekle, (b) `LIBRARY_ICONS` map'ine ekle. Eksik kalan değer çalışma zamanında `HelpCircle` ile yumuşak fallback yapar, çökmez. Bilinen 9 entry kuralın açık dokümantasyonu.
   - P2-4 + P2-4b ile toplam **11/11 lucide wildcard** elimine edildi. Recharts wildcard'ları hâlâ bilinçli SKIP (P2-4 notları).
+
+---
+
+## 2026-05-18 — P0-4 + P0-4a + P1-4 — claim assignment + rules deploy (orchestrator)
+
+- **Lead**: orchestrator (autonomous execution per user request "yapabildiklerini yap")
+- **Yapılan adımlar**:
+  1. `firebase apphosting:backends:list` + `gcloud secrets list` ile App Hosting secret state gözden geçirildi. Sadece 1 GitHub OAuth connector secret mevcut; kullanıcı tarafından setlenmesi gereken RESEND/NETGSM/META/NKOLAY env secret'ları YOK.
+  2. `firebase auth:export` ile 63 hesap dökümü çekildi. İki email-hardcoded admin UID bulundu: `v7woPvqKAzSTSodVOJB702WJmJ93` (ismailhilmi@hangel.org) + `j0LK5Kzvr4bwLFdD2pJuRQI2IHR2` (5384009090@hangel.org).
+  3. `users` koleksiyonunda `role == 'super-admin'` ile 2 ek UID tespit edildi: `qkAlDk30eBXaHJK2AKacaNX4wra2`, `xsvfFRJUPzf5EyXSTtt3DdyRYIY2`. Audit'in kaçırdığı bulgu.
+  4. `scripts/set-super-admin-claim.ts` 4 UID için sırayla çalıştırıldı; her birinde `customClaims = { role: 'super-admin' }` set edildi (idempotent merge, mevcut claim'ler korunur).
+  5. Re-scan: 4/4 UID'in claim'i doğrulandı.
+  6. `firebase deploy --only firestore:rules,storage --project hangel-new-v18-87297865-9bcc3` çalıştırıldı; compile + release başarılı.
+  7. Doğrulama: anon `POST https://firestore.googleapis.com/.../documents/users/_anon_test` → **400 / PERMISSION_DENIED** (beklendiği gibi).
+- **Risk profili**: Düşük-Orta. 4 mevcut admin'in aktif session ID-token'ları STALE — yeni claim'i görmek için bir kez logout/login (veya `auth.currentUser.getIdToken(true)`) gerekir. Bu süreçte UI tarafı `userData.role === 'super-admin'` fallback'i ile çalışır; Firestore client write'lar 403 alır (admin işlemleri API route'lar üzerinden Admin SDK ile gider, etkilenmez).
+- **Hangi UID hangi claim/path ile authorize ediliyor**:
+  - `v7woPvqKAzSTSodVOJB702WJmJ93`: claim ✅ + Firestore doc ✅
+  - `j0LK5Kzvr4bwLFdD2pJuRQI2IHR2`: claim ✅ + Firestore doc ❌ (email-hardcoded eski yol; claim sonrası tek başına geçerli)
+  - `qkAlDk30eBXaHJK2AKacaNX4wra2`: claim ✅ + Firestore doc ✅
+  - `xsvfFRJUPzf5EyXSTtt3DdyRYIY2`: claim ✅ + Firestore doc ✅
+- **Rollback**: Acil bir lockout durumunda Firebase Console → Firestore → Rules → "History" → bir önceki versiyonu Restore.
+- **Sonraki adımlar (kullanıcıya kalan)**:
+  - Service account rotate (Console — runbook hazır)
+  - `git push origin main` (kod deploy; öncesinde RESEND_WEBHOOK_SECRET, NETGSM_WEBHOOK_ALLOWED_IPS App Hosting secret olarak set edilmeli)
+  - Git history purge (destructive)
+- **Notlar**: 4 admin kullanıcıya çıkış-giriş yapmalarını bildir; aksi halde fallback UI'da çalışmaya devam ederler ama Firestore client write'lar reddedilir.

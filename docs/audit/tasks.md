@@ -10,7 +10,7 @@ Bu pano `docs/audit/findings.md`'deki bulgulardan türetilmiştir. Her görev: I
 |---|---|---|---|---|
 | **P0-1** | Firebase service account key rotate | security-lead | 🟡 Awaiting user | [service-account-rotate.md](./runbooks/service-account-rotate.md) |
 | **P0-1b** | `git filter-repo` ile geçmişten purge (rotate sonrası) | devops-lead | 🟡 Awaiting user | [git-history-purge.md](./runbooks/git-history-purge.md) |
-| **P0-4a** | Super-admin custom claims migration (deploy) | security-lead | 🟡 Awaiting user | [super-admin-claims.md](./runbooks/super-admin-claims.md) |
+| **P0-4a** | Super-admin custom claims migration (deploy) | security-lead | ✅ Done (2026-05-18) — 4 super-admin UID'i claim ile işaretlendi (v7woPv..., j0LK5K..., qkAlDk..., xsvfFR...); `firebase deploy --only firestore:rules,storage` ile rules canlı; anon Firestore write 400 (PERMISSION_DENIED) | — |
 
 ## P0 — Kritik
 
@@ -18,7 +18,7 @@ Bu pano `docs/audit/findings.md`'deki bulgulardan türetilmiştir. Her görev: I
 |---|---|---|---|---|---|
 | P0-2 | `/api/proxy` route'unu kaldır veya host whitelist + auth + rate limit ekle | security-lead | `src/app/api/proxy/route.ts` | Yüksek (callers var mı? grep gerekir) | ✅ Done (2026-05-18) — 0 caller, route + parent dir silindi; `.env.example`'a `ALLOWED_PROXY_HOSTS` placeholder eklendi. |
 | P0-3 | `/api/admin/import-data` Admin SDK'ya geçir | security-lead | `src/app/api/admin/import-data/route.ts` | Orta (admin import path) | ✅ Done (2026-05-18) — `getAdminFirestore()` + `FieldValue.serverTimestamp()`; client SDK importları silindi; in-memory IP rate limit (10/dk); `{errorCode,message}` error shape; typecheck PASS, lint 0 errors. |
-| P0-4 | Super-admin hardcoded e-postasını custom claim'e taşımak için kod tarafı | security-lead | `firestore.rules:12`, `src/lib/messaging/server-auth.ts:11` | Yüksek (auth model değişir) — sadece kod, deploy P0-4a | 🟡 Awaiting user (2026-05-18 — kod hazır; rules `isSuperAdmin()` artık tek satır claim kontrolü; server-auth + app-shell + super-admin layout claim primary, `users/{uid}.role` fallback; `scripts/set-super-admin-claim.ts` + `tests/rules/super-admin.test.ts` eklendi. Deploy: super-admin-claims.md runbook) |
+| P0-4 | Super-admin hardcoded e-postasını custom claim'e taşımak için kod tarafı | security-lead | `firestore.rules:12`, `src/lib/messaging/server-auth.ts:11` | Yüksek (auth model değişir) — sadece kod, deploy P0-4a | ✅ Done (2026-05-18) — kod hazır + 4 UID'e claim atandı + rules deploy edildi (P0-4a ile birlikte). Anon Firestore write artık 400/403. |
 | P0-5 | `/super-admin/layout.tsx`'e client-side rol kontrolü + redirect | frontend-lead | `src/app/super-admin/layout.tsx` | Düşük (UI gating) | ✅ Done (2026-05-18) — `useUser`+`useDoc<User>` ile rol okunuyor; super-admin değilse `/market`, anon ise `/login/selection`'a `router.replace`; auth çözülürken `<Loader2/>`; typecheck PASS, lint 0 errors. |
 | P0-6 | CI workflow'una `npm run test` adımı + rules emülatör job | devops-lead | `.github/workflows/ci.yml` | Düşük | ✅ Done (CI will verify on next PR) |
 
@@ -39,7 +39,7 @@ Bu pano `docs/audit/findings.md`'deki bulgulardan türetilmiştir. Her görev: I
 | P1-2b | Netgsm gerçek HMAC sağlayınca IP whitelist'i imza kontrolüne çevir | security-lead | `src/app/api/messaging/webhook/[driver]/route.ts` | 📋 |
 | P1-3 | Webhook replay protection (timestamp + nonce kayıt) | security-lead | aynı | 🔧 In progress (2026-05-18) — `webhookReplayIds` create-or-fail + 5dk timestamp window done; TTL cleanup P1-3b'ye ayrıldı. |
 | P1-3b | `webhookReplayIds` için Firestore TTL policy veya scheduled cleanup (90 gün) | devops-lead | Firestore Console / Cloud Scheduler | 📋 |
-| P1-4 | `storage.rules` — `transparency/{userId}/*` public read kapatma | security-lead | `storage.rules` | ✅ Done (2026-05-18) — read: `isSuperAdmin() \|\| auth.uid == userId \|\| isManagedEntity('Ngo', userId)`; write aynı; deploy gerekli. |
+| P1-4 | `storage.rules` — `transparency/{userId}/*` public read kapatma | security-lead | `storage.rules` | ✅ Done (2026-05-18) + deployed — read: `isSuperAdmin() \|\| auth.uid == userId \|\| isManagedEntity('Ngo', userId)`; write aynı; `firebase deploy --only storage` ile prod'a çıktı. |
 | P1-5 | Global `error.tsx` + key dashboard segment'lerinde error boundary | frontend-lead | `src/app/error.tsx`, `src/app/(dashboard segments)/error.tsx` | ✅ Done |
 | P1-6 | `dangerouslySetInnerHTML` sanitize katmanı (DOMPurify isomorphic) | security-lead | `src/app/logo-usage/page.tsx`, `src/app/library/[slug]/page.tsx`, diğerleri | ✅ Done (2026-05-18) — `isomorphic-dompurify@^3.13.0` + `src/lib/sanitize-html.ts` whitelist util; 17 dosya / 19 occurrence sarmalandı (chart.tsx shadcn `<style>` + use-site-content.ts JSDoc bilinçle atlandı); typecheck PASS, lint 0 errors. |
 | P1-7 | `target="_blank"` + `rel="noopener noreferrer"` pass | frontend-lead | 15+ dosya | ✅ Done (2026-05-18) — 7 dosya patch'lendi (`ngos/[id]`, `super-admin/{contracts,web-content,association-content,funds,pages}`, `settings/ngo-selection`); ~26 dosya zaten doğruydu; typecheck PASS, lint 0 errors. |
