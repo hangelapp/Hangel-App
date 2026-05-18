@@ -26,9 +26,11 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area,
 } from 'recharts';
-import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock } from "lucide-react";
+import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock, Pencil } from "lucide-react";
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b'];
 
@@ -139,6 +141,11 @@ export default function AnalyticsPage() {
     const activeNgos = (ngos ?? []).filter((n) => !n.status || n.status === 'Aktif').length;
     const activeBrands = (brands ?? []).filter((b) => !b.status || b.status === 'Aktif').length;
     const activeClubs = (clubs ?? []).filter((c) => !c.status || c.status === 'Aktif').length;
+    // Açık gönüllülük ilanları — status 'Aktif' veya 'Yayında' veya boş (varsayılan aktif kabul)
+    const activeOpportunities = (opportunities ?? []).filter((o) => {
+        const s = (o.status ?? '').toString();
+        return !s || s === 'Aktif' || s === 'Yayında' || s === 'active' || s === 'open' || s === 'Açık';
+    }).length;
 
     // Gerçek bağış toplamları (donations koleksiyonundan)
     const realDonations = (donations ?? []).filter((d) => d.type !== 'income');
@@ -285,11 +292,21 @@ export default function AnalyticsPage() {
                     <CardTitle className="text-sm font-medium mt-1">Aktif STK</CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">{(ngos?.length ?? 0) - activeNgos} pasif kayıt</p>
                 </Card>
-                <Card className="aspect-square flex flex-col justify-center items-center p-4">
+                <Card className="aspect-square flex flex-col justify-center items-center p-4 relative">
                     <Store className="h-8 w-8 text-muted-foreground" />
                     <p className="text-3xl font-bold mt-2">{activeBrands.toLocaleString('tr-TR')}</p>
                     <CardTitle className="text-sm font-medium mt-1">Aktif Marka</CardTitle>
                     <p className="text-xs text-muted-foreground mt-1">{(brands?.length ?? 0) - activeBrands} pasif kayıt</p>
+                    <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 rounded-2xl h-7 px-3 text-[11px]"
+                    >
+                        <Link href="/super-admin/brands">
+                            <Pencil className="h-3 w-3 mr-1" /> Düzenle (Markalar)
+                        </Link>
+                    </Button>
                 </Card>
                 <Card className="aspect-square flex flex-col justify-center items-center p-4">
                     <HandCoins className="h-8 w-8 text-muted-foreground" />
@@ -356,11 +373,16 @@ export default function AnalyticsPage() {
                     </div>
                 </Card>
                 <Card className="p-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full">
                         <div className="p-2 rounded-lg bg-blue-100"><FileText className="h-4 w-4 text-blue-600" /></div>
-                        <div>
-                            <p className="text-2xl font-bold">{(opportunities?.length ?? 0).toLocaleString('tr-TR')}</p>
-                            <p className="text-xs text-muted-foreground">Açık Gönüllülük İlanı</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-2xl font-bold">{activeOpportunities.toLocaleString('tr-TR')}</p>
+                            <p className="text-xs text-muted-foreground">
+                                Açık Gönüllülük İlanı
+                                <span className="block text-[10px] opacity-70">
+                                    Toplam {(opportunities?.length ?? 0).toLocaleString('tr-TR')} kayıt
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </Card>

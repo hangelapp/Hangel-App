@@ -1,4 +1,3 @@
-
 [
   {
     "id": "brand-1",
@@ -43,11 +42,261 @@
   {
     "id": "brand-26",
     "name": "Amazon TR",
-    "slug": "amazontr",
-    "donationRate": 13,
+    "slug": "amazon-tr",
+    "donationRate": 3,
     "category": "Pazar Yeri",
     "type": "brand",
     "domain": "amazon.com.tr",
     "logoUrl": "https://logo.clearbit.com/amazon.com.tr"
+  },
+  {
+    "id": "brand-trendyol",
+    "name": "Trendyol",
+    "slug": "trendyol",
+    "donationRate": 3,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "trendyol.com",
+    "logoUrl": "https://logo.clearbit.com/trendyol.com"
+  },
+  {
+    "id": "brand-hepsiburada",
+    "name": "Hepsiburada",
+    "slug": "hepsiburada",
+    "donationRate": 3,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "hepsiburada.com",
+    "logoUrl": "https://logo.clearbit.com/hepsiburada.com"
+  },
+  {
+    "id": "brand-n11",
+    "name": "N11",
+    "slug": "n11",
+    "donationRate": 3,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "n11.com",
+    "logoUrl": "https://logo.clearbit.com/n11.com"
+  },
+  {
+    "id": "brand-gittigidiyor",
+    "name": "Gittigidiyor",
+    "slug": "gittigidiyor",
+    "donationRate": 2,
+    "category": "Pazar Yeri",
+    "type": "brand",
+    "domain": "gittigidiyor.com",
+    "logoUrl": "https://logo.clearbit.com/gittigidiyor.com"
+  },
+  {
+    "id": "brand-ciceksepeti",
+    "name": "Çiçek Sepeti",
+    "slug": "ciceksepeti",
+    "donationRate": 4,
+    "category": "Hediyelik",
+    "type": "brand",
+    "domain": "ciceksepeti.com",
+    "logoUrl": "https://logo.clearbit.com/ciceksepeti.com"
+  },
+  {
+    "id": "brand-mediamarkt",
+    "name": "MediaMarkt",
+    "slug": "mediamarkt",
+    "donationRate": 2,
+    "category": "Elektronik",
+    "type": "brand",
+    "domain": "mediamarkt.com.tr",
+    "logoUrl": "https://logo.clearbit.com/mediamarkt.com.tr"
+  },
+  {
+    "id": "brand-teknosa",
+    "name": "Teknosa",
+    "slug": "teknosa",
+    "donationRate": 2,
+    "category": "Elektronik",
+    "type": "brand",
+    "domain": "teknosa.com",
+    "logoUrl": "https://logo.clearbit.com/teknosa.com"
+  },
+  {
+    "id": "brand-vatanbilgisayar",
+    "name": "Vatan Bilgisayar",
+    "slug": "vatan-bilgisayar",
+    "donationRate": 2,
+    "category": "Elektronik",
+    "type": "brand",
+    "domain": "vatanbilgisayar.com",
+    "logoUrl": "https://logo.clearbit.com/vatanbilgisayar.com"
+  },
+  {
+    "id": "brand-dr",
+    "name": "D&R",
+    "slug": "dr",
+    "donationRate": 4,
+    "category": "Kitap & Hobi",
+    "type": "brand",
+    "domain": "dr.com.tr",
+    "logoUrl": "https://logo.clearbit.com/dr.com.tr"
+  },
+  {
+    "id": "brand-watsons",
+    "name": "Watsons",
+    "slug": "watsons",
+    "donationRate": 3,
+    "category": "Kozmetik & Sağlık",
+    "type": "brand",
+    "domain": "watsons.com.tr",
+    "logoUrl": "https://logo.clearbit.com/watsons.com.tr"
+  },
+  {
+    "id": "brand-gratis",
+    "name": "Gratis",
+    "slug": "gratis",
+    "donationRate": 3,
+    "category": "Kozmetik & Sağlık",
+    "type": "brand",
+    "domain": "gratis.com",
+    "logoUrl": "https://logo.clearbit.com/gratis.com"
+  },
+  {
+    "id": "brand-boyner",
+    "name": "Boyner",
+    "slug": "boyner",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "boyner.com.tr",
+    "logoUrl": "https://logo.clearbit.com/boyner.com.tr"
+  },
+  {
+    "id": "brand-lcwaikiki",
+    "name": "LCWaikiki",
+    "slug": "lcwaikiki",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "lcwaikiki.com",
+    "logoUrl": "https://logo.clearbit.com/lcwaikiki.com"
+  },
+  {
+    "id": "brand-koton",
+    "name": "Koton",
+    "slug": "koton",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "koton.com",
+    "logoUrl": "https://logo.clearbit.com/koton.com"
+  },
+  {
+    "id": "brand-defacto",
+    "name": "Defacto",
+    "slug": "defacto",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "defacto.com.tr",
+    "logoUrl": "https://logo.clearbit.com/defacto.com.tr"
+  },
+  {
+    "id": "brand-mavi",
+    "name": "Mavi",
+    "slug": "mavi",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "mavi.com",
+    "logoUrl": "https://logo.clearbit.com/mavi.com"
+  },
+  {
+    "id": "brand-beymen",
+    "name": "Beymen",
+    "slug": "beymen",
+    "donationRate": 5,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "beymen.com",
+    "logoUrl": "https://logo.clearbit.com/beymen.com"
+  },
+  {
+    "id": "brand-vakko",
+    "name": "Vakko",
+    "slug": "vakko",
+    "donationRate": 5,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "vakko.com",
+    "logoUrl": "https://logo.clearbit.com/vakko.com"
+  },
+  {
+    "id": "brand-network",
+    "name": "Network",
+    "slug": "network",
+    "donationRate": 4,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "network.com.tr",
+    "logoUrl": "https://logo.clearbit.com/network.com.tr"
+  },
+  {
+    "id": "brand-pierrecardin",
+    "name": "Pierre Cardin",
+    "slug": "pierre-cardin",
+    "donationRate": 4,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "pierrecardin.com.tr",
+    "logoUrl": "https://logo.clearbit.com/pierrecardin.com.tr"
+  },
+  {
+    "id": "brand-damat",
+    "name": "Damat",
+    "slug": "damat",
+    "donationRate": 4,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "damat.com.tr",
+    "logoUrl": "https://logo.clearbit.com/damat.com.tr"
+  },
+  {
+    "id": "brand-atasun",
+    "name": "Atasun Optik",
+    "slug": "atasun-optik",
+    "donationRate": 3,
+    "category": "Optik & Sağlık",
+    "type": "brand",
+    "domain": "atasun.com",
+    "logoUrl": "https://logo.clearbit.com/atasun.com"
+  },
+  {
+    "id": "brand-mango",
+    "name": "Mango",
+    "slug": "mango",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "mango.com",
+    "logoUrl": "https://logo.clearbit.com/mango.com"
+  },
+  {
+    "id": "brand-zara",
+    "name": "Zara",
+    "slug": "zara",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "zara.com",
+    "logoUrl": "https://logo.clearbit.com/zara.com"
+  },
+  {
+    "id": "brand-hm",
+    "name": "H&M",
+    "slug": "hm",
+    "donationRate": 3,
+    "category": "Giyim",
+    "type": "brand",
+    "domain": "hm.com",
+    "logoUrl": "https://logo.clearbit.com/hm.com"
   }
 ]

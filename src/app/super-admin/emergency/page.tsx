@@ -103,23 +103,59 @@ export default function EmergencyManagementPage() {
   const pendingRequestsQuery = useMemoFirebase(() => {
     return query(collection(db, 'emergencyRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
   }, [db]);
-  const { data: pendingRequests } = useCollection<EmergencyDoc>(pendingRequestsQuery);
+  const { data: pendingRequestsPrimary } = useCollection<EmergencyDoc>(pendingRequestsQuery);
+
+  // Geriye dönük uyumluluk: bloodRequests / userRequests koleksiyonları varsa onlardan da oku
+  const bloodRequestsQuery = useMemoFirebase(() => {
+    try {
+      return query(collection(db, 'bloodRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+    } catch { return null; }
+  }, [db]);
+  const { data: bloodRequestsFallback } = useCollection<EmergencyDoc>(bloodRequestsQuery);
+
+  const userRequestsQuery = useMemoFirebase(() => {
+    try {
+      return query(collection(db, 'userRequests'), where('type', '==', 'blood'), orderBy('createdAt', 'desc'));
+    } catch { return null; }
+  }, [db]);
+  const { data: userRequestsFallback } = useCollection<EmergencyDoc>(userRequestsQuery);
+
+  // Birleştirilmiş "onay bekleyen" liste (id bazlı tekilleştirme)
+  const pendingRequests = useMemo(() => {
+    const all: EmergencyDoc[] = [
+      ...(pendingRequestsPrimary ?? []),
+      ...(bloodRequestsFallback ?? []),
+      ...((userRequestsFallback ?? []).filter(r => !r.status || r.status === 'pending')),
+    ];
+    const seen = new Set<string>();
+    return all.filter(r => {
+      if (!r.id || seen.has(r.id)) return false;
+      seen.add(r.id);
+      return true;
+    });
+  }, [pendingRequestsPrimary, bloodRequestsFallback, userRequestsFallback]);
 
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
   const neighborhoodOptions = (city && district) ? ((neighborhoodsData as Record<string, Record<string, string[]>>)[city]?.[district] ?? []) : [];
 
-  // Eşleşen kullanıcı sayısı (anlık önizleme)
+  // Eşleşen kullanıcı sayısı (anlık önizleme).
+  // Not: bloodType seçili değilse de kapsam (scope/şehir/ilçe/mahalle) bazlı sayım yapar —
+  // "Tüm Türkiye"de kan grubu seçilmese bile toplam kullanıcı sayısını göstermek için.
   const matchingUsers = useMemo(() => {
-    if (!allUsers || !bloodType) return [];
+    if (!allUsers) return [];
     return allUsers.filter(u => {
-      const ub = u.personalInfo?.bloodType;
-      if (ub !== bloodType) return false;
+      // Kan grubu filtresi (varsa)
+      if (bloodType) {
+        const ub = u.personalInfo?.bloodType;
+        if (ub !== bloodType) return false;
+      }
+      // Kapsam filtresi
       if (scope === 'all') return true;
       const ua = u.personalInfo?.address || {};
-      if (scope === 'city') return ua.city === city;
-      if (scope === 'district') return ua.city === city && ua.district === district;
-      if (scope === 'neighborhood') return ua.city === city && ua.district === district && ua.neighborhood === neighborhood;
+      if (scope === 'city') return !!city && ua.city === city;
+      if (scope === 'district') return !!city && !!district && ua.city === city && ua.district === district;
+      if (scope === 'neighborhood') return !!city && !!district && !!neighborhood && ua.city === city && ua.district === district && ua.neighborhood === neighborhood;
       return false;
     });
   }, [allUsers, bloodType, scope, city, district, neighborhood]);
@@ -349,7 +385,7 @@ export default function EmergencyManagementPage() {
               ) : (
                 <div className="space-y-3">
                   {pendingRequests.map((req) => (
-                    <div key={req.id} className="border rounded-xl p-4 bg-background space-y-3">
+                    <div key={req.id} className="border rounded-2xl p-4 bg-background space-y-3">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-red-600 text-[11px]">{req.bloodType || '?'}</Badge>
@@ -508,21 +544,26 @@ export default function EmergencyManagementPage() {
               </div>
 
               {/* Eşleşme önizlemesi */}
-              <Alert className="border-amber-300 bg-amber-50">
+              <Alert className="border-amber-300 bg-amber-50 rounded-2xl">
                 <Users className="h-4 w-4 text-amber-700" />
                 <AlertTitle className="text-amber-900">Hedef Kitle Önizlemesi</AlertTitle>
                 <AlertDescription className="text-amber-800">
                   {usersLoading ? (
-                    <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Kullanıcılar yükleniyor...</span>
-                  ) : !bloodType ? (
-                    <span>Kan grubu seçin — eşleşen kullanıcı sayısı burada görünecek.</span>
+                    <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Kullanıcılar yükleniyor ({(allUsers ?? []).length} okundu)...</span>
                   ) : (
                     <span>
-                      <strong className="text-2xl text-amber-900">{matchingUsers.length}</strong> kullanıcıya bildirim gönderilecek
+                      <strong className="text-2xl text-amber-900">{matchingUsers.length.toLocaleString('tr-TR')}</strong>
+                      {' '}/{' '}
+                      <span className="text-sm">{(allUsers ?? []).length.toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
                       <span className="text-xs block mt-1">
-                        Filtre: {bloodType} kan grubu • {scopeLabel[scope]}
+                        Filtre: {bloodType ? `${bloodType} kan grubu` : 'tüm kan grupları'} • {scopeLabel[scope]}
                         {city && ` • ${city}`}{district && ` / ${district}`}{neighborhood && ` / ${neighborhood}`}
                       </span>
+                      {!bloodType && (
+                        <span className="text-[11px] block mt-1 italic text-amber-700">
+                          İpucu: kan grubu seçerek hedef kitleyi daraltabilirsiniz.
+                        </span>
+                      )}
                     </span>
                   )}
                 </AlertDescription>

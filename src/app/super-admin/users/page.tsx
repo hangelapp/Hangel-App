@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, MailCheck } from 'lucide-react';
+import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, MailCheck, KeyRound, ShieldQuestion } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -41,7 +41,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useAuth, initiatePasswordResetEmail } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 
@@ -139,28 +139,84 @@ const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow | null;
   );
 };
 
-// Edit dialog (name, email, phone, username, role)
+// Edit dialog — kullanıcı profilinin tamamını düzenler
 const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   user: UserRow | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onSave: (id: string, patch: Record<string, unknown>) => Promise<void>;
 }) => {
+  // Temel
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [role, setRole] = useState<'user' | 'ngo-admin' | 'super-admin'>('user');
+  // İletişim
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState<'user' | 'ngo-admin' | 'super-admin'>('user');
+  const [website, setWebsite] = useState('');
+  // Demografi
+  const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState('');
+  const [nationality, setNationality] = useState('');
+  const [bloodType, setBloodType] = useState('');
+  // Adres
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [district, setDistrict] = useState('');
+  // Sosyal
+  const [instagram, setInstagram] = useState('');
+  const [twitter, setTwitter] = useState('');
+  const [linkedin, setLinkedin] = useState('');
+  const [github, setGithub] = useState('');
+  const [behance, setBehance] = useState('');
+  // Volunteer özet
+  const [profession, setProfession] = useState('');
+
   const [saving, setSaving] = useState(false);
 
   React.useEffect(() => {
     if (user) {
-       
+      const pi = (user.personalInfo || {}) as Partial<{
+        email: string;
+        phone: string;
+        birthDate: string;
+        gender: string;
+        nationality: string;
+        bloodType: string;
+        website: string;
+        address: Record<string, string | undefined>;
+        social: Record<string, string | undefined>;
+      }>;
+      const addr = (pi.address || {}) as Record<string, string | undefined>;
+      const social = (pi.social || {}) as Record<string, string | undefined>;
+      const vi = (user.volunteerInfo || {}) as Partial<{ profession: string | null }>;
+
       setName(user.name || '');
       setUsername(user.username || '');
-      setEmail(user.personalInfo?.email || '');
-      setPhone(user.personalInfo?.phone || '');
+      setAvatarUrl(user.avatarUrl || '');
       setRole((user.role as 'user' | 'ngo-admin' | 'super-admin') || 'user');
+
+      setEmail(pi.email || '');
+      setPhone(pi.phone || '');
+      setWebsite(pi.website || '');
+
+      setBirthDate(pi.birthDate || '');
+      setGender(pi.gender || '');
+      setNationality(pi.nationality || '');
+      setBloodType(pi.bloodType || '');
+
+      setCountry(addr.country || '');
+      setCity(addr.city || '');
+      setDistrict(addr.district || '');
+
+      setInstagram(social.instagram || '');
+      setTwitter(social.twitter || '');
+      setLinkedin(social.linkedin || '');
+      setGithub(social.github || '');
+      setBehance(social.behance || '');
+
+      setProfession(vi.profession || '');
     }
   }, [user]);
 
@@ -169,14 +225,43 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const prevPi = (user.personalInfo || {}) as Record<string, unknown>;
+      const prevAddress = ((prevPi.address as Record<string, unknown>) || {});
+      const prevSocial = ((prevPi.social as Record<string, unknown>) || {});
+      const prevVi = (user.volunteerInfo || {}) as Record<string, unknown>;
+
       await onSave(user.id, {
         name: name.trim(),
         username: username.trim(),
+        avatarUrl: avatarUrl.trim(),
         role,
         personalInfo: {
-          ...(user.personalInfo || {}),
+          ...prevPi,
           email: email.trim(),
           phone: phone.trim(),
+          website: website.trim() || null,
+          birthDate: birthDate.trim(),
+          gender: gender.trim(),
+          nationality: nationality.trim(),
+          bloodType: bloodType.trim(),
+          address: {
+            ...prevAddress,
+            country: country.trim(),
+            city: city.trim(),
+            district: district.trim(),
+          },
+          social: {
+            ...prevSocial,
+            instagram: instagram.trim() || null,
+            twitter: twitter.trim() || null,
+            linkedin: linkedin.trim() || null,
+            github: github.trim() || null,
+            behance: behance.trim() || null,
+          },
+        },
+        volunteerInfo: {
+          ...prevVi,
+          profession: profession.trim() || null,
         },
       });
       onOpenChange(false);
@@ -187,53 +272,172 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-[2rem] max-w-lg">
+      <DialogContent className="rounded-[2rem] max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Kullanıcı Bilgilerini Düzenle</DialogTitle>
-          <DialogDescription>{user.name} kullanıcısının bilgilerini ve yetki seviyesini güncelleyin.</DialogDescription>
+          <DialogTitle>Kullanıcı Profilini Düzenle</DialogTitle>
+          <DialogDescription>{user.name} kullanıcısının tüm profil bilgilerini, sosyal medyasını ve yetki seviyesini güncelleyin.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-2 max-h-[60vh] overflow-y-auto">
-          <div className="space-y-2">
-            <Label>Ad Soyad</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Kullanıcı Adı</Label>
-            <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="@kullaniciadi" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>E-posta</Label>
-              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+        <div className="space-y-5 py-2 max-h-[65vh] overflow-y-auto pr-1">
+          {/* Profil & Yetki */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Profil</p>
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-white shadow">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="text-xl font-black">{(name || '?').charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-2">
+                <Label className="text-xs">Profil Fotoğrafı URL</Label>
+                <Input value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://..." className="rounded-xl" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Ad Soyad</Label>
+                <Input value={name} onChange={e => setName(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Kullanıcı Adı</Label>
+                <Input value={username} onChange={e => setUsername(e.target.value)} placeholder="@kullaniciadi" className="rounded-xl" />
+              </div>
             </div>
             <div className="space-y-2">
-              <Label>Telefon</Label>
-              <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
+              <Label>Platform Yetkisi</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as 'user' | 'ngo-admin' | 'super-admin')}>
+                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">Standart Kullanıcı</SelectItem>
+                  <SelectItem value="ngo-admin">Yönetici (Kurumsal)</SelectItem>
+                  <SelectItem value="super-admin">Süper Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {role === 'super-admin' && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <ShieldAlert className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-red-800 leading-relaxed font-medium">
+                  Süper Admin yetkisi, kullanıcının bu paneli ve tüm sistem ayarlarını yönetmesini sağlar.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* İletişim */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">İletişim</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>E-posta</Label>
+                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Telefon</Label>
+                <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="rounded-xl" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Web Sitesi</Label>
+              <Input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://..." className="rounded-xl" />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Platform Yetkisi</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as 'user' | 'ngo-admin' | 'super-admin')}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Standart Kullanıcı</SelectItem>
-                <SelectItem value="ngo-admin">Yönetici (Kurumsal)</SelectItem>
-                <SelectItem value="super-admin">Süper Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {role === 'super-admin' && (
-            <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
-              <ShieldAlert className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
-              <p className="text-xs text-red-800 leading-relaxed font-medium">
-                Süper Admin yetkisi, kullanıcının bu paneli ve tüm sistem ayarlarını yönetmesini sağlar.
-              </p>
+
+          {/* Demografi */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Demografi</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Doğum Tarihi</Label>
+                <Input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Cinsiyet</Label>
+                <Select value={gender || undefined} onValueChange={(v) => setGender(v)}>
+                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Kadın">Kadın</SelectItem>
+                    <SelectItem value="Erkek">Erkek</SelectItem>
+                    <SelectItem value="Diğer">Diğer</SelectItem>
+                    <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Uyruk</Label>
+                <Input value={nationality} onChange={e => setNationality(e.target.value)} placeholder="T.C." className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Kan Grubu</Label>
+                <Select value={bloodType || undefined} onValueChange={(v) => setBloodType(v)}>
+                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                  <SelectContent>
+                    {['0 Rh+', '0 Rh-', 'A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-'].map(bt => (
+                      <SelectItem key={bt} value={bt}>{bt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Adres */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adres</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="space-y-2">
+                <Label>Ülke</Label>
+                <Input value={country} onChange={e => setCountry(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>İl</Label>
+                <Input value={city} onChange={e => setCity(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>İlçe</Label>
+                <Input value={district} onChange={e => setDistrict(e.target.value)} className="rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Sosyal Medya */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sosyal Medya</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Instagram</Label>
+                <Input value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@kullanici" className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Twitter / X</Label>
+                <Input value={twitter} onChange={e => setTwitter(e.target.value)} placeholder="@kullanici" className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>LinkedIn</Label>
+                <Input value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="linkedin.com/in/..." className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>GitHub</Label>
+                <Input value={github} onChange={e => setGithub(e.target.value)} placeholder="github.com/..." className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Behance</Label>
+                <Input value={behance} onChange={e => setBehance(e.target.value)} placeholder="behance.net/..." className="rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Gönüllü Özeti */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Gönüllü Bilgileri (Özet)</p>
+            <div className="space-y-2">
+              <Label>Meslek</Label>
+              <Input value={profession} onChange={e => setProfession(e.target.value)} placeholder="Yazılım Geliştirici" className="rounded-xl" />
+              <p className="text-[11px] text-muted-foreground">Diğer gönüllü alanları (yetenekler, eğitim, diller vb.) kullanıcı kendi profilinden düzenler.</p>
+            </div>
+          </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>İptal</Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl font-bold">İptal</Button>
+          <Button onClick={handleSave} disabled={saving} className="rounded-xl font-bold">
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Kaydet
           </Button>
@@ -245,13 +449,30 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
 
 export default function UsersPage() {
   const db = useFirestore();
+  const auth = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [viewingUser, setViewingUser] = useState<UserRow | null>(null);
+  const [permError, setPermError] = useState<string | null>(null);
 
   const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-  const { data: users, isLoading } = useCollection<UserRow>(usersQuery);
+  const { data: users, isLoading, error: usersError } = useCollection<UserRow>(usersQuery);
+
+  React.useEffect(() => {
+    if (!usersError) { setPermError(null); return; }
+    const code = (usersError as { code?: string } | null)?.code;
+    const msg = usersError instanceof Error ? usersError.message : 'Bilinmeyen hata.';
+    const friendly = code === 'permission-denied'
+      ? 'Bu sayfayı görüntülemek için super-admin yetkisi gerekli. (Firestore: users koleksiyonu erişimi reddedildi.)'
+      : msg;
+    setPermError(friendly);
+    toast({
+      variant: 'destructive',
+      title: 'Kullanıcılar yüklenemedi',
+      description: friendly,
+    });
+  }, [usersError, toast]);
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
@@ -366,17 +587,35 @@ export default function UsersPage() {
     try {
       // Doğrulama isteği kaydı (gerçek SMS/e-mail gönderimi yetkili bir backend job ile yapılır)
       const channels: string[] = [];
-      if (user.personalInfo?.email) channels.push('email');
+      const email = user.personalInfo?.email;
+      if (email) channels.push('email');
       if (user.personalInfo?.phone) channels.push('sms');
+
       await updateDoc(doc(db, 'users', user.id), {
         verificationRequestedAt: new Date().toISOString(),
         verificationRequestedChannels: channels,
       });
+
+      // Firebase Auth client SDK başka bir kullanıcıya doğrudan sendEmailVerification atamaz
+      // (hedef User nesnesi gerekir). E-posta varsa kullanıcıya en azından bir "şifre sıfırlama"
+      // bağlantısı göndererek hesabını aktif olarak doğrulama imkanı sun.
+      let authEmailSent = false;
+      if (email) {
+        try {
+          await initiatePasswordResetEmail(auth, email);
+          authEmailSent = true;
+        } catch (authErr) {
+          console.warn('Auth verification email could not be triggered client-side:', authErr);
+        }
+      }
+
       toast({
         title: 'Doğrulama Talebi Gönderildi',
-        description: channels.length
-          ? `${channels.join(' + ').toUpperCase()} doğrulama mesajı sıraya alındı.`
-          : 'Kullanıcının e-posta ve telefon bilgisi olmadığı için talep oluşturuldu fakat gönderim kanalı yok.',
+        description: channels.length === 0
+          ? 'Kullanıcının e-posta ve telefon bilgisi yok; talep oluşturuldu fakat gönderim kanalı yok.'
+          : authEmailSent
+            ? `${email} adresine Firebase Auth üzerinden doğrulama/sıfırlama maili gönderildi. SMS yetkili backend job tarafından iletilecek.`
+            : 'Doğrulama e-postası ve SMS yetkili backend job tarafından gönderilecek.',
       });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
@@ -387,6 +626,52 @@ export default function UsersPage() {
         description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
       });
     }
+  };
+
+  const handleSendPasswordReset = async (user: UserRow) => {
+    const email = user.personalInfo?.email?.trim();
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'E-posta yok',
+        description: 'Bu kullanıcının kayıtlı bir e-posta adresi olmadığı için şifre sıfırlama maili gönderilemez.',
+      });
+      return;
+    }
+    try {
+      await initiatePasswordResetEmail(auth, email);
+      try {
+        await updateDoc(doc(db, 'users', user.id), {
+          passwordResetRequestedAt: new Date().toISOString(),
+        });
+      } catch (logErr) {
+        console.warn('Failed to log passwordResetRequestedAt:', logErr);
+      }
+      toast({
+        title: 'Şifre Sıfırlama Maili Gönderildi',
+        description: `${email} adresine Firebase Auth üzerinden şifre sıfırlama bağlantısı gönderildi.`,
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen hata.';
+      toast({
+        variant: 'destructive',
+        title: 'Sıfırlama maili gönderilemedi',
+        description: code === 'auth/user-not-found'
+          ? 'Bu e-posta ile eşleşen Firebase Auth hesabı bulunamadı.'
+          : code === 'auth/invalid-email'
+            ? 'Geçersiz e-posta adresi.'
+            : message,
+      });
+    }
+  };
+
+  const handleAdminPasswordChange = (user: UserRow) => {
+    // Firebase client SDK başka kullanıcının şifresini değiştiremez; admin SDK gerekir.
+    toast({
+      title: 'Backend gerektiriyor',
+      description: `Doğrudan şifre değiştirme için /api/admin/users/${user.id}/reset-password endpoint'i kurulmalı. Bu kurulana kadar lütfen "Şifre Sıfırlama Maili" gönderin.`,
+    });
   };
 
   const handleSaveUser = async (userId: string, patch: Record<string, unknown>) => {
@@ -423,6 +708,16 @@ export default function UsersPage() {
         <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Kullanıcı Yönetimi</h1>
         <p className="text-muted-foreground text-sm font-medium">Platformdaki tüm kullanıcıları görüntüleyin, düzenleyin, yetki ve durumunu yönetin.</p>
       </div>
+
+      {permError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+          <ShieldAlert className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-red-800">Erişim hatası</p>
+            <p className="text-xs text-red-700 leading-relaxed">{permError}</p>
+          </div>
+        </div>
+      )}
 
       {/* E-postaya göre toplu silme — mükerrer profil temizliği için */}
       <Card className="rounded-[2rem] border-amber-200 bg-amber-50/40">
@@ -565,6 +860,24 @@ export default function UsersPage() {
                         <MailCheck className="mr-2 h-4 w-4" /> Doğrula
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl font-bold h-9 text-blue-700 border-blue-300 hover:bg-blue-50"
+                      onClick={() => handleSendPasswordReset(user)}
+                      title="Firebase Auth üzerinden şifre sıfırlama maili gönder"
+                    >
+                      <KeyRound className="mr-2 h-4 w-4" /> Şifre Sıfırla
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl font-bold h-9 text-muted-foreground"
+                      onClick={() => handleAdminPasswordChange(user)}
+                      title="Şifreyi doğrudan değiştir (backend endpoint gerektirir)"
+                    >
+                      <ShieldQuestion className="mr-2 h-4 w-4" /> Şifre Değiştir
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

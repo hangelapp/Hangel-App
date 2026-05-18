@@ -16,10 +16,13 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
-import { Loader2, Trash2, Power, PowerOff, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3, Database, Upload, RefreshCw } from 'lucide-react';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getApp } from 'firebase/app';
+import { Loader2, Trash2, Power, PowerOff, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3, Database, Upload, RefreshCw, ImageUp } from 'lucide-react';
 import type { Brand } from "@/lib/types";
 import Link from 'next/link';
 import seedBrands from '../../../../docs/database-exports/brands.json';
+import { neighborhoodsData } from '@/lib/neighborhoods-data';
 
 type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
 
@@ -31,8 +34,28 @@ type EditFormData = Partial<BrandItem> & {
     _twitter?: string;
     _facebook?: string;
     _linkedin?: string;
+    _country?: string;
+    _city?: string;
+    _district?: string;
+    _neighborhood?: string;
+    _street?: string;
     agency?: string;
     link?: string;
+};
+
+// Brand'in opsiyonel olarak Firestore'da tutulan, type tanımında olmayan ekstra alanları.
+// type Brand içerisinde address yok; type genişletmek için kullanılır.
+type BrandExtra = Brand & {
+    phone?: string;
+    email?: string;
+    website?: string;
+    address?: {
+        country?: string;
+        city?: string;
+        district?: string;
+        neighborhood?: string;
+        street?: string;
+    };
 };
 
 type StatusFilter = 'all' | 'approved' | 'pending' | 'passive' | 'rejected';
@@ -170,6 +193,7 @@ export default function BrandsPage() {
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<EditFormData>({});
     const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding'>('idle');
+    const [logoUploading, setLogoUploading] = useState(false);
 
     // Load approved brands
     const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
@@ -389,6 +413,7 @@ export default function BrandsPage() {
 
     const handleStartEdit = (brand: BrandItem) => {
         setEditingBrand(brand);
+        const b = brand as BrandExtra;
         setEditFormData({
             name: brand.name,
             slug: brand.slug,
@@ -401,14 +426,69 @@ export default function BrandsPage() {
             agency: brand.agency,
             link: brand.link || '',
             // Flatten contact fields for form state
-            _email: brand.contact?.email || (brand as Brand & { email?: string }).email || '',
-            _phone: (brand as Brand & { phone?: string }).phone || '',
-            _website: brand.contact?.website || (brand as Brand & { website?: string }).website || '',
+            _email: brand.contact?.email || b.email || '',
+            _phone: b.phone || '',
+            _website: brand.contact?.website || b.website || '',
             _instagram: brand.contact?.social?.instagram || '',
             _twitter: brand.contact?.social?.twitter || '',
             _facebook: brand.contact?.social?.facebook || '',
             _linkedin: brand.contact?.social?.linkedin || '',
+            _country: b.address?.country || 'Türkiye',
+            _city: b.address?.city || '',
+            _district: b.address?.district || '',
+            _neighborhood: b.address?.neighborhood || '',
+            _street: b.address?.street || '',
         });
+    };
+
+    const handleLogoFile = async (file: File, kind: 'logo' | 'cover') => {
+        if (!editingBrand?.id) return;
+        // 5MB cap
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Maksimum 5MB yükleyebilirsiniz.' });
+            return;
+        }
+        if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
+            toast({ variant: 'destructive', title: 'Geçersiz format', description: 'Sadece JPG, PNG, WebP veya SVG kabul edilir.' });
+            return;
+        }
+        setLogoUploading(true);
+        const field = kind === 'logo' ? 'logoUrl' : 'coverPhotoUrl';
+        try {
+            // 1) Firebase Storage'a yükle
+            const storage = getStorage(getApp());
+            const path = `brands/${editingBrand.id}/${kind}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            const ref = storageRef(storage, path);
+            await uploadBytes(ref, file, { contentType: file.type });
+            const url = await getDownloadURL(ref);
+            setEditFormData(prev => ({ ...prev, [field]: url }));
+            toast({ title: 'Yüklendi', description: 'Görsel Firebase Storage\'a yüklendi. Kaydet butonuna basmayı unutmayın.' });
+        } catch (err) {
+            console.warn('Storage upload failed, falling back to Base64:', err);
+            // 2) Storage erişimi yoksa Base64 data URL fallback (en fazla 500KB)
+            if (file.size > 500 * 1024) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Storage erişilemez ve dosya çok büyük',
+                    description: 'Storage upload başarısız oldu, Base64 fallback için maksimum 500KB önerilir. Dosyayı küçültün veya URL girin.',
+                });
+                setLogoUploading(false);
+                return;
+            }
+            const reader = new FileReader();
+            const dataUrl: string = await new Promise((resolve, reject) => {
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+            setEditFormData(prev => ({ ...prev, [field]: dataUrl }));
+            toast({
+                title: 'Base64 olarak gömüldü',
+                description: 'Storage erişilemediği için görsel Base64 data URL olarak alana eklendi. Kaydet butonuna basın.',
+            });
+        } finally {
+            setLogoUploading(false);
+        }
     };
 
     const handleSaveEdit = async () => {
@@ -428,8 +508,10 @@ export default function BrandsPage() {
                 donationRate: fd.donationRate,
                 agency: fd.agency,
                 link: fd.link || '',
+                phone: fd._phone || '',
                 contact: {
                     email: fd._email || '',
+                    phone: fd._phone || '',
                     website: fd._website || '',
                     social: {
                         instagram: fd._instagram || '',
@@ -437,6 +519,13 @@ export default function BrandsPage() {
                         facebook: fd._facebook || '',
                         linkedin: fd._linkedin || '',
                     },
+                },
+                address: {
+                    country: fd._country || 'Türkiye',
+                    city: fd._city || '',
+                    district: fd._district || '',
+                    neighborhood: fd._neighborhood || '',
+                    street: fd._street || '',
                 },
             });
             toast({
@@ -740,24 +829,82 @@ export default function BrandsPage() {
                                                                         />
                                                                     </div>
                                                                     <div className="space-y-2 col-span-2">
-                                                                        <Label htmlFor="edit-logo" className="text-sm font-semibold">Logo URL</Label>
-                                                                        <Input
-                                                                            id="edit-logo"
-                                                                            value={editFormData.logoUrl || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, logoUrl: e.target.value })}
-                                                                            className="rounded-xl"
-                                                                            placeholder="https://..."
-                                                                        />
+                                                                        <Label htmlFor="edit-logo" className="text-sm font-semibold">Logo</Label>
+                                                                        <div className="flex items-center gap-3">
+                                                                            {editFormData.logoUrl ? (
+                                                                                <Avatar className="h-14 w-14 border-2 border-white shadow-md bg-white shrink-0">
+                                                                                    <AvatarImage src={editFormData.logoUrl} alt="logo" className="object-contain p-1" />
+                                                                                    <AvatarFallback className="font-black">{(editFormData.name || '?')[0]}</AvatarFallback>
+                                                                                </Avatar>
+                                                                            ) : (
+                                                                                <div className="h-14 w-14 rounded-full border-2 border-dashed border-black/10 flex items-center justify-center text-muted-foreground shrink-0">
+                                                                                    <ImageUp className="h-5 w-5" />
+                                                                                </div>
+                                                                            )}
+                                                                            <div className="flex-1 space-y-2">
+                                                                                <Input
+                                                                                    id="edit-logo"
+                                                                                    value={editFormData.logoUrl || ''}
+                                                                                    onChange={(e) => setEditFormData({ ...editFormData, logoUrl: e.target.value })}
+                                                                                    className="rounded-xl"
+                                                                                    placeholder="https://... veya yükleyin"
+                                                                                />
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <label className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl font-bold cursor-pointer h-9')}>
+                                                                                        {logoUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageUp className="mr-2 h-4 w-4" />}
+                                                                                        Logo Yükle (JPG/PNG)
+                                                                                        <input
+                                                                                            type="file"
+                                                                                            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                                                                            hidden
+                                                                                            disabled={logoUploading}
+                                                                                            onChange={(e) => {
+                                                                                                const f = e.target.files?.[0];
+                                                                                                if (f) handleLogoFile(f, 'logo');
+                                                                                                e.currentTarget.value = '';
+                                                                                            }}
+                                                                                        />
+                                                                                    </label>
+                                                                                    <p className="text-[11px] text-muted-foreground">Maks 5MB. Storage erişilemezse Base64 (max 500KB).</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div className="space-y-2 col-span-2">
-                                                                        <Label htmlFor="edit-cover" className="text-sm font-semibold">Kapak Fotoğrafı URL</Label>
-                                                                        <Input
-                                                                            id="edit-cover"
-                                                                            value={editFormData.coverPhotoUrl || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, coverPhotoUrl: e.target.value })}
-                                                                            className="rounded-xl"
-                                                                            placeholder="https://..."
-                                                                        />
+                                                                        <Label htmlFor="edit-cover" className="text-sm font-semibold">Kapak Fotoğrafı</Label>
+                                                                        <div className="flex items-center gap-3">
+                                                                            {editFormData.coverPhotoUrl ? (
+                                                                                <div className="h-14 w-24 rounded-xl border-2 border-white shadow-md bg-cover bg-center shrink-0" style={{ backgroundImage: `url(${editFormData.coverPhotoUrl})` }} />
+                                                                            ) : (
+                                                                                <div className="h-14 w-24 rounded-xl border-2 border-dashed border-black/10 flex items-center justify-center text-muted-foreground shrink-0">
+                                                                                    <ImageUp className="h-5 w-5" />
+                                                                                </div>
+                                                                            )}
+                                                                            <div className="flex-1 space-y-2">
+                                                                                <Input
+                                                                                    id="edit-cover"
+                                                                                    value={editFormData.coverPhotoUrl || ''}
+                                                                                    onChange={(e) => setEditFormData({ ...editFormData, coverPhotoUrl: e.target.value })}
+                                                                                    className="rounded-xl"
+                                                                                    placeholder="https://... veya yükleyin"
+                                                                                />
+                                                                                <label className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl font-bold cursor-pointer h-9 w-fit')}>
+                                                                                    {logoUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageUp className="mr-2 h-4 w-4" />}
+                                                                                    Kapak Yükle (JPG/PNG)
+                                                                                    <input
+                                                                                        type="file"
+                                                                                        accept="image/png,image/jpeg,image/webp"
+                                                                                        hidden
+                                                                                        disabled={logoUploading}
+                                                                                        onChange={(e) => {
+                                                                                            const f = e.target.files?.[0];
+                                                                                            if (f) handleLogoFile(f, 'cover');
+                                                                                            e.currentTarget.value = '';
+                                                                                        }}
+                                                                                    />
+                                                                                </label>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div className="space-y-2 col-span-2">
                                                                         <Label htmlFor="edit-about" className="text-sm font-semibold">Hakkında</Label>
@@ -877,10 +1024,129 @@ export default function BrandsPage() {
                                                                     </div>
                                                                 </div>
                                                             </div>
+
+                                                            <div className="border-t border-black/5" />
+
+                                                            {/* --- Adres --- */}
+                                                            <div className="space-y-4">
+                                                                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Adres</p>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-country" className="text-sm font-semibold">Ülke</Label>
+                                                                        <Select
+                                                                            value={editFormData._country || 'Türkiye'}
+                                                                            onValueChange={(v) => setEditFormData({ ...editFormData, _country: v, _city: '', _district: '', _neighborhood: '' })}
+                                                                        >
+                                                                            <SelectTrigger id="edit-country" className="rounded-xl">
+                                                                                <SelectValue placeholder="Ülke seçin" />
+                                                                            </SelectTrigger>
+                                                                            <SelectContent>
+                                                                                <SelectItem value="Türkiye">Türkiye</SelectItem>
+                                                                                <SelectItem value="KKTC">KKTC</SelectItem>
+                                                                                <SelectItem value="Almanya">Almanya</SelectItem>
+                                                                                <SelectItem value="ABD">ABD</SelectItem>
+                                                                                <SelectItem value="İngiltere">İngiltere</SelectItem>
+                                                                                <SelectItem value="Diğer">Diğer</SelectItem>
+                                                                            </SelectContent>
+                                                                        </Select>
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-city" className="text-sm font-semibold">İl</Label>
+                                                                        {(editFormData._country || 'Türkiye') === 'Türkiye' ? (
+                                                                            <Select
+                                                                                value={editFormData._city || ''}
+                                                                                onValueChange={(v) => setEditFormData({ ...editFormData, _city: v, _district: '', _neighborhood: '' })}
+                                                                            >
+                                                                                <SelectTrigger id="edit-city" className="rounded-xl">
+                                                                                    <SelectValue placeholder="İl seçin" />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')).map(city => (
+                                                                                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        ) : (
+                                                                            <Input
+                                                                                id="edit-city"
+                                                                                value={editFormData._city || ''}
+                                                                                onChange={(e) => setEditFormData({ ...editFormData, _city: e.target.value })}
+                                                                                className="rounded-xl"
+                                                                                placeholder="Şehir adı"
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-district" className="text-sm font-semibold">İlçe</Label>
+                                                                        {(editFormData._country || 'Türkiye') === 'Türkiye' && editFormData._city && neighborhoodsData[editFormData._city] ? (
+                                                                            <Select
+                                                                                value={editFormData._district || ''}
+                                                                                onValueChange={(v) => setEditFormData({ ...editFormData, _district: v, _neighborhood: '' })}
+                                                                            >
+                                                                                <SelectTrigger id="edit-district" className="rounded-xl">
+                                                                                    <SelectValue placeholder="İlçe seçin" />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {Object.keys(neighborhoodsData[editFormData._city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => (
+                                                                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        ) : (
+                                                                            <Input
+                                                                                id="edit-district"
+                                                                                value={editFormData._district || ''}
+                                                                                onChange={(e) => setEditFormData({ ...editFormData, _district: e.target.value })}
+                                                                                className="rounded-xl"
+                                                                                placeholder="İlçe"
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <Label htmlFor="edit-neighborhood" className="text-sm font-semibold">Mahalle</Label>
+                                                                        {(editFormData._country || 'Türkiye') === 'Türkiye' && editFormData._city && editFormData._district && neighborhoodsData[editFormData._city]?.[editFormData._district] ? (
+                                                                            <Select
+                                                                                value={editFormData._neighborhood || ''}
+                                                                                onValueChange={(v) => setEditFormData({ ...editFormData, _neighborhood: v })}
+                                                                            >
+                                                                                <SelectTrigger id="edit-neighborhood" className="rounded-xl">
+                                                                                    <SelectValue placeholder="Mahalle seçin" />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {neighborhoodsData[editFormData._city][editFormData._district].slice().sort((a, b) => a.localeCompare(b, 'tr')).map(n => (
+                                                                                        <SelectItem key={n} value={n}>{n}</SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                        ) : (
+                                                                            <Input
+                                                                                id="edit-neighborhood"
+                                                                                value={editFormData._neighborhood || ''}
+                                                                                onChange={(e) => setEditFormData({ ...editFormData, _neighborhood: e.target.value })}
+                                                                                className="rounded-xl"
+                                                                                placeholder="Mahalle"
+                                                                            />
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="space-y-2 col-span-2">
+                                                                        <Label htmlFor="edit-street" className="text-sm font-semibold">Sokak / Cadde / No</Label>
+                                                                        <Input
+                                                                            id="edit-street"
+                                                                            value={editFormData._street || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _street: e.target.value })}
+                                                                            className="rounded-xl"
+                                                                            placeholder="Örn: Atatürk Cad. No:12 Daire:3"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <DialogFooter>
                                                             <Button variant="outline" onClick={() => setEditingBrand(null)} className="rounded-xl font-bold">Vazgeç</Button>
-                                                            <Button onClick={handleSaveEdit} className="rounded-xl font-bold">Kaydet</Button>
+                                                            <Button onClick={handleSaveEdit} className="rounded-xl font-bold" disabled={logoUploading}>
+                                                                {logoUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                                Kaydet
+                                                            </Button>
                                                         </DialogFooter>
                                                     </DialogContent>
                                                 )}
