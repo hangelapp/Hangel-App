@@ -15,8 +15,24 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+
+type EntityKind = 'ngo' | 'brand' | 'club';
+interface ManagedEntityDoc {
+    id: string;
+    name?: string;
+    shortName?: string;
+    adminUserId?: string;
+    files?: { logo?: string };
+    logoUrl?: string;
+}
+interface UserDocData {
+    id: string;
+    managedNgoId?: string;
+    managedBrandId?: string;
+    managedClubId?: string;
+}
 
 export default function PostsPage() {
     const { toast } = useToast();
@@ -30,6 +46,62 @@ export default function PostsPage() {
     const [imageUrl, setImageUrl] = useState('');
     const [imageDraft, setImageDraft] = useState('');
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // ---- Resolve managed entity (NGO / brand / club) so posts publish on entity's behalf ----
+    const adminNgosQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const adminBrandsQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const adminClubsQ = useMemoFirebase(
+        () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+        [firestore, authUser?.uid],
+    );
+    const { data: adminNgos } = useCollection<ManagedEntityDoc>(adminNgosQ);
+    const { data: adminBrands } = useCollection<ManagedEntityDoc>(adminBrandsQ);
+    const { data: adminClubs } = useCollection<ManagedEntityDoc>(adminClubsQ);
+
+    const userDocRef = useMemoFirebase(
+        () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+        [firestore, authUser?.uid],
+    );
+    const { data: userData } = useDoc<UserDocData>(userDocRef);
+
+    const fallbackNgoRef = useMemoFirebase(
+        () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+        [firestore, userData?.managedNgoId],
+    );
+    const fallbackBrandRef = useMemoFirebase(
+        () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+        [firestore, userData?.managedBrandId],
+    );
+    const fallbackClubRef = useMemoFirebase(
+        () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+        [firestore, userData?.managedClubId],
+    );
+    const { data: fallbackNgo } = useDoc<ManagedEntityDoc>(fallbackNgoRef);
+    const { data: fallbackBrand } = useDoc<ManagedEntityDoc>(fallbackBrandRef);
+    const { data: fallbackClub } = useDoc<ManagedEntityDoc>(fallbackClubRef);
+
+    const selfNgoRef = useMemoFirebase(
+        () => (firestore && authUser?.uid ? doc(firestore, 'ngos', authUser.uid) : null),
+        [firestore, authUser?.uid],
+    );
+    const { data: selfNgo } = useDoc<ManagedEntityDoc>(selfNgoRef);
+
+    const activeEntity = useMemo<{ kind: EntityKind; data: ManagedEntityDoc } | null>(() => {
+        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo || selfNgo;
+        if (ngo?.id) return { kind: 'ngo', data: ngo };
+        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
+        if (brand?.id) return { kind: 'brand', data: brand };
+        const club = (adminClubs && adminClubs[0]) || fallbackClub;
+        if (club?.id) return { kind: 'club', data: club };
+        return null;
+    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub, selfNgo]);
 
     // Load posts from Firestore (client-side sort to avoid composite index requirement
     // and to include legacy posts that may be missing the createdAt field)
@@ -69,12 +141,25 @@ export default function PostsPage() {
 
         setIsCreating(true);
 
+        // Resolve author identity: prefer managed entity (NGO/brand/club),
+        // fall back to user display name for individual accounts.
+        const entityName = activeEntity?.data?.name || activeEntity?.data?.shortName;
+        const entityLogo = activeEntity?.data?.files?.logo || activeEntity?.data?.logoUrl;
+        const authorName = entityName || authUser.displayName || 'Kuruluşunuz';
+        const authorAvatar = entityLogo || authUser.photoURL || '';
+
+        const author: Record<string, unknown> = {
+            name: authorName,
+            avatarUrl: authorAvatar,
+        };
+        if (activeEntity?.data?.id) {
+            author.entityId = activeEntity.data.id;
+            author.entityKind = activeEntity.kind;
+        }
+
         const newPost: Record<string, unknown> = {
             authorId: authUser.uid,
-            author: {
-                name: authUser.displayName || 'Kurulusunuz',
-                avatarUrl: authUser.photoURL || '',
-            },
+            author,
             content: newPostContent,
             timestamp: new Date().toLocaleDateString('tr-TR'),
             createdAt: Timestamp.now(),
@@ -183,7 +268,7 @@ export default function PostsPage() {
             </Button>
             {imageUrl && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
-                <span className="truncate max-w-[200px]">{imageUrl}</span>
+                <span className="truncate max-w-[200px]">{imageUrl.startsWith('data:') ? 'Yerel görsel (base64)' : imageUrl}</span>
                 <Button variant="ghost" size="sm" onClick={() => setImageUrl('')} className="h-7 px-2">Kaldır</Button>
               </div>
             )}
@@ -204,7 +289,7 @@ export default function PostsPage() {
           <DialogHeader>
             <DialogTitle>Görsel Ekle</DialogTitle>
             <DialogDescription>
-              Gönderinizde göstermek istediğiniz görselin URL&apos;sini ekleyin. Dosya yükleme altyapısı kurulum aşamasındadır; şimdilik bir resmin doğrudan bağlantısını kullanabilirsiniz.
+              Bir görsel URL&apos;si yapıştırabilir ya da küçük bir görseli (max 1MB) doğrudan yükleyebilirsiniz. Storage henüz aktif değil — küçük resimler base64 olarak kaydedilir.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 pt-2">
@@ -214,11 +299,44 @@ export default function PostsPage() {
                 id="image-url"
                 type="url"
                 placeholder="https://..."
-                value={imageDraft}
+                value={imageDraft.startsWith('data:') ? '' : imageDraft}
                 onChange={(e) => setImageDraft(e.target.value)}
               />
             </div>
-            {imageDraft && /^https?:\/\//i.test(imageDraft) && (
+            <div className="space-y-2">
+              <Label htmlFor="image-file">Veya cihazdan yükle</Label>
+              <Input
+                id="image-file"
+                type="file"
+                accept="image/*"
+                disabled={isUploading}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 1024 * 1024) {
+                    toast({ variant: 'destructive', title: 'Görsel çok büyük', description: 'Lütfen 1MB altında bir görsel seçin (Storage aktif değil).' });
+                    e.target.value = '';
+                    return;
+                  }
+                  setIsUploading(true);
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    const result = typeof reader.result === 'string' ? reader.result : '';
+                    setImageDraft(result);
+                    setIsUploading(false);
+                  };
+                  reader.onerror = () => {
+                    toast({ variant: 'destructive', title: 'Görsel okunamadı' });
+                    setIsUploading(false);
+                  };
+                  reader.readAsDataURL(file);
+                }}
+              />
+              {isUploading && (
+                <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Görsel hazırlanıyor...</p>
+              )}
+            </div>
+            {imageDraft && (/^https?:\/\//i.test(imageDraft) || imageDraft.startsWith('data:image/')) && (
               <div className="rounded-md border overflow-hidden relative aspect-video bg-muted">
                 <Image src={imageDraft} alt="Önizleme" fill className="object-cover" unoptimized />
               </div>
@@ -228,8 +346,8 @@ export default function PostsPage() {
             <Button variant="secondary" onClick={() => setIsImageDialogOpen(false)}>İptal</Button>
             <Button onClick={() => {
               const trimmed = imageDraft.trim();
-              if (trimmed && !/^https?:\/\//i.test(trimmed)) {
-                toast({ variant: 'destructive', title: 'Geçersiz URL', description: 'Görsel URL\'si http(s) ile başlamalıdır.' });
+              if (trimmed && !/^https?:\/\//i.test(trimmed) && !trimmed.startsWith('data:image/')) {
+                toast({ variant: 'destructive', title: 'Geçersiz görsel', description: 'Görsel URL\'si http(s) ile başlamalı veya yüklenen bir dosya olmalıdır.' });
                 return;
               }
               setImageUrl(trimmed);
@@ -260,7 +378,10 @@ export default function PostsPage() {
         posts.map((post) => (
           <Card key={post.id}>
             <CardHeader>
-                <p className="text-sm text-muted-foreground">{post.timestamp}</p>
+                <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold">{post.author?.name || 'Kuruluşunuz'}</p>
+                    <p className="text-xs text-muted-foreground">{post.timestamp}</p>
+                </div>
             </CardHeader>
             <CardContent>
               {editingPostId === post.id ? (

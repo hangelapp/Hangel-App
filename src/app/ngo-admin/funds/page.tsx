@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 
 interface Fund {
   id: string;
@@ -106,9 +106,11 @@ export default function FundsPage() {
     const [areaFilters, setAreaFilters] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: 'deadline' | 'name', direction: 'asc' | 'desc' }>({ key: 'deadline', direction: 'asc' });
 
-    // Firestore'dan fon listesi (super-admin tarafından yönetilen). Boşsa fallback hardcoded liste.
+    // Firestore'dan fon listesi (super-admin tarafından yönetilen).
+    // orderBy uygulamıyoruz; deadline alanı eksik olan dokümanlar listede yer alsın.
+    // Sıralama tamamen client-side yapılıyor.
     const fundsQuery = useMemoFirebase(
-        () => (db ? query(collection(db, 'funds'), orderBy('deadline', 'asc')) : null),
+        () => (db ? query(collection(db, 'funds')) : null),
         [db],
     );
     const { data: cmsFunds } = useCollection<Fund>(fundsQuery);
@@ -341,8 +343,14 @@ export default function FundsPage() {
                     )) : (
                         <div className="text-center py-20 bg-muted/20 rounded-[2rem] border-2 border-dashed">
                             <HandCoins className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                            <p className="text-muted-foreground font-medium italic">Aradığınız kriterlerde hibe fırsatı bulunamadı.</p>
-                            <Button variant="link" onClick={clearFilters} className="mt-2 text-primary">Tüm Filtreleri Temizle</Button>
+                            {(activeFilterCount > 0 || searchTerm) ? (
+                                <>
+                                    <p className="text-muted-foreground font-medium italic">Aradığınız kriterlerde hibe fırsatı bulunamadı.</p>
+                                    <Button variant="link" onClick={clearFilters} className="mt-2 text-primary">Tüm Filtreleri Temizle</Button>
+                                </>
+                            ) : (
+                                <p className="text-muted-foreground font-medium italic">Henüz yayınlanan bir hibe veya fon ilanı yok.</p>
+                            )}
                         </div>
                     )}
                 </CardContent>
