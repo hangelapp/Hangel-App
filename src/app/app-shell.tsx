@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
 import { SideNav } from '@/components/layout/SideNav';
@@ -13,10 +13,12 @@ import * as Icons from 'lucide-react';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { isNativeApp } from '@/lib/capacitor';
 import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useToast } from '@/hooks/use-toast';
 
 const group1Items: SideNavItem[] = [
   { href: '/timeline', label: 'nav.timeline', icon: 'layout-grid' },
@@ -100,6 +102,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
     const { t } = useTranslation();
+    const { toast } = useToast();
+    // 2./3. girişte bilgi yönlendirmesi mantığı sadece bir kez çalışsın diye guard
+    const loginCountHandledRef = useRef(false);
 
     const translateItems = (items: SideNavItem[]) => items.map(it => ({ ...it, label: t(it.label) }));
 
@@ -183,6 +188,56 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             }
         }
     }, [authUser, isUserLoading, pathname, router, isMounted, isCorporateRegisterFlow]);
+
+    // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
+    // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma
+    // - 2. login (loginCount >= 1) → personalInfo.email veya phone boşsa /settings/profile'a yönlendir
+    // - localStorage.profileRedirectShown ile bir kez gösterilir.
+    // - Zaten /settings/profile altındaysa redirect yapma (sonsuz döngü guard).
+    useEffect(() => {
+        if (loginCountHandledRef.current) return;
+        if (isUserLoading || !authUser || !isMounted || !userData || !userDocRef) return;
+
+        loginCountHandledRef.current = true;
+
+        // loginCount henüz User tipinde tanımlı değil — runtime'da ekleniyor.
+        const userDataAny = userData as unknown as { loginCount?: number };
+        const currentCount = typeof userDataAny.loginCount === 'number' ? userDataAny.loginCount : 0;
+
+        if (currentCount === 0) {
+            // İlk giriş — sayacı 1'e çek, redirect yapma.
+            updateDocumentNonBlocking(userDocRef, { loginCount: 1 });
+            return;
+        }
+
+        // 2. veya sonraki giriş — sayacı artır
+        updateDocumentNonBlocking(userDocRef, { loginCount: currentCount + 1 });
+
+        // Daha önce gösterildiyse tekrar gösterme
+        let alreadyShown = false;
+        try {
+            alreadyShown = typeof window !== 'undefined' && window.localStorage.getItem('profileRedirectShown') === '1';
+        } catch {
+            // localStorage erişilemedi (Safari private, vb.) — varsayılan false ile devam
+        }
+        if (alreadyShown) return;
+
+        // /settings/profile içindeyken yönlendirme yapma (sonsuz döngü guard)
+        if (pathname.startsWith('/settings/profile')) return;
+
+        const personalEmail = userData.personalInfo?.email || '';
+        const personalPhone = userData.personalInfo?.phone || '';
+        const profileIncomplete = !personalEmail.trim() || !personalPhone.trim();
+
+        if (profileIncomplete) {
+            try { window.localStorage.setItem('profileRedirectShown', '1'); } catch {}
+            toast({
+                title: 'Bilgileriniz eksik',
+                description: 'Lütfen kişisel ve gönüllülük bilgilerinizi tamamlayın.',
+            });
+            router.push('/settings/profile');
+        }
+    }, [authUser, isUserLoading, isMounted, userData, userDocRef, pathname, router, toast]);
 
     if (!isMounted) {
         return <div className="min-h-screen bg-background">{children}</div>;

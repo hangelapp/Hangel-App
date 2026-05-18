@@ -111,9 +111,11 @@ export default function NgoEditPage() {
 
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
     const [form, setForm] = useState<Partial<NGO> & Record<string, unknown>>({});
     const [initialized, setInitialized] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (ngo && !initialized) {
@@ -179,31 +181,59 @@ export default function NgoEditPage() {
         return ((neighborhoodsData as Record<string, Record<string, string[]>>)?.[currentCity]?.[currentDistrict] ?? []) as string[];
     }, [isTurkey, currentCity, currentDistrict]);
 
-    const handleLogoUpload = async (file: File) => {
+    const handleImageUpload = async (file: File, kind: 'logo' | 'cover') => {
         if (!file) return;
-        if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
-            toast({ variant: 'destructive', title: 'Geçersiz format', description: 'Sadece JPG veya PNG dosyası yükleyebilirsiniz.' });
+        if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
+            toast({ variant: 'destructive', title: 'Geçersiz format', description: 'Sadece JPG, PNG, WebP veya SVG kabul edilir.' });
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
             toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 5MB yükleyebilirsiniz.' });
             return;
         }
-        setUploadingLogo(true);
+        const setUploading = kind === 'logo' ? setUploadingLogo : setUploadingCover;
+        const field = kind === 'logo' ? 'avatarUrl' : 'coverPhotoUrl';
+        setUploading(true);
         try {
+            // 1) Firebase Storage'a yükle
             const storage = getStorage();
             const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-            const path = `ngos/${id}/logo-${Date.now()}-${safe}`;
+            const path = `ngos/${id}/${kind}-${Date.now()}-${safe}`;
             const r = storageRef(storage, path);
-            await uploadBytes(r, file);
+            await uploadBytes(r, file, { contentType: file.type });
             const url = await getDownloadURL(r);
-            set('avatarUrl', url);
-            toast({ title: 'Logo yüklendi', description: 'Kaydete bastığınızda kalıcı olarak kaydedilecek.' });
+            set(field, url);
+            toast({ title: kind === 'logo' ? 'Logo yüklendi' : 'Kapak fotoğrafı yüklendi', description: 'Kaydete bastığınızda kalıcı olarak kaydedilecek.' });
         } catch (e) {
-            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-            toast({ variant: 'destructive', title: 'Yükleme hatası', description: message });
+            console.warn('Storage upload failed, falling back to Base64:', e);
+            // 2) Storage erişimi yoksa Base64 data URL fallback (en fazla 500KB)
+            if (file.size > 500 * 1024) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Storage erişilemez ve dosya çok büyük',
+                    description: 'Storage upload başarısız oldu, Base64 fallback için maksimum 500KB önerilir. Dosyayı küçültün veya URL girin.',
+                });
+                setUploading(false);
+                return;
+            }
+            try {
+                const reader = new FileReader();
+                const dataUrl: string = await new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(file);
+                });
+                set(field, dataUrl);
+                toast({
+                    title: 'Base64 olarak gömüldü',
+                    description: 'Storage erişilemediği için görsel Base64 data URL olarak alana eklendi. Kaydet butonuna basın.',
+                });
+            } catch (err) {
+                const message = err instanceof Error ? err.message : 'Bilinmeyen hata.';
+                toast({ variant: 'destructive', title: 'Yükleme hatası', description: message });
+            }
         } finally {
-            setUploadingLogo(false);
+            setUploading(false);
         }
     };
 
@@ -355,11 +385,11 @@ export default function NgoEditPage() {
                                     <input
                                         ref={logoInputRef}
                                         type="file"
-                                        accept="image/jpeg,image/jpg,image/png"
+                                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
                                         className="hidden"
                                         onChange={(e) => {
                                             const f = e.target.files?.[0];
-                                            if (f) handleLogoUpload(f);
+                                            if (f) handleImageUpload(f, 'logo');
                                             if (logoInputRef.current) logoInputRef.current.value = '';
                                         }}
                                     />
@@ -380,15 +410,59 @@ export default function NgoEditPage() {
                                             </Button>
                                         )}
                                     </div>
-                                    <p className="text-[11px] text-muted-foreground">JPG veya PNG, en fazla 5MB.</p>
+                                    <p className="text-[11px] text-muted-foreground">JPG/PNG/WebP/SVG, en fazla 5MB. Storage erişilemezse Base64 (max 500KB).</p>
                                 </div>
                             </div>
                         </Field>
                     </div>
 
                     <div className="md:col-span-2">
-                        <Field label="Kapak Fotoğrafı URL">
-                            <Input value={form.coverPhotoUrl ?? ''} onChange={e => set('coverPhotoUrl', e.target.value)} />
+                        <Field label="Kapak Fotoğrafı (JPG / PNG / WebP)">
+                            <div className="flex items-center gap-4 p-4 border rounded-xl bg-muted/20 border-dashed">
+                                <div className="h-16 w-28 rounded-lg bg-background border flex items-center justify-center overflow-hidden shrink-0">
+                                    {form.coverPhotoUrl ? (
+                                        <img src={form.coverPhotoUrl as string} alt="cover" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                    )}
+                                </div>
+                                <div className="flex-1 space-y-2 min-w-0">
+                                    <Input
+                                        value={(form.coverPhotoUrl as string) ?? ''}
+                                        onChange={e => set('coverPhotoUrl', e.target.value)}
+                                        placeholder="https://... veya yükleyin"
+                                    />
+                                    <input
+                                        ref={coverInputRef}
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const f = e.target.files?.[0];
+                                            if (f) handleImageUpload(f, 'cover');
+                                            if (coverInputRef.current) coverInputRef.current.value = '';
+                                        }}
+                                    />
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={uploadingCover}
+                                            onClick={() => coverInputRef.current?.click()}
+                                        >
+                                            {uploadingCover ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                            {form.coverPhotoUrl ? 'Değiştir' : 'Kapak Yükle'}
+                                        </Button>
+                                        {form.coverPhotoUrl && (
+                                            <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => set('coverPhotoUrl', '')}>
+                                                Kaldır
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground">JPG/PNG/WebP, en fazla 5MB. Storage erişilemezse Base64 (max 500KB).</p>
+                                </div>
+                            </div>
                         </Field>
                     </div>
                     <div className="md:col-span-2">

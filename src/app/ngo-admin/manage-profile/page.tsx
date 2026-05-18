@@ -12,7 +12,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { countryPhoneCodes, sportsFederations, neighborhoodsData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
@@ -74,6 +74,7 @@ interface EntityDoc {
         city?: string;
         district?: string;
         neighborhood?: string;
+        street?: string;
     };
     contact?: {
         email?: string;
@@ -230,6 +231,7 @@ export default function ManageProfilePage() {
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
+  const [street, setStreet] = useState('');
   const [email, setEmail] = useState('');
   const [phoneCode, setPhoneCode] = useState('90');
   const [phone, setPhone] = useState('');
@@ -246,6 +248,26 @@ export default function ManageProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const isTurkey = country === 'Türkiye';
+
+  // Türkiye il/ilçe/mahalle options — memoized for perf (large lists)
+  const countryOptions = useMemo(() => ['Türkiye', 'KKTC (Kuzey Kıbrıs)', 'Diğer'], []);
+
+  const cityOptions = useMemo<string[]>(
+    () => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')),
+    [],
+  );
+
+  const districtOptions = useMemo<string[]>(() => {
+    if (!city || !neighborhoodsData[city]) return [];
+    return Object.keys(neighborhoodsData[city]).sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [city]);
+
+  const neighborhoodOptions = useMemo<string[]>(() => {
+    if (!city || !district) return [];
+    const list = neighborhoodsData[city]?.[district];
+    if (!list) return [];
+    return list.slice().sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [city, district]);
 
   // Hydrate form state when entity loads
   useEffect(() => {
@@ -266,6 +288,7 @@ export default function ManageProfilePage() {
     setCity(d.address?.city || '');
     setDistrict(d.address?.district || '');
     setNeighborhood(d.address?.neighborhood || '');
+    setStreet((d.address as { street?: string } | undefined)?.street || '');
     setEmail(d.contact?.email || '');
     setPhoneCode(d.contact?.phoneCountryCode || '90');
     setPhone(d.contact?.phone || '');
@@ -302,7 +325,7 @@ export default function ManageProfilePage() {
           beneficiaries,
           sdgs,
           memberships,
-          address: { country, city, district, neighborhood },
+          address: { country, city, district, neighborhood, street },
           contact: { email, phoneCountryCode: phoneCode, phone },
           socialMedia: { instagram, twitter, linkedin, youtube },
           representative: { fullName: repFullName, title: repTitle, email: repEmail },
@@ -500,21 +523,21 @@ export default function ManageProfilePage() {
             <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
-                    <Select value={country} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
+                    <Select value={country || 'Türkiye'} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Türkiye" /></SelectTrigger>
                         <SelectContent>
-                            {["Türkiye", "Almanya", "ABD", "İngiltere", "Azerbaycan"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            {countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
                         {isTurkey ? (
                             <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seçiniz..." /></SelectTrigger>
-                                <SelectContent>{(allProvinces || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                <SelectContent className="max-h-72">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
                             <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Şehir / Eyalet" className="h-11 rounded-xl" />
@@ -523,28 +546,48 @@ export default function ManageProfilePage() {
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
                         {isTurkey ? (
-                            <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seçiniz..." /></SelectTrigger>
-                                <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                            <Select
+                                value={district}
+                                onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }}
+                                disabled={!city || districtOptions.length === 0}
+                            >
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue placeholder={!city ? 'Önce il seçin' : 'İlçe seçin...'} />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-72">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
                             <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="İlçe / Bölge" className="h-11 rounded-xl" />
                         )}
                     </div>
-                </div>
-
-                <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                    {isTurkey && city && district && neighborhoodsData[city]?.[district] ? (
-                        <Select value={neighborhood} onValueChange={setNeighborhood}>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seçiniz..." /></SelectTrigger>
-                            <SelectContent>
-                                {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    ) : (
-                        <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle giriniz..." disabled={isTurkey && !district} className="h-11 rounded-xl" />
-                    )}
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                        {isTurkey ? (
+                            <Select
+                                value={neighborhood}
+                                onValueChange={setNeighborhood}
+                                disabled={!district || neighborhoodOptions.length === 0}
+                            >
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue placeholder={!district ? 'Önce ilçe seçin' : 'Mahalle seçin...'} />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-72">
+                                    {neighborhoodOptions.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle" className="h-11 rounded-xl" />
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sokak / Açık Adres</Label>
+                        <Input
+                            value={street}
+                            onChange={(e) => setStreet(e.target.value)}
+                            placeholder="Sokak, kapı no..."
+                            className="h-11 rounded-xl"
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">

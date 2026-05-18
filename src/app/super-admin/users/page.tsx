@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, MailCheck, KeyRound, ShieldQuestion } from 'lucide-react';
+import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, MailCheck, KeyRound, ShieldQuestion, UserPlus, Building2, Briefcase, GraduationCap } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -42,8 +42,62 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase, useAuth, initiatePasswordResetEmail } from '@/firebase';
-import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { User } from '@/lib/types';
+
+type EntityKind = 'ngo' | 'brand' | 'club';
+
+type EntityRow = {
+  id: string;
+  name?: string;
+  logoUrl?: string;
+  category?: string;
+};
+
+const entityKindLabels: Record<EntityKind, string> = {
+  ngo: 'STK',
+  brand: 'Marka',
+  club: 'Öğrenci Kulübü',
+};
+
+const entityCollectionByKind: Record<EntityKind, string> = {
+  ngo: 'ngos',
+  brand: 'brands',
+  club: 'clubs',
+};
+
+const entityIdFieldByKind: Record<EntityKind, 'managedNgoId' | 'managedBrandId' | 'managedClubId'> = {
+  ngo: 'managedNgoId',
+  brand: 'managedBrandId',
+  club: 'managedClubId',
+};
+
+const invitationIdFieldByKind: Record<EntityKind, 'ngoId' | 'brandId' | 'clubId'> = {
+  ngo: 'ngoId',
+  brand: 'brandId',
+  club: 'clubId',
+};
+
+const rolesByKind: Record<EntityKind, { value: string; label: string; isPrimary?: boolean }[]> = {
+  ngo: [
+    { value: 'Genel Yönetici', label: 'Genel Yönetici', isPrimary: true },
+    { value: 'Finans Yöneticisi', label: 'Finans Yöneticisi' },
+    { value: 'Gönüllü Yöneticisi', label: 'Gönüllü Yöneticisi' },
+    { value: 'İçerik Yöneticisi', label: 'İçerik Yöneticisi' },
+    { value: 'Proje Yöneticisi', label: 'Proje Yöneticisi' },
+  ],
+  brand: [
+    { value: 'Genel Yönetici', label: 'Genel Yönetici', isPrimary: true },
+    { value: 'Marka Yöneticisi', label: 'Marka Yöneticisi' },
+    { value: 'Pazarlama Yöneticisi', label: 'Pazarlama Yöneticisi' },
+    { value: 'Finans Yöneticisi', label: 'Finans Yöneticisi' },
+  ],
+  club: [
+    { value: 'Genel Yönetici', label: 'Genel Yönetici', isPrimary: true },
+    { value: 'Etkinlik Yöneticisi', label: 'Etkinlik Yöneticisi' },
+    { value: 'İçerik Yöneticisi', label: 'İçerik Yöneticisi' },
+  ],
+};
 
 type UserRow = User & { id: string; status?: string };
 
@@ -447,6 +501,273 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   );
 };
 
+// Yetkilendirme dialog'u — kullanıcıyı bir STK / Marka / Kulüp'e yönetici olarak atar
+const AssignEntityDialog = ({ user, open, onOpenChange }: {
+  user: UserRow | null;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+}) => {
+  const db = useFirestore();
+  const { toast } = useToast();
+
+  const [entityKind, setEntityKind] = useState<EntityKind>('ngo');
+  const [entitySearch, setEntitySearch] = useState('');
+  const [selectedEntityId, setSelectedEntityId] = useState<string>('');
+  const [roleTitle, setRoleTitle] = useState<string>(rolesByKind.ngo[0].value);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Dialog her açıldığında state'i sıfırla
+  React.useEffect(() => {
+    if (open) {
+      setEntityKind('ngo');
+      setEntitySearch('');
+      setSelectedEntityId('');
+      setRoleTitle(rolesByKind.ngo[0].value);
+    }
+  }, [open]);
+
+  // Entity türü değişince ilk role'ü seç, seçili kuruluşu sıfırla
+  React.useEffect(() => {
+    setSelectedEntityId('');
+    setEntitySearch('');
+    setRoleTitle(rolesByKind[entityKind][0].value);
+  }, [entityKind]);
+
+  const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
+  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const clubsQuery = useMemoFirebase(() => collection(db, 'clubs'), [db]);
+
+  const { data: ngos, isLoading: ngosLoading } = useCollection<EntityRow>(ngosQuery);
+  const { data: brands, isLoading: brandsLoading } = useCollection<EntityRow>(brandsQuery);
+  const { data: clubs, isLoading: clubsLoading } = useCollection<EntityRow>(clubsQuery);
+
+  const allEntities: EntityRow[] = useMemo(() => {
+    if (entityKind === 'ngo') return ngos || [];
+    if (entityKind === 'brand') return brands || [];
+    return clubs || [];
+  }, [entityKind, ngos, brands, clubs]);
+
+  const entitiesLoading = entityKind === 'ngo' ? ngosLoading : entityKind === 'brand' ? brandsLoading : clubsLoading;
+
+  const filteredEntities = useMemo(() => {
+    const list = allEntities || [];
+    const q = entitySearch.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(e => (e.name || '').toLowerCase().includes(q));
+  }, [allEntities, entitySearch]);
+
+  const selectedEntity = useMemo(
+    () => allEntities.find(e => e.id === selectedEntityId) || null,
+    [allEntities, selectedEntityId],
+  );
+
+  const handleAssign = async () => {
+    if (!user || !selectedEntityId || !roleTitle) return;
+    setSubmitting(true);
+    try {
+      const entityCollection = entityCollectionByKind[entityKind];
+      const idField = entityIdFieldByKind[entityKind];
+      const invitationIdField = invitationIdFieldByKind[entityKind];
+      const role = rolesByKind[entityKind].find(r => r.value === roleTitle);
+      const isPrimary = role?.isPrimary ?? false;
+
+      // 1) Kullanıcı dokümanını güncelle
+      const userPatch: Record<string, unknown> = {
+        [idField]: selectedEntityId,
+        roleTitle,
+      };
+      if (user.role !== 'super-admin') {
+        userPatch.role = 'ngo-admin';
+      }
+      await updateDoc(doc(db, 'users', user.id), userPatch);
+
+      // 2) Sadece Genel Yönetici ise kuruluşun adminUserId'sini bu kullanıcıya bağla
+      if (isPrimary) {
+        try {
+          await updateDoc(doc(db, entityCollection, selectedEntityId), {
+            adminUserId: user.id,
+          });
+        } catch (entityErr) {
+          console.warn('Entity adminUserId güncellenemedi:', entityErr);
+        }
+      }
+
+      // 3) userInvitations koleksiyonuna kabul edilmiş davet kaydı ekle
+      try {
+        await addDoc(collection(db, 'userInvitations'), {
+          [invitationIdField]: selectedEntityId,
+          inviteeUserId: user.id,
+          role: roleTitle,
+          status: 'accepted',
+          invitedBy: 'super-admin',
+          invitedAt: serverTimestamp(),
+          autoAcceptedBy: 'super-admin',
+        });
+      } catch (invErr) {
+        console.warn('userInvitations kaydı oluşturulamadı:', invErr);
+      }
+
+      toast({
+        title: 'Yetkilendirme Tamamlandı',
+        description: `${user.name || 'Kullanıcı'} → ${selectedEntity?.name || 'kuruluş'} (${roleTitle}).`,
+      });
+      onOpenChange(false);
+    } catch (e) {
+      console.error('Yetkilendirme başarısız:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({
+        variant: 'destructive',
+        title: 'Yetkilendirme başarısız',
+        description: code === 'permission-denied'
+          ? 'Bu işlem için super-admin yetkisi gerekli.'
+          : message,
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!user) return null;
+
+  const roleOptions = rolesByKind[entityKind];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-[2rem] max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserPlus className="h-5 w-5 text-purple-600" />
+            Yetkilendir
+          </DialogTitle>
+          <DialogDescription>
+            <span className="font-bold">{user.name || 'Kullanıcı'}</span> için entity türü, kuruluş ve rol seçin. Atama anında uygulanır ve kabul edilmiş davet kaydı oluşturulur.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-2">
+          {/* Entity Türü */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Entity Türü</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {(Object.keys(entityKindLabels) as EntityKind[]).map(kind => {
+                const Icon = kind === 'ngo' ? Building2 : kind === 'brand' ? Briefcase : GraduationCap;
+                const active = entityKind === kind;
+                return (
+                  <button
+                    key={kind}
+                    type="button"
+                    onClick={() => setEntityKind(kind)}
+                    className={cn(
+                      'flex flex-col items-center justify-center gap-1 p-3 rounded-xl border-2 transition-all font-bold text-xs',
+                      active
+                        ? 'border-purple-600 bg-purple-50 text-purple-700'
+                        : 'border-black/10 bg-background hover:border-purple-300',
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {entityKindLabels[kind]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Kuruluş seç */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Kuruluş</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={`${entityKindLabels[entityKind]} ara...`}
+                className="pl-9 h-9 rounded-xl"
+                value={entitySearch}
+                onChange={e => setEntitySearch(e.target.value)}
+              />
+            </div>
+            <div className="max-h-56 overflow-y-auto border rounded-xl divide-y bg-background">
+              {entitiesLoading && (
+                <div className="p-6 flex items-center justify-center text-xs text-muted-foreground">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Yükleniyor...
+                </div>
+              )}
+              {!entitiesLoading && filteredEntities.length === 0 && (
+                <div className="p-6 text-center text-xs text-muted-foreground italic">
+                  Eşleşen {entityKindLabels[entityKind].toLowerCase()} bulunamadı.
+                </div>
+              )}
+              {!entitiesLoading && filteredEntities.map(entity => {
+                const active = selectedEntityId === entity.id;
+                return (
+                  <button
+                    key={entity.id}
+                    type="button"
+                    onClick={() => setSelectedEntityId(entity.id)}
+                    className={cn(
+                      'w-full flex items-center gap-3 p-3 text-left transition-colors',
+                      active ? 'bg-purple-50' : 'hover:bg-muted/40',
+                    )}
+                  >
+                    <Avatar className="h-9 w-9 border">
+                      <AvatarImage src={entity.logoUrl} alt={entity.name} />
+                      <AvatarFallback className="text-xs font-black">
+                        {(entity.name || '?').charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold truncate">{entity.name || 'İsimsiz'}</p>
+                      {entity.category && (
+                        <p className="text-[11px] text-muted-foreground truncate">{entity.category}</p>
+                      )}
+                    </div>
+                    {active && (
+                      <Badge variant="default" className="text-[9px] font-black uppercase tracking-widest bg-purple-600">
+                        Seçildi
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Rol */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rol</Label>
+            <Select value={roleTitle} onValueChange={(v) => setRoleTitle(v)}>
+              <SelectTrigger className="rounded-xl"><SelectValue placeholder="Rol seçin" /></SelectTrigger>
+              <SelectContent>
+                {roleOptions.map(r => (
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}{r.isPrimary ? ' (birincil)' : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Birincil rol (Genel Yönetici) seçilirse, kuruluşun <code className="text-[10px] bg-muted px-1 py-0.5 rounded">adminUserId</code> alanı bu kullanıcıya bağlanır.
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl font-bold">
+            İptal
+          </Button>
+          <Button
+            onClick={handleAssign}
+            disabled={!selectedEntityId || !roleTitle || submitting}
+            className="rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Ata
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function UsersPage() {
   const db = useFirestore();
   const auth = useAuth();
@@ -454,6 +775,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [viewingUser, setViewingUser] = useState<UserRow | null>(null);
+  const [assigningUser, setAssigningUser] = useState<UserRow | null>(null);
   const [permError, setPermError] = useState<string | null>(null);
 
   const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
@@ -849,6 +1171,15 @@ export default function UsersPage() {
                     <Button variant="outline" size="sm" className="rounded-xl font-bold h-9" onClick={() => setEditingUser(user)}>
                       <Pencil className="mr-2 h-4 w-4" /> Düzenle
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl font-bold h-9 text-purple-700 border-purple-300 hover:bg-purple-50"
+                      onClick={() => setAssigningUser(user)}
+                      title="STK / Marka / Kulüp yöneticisi olarak yetkilendir"
+                    >
+                      <UserPlus className="mr-2 h-4 w-4" /> Yetkilendir
+                    </Button>
                     {!(user as UserRow & { verified?: boolean }).verified && (
                       <Button
                         variant="outline"
@@ -931,6 +1262,11 @@ export default function UsersPage() {
         user={viewingUser}
         open={!!viewingUser}
         onOpenChange={(o) => !o && setViewingUser(null)}
+      />
+      <AssignEntityDialog
+        user={assigningUser}
+        open={!!assigningUser}
+        onOpenChange={(o) => !o && setAssigningUser(null)}
       />
     </div>
   );

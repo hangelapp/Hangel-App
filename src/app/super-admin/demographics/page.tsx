@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
     Card, CardContent, CardHeader, CardTitle,
 } from '@/components/ui/card';
@@ -14,7 +15,7 @@ import {
     Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
-    Users, Cake, Heart, MapPin, Building, Loader2, Globe, GraduationCap, Sparkles, Target,
+    Users, Cake, Heart, MapPin, Building, Loader2, Globe, GraduationCap, Sparkles, Target, ArrowRight,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -173,6 +174,21 @@ const StatChartCard = ({
 
 export default function DemographicsPage() {
     const db = useFirestore();
+    const router = useRouter();
+
+    // Yalnızca bu sayfa kendi başına açıldığında yönlendirme yap; analytics
+    // sekmesi içine embed edildiğinde redirect tetiklenmesin.
+    const [isStandalone, setIsStandalone] = useState(false);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const standalone = window.location.pathname === '/super-admin/demographics';
+        setIsStandalone(standalone);
+        if (!standalone) return;
+        const t = setTimeout(() => {
+            router.replace('/super-admin/analytics?tab=demographics');
+        }, 5000);
+        return () => clearTimeout(t);
+    }, [router]);
 
     const usersQ = useMemoFirebase(() => collection(db, 'users'), [db]);
     const ngosQ = useMemoFirebase(() => collection(db, 'ngos'), [db]);
@@ -209,6 +225,27 @@ export default function DemographicsPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in-0">
+            {isStandalone && (
+                <Card className="rounded-2xl border-amber-300 bg-amber-50">
+                    <CardContent className="p-4 flex items-center gap-3 flex-wrap">
+                        <ArrowRight className="h-5 w-5 text-amber-700 shrink-0" />
+                        <div className="flex-1 min-w-[260px]">
+                            <p className="font-semibold text-amber-900 text-sm">
+                                Bu sayfa artık /super-admin/analytics altında.
+                            </p>
+                            <p className="text-xs text-amber-800">
+                                5 saniye içinde yönlendirileceksiniz.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => router.replace('/super-admin/analytics?tab=demographics')}
+                            className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 transition-colors"
+                        >
+                            Şimdi geç
+                        </button>
+                    </CardContent>
+                </Card>
+            )}
             <div>
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Demografi Analizi</h1>
                 <p className="text-muted-foreground text-sm">

@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 
 const DISCOVERY_OPTIONS = ['Sosyal Medya', 'Reklamlar', 'Sivil Toplum Kuruluşu', 'Arkadaşım'];
 const DETAIL_REQUIRED = ['Sivil Toplum Kuruluşu', 'Arkadaşım'];
@@ -34,7 +34,7 @@ export function RatingPopup() {
     const db = useFirestore();
 
     useEffect(() => {
-        if (isUserLoading || typeof window === 'undefined' || !user?.uid) return;
+        if (isUserLoading || typeof window === 'undefined' || !user?.uid || !db) return;
 
         // Safe localStorage helpers — Safari private mode / quota errors should never crash render
         const safeGet = (k: string): string | null => {
@@ -44,54 +44,87 @@ export function RatingPopup() {
             try { window.localStorage.setItem(k, v); } catch { /* ignore */ }
         };
 
-        try {
-            const discoveryKey = `hangel_discovery_done_${user.uid}`;
-            const ratingKey = `hangel_rating_done_${user.uid}`;
-            const neverAskKey = `hangel_never_ask_popup_${user.uid}`;
-            const visitCountKey = `hangel_visit_count_${user.uid}`;
-            const shownAtKey = `hangel_survey_shown_at_${user.uid}`;
+        let cancelled = false;
+        let timer: ReturnType<typeof setTimeout> | null = null;
 
-            // Check if user has opted out of surveys permanently
-            if (safeGet(neverAskKey)) return;
+        (async () => {
+            try {
+                const discoveryKey = `hangel_discovery_done_${user.uid}`;
+                const ratingKey = `hangel_rating_done_${user.uid}`;
+                const neverAskKey = `hangel_never_ask_popup_${user.uid}`;
+                const shownAtKey = `hangel_survey_shown_at_${user.uid}`;
 
-            // Rate limit: don't show again within 24h of a previous appearance
-            const lastShownRaw = safeGet(shownAtKey);
-            if (lastShownRaw) {
-                const lastShown = Number(lastShownRaw);
-                if (Number.isFinite(lastShown) && Date.now() - lastShown < 24 * 60 * 60 * 1000) {
-                    return;
+                // Kullanıcı kalıcı olarak kapatmışsa hiç gösterme
+                if (safeGet(neverAskKey)) return;
+
+                // 24 saat içinde tekrar gösterme rate limit
+                const lastShownRaw = safeGet(shownAtKey);
+                if (lastShownRaw) {
+                    const lastShown = Number(lastShownRaw);
+                    if (Number.isFinite(lastShown) && Date.now() - lastShown < 24 * 60 * 60 * 1000) {
+                        return;
+                    }
                 }
-            }
 
-            const alreadyDiscovered = !!safeGet(discoveryKey);
-            const alreadyRated = !!safeGet(ratingKey);
+                const alreadyDiscovered = !!safeGet(discoveryKey);
+                const alreadyRated = !!safeGet(ratingKey);
 
-            setDiscoveryDone(alreadyDiscovered);
-            setRatingDone(alreadyRated);
+                if (!cancelled) {
+                    setDiscoveryDone(alreadyDiscovered);
+                    setRatingDone(alreadyRated);
+                }
 
-            if (alreadyDiscovered && alreadyRated) return;
+                // Hem anket hem rating tamamlandıysa gösterme
+                if (alreadyDiscovered && alreadyRated) return;
 
-            const parsed = parseInt(safeGet(visitCountKey) || '0', 10);
-            const currentCount = (Number.isFinite(parsed) ? parsed : 0) + 1;
-            safeSet(visitCountKey, String(currentCount));
+                // Profil tamamlık + loginCount Firestore'dan okunur
+                let isProfileComplete = false;
+                let loginCount = 0;
+                try {
+                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    if (snap.exists()) {
+                        const data = snap.data() as {
+                            personalInfo?: { email?: string; phone?: string };
+                            loginCount?: number;
+                        };
+                        const email = data?.personalInfo?.email;
+                        const phone = data?.personalInfo?.phone;
+                        isProfileComplete = !!(email && phone);
+                        loginCount = typeof data?.loginCount === 'number' ? data.loginCount : 0;
+                    }
+                } catch (e) {
+                    console.warn('RatingPopup user doc read failed:', e);
+                }
 
-            const creationTime = user.metadata?.creationTime
-                ? new Date(user.metadata.creationTime).getTime()
-                : 0;
-            const isNewUser = creationTime > 0 && Date.now() - creationTime < 10 * 60 * 1000;
-            const threshold = isNewUser ? 3 : 2;
+                if (cancelled) return;
 
-            if (currentCount >= threshold) {
-                const timer = setTimeout(() => {
+                // Rating'i tetikleme eşiği:
+                //  - Profil tamsa 2. girişten itibaren
+                //  - Profil eksikse 3. girişten itibaren
+                const ratingThreshold = isProfileComplete ? 2 : 3;
+                const ratingEligible = !alreadyRated && loginCount >= ratingThreshold;
+
+                // Discovery anketi mevcut tetikleme mantığıyla kalır:
+                //  - Anket henüz tamamlanmadıysa görünmeye uygun (loginCount >= 2)
+                const discoveryEligible = !alreadyDiscovered && loginCount >= 2;
+
+                if (!ratingEligible && !discoveryEligible) return;
+
+                timer = setTimeout(() => {
+                    if (cancelled) return;
                     setOpen(true);
                     safeSet(shownAtKey, String(Date.now()));
                 }, 2000);
-                return () => clearTimeout(timer);
+            } catch (e) {
+                console.warn('RatingPopup init failed:', e);
             }
-        } catch (e) {
-            console.warn('RatingPopup init failed:', e);
-        }
-    }, [isUserLoading, user]);
+        })();
+
+        return () => {
+            cancelled = true;
+            if (timer) clearTimeout(timer);
+        };
+    }, [isUserLoading, user, db]);
 
     const safeSetLS = (k: string, v: string) => {
         if (typeof window === 'undefined') return;

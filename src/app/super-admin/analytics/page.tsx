@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, Suspense } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -26,11 +27,12 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area,
 } from 'recharts';
-import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock, Pencil } from "lucide-react";
+import { Users, Building, Store, HandCoins, Trophy, Loader2, Heart, FileText, Bell, Hourglass, CheckCircle2, XCircle, GraduationCap, MessageSquare, Star, ShoppingBag, Clock, Pencil, BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import DemographicsPage from '../demographics/page';
 
 const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b'];
 
@@ -100,9 +102,34 @@ function ageBucket(age: number): string {
     return '55+';
 }
 
-export default function AnalyticsPage() {
+function AnalyticsPageInner() {
     const db = useFirestore();
     const [growthSort, setGrowthSort] = useState<'desc' | 'asc'>('desc');
+
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+    const initialTab = searchParams?.get('tab') === 'demographics' ? 'demographics' : 'stats';
+    const [activeTab, setActiveTab] = useState<'stats' | 'demographics'>(initialTab);
+
+    useEffect(() => {
+        const t = searchParams?.get('tab');
+        if (t === 'demographics' && activeTab !== 'demographics') setActiveTab('demographics');
+        if ((!t || t === 'stats') && activeTab !== 'stats') setActiveTab('stats');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
+
+    const handleTabChange = (value: string) => {
+        const next = value === 'demographics' ? 'demographics' : 'stats';
+        setActiveTab(next);
+        try {
+            const params = new URLSearchParams(Array.from(searchParams?.entries() ?? []));
+            if (next === 'demographics') params.set('tab', 'demographics');
+            else params.delete('tab');
+            const qs = params.toString();
+            router.replace(qs ? `${pathname}?${qs}` : pathname);
+        } catch { /* ignore */ }
+    };
 
     const usersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
     const ngosQ = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
@@ -277,6 +304,18 @@ export default function AnalyticsPage() {
                     Firestore'dan gerçek zamanlı veriler. Toplam {totalUsers.toLocaleString('tr-TR')} kullanıcı, {(ngos?.length ?? 0).toLocaleString('tr-TR')} STK, {(brands?.length ?? 0).toLocaleString('tr-TR')} marka taranıyor.
                 </p>
             </div>
+
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 max-w-md">
+                    <TabsTrigger value="stats">
+                        <BarChart3 className="mr-2 h-4 w-4" /> İstatistikler
+                    </TabsTrigger>
+                    <TabsTrigger value="demographics">
+                        <PieChartIcon className="mr-2 h-4 w-4" /> Demografi
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="stats" className="mt-6 space-y-6">
 
             {/* Ana KPI'lar */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -632,6 +671,20 @@ export default function AnalyticsPage() {
                     </Tabs>
                 </CardContent>
             </Card>
+                </TabsContent>
+
+                <TabsContent value="demographics" className="mt-6">
+                    <DemographicsPage />
+                </TabsContent>
+            </Tabs>
         </div>
+    );
+}
+
+export default function AnalyticsPage() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Yükleniyor...</div>}>
+            <AnalyticsPageInner />
+        </Suspense>
     );
 }

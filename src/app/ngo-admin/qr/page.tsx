@@ -107,22 +107,36 @@ export default function QrPage() {
   }, [activeEntity]);
 
   const profileUrl = origin && profilePath ? `${origin}${profilePath}` : '';
-  const qrCodeUrl = profileUrl
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`
+  // Davet URL'i: yeni kullanıcı kayıt akışına otomatik aksiyon için ref param ekliyoruz.
+  // Örn: https://hangel.org.tr/login/selection?action=register&ref=ngo:abc123
+  // login/selection sayfası bu paramı okuyup yeni kullanıcı dokümanına supportedNgos/joinedClubs/followedBrands yazar.
+  const refParam = activeEntity ? `${activeEntity.kind}:${activeEntity.id}` : '';
+  const inviteUrl = origin && refParam
+    ? `${origin}/login/selection?action=register&ref=${encodeURIComponent(refParam)}`
     : '';
-  const shareUrl = profileUrl;
+  // QR ve paylaşım butonları davet URL'ini kullanır (yeni kullanıcı için auto-action tetiklensin).
+  const qrCodeUrl = inviteUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`
+    : '';
+  const shareUrl = inviteUrl;
   const entityName = activeEntity?.name ?? '';
   const shareText = activeEntity ? `${entityName} - hangel'de bizi destekleyin` : '';
   const shareSubject = activeEntity ? `hangel'de ${entityName}'i destekleyin` : '';
   const shareMessage = activeEntity
-    ? `${entityName} - hangel platformunda toplumsal etki yaratıyoruz. Bizi keşfedin: ${shareUrl}`
+    ? `${entityName} - hangel platformunda toplumsal etki yaratıyoruz. Bize katılın: ${shareUrl}`
     : '';
   const entityTypeLabel = activeEntity?.kind === 'ngo' ? 'STK' : activeEntity?.kind === 'brand' ? 'Marka' : activeEntity?.kind === 'club' ? 'Kulüp' : '';
 
-  const copyToClipboard = () => {
+  const copyProfileUrl = () => {
     if (!profileUrl) return;
     navigator.clipboard.writeText(profileUrl);
     toast({ title: 'Profil linki kopyalandı!' });
+  };
+
+  const copyInviteUrl = () => {
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl);
+    toast({ title: 'Davet linki kopyalandı!' });
   };
 
   if (isLoading) {
@@ -174,11 +188,28 @@ export default function QrPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
-            <p className="text-sm text-foreground font-mono break-all">{profileUrl}</p>
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={copyToClipboard} aria-label="Bağlantıyı kopyala">
-              <Copy className="h-4 w-4" />
-            </Button>
+          <div className="w-full space-y-2">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 text-left">Profil URL&apos;i</p>
+              <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
+                <p className="text-sm text-foreground font-mono break-all">{profileUrl}</p>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={copyProfileUrl} aria-label="Profil bağlantısını kopyala">
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1 text-left">Davet URL&apos;i (Otomatik Aksiyon)</p>
+              <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/20 w-full">
+                <p className="text-sm text-foreground font-mono break-all">{inviteUrl}</p>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={copyInviteUrl} aria-label="Davet bağlantısını kopyala">
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1 leading-tight text-left">
+                Bu link ile kayıt olan yeni kullanıcılar otomatik olarak {entityTypeLabel === 'STK' ? 'STK destekçisi ve gönüllüsü' : entityTypeLabel === 'Marka' ? 'marka takipçisi' : 'kulüp üyesi'} olur.
+              </p>
+            </div>
           </div>
 
           <div className="w-full space-y-2">

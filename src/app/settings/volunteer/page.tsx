@@ -64,11 +64,29 @@ type VolunteerUserDoc = {
       socialImpact: boolean;
       privacy: boolean;
     }>;
+    schedule?: {
+      startDate?: string;
+      endDate?: string;
+      notifications?: boolean;
+    };
+    location?: {
+      country?: string;
+      province?: string;
+      district?: string;
+      neighborhood?: string;
+    };
   };
   personalInfo?: {
     bloodType?: string;
     gender?: string;
-    address?: { neighborhood?: string; street?: string; doorNo?: string } & Record<string, unknown>;
+    address?: {
+      country?: string;
+      province?: string;
+      district?: string;
+      neighborhood?: string;
+      street?: string;
+      doorNo?: string;
+    } & Record<string, unknown>;
   } & Record<string, unknown>;
 };
 
@@ -413,6 +431,17 @@ export default function VolunteerSettingsPage() {
     privacy: false,
   });
 
+  // Gönüllülük tarih aralığı & bildirimler
+  const [volunteerStartDate, setVolunteerStartDate] = useState('');
+  const [volunteerEndDate, setVolunteerEndDate] = useState('');
+  const [scheduleNotifications, setScheduleNotifications] = useState(false);
+
+  // Detaylı adres — Ülke / İl / İlçe / Mahalle (çoktan seçmeli)
+  const [addrCountry, setAddrCountry] = useState('Türkiye');
+  const [addrProvince, setAddrProvince] = useState('');
+  const [addrDistrict, setAddrDistrict] = useState('');
+  const [addrNeighborhood, setAddrNeighborhood] = useState('');
+
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
     return doc(db, 'users', authUser.uid);
@@ -476,6 +505,17 @@ export default function VolunteerSettingsPage() {
     if (Array.isArray(vi.workModes)) setWorkModes(vi.workModes);
     if (Array.isArray(vi.motivations)) setMotivations(vi.motivations);
     if (vi.consents) setConsents(prev => ({ ...prev, ...vi.consents }));
+
+    if (vi.schedule?.startDate) setVolunteerStartDate(vi.schedule.startDate);
+    if (vi.schedule?.endDate) setVolunteerEndDate(vi.schedule.endDate);
+    if (typeof vi.schedule?.notifications === 'boolean') setScheduleNotifications(vi.schedule.notifications);
+
+    // Adres: önce volunteerInfo.location, yoksa personalInfo.address
+    const addr = vi.location ?? userData.personalInfo?.address ?? {};
+    if (addr.country) setAddrCountry(addr.country);
+    if (addr.province) setAddrProvince(addr.province);
+    if (addr.district) setAddrDistrict(addr.district);
+    if (addr.neighborhood) setAddrNeighborhood(addr.neighborhood);
   }, [userData]);
 
   const handleLevelChange = (lang: string, level: string) => {
@@ -494,6 +534,18 @@ export default function VolunteerSettingsPage() {
   const mahalleler = useMemo(
     () => (muhtarIl && muhtarIlce) ? ((neighborhoodsData as NeighborhoodsMap)[muhtarIl]?.[muhtarIlce] ?? []) : [],
     [muhtarIl, muhtarIlce],
+  );
+
+  const isTurkey = addrCountry === 'Türkiye';
+  const addrDistricts = useMemo(
+    () => (isTurkey && addrProvince) ? (districtsData[addrProvince] ?? []) : [],
+    [isTurkey, addrProvince],
+  );
+  const addrNeighborhoods = useMemo(
+    () => (isTurkey && addrProvince && addrDistrict)
+      ? ((neighborhoodsData as NeighborhoodsMap)[addrProvince]?.[addrDistrict] ?? [])
+      : [],
+    [isTurkey, addrProvince, addrDistrict],
   );
 
   const handleSubmit = (e: React.FormEvent) => {

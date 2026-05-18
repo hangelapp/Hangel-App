@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { allProvinces, districtsData } from '@/lib/data';
+import { neighborhoodsData } from '@/lib/data';
+import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { Country, State, City } from 'country-state-city';
 import type { User } from '@/lib/types';
 
@@ -201,12 +202,21 @@ export default function ProfileSettingsPage() {
   const currentCountry = profile.personalInfo.address.country;
   const currentCity = profile.personalInfo.address.city;
   const currentDistrict = profile.personalInfo.address.district;
+  const currentNeighborhood = (profile.personalInfo.address as { neighborhood?: string }).neighborhood || '';
+  const currentStreet = (profile.personalInfo.address as { fullAddress?: string }).fullAddress || '';
   const isTurkey = currentCountry === 'Türkiye' || currentCountry === 'Turkey' || currentCountry === 'TR';
 
-  const allCountriesList = useMemo(() => {
-    return Country.getAllCountries()
+  // Country dropdown options: Türkiye + KKTC pinned, then rest alphabetically
+  const countryOptions = useMemo(() => {
+    const rest = Country.getAllCountries()
       .map(c => ({ name: c.name, code: c.isoCode }))
+      .filter(c => c.name !== 'Turkey' && c.name !== 'Cyprus')
       .sort((a, b) => a.name.localeCompare(b.name));
+    return [
+      { name: 'Türkiye', code: 'TR' },
+      { name: 'KKTC (Kuzey Kıbrıs)', code: 'CY-KKTC' },
+      ...rest,
+    ];
   }, []);
 
   const countryISO = useMemo(() => {
@@ -215,21 +225,37 @@ export default function ProfileSettingsPage() {
     return Country.getAllCountries().find(c => c.name === currentCountry || c.isoCode === currentCountry)?.isoCode || null;
   }, [currentCountry, isTurkey]);
 
-  const cityOptions = useMemo(() => {
-    if (isTurkey) return (allProvinces || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+  // For Türkiye, list of il from neighborhoodsData; otherwise country-state-city states/cities
+  const cityOptions = useMemo<string[]>(() => {
+    if (isTurkey) {
+      return Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr'));
+    }
     if (!countryISO) return [];
     const states = State.getStatesOfCountry(countryISO).map(s => s.name);
     if (states.length > 0) return states.sort((a, b) => a.localeCompare(b));
     return City.getCitiesOfCountry(countryISO)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
   }, [isTurkey, countryISO]);
 
-  const districtOptions = useMemo(() => {
-    if (isTurkey) return (districtsData[currentCity] || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
+  // İlçe options (Türkiye: neighborhoodsData[il] keys; diğer: ülke şehirleri)
+  const districtOptions = useMemo<string[]>(() => {
+    if (isTurkey) {
+      if (!currentCity || !neighborhoodsData[currentCity]) return [];
+      return Object.keys(neighborhoodsData[currentCity]).sort((a, b) => a.localeCompare(b, 'tr'));
+    }
     if (!countryISO) return [];
     const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === currentCity);
     if (!stateObj) return [];
     return City.getCitiesOfState(countryISO, stateObj.isoCode)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
   }, [isTurkey, countryISO, currentCity]);
+
+  // Mahalle options (only Türkiye)
+  const neighborhoodOptions = useMemo<string[]>(() => {
+    if (!isTurkey) return [];
+    if (!currentCity || !currentDistrict) return [];
+    const list = neighborhoodsData[currentCity]?.[currentDistrict];
+    if (!list) return [];
+    return list.slice().sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [isTurkey, currentCity, currentDistrict]);
 
   if (isUserLoading || isUserDataLoading) {
       return (
@@ -293,48 +319,112 @@ export default function ProfileSettingsPage() {
                     </div>
                     <div className="space-y-2">
                         <Label>Telefon</Label>
-                        <Input
-                            type="tel"
-                            value={profile.personalInfo.phone || ''}
-                            onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)}
-                            placeholder="5XX XXX XX XX"
-                        />
+                        {(() => {
+                            const currentPhoneCountryCode =
+                                (profile.personalInfo as User['personalInfo'] & { phoneCountryCode?: string }).phoneCountryCode || '+90';
+                            const selectedPhone = COUNTRY_PHONE_CODES.find(c => c.code === currentPhoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
+                            return (
+                                <div className="grid grid-cols-[140px_1fr] gap-2">
+                                    <Select
+                                        value={currentPhoneCountryCode}
+                                        onValueChange={(v) => handleChange('personalInfo', 'phoneCountryCode', v)}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl font-bold">
+                                            <SelectValue>
+                                                <span className="text-base">{selectedPhone.flag}</span>
+                                                <span className="ml-1">{selectedPhone.code}</span>
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {COUNTRY_PHONE_CODES.map((c) => (
+                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                    <span className="text-base mr-2">{c.flag}</span>
+                                                    {c.country} ({c.code})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Input
+                                        type="tel"
+                                        value={profile.personalInfo.phone || ''}
+                                        onChange={(e) => handleChange('personalInfo', 'phone', e.target.value)}
+                                        placeholder="5XX XXX XX XX"
+                                    />
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Ülke</Label>
-                    <Select value={currentCountry || ''} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '' })}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
+                    <Select value={currentCountry || 'Türkiye'} onValueChange={(val) => handleChange('personalInfo', 'address', { country: val, city: '', district: '', neighborhood: '', fullAddress: '' })}>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Türkiye" /></SelectTrigger>
                         <SelectContent className="max-h-72">
-                            <SelectItem value="Türkiye">Türkiye</SelectItem>
-                            {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
+                            {countryOptions.map(c => (
                                 <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İl' : 'Şehir'}</Label>
                         {cityOptions.length > 0 ? (
                             <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Giriş yapın" />
+                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Şehir" className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
                         <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
-                        {districtOptions.length > 0 ? (
+                        {isTurkey ? (
+                            <Select
+                                value={currentDistrict || ''}
+                                onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })}
+                                disabled={!currentCity || districtOptions.length === 0}
+                            >
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue placeholder={!currentCity ? 'Önce il seçin' : 'İlçe seçin...'} />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : districtOptions.length > 0 ? (
                             <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} disabled={!currentCity}>
                                 <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                                 <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Giriş yapın" />
+                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Bölge" className="h-11 rounded-xl" />
                         )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Mahalle</Label>
+                        {isTurkey ? (
+                            <Select
+                                value={currentNeighborhood || ''}
+                                onValueChange={(v) => handleChange('personalInfo', 'address', { neighborhood: v })}
+                                disabled={!currentDistrict || neighborhoodOptions.length === 0}
+                            >
+                                <SelectTrigger className="h-11 rounded-xl">
+                                    <SelectValue placeholder={!currentDistrict ? 'Önce ilçe seçin' : 'Mahalle seçin...'} />
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">{neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                            </Select>
+                        ) : (
+                            <Input value={currentNeighborhood} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle" className="h-11 rounded-xl" />
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Sokak / Açık Adres</Label>
+                        <Input
+                            value={currentStreet}
+                            onChange={(e) => handleChange('personalInfo', 'address', { fullAddress: e.target.value })}
+                            placeholder="Sokak, kapı no..."
+                            className="h-11 rounded-xl"
+                        />
                     </div>
                 </div>
             </CardContent>
@@ -363,8 +453,7 @@ export default function ProfileSettingsPage() {
                         >
                             <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Uyruk seçin..." /></SelectTrigger>
                             <SelectContent className="max-h-72">
-                                <SelectItem value="Türkiye">Türkiye</SelectItem>
-                                {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
+                                {countryOptions.map(c => (
                                     <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
                                 ))}
                             </SelectContent>

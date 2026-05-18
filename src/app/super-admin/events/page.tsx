@@ -1,0 +1,481 @@
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import {
+  collection,
+  doc,
+  updateDoc,
+  deleteDoc,
+  orderBy,
+  query,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Inbox,
+  Calendar,
+  MapPin,
+  Hourglass,
+  Trash2,
+} from 'lucide-react';
+
+type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif';
+
+interface EventDoc {
+  id: string;
+  name?: string;
+  slug?: string;
+  organizer?: string;
+  organizerId?: string;
+  organizerKind?: string;
+  organizerLogoUrl?: string;
+  organizerAvatarUrl?: string;
+  imageUrl?: string;
+  coverImageUrl?: string;
+  date?: string;
+  startDate?: string;
+  location?: { type?: string; address?: string; city?: string; district?: string };
+  description?: string;
+  status?: EventStatus;
+  createdAt?: number;
+  createdBy?: string | null;
+  approvedAt?: unknown;
+  approvedBy?: string | null;
+  rejectedAt?: unknown;
+  rejectionReason?: string;
+}
+
+function StatusBadge({ status }: { status?: EventStatus }) {
+  const s = status || 'Beklemede';
+  if (s === 'Beklemede') {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-amber-50 text-amber-700 border-amber-200 text-[10px] font-bold uppercase tracking-wider"
+      >
+        <Hourglass className="mr-1 h-3 w-3" /> Onay Bekliyor
+      </Badge>
+    );
+  }
+  if (s === 'Reddedildi') {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-red-50 text-red-700 border-red-200 text-[10px] font-bold uppercase tracking-wider"
+      >
+        <XCircle className="mr-1 h-3 w-3" /> Reddedildi
+      </Badge>
+    );
+  }
+  return (
+    <Badge
+      variant="outline"
+      className="bg-green-50 text-green-700 border-green-200 text-[10px] font-bold uppercase tracking-wider"
+    >
+      <CheckCircle2 className="mr-1 h-3 w-3" /> Yayında
+    </Badge>
+  );
+}
+
+function formatDate(d?: string): string {
+  if (!d) return '—';
+  return d;
+}
+
+function EventRow({
+  event,
+  children,
+}: {
+  event: EventDoc;
+  children?: React.ReactNode;
+}) {
+  const title = event.name || 'Adsız etkinlik';
+  const organizer = event.organizer || 'Bilinmeyen Kulüp';
+  const city = event.location?.city || '';
+  const district = event.location?.district || '';
+  const address = event.location?.address || '';
+  const date = formatDate(event.date || event.startDate);
+  const cover = event.coverImageUrl || event.imageUrl || event.organizerLogoUrl;
+
+  return (
+    <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all">
+      <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <Avatar className="h-14 w-14 border shadow-sm shrink-0 rounded-2xl">
+          <AvatarImage src={cover} alt={title} />
+          <AvatarFallback className="rounded-2xl bg-primary/10 text-primary">
+            <Calendar className="h-6 w-6" />
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="font-bold text-foreground truncate">{title}</p>
+            <StatusBadge status={event.status} />
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">
+            <span className="font-semibold">{organizer}</span>
+          </p>
+          <p className="text-[11px] text-muted-foreground flex items-center gap-3 flex-wrap">
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="h-3 w-3" /> {date}
+            </span>
+            {(city || district) && (
+              <span className="inline-flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {[district, city].filter(Boolean).join(', ')}
+              </span>
+            )}
+          </p>
+          {event.description && (
+            <p className="text-xs text-muted-foreground line-clamp-2 pt-1">{event.description}</p>
+          )}
+          {address && (
+            <p className="text-[10px] text-muted-foreground/80 italic truncate">{address}</p>
+          )}
+          {event.rejectionReason && event.status === 'Reddedildi' && (
+            <p className="text-[11px] text-red-600 font-medium pt-1">
+              Red gerekçesi: {event.rejectionReason}
+            </p>
+          )}
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto sm:flex-col md:flex-row">{children}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function SuperAdminEventsPage() {
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+  const { toast } = useToast();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const eventsQuery = useMemoFirebase(
+    () => (db ? query(collection(db, 'events'), orderBy('createdAt', 'desc')) : null),
+    [db],
+  );
+  const { data: events, isLoading } = useCollection<EventDoc>(eventsQuery);
+
+  const grouped = useMemo(() => {
+    const list = (events || []) as EventDoc[];
+    return {
+      pending: list.filter((e) => (e.status || 'Beklemede') === 'Beklemede'),
+      published: list.filter((e) => e.status === 'Yayında' || e.status === 'Aktif'),
+      rejected: list.filter((e) => e.status === 'Reddedildi'),
+    };
+  }, [events]);
+
+  const handleApprove = async (id: string) => {
+    if (!db) return;
+    setBusyId(id);
+    try {
+      await updateDoc(doc(db, 'events', id), {
+        status: 'Yayında',
+        approvedAt: serverTimestamp(),
+        approvedBy: authUser?.uid || null,
+      });
+      toast({ title: 'Etkinlik Onaylandı', description: 'Etkinlik artık yayında.' });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'Onaylanamadı',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    if (!db) return;
+    setBusyId(id);
+    try {
+      await updateDoc(doc(db, 'events', id), {
+        status: 'Reddedildi',
+        rejectedAt: serverTimestamp(),
+        rejectionReason: 'Süper admin tarafından reddedildi.',
+        approvedBy: authUser?.uid || null,
+      });
+      toast({
+        variant: 'destructive',
+        title: 'Etkinlik Reddedildi',
+        description: 'Etkinlik yayına alınmadı.',
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'Reddedilemedi',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!db) return;
+    setBusyId(id);
+    try {
+      await deleteDoc(doc(db, 'events', id));
+      toast({ variant: 'destructive', title: 'Etkinlik Silindi' });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'Silinemedi',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">
+          Etkinlikler Yükleniyor...
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-in fade-in-0">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Etkinlik Yönetimi</h1>
+        <p className="text-muted-foreground text-sm font-medium">
+          Öğrenci kulüplerinin oluşturduğu etkinlikleri inceleyin, onaylayın veya reddedin.
+        </p>
+      </div>
+
+      <div className="p-4 bg-primary/5 border border-primary/10 rounded-[2rem] flex items-start gap-4">
+        <Calendar className="h-6 w-6 text-primary mt-0.5 shrink-0" />
+        <div className="space-y-1">
+          <p className="font-bold text-sm">Süper Admin Onay Süreci</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Yeni etkinlikler kulüpler tarafından &quot;Beklemede&quot; durumunda oluşturulur. Onayladığınız etkinlikler
+            otomatik olarak &quot;Yayında&quot; durumuna geçer ve platformda görünür olur.
+          </p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="pending" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl">
+          <TabsTrigger
+            value="pending"
+            className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
+          >
+            <Hourglass className="mr-2 h-4 w-4" /> Onay Bekleyenler ({grouped.pending.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="published"
+            className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" /> Yayında ({grouped.published.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="rejected"
+            className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
+          >
+            <XCircle className="mr-2 h-4 w-4" /> Reddedilenler ({grouped.rejected.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending" className="mt-8 space-y-4">
+          {grouped.pending.length === 0 ? (
+            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+              <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+                Onay bekleyen etkinlik bulunmuyor.
+              </p>
+            </div>
+          ) : (
+            grouped.pending.map((event) => (
+              <EventRow key={event.id} event={event}>
+                <Button
+                  size="sm"
+                  className="flex-1 sm:flex-grow-0 rounded-xl font-bold bg-green-600 hover:bg-green-700 text-white"
+                  disabled={busyId === event.id}
+                  onClick={() => handleApprove(event.id)}
+                >
+                  {busyId === event.id ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
+                  Onayla
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      disabled={busyId === event.id}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" /> Reddet
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-[2rem]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-xl font-bold">
+                        Etkinliği reddet?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-base font-medium">
+                        &quot;{event.name}&quot; etkinliği reddedilecek ve yayına alınmayacak. Bu işlemi
+                        daha sonra geri alabilirsiniz.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
+                        onClick={() => handleReject(event.id)}
+                      >
+                        Evet, Reddet
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </EventRow>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="published" className="mt-8 space-y-4">
+          {grouped.published.length === 0 ? (
+            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+              <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+                Yayında olan etkinlik bulunmuyor.
+              </p>
+            </div>
+          ) : (
+            grouped.published.map((event) => (
+              <EventRow key={event.id} event={event}>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      disabled={busyId === event.id}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Sil
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-[2rem]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-xl font-bold">
+                        Etkinliği kalıcı olarak sil?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-base font-medium">
+                        &quot;{event.name}&quot; etkinliği veritabanından silinecek. Bu işlem geri alınamaz.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
+                        onClick={() => handleDelete(event.id)}
+                      >
+                        Evet, Sil
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </EventRow>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="rejected" className="mt-8 space-y-4">
+          {grouped.rejected.length === 0 ? (
+            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+              <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+                Reddedilmiş etkinlik bulunmuyor.
+              </p>
+            </div>
+          ) : (
+            grouped.rejected.map((event) => (
+              <EventRow key={event.id} event={event}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 sm:flex-grow-0 rounded-xl font-bold"
+                  disabled={busyId === event.id}
+                  onClick={() => handleApprove(event.id)}
+                >
+                  {busyId === event.id ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
+                  Yeniden Yayınla
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                      disabled={busyId === event.id}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" /> Sil
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-[2rem]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-xl font-bold">
+                        Etkinliği kalıcı olarak sil?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-base font-medium">
+                        &quot;{event.name}&quot; etkinliği veritabanından silinecek. Bu işlem geri alınamaz.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                      <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
+                        onClick={() => handleDelete(event.id)}
+                      >
+                        Evet, Sil
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </EventRow>
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

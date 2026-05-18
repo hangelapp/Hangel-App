@@ -28,13 +28,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
-    countryPhoneCodes, allCountries, allSdgs,
+    allCountries, allSdgs,
 } from '@/lib/data';
+import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
-import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
 // --- Shared UI Components ---
@@ -194,7 +195,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
     const [step, setStep] = useState<IndividualStep>('email');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
-    const [phoneCode, setPhoneCode] = useState('90');
+    const [phoneCountryCode, setPhoneCountryCode] = useState('+90');
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -246,6 +247,36 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                 try { await updateProfile(userCredential.user, { displayName: name }); } catch {}
             }
             const referrerId = searchParams.get('ref') || null;
+
+            // QR/davet linki ile gelen otomatik aksiyon: ref=<kind>:<id> formatı
+            // - ngo:X  → supportedNgos + volunteerNgos (STK destekçisi + gönüllüsü)
+            // - club:X → joinedClubs (kulübe katılmış)
+            // - brand:X → followedBrands (marka takip)
+            let autoActionFields: Record<string, unknown> = {};
+            let autoActionKind: 'ngo' | 'club' | 'brand' | null = null;
+            let autoActionEntityId = '';
+            if (referrerId && referrerId.includes(':')) {
+                const [kind, entityId] = referrerId.split(':');
+                if (entityId) {
+                    if (kind === 'ngo') {
+                        autoActionKind = 'ngo';
+                        autoActionEntityId = entityId;
+                        autoActionFields = {
+                            supportedNgos: [entityId],
+                            volunteerNgos: [entityId],
+                        };
+                    } else if (kind === 'club') {
+                        autoActionKind = 'club';
+                        autoActionEntityId = entityId;
+                        autoActionFields = { joinedClubs: [entityId] };
+                    } else if (kind === 'brand') {
+                        autoActionKind = 'brand';
+                        autoActionEntityId = entityId;
+                        autoActionFields = { followedBrands: [entityId] };
+                    }
+                }
+            }
+
             setDocumentNonBlocking(doc(db, 'users', userId), {
                 id: userId,
                 name: name,
@@ -254,13 +285,36 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                 avatarUrl: '',
                 personalInfo: {
                     email: email.trim().toLowerCase(),
-                    phone: `+${phoneCode}${phone.replace(/\D/g, '')}`,
+                    phone: phone.replace(/\D/g, ''),
+                    phoneCountryCode,
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
                 ...(referrerId ? { invitedBy: referrerId } : {}),
+                ...autoActionFields,
                 createdAt: serverTimestamp(),
                 joinDate: new Date().toISOString().split('T')[0],
             }, { merge: true });
+
+            // Auto-action toast: davet edilen kuruluşun adını çekip kullanıcıya bilgi ver.
+            if (autoActionKind && autoActionEntityId) {
+                try {
+                    const collectionName = autoActionKind === 'ngo' ? 'ngos' : autoActionKind === 'club' ? 'clubs' : 'brands';
+                    const entitySnap = await getDoc(doc(db, collectionName, autoActionEntityId));
+                    const entityName = (entitySnap.exists() && (entitySnap.data() as { name?: string }).name) || '';
+                    const roleLabel =
+                        autoActionKind === 'ngo' ? 'STK destekçisi ve gönüllüsü' :
+                        autoActionKind === 'club' ? 'Kulüp üyesi' :
+                        'Marka takipçisi';
+                    toast({
+                        title: 'Davet kabul edildi',
+                        description: entityName
+                            ? `${entityName} kuruluşundan davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`
+                            : `Davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`,
+                    });
+                } catch {
+                    // sessiz geç — auto-action toast opsiyonel
+                }
+            }
 
             await initiateEmailVerification(userCredential.user);
             setStep('verify-sent');
@@ -272,7 +326,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         }
     };
 
-    const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
+    const selectedIndividualPhone = COUNTRY_PHONE_CODES.find(c => c.code === phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
 
     if (step === 'email') {
         return (
@@ -310,14 +364,24 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                 </div>
                 <div className="space-y-2">
                     <FormLabel required>Telefon</FormLabel>
-                    <div className="flex gap-2">
-                        <Select value={phoneCode} onValueChange={setPhoneCode}>
-                            <SelectTrigger className="w-[90px] h-12 rounded-xl bg-card border-none shadow-sm"><SelectValue /></SelectTrigger>
+                    <div className="grid grid-cols-[140px_1fr] gap-2">
+                        <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
+                            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
+                                <SelectValue>
+                                    <span className="text-base">{selectedIndividualPhone.flag}</span>
+                                    <span className="ml-1">{selectedIndividualPhone.code}</span>
+                                </SelectValue>
+                            </SelectTrigger>
                             <SelectContent className="max-h-60">
-                                {uniquePhoneCodes.map((code, idx) => <SelectItem key={`${code}-${idx}`} value={code}>+{code}</SelectItem>)}
+                                {COUNTRY_PHONE_CODES.map((c) => (
+                                    <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                        <span className="text-base mr-2">{c.flag}</span>
+                                        {c.country} ({c.code})
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
-                        <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} className="flex-1" />
+                        <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
                     </div>
                 </div>
                 <div className="space-y-2">
@@ -372,7 +436,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         sector: '',
         email: '',
         phone: '',
-        phoneCode: '90',
+        phoneCountryCode: '+90',
         website: '',
         legalTitle: '',
         iban: '',
@@ -391,7 +455,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         about: '',
         physicalDonationsEnabled: false,
         posRequested: false,
-        authorized: { name: '', role: '', email: '', phone: '', phoneCode: '90' },
+        authorized: { name: '', role: '', email: '', phone: '', phoneCountryCode: '+90' },
         affiliateId: '',
         trackingLink: '',
         pixelScript: '',
@@ -443,7 +507,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         }
     };
 
-    const uniquePhoneCodes = Array.from(new Set(countryPhoneCodes)).sort();
+    const selectedCorporatePhone = COUNTRY_PHONE_CODES.find(c => c.code === formData.phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
@@ -585,12 +649,24 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel required>Kurumsal Telefon</FormLabel>
-                                <div className="flex gap-2">
-                                    <Select value={formData.phoneCode} onValueChange={v => setFormData({...formData, phoneCode: v})}>
-                                        <SelectTrigger className="w-[90px] h-12 rounded-xl bg-card border-none"><SelectValue /></SelectTrigger>
-                                        <SelectContent className="max-h-60">{uniquePhoneCodes.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>+{c}</SelectItem>)}</SelectContent>
+                                <div className="grid grid-cols-[140px_1fr] gap-2">
+                                    <Select value={formData.phoneCountryCode} onValueChange={v => setFormData({...formData, phoneCountryCode: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
+                                            <SelectValue>
+                                                <span className="text-base">{selectedCorporatePhone.flag}</span>
+                                                <span className="ml-1">{selectedCorporatePhone.code}</span>
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {COUNTRY_PHONE_CODES.map((c) => (
+                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                    <span className="text-base mr-2">{c.flag}</span>
+                                                    {c.country} ({c.code})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
                                     </Select>
-                                    <FormInput type="tel" placeholder="5XXXXXXXXX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="flex-1" />
+                                    <FormInput type="tel" placeholder="5XXXXXXXXX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                                 </div>
                             </div>
                         </div>
