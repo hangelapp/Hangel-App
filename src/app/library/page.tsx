@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -19,8 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import * as Icons from 'lucide-react';
-import { Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -500,6 +502,127 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
   );
 }
 
+// TODO: OpenAI/Gemini API key + library docs context'i ile entegre edilecek.
+type ChatMessage = { role: 'user' | 'assistant'; content: string; ts: number };
+type AssistantKind = 'library' | 'project';
+
+const ASSISTANT_META: Record<AssistantKind, { title: string; description: string; placeholder: string; endpoint: string; storageKey: string; icon: React.ComponentType<{ className?: string }>; accent: string }> = {
+  library: { title: 'Kütüphane Asistanı', description: 'Yalnızca kütüphanedeki dokümanları kullanarak sorularınızı yanıtlar.', placeholder: 'Kütüphane içeriği hakkında bir soru sorun...', endpoint: '/api/library/chat', storageKey: 'hangel.assistant.library.history', icon: Bot, accent: 'bg-primary text-primary-foreground' },
+  project: { title: 'Proje Yazma Asistanı', description: 'Projenizi anlatın, kütüphane ve yönetim şablonlarıyla proje dokümanı oluştursun.', placeholder: 'Projenizi birkaç cümleyle anlatın...', endpoint: '/api/library/project', storageKey: 'hangel.assistant.project.history', icon: Sparkles, accent: 'bg-fuchsia-600 text-white' },
+};
+
+function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const meta = ASSISTANT_META[kind];
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [sending, setSending] = useState(false);
+  const listRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(meta.storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as ChatMessage[];
+        if (Array.isArray(parsed)) setMessages(parsed);
+      }
+    } catch { /* ignore */ }
+  }, [meta.storageKey]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try { window.localStorage.setItem(meta.storageKey, JSON.stringify(messages)); } catch { /* ignore */ }
+  }, [messages, meta.storageKey]);
+
+  useEffect(() => {
+    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [messages, open]);
+
+  const handleSend = async () => {
+    const text = input.trim();
+    if (!text || sending) return;
+    setMessages(prev => [...prev, { role: 'user', content: text, ts: Date.now() }]);
+    setInput('');
+    setSending(true);
+    try {
+      const res = await fetch(meta.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: messages.slice(-10) }) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { reply?: string };
+      const reply = (data?.reply ?? '').toString().trim();
+      if (!reply) throw new Error('Empty reply');
+      setMessages(prev => [...prev, { role: 'assistant', content: reply, ts: Date.now() }]);
+    } catch {
+      toast({ title: 'AI servisi henüz hazır değil', description: 'AI servisi yakında aktif olacak. Süper admin yapay zeka yönetiminden eğitildikten sonra cevap verecek.' });
+    } finally { setSending(false); }
+  };
+
+  const handleClear = () => {
+    setMessages([]);
+    try { if (typeof window !== 'undefined') window.localStorage.removeItem(meta.storageKey); } catch { /* ignore */ }
+  };
+
+  const Icon = meta.icon;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-3xl max-w-lg p-0 overflow-hidden">
+        <DialogHeader className="p-5 border-b">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${meta.accent}`}><Icon className="h-4 w-4" /></span>
+            {meta.title}
+          </DialogTitle>
+          <DialogDescription className="text-xs">{meta.description}</DialogDescription>
+        </DialogHeader>
+        <div ref={listRef} className="px-5 py-4 h-[60vh] max-h-[420px] overflow-y-auto space-y-3 bg-muted/30">
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <Icon className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">{meta.placeholder}</p>
+            </div>
+          )}
+          {messages.map((m, idx) => (
+            <div key={`${m.ts}-${idx}`} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+              <div className={m.role === 'user' ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-3 py-2 text-sm whitespace-pre-wrap' : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-background border px-3 py-2 text-sm whitespace-pre-wrap'}>
+                <div className="text-[10px] uppercase tracking-wide opacity-70 mb-1">{m.role === 'user' ? 'Siz' : meta.title}</div>
+                {m.content}
+              </div>
+            </div>
+          ))}
+          {sending && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl rounded-bl-sm bg-background border px-3 py-2 text-sm flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" />Düşünüyor...</div>
+            </div>
+          )}
+        </div>
+        <div className="p-3 border-t bg-background flex items-end gap-2">
+          <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend(); } }} placeholder={meta.placeholder} disabled={sending} className="flex-1" />
+          <Button type="button" size="icon" onClick={() => void handleSend()} disabled={sending || !input.trim()} aria-label="Gönder">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          </Button>
+          {messages.length > 0 && (
+            <Button type="button" size="icon" variant="ghost" onClick={handleClear} aria-label="Geçmişi temizle"><Trash2 className="h-4 w-4" /></Button>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function LibraryAssistantsFab() {
+  const [openLibrary, setOpenLibrary] = useState(false);
+  const [openProject, setOpenProject] = useState(false);
+  return (
+    <>
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+        <Button type="button" onClick={() => setOpenProject(true)} className="rounded-full shadow-lg h-14 w-14 p-0 bg-fuchsia-600 hover:bg-fuchsia-700 text-white" aria-label="Proje Yazma Asistanı" title="Proje Yazma Asistanı"><Sparkles className="h-6 w-6" /></Button>
+        <Button type="button" onClick={() => setOpenLibrary(true)} className="rounded-full shadow-lg h-14 w-14 p-0" aria-label="Kütüphane Asistanı" title="Kütüphane Asistanı"><Bot className="h-6 w-6" /></Button>
+      </div>
+      <AssistantDialog kind="library" open={openLibrary} onOpenChange={setOpenLibrary} />
+      <AssistantDialog kind="project" open={openProject} onOpenChange={setOpenProject} />
+    </>
+  );
+}
+
 export default function LibraryPage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
@@ -599,6 +722,8 @@ export default function LibraryPage() {
           <SectionAccordion key={section.slug} section={section} />
         ))}
       </div>
+
+      <LibraryAssistantsFab />
     </div>
   );
 }

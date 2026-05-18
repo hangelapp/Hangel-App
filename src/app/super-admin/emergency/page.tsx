@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -49,8 +50,14 @@ interface EmergencyDoc {
 
 interface UserDoc {
   id: string;
+  name?: string;
+  displayName?: string;
+  email?: string;
+  avatarUrl?: string;
   personalInfo?: {
     bloodType?: string;
+    firstName?: string;
+    lastName?: string;
     address?: { city?: string; district?: string; neighborhood?: string };
   };
 }
@@ -134,6 +141,15 @@ export default function EmergencyManagementPage() {
       return true;
     });
   }, [pendingRequestsPrimary, bloodRequestsFallback, userRequestsFallback]);
+
+  // Kullanıcı id → user doc haritası (Yanıtlar sekmesinde ad + avatar için)
+  const usersById = useMemo(() => {
+    const map = new Map<string, UserDoc>();
+    for (const u of allUsers ?? []) {
+      if (u?.id) map.set(u.id, u);
+    }
+    return map;
+  }, [allUsers]);
 
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
@@ -666,35 +682,53 @@ export default function EmergencyManagementPage() {
                           )}
                         </div>
                         <div className="divide-y">
-                          {reqResponses.map(r => (
-                            <div key={r.id} className="p-3 flex items-start justify-between gap-3 hover:bg-muted/20">
-                              <div className="flex items-start gap-3 flex-1 min-w-0">
-                                {r.status === 'positive' ? (
-                                  <div className="p-2 rounded-full bg-green-100 shrink-0">
-                                    <ThumbsUp className="h-4 w-4 text-green-700" />
+                          {reqResponses.map(r => {
+                            const respUserId = (r as EmergencyDoc & { userId?: string }).userId;
+                            const userDoc = respUserId ? usersById.get(respUserId) : undefined;
+                            const pi = userDoc?.personalInfo;
+                            const lookedUpName =
+                              userDoc?.name ||
+                              userDoc?.displayName ||
+                              [pi?.firstName, pi?.lastName].filter(Boolean).join(' ').trim() ||
+                              r.userName ||
+                              'Kullanıcı';
+                            const lookedUpEmail = userDoc?.email || r.userEmail;
+                            return (
+                              <div key={r.id} className="p-3 flex items-start justify-between gap-3 hover:bg-muted/20">
+                                <div className="flex items-start gap-3 flex-1 min-w-0">
+                                  <Avatar className="h-9 w-9 shrink-0">
+                                    <AvatarImage src={userDoc?.avatarUrl} alt={lookedUpName} />
+                                    <AvatarFallback className="text-xs font-bold">
+                                      {lookedUpName.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {r.status === 'positive' ? (
+                                    <div className="p-1.5 rounded-full bg-green-100 shrink-0">
+                                      <ThumbsUp className="h-3.5 w-3.5 text-green-700" />
+                                    </div>
+                                  ) : (
+                                    <div className="p-1.5 rounded-full bg-gray-100 shrink-0">
+                                      <ThumbsDown className="h-3.5 w-3.5 text-gray-500" />
+                                    </div>
+                                  )}
+                                  <div className="min-w-0">
+                                    <p className="font-bold text-sm truncate">{lookedUpName}</p>
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+                                      {lookedUpEmail && (
+                                        <a href={`mailto:${lookedUpEmail}`} className="flex items-center gap-1 hover:text-primary">
+                                          <Mail className="h-3 w-3" /> {lookedUpEmail}
+                                        </a>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(r.respondedAt)}</p>
                                   </div>
-                                ) : (
-                                  <div className="p-2 rounded-full bg-gray-100 shrink-0">
-                                    <ThumbsDown className="h-4 w-4 text-gray-500" />
-                                  </div>
-                                )}
-                                <div className="min-w-0">
-                                  <p className="font-bold text-sm truncate">{r.userName || 'Kullanıcı'}</p>
-                                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
-                                    {r.userEmail && (
-                                      <a href={`mailto:${r.userEmail}`} className="flex items-center gap-1 hover:text-primary">
-                                        <Mail className="h-3 w-3" /> {r.userEmail}
-                                      </a>
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(r.respondedAt)}</p>
                                 </div>
+                                <Badge variant={r.status === 'positive' ? 'default' : 'secondary'} className={r.status === 'positive' ? 'bg-green-600 text-[10px]' : 'text-[10px]'}>
+                                  {r.status === 'positive' ? 'Yardım Edebilirim' : 'Edemiyorum'}
+                                </Badge>
                               </div>
-                              <Badge variant={r.status === 'positive' ? 'default' : 'secondary'} className={r.status === 'positive' ? 'bg-green-600 text-[10px]' : 'text-[10px]'}>
-                                {r.status === 'positive' ? 'Yardım Edebilirim' : 'Edemiyorum'}
-                              </Badge>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     );

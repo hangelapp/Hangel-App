@@ -178,12 +178,7 @@ export default function MessagesPage() {
                             msg.unread && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }}
-                                    className="flex items-center gap-3 rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary"
-                                    aria-label={`${msg.sender} profilini gör`}
-                                >
+                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${msg.sender} profilini gör`}>
                                     <Avatar className="h-12 w-12 border">
                                         {msg.senderAvatarUrl ? <AvatarImage src={msg.senderAvatarUrl} /> : null}
                                         <AvatarFallback>{(msg.sender || '?')[0]}</AvatarFallback>
@@ -192,17 +187,9 @@ export default function MessagesPage() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1">
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }}
-                                                className="font-bold text-sm truncate hover:underline text-left"
-                                            >
-                                                {msg.sender}
-                                            </button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left">{msg.sender}</button>
                                             {msg.senderType && (
-                                                <div className="p-1 bg-muted rounded-full text-muted-foreground">
-                                                    {senderTypeIcons[msg.senderType] || null}
-                                                </div>
+                                                <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[msg.senderType] || null}</div>
                                             )}
                                         </div>
                                         <span className="text-[10px] text-muted-foreground">{msg.time}</span>
@@ -251,11 +238,7 @@ export default function MessagesPage() {
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <Input
-                                    placeholder="Alıcı ara (isim, telefon, e-posta)"
-                                    value={recipientSearch}
-                                    onChange={(e) => setRecipientSearch(e.target.value)}
-                                />
+                                <Input placeholder="Alıcı ara (isim, telefon, e-posta)" value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
                                 <div className="max-h-44 overflow-y-auto rounded-lg border divide-y">
                                     {recipientCandidates.length === 0 ? (
                                         <p className="text-xs text-muted-foreground text-center py-4">Sonuç bulunamadı.</p>
@@ -263,12 +246,7 @@ export default function MessagesPage() {
                                         const name = u.displayName || u.fullName || u.name || 'Kullanıcı';
                                         const sub = u.email || u.phoneNumber || u.personalInfo?.phone || '';
                                         return (
-                                            <button
-                                                key={u.id}
-                                                type="button"
-                                                onClick={() => setSelectedRecipient(u)}
-                                                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50"
-                                            >
+                                            <button key={u.id} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
                                                 <Avatar className="h-8 w-8">
                                                     {(u.photoURL || u.avatarUrl) ? <AvatarImage src={u.photoURL || u.avatarUrl} /> : null}
                                                     <AvatarFallback>{name[0]}</AvatarFallback>
@@ -284,19 +262,9 @@ export default function MessagesPage() {
                             </div>
                         )}
 
-                        <Input
-                            placeholder="Konu"
-                            value={subject}
-                            onChange={(e) => setSubject(e.target.value)}
-                        />
-                        <Textarea
-                            placeholder="Mesajınızı yazın..."
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            rows={5}
-                        />
+                        <Input placeholder="Konu" value={subject} onChange={(e) => setSubject(e.target.value)} />
+                        <Textarea placeholder="Mesajınızı yazın..." value={content} onChange={(e) => setContent(e.target.value)} rows={5} />
                     </div>
-
                     <DialogFooter className="flex-row gap-2 sm:gap-2">
                         <Button type="button" variant="outline" className="flex-1" onClick={() => { setComposeOpen(false); resetCompose(); }}>İptal</Button>
                         <Button type="button" className="flex-1" onClick={handleSend} disabled={sending || !selectedRecipient || !content.trim()}>
@@ -323,9 +291,7 @@ export default function MessagesPage() {
                                 <div className="flex items-center gap-2">
                                     <p className="font-bold text-lg">{profileData.name}</p>
                                     {profileData.senderType && (
-                                        <div className="p-1 bg-muted rounded-full text-muted-foreground">
-                                            {senderTypeIcons[profileData.senderType] || null}
-                                        </div>
+                                        <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[profileData.senderType] || null}</div>
                                     )}
                                 </div>
                                 {profileData.email ? <p className="text-sm text-muted-foreground">{profileData.email}</p> : null}

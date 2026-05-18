@@ -17,25 +17,35 @@ import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-type SitePageMeta = { slug: string; label: string; href: string };
+type SitePageMeta = { slug: string; label: string; href: string; group?: string };
 
+// Sitemap section "1- WEB (Bilgi İçerikli, Tanıtım ve Kurumsal Portal)" tüm sayfalar.
+// Anasayfa ve Hakkımızda ayrı tablarda yönetildiği için burada üst düzey ile çakışmaz.
 const SITE_PAGES: SitePageMeta[] = [
-    { slug: 'press', label: 'Basın Odası', href: '/press' },
-    { slug: 'yatirimci-iliskileri', label: 'Yatırımcı İlişkileri', href: '/yatirimci-iliskileri' },
-    { slug: 'careers', label: 'Kariyer', href: '/careers' },
-    { slug: 'social-entrepreneurship', label: 'Sosyal Girişimcilik', href: '/social-entrepreneurship' },
-    { slug: 'social-impact', label: 'Sürdürülebilirlik (Sosyal Etki)', href: '/social-impact' },
-    { slug: 'bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', href: '/bilgi-toplumu-hizmetleri' },
-    { slug: 'accessibility', label: 'Erişilebilirlik Beyanı', href: '/accessibility' },
-    { slug: 'standards', label: 'Kalite Standartlarımız', href: '/standards' },
-    { slug: 'logo-usage', label: 'Logo ve Marka Kullanımı', href: '/logo-usage' },
-    { slug: 'support', label: 'Destek Merkezi', href: '/support' },
-    { slug: 'support-app-support', label: 'Uygulama Desteği (SSS)', href: '/support/app-support' },
-    { slug: 'feedback', label: 'Geri Bildirim', href: '/feedback' },
-    { slug: 'merchant', label: 'Üye İşyeri Avantajları', href: '/merchant' },
-    { slug: 'ngo-onboarding', label: 'STK Kayıt Bilgileri', href: '/ngo-onboarding' },
-    { slug: 'campus-advantages', label: 'Kampüs Avantajları', href: '/campus-advantages' },
-    { slug: 'corporate', label: 'Kamu İş Birliği', href: '/corporate' },
+    // 1.1 Ana Sayfa
+    { slug: 'login', label: 'Ana Sayfa (Karşılama)', href: '/login', group: 'Ana Sayfa' },
+    // 1.2 Kurumsal
+    { slug: 'about', label: 'Biz Kimiz? / Hakkımızda', href: '/about', group: 'Kurumsal' },
+    { slug: 'social-impact', label: 'Sürdürülebilirlik (Sosyal Etki)', href: '/social-impact', group: 'Kurumsal' },
+    { slug: 'press', label: 'Basın Odası', href: '/press', group: 'Kurumsal' },
+    { slug: 'yatirimci-iliskileri', label: 'Yatırımcı İlişkileri', href: '/yatirimci-iliskileri', group: 'Kurumsal' },
+    { slug: 'careers', label: 'Kariyer', href: '/careers', group: 'Kurumsal' },
+    { slug: 'social-entrepreneurship', label: 'Sosyal Girişimcilik', href: '/social-entrepreneurship', group: 'Kurumsal' },
+    // 1.3 Yasal & Standartlar
+    { slug: 'bilgi-toplumu-hizmetleri', label: 'Bilgi Toplumu Hizmetleri', href: '/bilgi-toplumu-hizmetleri', group: 'Yasal & Standartlar' },
+    { slug: 'accessibility', label: 'Erişilebilirlik Beyanı', href: '/accessibility', group: 'Yasal & Standartlar' },
+    { slug: 'standards', label: 'Kalite Standartlarımız', href: '/standards', group: 'Yasal & Standartlar' },
+    { slug: 'logo-usage', label: 'Logo ve Marka Kullanımı', href: '/logo-usage', group: 'Yasal & Standartlar' },
+    { slug: 'sitemap', label: 'Site Haritası', href: '/sitemap', group: 'Yasal & Standartlar' },
+    // 1.4 Bilgi & Destek
+    { slug: 'support', label: 'Destek Merkezi', href: '/support', group: 'Bilgi & Destek' },
+    { slug: 'support-app-support', label: 'Uygulama Desteği (SSS)', href: '/support/app-support', group: 'Bilgi & Destek' },
+    { slug: 'feedback', label: 'Geri Bildirim', href: '/feedback', group: 'Bilgi & Destek' },
+    // 1.5 İş Birlikleri (Bilgi Sayfaları)
+    { slug: 'corporate', label: 'İş Birlikleri / Kamu Modelleri', href: '/corporate', group: 'İş Birlikleri' },
+    { slug: 'merchant', label: 'Üye İşyeri Avantajları', href: '/merchant', group: 'İş Birlikleri' },
+    { slug: 'ngo-onboarding', label: 'STK Kayıt Bilgileri', href: '/ngo-onboarding', group: 'İş Birlikleri' },
+    { slug: 'campus-advantages', label: 'Kampüs Avantajları (Kulüpler)', href: '/campus-advantages', group: 'İş Birlikleri' },
 ];
 
 type PageContent = {
@@ -43,6 +53,8 @@ type PageContent = {
     subtitle?: string;
     description?: string;
     heroImageUrl?: string;
+    image2Url?: string;
+    image3Url?: string;
     body?: string;
 };
 
@@ -497,41 +509,46 @@ export default function WebContentPage() {
                                 Sayfaların kendi yapısı (örn. tablolar, accordion'lar) korunur — buradaki alanlar başlık ve hero bölümlerinde kullanılır.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                            <div className="border rounded-2xl overflow-hidden divide-y">
-                                {SITE_PAGES.map(p => {
-                                    const stored = pages[p.slug] || {};
-                                    const hasContent = !!(stored.title || stored.subtitle || stored.description || stored.heroImageUrl || stored.body);
-                                    return (
-                                        <div key={p.slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
-                                            <div className="flex-1 min-w-0 space-y-1">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="font-bold text-sm">{p.label}</p>
-                                                    {hasContent ? (
-                                                        <Badge className="bg-green-600 text-[10px]">Düzenlendi</Badge>
-                                                    ) : (
-                                                        <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
-                                                    )}
-                                                    <Link href={p.href} target="_blank" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
-                                                        {p.href} <ExternalLink className="h-3 w-3" />
-                                                    </Link>
+                        <CardContent className="space-y-6">
+                            {Array.from(new Set(SITE_PAGES.map(p => p.group || 'Diğer'))).map(group => (
+                                <div key={group} className="space-y-2">
+                                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">{group}</h4>
+                                    <div className="border rounded-2xl overflow-hidden divide-y">
+                                        {SITE_PAGES.filter(p => (p.group || 'Diğer') === group).map(p => {
+                                            const stored = pages[p.slug] || {};
+                                            const hasContent = !!(stored.title || stored.subtitle || stored.description || stored.heroImageUrl || stored.image2Url || stored.image3Url || stored.body);
+                                            return (
+                                                <div key={p.slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
+                                                    <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <p className="font-bold text-sm">{p.label}</p>
+                                                            {hasContent ? (
+                                                                <Badge className="bg-green-600 text-[10px]">Düzenlendi</Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
+                                                            )}
+                                                            <Link href={p.href} target="_blank" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+                                                                {p.href} <ExternalLink className="h-3 w-3" />
+                                                            </Link>
+                                                        </div>
+                                                        {stored.title && (
+                                                            <p className="text-xs text-muted-foreground truncate">{stored.title}</p>
+                                                        )}
+                                                    </div>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleStartEditPage(p.slug)}
+                                                        className="rounded-xl shrink-0"
+                                                    >
+                                                        <Pencil className="mr-2 h-3.5 w-3.5" /> Düzenle
+                                                    </Button>
                                                 </div>
-                                                {stored.title && (
-                                                    <p className="text-xs text-muted-foreground truncate">{stored.title}</p>
-                                                )}
-                                            </div>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleStartEditPage(p.slug)}
-                                                className="rounded-xl shrink-0"
-                                            >
-                                                <Pencil className="mr-2 h-3.5 w-3.5" /> Düzenle
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -581,6 +598,22 @@ export default function WebContentPage() {
                             <ImageUploaderCompact
                                 value={editPage.heroImageUrl || ''}
                                 onChange={(url) => setEditPage({ ...editPage, heroImageUrl: url })}
+                                pathPrefix={`siteContent/web/pages/${editingSlug}`}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Ek Görsel #2 (opsiyonel)</Label>
+                            <ImageUploaderCompact
+                                value={editPage.image2Url || ''}
+                                onChange={(url) => setEditPage({ ...editPage, image2Url: url })}
+                                pathPrefix={`siteContent/web/pages/${editingSlug}`}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Ek Görsel #3 (opsiyonel)</Label>
+                            <ImageUploaderCompact
+                                value={editPage.image3Url || ''}
+                                onChange={(url) => setEditPage({ ...editPage, image3Url: url })}
                                 pathPrefix={`siteContent/web/pages/${editingSlug}`}
                             />
                         </div>

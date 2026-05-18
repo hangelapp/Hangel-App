@@ -18,10 +18,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
-    collection, doc, query, orderBy, updateDoc, addDoc, serverTimestamp,
+    collection, doc, query, orderBy, updateDoc, addDoc, serverTimestamp, writeBatch,
 } from 'firebase/firestore';
 import {
-    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText,
+    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText, Wallet,
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -116,23 +116,83 @@ export default function DonationsAdminPage() {
     }, [list]);
 
     // STK hak edişleri (her STK için toplam bağış miktarı + işlem sayısı)
-    const ngoEarnings = useMemo(() => {
-        const map = new Map<string, { ngo: string; totalAmount: number; pendingAmount: number; paidAmount: number; count: number }>();
+    type EarningRow = {
+        ngo: string;
+        totalAmount: number;
+        pendingAmount: number;
+        paidAmount: number;
+        count: number;
+        pendingIds: string[];
+        lastApprovalAt: number | null;
+    };
+    const ngoEarnings = useMemo<EarningRow[]>(() => {
+        const map = new Map<string, EarningRow>();
         for (const d of list) {
             if (d.type === 'income') continue;
             const amount = parseFloat(d.donationAmount || '0') || 0;
             const ngoNames = d.ngo && d.ngo.length > 0 ? d.ngo : ['Atanmamış'];
+            const status = d.status || 'İşleme Alındı';
+            const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
+            const payoutMaybe = d.payoutDate as { toDate?: () => Date } | undefined;
+            const payoutMs = payoutMaybe?.toDate ? payoutMaybe.toDate().getTime() : null;
             for (const n of ngoNames) {
-                if (!map.has(n)) map.set(n, { ngo: n, totalAmount: 0, pendingAmount: 0, paidAmount: 0, count: 0 });
+                if (!map.has(n)) {
+                    map.set(n, {
+                        ngo: n, totalAmount: 0, pendingAmount: 0, paidAmount: 0,
+                        count: 0, pendingIds: [], lastApprovalAt: null,
+                    });
+                }
                 const e = map.get(n)!;
                 e.totalAmount += amount;
                 e.count++;
-                if (d.status === 'Yatırıldı' || d.status === 'Tamamlandı') e.paidAmount += amount;
-                else e.pendingAmount += amount;
+                if (isPaid) {
+                    e.paidAmount += amount;
+                    if (payoutMs && (e.lastApprovalAt === null || payoutMs > e.lastApprovalAt)) {
+                        e.lastApprovalAt = payoutMs;
+                    }
+                } else {
+                    e.pendingAmount += amount;
+                    if (status === 'İşleme Alındı') e.pendingIds.push(d.id);
+                }
             }
         }
         return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
     }, [list]);
+
+    const [payoutTarget, setPayoutTarget] = useState<string | null>(null);
+
+    const fmtApproval = (ms: number | null) => {
+        if (!ms) return '—';
+        try { return format(new Date(ms), 'd MMM yyyy', { locale: tr }); } catch { return '—'; }
+    };
+
+    const handlePayoutNgo = async (row: EarningRow) => {
+        if (!db || row.pendingIds.length === 0) {
+            toast({ title: 'Bekleyen hak ediş yok', description: `${row.ngo} için ödenecek bağış bulunamadı.` });
+            return;
+        }
+        setPayoutTarget(row.ngo);
+        try {
+            const batch = writeBatch(db);
+            for (const id of row.pendingIds) {
+                batch.update(doc(db, 'donations', id), {
+                    status: 'Yatırıldı',
+                    payoutDate: serverTimestamp(),
+                });
+            }
+            await batch.commit();
+            toast({
+                title: 'Hakediş ödendi',
+                description: `${row.ngo} için ${row.pendingIds.length} bağış "Yatırıldı" olarak işaretlendi.`,
+            });
+        } catch (e) {
+            console.error('Payout batch failed:', e);
+            const message = e instanceof Error ? e.message : 'Hakediş ödemesi başarısız oldu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setPayoutTarget(null);
+        }
+    };
 
     const updateStatus = async (donationId: string, newStatus: string, userId?: string, brandName?: string, donationAmount?: string) => {
         try {
@@ -344,7 +404,7 @@ export default function DonationsAdminPage() {
                                     <p>STK hak edişi yok.</p>
                                 </div>
                             ) : (
-                                <div className="border rounded-2xl overflow-hidden">
+                                <div className="border rounded-2xl overflow-hidden overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead className="bg-muted/30">
                                             <tr>
@@ -353,18 +413,38 @@ export default function DonationsAdminPage() {
                                                 <th className="text-right p-4 font-bold text-orange-600">Bekleyen</th>
                                                 <th className="text-right p-4 font-bold text-green-600">Yatırılan</th>
                                                 <th className="text-right p-4 font-bold">İşlem</th>
+                                                <th className="text-right p-4 font-bold">Son Onay</th>
+                                                <th className="text-right p-4 font-bold">Aksiyon</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {ngoEarnings.map(e => (
-                                                <tr key={e.ngo} className="border-t hover:bg-muted/20">
-                                                    <td className="p-4 font-bold">{e.ngo}</td>
-                                                    <td className="p-4 text-right font-bold text-primary">{fmtAmount(e.totalAmount)}</td>
-                                                    <td className="p-4 text-right text-orange-600">{fmtAmount(e.pendingAmount)}</td>
-                                                    <td className="p-4 text-right text-green-600">{fmtAmount(e.paidAmount)}</td>
-                                                    <td className="p-4 text-right">{e.count}</td>
-                                                </tr>
-                                            ))}
+                                            {ngoEarnings.map(e => {
+                                                const isLoadingRow = payoutTarget === e.ngo;
+                                                const canPay = e.pendingIds.length > 0;
+                                                return (
+                                                    <tr key={e.ngo} className="border-t hover:bg-muted/20">
+                                                        <td className="p-4 font-bold">{e.ngo}</td>
+                                                        <td className="p-4 text-right font-bold text-primary">{fmtAmount(e.totalAmount)}</td>
+                                                        <td className="p-4 text-right text-orange-600">{fmtAmount(e.pendingAmount)}</td>
+                                                        <td className="p-4 text-right text-green-600">{fmtAmount(e.paidAmount)}</td>
+                                                        <td className="p-4 text-right">{e.count}</td>
+                                                        <td className="p-4 text-right text-xs text-muted-foreground">{fmtApproval(e.lastApprovalAt)}</td>
+                                                        <td className="p-4 text-right">
+                                                            <Button
+                                                                size="sm"
+                                                                disabled={!canPay || isLoadingRow}
+                                                                className="rounded-xl bg-green-600 hover:bg-green-700"
+                                                                onClick={() => handlePayoutNgo(e)}
+                                                            >
+                                                                {isLoadingRow
+                                                                    ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                                                    : <Wallet className="h-3.5 w-3.5 mr-1" />}
+                                                                Hakedişi Öde
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                             <tr className="border-t-2 bg-muted/30 font-black">
                                                 <td className="p-4">TOPLAM</td>
                                                 <td className="p-4 text-right text-primary">
@@ -377,6 +457,8 @@ export default function DonationsAdminPage() {
                                                     {fmtAmount(ngoEarnings.reduce((s, e) => s + e.paidAmount, 0))}
                                                 </td>
                                                 <td className="p-4 text-right">{ngoEarnings.reduce((s, e) => s + e.count, 0)}</td>
+                                                <td className="p-4" />
+                                                <td className="p-4" />
                                             </tr>
                                         </tbody>
                                     </table>

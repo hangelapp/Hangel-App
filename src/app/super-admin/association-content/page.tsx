@@ -29,7 +29,20 @@ type ProjectPage = {
 const SETTINGS_DOC = 'siteSettings';
 const CONTENT_ID = 'associationContent';
 
-type SectionKey = 'homepage' | 'about' | 'events' | 'workshop' | 'legislation' | 'projects' | 'contact' | 'feedback';
+type SectionKey =
+    | 'homepage'
+    | 'about'
+    | 'press'
+    | 'events'
+    | 'workshop'
+    | 'conferences'
+    | 'projects'
+    | 'entrepreneurshipLibrary'
+    | 'impactAtlas'
+    | 'employmentProtocol'
+    | 'legislation'
+    | 'contact'
+    | 'feedback';
 
 type ContentMap = Record<string, unknown>;
 
@@ -53,6 +66,12 @@ const DEFAULTS: ContentMap = {
         visionDescription: 'Ulusal ve uluslararası paydaşlarımız ile hayata sosyal fayda odaklı bakan sosyal girişimcileri bir araya getirerek, birbirlerinden ilham almalarını sağlayacak doğal bir ağ oluşturuyoruz.',
         coverImageUrl: '',
     },
+    press: {
+        title: 'Basında Biz',
+        subtitle: 'Hangel Derneği medya kayıtları.',
+        description: 'Derneğimizin ulusal ve uluslararası basında yer alan haberlerini, röportajlarını ve duyurularını bu sayfada bulabilirsiniz.',
+        coverImageUrl: '',
+    },
     events: {
         title: 'Etkinliklerimiz',
         description: 'Çalıştaylar, paneller ve buluşmalar.',
@@ -67,6 +86,12 @@ const DEFAULTS: ContentMap = {
         applicationUrl: '',
         coverImageUrl: '',
     },
+    conferences: {
+        title: 'Konferanslar',
+        subtitle: 'Sosyal etki için bilgi paylaşımı.',
+        description: 'Sivil toplum, akademi ve kamu temsilcilerinin bir araya geldiği konferans programlarımız.',
+        coverImageUrl: '',
+    },
     legislation: {
         title: 'Sosyal Girişimcilik Kanunu Teklifi',
         subtitle: '29 maddelik hukuki reform önerisi.',
@@ -77,6 +102,24 @@ const DEFAULTS: ContentMap = {
     projects: {
         title: 'Projelerimiz',
         description: 'Sosyal etki yaratan girişimlerimiz.',
+        coverImageUrl: '',
+    },
+    entrepreneurshipLibrary: {
+        title: 'Girişimcilik Kütüphanesi',
+        subtitle: 'Sosyal girişimcilik için referans kaynaklar.',
+        description: 'Sosyal girişimcilere ve kurumlara yönelik araştırmalar, rehberler ve metodolojik dokümanlar.',
+        coverImageUrl: '',
+    },
+    impactAtlas: {
+        title: 'Sosyal Etki Atlası',
+        subtitle: 'Türkiye sosyal etki haritası.',
+        description: 'Sivil toplum kuruluşlarının ve sosyal girişimlerin yarattığı etkiyi görselleştiren atlas projesi.',
+        coverImageUrl: '',
+    },
+    employmentProtocol: {
+        title: 'Etki Odaklı İstihdam Protokolü',
+        subtitle: 'Sosyal fayda odaklı istihdam standartları.',
+        description: 'Şirketlerin sosyal etki yaratan istihdam politikalarını standartlaştıran protokol metni.',
         coverImageUrl: '',
     },
     contact: {
@@ -254,6 +297,12 @@ const SECTION_FIELDS: Record<SectionKey, { key: string; label: string; type: 'te
         { key: 'visionDescription', label: 'Vizyon — Açıklama', type: 'textarea' },
         { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
     ],
+    press: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
     events: [
         { key: 'title', label: 'Sayfa Başlığı', type: 'text' },
         { key: 'description', label: 'Sayfa Açıklaması', type: 'textarea' },
@@ -268,6 +317,12 @@ const SECTION_FIELDS: Record<SectionKey, { key: string; label: string; type: 'te
         { key: 'applicationUrl', label: 'Başvuru Linki', type: 'text' },
         { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
     ],
+    conferences: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
     legislation: [
         { key: 'title', label: 'Başlık', type: 'text' },
         { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
@@ -277,6 +332,24 @@ const SECTION_FIELDS: Record<SectionKey, { key: string; label: string; type: 'te
     ],
     projects: [
         { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
+    entrepreneurshipLibrary: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
+    impactAtlas: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
+        { key: 'description', label: 'Açıklama', type: 'textarea' },
+        { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
+    ],
+    employmentProtocol: [
+        { key: 'title', label: 'Başlık', type: 'text' },
+        { key: 'subtitle', label: 'Alt Başlık', type: 'text' },
         { key: 'description', label: 'Açıklama', type: 'textarea' },
         { key: 'coverImageUrl', label: 'Kapak Görseli', type: 'image' },
     ],
@@ -433,10 +506,15 @@ export default function AssociationContentPage() {
     const sections: { key: SectionKey; label: string; description: string }[] = [
         { key: 'homepage', label: 'Ana Sayfa', description: '/hangelassociation sayfasının içeriklerini düzenleyin.' },
         { key: 'about', label: 'Hakkında', description: '/hangelassociation/about sayfasının içeriklerini düzenleyin.' },
+        { key: 'press', label: 'Basında Biz', description: 'Dernek basın haberleri sayfası.' },
         { key: 'events', label: 'Etkinlikler', description: '/hangelassociation/events sayfası.' },
         { key: 'workshop', label: 'Çalıştay', description: '/hangelassociation/workshop sayfası.' },
-        { key: 'legislation', label: 'Mevzuat', description: '/hangelassociation/legislation sayfası.' },
+        { key: 'conferences', label: 'Konferanslar', description: 'Dernek konferans programları sayfası.' },
         { key: 'projects', label: 'Projeler', description: '/hangelassociation/projects bölümü.' },
+        { key: 'entrepreneurshipLibrary', label: 'Girişimcilik Kütüphanesi', description: 'Sosyal girişimcilik referans kütüphanesi.' },
+        { key: 'impactAtlas', label: 'Etki Atlası', description: 'Sosyal Etki Atlası projesi sayfası.' },
+        { key: 'employmentProtocol', label: 'İstihdam Protokolü', description: 'Etki odaklı istihdam protokolü sayfası.' },
+        { key: 'legislation', label: 'Mevzuat', description: '/hangelassociation/legislation sayfası.' },
         { key: 'contact', label: 'İletişim', description: '/hangelassociation/contact sayfası.' },
         { key: 'feedback', label: 'Geri Bildirim', description: '/hangelassociation/feedback sayfası.' },
     ];
@@ -456,9 +534,9 @@ export default function AssociationContentPage() {
             </div>
 
             <Tabs defaultValue="homepage" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 md:grid-cols-6">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 h-auto gap-1 p-1">
                     {sections.map(s => (
-                        <TabsTrigger key={s.key} value={s.key}>{s.label}</TabsTrigger>
+                        <TabsTrigger key={s.key} value={s.key} className="text-xs whitespace-normal h-auto py-2">{s.label}</TabsTrigger>
                     ))}
                 </TabsList>
 

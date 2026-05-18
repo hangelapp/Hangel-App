@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, Inbox } from 'lucide-react';
+import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, Inbox, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -54,7 +54,7 @@ export default function NotificationsPage() {
     responseStatus?: 'positive' | 'negative';
     data?: { requestId?: string; bloodType?: string; hospitalName?: string };
   }
-  const { data: notifications, isLoading } = useCollection<NotifItem>(notifQuery);
+  const { data: notifications, isLoading, error: notifError } = useCollection<NotifItem>(notifQuery);
 
   const formatTime = (createdAt: NotifItem['createdAt']) => {
     try {
@@ -140,8 +140,16 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
+      ) : notifError ? (
+        <Card className="rounded-2xl border-destructive/30 bg-destructive/5">
+          <CardContent className="py-16 text-center">
+            <AlertCircle className="h-12 w-12 mx-auto text-destructive/60 mb-3" />
+            <p className="text-destructive font-bold">Bildirimler yüklenemedi</p>
+            <p className="text-xs text-muted-foreground mt-1">{notifError.message || 'Lütfen daha sonra tekrar deneyin.'}</p>
+          </CardContent>
+        </Card>
       ) : !notifications || notifications.length === 0 ? (
-        <Card>
+        <Card className="rounded-2xl">
           <CardContent className="py-16 text-center">
             <Inbox className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
             <p className="text-muted-foreground font-medium">Henüz bildirimin yok</p>
@@ -169,10 +177,10 @@ export default function NotificationsPage() {
                   </div>
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold text-sm">{n.title}</p>
+                      <p className={cn('text-sm', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
                       {!n.read && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{n.body}</p>
+                    <p className={cn('text-sm leading-relaxed', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
                     <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
                       <p className="text-[10px] text-muted-foreground/70">{formatTime(n.createdAt)}</p>
                       <div className="flex items-center gap-2 flex-wrap">

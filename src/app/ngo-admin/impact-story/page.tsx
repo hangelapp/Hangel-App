@@ -1,8 +1,8 @@
 'use client';
 
-import React, { Suspense, useCallback, useEffect, useState, useMemo } from 'react';
+import React, { Suspense, useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Sparkles } from 'lucide-react';
+import { X, Sparkles, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
@@ -12,7 +12,10 @@ import {
     Newspaper, ShieldCheck, Building2, Loader2,
 } from 'lucide-react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc, query, updateDoc, where } from 'firebase/firestore';
+import { getApp } from 'firebase/app';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 export type ImpactSlide = {
@@ -69,9 +72,13 @@ type ManagedEntity = { kind: EntityKind; id: string; name: string; data: EntityD
 
 function StoryViewer() {
     const router = useRouter();
+    const { toast } = useToast();
 
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
+    const [uploading, setUploading] = useState(false);
+    const [coverOverride, setCoverOverride] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const { user: authUser } = useUser();
     const db = useFirestore();
@@ -219,7 +226,7 @@ function StoryViewer() {
             subtitle: activeEntity.kind === 'ngo' ? 'STK Etki Raporu' : activeEntity.kind === 'brand' ? 'Marka Etki Raporu' : 'Kulüp Etki Raporu',
             content: 'Birlikte yarattığımız değişimi rakamlarla anlatıyoruz.',
             icon: Building2,
-            background: activeEntity.data?.coverUrl || activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl,
+            background: coverOverride || activeEntity.data?.coverUrl || activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl,
         });
 
         // 2) Bağış toplam tutarı
@@ -294,9 +301,64 @@ function StoryViewer() {
         });
 
         return slides;
-    }, [activeEntity, stats]);
+    }, [activeEntity, stats, coverOverride]);
 
     const handleClose = useCallback(() => router.back(), [router]);
+
+    const handleCoverUpload = useCallback(async (file: File) => {
+        if (!activeEntity || !db) return;
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Maksimum 5MB yükleyebilirsiniz.' });
+            return;
+        }
+        if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
+            toast({ variant: 'destructive', title: 'Geçersiz format', description: 'Sadece JPG, PNG, WebP veya SVG kabul edilir.' });
+            return;
+        }
+        setUploading(true);
+        const collectionName = activeEntity.kind === 'ngo'
+            ? 'ngos' : activeEntity.kind === 'brand' ? 'brands' : 'clubs';
+        try {
+            // 1) Firebase Storage'a yükle
+            const storage = getStorage(getApp());
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `impact-stories/${activeEntity.id}/${Date.now()}-${safeName}`;
+            const ref = storageRef(storage, path);
+            await uploadBytes(ref, file, { contentType: file.type });
+            const url = await getDownloadURL(ref);
+            await updateDoc(doc(db, collectionName, activeEntity.id), { coverUrl: url });
+            setCoverOverride(url);
+            toast({ title: 'Kapak güncellendi', description: 'Etki hikayeniz için yeni kapak yüklendi.' });
+        } catch (err) {
+            console.warn('Storage upload failed, falling back to Base64:', err);
+            // 2) Base64 fallback (max 500KB)
+            if (file.size > 500 * 1024) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Storage erişilemez ve dosya çok büyük',
+                    description: 'Storage yüklemesi başarısız. Base64 için maksimum 500KB önerilir, dosyayı küçültün.',
+                });
+                setUploading(false);
+                return;
+            }
+            try {
+                const reader = new FileReader();
+                const dataUrl: string = await new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = () => reject(reader.error);
+                    reader.readAsDataURL(file);
+                });
+                await updateDoc(doc(db, collectionName, activeEntity.id), { coverUrl: dataUrl });
+                setCoverOverride(dataUrl);
+                toast({ title: 'Base64 olarak kaydedildi', description: 'Storage erişilemediği için görsel Base64 olarak gömüldü.' });
+            } catch (fallbackErr) {
+                console.error('Base64 fallback failed:', fallbackErr);
+                toast({ variant: 'destructive', title: 'Yükleme başarısız', description: 'Görsel kaydedilemedi.' });
+            }
+        } finally {
+            setUploading(false);
+        }
+    }, [activeEntity, db, toast]);
 
     useEffect(() => {
         if (!api) return;
@@ -379,15 +441,44 @@ function StoryViewer() {
                         </p>
                     </div>
                 </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
-                    onClick={handleClose}
-                    aria-label="Kapat"
-                >
-                    <X className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                    {stories[current - 1]?.id === 'cover' && (
+                        <>
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    if (f) handleCoverUpload(f);
+                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                }}
+                            />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={uploading}
+                                className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                aria-label="Kapak görseli yükle"
+                            >
+                                {uploading
+                                    ? <Loader2 className="h-5 w-5 animate-spin" />
+                                    : <Camera className="h-5 w-5" />}
+                            </Button>
+                        </>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
+                        onClick={handleClose}
+                        aria-label="Kapat"
+                    >
+                        <X className="h-5 w-5" />
+                    </Button>
+                </div>
             </div>
 
             {/* Click Nav Regions */}
