@@ -56,3 +56,6 @@ android/.gradle/
 android/.idea/
 android/app/build/
 android/build/
+
+# git worktrees
+.worktrees/
