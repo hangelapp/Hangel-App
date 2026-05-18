@@ -81,7 +81,9 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
         <Card
             className={cn(
                 "rounded-[2rem] border-black/5 flex flex-col items-center text-center p-6 transition-all hover:shadow-xl group",
-                !isEarned && "opacity-60 grayscale-[0.85]",
+                // PRD görsel kuralı: hak kazanılmayan rozetler renksiz/gri,
+                // hak kazanıldığında ikon renkli görünür.
+                !isEarned && "grayscale opacity-50",
             )}
         >
             <div className={cn('relative w-20 h-20 flex items-center justify-center rounded-3xl transition-all duration-500 mb-4 group-hover:scale-110', isEarned ? colors.bg : 'bg-muted')}>

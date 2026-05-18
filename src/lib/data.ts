@@ -2,10 +2,8 @@ import {
     Leaf,
     GraduationCap,
     Palette,
-    ShieldCheck,
     Handshake,
     Briefcase,
-    Users,
     BookOpen,
     Droplets,
     PawPrint,
@@ -19,6 +17,7 @@ import {
     ShieldX,
     UserRoundCog,
     Sprout,
+    Dumbbell,
 } from 'lucide-react';
 import type { NGO, Brand, Volunteering, Badge, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, Post } from './types';
 
@@ -266,8 +265,9 @@ export const marketCategories: MarketCategory[] = [
     { mainCategory: 'Seyahat', subCategories: [{ name: 'Bilet', imageUrl: '' }] }
 ];
 
-// 20 sosyal alan × 5 seviye = 100 rozet
-// Eşikler: Bakır 100 → Bronz 250 → Gümüş 500 → Altın 1000 → Platin 2500
+// 19 sosyal alan × 5 seviye = 95 rozet
+// Eşikler (PRD): Bakır 10s/1p → Bronz 25s/2p → Gümüş 50s/4p → Altın 100s/8p → Platin 250s/16p
+// Puan eşlemesi: Bakır 100 → Bronz 250 → Gümüş 500 → Altın 1000 → Platin 2500
 const BADGE_LEVELS: Array<{ level: 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 'Platin'; points: number }> = [
     { level: 'Bakır', points: 100 },
     { level: 'Bronz', points: 250 },
@@ -276,28 +276,28 @@ const BADGE_LEVELS: Array<{ level: 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 
     { level: 'Platin', points: 2500 },
 ];
 
+// PRD: 19 sosyal alan gönüllülüğü — her alanın adı "{Alan} Gönüllüsü" formatında.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BADGE_CATEGORIES: Array<{ name: string; socialArea: string; iconName: any }> = [
-    { name: 'Çevre Koruyucusu',           socialArea: 'Çevre',                iconName: Leaf },
-    { name: 'Eğitim Destekçisi',          socialArea: 'Eğitim',               iconName: GraduationCap },
-    { name: 'Hayvan Dostu',               socialArea: 'Hayvanlar',            iconName: PawPrint },
-    { name: 'Afet Kahramanı',             socialArea: 'Afet',                 iconName: Siren },
-    { name: 'Topluluk Lideri',            socialArea: 'Topluluk',             iconName: Users },
-    { name: 'Gönüllülük Elçisi',          socialArea: 'Gönüllülük',           iconName: Handshake },
-    { name: 'Kan Bağışı Destekçisi',      socialArea: 'Sağlık',               iconName: Droplets },
-    { name: 'Hayvan Koruyucusu',          socialArea: 'Hayvanlar',            iconName: ShieldCheck },
-    { name: 'Gençlik Mentoru',            socialArea: 'Gençlik',              iconName: Sprout },
-    { name: 'Kültür ve Sanat Destekçisi', socialArea: 'Kültür ve Sanat',      iconName: Palette },
-    { name: 'Sağlık Gönüllüsü',           socialArea: 'Sağlık',               iconName: Stethoscope },
-    { name: 'Eğitim Gönüllüsü',           socialArea: 'Eğitim',               iconName: BookOpen },
-    { name: 'Sosyal Yardım Destekçisi',   socialArea: 'Sosyal Yardım',        iconName: HandHeart },
-    { name: 'Engelsiz Yaşam Destekçisi',  socialArea: 'Engelsiz Yaşam',       iconName: Accessibility },
-    { name: 'Çocuk Destekçisi',           socialArea: 'Çocuklar',             iconName: Baby },
-    { name: 'Hak Temelli Çalışmalar',     socialArea: 'Hak Temelli',          iconName: Scale },
-    { name: 'Göç ve Mülteci Destekçisi',  socialArea: 'Göç ve Mülteciler',    iconName: Plane },
-    { name: 'İstihdam Destekçisi',        socialArea: 'İstihdam',             iconName: Briefcase },
-    { name: 'Bağımlılıkla Mücadele',      socialArea: 'Bağımlılıkla Mücadele', iconName: ShieldX },
-    { name: 'Yaşlı Destekçisi',           socialArea: 'Yaşlılar',             iconName: UserRoundCog },
+    { name: 'hangel Gönüllüsü',                    socialArea: 'hangel Gönüllüsü',                    iconName: Handshake },
+    { name: 'Kütüphane Gönüllüsü',                 socialArea: 'Kütüphane Gönüllüsü',                 iconName: BookOpen },
+    { name: 'Çevre Gönüllüsü',                     socialArea: 'Çevre Gönüllüsü',                     iconName: Leaf },
+    { name: 'Eğitim Gönüllüsü',                    socialArea: 'Eğitim Gönüllüsü',                    iconName: GraduationCap },
+    { name: 'Afet Gönüllüsü',                      socialArea: 'Afet Gönüllüsü',                      iconName: Siren },
+    { name: 'Kan Bağışı Gönüllüsü',                socialArea: 'Kan Bağışı Gönüllüsü',                iconName: Droplets },
+    { name: 'Hayvan Gönüllüsü',                    socialArea: 'Hayvan Gönüllüsü',                    iconName: PawPrint },
+    { name: 'Gençlik Gönüllüsü',                   socialArea: 'Gençlik Gönüllüsü',                   iconName: Sprout },
+    { name: 'Kültür ve Sanat Gönüllüsü',           socialArea: 'Kültür ve Sanat Gönüllüsü',           iconName: Palette },
+    { name: 'Sağlık Gönüllüsü',                    socialArea: 'Sağlık Gönüllüsü',                    iconName: Stethoscope },
+    { name: 'Sosyal Yardım Gönüllüsü',             socialArea: 'Sosyal Yardım Gönüllüsü',             iconName: HandHeart },
+    { name: 'Engelsiz Yaşam Gönüllüsü',            socialArea: 'Engelsiz Yaşam Gönüllüsü',            iconName: Accessibility },
+    { name: 'Çocuk Gönüllüsü',                     socialArea: 'Çocuk Gönüllüsü',                     iconName: Baby },
+    { name: 'Hak Temelli Çalışmalar Gönüllüsü',    socialArea: 'Hak Temelli Çalışmalar Gönüllüsü',    iconName: Scale },
+    { name: 'Göç ve Mülteci Gönüllüsü',            socialArea: 'Göç ve Mülteci Gönüllüsü',            iconName: Plane },
+    { name: 'İş Dünyası Gönüllüsü',                socialArea: 'İş Dünyası Gönüllüsü',                iconName: Briefcase },
+    { name: 'Bağımlılıkla Mücadele Gönüllüsü',     socialArea: 'Bağımlılıkla Mücadele Gönüllüsü',     iconName: ShieldX },
+    { name: 'Yaşlılık Gönüllüsü',                  socialArea: 'Yaşlılık Gönüllüsü',                  iconName: UserRoundCog },
+    { name: 'Spor Gönüllüsü',                      socialArea: 'Spor Gönüllüsü',                      iconName: Dumbbell },
 ];
 
 const slugifyTr = (s: string) => s.toLowerCase()
@@ -305,10 +305,11 @@ const slugifyTr = (s: string) => s.toLowerCase()
     .replace(/ö/g, 'o').replace(/ç/g, 'c')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
+// PRD: rozet adı formatı → "{Alan} Rozeti — {Seviye}"
 export const badges: Badge[] = BADGE_CATEGORIES.flatMap(cat =>
     BADGE_LEVELS.map(({ level, points }) => ({
         id: `${slugifyTr(cat.name)}-${slugifyTr(level)}`,
-        name: `${cat.name} — ${level}`,
+        name: `${cat.name} Rozeti — ${level}`,
         level,
         iconName: cat.iconName,
         socialArea: cat.socialArea,
