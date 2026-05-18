@@ -25,19 +25,44 @@ service firebase.storage {
     }
 
     // STK/Marka/Kulüp logoları ve kapak fotoğrafları
+    // adminUserId == auth.uid pattern'inde yönetilen entity için Firestore lookup ile yazma
+    function isManagedEntity(kind, entityId) {
+      return request.auth != null && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data['managed' + kind + 'Id'] == entityId;
+    }
+
     match /ngos/{ngoId}/{allPaths=**} {
       allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == ngoId) || isSuperAdmin();
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == ngoId) ||
+        isManagedEntity('Ngo', ngoId);
     }
 
     match /brands/{brandId}/{allPaths=**} {
       allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == brandId) || isSuperAdmin();
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == brandId) ||
+        isManagedEntity('Brand', brandId);
     }
 
     match /studentClubs/{clubId}/{allPaths=**} {
       allow read: if true;
-      allow write: if (request.auth != null && request.auth.uid == clubId) || isSuperAdmin();
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == clubId) ||
+        isManagedEntity('Club', clubId);
+    }
+
+    match /clubs/{clubId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == clubId) ||
+        isManagedEntity('Club', clubId);
+    }
+
+    // Post görselleri (uzun vadede Base64 yerine Storage)
+    match /posts/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId || isSuperAdmin();
     }
 
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir

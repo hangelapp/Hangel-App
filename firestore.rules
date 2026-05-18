@@ -41,11 +41,15 @@ service cloud.firestore {
     match /ngos/{ngoId} {
       allow read, list: if true; // Public for marketplace
       // Herkes sadece viewCount alanını artırabilir (görüntülenme sayacı)
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount']);
+      // VEYA: NGO admin (adminUserId match) kendi STK'sını tam günceller
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+        || (isSignedIn() && resource.data.adminUserId == request.auth.uid);
     }
 
     match /brands/{brandId} {
       allow read, list: if true; // Public read access for marketplace
+      // Marka admin (adminUserId match) kendi markasını günceller
+      allow update: if isSignedIn() && resource.data.adminUserId == request.auth.uid;
     }
 
     // Öğrenci kulüpleri (public read, super-admin global write)
@@ -84,6 +88,37 @@ service cloud.firestore {
 
     match /events/{eventId} {
       allow read, list: if true; // Public event listings
+      // Öğrenci kulüpleri kendi etkinliklerini oluşturabilir (status='Beklemede')
+      allow create: if isSignedIn() &&
+        request.resource.data.status == 'Beklemede' &&
+        (request.resource.data.organizerId == request.auth.uid ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == request.resource.data.organizerId));
+      // Sahibi kendi etkinliğini günceller (status DAHIL DEĞIL — super-admin onaylar)
+      allow update: if isSignedIn() && resource.data.organizerId == request.auth.uid &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
+      allow delete: if isSignedIn() && resource.data.organizerId == request.auth.uid;
+    }
+
+    // Şeffaflık endeksi kriterleri (super-admin yönetir, herkes okur)
+    match /transparencyCriteria/{criterionId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // Kan bağışı / acil yardım talepleri (alternatif koleksiyonlar)
+    match /bloodRequests/{reqId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.requestedBy == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /userRequests/{reqId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
     }
 
     match /library/{sectionId} {
