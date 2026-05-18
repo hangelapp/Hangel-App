@@ -574,7 +574,7 @@ export default function VolunteerSettingsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">

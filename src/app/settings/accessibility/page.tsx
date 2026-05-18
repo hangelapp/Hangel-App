@@ -202,7 +202,7 @@ export default function AccessibilitySettingsPage() {
         <div className="p-4 space-y-10 animate-in fade-in-0 max-w-3xl mx-auto pb-32">
             {/* --- Header Section --- */}
             <div className="space-y-6">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div className="space-y-4">

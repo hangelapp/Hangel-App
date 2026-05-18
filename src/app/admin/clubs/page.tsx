@@ -3,13 +3,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit, ChevronRight } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Users, BrainCircuit, ChevronRight, GraduationCap, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+
+type UserData = {
+    personalInfo?: {
+        address?: { city?: string; country?: string };
+    };
+    volunteerInfo?: {
+        education?: { school?: string }[];
+    };
+};
 
 
 const ClubCard = ({ club }: { club: StudentClub }) => (
@@ -77,11 +88,24 @@ type SubTabsProps = {
     finalClubs: StudentClub[];
     activeSubTab: string;
     setActiveSubTab: (v: string) => void;
+    userCity: string | null;
+    userSchool: string | null;
 };
 
-const SubTabs = ({ finalClubs, activeSubTab, setActiveSubTab }: SubTabsProps) => {
+const SubTabs = ({ finalClubs, activeSubTab, setActiveSubTab, userCity, userSchool }: SubTabsProps) => {
     const clubListAll = <ClubList finalClubs={finalClubs} />;
     const schoolTypeTabs = <SchoolTypeTabs finalClubs={finalClubs} />;
+
+    const schoolClubs = useMemo(() => {
+        if (!userSchool) return [];
+        return finalClubs.filter(c => c.university.toLowerCase() === userSchool.toLowerCase());
+    }, [finalClubs, userSchool]);
+
+    const cityClubs = useMemo(() => {
+        if (!userCity) return [];
+        const c = userCity.toLowerCase();
+        return finalClubs.filter(club => club.university.toLowerCase().includes(c));
+    }, [finalClubs, userCity]);
 
     return (
         <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
@@ -97,8 +121,36 @@ const SubTabs = ({ finalClubs, activeSubTab, setActiveSubTab }: SubTabsProps) =>
             <TabsContent value="country" className="mt-4">
                 {['country'].includes(activeSubTab) && schoolTypeTabs}
             </TabsContent>
-            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
-            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
+            <TabsContent value="school" className="mt-4">
+                {userSchool ? (
+                    <>
+                        <p className="text-sm text-muted-foreground mb-3 flex items-center gap-2"><GraduationCap className="h-4 w-4" /> {userSchool}</p>
+                        <SchoolTypeTabs finalClubs={schoolClubs} />
+                    </>
+                ) : (
+                    <div className="text-center text-muted-foreground py-8 space-y-2">
+                        <p>Okulunuz tanımlı değil.</p>
+                        <Button variant="link" asChild>
+                            <Link href="/settings/volunteer">Okul bilgisini ekle</Link>
+                        </Button>
+                    </div>
+                )}
+            </TabsContent>
+            <TabsContent value="city" className="mt-4">
+                {userCity ? (
+                    <>
+                        <p className="text-sm text-muted-foreground mb-3 flex items-center gap-2"><MapPin className="h-4 w-4" /> {userCity}</p>
+                        <SchoolTypeTabs finalClubs={cityClubs} />
+                    </>
+                ) : (
+                    <div className="text-center text-muted-foreground py-8 space-y-2">
+                        <p>Şehir bilginiz tanımlı değil.</p>
+                        <Button variant="link" asChild>
+                            <Link href="/settings/profile">Adres bilgisini ekle</Link>
+                        </Button>
+                    </div>
+                )}
+            </TabsContent>
         </Tabs>
     );
 };
@@ -109,6 +161,16 @@ export default function StudentClubsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
   const [searchTerm, setSearchTerm] = useState('');
   const [universityFilter, setUniversityFilter] = useState<string[]>([]);
+
+  const { user: authUser } = useUser();
+  const db = useFirestore();
+  const userDocRef = useMemoFirebase(() => {
+      if (!db || !authUser?.uid) return null;
+      return doc(db, 'users', authUser.uid);
+  }, [db, authUser?.uid]);
+  const { data: userData } = useDoc<UserData>(userDocRef);
+  const userCity = userData?.personalInfo?.address?.city || null;
+  const userSchool = userData?.volunteerInfo?.education?.[0]?.school || null;
 
   useEffect(() => {
     setClubs(studentClubs);
@@ -177,7 +239,7 @@ export default function StudentClubsPage() {
             </div>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-11 w-11">
+                    <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele">
                         <Filter className="h-5 w-5" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -201,7 +263,7 @@ export default function StudentClubsPage() {
             </DropdownMenu>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-11 w-11">
+                    <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala">
                         <ArrowDownUp className="h-5 w-5" />
                     </Button>
                 </DropdownMenuTrigger>
@@ -215,7 +277,7 @@ export default function StudentClubsPage() {
                 </DropdownMenuContent>
             </DropdownMenu>
       </div>
-      <SubTabs finalClubs={finalClubs} activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
+      <SubTabs finalClubs={finalClubs} activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} userCity={userCity} userSchool={userSchool} />
     </div>
   );
 }

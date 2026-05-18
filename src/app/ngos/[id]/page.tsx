@@ -14,7 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
@@ -109,6 +109,7 @@ export default function NgoProfilePage() {
   const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
 
   const [profileUrl, setProfileUrl] = useState('');
+  const [isPosInfoOpen, setIsPosInfoOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -177,18 +178,18 @@ export default function NgoProfilePage() {
   return (
     <div className="animate-in fade-in-0">
         <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Geri">
                 <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-                <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Mağaza">
                     <Store className="h-4 w-4" />
                 </Button>
-                <Button onClick={() => toast({ title: 'POS ile ödeme özelliği yakında gelecek.'})} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                <Button aria-label="POS ile ödeme" onClick={() => setIsPosInfoOpen(true)} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
                     <CreditCard className="h-4 w-4" />
                 </Button>
                 <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
-                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Web sitesini görüntüle">
                   <Link href={`/ngo-admin/website/preview`} target="_blank">
                     <Globe className="h-4 w-4" />
                   </Link>
@@ -390,7 +391,7 @@ export default function NgoProfilePage() {
                                 </div>
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8">
+                                        <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Görüntüle">
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                     </DialogTrigger>
@@ -424,6 +425,45 @@ export default function NgoProfilePage() {
             )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isPosInfoOpen} onOpenChange={setIsPosInfoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>POS ile Ödeme</DialogTitle>
+            <DialogDescription>
+              Üye işyeri POS entegrasyonu bir sonraki onboarding turunda devreye alınacaktır.
+              Şu an için aşağıdaki alternatifleri kullanabilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/qr-payment"
+              className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
+              onClick={() => setIsPosInfoOpen(false)}
+            >
+              <Target className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">QR ile öde</p>
+                <p className="text-xs text-muted-foreground">hangel QR ödemesiyle anında bağış yapın.</p>
+              </div>
+            </Link>
+            <Link
+              href={`/ngos/${id}`}
+              className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
+              onClick={() => setIsPosInfoOpen(false)}
+            >
+              <Heart className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Bağış sayfasına git</p>
+                <p className="text-xs text-muted-foreground">Bu kuruluşa kart veya cüzdan ile bağış yapın.</p>
+              </div>
+            </Link>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsPosInfoOpen(false)}>Kapat</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

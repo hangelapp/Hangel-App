@@ -161,7 +161,7 @@ export default function MyDonationsPage() {
               <div className='flex'>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon"><Filter className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label="Filtrele"><Filter className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
@@ -171,7 +171,7 @@ export default function MyDonationsPage() {
                 </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon"><ArrowDownUp className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label="Sırala"><ArrowDownUp className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>Tarihe Göre (En Yeni)</DropdownMenuItem>
@@ -273,9 +273,9 @@ export default function MyDonationsPage() {
                             <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
                           </div>
                           <div className="flex">
-                            <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Dekont indiriliyor...' })}><Download className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Paylaşım seçenekleri açılıyor...' })}><Share2 className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }} aria-label="Dekontu görüntüle"><Eye className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Dekont indiriliyor...' })} aria-label="Dekontu indir"><Download className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Paylaşım seçenekleri açılıyor...' })} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
                           </div>
                         </div>
                       </div>

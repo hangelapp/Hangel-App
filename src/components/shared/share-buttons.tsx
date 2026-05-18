@@ -30,7 +30,7 @@ export function ShareButtons({ url, title, buttonClassName }: { url: string; tit
     <div className="flex gap-2">
       <Dialog>
         <DialogTrigger asChild>
-            <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)}>
+            <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)} aria-label="QR kodunu göster">
                 <QrCode className="h-4 w-4" />
             </Button>
         </DialogTrigger>
@@ -47,7 +47,7 @@ export function ShareButtons({ url, title, buttonClassName }: { url: string; tit
 
       <Dialog>
         <DialogTrigger asChild>
-          <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)}>
+          <Button size="icon" variant="outline" className={cn("rounded-full h-9 w-9", buttonClassName)} aria-label="Paylaş">
             <Share2 className="h-4 w-4" />
           </Button>
         </DialogTrigger>

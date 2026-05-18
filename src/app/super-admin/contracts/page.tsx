@@ -307,7 +307,7 @@ export default function ContractsAdminPage() {
                     {c.source === 'firestore' && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10">
+                          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" aria-label="Sil">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>

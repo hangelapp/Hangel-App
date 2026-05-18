@@ -444,7 +444,7 @@ export default function AssociationContentPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.push('/super-admin')} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.push('/super-admin')} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
@@ -541,6 +541,7 @@ export default function AssociationContentPage() {
                                             size="icon"
                                             onClick={() => handleDeleteProject(slug)}
                                             className="text-destructive hover:bg-destructive/10 rounded-xl"
+                                            aria-label="Projeyi sil"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>

@@ -24,7 +24,7 @@ export default function FundsPage() {
 
     return (
         <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div className="text-center space-y-4">

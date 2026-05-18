@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, Contact, Copy, ShoppingBag } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -135,6 +136,10 @@ export default function QrPaymentPage() {
   const [isActivationOpen, setIsActivationOpen] = useState(false);
   const [activatingCard, setActivatingCard] = useState<typeof cards[0] | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [txSearch, setTxSearch] = useState('');
+  const [txFilter, setTxFilter] = useState<string[]>([]);
+  const [txSort, setTxSort] = useState<{ key: 'date' | 'amount'; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
+  const [viewingReceipt, setViewingReceipt] = useState<typeof donationTransactions[0] | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -142,11 +147,95 @@ export default function QrPaymentPage() {
 
   const activeCard = useMemo(() => cards.find(c => c.id === activeCardId), [cards, activeCardId]);
 
-  const handleActionClick = (action: string) => {
-    toast({
-      title: 'İşlevsellik Yakında!',
-      description: `Dekont ${action} özelliği yakında aktif olacaktır.`,
+  const transactionTypes = useMemo(() => {
+    return Array.from(new Set(donationTransactions.map(t => t.type === 'income' ? 'Gelir' : 'Harcama')));
+  }, []);
+
+  const filteredSortedTransactions = useMemo(() => {
+    let list = [...donationTransactions];
+    if (txFilter.length > 0) {
+      list = list.filter(t => txFilter.includes(t.type === 'income' ? 'Gelir' : 'Harcama'));
+    }
+    if (txSearch.trim()) {
+      const q = txSearch.toLowerCase();
+      list = list.filter(t =>
+        t.brand.toLowerCase().includes(q) ||
+        t.ngo.some(n => n.toLowerCase().includes(q)) ||
+        t.id.includes(q)
+      );
+    }
+    list.sort((a, b) => {
+      if (txSort.key === 'date') {
+        const ta = new Date(`${a.date}T${a.time}`).getTime();
+        const tb = new Date(`${b.date}T${b.time}`).getTime();
+        return txSort.direction === 'desc' ? tb - ta : ta - tb;
+      }
+      const va = parseFloat(a.purchaseAmount);
+      const vb = parseFloat(b.purchaseAmount);
+      return txSort.direction === 'desc' ? vb - va : va - vb;
     });
+    return list;
+  }, [txFilter, txSearch, txSort]);
+
+  const handleViewReceipt = (tx: typeof donationTransactions[0]) => setViewingReceipt(tx);
+
+  const handleDownloadReceipt = async (tx: typeof donationTransactions[0]) => {
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      pdf.setFontSize(16);
+      pdf.setTextColor(234, 88, 12);
+      pdf.text('hangel Dekontu', pageW / 2, 18, { align: 'center' });
+      pdf.setDrawColor(220, 220, 220);
+      pdf.line(10, 22, pageW - 10, 22);
+
+      pdf.setFontSize(11);
+      pdf.setTextColor(40, 40, 40);
+      const lines: Array<[string, string]> = [
+        ['İşlem No', `#${tx.id}000${tx.id}`],
+        ['Tarih', `${tx.date} ${tx.time}`],
+        ['İşlem Türü', tx.type === 'income' ? 'Gelir' : 'Harcama'],
+        ['Marka', tx.brand],
+        ['Alışveriş Tutarı', `${tx.purchaseAmount} TL`],
+      ];
+      if (tx.type === 'expense') {
+        lines.push(['Bağış Tutarı', `${tx.donationAmount} TL`]);
+        if (tx.ngo.length > 0) lines.push(['Desteklenen STK', tx.ngo.join(', ')]);
+      }
+      let y = 30;
+      lines.forEach(([k, v]) => {
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(k, 12, y);
+        pdf.setTextColor(20, 20, 20);
+        pdf.text(v, pageW - 12, y, { align: 'right', maxWidth: pageW - 60 });
+        y += 8;
+      });
+      pdf.setFontSize(8);
+      pdf.setTextColor(140, 140, 140);
+      pdf.text('hangel.org', pageW / 2, y + 10, { align: 'center' });
+
+      pdf.save(`hangel-dekont-${tx.id}.pdf`);
+      toast({ title: 'Dekont İndirildi', description: 'PDF dekontunuz başarıyla indirildi.' });
+    } catch (error) {
+      console.error('Receipt PDF failed:', error);
+      toast({ variant: 'destructive', title: 'İndirme Başarısız', description: 'Dekont oluşturulurken bir hata oluştu.' });
+    }
+  };
+
+  const handleShareReceipt = async (tx: typeof donationTransactions[0]) => {
+    const shareText = `hangel - ${tx.brand}\nTutar: ${tx.purchaseAmount} TL${tx.type === 'expense' ? `\nBağış: ${tx.donationAmount} TL` : ''}\nTarih: ${tx.date} ${tx.time}\nİşlem No: #${tx.id}000${tx.id}`;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try { await navigator.share({ title: 'hangel Dekontu', text: shareText }); return; } catch { /* user cancelled */ }
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        toast({ title: 'Kopyalandı', description: 'Dekont bilgileri panoya kopyalandı.' });
+        return;
+      } catch { /* fallback */ }
+    }
+    toast({ title: 'Paylaşım', description: 'Tarayıcınız paylaşımı desteklemiyor.' });
   };
 
   const handleActivateClick = (card: typeof cards[0]) => {
@@ -212,9 +301,9 @@ export default function QrPaymentPage() {
         <div className="flex justify-between items-center pt-4">
             <h1 className="text-3xl font-bold font-headline">Cüzdanım</h1>
              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted h-8 w-8"><Plus className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><Search className="h-5 w-5" /></Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="rounded-full bg-muted h-8 w-8" aria-label="Yeni kart ekle"><Plus className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Ara"><Search className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Daha fazla seçenek"><MoreHorizontal className="h-5 w-5" /></Button>
             </div>
         </div>
 
@@ -296,10 +385,10 @@ export default function QrPaymentPage() {
                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10" onClick={() => {
                                 navigator.clipboard.writeText('h-123456');
                                 toast({ title: 'hangel kodu kopyalandı!' });
-                            }}>
+                            }} aria-label="hangel kodunu kopyala">
                                 <Copy className="h-5 w-5" />
                             </Button>
-                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10">
+                             <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/10" aria-label="hangel kodunu paylaş">
                                 <Share2 className="h-5 w-5" />
                             </Button>
                         </div>
@@ -323,7 +412,7 @@ export default function QrPaymentPage() {
                             <Label htmlFor="phone-number" className="font-bold">Telefon Numarası</Label>
                             <div className="relative flex items-center">
                                 <Input id="phone-number" type="tel" placeholder="5XX XXX XX XX" className="pr-12 h-12 rounded-xl border-2" />
-                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-primary">
+                                <Button size="icon" variant="ghost" className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 text-primary" aria-label="Rehberden seç">
                                     <Contact className="h-6 w-6" />
                                 </Button>
                             </div>
@@ -368,21 +457,62 @@ export default function QrPaymentPage() {
            <div className="flex justify-between items-center gap-2 pt-2">
                 <div className="relative w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="İşlemlerde ara..." className="pl-9 text-sm h-10 w-full rounded-xl" />
+                    <Input
+                        placeholder="İşlemlerde ara..."
+                        className="pl-9 text-sm h-10 w-full rounded-xl"
+                        value={txSearch}
+                        onChange={(e) => setTxSearch(e.target.value)}
+                    />
                 </div>
                 <div className='flex gap-1'>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Filtreleme özelliği yakında gelecek!' })}>
-                        <Filter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" onClick={() => toast({ title: 'Sıralama özelliği yakında gelecek!' })}>
-                        <ArrowDownUp className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" aria-label="Filtrele">
+                                <Filter className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>İşlem Türü</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {transactionTypes.map(type => (
+                                <DropdownMenuCheckboxItem
+                                    key={type}
+                                    checked={txFilter.includes(type)}
+                                    onCheckedChange={(checked) => setTxFilter(prev => checked ? [...prev, type] : prev.filter(t => t !== type))}
+                                >
+                                    {type}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                            {txFilter.length > 0 && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setTxFilter([]); }}>Filtreleri Temizle</DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon" className="h-10 w-10 rounded-xl" aria-label="Sırala">
+                                <ArrowDownUp className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setTxSort({ key: 'date', direction: 'desc' })}>Tarihe Göre (En Yeni)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setTxSort({ key: 'date', direction: 'asc' })}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setTxSort({ key: 'amount', direction: 'desc' })}>Tutara Göre (Yüksek-Düşük)</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setTxSort({ key: 'amount', direction: 'asc' })}>Tutara Göre (Düşük-Yüksek)</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </CardHeader>
         <CardContent className="p-0">
           <Accordion type="single" collapsible className="w-full">
-              {donationTransactions.map(donation => {
+              {filteredSortedTransactions.length === 0 && (
+                <p className="text-center text-muted-foreground py-8 text-sm">Eşleşen işlem bulunamadı.</p>
+              )}
+              {filteredSortedTransactions.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
                 const gelirVergisi = donationAmount * 0.20;
                 const netDonationAfterTaxes = donationAmount - gelirVergisi;
@@ -436,9 +566,9 @@ export default function QrPaymentPage() {
                                 <div className='flex justify-between items-center pt-2 border-t border-dashed'>
                                     <p className='text-[10px] text-muted-foreground font-mono'>ID: #{donation.id}000{donation.id}</p>
                                     <div className="flex gap-1">
-                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('görüntüleme')}><Eye className="h-4 w-4"/></Button>
-                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('indirme')}><Download className="h-4 w-4"/></Button>
-                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleActionClick('paylaşma')}><Share2 className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleViewReceipt(donation)} aria-label="Görüntüle"><Eye className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleDownloadReceipt(donation)} aria-label="İndir"><Download className="h-4 w-4"/></Button>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 rounded-lg" onClick={() => handleShareReceipt(donation)} aria-label="Paylaş"><Share2 className="h-4 w-4"/></Button>
                                     </div>
                                 </div>
                             </div>
@@ -451,7 +581,47 @@ export default function QrPaymentPage() {
       </Card>
 
       <ActivationDialog card={activatingCard} open={isActivationOpen} onClose={() => setIsActivationOpen(false)} onActivate={handleActivate} />
-      
+
+      <Dialog open={!!viewingReceipt} onOpenChange={(open) => { if (!open) setViewingReceipt(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Dekont Önizleme</DialogTitle>
+            <DialogDescription>İşlem detayları aşağıdadır.</DialogDescription>
+          </DialogHeader>
+          {viewingReceipt && (
+            <div className="rounded-lg border p-4 space-y-2 text-sm bg-muted/30">
+              <div className="flex justify-between"><span className="text-muted-foreground">İşlem No</span><span className="font-mono">#{viewingReceipt.id}000{viewingReceipt.id}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Tarih</span><span>{viewingReceipt.date} {viewingReceipt.time}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">İşlem Türü</span><span>{viewingReceipt.type === 'income' ? 'Gelir' : 'Harcama'}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Marka</span><span className="font-semibold">{viewingReceipt.brand}</span></div>
+              <Separator />
+              <div className="flex justify-between"><span className="text-muted-foreground">Alışveriş Tutarı</span><span className="font-bold">{viewingReceipt.purchaseAmount} ₺</span></div>
+              {viewingReceipt.type === 'expense' && (
+                <>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Bağış Tutarı</span><span className="text-primary font-bold">{viewingReceipt.donationAmount} ₺</span></div>
+                  {viewingReceipt.ngo.length > 0 && (
+                    <div className="flex justify-between gap-3"><span className="text-muted-foreground shrink-0">Desteklenen STK</span><span className="text-right">{viewingReceipt.ngo.join(', ')}</span></div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="secondary" onClick={() => setViewingReceipt(null)}>Kapat</Button>
+            {viewingReceipt && (
+              <>
+                <Button variant="outline" onClick={() => handleShareReceipt(viewingReceipt)}>
+                  <Share2 className="mr-2 h-4 w-4" /> Paylaş
+                </Button>
+                <Button onClick={() => handleDownloadReceipt(viewingReceipt)}>
+                  <Download className="mr-2 h-4 w-4" /> PDF İndir
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

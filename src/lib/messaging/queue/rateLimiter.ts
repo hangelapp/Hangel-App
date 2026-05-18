@@ -7,10 +7,28 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import { getThrottleMultiplier } from '../trust-score';
 
 export interface RateLimitConfig {
   perSecond: number;
   perMinute: number;
+}
+
+/**
+ * NGO trust score'a göre etkin rate config döndürür.
+ * Multiplier < 1.0 ise perSecond/perMinute o oranda düşürülür.
+ */
+export async function getEffectiveRate(
+  baseCfg: RateLimitConfig,
+  ngoId?: string | null
+): Promise<RateLimitConfig> {
+  if (!ngoId) return baseCfg;
+  const multiplier = await getThrottleMultiplier(ngoId);
+  if (multiplier >= 1.0) return baseCfg;
+  return {
+    perSecond: Math.max(1, Math.floor(baseCfg.perSecond * multiplier)),
+    perMinute: Math.max(1, Math.floor(baseCfg.perMinute * multiplier)),
+  };
 }
 
 export interface TakeResult {

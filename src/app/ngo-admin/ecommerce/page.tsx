@@ -43,7 +43,7 @@ export default function EcommerceManagementPage() {
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <div>
@@ -148,7 +148,7 @@ export default function EcommerceManagementPage() {
                             <p className="text-sm text-muted-foreground">Bu linki kullanarak ürünlerinizi Google Merchant, Facebook Catalog veya diğer pazar yerlerine otomatik olarak aktarabilirsiniz.</p>
                             <div className="flex gap-2">
                                 <Input readOnly value={xmlFeedUrl} className="font-mono text-xs bg-muted" />
-                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(xmlFeedUrl)}><Copy className="h-4 w-4" /></Button>
+                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(xmlFeedUrl)} aria-label="Kopyala"><Copy className="h-4 w-4" /></Button>
                             </div>
                             <div className="flex items-center gap-2 pt-4">
                                 <Button variant="outline" className="flex-1" onClick={() => toast({title: "Feed Yenilendi"})}>Akışı Güncelle</Button>

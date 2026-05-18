@@ -186,7 +186,7 @@ export default function FundsPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
@@ -208,7 +208,7 @@ export default function FundsPage() {
                 <div className="flex gap-2 w-full sm:w-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl relative">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl relative" aria-label="Filtrele">
                                 <Filter className="h-5 w-5" />
                                 {activeFilterCount > 0 && (
                                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
@@ -257,7 +257,7 @@ export default function FundsPage() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl" aria-label="Sırala">
                                 <ArrowDownUp className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>

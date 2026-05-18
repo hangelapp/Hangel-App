@@ -30,7 +30,7 @@ const RepresentativeProfilePage = () => {
 
   return (
     <div className="p-4 space-y-4">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4" aria-label="Geri">
             <ArrowLeft />
         </Button>
       <Card>

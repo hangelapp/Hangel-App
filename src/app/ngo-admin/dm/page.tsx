@@ -43,7 +43,7 @@ export default function DmManagementPage() {
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <h1 className="text-2xl font-bold font-headline">DM Mesajlaşma Merkezi</h1>
@@ -71,7 +71,7 @@ export default function DmManagementPage() {
                                     value={msg} 
                                     onChange={(e) => setMsg(e.target.value)}
                                 />
-                                <Button type="submit" size="icon"><Send className="h-4 w-4" /></Button>
+                                <Button type="submit" size="icon" aria-label="Gönder"><Send className="h-4 w-4" /></Button>
                             </form>
                         </div>
                     </Card>

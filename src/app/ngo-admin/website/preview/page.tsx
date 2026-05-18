@@ -175,7 +175,7 @@ function PreviewContent() {
                         </Button>
                         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                             <SheetTrigger asChild>
-                                <Button variant="outline" size="icon" className="md:hidden">
+                                <Button variant="outline" size="icon" className="md:hidden" aria-label="Menüyü aç">
                                     <Menu className="h-7 w-7" />
                                 </Button>
                             </SheetTrigger>
@@ -302,7 +302,7 @@ function PreviewContent() {
                                         <p className="text-muted-foreground leading-relaxed">Doğrudan banka hesabımıza transfer yaparak çalışmalarımızı destekleyebilirsiniz.</p>
                                         <div className="flex items-center justify-between text-base font-mono tracking-widest p-4 bg-muted rounded-2xl border-2 border-dashed">
                                             <span className="truncate">TR00 0000 0000 0000 0000 0000 00</span>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary/10" onClick={() => { navigator.clipboard.writeText("TR00 0000 0000 0000 0000 0000 00"); toast({ title: 'IBAN Kopyalandı!' }); }}>
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary/10" onClick={() => { navigator.clipboard.writeText("TR00 0000 0000 0000 0000 0000 00"); toast({ title: 'IBAN Kopyalandı!' }); }} aria-label="IBAN'ı kopyala">
                                                 <Copy className="h-5 w-5"/>
                                             </Button>
                                         </div>

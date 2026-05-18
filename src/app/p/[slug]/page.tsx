@@ -52,7 +52,7 @@ export default function SitePageView() {
     <div className="min-h-screen bg-white">
       <main className="animate-in fade-in-0">
         <div className="max-w-3xl mx-auto p-4 sm:p-6">
-          <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+          <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
             <ArrowLeft className="h-6 w-6" />
           </Button>
 

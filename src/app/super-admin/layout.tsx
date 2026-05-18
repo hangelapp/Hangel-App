@@ -29,7 +29,7 @@ export default function SuperAdminLayout({
     <div className="min-h-screen w-full">
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 lg:h-[60px] lg:px-6 sticky top-0 z-50 backdrop-blur-xl">
-            <Button onClick={handleBackClick} variant="ghost" size="icon" className="h-9 w-9">
+            <Button onClick={handleBackClick} variant="ghost" size="icon" className="h-9 w-9" aria-label="Geri">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Link href="/super-admin" className="flex items-center gap-2 font-semibold">

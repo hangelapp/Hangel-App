@@ -241,7 +241,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
-       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
             <ArrowLeft className="h-6 w-6" />
         </Button>
       <div>
@@ -478,6 +478,7 @@ export default function ProfileSettingsPage() {
                                     className="h-10 w-10 text-destructive shrink-0"
                                     onClick={() => removeCustomLink(index)}
                                     title="Kaldır"
+                                    aria-label="Kaldır"
                                 >
                                     <X className="h-4 w-4" />
                                 </Button>

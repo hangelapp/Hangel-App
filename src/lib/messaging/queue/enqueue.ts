@@ -18,6 +18,8 @@ import type {
   Channel,
   JobStatus,
   UseCase,
+  WhatsAppConversationCategory,
+  WhatsAppTemplateComponent,
 } from '../types';
 
 const BATCH_SIZE = 450;
@@ -49,6 +51,18 @@ interface CampaignDoc {
   driver?: string;
   status: CampaignStatus;
   stats?: Partial<CampaignStats>;
+  ngoId?: string | null;
+  cost?: {
+    total?: number;
+    perRecipientWithVat?: number;
+  };
+  whatsapp?: {
+    templateName: string;
+    templateLanguage: string;
+    components?: WhatsAppTemplateComponent[];
+    conversationCategory: WhatsAppConversationCategory;
+    wabaPhoneNumberId: string;
+  };
 }
 
 export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult> {
@@ -68,9 +82,12 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
   });
 
   const recipientsRef = campRef.collection('recipients');
-  const driver =
-    camp.driver ??
-    (camp.channel === 'sms' ? (process.env.SMS_DRIVER ?? 'mock') : (process.env.EMAIL_DRIVER ?? 'mock'));
+  const defaultDriverFor = (channel: Channel): string => {
+    if (channel === 'sms') return process.env.SMS_DRIVER ?? 'mock';
+    if (channel === 'email') return process.env.EMAIL_DRIVER ?? 'mock';
+    return process.env.WHATSAPP_DRIVER ?? 'mock';
+  };
+  const driver = camp.driver ?? defaultDriverFor(camp.channel);
 
   let queued = 0;
   let skipped = 0;
@@ -94,23 +111,39 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
       }
 
       const jobRef = db.collection('messageJobs').doc();
-      const payload =
-        camp.channel === 'sms'
-          ? { body: camp.body, senderId: camp.senderId, vars: r.vars }
-          : {
-              subject: camp.subject ?? '',
-              body: camp.body,
-              senderId: camp.senderId,
-              fromEmail: camp.fromEmail ?? null,
-              fromName: camp.fromName ?? null,
-              replyTo: camp.replyTo ?? null,
-              vars: r.vars,
-            };
+      let payload: Record<string, unknown>;
+      if (camp.channel === 'sms') {
+        payload = { body: camp.body, senderId: camp.senderId, vars: r.vars };
+      } else if (camp.channel === 'email') {
+        payload = {
+          subject: camp.subject ?? '',
+          body: camp.body,
+          senderId: camp.senderId,
+          fromEmail: camp.fromEmail ?? null,
+          fromName: camp.fromName ?? null,
+          replyTo: camp.replyTo ?? null,
+          vars: r.vars,
+        };
+      } else {
+        // whatsapp
+        if (!camp.whatsapp) throw new Error(`Campaign ${campaignId} channel=whatsapp ama whatsapp config yok`);
+        payload = {
+          body: camp.body,
+          senderId: camp.senderId,
+          vars: r.vars,
+          templateName: camp.whatsapp.templateName,
+          templateLanguage: camp.whatsapp.templateLanguage,
+          components: camp.whatsapp.components ?? null,
+          conversationCategory: camp.whatsapp.conversationCategory,
+          wabaPhoneNumberId: camp.whatsapp.wabaPhoneNumberId,
+        };
+      }
 
       batch.set(jobRef, {
         campaignId,
         recipientPath: doc.ref.path,
         userId: r.userId ?? null,
+        ngoId: camp.ngoId ?? null,
         channel: camp.channel,
         driver,
         to: r.channelAddress,
@@ -120,6 +153,7 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
         attempts: 0,
         maxAttempts: 5,
         nextAttemptAt: now,
+        walletCostPerRecipient: camp.cost?.perRecipientWithVat ?? 0,
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });

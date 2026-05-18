@@ -21,6 +21,33 @@ const mockUsers = [
     { id: 'u3', name: 'Mustafa Demir', username: '@mdemir', phone: '5550001122', avatarUrl: 'https://i.pravatar.cc/150?u=u3' },
 ];
 
+const AI_DRAFT_TEMPLATES: Record<string, { subject: string; body: string }> = {
+    'group-volunteers': {
+        subject: 'Aktif Gönüllülerimize Önemli Duyuru',
+        body: 'Merhaba değerli gönüllümüz,\n\nBu hafta yürüteceğimiz çalışma için sizden destek beklemekteyiz. Aşağıda etkinlik detaylarını bulabilirsiniz.\n\n• Tarih: [Tarih ekleyin]\n• Lokasyon: [Lokasyon ekleyin]\n• Görev: [Görev tanımı]\n\nKatılımınız bizim için çok değerli. Teşekkür ederiz.',
+    },
+    'group-donors': {
+        subject: 'Bağışçılarımıza Etki Raporu ve Teşekkür',
+        body: 'Sevgili destekçimiz,\n\nKatkılarınız sayesinde son dönemde [proje adı] çalışmasını tamamladık. Aşağıda paylaşmak istediğimiz etki özetidir.\n\n• Ulaşılan kişi sayısı: [sayı]\n• Yapılan harcama kalemleri: [özet]\n• Sıradaki hedefimiz: [hedef]\n\nDesteğiniz için tekrar teşekkür ederiz.',
+    },
+    'individual-user': {
+        subject: 'İşbirliği Hakkında',
+        body: 'Merhaba,\n\nKuruluşumuz adına size ulaşıyoruz. Yürüttüğümüz çalışmalarda sizinle yapabileceğimiz işbirliklerini görüşmek isteriz. Uygun olduğunuz bir zaman dilimini paylaşır mısınız?\n\nİyi çalışmalar dileriz.',
+    },
+    'individual-ngo': {
+        subject: 'Kurumsal İşbirliği Önerisi',
+        body: 'Sayın yetkili,\n\nKuruluşunuzla ortak yürütebileceğimiz bir proje fikrini paylaşmak isteriz.\n\n• Konu: [Proje başlığı]\n• Beklenen çıktı: [özet]\n• Önerilen takvim: [tarih aralığı]\n\nGörüşmek dileğiyle.',
+    },
+    'individual-club': {
+        subject: 'Öğrenci Kulübü İşbirliği',
+        body: 'Merhaba kıymetli kulüp yönetimi,\n\nKuruluşumuzun yürüttüğü çalışmalarda gönüllü destek almak istediğimiz bir döneme giriyoruz. Sizinle ortak bir etkinlik veya çağrı organize etmek üzere fikir alışverişi yapmak isteriz.\n\nUygun olduğunuz bir görüşme zamanı paylaşır mısınız?',
+    },
+    'admin': {
+        subject: 'Sistem Talebi / Bilgi',
+        body: 'Merhaba hangel ekibi,\n\nAşağıdaki konuda yardımınıza ihtiyacımız var:\n\n• Konu özeti: [kısaca açıklayın]\n• İlgili modül: [modül adı]\n• Beklenen aksiyon: [örn. inceleme, onay, hata düzeltme]\n\nYardımcı olabilirseniz seviniriz.',
+    },
+};
+
 export default function NewMessagePage() {
     const { toast } = useToast();
     const router = useRouter();
@@ -28,6 +55,23 @@ export default function NewMessagePage() {
     const [recipientType, setRecipientType] = useState<string>('');
     const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [subject, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+
+    const handleAiDraft = () => {
+        if (!recipientType) {
+            toast({ variant: 'destructive', title: 'Hedef Kitle Seçilmedi', description: 'Önce alıcı türünü seçin; öneri buna göre hazırlanır.' });
+            return;
+        }
+        const tpl = AI_DRAFT_TEMPLATES[recipientType];
+        if (!tpl) {
+            toast({ variant: 'destructive', title: 'Taslak Bulunamadı', description: 'Bu alıcı türü için hazır taslak yok.' });
+            return;
+        }
+        setSubject(tpl.subject);
+        setMessage(tpl.body);
+        toast({ title: 'Taslak Hazırlandı', description: 'Mesaj alanını gönderi öncesi kişiselleştirebilirsiniz.' });
+    };
 
     const filteredEntities = useMemo(() => {
         const lowercased = searchTerm.toLowerCase();
@@ -74,7 +118,7 @@ export default function NewMessagePage() {
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-4xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <h1 className="text-2xl font-bold font-headline">Yeni İletişim Oluştur</h1>
@@ -149,21 +193,23 @@ export default function NewMessagePage() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="subject">Konu Başlığı</Label>
-                                    <Input id="subject" placeholder="Örn: İşbirliği Hakkında" required />
+                                    <Input id="subject" placeholder="Örn: İşbirliği Hakkında" required value={subject} onChange={(e) => setSubject(e.target.value)} />
                                 </div>
 
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-center">
                                         <Label htmlFor="message">Mesajınız</Label>
-                                        <Button type="button" variant="ghost" size="sm" className="h-7 text-primary text-xs flex items-center gap-1" onClick={() => toast({title: "Yapay zeka asistanı yakında burada olacak!"})}>
+                                        <Button type="button" variant="ghost" size="sm" className="h-7 text-primary text-xs flex items-center gap-1" onClick={handleAiDraft}>
                                             <Sparkles className="h-3 w-3" /> AI ile Taslağı Hazırla
                                         </Button>
                                     </div>
-                                    <Textarea 
-                                        id="message" 
-                                        placeholder="Mesajınızı buraya detaylıca yazın..." 
-                                        rows={10} 
-                                        required 
+                                    <Textarea
+                                        id="message"
+                                        placeholder="Mesajınızı buraya detaylıca yazın..."
+                                        rows={10}
+                                        required
+                                        value={message}
+                                        onChange={(e) => setMessage(e.target.value)}
                                     />
                                 </div>
                             </form>

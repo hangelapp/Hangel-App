@@ -452,6 +452,7 @@ export default function InvitePage() {
                             variant="ghost"
                             onClick={copyToClipboard}
                             className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9"
+                            aria-label="Bağlantıyı kopyala"
                         >
                             <Copy className="h-5 w-5" />
                         </Button>
@@ -541,7 +542,7 @@ export default function InvitePage() {
                                         <div className="flex gap-2">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="icon" className="h-9 w-9">
+                                                    <Button variant="outline" size="icon" className="h-9 w-9" aria-label="Sırala">
                                                         <ArrowDownUp className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>

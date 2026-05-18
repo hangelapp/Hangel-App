@@ -35,7 +35,7 @@ export default function VolunteerPortalIntegrationPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
@@ -78,7 +78,7 @@ export default function VolunteerPortalIntegrationPage() {
                         <Label>Global Portal Auth Token</Label>
                         <div className="flex gap-2">
                             <Input type="password" value="sk_test_51MzZ2SE1..." readOnly className="font-mono text-xs bg-muted" />
-                            <Button variant="outline" size="icon" onClick={() => toast({title: "Kopyalandı"})}><Share2 className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" onClick={() => toast({title: "Kopyalandı"})} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
                         </div>
                     </div>
                     <div className="p-4 border rounded-xl bg-orange-50 text-orange-800 text-xs flex items-center gap-3">

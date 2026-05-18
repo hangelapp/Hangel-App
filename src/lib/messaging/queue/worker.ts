@@ -14,10 +14,11 @@ import type { CanonicalErrorCode, JobStatus, SendResult, WhatsAppConversationCat
 import { getSmsProvider } from '../providers/sms';
 import { getEmailProvider } from '../providers/email';
 import { getWhatsAppProvider } from '../providers/whatsapp';
-import { takeToken } from './rateLimiter';
+import { takeToken, getEffectiveRate } from './rateLimiter';
 import { isTerminal, MAX_ATTEMPTS, nextAttemptAt } from './retry';
 import { render } from '../template';
 import { appendEmailUnsubscribeFooter, buildUnsubscribeUrl, ensureUnsubscribeToken } from '../unsubscribe';
+import { debit, refund } from '../wallet';
 
 const DEFAULT_LEASE_MS = 60_000;
 const DEFAULT_BATCH = 50;
@@ -51,6 +52,7 @@ interface JobDoc {
   maxAttempts: number;
   nextAttemptAt: Timestamp;
   leasedUntil?: Timestamp;
+  walletCostPerRecipient?: number; // KDV dahil birim maliyet (TRY)
 }
 
 export interface WorkerTickResult {
@@ -113,7 +115,8 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
     result.dispatched += 1;
     const { ref: jobRef, job } = leased;
 
-    const cfg = rateConfigForDriver(job.driver);
+    const baseCfg = rateConfigForDriver(job.driver);
+    const cfg = await getEffectiveRate(baseCfg, job.ngoId);
     const tokenOk = await takeToken(job.driver, cfg, 4000);
     if (!tokenOk) {
       // Rate limit doluysa pending'e geri al, biraz ileri ittir
@@ -237,6 +240,22 @@ async function persistResult(
       { merge: false }
     );
     await batch.commit();
+
+    // Wallet debit: NGO kampanyalarında her başarılı send'de reserved'tan birim düşülür
+    if (job.ngoId && job.walletCostPerRecipient && job.walletCostPerRecipient > 0) {
+      try {
+        await debit({
+          ngoId: job.ngoId,
+          amount: job.walletCostPerRecipient,
+          campaignId: job.campaignId,
+          jobId: jobRef.id,
+          channel: job.channel,
+        });
+      } catch (err) {
+        console.error('[worker] wallet debit failed', err);
+      }
+    }
+
     tally.successes += 1;
     return;
   }
@@ -293,4 +312,24 @@ async function persistResult(
     tally.failures += 1;
   }
   await batch.commit();
+
+  // Wallet refund: terminal fail durumunda NGO'nun reserved'tan ayrılan birim iade edilir
+  if (!res.ok && job.ngoId && job.walletCostPerRecipient && job.walletCostPerRecipient > 0) {
+    const finalAttempts = job.attempts + 1;
+    const isTerminalNow = isTerminal(errorCode) || finalAttempts >= MAX_ATTEMPTS;
+    if (isTerminalNow) {
+      try {
+        await refund({
+          ngoId: job.ngoId,
+          amount: job.walletCostPerRecipient,
+          campaignId: job.campaignId,
+          jobId: jobRef.id,
+          channel: job.channel,
+          reason: errorCode,
+        });
+      } catch (err) {
+        console.error('[worker] wallet refund failed', err);
+      }
+    }
+  }
 }

@@ -93,7 +93,7 @@ export default function ClubProfilePage() {
        <div className="relative h-48 w-full bg-muted">
         <Image src={club.coverPhotoUrl} alt={`${club.name} Cover`} fill className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0" />
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full" aria-label="Geri">
             <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="absolute top-4 right-4">

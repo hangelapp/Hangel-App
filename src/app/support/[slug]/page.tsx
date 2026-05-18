@@ -20,7 +20,7 @@ export default function SupportTopicPage() {
   return (
     <>
       <main className="p-4 space-y-6 animate-in fade-in-0">
-        <Button onClick={() => router.push('/support')} variant="ghost" size="icon" className="mb-2 -ml-2">
+        <Button onClick={() => router.push('/support')} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>

@@ -476,7 +476,7 @@ export default function ClubsAdminPage() {
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl">
+                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
                                                             <Trash2 className="h-5 w-5" />
                                                         </Button>
                                                     </AlertDialogTrigger>

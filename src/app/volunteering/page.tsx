@@ -309,7 +309,7 @@ export default function VolunteeringPage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input placeholder="İlan ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
-              <Button variant="outline" size="icon" className="h-11 w-11"><Filter size={20} /></Button>
+              <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter size={20} /></Button>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar items-center">
               <FilterButton icon={Heart} title="Hassasiyet" options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />

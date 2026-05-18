@@ -150,7 +150,7 @@ export default function TimelinePage() {
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Filtrele">
                                 <Filter className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -164,7 +164,7 @@ export default function TimelinePage() {
                     </DropdownMenu>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Sırala">
                                 <ArrowDownUp className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -248,7 +248,7 @@ export default function TimelinePage() {
                                         <Star className="h-3 w-3 mr-1" /> Sponsorlu
                                     </Badge>
                                     )}
-                                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-5 w-5" /></Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Daha fazla seçenek"><MoreHorizontal className="h-5 w-5" /></Button>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-4 px-3 sm:px-4 pb-3">

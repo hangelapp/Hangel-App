@@ -54,7 +54,7 @@ export default function NgoNotificationsPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Mesajlarda veya bildirimlerde ara..." className="pl-10" />
                 </div>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" aria-label="Filtrele">
                     <Filter className="h-4 w-4" />
                 </Button>
             </div>

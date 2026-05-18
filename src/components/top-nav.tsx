@@ -7,7 +7,7 @@ export default function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
     <header className="fixed top-0 left-0 right-0 z-40 mx-auto max-w-md border-b bg-card/95 backdrop-blur-sm">
       <div className="flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onMenuClick}>
+          <Button variant="ghost" size="icon" onClick={onMenuClick} aria-label="Menüyü aç">
             <Menu className="h-6 w-6" />
           </Button>
           <Link href="/timeline" className="flex items-center gap-2">
@@ -15,17 +15,17 @@ export default function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
           </Link>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild aria-label="Bildirimler">
             <Link href="/notifications">
               <Bell className="h-5 w-5" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild aria-label="Acil Durum">
             <Link href="/emergency">
               <ShieldAlert className="h-5 w-5 text-destructive" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild aria-label="Profilim">
             <Link href="/profile">
               <UserCircle className="h-6 w-6" />
             </Link>

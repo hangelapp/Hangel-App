@@ -146,7 +146,7 @@ export default function MarketPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label="Filtrele">
                 <Filter className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -160,7 +160,7 @@ export default function MarketPage() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm">
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label="Sırala">
                 <ArrowDownUp className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>

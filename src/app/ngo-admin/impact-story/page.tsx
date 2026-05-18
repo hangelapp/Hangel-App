@@ -384,6 +384,7 @@ function StoryViewer() {
                     size="icon"
                     className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
                     onClick={handleClose}
+                    aria-label="Kapat"
                 >
                     <X className="h-5 w-5" />
                 </Button>

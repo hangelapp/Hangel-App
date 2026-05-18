@@ -6,14 +6,16 @@ import { resolveRecipients } from '@/lib/messaging/resolver';
 import { enqueueCampaign } from '@/lib/messaging/queue/enqueue';
 import { segmentInfo } from '@/lib/messaging/sms-segments';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
-import type { CampaignStats, CampaignStatus, RecipientSourceSpec } from '@/lib/messaging/types';
+import { computeCampaignCost } from '@/lib/messaging/pricing';
+import { reserve as walletReserve, InsufficientBalanceError } from '@/lib/messaging/wallet';
+import type { CampaignStats, CampaignStatus, RecipientSourceSpec, WhatsAppConversationCategory, WhatsAppTemplateComponent } from '@/lib/messaging/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
 
 interface CreateCampaignBody {
   name: string;
-  channel: 'sms' | 'email';
+  channel: 'sms' | 'email' | 'whatsapp';
   useCase: 'transactional' | 'marketing' | 'emergency';
   templateId?: string;
   subject?: string;
@@ -23,8 +25,16 @@ interface CreateCampaignBody {
   fromName?: string;
   replyTo?: string;
   spec: RecipientSourceSpec;
-  scheduledAt?: string | null; // ISO; null = şimdi gönder
+  scheduledAt?: string | null;
   doubleConfirmCount?: number;
+  ngoId?: string | null;
+  whatsapp?: {
+    templateName: string;
+    templateLanguage: string;
+    components?: WhatsAppTemplateComponent[];
+    conversationCategory: WhatsAppConversationCategory;
+    wabaPhoneNumberId: string;
+  };
 }
 
 const BATCH_WRITE_SIZE = 450;
@@ -99,24 +109,52 @@ export async function POST(req: Request) {
     );
   }
 
-  // 3) Cost
-  const cost =
-    payload.channel === 'sms'
-      ? (() => {
-          const seg = segmentInfo(payload.body);
-          const perSeg = Number(process.env.SMS_COST_TRY_PER_SEGMENT ?? '0.30');
-          return {
-            encoding: seg.encoding,
-            smsSegments: seg.segments,
-            estimatedCost: resolved.recipients.length * seg.segments * perSeg,
-            currency: 'TRY' as const,
-          };
-        })()
-      : {
-          estimatedCost:
-            resolved.recipients.length * Number(process.env.EMAIL_COST_TRY_PER_MESSAGE ?? '0.02'),
-          currency: 'TRY' as const,
-        };
+  // 3) Cost — yeni pricing modeli (tier + KDV + free quota)
+  const costDetail = await computeCampaignCost({
+    channel: payload.channel,
+    recipientCount: resolved.recipients.length,
+    body: payload.body,
+    whatsappCategory: payload.whatsapp?.conversationCategory,
+    ngoMonthlyVolume: 0,    // TODO: NGO bazlı volume — Faz 12 sonrası enrich
+    ngoFreeQuotaUsed: 0,
+  });
+  const perRecipientWithVat = resolved.recipients.length > 0
+    ? +(costDetail.total / resolved.recipients.length).toFixed(4)
+    : 0;
+  const cost = {
+    ...costDetail,
+    encoding: costDetail.encoding,
+    smsSegments: payload.channel === 'sms' ? segmentInfo(payload.body).segments : undefined,
+    estimatedCost: costDetail.total,
+    perRecipientWithVat,
+  };
+
+  // 3.5) Wallet pre-flight: NGO scope'lu kampanyalarda atomik reserve
+  if (payload.ngoId) {
+    try {
+      await walletReserve({
+        ngoId: payload.ngoId,
+        amount: costDetail.total,
+        campaignId: 'pending', // updated below
+        channel: payload.channel,
+        freeUnitsUsed: costDetail.freeUnitsUsed,
+        actorUid: actor.uid,
+      });
+    } catch (err) {
+      if (err instanceof InsufficientBalanceError) {
+        return NextResponse.json(
+          {
+            error: 'Yetersiz bakiye',
+            balance: err.balance,
+            required: err.required,
+            costDetail,
+          },
+          { status: 402 }
+        );
+      }
+      throw err;
+    }
+  }
 
   // 4) Campaign doc
   const isScheduled = !!payload.scheduledAt;
@@ -135,6 +173,8 @@ export async function POST(req: Request) {
     fromEmail: payload.fromEmail ?? null,
     fromName: payload.fromName ?? null,
     replyTo: payload.replyTo ?? null,
+    ngoId: payload.ngoId ?? null,
+    whatsapp: payload.whatsapp ?? null,
     recipients: {
       sourceSummary: resolved.summary,
       totalUnique: resolved.summary.afterDedupe,

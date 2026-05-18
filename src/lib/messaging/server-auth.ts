@@ -62,3 +62,62 @@ export async function requireSuperAdmin(
 
   return { actor: { uid: decoded.uid, email } };
 }
+
+export interface NgoAdminContext {
+  uid: string;
+  email: string | null;
+  ngoId: string;            // Server tarafında zorlanır — clientten gelenle override edilir
+  isSuperAdmin: boolean;
+}
+
+/**
+ * NGO admin kontrolü: user.managedNgoId == requested ngoId (varsa).
+ * Süper admin geçtiyse her NGO için tam yetkili.
+ * Dönen `ngoId` her zaman ya kullanıcının kendi managedNgoId'si ya da süper admin için
+ * client'ın gönderdiği targetNgoId (gerekirse).
+ */
+export async function requireNgoAdmin(
+  req: Request,
+  options?: { allowSuperAdmin?: boolean; targetNgoId?: string }
+): Promise<
+  | { error: NextResponse; actor?: undefined }
+  | { actor: NgoAdminContext; error?: undefined }
+> {
+  const authHeader = req.headers.get('authorization') ?? '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  if (!token) {
+    return { error: NextResponse.json({ error: 'Token gerekli' }, { status: 401 }) };
+  }
+
+  let decoded: { uid: string; email?: string };
+  try {
+    decoded = await getAdminAuth().verifyIdToken(token);
+  } catch {
+    return { error: NextResponse.json({ error: 'Geçersiz token' }, { status: 401 }) };
+  }
+
+  const email = decoded.email ?? null;
+  const allowSuperAdmin = options?.allowSuperAdmin ?? true;
+
+  const userSnap = await getAdminFirestore().collection('users').doc(decoded.uid).get();
+  const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string }) : null;
+
+  const isSuperAdmin =
+    email === SUPER_ADMIN_EMAIL || userData?.role === 'super-admin';
+
+  if (isSuperAdmin && allowSuperAdmin) {
+    const ngoId = options?.targetNgoId ?? userData?.managedNgoId ?? '';
+    if (!ngoId) {
+      return {
+        error: NextResponse.json({ error: 'targetNgoId gerekli (super-admin için)' }, { status: 400 }),
+      };
+    }
+    return { actor: { uid: decoded.uid, email, ngoId, isSuperAdmin: true } };
+  }
+
+  if (userData?.role !== 'ngo-admin' || !userData.managedNgoId) {
+    return { error: NextResponse.json({ error: 'NGO admin yetkisi yok' }, { status: 403 }) };
+  }
+
+  return { actor: { uid: decoded.uid, email, ngoId: userData.managedNgoId, isSuperAdmin: false } };
+}

@@ -292,7 +292,7 @@ export default function WebsiteBuilderPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0 max-w-5xl mx-auto pb-32">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
@@ -355,13 +355,13 @@ export default function WebsiteBuilderPage() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
                                         <code className="text-[10px] font-bold font-mono">ns1.hangel.org</code>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns1.hangel.org', 'NS1')}>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns1.hangel.org', 'NS1')} aria-label="NS1 kopyala">
                                             <Copy className="h-4 w-4 text-indigo-600" />
                                         </Button>
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-white border rounded-xl shadow-sm">
                                         <code className="text-[10px] font-bold font-mono">ns2.hangel.org</code>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns2.hangel.org', 'NS2')}>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard('ns2.hangel.org', 'NS2')} aria-label="NS2 kopyala">
                                             <Copy className="h-4 w-4 text-indigo-600" />
                                         </Button>
                                     </div>
@@ -470,7 +470,7 @@ export default function WebsiteBuilderPage() {
                                                     <ImageIcon className="mr-1.5 h-3.5 w-3.5"/> Değiştir
                                                 </Button>
                                                 {!banner.isPrimary && (
-                                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => removeBanner(banner.id)}>
+                                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => removeBanner(banner.id)} aria-label="Banner'ı sil">
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 )}

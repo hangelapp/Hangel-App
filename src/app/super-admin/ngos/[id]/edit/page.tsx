@@ -267,7 +267,7 @@ export default function NgoEditPage() {
             {/* Header */}
             <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-4 border-b">
                 <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>

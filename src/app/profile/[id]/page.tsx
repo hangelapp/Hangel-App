@@ -96,6 +96,7 @@ export default function PublicProfilePage() {
           variant="ghost"
           size="icon"
           className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full"
+          aria-label="Geri"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>

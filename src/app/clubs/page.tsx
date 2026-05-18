@@ -121,7 +121,7 @@ export default function ClubsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11">
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala">
               <ArrowDownUp className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>

@@ -221,7 +221,7 @@ export default function NewUserPage() {
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in-0">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <h1 className="text-2xl font-bold font-headline">Yeni Yetkili Ekle</h1>

@@ -216,7 +216,7 @@ export default function BrandProfilePage() {
     <div className="animate-in fade-in-0">
         <div className="p-4 bg-background pt-16">
             <div className="flex items-center gap-2 absolute top-20 left-4 z-10">
-              <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-foreground bg-background/80 shadow-sm hover:bg-background rounded-full">
+              <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-foreground bg-background/80 shadow-sm hover:bg-background rounded-full" aria-label="Geri">
                   <ArrowLeft className="h-5 w-5" />
               </Button>
             </div>

@@ -219,7 +219,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick}>
+                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick} aria-label="Menüyü aç">
                         <Menu className="h-5 w-5" />
                     </Button>
                     <HangelLogo className="text-xl" />
@@ -246,7 +246,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={user ? 'hangel Tanıtım' : 'Acil Durum'}>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={user ? 'hangel Tanıtım' : 'Acil Durum'} aria-label={user ? 'hangel Tanıtım' : 'Acil Durum'}>
                         <Link href={user ? '/about' : '/emergency'}><Siren className="h-5 w-5" /></Link>
                     </Button>
                     {isUserLoading ? (

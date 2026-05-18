@@ -185,7 +185,7 @@ export default function MyApplicationsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11"><Filter className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Duruma Göre Filtrele</DropdownMenuLabel>
@@ -203,7 +203,7 @@ export default function MyApplicationsPage() {
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11"><ArrowDownUp className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setSortOrder('desc')}>Tarihe Göre (En Yeni)</DropdownMenuItem>

@@ -195,7 +195,7 @@ export default function DonationsPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="İşlemlerde ara..." className="pl-8" />
               </div>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" aria-label="Sırala">
                 <ArrowDownUp className="h-4 w-4" />
               </Button>
             </div>

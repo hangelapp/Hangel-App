@@ -219,7 +219,7 @@ export default function EventDetailPage() {
     <div className="animate-in fade-in-0 w-full px-4 sm:px-6 lg:px-8">
         <div className="p-4 bg-background">
             <div className="flex justify-between items-center mb-6">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-border text-foreground hover:bg-accent"/>

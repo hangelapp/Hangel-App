@@ -49,7 +49,7 @@ export default function ImecePage() {
     <div className="min-h-screen bg-background">
       <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <p className="font-black text-primary">hangel</p>

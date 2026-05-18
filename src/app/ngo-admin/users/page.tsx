@@ -37,7 +37,7 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="flex items-center gap-2">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
             <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>
@@ -72,11 +72,12 @@ export default function UsersPage() {
                              <Badge variant="outline" className={cn("text-[10px] font-bold px-2 py-0", statusVariantMap[user.status])}>
                                 {user.status}
                             </Badge>
-                             <Button 
-                                variant="ghost" 
-                                size="icon" 
+                             <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                 onClick={() => handleRemoveUser(user.email)}
+                                aria-label="Kullanıcıyı kaldır"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>

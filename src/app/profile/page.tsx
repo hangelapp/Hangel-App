@@ -24,6 +24,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
@@ -83,7 +84,7 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
         <Card className="relative bg-transparent shadow-none">
             <CardHeader>
                 <CardTitle className="text-lg">Sıradaki Rozet Hedefi</CardTitle>
-                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsVisible(false)}>
+                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setIsVisible(false)} aria-label="Kapat">
                     <X className="h-4 w-4" />
                 </Button>
             </CardHeader>
@@ -111,6 +112,7 @@ export default function ProfilePage() {
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
+    const [viewingCert, setViewingCert] = useState<{ id?: string; title: string; organization: string; date: string } | null>(null);
 
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -156,6 +158,69 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData, authUser]);
     
+    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
+        try {
+            const { default: jsPDF } = await import('jspdf');
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+
+            // Border
+            pdf.setDrawColor(234, 88, 12);
+            pdf.setLineWidth(2);
+            pdf.rect(10, 10, pageW - 20, pageH - 20);
+            pdf.setLineWidth(0.5);
+            pdf.rect(14, 14, pageW - 28, pageH - 28);
+
+            // Title
+            pdf.setFontSize(32);
+            pdf.setTextColor(234, 88, 12);
+            pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
+
+            pdf.setFontSize(12);
+            pdf.setTextColor(80, 80, 80);
+            pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
+
+            // Recipient
+            pdf.setFontSize(14);
+            pdf.setTextColor(60, 60, 60);
+            pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
+
+            pdf.setFontSize(22);
+            pdf.setTextColor(20, 20, 20);
+            pdf.text(currentUser.name || 'Gönüllü', pageW / 2, 92, { align: 'center' });
+
+            // Body
+            pdf.setFontSize(13);
+            pdf.setTextColor(60, 60, 60);
+            const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
+            pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
+
+            // Title of cert
+            pdf.setFontSize(20);
+            pdf.setTextColor(20, 20, 20);
+            pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
+
+            // Date / org footer
+            pdf.setFontSize(11);
+            pdf.setTextColor(80, 80, 80);
+            pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
+            pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
+
+            pdf.setFontSize(9);
+            pdf.setTextColor(120, 120, 120);
+            pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
+
+            const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+            pdf.save(filename);
+
+            toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
+        } catch (error) {
+            console.error('Certificate PDF generation failed:', error);
+            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+        }
+    };
+
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
         setStories([]);
@@ -287,10 +352,10 @@ export default function ProfilePage() {
     return (
         <div className="animate-in fade-in-0 bg-secondary min-h-screen">
             <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Geri">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
+                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Çıkış yap">
                     <LogOut className="h-5 w-5" />
                 </Button>
             </div>
@@ -359,7 +424,7 @@ export default function ProfilePage() {
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Filtrele">
                                                 <Filter className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -381,7 +446,7 @@ export default function ProfilePage() {
                                     </DropdownMenu>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sırala">
                                                 <ArrowDownUp className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -424,7 +489,7 @@ export default function ProfilePage() {
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle>
-                                 <Button asChild variant="ghost" size="icon">
+                                 <Button asChild variant="ghost" size="icon" aria-label="Profili düzenle">
                                     <Link href="/settings/profile">
                                         <Edit className="h-4 w-4" />
                                     </Link>
@@ -456,7 +521,7 @@ export default function ProfilePage() {
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle>
-                                <Button asChild variant="ghost" size="icon">
+                                <Button asChild variant="ghost" size="icon" aria-label="Gönüllülük bilgilerini düzenle">
                                     <Link href="/settings/volunteer">
                                         <Edit className="h-4 w-4" />
                                     </Link>
@@ -527,8 +592,8 @@ export default function ProfilePage() {
                                             <p className='font-semibold mt-1'>{cert.title}</p>
                                         </div>
                                         <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
-                                            <Button aria-label="Sertifikayı görüntüle" size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "Sertifika", description: `${cert.title} — ${cert.organization} (${cert.date})` })}><Eye className="h-4 w-4"/></Button>
-                                            <Button aria-label="Sertifikayı indir" size="icon" variant="ghost" className="h-7 w-7" onClick={() => toast({ title: "İndirme", description: "Sertifika dosya URL'i henüz tanımlı değil. STK sertifika dosyalarını yüklediğinde indirilebilir olacak." })}><Download className="h-4 w-4"/></Button>
+                                            <Button aria-label="Sertifikayı görüntüle" size="icon" variant="ghost" className="h-7 w-7" onClick={() => setViewingCert({ id: cert.id, title: cert.title, organization: cert.organization, date: cert.date })}><Eye className="h-4 w-4"/></Button>
+                                            <Button aria-label="Sertifikayı indir" size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}><Download className="h-4 w-4"/></Button>
                                             <Button aria-label="Sertifikayı paylaş" size="icon" variant="ghost" className="h-7 w-7" onClick={async () => {
                                                 const shareData = { title: cert.title, text: `${cert.title} — ${cert.organization} (${cert.date}) sertifikamı hangel üzerinden paylaşıyorum.`, url: typeof window !== 'undefined' ? window.location.href : '' };
                                                 if (typeof navigator !== 'undefined' && navigator.share) {
@@ -595,6 +660,32 @@ export default function ProfilePage() {
 
                 </Tabs>
             </div>
+            <Dialog open={!!viewingCert} onOpenChange={(open) => { if (!open) setViewingCert(null); }}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Sertifika Önizleme</DialogTitle>
+                        <DialogDescription>{viewingCert?.organization}</DialogDescription>
+                    </DialogHeader>
+                    {viewingCert && (
+                        <div className="rounded-lg border-2 border-primary/30 p-6 bg-gradient-to-br from-primary/5 to-background text-center space-y-3">
+                            <Award className="h-12 w-12 text-primary mx-auto" />
+                            <p className="text-xs uppercase tracking-widest text-muted-foreground">Sertifika</p>
+                            <p className="text-lg font-bold leading-tight">{viewingCert.title}</p>
+                            <p className="text-sm text-muted-foreground">Sahibi: <span className="font-medium text-foreground">{currentUser.name || '-'}</span></p>
+                            <p className="text-sm text-muted-foreground">{viewingCert.organization}</p>
+                            <p className="text-xs text-muted-foreground">Tarih: {viewingCert.date}</p>
+                        </div>
+                    )}
+                    <DialogFooter className="gap-2 sm:gap-2">
+                        <Button variant="secondary" onClick={() => setViewingCert(null)}>Kapat</Button>
+                        {viewingCert && (
+                            <Button onClick={() => handleDownloadCertificate({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
+                                <Download className="mr-2 h-4 w-4" /> PDF İndir
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

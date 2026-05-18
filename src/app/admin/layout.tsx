@@ -15,7 +15,7 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-4 -ml-2" aria-label="Geri">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             {children}

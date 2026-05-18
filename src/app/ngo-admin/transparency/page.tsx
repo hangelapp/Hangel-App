@@ -412,7 +412,7 @@ export default function TransparencyPage() {
                     )}
 
                     {!isEditing && item.isCompleted && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title="Kaldır">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title="Kaldır" aria-label="Kaldır">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}

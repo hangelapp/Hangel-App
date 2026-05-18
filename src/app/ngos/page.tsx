@@ -78,7 +78,7 @@ export default function NgosPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0">
+                <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Filtrele">
                     <Filter className="h-5 w-5" />
                 </Button>
             </div>

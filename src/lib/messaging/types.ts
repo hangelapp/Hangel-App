@@ -127,6 +127,8 @@ export interface RecipientSourceSpec {
   segmentIds?: string[];
   manualUserIds?: string[];
   csvUploadId?: string;
+  /** NGO admin gönderiminde server tarafında zorla doldurulur — client'tan tampered değer kabul edilmez */
+  scopedNgoId?: string;
 }
 
 export interface CampaignCost {

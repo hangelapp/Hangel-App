@@ -14,6 +14,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Building2 } from 'lucide-react';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
@@ -36,6 +39,7 @@ export default function ClubProfilePage() {
   const id = params.id as string;
   const club = studentClubs.find(c => c.id === id);
   const [profileUrl, setProfileUrl] = useState('');
+  const [isEditInfoOpen, setIsEditInfoOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function ClubProfilePage() {
        <div className="relative h-48 w-full bg-muted">
         <Image src={club.coverPhotoUrl} alt={`${club.name} Cover`} fill className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/0" />
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="absolute top-4 left-4 text-white bg-black/30 hover:bg-black/50 hover:text-white rounded-full" aria-label="Geri">
             <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="absolute top-4 right-4">
@@ -90,7 +94,7 @@ export default function ClubProfilePage() {
             </div>
             <div className="flex gap-2">
                 <Button className="flex-1" onClick={() => toast({ title: 'Başvurunuz alındı!', description: 'Kulüp yönetimi başvurunuzu inceleyecektir.'})}>Kulübe Katıl</Button>
-                <Button variant="outline" className="flex-1" onClick={() => toast({ title: "Profili Düzenle", description: "Bu özellik yakında aktif olacaktır." })}>
+                <Button variant="outline" className="flex-1" onClick={() => setIsEditInfoOpen(true)}>
                     <Edit className="mr-2 h-4 w-4" /> Profili Düzenle
                 </Button>
             </div>
@@ -165,6 +169,34 @@ export default function ClubProfilePage() {
             </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={isEditInfoOpen} onOpenChange={setIsEditInfoOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Profili Düzenle</DialogTitle>
+            <DialogDescription>
+              Kulüp profilini düzenleme yetkisi kulüp adminlerine ve yönetim kuruluna açıktır.
+              NGO/Kulüp paneli üzerinden düzenleyebilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/ngo-admin/dashboard"
+              className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
+              onClick={() => setIsEditInfoOpen(false)}
+            >
+              <Building2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Yönetim Paneline Git</p>
+                <p className="text-xs text-muted-foreground">Kulüp/NGO admin panelinden profil, üyeler ve içerikleri yönetin.</p>
+              </div>
+            </Link>
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsEditInfoOpen(false)}>Kapat</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

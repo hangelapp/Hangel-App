@@ -156,7 +156,7 @@ export default function QrPage() {
 
           <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-muted w-full">
             <p className="text-sm text-foreground font-mono break-all">{profileUrl}</p>
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={copyToClipboard}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={copyToClipboard} aria-label="Bağlantıyı kopyala">
               <Copy className="h-4 w-4" />
             </Button>
           </div>
@@ -171,12 +171,12 @@ export default function QrPage() {
               </Button>
             </div>
             <div className="flex justify-center gap-2 pt-2">
-              <Button asChild variant="outline" size="icon">
+              <Button asChild variant="outline" size="icon" aria-label="Twitter'da paylaş">
                 <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noopener noreferrer">
                   <Twitter className="h-5 w-5" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="icon">
+              <Button asChild variant="outline" size="icon" aria-label="LinkedIn'de paylaş">
                 <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(profileUrl)}&title=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer">
                   <Linkedin className="h-5 w-5" />
                 </a>

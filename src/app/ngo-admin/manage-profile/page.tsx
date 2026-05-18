@@ -117,7 +117,7 @@ export default function ManageProfilePage() {
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>

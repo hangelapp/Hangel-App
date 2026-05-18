@@ -245,6 +245,117 @@ service cloud.firestore {
       allow list, read: if isSuperAdmin();
     }
 
+    // WhatsApp template'leri (super-admin yönetir; Meta'dan senkronlanır)
+    match /whatsappTemplates/{id} {
+      allow list, read: if isSuperAdmin();
+    }
+
+    // Pricing config (super-admin yönetir; herkes okur — fiyat şeffaflığı)
+    match /messagingPricing/{id} {
+      allow read: if isSignedIn();
+    }
+
+    // Kontör paketleri (herkes okuyabilir; super-admin yönetir)
+    match /messagingPackages/{id} {
+      allow list, read: if isSignedIn();
+    }
+
+    // NGO cüzdanları — server-only (Admin SDK üzerinden); NGO admin kendi cüzdanını okur
+    match /ngoMessagingWallets/{ngoId} {
+      allow read: if isSignedIn() && (
+        isSuperAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId)
+      );
+      allow write: if false;
+    }
+
+    // Transactions — server-only; NGO admin kendi NGO'sunun transactions'ını okuyabilir
+    match /messagingTransactions/{id} {
+      allow list, read: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+      allow write: if false;
+    }
+
+    // NGO sender'ları — NGO admin kendi sender'larını okur; sadece super-admin onaylar
+    match /ngoSenders/{ngoId}/senders/{senderId} {
+      allow read, list: if isSignedIn() && (
+        isSuperAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId)
+      );
+      // Create: NGO admin pending olarak talep yaratabilir
+      allow create: if isSignedIn() &&
+        request.resource.data.status == 'pending' &&
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId);
+      // Update/delete sadece super-admin (global rule kapsar)
+    }
+
+    // NGO message templates — NGO admin kendi şablonlarını yönetir
+    match /ngoMessageTemplates/{id} {
+      allow read, list: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+      allow create: if isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.ngoId;
+      allow update, delete: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+    }
+
+    // Payment orders — server-only; NGO admin kendi NGO'sunun order'larını okur
+    match /paymentOrders/{id} {
+      allow read, list: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+      allow write: if false;
+    }
+
+    // Invoices — NGO admin kendi NGO'sunun faturalarını okur
+    match /messagingInvoices/{id} {
+      allow read, list: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+      allow write: if false;
+    }
+
+    // NGO recipient segments — NGO admin kendi segmentlerini yönetir
+    match /ngoRecipientSegments/{id} {
+      allow read, list: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+      allow create: if isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.ngoId;
+      allow update, delete: if isSignedIn() && (
+        isSuperAdmin() ||
+        (resource != null &&
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      );
+    }
+
     // Server-only: gerçek mesaj kuyruğu — Admin SDK ile yazılır/okunur
     match /messageJobs/{id} {
       allow read, write: if false;

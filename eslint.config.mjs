@@ -14,6 +14,8 @@ export default tseslint.config(
       'android/**',
       'ios/**',
       'scripts/**',
+      '.lh-tmp/**',
+      '.worktrees/**',
       'next.config.ts',
       'tailwind.config.ts',
       'postcss.config.mjs',

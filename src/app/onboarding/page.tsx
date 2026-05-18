@@ -108,7 +108,7 @@ export default function OnboardingPage() {
             </div>
           </footer>
       </Carousel>
-      <Button onClick={handleNext} size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-10">
+      <Button onClick={handleNext} size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-10" aria-label="İleri">
            <ChevronRight className="h-6 w-6" />
       </Button>
     </div>

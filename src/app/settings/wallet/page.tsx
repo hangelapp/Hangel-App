@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CreditCard, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, Plus, Trash2, QrCode, Building2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +17,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from '@/lib/utils';
 import { qrPaymentCardData } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +38,7 @@ export default function WalletSettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [savedCards, setSavedCards] = useState(initialSavedCards);
+    const [isAddCardOpen, setIsAddCardOpen] = useState(false);
 
     const handleCardDelete = (cardId: string) => {
         setSavedCards(prev => prev.filter(card => card.id !== cardId));
@@ -41,7 +51,7 @@ export default function WalletSettingsPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
@@ -86,7 +96,7 @@ export default function WalletSettingsPage() {
                             </div>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                     <Button variant="ghost" size="icon" className="text-destructive">
+                                     <Button variant="ghost" size="icon" className="text-destructive" aria-label="Kartı sil">
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </AlertDialogTrigger>
@@ -105,12 +115,47 @@ export default function WalletSettingsPage() {
                             </AlertDialog>
                         </div>
                     ))}
-                    <Button variant="secondary" className="w-full" onClick={() => toast({ title: 'Yeni Kart Ekleme', description: 'Bu özellik yakında eklenecektir.' })}>
+                    <Button variant="secondary" className="w-full" onClick={() => setIsAddCardOpen(true)}>
                         <Plus className="mr-2 h-4 w-4" />
                         Yeni Kart Ekle
                     </Button>
                 </CardContent>
             </Card>
+
+            <Dialog open={isAddCardOpen} onOpenChange={setIsAddCardOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Yeni Kart Ekleme</DialogTitle>
+                        <DialogDescription>
+                            Banka/kredi kartı entegrasyonu için ödeme altyapısı kurulum aşamasındadır.
+                            Şimdilik bakiye yüklemek için aşağıdaki alternatifleri kullanabilirsiniz.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 pt-2">
+                        <Link
+                            href="/qr-payment"
+                            className="flex items-start gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
+                            onClick={() => setIsAddCardOpen(false)}
+                        >
+                            <QrCode className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">QR ile öde</p>
+                                <p className="text-xs text-muted-foreground">hangel QR koduyla anında ödeme alıp gönderin.</p>
+                            </div>
+                        </Link>
+                        <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+                            <Building2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                                <p className="font-medium text-sm">Banka EFT / Havale</p>
+                                <p className="text-xs text-muted-foreground">Bakiye yüklemek için doğrudan hangel kurumsal hesabımıza EFT/havale yapabilirsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setIsAddCardOpen(false)}>Kapat</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

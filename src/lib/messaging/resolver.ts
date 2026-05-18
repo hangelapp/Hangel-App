@@ -138,8 +138,16 @@ function matchesFilters(user: UserDoc, filters: SegmentFilters): boolean {
   return true;
 }
 
+function matchesNgoScope(user: UserDoc, ngoId: string): boolean {
+  if (user.managedNgoId === ngoId) return true;
+  if ((user.supportedNgos ?? []).includes(ngoId)) return true;
+  if ((user.volunteerNgos ?? []).includes(ngoId)) return true;
+  return false;
+}
+
 async function loadByFilters(
-  filters: SegmentFilters
+  filters: SegmentFilters,
+  scopedNgoId?: string
 ): Promise<Array<{ userId: string; user: UserDoc }>> {
   const db = getAdminFirestore();
   // Şimdilik tüm users üzerinden tara — küçük-orta kullanıcı sayısı için yeterli.
@@ -148,20 +156,27 @@ async function loadByFilters(
   const out: Array<{ userId: string; user: UserDoc }> = [];
   for (const doc of snap.docs) {
     const user = doc.data() as UserDoc;
-    if (matchesFilters(user, filters)) {
-      out.push({ userId: doc.id, user });
-    }
+    if (!matchesFilters(user, filters)) continue;
+    if (scopedNgoId && !matchesNgoScope(user, scopedNgoId)) continue;
+    out.push({ userId: doc.id, user });
   }
   return out;
 }
 
-async function loadSegments(segmentIds: string[]): Promise<SegmentFilters[]> {
+async function loadSegments(segmentIds: string[], scopedNgoId?: string): Promise<SegmentFilters[]> {
   const db = getAdminFirestore();
-  const refs = segmentIds.map((id) => db.collection('recipientSegments').doc(id));
+  // NGO scope'da ngoRecipientSegments koleksiyonundan çek; aksi halde recipientSegments (system-scoped)
+  const collectionName = scopedNgoId ? 'ngoRecipientSegments' : 'recipientSegments';
+  const refs = segmentIds.map((id) => db.collection(collectionName).doc(id));
   if (refs.length === 0) return [];
   const snaps = await db.getAll(...refs);
   return snaps
     .filter((s) => s.exists)
+    .filter((s) => {
+      if (!scopedNgoId) return true;
+      const data = s.data() as { ngoId?: string };
+      return data.ngoId === scopedNgoId;
+    })
     .map((s) => (s.data() as { filters?: SegmentFilters }).filters ?? {});
 }
 
@@ -189,11 +204,13 @@ interface CsvRow {
   userId?: string | null;
 }
 
-async function loadCsvRows(csvUploadId: string): Promise<CsvRow[]> {
+async function loadCsvRows(csvUploadId: string, scopedNgoId?: string): Promise<CsvRow[]> {
   const db = getAdminFirestore();
   const snap = await db.collection('csvUploads').doc(csvUploadId).get();
   if (!snap.exists) return [];
-  const data = snap.data() as { rows?: CsvRow[] } | undefined;
+  const data = snap.data() as { rows?: CsvRow[]; ngoId?: string } | undefined;
+  // NGO scope: CSV upload başka NGO'ya aitse reddet
+  if (scopedNgoId && data?.ngoId && data.ngoId !== scopedNgoId) return [];
   return data?.rows ?? [];
 }
 
@@ -205,9 +222,18 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
   let manual = 0;
   let csv = 0;
 
+  const scopedNgoId = spec.scopedNgoId;
+
   // 1. Filters
   if (spec.filters) {
-    const matched = await loadByFilters(spec.filters);
+    const matched = await loadByFilters(spec.filters, scopedNgoId);
+    fromFilters = matched.length;
+    for (const { userId, user } of matched) {
+      candidates.push({ userId, user, source: 'filter' });
+    }
+  } else if (scopedNgoId) {
+    // NGO scope'da filter yoksa otomatik olarak tüm NGO destekçi/gönüllü/ekip'i ekle
+    const matched = await loadByFilters({}, scopedNgoId);
     fromFilters = matched.length;
     for (const { userId, user } of matched) {
       candidates.push({ userId, user, source: 'filter' });
@@ -216,9 +242,9 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
 
   // 2. Saved segments — her bir segment'in filter'ını run et
   if (spec.segmentIds && spec.segmentIds.length > 0) {
-    const filterList = await loadSegments(spec.segmentIds);
+    const filterList = await loadSegments(spec.segmentIds, scopedNgoId);
     for (const f of filterList) {
-      const matched = await loadByFilters(f);
+      const matched = await loadByFilters(f, scopedNgoId);
       fromSegments += matched.length;
       for (const { userId, user } of matched) {
         candidates.push({ userId, user, source: 'segment' });
@@ -230,6 +256,7 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
   if (spec.manualUserIds && spec.manualUserIds.length > 0) {
     const userMap = await loadUsersByIds(spec.manualUserIds);
     for (const [uid, user] of userMap) {
+      if (scopedNgoId && !matchesNgoScope(user, scopedNgoId)) continue;
       candidates.push({ userId: uid, user, source: 'manual' });
       manual += 1;
     }
@@ -237,7 +264,7 @@ export async function resolveRecipients(spec: RecipientSourceSpec): Promise<Reso
 
   // 4. CSV
   if (spec.csvUploadId) {
-    const rows = await loadCsvRows(spec.csvUploadId);
+    const rows = await loadCsvRows(spec.csvUploadId, scopedNgoId);
     csv = rows.length;
     for (const row of rows) {
       if (!row.channelAddress) continue;

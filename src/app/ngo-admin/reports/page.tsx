@@ -68,9 +68,9 @@ const ReportList = ({ type }: { type: ReportType }) => {
                                      <p className="text-xs text-muted-foreground">{new Date(report.date).toLocaleDateString('tr-TR')}</p>
                                    </div>
                                    <div className="flex gap-1">
-                                       <Button size="icon" variant="ghost"><Eye className="h-4 w-4"/></Button>
-                                       <Button size="icon" variant="ghost"><Share2 className="h-4 w-4"/></Button>
-                                       <Button size="icon" variant="ghost"><Download className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" aria-label="Raporu görüntüle"><Eye className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" aria-label="Raporu paylaş"><Share2 className="h-4 w-4"/></Button>
+                                       <Button size="icon" variant="ghost" aria-label="Raporu indir"><Download className="h-4 w-4"/></Button>
                                    </div>
                                 </div>
                             ))}

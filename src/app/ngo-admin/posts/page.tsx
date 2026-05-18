@@ -11,6 +11,9 @@ import Image from 'next/image';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -24,6 +27,9 @@ export default function PostsPage() {
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
     const [editContent, setEditContent] = useState('');
     const [isCreating, setIsCreating] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
+    const [imageDraft, setImageDraft] = useState('');
+    const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
     // Load posts from Firestore (client-side sort to avoid composite index requirement
     // and to include legacy posts that may be missing the createdAt field)
@@ -63,7 +69,7 @@ export default function PostsPage() {
 
         setIsCreating(true);
 
-        const newPost = {
+        const newPost: Record<string, unknown> = {
             authorId: authUser.uid,
             author: {
                 name: authUser.displayName || 'Kurulusunuz',
@@ -76,9 +82,14 @@ export default function PostsPage() {
             comments: 0,
         };
 
+        if (imageUrl.trim()) {
+            newPost.imageUrl = imageUrl.trim();
+        }
+
         try {
             await addDoc(collection(firestore, 'posts'), newPost);
             setNewPostContent('');
+            setImageUrl('');
             toast({ title: 'Gönderi paylaşıldı!', description: 'Yeni gönderiniz zaman tünelinde yayınlandı.' });
         } catch (error) {
             console.error('Post create failed:', error);
@@ -164,11 +175,19 @@ export default function PostsPage() {
             onChange={(e) => setNewPostContent(e.target.value)}
           />
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={() => toast({ title: 'Bu özellik yakında eklenecektir.' })}>
-            <ImagePlus className="mr-2 h-4 w-4" />
-            Görsel Ekle
-          </Button>
+        <CardFooter className="flex justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Button variant="outline" onClick={() => { setImageDraft(imageUrl); setIsImageDialogOpen(true); }}>
+              <ImagePlus className="mr-2 h-4 w-4" />
+              {imageUrl ? 'Görseli Değiştir' : 'Görsel Ekle'}
+            </Button>
+            {imageUrl && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground truncate">
+                <span className="truncate max-w-[200px]">{imageUrl}</span>
+                <Button variant="ghost" size="sm" onClick={() => setImageUrl('')} className="h-7 px-2">Kaldır</Button>
+              </div>
+            )}
+          </div>
           <Button onClick={handleCreatePost} disabled={isCreating}>
             {isCreating ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -179,6 +198,47 @@ export default function PostsPage() {
           </Button>
         </CardFooter>
       </Card>
+
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Görsel Ekle</DialogTitle>
+            <DialogDescription>
+              Gönderinizde göstermek istediğiniz görselin URL&apos;sini ekleyin. Dosya yükleme altyapısı kurulum aşamasındadır; şimdilik bir resmin doğrudan bağlantısını kullanabilirsiniz.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="image-url">Görsel URL</Label>
+              <Input
+                id="image-url"
+                type="url"
+                placeholder="https://..."
+                value={imageDraft}
+                onChange={(e) => setImageDraft(e.target.value)}
+              />
+            </div>
+            {imageDraft && /^https?:\/\//i.test(imageDraft) && (
+              <div className="rounded-md border overflow-hidden relative aspect-video bg-muted">
+                <Image src={imageDraft} alt="Önizleme" fill className="object-cover" unoptimized />
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsImageDialogOpen(false)}>İptal</Button>
+            <Button onClick={() => {
+              const trimmed = imageDraft.trim();
+              if (trimmed && !/^https?:\/\//i.test(trimmed)) {
+                toast({ variant: 'destructive', title: 'Geçersiz URL', description: 'Görsel URL\'si http(s) ile başlamalıdır.' });
+                return;
+              }
+              setImageUrl(trimmed);
+              setIsImageDialogOpen(false);
+              toast({ title: trimmed ? 'Görsel eklendi' : 'Görsel kaldırıldı' });
+            }}>Onayla</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Mevcut Gönderiler</h2>

@@ -74,8 +74,8 @@ const NavLink = ({ href, icon, label, comingSoon }: { href: string, icon: string
       <button
         type="button"
         onClick={() => toast({
-          title: 'Çok Yakında!',
-          description: `"${label}" özelliği çok yakında hizmete girecektir.`,
+          title: `${label} — Yol Haritasında`,
+          description: `Bu modül için harici servis sağlayıcı entegrasyonu (örn. SMS/mail/CRM/video toplantı/POS sağlayıcısı) gereklidir. Geliştirme önceliklendirildiğinde panelinizden duyurulacaktır. Bu sürede süreçleri manuel olarak yönetebilir veya destek ekibimizle iletişime geçebilirsiniz.`,
         })}
         className="flex items-center p-4 hover:bg-accent transition-colors w-full text-sm sm:text-base border-b last:border-b-0 text-left opacity-80"
       >

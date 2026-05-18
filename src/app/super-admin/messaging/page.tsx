@@ -16,6 +16,9 @@ import {
   ChevronRight,
   Mail,
   MessageSquare,
+  MessageCircle,
+  Coins,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,8 +35,11 @@ interface CampaignRow {
 const NAV = [
   { href: '/super-admin/messaging/campaigns', icon: Send, color: 'bg-violet-500', label: 'Kampanyalar', desc: 'Yeni kampanya oluştur, geçmişi gör, detay analitiği incele.' },
   { href: '/super-admin/messaging/templates', icon: FileText, color: 'bg-sky-500', label: 'Şablonlar', desc: 'Tekrar kullanılabilir SMS / e-posta şablonları.' },
+  { href: '/super-admin/messaging/whatsapp/templates', icon: MessageCircle, color: 'bg-emerald-600', label: 'WhatsApp Şablonları', desc: 'Meta-onaylı WhatsApp template\'leri.' },
   { href: '/super-admin/messaging/segments', icon: Filter, color: 'bg-emerald-500', label: 'Segmentler', desc: 'Filtre tabanlı alıcı kitleleri tanımla.' },
-  { href: '/super-admin/messaging/providers', icon: SettingsIcon, color: 'bg-amber-500', label: 'Provider Ayarları', desc: 'SMS/E-posta sağlayıcısı, sender ID, rate limit ve İYS modu.' },
+  { href: '/super-admin/messaging/pricing', icon: Coins, color: 'bg-amber-500', label: 'Pricing', desc: 'Tier indirimleri, ücretsiz kotalar, KDV ve çarpanlar.' },
+  { href: '/super-admin/messaging/ngo-wallets', icon: Wallet, color: 'bg-emerald-700', label: 'NGO Cüzdanları', desc: 'NGO bakiyeleri + manuel top-up / düzeltme.' },
+  { href: '/super-admin/messaging/providers', icon: SettingsIcon, color: 'bg-yellow-500', label: 'Provider Ayarları', desc: 'SMS/E-posta sağlayıcısı, sender ID, rate limit ve İYS modu.' },
   { href: '/super-admin/messaging/audit', icon: History, color: 'bg-rose-500', label: 'Audit Log', desc: 'Kim, ne zaman, ne gönderdi — denetim kaydı.' },
 ];
 

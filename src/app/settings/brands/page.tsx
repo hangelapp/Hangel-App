@@ -136,7 +136,7 @@ export default function FollowedBrandsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div>
@@ -151,7 +151,7 @@ export default function FollowedBrandsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11"><Filter className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
@@ -167,7 +167,7 @@ export default function FollowedBrandsPage() {
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11"><ArrowDownUp className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
