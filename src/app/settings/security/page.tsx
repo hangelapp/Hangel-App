@@ -17,22 +17,10 @@ const activeSessions = [
 export default function SecuritySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [_currentPassword, _setCurrentPassword] = useState('');
-    const [newPassword, _setNewPassword] = useState('');
-    const [confirmPassword, _setConfirmPassword] = useState('');
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Add validation logic here
-        if (newPassword && newPassword !== confirmPassword) {
-            toast({
-                variant: "destructive",
-                title: "Hata",
-                description: "Yeni şifreler eşleşmiyor.",
-            });
-            return;
-        }
         toast({
             title: "Ayarlar Kaydedildi",
             description: "Güvenlik ayarlarınız başarıyla güncellendi.",
@@ -45,8 +33,8 @@ export default function SecuritySettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Güvenlik ve Şifre</h1>
-                <p className="text-muted-foreground text-sm">Hesap güvenliğinizi yönetin ve şifrenizi güncelleyin.</p>
+                <h1 className="text-2xl font-bold font-headline">Güvenlik</h1>
+                <p className="text-muted-foreground text-sm">Hesap güvenliğinizi ve aktif oturumlarınızı yönetin.</p>
             </div>
             
             <form className="space-y-6" onSubmit={handleSubmit}>

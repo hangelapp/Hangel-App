@@ -44,7 +44,8 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -65,7 +66,13 @@ export default function AccessibilitySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
     const { user: authUser } = useUser();
+    const db = useFirestore();
     const [isSaving, setIsSaving] = useState(false);
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
 
     // --- State Definition ---
     // Visual
@@ -188,6 +195,17 @@ export default function AccessibilitySettingsPage() {
         localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
         // Apply settings immediately to current page
         window.dispatchEvent(new StorageEvent('storage', { key: 'hangel-a11y-v3', newValue: JSON.stringify(settings) }));
+
+        // Persist core a11y preferences to Firestore so they sync across devices.
+        if (userDocRef) {
+            updateDocumentNonBlocking(userDocRef, {
+                accessibilitySettings: {
+                    fontSize,
+                    highContrast,
+                    reducedMotion: reduceMotion,
+                },
+            });
+        }
 
         setTimeout(() => {
             setIsSaving(false);

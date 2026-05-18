@@ -85,7 +85,7 @@ export default function SettingsPage() {
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/profile" icon={User} label="Kişisel Bilgileri Düzenle" iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/volunteer" icon={HeartHandshake} label="Gönüllülük Bilgilerini Düzenle" iconColor="bg-orange-500" />
-                    <SettingsLink href="/settings/security" icon={Shield} label="Güvenlik ve Şifre" iconColor="bg-sky-500" />
+                    <SettingsLink href="/settings/security" icon={Shield} label="Güvenlik" iconColor="bg-sky-500" />
                  </div>
             </CardContent>
         </Card>

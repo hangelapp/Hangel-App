@@ -7,17 +7,29 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 export default function LanguageSettingsPage() {
     const router = useRouter();
     const { language, changeLanguage } = useTranslation();
     const { toast } = useToast();
+    const { user: authUser } = useUser();
+    const db = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser) return null;
+        return doc(db, 'users', authUser.uid);
+    }, [db, authUser]);
 
     const handleSave = () => {
         const langName = languages.find(l => l.value === language)?.label;
+        if (userDocRef) {
+            updateDocumentNonBlocking(userDocRef, { language });
+        }
         toast({
             title: "Dil Ayarları Kaydedildi",
-            description: `Uygulama dili "${langName}" olarak ayarlandı.`,
+            description: `Dil tercihiniz "${langName}" olarak kaydedildi. Sayfa yeniden yüklendiğinde değişiklik aktif olacak.`,
         });
     };
 
