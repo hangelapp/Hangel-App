@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Loader2, Trash2, Power, PowerOff, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3 } from 'lucide-react';
+import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
+import { Loader2, Trash2, Power, PowerOff, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3, Database, Upload, RefreshCw } from 'lucide-react';
 import type { Brand } from "@/lib/types";
 import Link from 'next/link';
+import seedBrands from '../../../../docs/database-exports/brands.json';
 
 type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
 
@@ -168,6 +169,7 @@ export default function BrandsPage() {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<EditFormData>({});
+    const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding'>('idle');
 
     // Load approved brands
     const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
@@ -313,6 +315,78 @@ export default function BrandsPage() {
         }
     };
 
+    const handleClearAll = async () => {
+        setBulkOp('clearing');
+        try {
+            const snap = await getDocs(collection(db, 'brands'));
+            const batches: ReturnType<typeof writeBatch>[] = [];
+            let current = writeBatch(db);
+            let count = 0;
+            snap.docs.forEach(d => {
+                current.delete(d.ref);
+                count += 1;
+                if (count >= 450) {
+                    batches.push(current);
+                    current = writeBatch(db);
+                    count = 0;
+                }
+            });
+            if (count > 0) batches.push(current);
+            await Promise.all(batches.map(b => b.commit()));
+            toast({
+                variant: 'destructive',
+                title: 'Marka Listesi Temizlendi',
+                description: `${snap.size} marka kaydı silindi.`,
+            });
+        } catch (e) {
+            console.error('Clear all brands failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
+            toast({
+                variant: 'destructive',
+                title: 'Temizleme başarısız',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : message,
+            });
+        } finally {
+            setBulkOp('idle');
+        }
+    };
+
+    const handleSeed = async () => {
+        setBulkOp('seeding');
+        try {
+            let count = 0;
+            for (const b of (seedBrands as Array<{ id: string } & Record<string, unknown>>)) {
+                await setDoc(doc(db, 'brands', b.id), { ...b, status: 'Aktif' }, { merge: true });
+                count += 1;
+            }
+            toast({
+                title: 'Marka Verisi Yüklendi',
+                description: `${count} marka Firestore'a aktarıldı (mevcut kayıtların üzerine yazıldı).`,
+            });
+        } catch (e) {
+            console.error('Seed brands failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
+            toast({
+                variant: 'destructive',
+                title: 'Yükleme başarısız',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : message,
+            });
+        } finally {
+            setBulkOp('idle');
+        }
+    };
+
+    const handleResetAndSeed = async () => {
+        await handleClearAll();
+        await handleSeed();
+    };
+
     const handleStartEdit = (brand: BrandItem) => {
         setEditingBrand(brand);
         setEditFormData({
@@ -405,6 +479,71 @@ export default function BrandsPage() {
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Marka Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını, onay durumlarını ve detaylarını yönetin.</p>
             </div>
+
+            {/* Bulk admin tools */}
+            <Card className="rounded-2xl border-amber-200 bg-amber-50/30">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><Database className="h-4 w-4" /> Veri Yönetim Araçları</CardTitle>
+                    <CardDescription>Demo verileri temizle ve mevcut marka datalarını ({(seedBrands as unknown[]).length} marka) Firestore'a yükle.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row gap-2 flex-wrap">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="outline" disabled={bulkOp !== 'idle'} className="gap-1.5">
+                                <Trash2 className="h-4 w-4" /> Tüm Markaları Temizle
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Tüm marka kayıtları silinsin mi?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Bu işlem <strong>kalıcıdır</strong>. Firestore'daki <code>brands</code> koleksiyonundaki tüm dokümanlar silinir.
+                                    Başvurular ve kullanıcı bağlantıları etkilenmez.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                <AlertDialogAction
+                                    className={cn(buttonVariants({ variant: 'destructive' }))}
+                                    onClick={handleClearAll}>
+                                    {bulkOp === 'clearing' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    Evet, Tümünü Sil
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+
+                    <Button variant="outline" onClick={handleSeed} disabled={bulkOp !== 'idle'} className="gap-1.5">
+                        {bulkOp === 'seeding' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                        Marka Datalarını Yükle ({(seedBrands as unknown[]).length} marka)
+                    </Button>
+
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button disabled={bulkOp !== 'idle'} className="gap-1.5 bg-red-600 hover:bg-red-700">
+                                <RefreshCw className="h-4 w-4" /> Sıfırla ve Yeniden Yükle
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Sıfırla ve Yeniden Yükle?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Önce mevcut tüm marka kayıtları silinir, ardından <strong>{(seedBrands as unknown[]).length} marka</strong> Firestore'a aktarılır.
+                                    Bu işlem geri alınamaz.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                <AlertDialogAction
+                                    className={cn(buttonVariants({ variant: 'destructive' }))}
+                                    onClick={handleResetAndSeed}>
+                                    Devam Et
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardContent>
+            </Card>
 
             {/* Stat cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">

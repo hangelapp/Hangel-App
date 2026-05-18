@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe } from 'lucide-react';
+import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, MailCheck } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -362,6 +362,33 @@ export default function UsersPage() {
     });
   };
 
+  const handleSendVerification = async (user: UserRow) => {
+    try {
+      // Doğrulama isteği kaydı (gerçek SMS/e-mail gönderimi yetkili bir backend job ile yapılır)
+      const channels: string[] = [];
+      if (user.personalInfo?.email) channels.push('email');
+      if (user.personalInfo?.phone) channels.push('sms');
+      await updateDoc(doc(db, 'users', user.id), {
+        verificationRequestedAt: new Date().toISOString(),
+        verificationRequestedChannels: channels,
+      });
+      toast({
+        title: 'Doğrulama Talebi Gönderildi',
+        description: channels.length
+          ? `${channels.join(' + ').toUpperCase()} doğrulama mesajı sıraya alındı.`
+          : 'Kullanıcının e-posta ve telefon bilgisi olmadığı için talep oluşturuldu fakat gönderim kanalı yok.',
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen hata.';
+      toast({
+        variant: 'destructive',
+        title: 'Doğrulama gönderilemedi',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    }
+  };
+
   const handleSaveUser = async (userId: string, patch: Record<string, unknown>) => {
     try {
       await updateDoc(doc(db, 'users', userId), patch);
@@ -527,6 +554,17 @@ export default function UsersPage() {
                     <Button variant="outline" size="sm" className="rounded-xl font-bold h-9" onClick={() => setEditingUser(user)}>
                       <Pencil className="mr-2 h-4 w-4" /> Düzenle
                     </Button>
+                    {!(user as UserRow & { verified?: boolean }).verified && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl font-bold h-9 text-amber-700 border-amber-300 hover:bg-amber-50"
+                        onClick={() => handleSendVerification(user)}
+                        title="Doğrulama maili ve SMS gönder"
+                      >
+                        <MailCheck className="mr-2 h-4 w-4" /> Doğrula
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"

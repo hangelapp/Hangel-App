@@ -45,8 +45,6 @@ const iconColorMap: { [key: string]: string } = {
 };
 
 const superAdminNavItems = [
-    { href: '/super-admin/setup', label: 'Veritabanı Kurulumu (Import)', icon: 'DatabaseZap', description: 'Mock dataları veritabanına aktar ve sistemi başlat.' },
-    { href: '/super-admin/maintenance', label: 'Bakım & Migration', icon: 'Wrench', description: 'Tek seferlik veri düzeltmeleri (createdAt backfill, Filmler seed vb.).' },
     { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
     { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
     { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
@@ -63,8 +61,8 @@ const superAdminNavItems = [
     { href: '/super-admin/emergency', label: 'Acil Durum Yönetimi', icon: 'Siren', description: 'Acil kan talebi ve afet bildirimlerini yönet, hedef bildirimler gönder.' },
     { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
     { href: '/super-admin/surveys', label: 'Anket & Değerlendirmeler', icon: 'Star', description: 'Kullanıcı keşif anketleri ve uygulama değerlendirmelerini görüntüle.' },
-    { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Platformun genel metriklerini izle.' },
-    { href: '/super-admin/demographics', label: 'Demografi Analizi', icon: 'Users', description: 'Genel demografi + STK bazında destekçi profili (yaş, cinsiyet, konum, meslek, ilgi alanları).' },
+    { href: '/super-admin/analytics', label: 'İstatistik, Analizler & Demografi', icon: 'BarChart3', description: 'Platformun genel metrikleri ve STK bazında destekçi demografi profili (yaş, cinsiyet, konum, meslek, ilgi alanları) birleşik panelde.' },
+    { href: '/super-admin/activity', label: 'Aktiviteler & İşlem Logu', icon: 'Activity', description: 'Platform genelinde tüm aktivite ve sistem işlemlerinin merkezi listesi.' },
     { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
     { href: '/super-admin/communications', label: 'DM & Uygulama-İçi Bildirim', icon: 'MessageSquare', description: 'Kullanıcılara uygulama-içi direkt mesaj ve anlık bildirim gönder.' },
     { href: '/super-admin/messaging', label: 'Toplu SMS & E-Posta', icon: 'Send', description: 'Kampanya, şablon, segment ve gönderim analitikleri.' },

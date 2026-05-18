@@ -8,10 +8,35 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Star, Search, MessageSquare, Radio, Inbox, ArrowDownUp } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+interface SurveyUser {
+    id: string;
+    name?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    profilePhoto?: string;
+}
+
+const UserCell = ({ userId, userMap }: { userId: string; userMap: Map<string, SurveyUser> }) => {
+    const user = userMap.get(userId);
+    const name = user?.name || user?.displayName || 'Bilinmeyen Kullanıcı';
+    const avatar = user?.avatarUrl || user?.profilePhoto;
+    const initial = (name || 'U').charAt(0).toUpperCase();
+    return (
+        <div className="flex items-center gap-2 min-w-0">
+            <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={avatar} alt={name} />
+                <AvatarFallback className="text-xs font-bold">{initial}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm font-medium truncate">{name}</span>
+        </div>
+    );
+};
 
 interface SurveyDoc {
     id: string;
@@ -75,6 +100,21 @@ export default function SurveysPage() {
     const { data: surveysData, isLoading: surveysLoading } = useCollection<SurveyDoc>(surveysQuery);
     const { data: ratingsData, isLoading: ratingsLoading } = useCollection<RatingDoc>(ratingsQuery);
 
+    const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+    const { data: usersData } = useCollection<SurveyUser>(usersQuery);
+    const userMap = useMemo(() => {
+        const m = new Map<string, SurveyUser>();
+        (usersData || []).forEach(u => m.set(u.id, u));
+        return m;
+    }, [usersData]);
+
+    const userMatches = (uid: string | undefined, q: string) => {
+        if (!uid) return false;
+        const u = userMap.get(uid);
+        const hay = `${uid} ${u?.name || ''} ${u?.displayName || ''}`.toLowerCase();
+        return hay.includes(q);
+    };
+
     const filteredSurveys = useMemo(() => {
         if (!surveysData) return [];
         if (!surveySearch.trim()) return surveysData;
@@ -82,9 +122,9 @@ export default function SurveysPage() {
         return surveysData.filter(s =>
             s.source?.toLowerCase().includes(q) ||
             s.detail?.toLowerCase().includes(q) ||
-            s.userId?.toLowerCase().includes(q)
+            userMatches(s.userId, q)
         );
-    }, [surveysData, surveySearch]);
+    }, [surveysData, surveySearch, userMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const filteredRatings = useMemo(() => {
         if (!ratingsData) return [];
@@ -94,7 +134,7 @@ export default function SurveysPage() {
             const q = ratingSearch.toLowerCase();
             list = list.filter(r =>
                 r.comment?.toLowerCase().includes(q) ||
-                r.userId?.toLowerCase().includes(q)
+                userMatches(r.userId, q)
             );
         }
 
@@ -223,7 +263,7 @@ export default function SurveysPage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Kullanıcı ID</TableHead>
+                                                <TableHead>Kullanıcı</TableHead>
                                                 <TableHead>Kaynak</TableHead>
                                                 <TableHead>Detay</TableHead>
                                                 <TableHead>Tarih</TableHead>
@@ -232,8 +272,8 @@ export default function SurveysPage() {
                                         <TableBody>
                                             {filteredSurveys.map((s) => (
                                                 <TableRow key={s.id}>
-                                                    <TableCell className="font-mono text-xs text-muted-foreground max-w-[120px] truncate">
-                                                        {s.userId}
+                                                    <TableCell className="max-w-[200px]">
+                                                        <UserCell userId={s.userId} userMap={userMap} />
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge className={SOURCE_COLORS[s.source] || 'bg-gray-100 text-gray-700'} variant="outline">
@@ -331,17 +371,17 @@ export default function SurveysPage() {
                                 <div className="space-y-3">
                                     {filteredRatings.map((r) => (
                                         <div key={r.id} className="rounded-xl border p-4 space-y-2">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <UserCell userId={r.userId} userMap={userMap} />
                                                 <StarDisplay rating={r.rating} />
-                                                <span className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</span>
                                             </div>
                                             {r.comment?.trim() && (
                                                 <p className="text-sm text-foreground bg-muted/50 rounded-lg px-3 py-2">
                                                     {r.comment}
                                                 </p>
                                             )}
-                                            <p className="font-mono text-[10px] text-muted-foreground/60">
-                                                UID: {r.userId}
+                                            <p className="text-[10px] text-muted-foreground/60 text-right">
+                                                {formatDate(r.createdAt)}
                                             </p>
                                         </div>
                                     ))}
