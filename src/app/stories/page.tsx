@@ -24,7 +24,7 @@ interface StoryCardProps {
   href: string;
   bgColor: string;
   textColor: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const StoryCard: React.FC<StoryCardProps> = ({ category, title, description, imageUrl, imageHint, href, bgColor, textColor, icon: Icon }) => {

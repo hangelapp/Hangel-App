@@ -11,7 +11,7 @@ import type { Event } from '@/lib/types';
 // Default Leaflet ikon path'i Next.js bundler'ında bozulur — manuel düzeltme.
 function fixDefaultIcon() {
   // @ts-ignore
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
   L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
     iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -32,8 +32,9 @@ export function EventMap({ events }: { events: Event[] }) {
   const groups: EventGroup[] = useMemo(() => {
     const map = new Map<string, EventGroup>();
     for (const ev of events) {
-      const explicit = (ev as any).location?.coords as [number, number] | undefined;
-      const city = (ev as any).location?.city as string | undefined;
+      const loc = ev.location as (typeof ev.location & { coords?: [number, number] }) | undefined;
+      const explicit = loc?.coords;
+      const city = loc?.city;
       const coords = (Array.isArray(explicit) && explicit.length === 2)
         ? explicit
         : lookupCityCoords(city);
@@ -68,7 +69,7 @@ export function EventMap({ events }: { events: Event[] }) {
             <div className="space-y-2 min-w-[200px]">
               <p className="font-bold text-sm">{group.city}</p>
               <ul className="space-y-1.5">
-                {group.events.slice(0, 8).map((ev: any) => (
+                {group.events.slice(0, 8).map((ev) => (
                   <li key={ev.id || ev.slug}>
                     <Link
                       href={`/events/${ev.slug || ev.id}`}

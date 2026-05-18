@@ -20,10 +20,10 @@ export function UserNav() {
     return doc(db, 'users', user.uid);
   }, [db, user]);
 
-  const { data: userData } = useDoc(userDocRef);
+  const { data: userData } = useDoc<{ avatarUrl?: string; name?: string }>(userDocRef);
 
   // userData / photoURL değiştiğinde "broken" durumunu sıfırla
-  const docAvatar = (userData as any)?.avatarUrl;
+  const docAvatar = userData?.avatarUrl;
   const avatarUrl = docAvatar || user?.photoURL || undefined;
 
   useEffect(() => { setImageBroken(false); }, [avatarUrl]);
@@ -31,7 +31,7 @@ export function UserNav() {
   if (!user) return null;
 
   const getInitials = () => {
-    const source = (userData as any)?.name || user.displayName;
+    const source = userData?.name || user.displayName;
     if (source) {
       return source.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
     }

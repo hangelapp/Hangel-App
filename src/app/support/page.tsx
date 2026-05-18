@@ -1,6 +1,6 @@
 
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,6 @@ import { useWebPage } from '@/hooks/use-site-content';
 import { 
   Search,
   ChevronRight,
-  Mail,
   Bot,
   User,
   Building,
@@ -28,12 +27,8 @@ import {
   School,
   HelpCircle,
   Settings,
-  Library,
-  Video,
-  Users as CommunityIcon,
   FileText
 } from 'lucide-react';
-import * as Icons from 'lucide-react';
 import Link from 'next/link';
 import { helpTopics } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
@@ -77,7 +72,7 @@ export default function SupportPage() {
     const [ticketName, setTicketName] = useState('');
     const [submittingTicket, setSubmittingTicket] = useState(false);
 
-    const popularArticles = helpTopics.flatMap(t => t.subtopics).slice(0,3);
+    const _popularArticles = helpTopics.flatMap(t => t.subtopics).slice(0,3);
 
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -112,14 +107,16 @@ export default function SupportPage() {
             setTicketSubject('');
             setTicketMessage('');
             setTicketPriority('normal');
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Ticket create failed:', err);
+            const code = (err as { code?: string } | null)?.code;
+            const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata oluştu.';
             toast({
                 variant: 'destructive',
                 title: 'Talep oluşturulamadı',
-                description: err?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
-                    : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+                    : message,
             });
         } finally {
             setSubmittingTicket(false);
@@ -344,7 +341,7 @@ export default function SupportPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="ticket-priority">Öncelik</Label>
-                            <Select value={ticketPriority} onValueChange={(v: any) => setTicketPriority(v)}>
+                            <Select value={ticketPriority} onValueChange={(v: string) => setTicketPriority(v as 'low' | 'normal' | 'high')}>
                                 <SelectTrigger id="ticket-priority"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="low">Düşük</SelectItem>

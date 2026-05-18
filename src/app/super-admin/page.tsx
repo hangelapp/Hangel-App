@@ -10,24 +10,6 @@ import {
   Store,
   Users,
   FileText,
-  Bell,
-  HeartHandshake,
-  BarChart3,
-  Shield,
-  LayoutDashboard,
-  Newspaper,
-  BookCopy,
-  Settings,
-  HelpCircle,
-  School,
-  UserCog,
-  LifeBuoy,
-  Megaphone,
-  Inbox,
-  FileEdit,
-  Globe,
-  MessageSquare,
-  DatabaseZap,
   Activity,
   ChevronRight
 } from "lucide-react";
@@ -57,6 +39,7 @@ const iconColorMap: { [key: string]: string } = {
   'Users': 'bg-blue-500',
   'Globe': 'bg-emerald-500',
   'MessageSquare': 'bg-cyan-500',
+  'Send': 'bg-violet-500',
   'DatabaseZap': 'bg-red-600',
   'Siren': 'bg-red-700',
 };
@@ -83,7 +66,8 @@ const superAdminNavItems = [
     { href: '/super-admin/analytics', label: 'İstatistik ve Analizler', icon: 'BarChart3', description: 'Platformun genel metriklerini izle.' },
     { href: '/super-admin/demographics', label: 'Demografi Analizi', icon: 'Users', description: 'Genel demografi + STK bazında destekçi profili (yaş, cinsiyet, konum, meslek, ilgi alanları).' },
     { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
-    { href: '/super-admin/communications', label: 'DM, Bildirimler & E-Bülten', icon: 'MessageSquare', description: 'Kullanıcılara direkt mesaj, anlık bildirim ve e-bülten gönder.' },
+    { href: '/super-admin/communications', label: 'DM & Uygulama-İçi Bildirim', icon: 'MessageSquare', description: 'Kullanıcılara uygulama-içi direkt mesaj ve anlık bildirim gönder.' },
+    { href: '/super-admin/messaging', label: 'Toplu SMS & E-Posta', icon: 'Send', description: 'Kampanya, şablon, segment ve gönderim analitikleri.' },
     { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
     { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
     { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
@@ -177,7 +161,7 @@ export default function SuperAdminDashboard() {
             <CardContent className="p-0">
                 <div className="divide-y border-black/5">
                     {superAdminNavItems.map(item => {
-                        const Icon = ((Icons as any)[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
+                        const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
                         const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
                         return (
                             <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">

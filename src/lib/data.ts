@@ -1,33 +1,13 @@
 import {
     Leaf,
     GraduationCap,
-    Heart,
-    Code,
     Palette,
-    Globe,
     ShieldCheck,
     Handshake,
-    Star,
-    Laptop,
     Briefcase,
-    Zap,
     Users,
-    Building2,
-    Store,
-    Library as LibraryIcon,
-    Dog,
-    TreePine,
     BookOpen,
-    Flame,
     Droplets,
-    Anchor,
-    Search,
-    CircleHelp,
-    BarChart,
-    Building,
-    Landmark,
-    Target,
-    Activity,
     PawPrint,
     Siren,
     Stethoscope,
@@ -40,7 +20,7 @@ import {
     UserRoundCog,
     Sprout,
 } from 'lucide-react';
-import type { User, NGO, Brand, Volunteering, Badge, Certificate, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, SchoolRepresentative, Application, DonationTransaction, Post } from './types';
+import type { NGO, Brand, Volunteering, Badge, ManagedItem, AdBanner, HelpTopic, MarketCategory, StudentClub, Event, Post } from './types';
 
 // Full list of unique country phone codes
 export const countryPhoneCodes = [
@@ -212,6 +192,39 @@ export const allSdgs = [
 export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr', 'TGSP', 'Diğer...'];
 export const years = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
 
+export const allUniversities: string[] = [
+    'Boğaziçi Üniversitesi',
+    'Orta Doğu Teknik Üniversitesi',
+    'İstanbul Teknik Üniversitesi',
+    'İstanbul Üniversitesi',
+    'Ankara Üniversitesi',
+    'Hacettepe Üniversitesi',
+    'Bilkent Üniversitesi',
+    'Koç Üniversitesi',
+    'Sabancı Üniversitesi',
+    'Marmara Üniversitesi',
+    'Yıldız Teknik Üniversitesi',
+    'Ege Üniversitesi',
+    'Dokuz Eylül Üniversitesi',
+    'Gazi Üniversitesi',
+    'Galatasaray Üniversitesi',
+    'Yeditepe Üniversitesi',
+    'Bahçeşehir Üniversitesi',
+    'Özyeğin Üniversitesi',
+    'TOBB Ekonomi ve Teknoloji Üniversitesi',
+    'Atatürk Üniversitesi',
+    'Çukurova Üniversitesi',
+    'Selçuk Üniversitesi',
+    'Uludağ Üniversitesi',
+    'Erciyes Üniversitesi',
+    'Karadeniz Teknik Üniversitesi',
+    'Akdeniz Üniversitesi',
+    'Anadolu Üniversitesi',
+    'Pamukkale Üniversitesi',
+    'Süleyman Demirel Üniversitesi',
+    'Eskişehir Osmangazi Üniversitesi',
+    'Diğer'
+];
 
 export const ngos: NGO[] = [
     {
@@ -263,6 +276,7 @@ const BADGE_LEVELS: Array<{ level: 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 
     { level: 'Platin', points: 2500 },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const BADGE_CATEGORIES: Array<{ name: string; socialArea: string; iconName: any }> = [
     { name: 'Çevre Koruyucusu',           socialArea: 'Çevre',                iconName: Leaf },
     { name: 'Eğitim Destekçisi',          socialArea: 'Eğitim',               iconName: GraduationCap },

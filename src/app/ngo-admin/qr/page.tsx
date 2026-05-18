@@ -11,6 +11,18 @@ import { collection, doc, query, where } from 'firebase/firestore';
 type EntityKind = 'ngo' | 'brand' | 'club';
 type ManagedEntity = { kind: EntityKind; id: string; name: string };
 
+interface EntityDoc {
+  id: string;
+  name?: string;
+  adminUserId?: string;
+}
+interface UserDocData {
+  id: string;
+  managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
+}
+
 export default function QrPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -34,16 +46,16 @@ export default function QrPage() {
     [firestore, authUser?.uid],
   );
 
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<any>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<any>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<any>(adminClubsQ);
+  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
+  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
+  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
 
   // Fallback: user doc'taki managed*Id (duplicate doc edge case'i için)
   const userDocRef = useMemoFirebase(
     () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
     [firestore, authUser?.uid],
   );
-  const { data: userData } = useDoc<any>(userDocRef);
+  const { data: userData } = useDoc<UserDocData>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
     () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
@@ -57,9 +69,9 @@ export default function QrPage() {
     () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
     [firestore, userData?.managedClubId],
   );
-  const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+  const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
+  const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
+  const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
 
   const activeEntity = useMemo<ManagedEntity | null>(() => {
     const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;

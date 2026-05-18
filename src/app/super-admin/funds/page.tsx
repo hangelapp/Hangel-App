@@ -18,7 +18,7 @@ import {
     AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-    HandCoins, Plus, Pencil, Trash2, Loader2, Search, Calendar, Eye, ExternalLink,
+    HandCoins, Plus, Pencil, Trash2, Loader2, Search, Calendar, ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ type Fund = {
     budget: string;
     requirements: string;
     url: string;
-    updatedAt?: any;
+    updatedAt?: unknown;
 };
 
 type FundFormData = Omit<Fund, 'id' | 'updatedAt'>;
@@ -112,7 +112,7 @@ const FundEditor = ({
                         </div>
                         <div className="space-y-2">
                             <Label>Durum</Label>
-                            <Select value={data.status} onValueChange={(v: any) => setData({ ...data, status: v })}>
+                            <Select value={data.status} onValueChange={(v) => setData({ ...data, status: v as 'Açık' | 'Kapandı' })}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Açık">Açık</SelectItem>
@@ -216,11 +216,13 @@ export default function FundsAdminPage() {
                 await addDoc(collection(db, 'funds'), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
                 toast({ title: 'Oluşturuldu', description: `"${data.name}" yayına alındı.` });
             }
-        } catch (e: any) {
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Hata',
-                description: e?.code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+                description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : message,
             });
             throw e;
         }
@@ -230,8 +232,9 @@ export default function FundsAdminPage() {
         try {
             await deleteDoc(doc(db, 'funds', fund.id));
             toast({ variant: 'destructive', title: 'Silindi', description: `"${fund.name}" kaldırıldı.` });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Silinemedi', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Silinemedi.';
+            toast({ variant: 'destructive', title: 'Silinemedi', description: message });
         }
     };
 
@@ -298,7 +301,7 @@ export default function FundsAdminPage() {
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'Açık' | 'Kapandı')}>
                         <SelectTrigger className="h-10 w-44"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Tüm Durumlar</SelectItem>

@@ -65,7 +65,7 @@ export default function NotificationSettingsPage() {
         return doc(db, 'users', authUser.uid);
     }, [db, authUser]);
 
-    const { data: userData } = useDoc<any>(userDocRef);
+    const { data: userData } = useDoc<{ notificationSettings?: NotificationSettings }>(userDocRef);
     const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
     const [saving, setSaving] = useState(false);
 

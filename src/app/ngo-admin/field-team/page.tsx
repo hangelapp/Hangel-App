@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, MapPin, Users, Navigation, Radio, ShieldCheck, ClipboardCheck, Phone, Loader2, LayoutGrid, Zap, Signal } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Navigation, Radio, ShieldCheck, Loader2, LayoutGrid, Signal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

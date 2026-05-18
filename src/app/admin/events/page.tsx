@@ -11,7 +11,16 @@ import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { events as allEvents, studentClubs } from '@/lib/data';
 
-const EventCard = ({ event }: { event: { id: string, name: string, club: string, clubId: string, date: string, slug: string } }) => (
+type ProcessedEvent = {
+    id: string;
+    name: string;
+    club: string;
+    clubId: string;
+    date: string;
+    slug: string;
+};
+
+const EventCard = ({ event }: { event: ProcessedEvent }) => (
     <Card key={event.id}>
         <CardHeader>
              <Link href={`/admin/clubs/profile/${event.clubId}`} className="text-sm text-muted-foreground hover:underline">{event.club}</Link>
@@ -31,8 +40,71 @@ const EventCard = ({ event }: { event: { id: string, name: string, club: string,
     </Card>
 );
 
+type EventListProps = {
+    sortedEvents: ProcessedEvent[];
+};
+
+const EventList = ({ sortedEvents }: EventListProps) => (
+    <div className='space-y-4'>
+        {sortedEvents.length > 0 ? sortedEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+        )) : <p className="text-center text-muted-foreground py-8">Etkinlik bulunamadı.</p>}
+        <div className="text-center text-muted-foreground pt-8">
+            <p>Yakında daha fazla etkinlik burada olacak.</p>
+            <Button variant="link" asChild>
+                <Link href="/settings">
+                Bildirim almak için etkinlik bildirim ayarlarını aç
+                </Link>
+            </Button>
+        </div>
+    </div>
+);
+
+type SchoolTypeTabsProps = {
+    sortedEvents: ProcessedEvent[];
+};
+
+const SchoolTypeTabs = ({ sortedEvents }: SchoolTypeTabsProps) => {
+    return (
+        <Tabs defaultValue="university" className='w-full mt-2'>
+            <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger value="university">Üniversite</TabsTrigger>
+                <TabsTrigger value="high-school">Lise</TabsTrigger>
+            </TabsList>
+            <TabsContent value="university" className="mt-4"><EventList sortedEvents={sortedEvents} /></TabsContent>
+            <TabsContent value="high-school" className="mt-4 text-center text-muted-foreground py-8">Lise etkinlikleri yakında burada.</TabsContent>
+        </Tabs>
+    );
+};
+
+type SubTabsProps = {
+    sortedEvents: ProcessedEvent[];
+    setActiveSubTab: (v: string) => void;
+};
+
+const SubTabs = ({ sortedEvents, setActiveSubTab }: SubTabsProps) => {
+    return (
+        <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
+            <TabsList className='grid w-full grid-cols-4'>
+                <TabsTrigger value="all">Tümü</TabsTrigger>
+                <TabsTrigger value="country">Ülkemde</TabsTrigger>
+                <TabsTrigger value="school">Okulumda</TabsTrigger>
+                <TabsTrigger value="city">Şehrimde</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-4">
+                <SchoolTypeTabs sortedEvents={sortedEvents} />
+            </TabsContent>
+            <TabsContent value="country" className="mt-4">
+                <SchoolTypeTabs sortedEvents={sortedEvents} />
+            </TabsContent>
+            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
+            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
+        </Tabs>
+    );
+};
+
 export default function StudentClubEventsPage() {
-    const [activeSubTab, setActiveSubTab] = useState('all');
+    const [_activeSubTab, setActiveSubTab] = useState('all');
     const { toast } = useToast();
     const [sortKey, setSortKey] = useState('name');
     const [searchTerm, setSearchTerm] = useState('');
@@ -73,56 +145,6 @@ export default function StudentClubEventsPage() {
         });
     }, [sortKey, searchTerm, processedEvents]);
 
-    const EventList = () => (
-        <div className='space-y-4'>
-            {sortedEvents.length > 0 ? sortedEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-            )) : <p className="text-center text-muted-foreground py-8">Etkinlik bulunamadı.</p>}
-            <div className="text-center text-muted-foreground pt-8">
-                <p>Yakında daha fazla etkinlik burada olacak.</p>
-                <Button variant="link" asChild>
-                    <Link href="/settings">
-                    Bildirim almak için etkinlik bildirim ayarlarını aç
-                    </Link>
-                </Button>
-            </div>
-        </div>
-    );
-
-    const SchoolTypeTabs = () => {
-        return (
-            <Tabs defaultValue="university" className='w-full mt-2'>
-                <TabsList className='grid w-full grid-cols-2'>
-                    <TabsTrigger value="university">Üniversite</TabsTrigger>
-                    <TabsTrigger value="high-school">Lise</TabsTrigger>
-                </TabsList>
-                <TabsContent value="university" className="mt-4"><EventList /></TabsContent>
-                <TabsContent value="high-school" className="mt-4 text-center text-muted-foreground py-8">Lise etkinlikleri yakında burada.</TabsContent>
-            </Tabs>
-        );
-    };
-
-    const SubTabs = () => {
-        return (
-            <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
-                <TabsList className='grid w-full grid-cols-4'>
-                    <TabsTrigger value="all">Tümü</TabsTrigger>
-                    <TabsTrigger value="country">Ülkemde</TabsTrigger>
-                    <TabsTrigger value="school">Okulumda</TabsTrigger>
-                    <TabsTrigger value="city">Şehrimde</TabsTrigger>
-                </TabsList>
-                <TabsContent value="all" className="mt-4">
-                     <SchoolTypeTabs />
-                </TabsContent>
-                <TabsContent value="country" className="mt-4">
-                    <SchoolTypeTabs />
-                </TabsContent>
-                <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
-                <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
-            </Tabs>
-        )
-    };
-
     return (
         <div className="p-4 space-y-4 animate-in fade-in-0">
             <h1 className="text-2xl font-bold font-headline">Kulüp Etkinlikleri Yönetimi</h1>
@@ -151,7 +173,7 @@ export default function StudentClubEventsPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <SubTabs />
+            <SubTabs sortedEvents={sortedEvents} setActiveSubTab={setActiveSubTab} />
         </div>
     );
 }

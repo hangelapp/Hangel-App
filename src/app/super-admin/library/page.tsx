@@ -19,8 +19,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -41,6 +39,82 @@ import { cn } from '@/lib/utils';
 
 // Define a type that includes the section slug for easier manipulation
 type ItemWithSection = LibraryItem & { sectionSlug: string };
+
+type AddEditPayload = { title: string; content: string; sectionSlug: string; slug?: string };
+
+const AddEditDialog = ({ item, open, onOpenChange, onSave, sections, toast }: {
+    item?: ItemWithSection | null;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSave: (data: AddEditPayload) => void;
+    sections: LibrarySection[];
+    toast: ReturnType<typeof useToast>['toast'];
+}) => {
+    const [title, setTitle] = useState(item?.title || '');
+    const [content, setContent] = useState(item?.content || '');
+    const [sectionSlug, setSectionSlug] = useState(item?.sectionSlug || '');
+
+    React.useEffect(() => {
+        if (open) {
+            if (item) {
+                 
+                setTitle(item.title);
+                setContent(item.content);
+                setSectionSlug(item.sectionSlug);
+            } else {
+                setTitle('');
+                setContent('');
+                setSectionSlug('');
+            }
+        }
+    }, [item, open]);
+
+    const handleSubmit = () => {
+        if (!title || !content || !sectionSlug) {
+            toast({ variant: 'destructive', title: 'Eksik Bilgi', description: 'Lütfen tüm alanları doldurun.' });
+            return;
+        }
+        onSave({ title, content, sectionSlug, slug: item?.slug });
+    };
+
+    return (
+         <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                    <DialogTitle>{item ? 'İçeriği Düzenle' : 'Yeni İçerik Ekle'}</DialogTitle>
+                    <DialogDescription>
+                        {item ? 'Mevcut içeriği düzenleyin.' : 'Kütüphaneye yeni bir içerik ekleyin.'}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="section" className="text-right">Kategori</Label>
+                        <Select value={sectionSlug} onValueChange={setSectionSlug} disabled={!!item}>
+                            <SelectTrigger id="section" className="col-span-3">
+                                <SelectValue placeholder="Bir kategori seçin..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {sections.map(sec => <SelectItem key={sec.slug} value={sec.slug}>{sec.title}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="title" className="text-right">Başlık</Label>
+                        <Input id="title" value={title} onChange={e => setTitle(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label htmlFor="content" className="text-right pt-2">İçerik (HTML)</Label>
+                        <Textarea id="content" value={content} onChange={e => setContent(e.target.value)} className="col-span-3" rows={10} />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>İptal</Button>
+                    <Button type="submit" onClick={handleSubmit}>Kaydet</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 export default function LibraryPage() {
     const { toast } = useToast();
@@ -104,77 +178,6 @@ export default function LibraryPage() {
         setDeletingItem(null);
     };
     
-    const AddEditDialog = ({ item, open, onOpenChange, onSave }: {
-        item?: ItemWithSection | null;
-        open: boolean;
-        onOpenChange: (open: boolean) => void;
-        onSave: (data: any) => void;
-    }) => {
-        const [title, setTitle] = useState(item?.title || '');
-        const [content, setContent] = useState(item?.content || '');
-        const [sectionSlug, setSectionSlug] = useState(item?.sectionSlug || '');
-
-        React.useEffect(() => {
-            if (open) {
-                if (item) {
-                    setTitle(item.title);
-                    setContent(item.content);
-                    setSectionSlug(item.sectionSlug);
-                } else {
-                    setTitle('');
-                    setContent('');
-                    setSectionSlug('');
-                }
-            }
-        }, [item, open]);
-
-        const handleSubmit = () => {
-            if (!title || !content || !sectionSlug) {
-                toast({ variant: 'destructive', title: 'Eksik Bilgi', description: 'Lütfen tüm alanları doldurun.' });
-                return;
-            }
-            onSave({ title, content, sectionSlug, slug: item?.slug });
-        };
-        
-        return (
-             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                        <DialogTitle>{item ? 'İçeriği Düzenle' : 'Yeni İçerik Ekle'}</DialogTitle>
-                        <DialogDescription>
-                            {item ? 'Mevcut içeriği düzenleyin.' : 'Kütüphaneye yeni bir içerik ekleyin.'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="section" className="text-right">Kategori</Label>
-                            <Select value={sectionSlug} onValueChange={setSectionSlug} disabled={!!item}>
-                                <SelectTrigger id="section" className="col-span-3">
-                                    <SelectValue placeholder="Bir kategori seçin..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {sections.map(sec => <SelectItem key={sec.slug} value={sec.slug}>{sec.title}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="title" className="text-right">Başlık</Label>
-                            <Input id="title" value={title} onChange={e => setTitle(e.target.value)} className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-start gap-4">
-                            <Label htmlFor="content" className="text-right pt-2">İçerik (HTML)</Label>
-                            <Textarea id="content" value={content} onChange={e => setContent(e.target.value)} className="col-span-3" rows={10} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>İptal</Button>
-                        <Button type="submit" onClick={handleSubmit}>Kaydet</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        )
-    };
-    
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -217,13 +220,21 @@ export default function LibraryPage() {
                 open={isAddDialogOpen}
                 onOpenChange={setIsAddDialogOpen}
                 onSave={handleAddItem}
+                sections={sections}
+                toast={toast}
             />
 
             <AddEditDialog
                 item={editingItem}
                 open={!!editingItem}
                 onOpenChange={() => setEditingItem(null)}
-                onSave={handleEditItem}
+                onSave={(payload) => {
+                    if (editingItem && payload.slug) {
+                        handleEditItem({ ...editingItem, title: payload.title, content: payload.content, sectionSlug: payload.sectionSlug });
+                    }
+                }}
+                sections={sections}
+                toast={toast}
             />
 
             <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>

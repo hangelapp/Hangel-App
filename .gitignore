@@ -45,6 +45,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+.firebase-service-account.json
+*-service-account.json
+*-firebase-adminsdk-*.json
 
 # Capacitor native build artifacts
 ios/App/Pods/

@@ -34,10 +34,28 @@ const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b'
 
 const TR_MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 
-function toDate(value: any): Date | null {
+interface AnalyticsDoc {
+    id?: string;
+    status?: string;
+    type?: string;
+    donationAmount?: string | number;
+    purchaseAmount?: string | number;
+    stats?: { volunteerHours?: number; projects?: number; totalDonation?: number };
+    createdAt?: unknown;
+    joinDate?: unknown;
+    likes?: number;
+    comments?: number;
+    personalInfo?: { birthDate?: unknown; gender?: string };
+    shortName?: string;
+    name?: string;
+    rating?: number;
+    [key: string]: unknown;
+}
+
+function toDate(value: unknown): Date | null {
     if (!value) return null;
-    if (value?.toDate) {
-        try { return value.toDate(); } catch { return null; }
+    if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as { toDate?: unknown }).toDate === 'function') {
+        try { return (value as { toDate: () => Date }).toDate(); } catch { return null; }
     }
     if (typeof value === 'string' || typeof value === 'number') {
         const d = new Date(value);
@@ -61,7 +79,7 @@ function buildLast7Months() {
     return buckets;
 }
 
-function ageFromBirthDate(birthDate: any): number | null {
+function ageFromBirthDate(birthDate: unknown): number | null {
     const d = toDate(birthDate);
     if (!d) return null;
     const now = new Date();
@@ -99,54 +117,54 @@ export default function AnalyticsPage() {
     const ratingsQ = useMemoFirebase(() => (db ? collection(db, 'ratings') : null), [db]);
     const surveysQ = useMemoFirebase(() => (db ? collection(db, 'surveys') : null), [db]);
 
-    const { data: users, isLoading: usersLoading } = useCollection<any>(usersQ);
-    const { data: ngos, isLoading: ngosLoading } = useCollection<any>(ngosQ);
-    const { data: brands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
-    const { data: clubs } = useCollection<any>(clubsQ);
-    const { data: posts, isLoading: postsLoading } = useCollection<any>(postsQ);
-    const { data: apps, isLoading: appsLoading } = useCollection<any>(appsQ);
-    const { data: opportunities, isLoading: oppLoading } = useCollection<any>(volunteeringQ);
-    const { data: emergencies } = useCollection<any>(emergencyQ);
-    const { data: responses } = useCollection<any>(responsesQ);
-    const { data: donations } = useCollection<any>(donationsQ);
-    const { data: supportTickets } = useCollection<any>(supportQ);
-    const { data: funds } = useCollection<any>(fundsQ);
-    const { data: ratings } = useCollection<any>(ratingsQ);
-    const { data: surveys } = useCollection<any>(surveysQ);
+    const { data: users, isLoading: usersLoading } = useCollection<AnalyticsDoc>(usersQ);
+    const { data: ngos, isLoading: ngosLoading } = useCollection<AnalyticsDoc>(ngosQ);
+    const { data: brands, isLoading: brandsLoading } = useCollection<AnalyticsDoc>(brandsQ);
+    const { data: clubs } = useCollection<AnalyticsDoc>(clubsQ);
+    const { data: posts, isLoading: postsLoading } = useCollection<AnalyticsDoc>(postsQ);
+    const { data: apps, isLoading: appsLoading } = useCollection<AnalyticsDoc>(appsQ);
+    const { data: opportunities, isLoading: oppLoading } = useCollection<AnalyticsDoc>(volunteeringQ);
+    const { data: emergencies } = useCollection<AnalyticsDoc>(emergencyQ);
+    const { data: responses } = useCollection<AnalyticsDoc>(responsesQ);
+    const { data: donations } = useCollection<AnalyticsDoc>(donationsQ);
+    const { data: supportTickets } = useCollection<AnalyticsDoc>(supportQ);
+    const { data: funds } = useCollection<AnalyticsDoc>(fundsQ);
+    const { data: ratings } = useCollection<AnalyticsDoc>(ratingsQ);
+    const { data: surveys } = useCollection<AnalyticsDoc>(surveysQ);
 
     const isLoading = usersLoading || ngosLoading || brandsLoading || postsLoading || appsLoading || oppLoading;
 
     // KPI'lar — gerçek Firestore verileri
     const totalUsers = users?.length ?? 0;
-    const activeNgos = (ngos ?? []).filter((n: any) => !n.status || n.status === 'Aktif').length;
-    const activeBrands = (brands ?? []).filter((b: any) => !b.status || b.status === 'Aktif').length;
-    const activeClubs = (clubs ?? []).filter((c: any) => !c.status || c.status === 'Aktif').length;
+    const activeNgos = (ngos ?? []).filter((n) => !n.status || n.status === 'Aktif').length;
+    const activeBrands = (brands ?? []).filter((b) => !b.status || b.status === 'Aktif').length;
+    const activeClubs = (clubs ?? []).filter((c) => !c.status || c.status === 'Aktif').length;
 
     // Gerçek bağış toplamları (donations koleksiyonundan)
-    const realDonations = (donations ?? []).filter((d: any) => d.type !== 'income');
-    const totalDonationActual = realDonations.reduce((s: number, d: any) =>
-        s + (parseFloat(d.donationAmount || '0') || 0), 0);
+    const realDonations = (donations ?? []).filter((d) => d.type !== 'income');
+    const totalDonationActual = realDonations.reduce((s: number, d) =>
+        s + (parseFloat(String(d.donationAmount ?? '0')) || 0), 0);
     const paidDonationTotal = realDonations
-        .filter((d: any) => d.status === 'Yatırıldı' || d.status === 'Tamamlandı')
-        .reduce((s: number, d: any) => s + (parseFloat(d.donationAmount || '0') || 0), 0);
+        .filter((d) => d.status === 'Yatırıldı' || d.status === 'Tamamlandı')
+        .reduce((s: number, d) => s + (parseFloat(String(d.donationAmount ?? '0')) || 0), 0);
     const pendingDonationTotal = totalDonationActual - paidDonationTotal;
-    const totalPurchase = realDonations.reduce((s: number, d: any) =>
-        s + (parseFloat(d.purchaseAmount || '0') || 0), 0);
+    const _totalPurchase = realDonations.reduce((s: number, d) =>
+        s + (parseFloat(String(d.purchaseAmount ?? '0')) || 0), 0);
 
-    const totalVolunteerHours = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.volunteerHours || 0), 0);
-    const totalProjects = (ngos ?? []).reduce((sum: number, n: any) => sum + (n?.stats?.projects || 0), 0);
-    const totalPosts = posts?.length ?? 0;
-    const openTickets = (supportTickets ?? []).filter((t: any) => (t.status || 'open') === 'open').length;
+    const totalVolunteerHours = (ngos ?? []).reduce((sum: number, n) => sum + (n?.stats?.volunteerHours || 0), 0);
+    const _totalProjects = (ngos ?? []).reduce((sum: number, n) => sum + (n?.stats?.projects || 0), 0);
+    const _totalPosts = posts?.length ?? 0;
+    const openTickets = (supportTickets ?? []).filter((t) => (t.status || 'open') === 'open').length;
     const avgRating = (ratings && ratings.length > 0)
-        ? (ratings.reduce((s: number, r: any) => s + (r.rating || 0), 0) / ratings.length)
+        ? (ratings.reduce((s: number, r) => s + (r.rating || 0), 0) / ratings.length)
         : 0;
 
     // Aylık kullanıcı büyümesi (joinDate / createdAt'a göre)
-    const monthBuckets = useMemo(buildLast7Months, []);
+    const monthBuckets = useMemo(() => buildLast7Months(), []);
     const userGrowthData = useMemo(() => {
         const counts: Record<string, number> = {};
         monthBuckets.forEach(b => { counts[b.key] = 0; });
-        (users ?? []).forEach((u: any) => {
+        (users ?? []).forEach((u) => {
             const d = toDate(u.createdAt) || toDate(u.joinDate);
             if (!d) return;
             const key = monthKey(d);
@@ -159,7 +177,7 @@ export default function AnalyticsPage() {
     const engagementData = useMemo(() => {
         const grouped: Record<string, { posts: number; likes: number; comments: number }> = {};
         monthBuckets.forEach(b => { grouped[b.key] = { posts: 0, likes: 0, comments: 0 }; });
-        (posts ?? []).forEach((p: any) => {
+        (posts ?? []).forEach((p) => {
             const d = toDate(p.createdAt);
             if (!d) return;
             const key = monthKey(d);
@@ -180,7 +198,7 @@ export default function AnalyticsPage() {
     // Yaş demografisi (kullanıcılardan)
     const ageGroupData = useMemo(() => {
         const counts: Record<string, number> = { '<18': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
-        (users ?? []).forEach((u: any) => {
+        (users ?? []).forEach((u) => {
             const age = ageFromBirthDate(u?.personalInfo?.birthDate);
             if (age == null) return;
             counts[ageBucket(age)]++;
@@ -195,7 +213,7 @@ export default function AnalyticsPage() {
     // Cinsiyet dağılımı
     const genderData = useMemo(() => {
         const counts: Record<string, number> = {};
-        (users ?? []).forEach((u: any) => {
+        (users ?? []).forEach((u) => {
             const g = (u?.personalInfo?.gender || '').trim();
             if (!g) return;
             counts[g] = (counts[g] || 0) + 1;
@@ -206,7 +224,7 @@ export default function AnalyticsPage() {
     // Top STK'lar (bağışa göre)
     const topNgosByDonation = useMemo(() => {
         return [...(ngos ?? [])]
-            .map((n: any) => ({
+            .map((n) => ({
                 name: n.shortName || n.name || 'Adsız',
                 Bagis: n?.stats?.totalDonation || 0,
                 Gonulluluk: n?.stats?.volunteerHours || 0,
@@ -218,7 +236,7 @@ export default function AnalyticsPage() {
     // Başvuru durumu dağılımı
     const applicationStatus = useMemo(() => {
         const counts = { pending: 0, approved: 0, rejected: 0 };
-        (apps ?? []).forEach((a: any) => {
+        (apps ?? []).forEach((a) => {
             const s = a.status;
             if (s === 'Beklemede') counts.pending++;
             else if (s === 'Onaylandı' || s === 'Onaylandi' || s === 'approved') counts.approved++;
@@ -359,7 +377,7 @@ export default function AnalyticsPage() {
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-emerald-100"><CheckCircle2 className="h-4 w-4 text-emerald-600" /></div>
                         <div>
-                            <p className="text-2xl font-bold">{((responses ?? []).filter((r: any) => r.status === 'positive').length).toLocaleString('tr-TR')}</p>
+                            <p className="text-2xl font-bold">{((responses ?? []).filter((r) => r.status === 'positive').length).toLocaleString('tr-TR')}</p>
                             <p className="text-xs text-muted-foreground">Olumlu Acil Yanıt</p>
                         </div>
                     </div>
@@ -388,7 +406,7 @@ export default function AnalyticsPage() {
                         <div className="p-2 rounded-lg bg-indigo-100"><FileText className="h-4 w-4 text-indigo-600" /></div>
                         <div>
                             <p className="text-2xl font-bold">{(funds?.length ?? 0).toLocaleString('tr-TR')}</p>
-                            <p className="text-xs text-muted-foreground">{(funds ?? []).filter((f: any) => f.status === 'Açık').length} açık fon</p>
+                            <p className="text-xs text-muted-foreground">{(funds ?? []).filter((f) => f.status === 'Açık').length} açık fon</p>
                         </div>
                     </div>
                 </Card>

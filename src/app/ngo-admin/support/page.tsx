@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 type Topic = {
   id: string;
   href?: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   description: string;
   hint: string;
@@ -168,8 +168,9 @@ export default function NgoSupportPage() {
       toast({ title: 'Destek talebiniz alındı', description: 'Ekibimiz en kısa sürede dönüş yapacaktır.' });
       setSubject('');
       setMessage('');
-    } catch (err: any) {
-      toast({ variant: 'destructive', title: 'Gönderilemedi', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+    } catch (err) {
+      const e = err as { message?: string };
+      toast({ variant: 'destructive', title: 'Gönderilemedi', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
     } finally {
       setSubmitting(false);
     }

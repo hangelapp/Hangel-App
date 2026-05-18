@@ -1,19 +1,18 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Instagram, Linkedin, Youtube, ArrowLeft, Globe, Mail, Phone, MapPin, Palette, FileText, X, Save, Building2, Users } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import { Upload, Instagram, Linkedin, Youtube, ArrowLeft, MapPin, Palette, FileText, X, Save, Building2, Users } from 'lucide-react';
+import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { allUniversities, countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { countryPhoneCodes, sportsFederations, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 

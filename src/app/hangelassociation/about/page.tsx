@@ -3,10 +3,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart, ShoppingCart, 
-    HeartHandshake, Briefcase, Globe, Sparkles, Star, Award, Landmark,
-    Cpu, Map, Scale, Brain
+import { ArrowLeft, Target, Users, ShoppingCart,
+    HeartHandshake, Briefcase, Globe, Sparkles, type LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,7 +13,6 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAssociationContent } from '@/hooks/use-site-content';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
@@ -40,7 +37,14 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const SectionHeading = ({ badge, title, desc, centered = true }: any) => (
+type SectionHeadingProps = {
+    badge: string;
+    title: string;
+    desc: string;
+    centered?: boolean;
+};
+
+const SectionHeading = ({ badge, title, desc, centered = true }: SectionHeadingProps) => (
     <div className={cn("space-y-6 max-w-4xl", centered ? "mx-auto text-center" : "text-left")}>
         <div className={cn("inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary", !centered && "mb-4")}>
             <Sparkles className="h-4 w-4" />
@@ -51,7 +55,7 @@ const SectionHeading = ({ badge, title, desc, centered = true }: any) => (
     </div>
 );
 
-const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: any, title: string, desc: string, onClick?: () => void }) => (
+const FeatureBlock = ({ icon: Icon, title, desc, onClick }: { icon: LucideIcon, title: string, desc: string, onClick?: () => void }) => (
     <button onClick={onClick} className="flex flex-col items-center gap-6 text-center p-10 bg-[#f5f5f7] rounded-[3rem] border border-black/5 hover:bg-white hover:shadow-2xl transition-all duration-500 group w-full">
         <div className="p-5 bg-white rounded-3xl shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
             <Icon className="h-10 w-10 text-primary group-hover:text-white" />

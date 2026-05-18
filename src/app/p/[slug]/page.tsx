@@ -19,7 +19,18 @@ export default function SitePageView() {
     return doc(db, 'sitePages', slug);
   }, [db, slug]);
 
-  const { data: page, isLoading } = useDoc<any>(pageDocRef);
+  interface SitePage {
+    title?: string;
+    description?: string;
+    content?: string;
+    heroImageUrl?: string;
+    heroImageHint?: string;
+    published?: boolean;
+    category?: string;
+    excerpt?: string;
+    coverImageUrl?: string;
+  }
+  const { data: page, isLoading } = useDoc<SitePage>(pageDocRef);
 
   if (isLoading) {
     return (
@@ -59,7 +70,7 @@ export default function SitePageView() {
             <div className="relative aspect-[16/9] mt-6 rounded-2xl overflow-hidden border bg-muted">
               <Image
                 src={page.coverImageUrl}
-                alt={page.title}
+                alt={page.title || ''}
                 fill
                 className="object-cover"
                 unoptimized

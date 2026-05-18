@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Laptop, Smartphone } from 'lucide-react';
@@ -18,9 +17,9 @@ const activeSessions = [
 export default function SecuritySettingsPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [_currentPassword, _setCurrentPassword] = useState('');
+    const [newPassword, _setNewPassword] = useState('');
+    const [confirmPassword, _setConfirmPassword] = useState('');
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {

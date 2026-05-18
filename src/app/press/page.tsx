@@ -3,10 +3,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, ArrowLeft, Download, FileText, Image as ImageIcon, Video, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy
+import { ArrowLeft, Download, FileText, Image as ImageIcon, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy
 } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -17,7 +15,7 @@ import { useWebPage } from '@/hooks/use-site-content';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 
-const StatCard = ({ icon: Icon, value, label }: { icon: any, value: string, label: string }) => (
+const StatCard = ({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: string, label: string }) => (
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-black/5 text-center transition-all hover:scale-105 hover:shadow-xl">
         <Icon className="h-10 w-10 text-primary mx-auto mb-4" />
         <p className="text-4xl font-black tracking-tighter text-[#1d1d1f]">{value}</p>

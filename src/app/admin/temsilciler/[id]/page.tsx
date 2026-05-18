@@ -1,9 +1,11 @@
 
 'use client';
 
-import { schoolRepresentatives } from '@/lib/data';
+import { schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
+import type { SchoolRepresentative } from '@/lib/types';
+
+const schoolRepresentatives = schoolRepresentativesRaw as SchoolRepresentative[];
 import { notFound, useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';

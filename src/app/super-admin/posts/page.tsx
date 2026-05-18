@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-    Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter,
+    Card, CardContent, CardHeader, CardFooter,
 } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import Image from 'next/image';
 import {
-    Loader2, Trash2, Pencil, Power, PowerOff, Search, MessageSquare, Heart, Calendar, Eye, ImageIcon, Save,
+    Loader2, Trash2, Pencil, Power, PowerOff, Search, MessageSquare, Heart, Calendar, Save,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -36,17 +36,18 @@ type Post = {
     content?: string;
     imageUrl?: string;
     timestamp?: string;
-    createdAt?: any;
+    createdAt?: unknown;
     likes?: number;
     comments?: number;
     sponsored?: boolean;
     status?: 'Aktif' | 'Pasif' | 'Onay Bekliyor' | string;
 };
 
-const fmtDate = (v: any) => {
+const fmtDate = (v: unknown) => {
     if (!v) return '';
     try {
-        if (v?.toDate) return format(v.toDate(), 'd MMM yyyy HH:mm', { locale: tr });
+        const maybeDate = v as { toDate?: () => Date } | null;
+        if (maybeDate?.toDate) return format(maybeDate.toDate(), 'd MMM yyyy HH:mm', { locale: tr });
         if (typeof v === 'string') {
             const d = new Date(v);
             if (!Number.isNaN(d.getTime())) return format(d, 'd MMM yyyy HH:mm', { locale: tr });
@@ -107,11 +108,13 @@ export default function PostsAdminPage() {
                 title: newStatus === 'Aktif' ? 'Gönderi Aktifleştirildi' : 'Gönderi Pasife Alındı',
                 description: newStatus === 'Aktif' ? 'Akışta görünür olacak.' : 'Akıştan kaldırıldı, kullanıcılar göremez.',
             });
-        } catch (e: any) {
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Hata',
-                description: e?.code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+                description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : message,
             });
         }
     };
@@ -120,8 +123,9 @@ export default function PostsAdminPage() {
         try {
             await updateDoc(doc(db, 'posts', id), { status: 'Aktif' });
             toast({ title: 'Onaylandı', description: 'Gönderi aktifleştirildi.' });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         }
     };
 
@@ -133,11 +137,13 @@ export default function PostsAdminPage() {
                 title: 'Gönderi Silindi',
                 description: `${authorName || 'Yazarın'} gönderisi kalıcı olarak silindi.`,
             });
-        } catch (e: any) {
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Silinemedi',
-                description: e?.code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+                description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : message,
             });
         }
     };
@@ -158,8 +164,9 @@ export default function PostsAdminPage() {
             });
             toast({ title: 'Kaydedildi', description: 'Gönderi içeriği güncellendi.' });
             setEditingPost(null);
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setSavingEdit(false);
         }
@@ -222,7 +229,7 @@ export default function PostsAdminPage() {
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'active' | 'passive' | 'pending')}>
                         <SelectTrigger className="h-10 w-44"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Tümü</SelectItem>

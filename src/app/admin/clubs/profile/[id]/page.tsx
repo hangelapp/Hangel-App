@@ -1,18 +1,20 @@
 
 'use client';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare, Edit } from 'lucide-react';
-import { studentClubs, schoolRepresentatives } from '@/lib/data';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Edit } from 'lucide-react';
+import { studentClubs, schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
+import type { SchoolRepresentative } from '@/lib/types';
+
+const schoolRepresentatives = schoolRepresentativesRaw as SchoolRepresentative[];
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">

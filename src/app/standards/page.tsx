@@ -4,13 +4,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-    ArrowLeft, 
-    CheckCircle2, 
+    ArrowLeft,
+    CheckCircle2,
     Award,
     ChevronRight,
-    Globe,
-    ShieldCheck,
-    Target
+    ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -37,7 +35,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
-const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: any[], headers: string[] }) => (
+const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: Array<Record<string, unknown>>, headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
         <div className="space-y-1 px-1">
             <h3 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{title}</h3>
@@ -58,13 +56,13 @@ const ComplianceTable = ({ title, description, data, headers }: { title: string,
                     <TableBody>
                         {data.map((row, i) => (
                             <TableRow key={i} className="hover:bg-[#f5f5f7]/50 border-black/5">
-                                {Object.values(row).map((cell: any, j) => (
+                                {Object.values(row).map((cell: unknown, j) => (
                                     <TableCell key={j} className={cn(
                                         "py-4 px-6 text-sm font-medium",
                                         j === 0 ? "text-[#1d1d1f] font-bold" : "text-[#1d1d1f]/70",
                                         String(cell).includes('%') && "text-primary font-black"
                                     )}>
-                                        {cell}
+                                        {cell as React.ReactNode}
                                     </TableCell>
                                 ))}
                             </TableRow>

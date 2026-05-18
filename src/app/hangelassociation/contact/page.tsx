@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Mail, Phone, Globe, MapPin, Send } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, Send } from 'lucide-react';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAssociationContent } from '@/hooks/use-site-content';

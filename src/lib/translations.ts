@@ -10,6 +10,7 @@ export const languages = [
 
 export type Language = typeof languages[number]['value'];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const translations: Record<Language, any> = {
   tr: {
     title: 'yok öyle yalnız başına mücadele etmek!',

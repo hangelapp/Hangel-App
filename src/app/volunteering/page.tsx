@@ -10,7 +10,6 @@ import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { parse, differenceInDays } from 'date-fns';
-import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
@@ -72,7 +71,7 @@ const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }
 function computeMatch(opp: Volunteering, userAbilities: string[], userInterests: string[], userCity?: string) {
     const requiredAbilities = [
         ...(opp.skills || []),
-        ...((opp as any).dailySkills || []),
+        ...((opp as Volunteering & { dailySkills?: string[] }).dailySkills || []),
         ...(opp.languages || []),
         ...(opp.programs || []),
         ...(opp.requirements || []),
@@ -202,7 +201,20 @@ export default function VolunteeringPage() {
         if (!db || !authUser) return null;
         return doc(db, 'users', authUser.uid);
     }, [db, authUser]);
-    const { data: userData } = useDoc<any>(userDocRef);
+    const { data: userData } = useDoc<{
+        volunteerInfo?: {
+            skills?: string[];
+            dailySkills?: string[];
+            languages?: string[];
+            programs?: string[];
+            licenses?: string[];
+            driverLicenses?: string[];
+            documents?: string[];
+            certificates?: string[];
+            interests?: string[];
+        };
+        personalInfo?: { address?: { city?: string } };
+    }>(userDocRef);
 
     const userAbilities = useMemo(() => {
         const vi = userData?.volunteerInfo;
@@ -247,7 +259,7 @@ export default function VolunteeringPage() {
         if (!oppsData) return [];
         // Sadece onaylanmış (Aktif) ilanlar — Beklemede/Pasif gizli
         let filtered = oppsData.filter(opp => {
-            const status = (opp as any).status;
+            const status = (opp as Volunteering & { status?: string }).status;
             // Eski ilanlar status alanı olmayabilir — varsayılan olarak gösterilir
             return !status || status === 'Aktif';
         });

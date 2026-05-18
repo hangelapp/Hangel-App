@@ -4,14 +4,20 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Download, Share2, BarChart3, ShieldCheck, Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { ArrowLeft, FileText, Download, Share2 } from 'lucide-react';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
-const reportContents: Record<string, any> = {
+type ReportStat = { label: string; value: string };
+type ReportContent = {
+    title: string;
+    period: string;
+    summary: string;
+    stats: ReportStat[];
+};
+
+const reportContents: Record<string, ReportContent> = {
     '5-yillik-etki': {
         title: "5 Yıllık Sosyal Fayda Raporu.",
         period: "2020 - 2025",
@@ -74,7 +80,7 @@ export default function ReportsSlugPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {content.stats.map((stat: any, i: number) => (
+                        {content.stats.map((stat, i) => (
                             <div key={i} className="p-8 bg-[#f5f5f7] rounded-[2.5rem] text-center border border-black/5">
                                 <p className="text-4xl font-black text-primary tracking-tighter">{stat.value}</p>
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{stat.label}</p>

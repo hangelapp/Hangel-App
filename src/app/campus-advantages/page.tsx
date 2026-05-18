@@ -7,7 +7,6 @@ import {
     School, 
     Users, 
     Target, 
-    Rocket, 
     Award, 
     Globe, 
     ChevronRight, 
@@ -35,7 +34,7 @@ const AdvantageCard = ({
 }: { 
     title: string, 
     description: string, 
-    icon: any, 
+    icon: React.ComponentType<{ className?: string }>,
     className?: string,
     isLarge?: boolean,
     image?: string

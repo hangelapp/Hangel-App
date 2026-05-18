@@ -215,13 +215,74 @@ service cloud.firestore {
       allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
-    // E-posta kuyruğu (Cloud Function tarafından işlenir)
-    match /mailQueue/{mailId} {
+    // ----- Toplu SMS & E-Posta sistemi -----
+
+    // Şablonlar (super-admin yönetir; client okur)
+    match /messageTemplates/{tplId} {
       allow list, read: if isSuperAdmin();
-      allow create: if isSignedIn() &&
-        request.resource.data.createdBy == request.auth.uid &&
-        request.resource.data.status == 'pending';
-      allow update, delete: if isSuperAdmin();
+    }
+
+    // Segmentler (super-admin yönetir)
+    match /recipientSegments/{segId} {
+      allow list, read: if isSuperAdmin();
+    }
+
+    // Kampanyalar + alıcı subcollection (super-admin yönetir)
+    match /campaigns/{campaignId} {
+      allow list, read: if isSuperAdmin();
+      match /recipients/{rid} {
+        allow list, read: if isSuperAdmin();
+      }
+    }
+
+    // Provider konfigleri (super-admin yönetir; secret'lar env'de)
+    match /messagingProviders/{key} {
+      allow list, read: if isSuperAdmin();
+    }
+
+    // CSV upload kayıtları (super-admin yönetir)
+    match /csvUploads/{id} {
+      allow list, read: if isSuperAdmin();
+    }
+
+    // Server-only: gerçek mesaj kuyruğu — Admin SDK ile yazılır/okunur
+    match /messageJobs/{id} {
+      allow read, write: if false;
+    }
+
+    // Server-only: provider webhook event landing
+    match /deliveryEvents/{id} {
+      allow read, write: if false;
+    }
+
+    // Server-only: append-only audit log
+    match /messagingAuditLogs/{id} {
+      allow list, read: if isSuperAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // Server-only: rate limit state
+    match /messagingRateState/{driver} {
+      allow read, write: if false;
+    }
+
+    // Server-only: mock provider dev outbox (yalnızca local/dev)
+    match /_devOutbox/{id} {
+      allow read, write: if false;
+    }
+
+    // KVKK pazarlama izni: sahibi sadece kendi toggle'larını günceller; unsubscribeToken server-only
+    match /userMarketingConsent/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      // İlk kez opt-in için create — sadece sahibi, sadece enabled flag'leri ile
+      allow create: if isSignedIn() && isOwner(userId) &&
+        !('unsubscribeToken' in request.resource.data) &&
+        !('iys' in request.resource.data);
+      // Update — sahibi sadece email.enabled / sms.enabled / channelAddresses alanlarını değiştirebilir
+      allow update: if isSignedIn() && isOwner(userId) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['email', 'sms', 'channelAddresses', 'updatedAt']);
+      allow delete: if isSuperAdmin();
     }
 
     // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)

@@ -101,7 +101,7 @@ function NewOpportunityForm() {
     if (!db || !entityId) return null;
     return doc(db, 'ngos', entityId);
   }, [db, entityId]);
-  const { data: ngoData } = useDoc<any>(ngoDocRef);
+  const { data: ngoData } = useDoc<{ name?: string }>(ngoDocRef);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -185,7 +185,7 @@ function NewOpportunityForm() {
     const set = new Set<string>();
     cities.forEach(c => {
       districts.forEach(d => {
-        ((neighborhoodsData as any)?.[c]?.[d] || []).forEach((n: string) => set.add(n));
+        ((neighborhoodsData as Record<string, Record<string, string[]>>)?.[c]?.[d] || []).forEach((n: string) => set.add(n));
       });
     });
     return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
@@ -222,7 +222,7 @@ function NewOpportunityForm() {
 
     setIsSubmitting(true);
     try {
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         title: title.trim(),
         description: description.trim(),
         organization: ngoData?.name || 'Kuruluş',
@@ -297,12 +297,13 @@ function NewOpportunityForm() {
         ? `/ngo-admin/volunteer?id=${searchParams.get('id')}`
         : '/ngo-admin/volunteer';
       router.push(backHref);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Failed to publish opportunity:', err);
+      const e = err as { message?: string };
       toast({
         variant: 'destructive',
         title: 'İlan yayınlanamadı',
-        description: err?.message || 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
+        description: e?.message || 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.',
       });
     } finally {
       setIsSubmitting(false);

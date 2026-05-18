@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Suspense, useState, useEffect, useMemo } from 'react';
-import { Loader2, BarChart3, Users, Building, ShieldAlert } from 'lucide-react';
+import { Loader2, BarChart3, Users, ShieldAlert } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
 
@@ -43,6 +43,35 @@ const topN = <T extends { count: number }>(arr: T[], n = 10): T[] =>
 type EntityKind = 'ngo' | 'brand' | 'club';
 type ManagedEntity = { kind: EntityKind; id: string; name: string };
 
+interface EntityDoc {
+  id: string;
+  name?: string;
+  adminUserId?: string;
+}
+interface UserDocData {
+  id: string;
+  managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
+  supportedNgos?: string[];
+  volunteerNgos?: string[];
+  followedBrands?: string[];
+  personalInfo?: {
+    birthDate?: string;
+    gender?: string;
+    address?: { city?: string };
+  };
+  volunteerInfo?: {
+    interests?: string[];
+    skills?: string[];
+    education?: Array<{ school?: string }>;
+  };
+}
+interface BrandDoc {
+  id: string;
+  name?: string;
+}
+
 function DemographicsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
@@ -64,16 +93,16 @@ function DemographicsPageContent() {
     [firestore, authUser?.uid],
   );
 
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<any>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<any>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<any>(adminClubsQ);
+  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
+  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
+  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
 
   // Fallback: user doc'taki managed*Id
   const userDocRef = useMemoFirebase(
     () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
     [firestore, authUser?.uid],
   );
-  const { data: userData } = useDoc<any>(userDocRef);
+  const { data: userData } = useDoc<UserDocData>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
     () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
@@ -87,15 +116,15 @@ function DemographicsPageContent() {
     () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
     [firestore, userData?.managedClubId],
   );
-  const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+  const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
+  const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
+  const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
 
   // Yönetici olduğu varlıkları topla (NGO > Brand > Club önceliği)
   const managedEntities = useMemo<ManagedEntity[]>(() => {
     const list: ManagedEntity[] = [];
     const seen = new Set<string>();
-    const push = (kind: EntityKind, e: any) => {
+    const push = (kind: EntityKind, e: EntityDoc | null | undefined) => {
       if (!e?.id) return;
       const key = `${kind}:${e.id}`;
       if (seen.has(key)) return;
@@ -115,16 +144,16 @@ function DemographicsPageContent() {
 
   // Tüm kullanıcıları + tüm markaları oku (filtreleme için)
   const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
-  const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
+  const { data: allUsers, isLoading: usersLoading } = useCollection<UserDocData>(usersQuery);
 
   const brandsQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'brands') : null), [firestore]);
-  const { data: allBrands } = useCollection<any>(brandsQuery);
+  const { data: allBrands } = useCollection<BrandDoc>(brandsQuery);
 
   const { donors, volunteers, supporters } = useMemo(() => {
     if (!activeEntity || !allUsers) return { donors: [], volunteers: [], supporters: [] };
     const id = activeEntity.id;
-    let donors: any[] = [];
-    let volunteers: any[] = [];
+    let donors: UserDocData[];
+    let volunteers: UserDocData[];
     if (activeEntity.kind === 'ngo') {
       donors = allUsers.filter(u => Array.isArray(u.supportedNgos) && u.supportedNgos.includes(id));
       volunteers = allUsers.filter(u => Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id));
@@ -175,7 +204,7 @@ function DemographicsPageContent() {
       .map(([name, v]) => ({ name, Gonullu: v.Gonullu, Bagisci: v.Bagisci, count: v.Gonullu + v.Bagisci }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
-      .map(({ count, ...rest }) => rest);
+      .map(({ count: _count, ...rest }) => rest);
   }, [volunteers, donors]);
 
   const volunteerInterestData = useMemo(() => {
@@ -188,7 +217,7 @@ function DemographicsPageContent() {
     return topN(
       Object.entries(counts).map(([name, count]) => ({ name, count, Gonullu: count })),
       8,
-    ).map(({ count, ...rest }) => rest);
+    ).map(({ count: _count, ...rest }) => rest);
   }, [volunteers]);
 
   const genderAgeData = useMemo(() => {
@@ -211,7 +240,7 @@ function DemographicsPageContent() {
   const schoolData = useMemo(() => {
     const counts: Record<string, number> = {};
     supporters.forEach(u => {
-      (u.volunteerInfo?.education || []).forEach((e: any) => {
+      (u.volunteerInfo?.education || []).forEach((e: { school?: string }) => {
         const s = e?.school;
         if (s) counts[s] = (counts[s] || 0) + 1;
       });
@@ -219,7 +248,7 @@ function DemographicsPageContent() {
     return topN(
       Object.entries(counts).map(([name, count]) => ({ name, count, Destekci: count })),
       5,
-    ).map(({ count, ...rest }) => rest);
+    ).map(({ count: _count, ...rest }) => rest);
   }, [supporters]);
 
   const competencyData = useMemo(() => {
@@ -232,12 +261,12 @@ function DemographicsPageContent() {
     return topN(
       Object.entries(counts).map(([name, count]) => ({ name, count, value: count })),
       10,
-    ).map(({ count, ...rest }) => rest);
+    ).map(({ count: _count, ...rest }) => rest);
   }, [volunteers]);
 
   const spendingHabitsData = useMemo(() => {
     if (!allBrands) return [];
-    const brandNameById = new Map(allBrands.map((b: any) => [b.id, b.name]));
+    const brandNameById = new Map(allBrands.map((b) => [b.id, b.name]));
     const counts: Record<string, number> = {};
     donors.forEach(u => {
       (u.followedBrands || []).forEach((brandId: string) => {
@@ -248,7 +277,7 @@ function DemographicsPageContent() {
     return topN(
       Object.entries(counts).map(([name, count]) => ({ name, count, value: count })),
       5,
-    ).map(({ count, ...rest }) => rest);
+    ).map(({ count: _count, ...rest }) => rest);
   }, [donors, allBrands]);
 
   const initialLoading = !isMounted || usersLoading || ngosLoading || brandsLoading || clubsLoading;

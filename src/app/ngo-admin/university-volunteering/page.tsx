@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, GraduationCap, School, CheckCircle2, FileText, Info, Users, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, School, Info, Users, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 const universities = [
     { id: 'boun', name: 'Boğaziçi Üniversitesi', status: 'Bağlı', students: 120, course: 'Gönüllülük Dersi (GND101)', discount: '%100 Akademik Kredi' },

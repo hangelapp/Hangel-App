@@ -45,8 +45,22 @@ interface PhoneContact {
 const buildInviteText = (link: string) =>
     `Bugün hiçbir ekstra ödeme yapmadan bağış yaptım. Aynısını sen de yapabilirsin. Gel birlikte büyütelim: ${link}`;
 
+interface CapacitorContact {
+    contactId?: string;
+    name?: { display?: string };
+    phones?: Array<{ number?: string }>;
+}
+
+interface WebContact {
+    name?: string[];
+    tel?: string[] | string;
+}
+
 async function getCapacitorContacts(): Promise<PhoneContact[]> {
-    const { Contacts } = await import('@capacitor-community/contacts') as any;
+    const mod = (await import('@capacitor-community/contacts')) as unknown as {
+        Contacts: { getContacts: (opts: unknown) => Promise<{ contacts: CapacitorContact[] }> };
+    };
+    const { Contacts } = mod;
 
     const { contacts } = await Contacts.getContacts({
         projection: {
@@ -56,21 +70,21 @@ async function getCapacitorContacts(): Promise<PhoneContact[]> {
         },
     });
 
-    return (contacts as any[])
-        .filter((c: any) => c.name?.display)
-        .map((c: any) => ({
+    return (contacts as CapacitorContact[])
+        .filter((c) => c.name?.display)
+        .map((c) => ({
             id: c.contactId || String(Math.random()),
-            name: c.name.display,
-            phones: (c.phones || []).map((p: any) => p.number).filter(Boolean),
+            name: c.name!.display!,
+            phones: (c.phones || []).map((p) => p.number).filter((n): n is string => Boolean(n)),
             onPlatform: false,
         }));
 }
 
 async function getWebContacts(): Promise<PhoneContact[] | null> {
-    const nav = typeof navigator !== 'undefined' ? (navigator as any) : null;
+    const nav = typeof navigator !== 'undefined' ? (navigator as unknown as { contacts?: { select?: (props: string[], opts: { multiple: boolean }) => Promise<WebContact[]> } }) : null;
     if (!nav?.contacts?.select) return null;
     const results = await nav.contacts.select(['name', 'tel'], { multiple: true });
-    return (results || []).map((c: any, i: number) => ({
+    return (results || []).map((c: WebContact, i: number) => ({
         id: String(i),
         name: (c.name && c.name[0]) || 'İsimsiz',
         phones: Array.isArray(c.tel) ? c.tel : [],
@@ -287,8 +301,9 @@ export default function InvitePage() {
                         return;
                     }
                     contacts = webContacts;
-                } catch (err: any) {
-                    if (err?.name === 'InvalidStateError' || err?.name === 'AbortError') return;
+                } catch (err: unknown) {
+                    const name = (err as { name?: string } | null)?.name;
+                    if (name === 'InvalidStateError' || name === 'AbortError') return;
                     console.error('Web contacts failed:', err);
                     toast({
                         variant: 'destructive',
@@ -309,7 +324,7 @@ export default function InvitePage() {
             }
 
             const firestorePhones = new Set(
-                (allUsers || []).flatMap((u: any) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
+                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
             );
             const normalize = (p: string) => p.replace(/[\s()-]/g, '');
 
@@ -348,7 +363,7 @@ export default function InvitePage() {
             }
 
             const firestorePhones = new Set(
-                (allUsers || []).flatMap((u: any) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
+                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
             );
             const normalize = (p: string) => p.replace(/[\s()-]/g, '');
             const enriched = parsed.map(c => ({
@@ -358,8 +373,9 @@ export default function InvitePage() {
             setPhoneContacts(enriched);
             setPhoneSynced(true);
             toast({ title: 'Dosyadan İçe Aktarıldı', description: `${enriched.length} kişi yüklendi.` });
-        } catch (err: any) {
-            toast({ variant: 'destructive', title: 'Dosya okunamadı', description: err?.message || 'Beklenmeyen bir hata.' });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata.';
+            toast({ variant: 'destructive', title: 'Dosya okunamadı', description: message });
         } finally {
             setPhoneLoading(false);
         }

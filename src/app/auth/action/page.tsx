@@ -74,8 +74,9 @@ function ActionInner() {
                 } else {
                     if (!cancelled) setPhase({ kind: 'error', message: 'Desteklenmeyen işlem.' });
                 }
-            } catch (err: any) {
-                if (!cancelled) setPhase({ kind: 'error', message: mapAuthError(err?.code) });
+            } catch (err: unknown) {
+                const code = (err as { code?: string } | null)?.code;
+                if (!cancelled) setPhase({ kind: 'error', message: mapAuthError(code) });
             }
         })();
 
@@ -102,8 +103,9 @@ function ActionInner() {
                 // Auto-login başarısız olursa kullanıcıyı login sayfasına yönlendiririz.
             }
             setPhase({ kind: 'reset-success' });
-        } catch (err: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: mapAuthError(err?.code) });
+        } catch (err: unknown) {
+            const code = (err as { code?: string } | null)?.code;
+            toast({ variant: 'destructive', title: 'Hata', description: mapAuthError(code) });
         } finally {
             setIsSubmitting(false);
         }

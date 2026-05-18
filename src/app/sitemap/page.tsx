@@ -51,7 +51,7 @@ export default function SitemapPage() {
         { label: "11. DERNEK - hangel derneği", href: "/hangelassociation" },
     ];
 
-    const allPagesSections = [
+    const allPagesSections = useMemo(() => [
         {
             title: "1- WEB (Bilgi İçerikli, Tanıtım ve Kurumsal Portal)",
             links: [
@@ -262,9 +262,9 @@ export default function SitemapPage() {
                 { label: "3.4.4 Mevzuat Taslağı", href: "/hangelassociation/legislation", indent: 1 },
             ]
         }
-    ];
+    ], []);
 
-    const totalAllPagesCount = useMemo(() => allPagesSections.reduce((acc, section) => acc + section.links.length, 0), []);
+    const totalAllPagesCount = useMemo(() => allPagesSections.reduce((acc, section) => acc + section.links.length, 0), [allPagesSections]);
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">

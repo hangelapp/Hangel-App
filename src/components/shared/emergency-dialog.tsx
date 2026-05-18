@@ -37,7 +37,7 @@ export function EmergencyDialog({ children }: { children: React.ReactNode }) {
     }, []);
     
     const handleReportClick = (type: 'disaster' | 'blood', details?: string) => {
-        let description = type === 'blood'
+        const description = type === 'blood'
             ? 'Kan ihtiyacı çağrısı oluşturuluyor.'
             : `${details} durumu ilgili birimlere iletiliyor.`;
 

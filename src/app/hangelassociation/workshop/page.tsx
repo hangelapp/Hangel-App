@@ -3,10 +3,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, 
-    BookOpen, Library, GraduationCap, Sparkles, MapPin, Search, Filter,
-    ArrowRight, Info, CheckCircle2
+import { ArrowLeft, Rocket, Database, 
+    BookOpen, Library, GraduationCap,
+    ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,7 +13,6 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
-import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAssociationContent } from '@/hooks/use-site-content';
 
@@ -38,7 +36,16 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const MetricSection = ({ title, stat, subtitle, desc, image, theme = 'light' }: any) => (
+type MetricSectionProps = {
+    title: string;
+    stat: string;
+    subtitle: string;
+    desc: string;
+    image: string;
+    theme?: 'light' | 'dark';
+};
+
+const MetricSection = ({ title, stat, subtitle, desc, image, theme = 'light' }: MetricSectionProps) => (
     <section className={cn(
         "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-black/5 overflow-hidden",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"

@@ -21,7 +21,7 @@ import {
     collection, doc, query, orderBy, updateDoc, addDoc, serverTimestamp,
 } from 'firebase/firestore';
 import {
-    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, TrendingUp, Building, Eye, FileText,
+    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText,
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -43,11 +43,11 @@ type Donation = {
     status?: string;
     ngo?: string[];
     ngoIds?: string[];
-    createdAt?: any;
-    payoutDate?: any;
+    createdAt?: unknown;
+    payoutDate?: unknown;
 };
 
-const STATUS_TONES: Record<string, { class: string; icon: any; label: string }> = {
+const STATUS_TONES: Record<string, { class: string; icon: React.ComponentType<{ className?: string }>; label: string }> = {
     'Yatırıldı': { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: 'Yatırıldı' },
     'Tamamlandı': { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: 'Tamamlandı' },
     'İşleme Alındı': { class: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: 'İşleme Alındı' },
@@ -55,18 +55,19 @@ const STATUS_TONES: Record<string, { class: string; icon: any; label: string }> 
     'Reddedildi': { class: 'bg-red-100 text-red-700 border-red-200', icon: XCircle, label: 'Reddedildi' },
 };
 
-const fmtAmount = (v: any) => {
+const fmtAmount = (v: unknown) => {
     const n = typeof v === 'string' ? parseFloat(v) : Number(v || 0);
     return Number.isFinite(n) ? n.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }) : '0,00 ₺';
 };
 
-const fmtDate = (v: any) => {
+const fmtDate = (v: unknown) => {
     if (!v) return '';
     try {
-        if (v?.toDate) return format(v.toDate(), 'd MMM yyyy', { locale: tr });
+        const maybeDate = v as { toDate?: () => Date } | null;
+        if (maybeDate?.toDate) return format(maybeDate.toDate(), 'd MMM yyyy', { locale: tr });
         if (typeof v === 'string') return format(parse(v, 'yyyy-MM-dd', new Date()), 'd MMM yyyy', { locale: tr });
     } catch {}
-    return v;
+    return typeof v === 'string' ? v : '';
 };
 
 export default function DonationsAdminPage() {
@@ -85,7 +86,7 @@ export default function DonationsAdminPage() {
     );
     const { data: donations, isLoading } = useCollection<Donation>(donationsQuery);
 
-    const list = donations || [];
+    const list = useMemo(() => donations || [], [donations]);
 
     const filtered = useMemo(() => {
         return list.filter(d => {
@@ -135,7 +136,7 @@ export default function DonationsAdminPage() {
 
     const updateStatus = async (donationId: string, newStatus: string, userId?: string, brandName?: string, donationAmount?: string) => {
         try {
-            const updatePayload: any = { status: newStatus };
+            const updatePayload: Record<string, unknown> = { status: newStatus };
             if (newStatus === 'Yatırıldı' || newStatus === 'Tamamlandı') {
                 updatePayload.payoutDate = serverTimestamp();
             }
@@ -160,9 +161,10 @@ export default function DonationsAdminPage() {
             }
 
             toast({ title: 'Durum güncellendi', description: `Bağış "${newStatus}" olarak işaretlendi.` });
-        } catch (e: any) {
+        } catch (e) {
             console.error('Status update failed:', e);
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message || 'Güncellenemedi.' });
+            const message = e instanceof Error ? e.message : 'Güncellenemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         }
     };
 
@@ -176,8 +178,9 @@ export default function DonationsAdminPage() {
             });
             toast({ title: 'Tutarlar güncellendi' });
             setEditingDonation(null);
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setSavingEdit(false);
         }

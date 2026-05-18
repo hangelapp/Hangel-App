@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Target, Users, ShieldCheck, Heart } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';

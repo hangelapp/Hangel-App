@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Globe, Users, Target, Rocket, Database, BookOpen } from 'lucide-react';
+import { ArrowLeft, Rocket, Database, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -30,7 +30,17 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, theme = 'light' }: any) => (
+interface ShowcaseSectionProps {
+    title: string;
+    subtitle: string;
+    stat?: string;
+    description: string;
+    image: string;
+    hint: string;
+    theme?: 'light' | 'dark';
+}
+
+const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, theme = 'light' }: ShowcaseSectionProps) => (
     <section className={cn(
         "relative min-h-screen flex flex-col items-center pt-32 text-center border-b border-black/5 overflow-hidden",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"

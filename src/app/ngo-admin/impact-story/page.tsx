@@ -20,7 +20,7 @@ export type ImpactSlide = {
   title: string;
   subtitle: string;
   content: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   stat?: string;
   background?: string;
 };
@@ -28,7 +28,44 @@ export type ImpactSlide = {
 const STORY_DURATION = 5000;
 
 type EntityKind = 'ngo' | 'brand' | 'club';
-type ManagedEntity = { kind: EntityKind; id: string; name: string; data: any };
+interface EntityDoc {
+  id: string;
+  name?: string;
+  adminUserId?: string;
+  coverUrl?: string;
+  avatarUrl?: string;
+  logoUrl?: string;
+}
+interface UserDocData {
+  id?: string;
+  managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
+  supportedNgos?: string[];
+  volunteerNgos?: string[];
+  followedBrands?: string[];
+}
+interface DonationDoc {
+  id?: string;
+  ngoIds?: string[];
+  brandId?: string;
+  brandName?: string;
+  userId?: string;
+  donationAmount?: string | number;
+  amount?: string | number;
+}
+interface OpportunityDoc {
+  id?: string;
+  status?: string;
+  volunteerCount?: { applications?: number };
+}
+interface PostDoc {
+  id?: string;
+}
+interface TransparencyDoc {
+  id?: string;
+}
+type ManagedEntity = { kind: EntityKind; id: string; name: string; data: EntityDoc };
 
 function StoryViewer() {
     const router = useRouter();
@@ -52,15 +89,15 @@ function StoryViewer() {
       () => (db && authUser?.uid ? query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
-    const { data: adminNgos, isLoading: ngosLoading } = useCollection<any>(adminNgosQ);
-    const { data: adminBrands, isLoading: brandsLoading } = useCollection<any>(adminBrandsQ);
-    const { data: adminClubs, isLoading: clubsLoading } = useCollection<any>(adminClubsQ);
+    const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
+    const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
+    const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
 
     const userDocRef = useMemoFirebase(
       () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
       [db, authUser?.uid],
     );
-    const { data: userData } = useDoc<any>(userDocRef);
+    const { data: userData } = useDoc<UserDocData>(userDocRef);
 
     const fallbackNgoRef = useMemoFirebase(
       () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
@@ -74,9 +111,9 @@ function StoryViewer() {
       () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
       [db, userData?.managedClubId],
     );
-    const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
-    const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
-    const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+    const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
+    const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
+    const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
 
     const activeEntity = useMemo<ManagedEntity | null>(() => {
         const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
@@ -90,28 +127,28 @@ function StoryViewer() {
 
     // İlgili koleksiyonları topla
     const allUsersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
-    const { data: allUsers } = useCollection<any>(allUsersQ);
+    const { data: allUsers } = useCollection<UserDocData>(allUsersQ);
 
     const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
-    const { data: allDonations } = useCollection<any>(donationsQ);
+    const { data: allDonations } = useCollection<DonationDoc>(donationsQ);
 
     const volunteeringQ = useMemoFirebase(
       () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'volunteering'), where('ngoId', '==', activeEntity.id)) : null),
       [db, activeEntity?.kind, activeEntity?.id],
     );
-    const { data: opportunities } = useCollection<any>(volunteeringQ);
+    const { data: opportunities } = useCollection<OpportunityDoc>(volunteeringQ);
 
     const postsQ = useMemoFirebase(
       () => (db && authUser?.uid ? query(collection(db, 'posts'), where('authorId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
-    const { data: posts } = useCollection<any>(postsQ);
+    const { data: posts } = useCollection<PostDoc>(postsQ);
 
     const transparencyQ = useMemoFirebase(
       () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'transparency'), where('ngoId', '==', activeEntity.id)) : null),
       [db, activeEntity?.kind, activeEntity?.id],
     );
-    const { data: transparencyItems } = useCollection<any>(transparencyQ);
+    const { data: transparencyItems } = useCollection<TransparencyDoc>(transparencyQ);
 
     // İstatistikleri hesapla
     const stats = useMemo(() => {
@@ -119,19 +156,19 @@ function StoryViewer() {
         if (!id) return null;
 
         // Bu varlığa yapılan bağışlar
-        const matchingDonations = (allDonations || []).filter((d: any) => {
+        const matchingDonations = (allDonations || []).filter((d) => {
             if (Array.isArray(d.ngoIds) && d.ngoIds.includes(id)) return true;
             if (activeEntity?.kind === 'brand' && (d.brandId === id || d.brandName === activeEntity.name)) return true;
             return false;
         });
-        const totalDonationAmount = matchingDonations.reduce((sum: number, d: any) => {
-            const amt = parseFloat(d.donationAmount || d.amount || '0');
+        const totalDonationAmount = matchingDonations.reduce((sum: number, d) => {
+            const amt = parseFloat(String(d.donationAmount || d.amount || '0'));
             return sum + (isNaN(amt) ? 0 : amt);
         }, 0);
-        const donorIds = new Set(matchingDonations.map((d: any) => d.userId).filter(Boolean));
+        const donorIds = new Set(matchingDonations.map((d) => d.userId).filter(Boolean));
 
         // Destekçi & gönüllüler
-        const supporterCount = (allUsers || []).filter((u: any) => {
+        const supporterCount = (allUsers || []).filter((u) => {
             if (activeEntity?.kind === 'ngo') {
               return (Array.isArray(u.supportedNgos) && u.supportedNgos.includes(id))
                 || (Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id));
@@ -141,16 +178,16 @@ function StoryViewer() {
             }
             return false;
         }).length;
-        const volunteerCount = (allUsers || []).filter((u: any) =>
+        const volunteerCount = (allUsers || []).filter((u) =>
             Array.isArray(u.volunteerNgos) && u.volunteerNgos.includes(id),
         ).length;
 
         // Açık ilanlar
-        const openOpportunities = (opportunities || []).filter((o: any) =>
+        const openOpportunities = (opportunities || []).filter((o) =>
             o.status === 'Aktif' || o.status === 'Yayında',
         ).length;
         const totalOpportunities = (opportunities || []).length;
-        const totalApplications = (opportunities || []).reduce((s: number, o: any) =>
+        const totalApplications = (opportunities || []).reduce((s: number, o) =>
             s + (o.volunteerCount?.applications || 0), 0);
 
         const postsCount = (posts || []).length;
@@ -331,7 +368,7 @@ function StoryViewer() {
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-white/80 backdrop-blur-xl flex items-center justify-center border shadow-sm overflow-hidden">
                         {activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl ? (
-                            <Image src={activeEntity.data.avatarUrl || activeEntity.data.logoUrl} alt={activeEntity.name} width={40} height={40} className="object-cover h-full w-full" />
+                            <Image src={activeEntity.data.avatarUrl || activeEntity.data.logoUrl || ''} alt={activeEntity.name} width={40} height={40} className="object-cover h-full w-full" />
                         ) : (
                             <HangelLogo className="text-xl" />
                         )}

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Network, Globe, ShieldCheck, KeyRound, Share2, Loader2, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Globe, ShieldCheck, KeyRound, Share2, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

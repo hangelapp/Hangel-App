@@ -2,10 +2,10 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Target, Mail, Megaphone, Share2, TrendingUp, Info } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

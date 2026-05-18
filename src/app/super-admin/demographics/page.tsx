@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import {
-    Card, CardContent, CardDescription, CardHeader, CardTitle,
+    Card, CardContent, CardHeader, CardTitle,
 } from '@/components/ui/card';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid,
-    Tooltip, Legend, ResponsiveContainer,
+    Tooltip, ResponsiveContainer,
 } from 'recharts';
 import {
     Users, Cake, Heart, MapPin, Building, Loader2, Globe, GraduationCap, Sparkles, Target,
@@ -21,9 +21,9 @@ import { collection } from 'firebase/firestore';
 
 const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b', '#ec4899', '#6366f1'];
 
-function ageFromBirthDate(birthDate: any): number | null {
+function ageFromBirthDate(birthDate: unknown): number | null {
     if (!birthDate) return null;
-    const d = new Date(birthDate);
+    const d = new Date(birthDate as string | number | Date);
     if (Number.isNaN(d.getTime())) return null;
     const now = new Date();
     let age = now.getFullYear() - d.getFullYear();
@@ -41,7 +41,17 @@ function ageBucket(age: number): string {
     return '55+';
 }
 
-const computeStats = (users: any[]) => {
+interface DemoUser {
+    id: string;
+    personalInfo?: { birthDate?: unknown; gender?: string; bloodType?: string; nationality?: string; address?: { country?: string; city?: string } };
+    volunteerInfo?: { profession?: string; sector?: string; interests?: string[]; skills?: string[]; languages?: string[]; education?: Array<{ level?: string }> };
+    supportedNgos?: string[];
+    volunteeredNgos?: string[];
+    managedNgoId?: string;
+    [key: string]: unknown;
+}
+
+const computeStats = (users: DemoUser[]) => {
     const ageBuckets: Record<string, number> = { '<18': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
     const gender: Record<string, number> = {};
     const blood: Record<string, number> = {};
@@ -105,7 +115,7 @@ const StatChartCard = ({
     title, icon: Icon, data, type = 'bar', color = '#f34723',
 }: {
     title: string;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     data: { name: string; value: number }[];
     type?: 'bar' | 'pie' | 'horizontal';
     color?: string;
@@ -167,8 +177,8 @@ export default function DemographicsPage() {
     const usersQ = useMemoFirebase(() => collection(db, 'users'), [db]);
     const ngosQ = useMemoFirebase(() => collection(db, 'ngos'), [db]);
 
-    const { data: users, isLoading } = useCollection<any>(usersQ);
-    const { data: ngos } = useCollection<any>(ngosQ);
+    const { data: users, isLoading } = useCollection<DemoUser>(usersQ);
+    const { data: ngos } = useCollection<{ id: string; name?: string }>(ngosQ);
 
     const [selectedNgoId, setSelectedNgoId] = useState<string>('all');
 
@@ -190,7 +200,7 @@ export default function DemographicsPage() {
     const stats = useMemo(() => computeStats(filteredUsers), [filteredUsers]);
     const selectedNgoName = useMemo(() => {
         if (selectedNgoId === 'all') return 'Tüm Platform';
-        return (ngos || []).find((n: any) => n.id === selectedNgoId)?.name || 'STK';
+        return (ngos || []).find((n) => n.id === selectedNgoId)?.name || 'STK';
     }, [selectedNgoId, ngos]);
 
     if (isLoading) {
@@ -219,7 +229,7 @@ export default function DemographicsPage() {
                         <SelectTrigger className="ml-auto h-10 w-72"><SelectValue /></SelectTrigger>
                         <SelectContent className="max-h-72">
                             <SelectItem value="all">🌐 Tüm Platform (Genel)</SelectItem>
-                            {(ngos || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr')).map((n: any) => (
+                            {(ngos || []).slice().sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr')).map((n) => (
                                 <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>
                             ))}
                         </SelectContent>

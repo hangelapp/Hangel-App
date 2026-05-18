@@ -1,41 +1,30 @@
 'use client';
 
-import React, { useState, Suspense, useEffect, useMemo } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Mail,
     Activity,
     Target,
-    Trash2,
-    Users,
-    Instagram,
-    Linkedin,
     X,
-    ArrowLeft,
     Upload,
     Loader2,
     Building2,
     CheckCircle,
     FileText,
-    ShieldAlert,
-    Sparkles,
     Store,
-    Globe,
     UserCircle,
     MapPin,
-    School,
-    MessageCircle,
-    Smartphone
+    School
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
@@ -44,15 +33,15 @@ import {
     allBeneficiaries, allSdgs, allMemberships
 } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, useUser, setDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { initiateEmailVerification, initiatePasswordResetEmail } from '@/firebase/non-blocking-login';
+import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 
 // --- Shared UI Components ---
 
-const XIcon = (props: React.ComponentProps<'svg'>) => (
+const _XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
       role="img"
       viewBox="0 0 24 24"
@@ -118,7 +107,7 @@ const FileUpload = ({label, accept, hint, required}: {label: string, accept?: st
     );
 };
 
-const SectionTitle = ({ children, icon: Icon }: { children: React.ReactNode, icon?: any }) => (
+const SectionTitle = ({ children, icon: Icon }: { children: React.ReactNode, icon?: React.ComponentType<{ className?: string }> }) => (
     <div className="flex items-start gap-2 mb-4 pt-4 first:pt-0 border-t border-dashed first:border-t-0">
         {Icon && <Icon className="h-5 w-5 text-primary shrink-0 mt-0.5" />}
         <h3 className="text-sm font-black uppercase tracking-[0.1em] text-primary text-left">{children}</h3>
@@ -135,26 +124,27 @@ const FormInput = (props: React.ComponentProps<typeof Input>) => (
     <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30", props.className)} />
 );
 
-const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: React.ComponentType<any> }) => (
+const IconInput = ({ icon: Icon, ...props }: React.ComponentProps<typeof Input> & { icon: React.ComponentType<{ className?: string }> }) => (
     <div className="relative">
         <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input {...props} className={cn("h-12 rounded-xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 pl-10", props.className)} />
     </div>
 );
 
-const brandCategoryOptions = [
+const _brandCategoryOptions = [
     "Giyim & Aksesuar", "Elektronik", "Kozmetik & Kişisel Bakım",
     "Ev & Yaşam", "Gıda & İçecek", "Spor & Outdoor",
     "Kitap & Kırtasiye", "Oyuncak & Hobi", "Sağlık & Medikal",
     "Otomotiv", "Mücevher & Saat", "Diğer"
 ];
 
-const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+const _isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => void }) => {
     const auth = useAuth();
     const db = useFirestore();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
 
     type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent';
     const [step, setStep] = useState<IndividualStep>('email');
@@ -191,7 +181,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
         try {
             await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
             onComplete(false);
-        } catch (error: any) {
+        } catch {
             toast({ variant: 'destructive', title: 'Giriş Başarısız', description: 'E-posta veya şifre hatalı.' });
         } finally {
             setIsLoading(false);
@@ -227,8 +217,9 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
 
             await initiateEmailVerification(userCredential.user);
             setStep('verify-sent');
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Kayıt Başarısız', description: error.message });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Bir hata oluştu.';
+            toast({ variant: 'destructive', title: 'Kayıt Başarısız', description: message });
         } finally {
             setIsLoading(false);
         }
@@ -357,7 +348,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
     const [selectedSdgs, setSelectedSdgs] = useState<string[]>([]);
     const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
-    const [donationCategories, setDonationCategories] = useState([{ id: '1', category: '', rate: '' }]);
+    const [donationCategories, _setDonationCategories] = useState([{ id: '1', category: '', rate: '' }]);
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -389,8 +380,9 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             });
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push(authUser ? '/my-applications' : '/login');
-        } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: error.message });
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Bir hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setIsSubmitting(false);
         }
@@ -512,7 +504,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormLabel>Mahalle</FormLabel>
                             <Select value={formData.neighborhood} onValueChange={v => setFormData({...formData, neighborhood: v})} disabled={!formData.district}>
                                 <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Mahalle Seç" /></SelectTrigger>
-                                <SelectContent className="max-h-60">{formData.city && formData.district && (neighborhoodsData as any)[formData.city]?.[formData.district]?.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
+                                <SelectContent className="max-h-60">{formData.city && formData.district && (neighborhoodsData as Record<string, Record<string, string[]>>)[formData.city]?.[formData.district]?.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                     </div>
@@ -648,7 +640,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FormLabel>Üniversite</FormLabel>
                             <Select value={formData.universityName} onValueChange={v => setFormData({...formData, universityName: v})}>
                                 <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Üniversite Seçin" /></SelectTrigger>
-                                <SelectContent className="max-h-60">{allUniversities.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                                <SelectContent className="max-h-60">{allUniversities.map((u: string) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                     </div>

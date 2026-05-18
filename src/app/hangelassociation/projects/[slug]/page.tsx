@@ -4,14 +4,22 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Target, ShieldCheck, Globe, Briefcase, Map, DollarSign, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowLeft, Target, Briefcase, Map, DollarSign, ArrowRight, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAssociationProject } from '@/hooks/use-site-content';
 
-const projectContents: Record<string, any> = {
+type ProjectContent = {
+    title: string;
+    subtitle: string;
+    desc: string;
+    icon: LucideIcon;
+    imageUrl: string;
+    hint: string;
+};
+
+const projectContents: Record<string, ProjectContent> = {
     'istihdam-protokolu': {
         title: "Etki Odaklı İstihdam.",
         subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",

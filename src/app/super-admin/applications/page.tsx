@@ -4,7 +4,6 @@ import React, { useMemo } from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -26,7 +25,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { FileText, Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, Phone, Globe, MapPin, User } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, MapPin, User } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -43,11 +42,53 @@ const entityTypeIcons: Record<string, React.ElementType> = {
   'CLUB': School,
 };
 
+interface ApplicationDoc {
+  id: string;
+  name?: string;
+  org?: string;
+  entityType?: string;
+  type?: string;
+  date?: string;
+  city?: string;
+  district?: string;
+  location?: string;
+  status?: string;
+  userId?: string;
+  about?: string;
+  logoUrl?: string;
+  avatarUrl?: string;
+  coverPhotoUrl?: string;
+  email?: string;
+  phone?: string;
+  phoneCode?: string;
+  website?: string;
+  social?: { instagram?: string; twitter?: string; linkedin?: string; facebook?: string };
+  shortName?: string;
+  country?: string;
+  neighborhood?: string;
+  addressLine?: string;
+  communicationAddress?: string;
+  sector?: string;
+  category?: string;
+  brandStatus?: string;
+  donationCategories?: Array<{ customCategory?: string; category?: string; rate?: string | number }>;
+  clubType?: string;
+  universityName?: string;
+  clubCategory?: string;
+  orgSubType?: string;
+  registryNo?: string;
+  legalTitle?: string;
+  slogan?: string;
+  selectedBeneficiaries?: string[];
+  selectedServiceAreas?: string[];
+  authorized?: { name?: string; role?: string; email?: string; phone?: string; phoneCode?: string };
+}
+
 // Helper to get display name from application data
-const getAppName = (app: any): string => app.name || app.org || 'Bilinmeyen Kuruluş';
-const getAppType = (app: any): string => entityTypeLabels[app.entityType] || app.entityType || app.type || 'Belirtilmemiş';
-const getAppDate = (app: any): string => app.date || '';
-const getAppLocation = (app: any): string => {
+const getAppName = (app: ApplicationDoc): string => app.name || app.org || 'Bilinmeyen Kuruluş';
+const getAppType = (app: ApplicationDoc): string => entityTypeLabels[app.entityType as string] || app.entityType || app.type || 'Belirtilmemiş';
+const _getAppDate = (app: ApplicationDoc): string => app.date || '';
+const getAppLocation = (app: ApplicationDoc): string => {
   if (app.city && app.district) return `${app.district}, ${app.city}`;
   if (app.city) return app.city;
   return app.location || '';
@@ -63,11 +104,11 @@ const InfoField = ({ label, value }: { label: string; value?: string }) => {
   );
 };
 
-const ApplicationDetailsDialog = ({ application: app }: { application: any }) => {
+const ApplicationDetailsDialog = ({ application: app }: { application: ApplicationDoc }) => {
   const name = getAppName(app);
   const type = getAppType(app);
-  const location = getAppLocation(app);
-  const EntityIcon = entityTypeIcons[app.entityType] || Building;
+  const _location = getAppLocation(app);
+  const EntityIcon = entityTypeIcons[app.entityType as string] || Building;
 
   return (
     <DialogContent className="sm:max-w-[600px] rounded-[2.5rem]">
@@ -151,7 +192,7 @@ const ApplicationDetailsDialog = ({ application: app }: { application: any }) =>
           <Card className="rounded-2xl border-black/5">
             <CardHeader><CardTitle className="text-base">Bağış Kategorileri</CardTitle></CardHeader>
             <CardContent className="space-y-0">
-              {app.donationCategories.map((cat: any, i: number) => (
+              {app.donationCategories.map((cat, i: number) => (
                 <InfoField key={i} label={cat.customCategory || cat.category || `Kategori ${i + 1}`} value={cat.rate ? `%${cat.rate}` : 'Oran Belirtilmemiş'} />
               ))}
             </CardContent>
@@ -159,20 +200,20 @@ const ApplicationDetailsDialog = ({ application: app }: { application: any }) =>
         )}
 
         {/* Faydalanıcı & Hizmet Alanları */}
-        {(app.selectedBeneficiaries?.length > 0 || app.selectedServiceAreas?.length > 0) && (
+        {((app.selectedBeneficiaries?.length ?? 0) > 0 || (app.selectedServiceAreas?.length ?? 0) > 0) && (
           <Card className="rounded-2xl border-black/5">
             <CardHeader><CardTitle className="text-base">Faaliyet Alanları</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
-              {app.selectedBeneficiaries?.length > 0 && (
+              {(app.selectedBeneficiaries?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-muted-foreground font-medium mb-1">Faydalanıcılar:</p>
-                  <p className="font-semibold">{app.selectedBeneficiaries.join(', ')}</p>
+                  <p className="font-semibold">{app.selectedBeneficiaries!.join(', ')}</p>
                 </div>
               )}
-              {app.selectedServiceAreas?.length > 0 && (
+              {(app.selectedServiceAreas?.length ?? 0) > 0 && (
                 <div>
                   <p className="text-muted-foreground font-medium mb-1">Hizmet Alanları:</p>
-                  <p className="font-semibold">{app.selectedServiceAreas.join(', ')}</p>
+                  <p className="font-semibold">{app.selectedServiceAreas!.join(', ')}</p>
                 </div>
               )}
             </CardContent>
@@ -198,12 +239,12 @@ const ApplicationDetailsDialog = ({ application: app }: { application: any }) =>
   );
 };
 
-const PendingApplicationCard = ({ item, onApprove, onReject }: { item: any, onApprove: (id: string, userId?: string) => void, onReject: (id: string) => void }) => {
+const PendingApplicationCard = ({ item, onApprove, onReject }: { item: ApplicationDoc, onApprove: (id: string, userId?: string) => void, onReject: (id: string) => void }) => {
   const name = getAppName(item);
   const type = getAppType(item);
-  const date = getAppDate(item);
+  const date = item.date || '';
   const location = getAppLocation(item);
-  const EntityIcon = entityTypeIcons[item.entityType] || Building;
+  const EntityIcon = entityTypeIcons[item.entityType as string] || Building;
 
   return (
     <Card className="rounded-2xl border-black/5 hover:shadow-md transition-all group">
@@ -262,7 +303,7 @@ export default function ApplicationsPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
-  const createEntityFromApp = async (app: any): Promise<string | null> => {
+  const createEntityFromApp = async (app: ApplicationDoc): Promise<string | null> => {
     const entityType = app.entityType;
     const name = app.name || app.org || 'Yeni Kuruluş';
 
@@ -339,7 +380,7 @@ export default function ApplicationsPage() {
 
   const handleUpdateStatus = async (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
     const appRef = doc(db, 'applications', id);
-    const app = (applications || []).find((a: any) => a.id === id);
+    const app = (applications || []).find((a) => (a as ApplicationDoc).id === id) as ApplicationDoc | undefined;
 
     if (newStatus === 'Onaylandı' && app) {
       try {
@@ -355,7 +396,7 @@ export default function ApplicationsPage() {
           // Super-admin'in rolünü ngo-admin'e düşürme; sadece henüz super-admin olmayanları yükselt.
           try {
             const userSnap = await getDoc(userRef);
-            const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
+            const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
             if (currentRole !== 'super-admin') {
               updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
             }
@@ -365,18 +406,19 @@ export default function ApplicationsPage() {
           }
         }
 
-        const entityTypeLabel = entityTypeLabels[app.entityType] || 'Kuruluş';
+        const entityTypeLabel = entityTypeLabels[app.entityType as string] || 'Kuruluş';
         toast({
           title: 'Başvuru Onaylandı',
           description: entityId
             ? `${entityTypeLabel} yayına alındı. ${userId ? 'Kullanıcıya yönetici yetkisi verildi.' : ''}`
             : 'Başvuru onaylandı ancak kuruluş oluşturulamadı. Manuel kontrol gerekli.',
         });
-      } catch (err: any) {
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Kuruluş oluşturulurken bir hata oluştu.';
         toast({
           variant: 'destructive',
           title: 'Onay Başarısız',
-          description: err?.message || 'Kuruluş oluşturulurken bir hata oluştu.',
+          description: message,
         });
       }
       return;
@@ -391,15 +433,16 @@ export default function ApplicationsPage() {
 
   const sortedApps = useMemo(() => {
     if (!applications) return { pending: [], approved: [], rejected: [] };
-    const safeSorter = (a: any, b: any) => {
+    const safeSorter = (a: ApplicationDoc, b: ApplicationDoc) => {
       const dateA = a.date || '';
       const dateB = b.date || '';
       return dateB.localeCompare(dateA);
     };
+    const apps = applications as ApplicationDoc[];
     return {
-      pending: applications.filter((a: any) => a.status === 'Beklemede').sort(safeSorter),
-      approved: applications.filter((a: any) => a.status === 'Onaylandı').sort(safeSorter),
-      rejected: applications.filter((a: any) => a.status === 'Reddedildi').sort(safeSorter),
+      pending: apps.filter((a) => a.status === 'Beklemede').sort(safeSorter),
+      approved: apps.filter((a) => a.status === 'Onaylandı').sort(safeSorter),
+      rejected: apps.filter((a) => a.status === 'Reddedildi').sort(safeSorter),
     };
   }, [applications]);
 
@@ -442,7 +485,7 @@ export default function ApplicationsPage() {
 
         <TabsContent value="pending" className="mt-8 space-y-4">
           {sortedApps.pending.length > 0 ? (
-            sortedApps.pending.map((app: any) => (
+            sortedApps.pending.map((app) => (
               <PendingApplicationCard
                 key={app.id}
                 item={app}
@@ -459,10 +502,10 @@ export default function ApplicationsPage() {
         </TabsContent>
 
         <TabsContent value="approved" className="mt-8 space-y-4">
-          {sortedApps.approved.length > 0 ? sortedApps.approved.map((app: any) => {
+          {sortedApps.approved.length > 0 ? sortedApps.approved.map((app) => {
             const name = getAppName(app);
             const type = getAppType(app);
-            const EntityIcon = entityTypeIcons[app.entityType] || Building;
+            const EntityIcon = entityTypeIcons[app.entityType as string] || Building;
             return (
               <Card key={app.id} className="rounded-2xl border-black/5 bg-green-50/30">
                 <CardContent className="p-4 flex items-center justify-between">
@@ -485,7 +528,7 @@ export default function ApplicationsPage() {
         </TabsContent>
 
         <TabsContent value="rejected" className="mt-8 space-y-4">
-          {sortedApps.rejected.length > 0 ? sortedApps.rejected.map((app: any) => {
+          {sortedApps.rejected.length > 0 ? sortedApps.rejected.map((app) => {
             const name = getAppName(app);
             const type = getAppType(app);
             return (

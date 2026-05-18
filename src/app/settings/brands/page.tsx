@@ -41,7 +41,7 @@ export default function FollowedBrandsPage() {
     return doc(db, 'users', authUser.uid);
   }, [db, authUser]);
 
-  const { data: userData, isLoading: isUserDataLoading } = useDoc<any>(userDocRef);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc<{ followedBrands?: string[] }>(userDocRef);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
 
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);

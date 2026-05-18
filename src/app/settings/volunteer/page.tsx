@@ -31,6 +31,49 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
+// Extended Firestore user doc shape used on this page
+type VolunteerUserDoc = {
+  volunteerInfo?: {
+    profession?: string;
+    professionOther?: string;
+    skills?: string[];
+    dailySkills?: string[];
+    interests?: string[];
+    languages?: string[];
+    languageLevels?: Record<string, string>;
+    signLanguages?: string[];
+    certificates?: string[];
+    driverLicenses?: string[];
+    programs?: string[];
+    travelInfo?: { visas?: string[] };
+    muhtarInfo?: { isMuhtar?: boolean; il?: string; ilce?: string; mahalle?: string };
+    emergency?: {
+      emergencyContacts?: { name: string; phone: string }[];
+      available?: boolean;
+      hasChronicIllness?: boolean;
+      usesRegularMedication?: boolean;
+    };
+    availabilityDays?: string[];
+    availabilityTimes?: string[];
+    workModes?: string[];
+    motivations?: string[];
+    consents?: Partial<{
+      contract: boolean;
+      rights: boolean;
+      ethics: boolean;
+      socialImpact: boolean;
+      privacy: boolean;
+    }>;
+  };
+  personalInfo?: {
+    bloodType?: string;
+    gender?: string;
+    address?: { neighborhood?: string; street?: string; doorNo?: string } & Record<string, unknown>;
+  } & Record<string, unknown>;
+};
+
+type NeighborhoodsMap = Record<string, Record<string, string[]>>;
+
 // ---------------------------------------------------------------------------
 // FilteredMultiSelect — searchable multi-select with optional categories
 // ---------------------------------------------------------------------------
@@ -375,7 +418,7 @@ export default function VolunteerSettingsPage() {
     return doc(db, 'users', authUser.uid);
   }, [db, authUser]);
 
-  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc<VolunteerUserDoc>(userDocRef);
 
   useEffect(() => {
     if (localStorage.getItem('onboardingStep') === 'volunteer') setIsOnboarding(true);
@@ -383,7 +426,7 @@ export default function VolunteerSettingsPage() {
 
   useEffect(() => {
     if (!userData) return;
-    const vi = (userData as any).volunteerInfo;
+    const vi = userData.volunteerInfo;
     if (!vi) return;
 
     if (vi.profession) {
@@ -421,8 +464,8 @@ export default function VolunteerSettingsPage() {
     if (typeof vi.emergency?.available === 'boolean') setEmergencyAvailable(vi.emergency.available);
     if (typeof vi.emergency?.hasChronicIllness === 'boolean') setHasChronicIllness(vi.emergency.hasChronicIllness);
     if (typeof vi.emergency?.usesRegularMedication === 'boolean') setUsesRegularMedication(vi.emergency.usesRegularMedication);
-    if ((userData as any).personalInfo?.bloodType) setBloodType((userData as any).personalInfo.bloodType);
-    const pi = (userData as any).personalInfo || {};
+    if (userData.personalInfo?.bloodType) setBloodType(userData.personalInfo.bloodType);
+    const pi = userData.personalInfo || {};
     if (pi.gender) setGender(pi.gender);
     if (pi.address?.neighborhood) setNeighborhood(pi.address.neighborhood);
     if (pi.address?.street) setStreet(pi.address.street);
@@ -449,7 +492,7 @@ export default function VolunteerSettingsPage() {
 
   const ilceler = useMemo(() => muhtarIl ? (districtsData[muhtarIl] ?? []) : [], [muhtarIl]);
   const mahalleler = useMemo(
-    () => (muhtarIl && muhtarIlce) ? ((neighborhoodsData as any)[muhtarIl]?.[muhtarIlce] ?? []) : [],
+    () => (muhtarIl && muhtarIlce) ? ((neighborhoodsData as NeighborhoodsMap)[muhtarIl]?.[muhtarIlce] ?? []) : [],
     [muhtarIl, muhtarIlce],
   );
 
@@ -498,7 +541,7 @@ export default function VolunteerSettingsPage() {
       consentsAcceptedAt: new Date().toISOString(),
     };
 
-    const existingPersonal = (userData as any)?.personalInfo ?? {};
+    const existingPersonal = userData?.personalInfo ?? {};
     const personalInfoPatch = {
       personalInfo: {
         ...existingPersonal,

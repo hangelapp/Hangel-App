@@ -99,7 +99,7 @@ export default function MyDonationsPage() {
   );
   const { data: donationTransactions, isLoading } = useCollection<DonationTransaction>(donationsQuery);
 
-  const transactions = donationTransactions || [];
+  const transactions = useMemo(() => donationTransactions || [], [donationTransactions]);
 
   const totalDonations = useMemo(() =>
     transactions
@@ -118,7 +118,7 @@ export default function MyDonationsPage() {
         return matchesFilter && matchesSearch;
       })
       .sort((a, b) => {
-        let comparison = 0;
+        let comparison: number;
         if (sortKey === 'date') {
           const dateA = parse(`${a.date} ${a.time}`, 'yyyy-MM-dd HH:mm', new Date()).getTime();
           const dateB = parse(`${b.date} ${b.time}`, 'yyyy-MM-dd HH:mm', new Date()).getTime();
@@ -202,7 +202,7 @@ export default function MyDonationsPage() {
                 const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
                 const hangelShare = ngoShare * 0.10;
 
-                const status = (donation as any).status as string | undefined;
+                const status = (donation as DonationTransaction & { status?: string }).status;
                 const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
                 const isPending = !isPaid && status !== 'Reddedildi';
                 const statusBadge = isPaid

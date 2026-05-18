@@ -5,13 +5,12 @@ import { collection, doc, query, where, limit } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Twitter, Instagram, Linkedin, Facebook, Languages, UserCheck, Clock, School, ShieldAlert, BadgeInfo, HeartPulse, Phone, Mail, Share2, Copy, Github, Palette, Briefcase, ChevronRight, X, Map } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Languages, UserCheck, Clock, Phone, Mail, ChevronRight, Map } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -20,15 +19,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+
+
 import { useState, useEffect, useRef } from 'react';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -104,8 +96,9 @@ export default function EventDetailPage() {
       pdf.text('hangel — etkinlik yaka kartı', pageW / 2, pageH - 10, { align: 'center' });
 
       pdf.save(`yaka-karti-${event?.id || 'hangel'}.pdf`);
-    } catch (err: any) {
-      toast({ variant: 'destructive', title: 'PDF oluşturulamadı', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+    } catch (err) {
+      const e = err as { message?: string };
+      toast({ variant: 'destructive', title: 'PDF oluşturulamadı', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -162,7 +155,7 @@ export default function EventDetailPage() {
   }
 
   const organizerEntity = (orgNgo && orgNgo[0]) || (orgClub && orgClub[0]) || null;
-  const organizerCategory = (organizerEntity as any)?.category;
+  const organizerCategory = (organizerEntity as (NGO | StudentClub) & { category?: string })?.category;
   const organizerLogo = organizerEntity?.avatarUrl;
 
   let organizerLink = '#';
@@ -174,15 +167,15 @@ export default function EventDetailPage() {
     }
   }
 
-  const user = userData || {
+  const user = (userData || {
     name: authUser?.displayName || authUser?.email?.split('@')[0] || 'Katılımcı',
     personalInfo: {
       email: authUser?.email || '',
       phone: '',
-      social: {} as any,
+      social: {} as Record<string, string>,
     },
-    volunteerInfo: { education: [] as any[] },
-  } as any;
+    volunteerInfo: { education: [] as unknown[] },
+  }) as UserType;
 
   const nameQrData = user.name;
   const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(nameQrData)}`;
@@ -213,16 +206,11 @@ export default function EventDetailPage() {
     }
   })();
   
-  const handleCopy = () => {
-    navigator.clipboard.writeText(profileUrl);
-    toast({ title: 'Etkinlik linki kopyalandı!' });
-  };
-
   const formatDateTime = (dateStr: string) => {
     try {
         const date = parse(dateStr, 'yyyy-MM-dd HH:mm', new Date());
         return format(date, 'dd MMMM yyyy, HH:mm', { locale: tr });
-    } catch (e) {
+    } catch {
         return dateStr;
     }
   };
@@ -337,7 +325,7 @@ export default function EventDetailPage() {
                             <CardContent className="pt-6 space-y-6">
                                 {organizerEntity ? (
                                     <div className="space-y-4">
-                                        <p className="text-sm text-muted-foreground leading-relaxed font-medium line-clamp-6">{organizerEntity.about}</p>
+                                        <p className="text-sm text-muted-foreground leading-relaxed font-medium line-clamp-6">{'about' in organizerEntity ? organizerEntity.about : organizerEntity.description}</p>
                                         <Button asChild variant="outline" className="w-full rounded-xl font-bold h-11">
                                             <Link href={organizerLink}>Kuruluş Profilini İncele <ChevronRight className="ml-1 h-4 w-4"/></Link>
                                         </Button>

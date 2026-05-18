@@ -223,8 +223,8 @@ function FilterControl({
   onChange,
 }: {
   def: FilterDef;
-  value: any;
-  onChange: (v: any) => void;
+  value: unknown;
+  onChange: (v: unknown) => void;
 }) {
   if (def.type === 'select') {
     return (
@@ -232,7 +232,7 @@ function FilterControl({
         <label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
           {def.label}
         </label>
-        <Select value={value || '__all__'} onValueChange={v => onChange(v === '__all__' ? '' : v)}>
+        <Select value={(typeof value === 'string' && value) || '__all__'} onValueChange={v => onChange(v === '__all__' ? '' : v)}>
           <SelectTrigger className="h-9 bg-background text-xs">
             <SelectValue placeholder={`Tüm ${def.label}`} />
           </SelectTrigger>
@@ -248,7 +248,7 @@ function FilterControl({
   }
 
   if (def.type === 'multi-select') {
-    const arr: string[] = Array.isArray(value) ? value : [];
+    const arr: string[] = Array.isArray(value) ? (value as string[]) : [];
     return (
       <div className="space-y-1 md:col-span-2">
         <div className="flex items-center justify-between">
@@ -265,7 +265,7 @@ function FilterControl({
             </button>
           )}
         </div>
-        <MultiSelectBadges options={def.options} selected={arr} onChange={onChange} />
+        <MultiSelectBadges options={def.options} selected={arr} onChange={(v) => onChange(v)} />
       </div>
     );
   }
@@ -309,8 +309,8 @@ function SectionToolbar({
   filterDefs: FilterDef[];
   query: string;
   onQueryChange: (v: string) => void;
-  filters: Record<string, any>;
-  onFilterChange: (key: string, value: any) => void;
+  filters: Record<string, unknown>;
+  onFilterChange: (key: string, value: unknown) => void;
   onClearAll: () => void;
   filteredCount: number;
   totalCount: number;
@@ -411,7 +411,7 @@ function SectionToolbar({
 function SectionAccordion({ section }: { section: LibrarySection }) {
   const filterDefs = useMemo(() => getFilterDefs(section), [section]);
   const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
 
   const filteredItems = useMemo(() => {
     const lower = query.trim().toLowerCase();
@@ -425,17 +425,17 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
       for (const def of filterDefs) {
         const v = filters[def.key];
         if (def.type === 'select') {
-          if (v && !itemContainsValue(item, v)) return false;
+          if (typeof v === 'string' && v && !itemContainsValue(item, v)) return false;
         } else if (def.type === 'multi-select') {
           if (Array.isArray(v) && v.length > 0) {
-            const someMatch = v.some(val => itemContainsValue(item, val));
+            const someMatch = (v as string[]).some(val => itemContainsValue(item, val));
             if (!someMatch) return false;
           }
         } else if (def.type === 'year-range') {
           if (Array.isArray(v) && (v[0] !== def.min || v[1] !== def.max)) {
             const year = extractYear(item);
             if (year == null) return false; // yıl bulunamayan eşleşmez
-            if (year < v[0] || year > v[1]) return false;
+            if (year < (v[0] as number) || year > (v[1] as number)) return false;
           }
         }
       }
@@ -443,7 +443,7 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
     });
   }, [section.items, query, filters, filterDefs]);
 
-  const Icon = (Icons as any)[section.icon] || BookOpen;
+  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[section.icon] || BookOpen;
 
   return (
     <Card key={section.slug} className="overflow-hidden">

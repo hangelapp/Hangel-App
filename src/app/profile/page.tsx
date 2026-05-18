@@ -5,19 +5,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 // badges, pastVolunteering, certificates will come from Firebase in future
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const badges: any[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pastVolunteering: any[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const certificates: any[] = [];
 import {
-    Star, Briefcase, Heart, School, FileText, Badge as BadgeIcon, Languages, Laptop,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, BookOpen, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, QrCode, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, Rss, CheckCircle, Leaf, X, Loader2, LogOut
+    Star, Briefcase, School, FileText, Languages,
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { ShareButtons } from '@/components/shared/share-buttons';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -66,7 +68,8 @@ const pointTransactions: { type: string; icon: React.ElementType; description: s
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
 
-const NextBadgeGoal = ({ userProfile }: { userProfile: any }) => {
+// eslint-disable-next-line unused-imports/no-unused-vars
+const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) => {
     const [isVisible, setIsVisible] = useState(true);
     const nextBadge = {
         name: 'Gümüş Çevre Koruyucusu',
@@ -101,7 +104,7 @@ const NextBadgeGoal = ({ userProfile }: { userProfile: any }) => {
 };
 
 export default function ProfilePage() {
-    const [profileUrl, setProfileUrl] = useState('');
+    const [_profileUrl, setProfileUrl] = useState('');
     const router = useRouter();
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
     const [filters, setFilters] = useState<string[]>([]);
@@ -117,7 +120,7 @@ export default function ProfilePage() {
         try {
             await signOut(auth);
             router.push('/login');
-        } catch (error) {
+        } catch {
             toast({ variant: 'destructive', title: 'Hata', description: 'Çıkış yapılırken bir hata oluştu.' });
         }
     };
@@ -323,7 +326,7 @@ export default function ProfilePage() {
                                 <StatCard icon={HandCoins} value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
                                 <StatCard icon={Sparkles} value={`${currentUser.stats.totalImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
                                 <StatCard icon={Handshake} value={`${currentUser.stats.volunteerHours} Saat`} label="Gönüllülük" />
-                                <StatCard icon={Award} value={badges.filter((b: any) => b.currentPoints >= b.pointsRequired).length} label="Kazanılan Rozet" />
+                                <StatCard icon={Award} value={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length} label="Kazanılan Rozet" />
                                 <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
                                 <StatCard icon={BarChart3} value={currentUser.stats.volunteerRank.country} label="Türkiye Sıralaması" />
                             </CardContent>
@@ -440,7 +443,7 @@ export default function ProfilePage() {
                                 <InfoRow icon={Palette} label="Behance" value={currentUser.personalInfo.social?.behance} />
                                 <InfoRow icon={Instagram} label="Instagram" value={currentUser.personalInfo.social?.instagram} />
                                 <InfoRow icon={Twitter} label="X (Twitter)" value={currentUser.personalInfo.social?.twitter} />
-                                {((currentUser.personalInfo.social as any)?.custom || []).map((link: any, i: number) =>
+                                {(((currentUser.personalInfo.social as { custom?: Array<{ platform?: string; url?: string }> } | undefined)?.custom) || []).map((link, i) =>
                                     link?.platform && link?.url ? (
                                         <InfoRow key={`custom-${i}`} icon={Globe} label={link.platform} value={link.url} />
                                     ) : null
@@ -470,7 +473,7 @@ export default function ProfilePage() {
                                 <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={currentUser.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
                                 <InfoRow icon={Landmark} label="Vizeler" value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
-                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map((e: any) => e.school).join('; ')} verified />
+                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map((e: { school?: string }) => e.school || '').join('; ')} verified />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={currentUser.volunteerInfo.sector} />
                                 <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={currentUser.volunteerInfo.profession} />
                                  <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={currentUser.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
@@ -500,7 +503,7 @@ export default function ProfilePage() {
                             <CardContent>
                                 {badges.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-4">
-                                        {badges.slice(0, 6).map((badge: any) => <BadgeDisplay key={badge.id} badge={badge} />)}
+                                        {badges.slice(0, 6).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
                                     </div>
                                 ) : (
                                     <p className="text-center text-muted-foreground text-sm py-8">Henüz kazanılmış bir rozetiniz bulunmuyor.</p>

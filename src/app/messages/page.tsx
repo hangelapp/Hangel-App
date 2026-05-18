@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft, Loader2 } from 'lucide-react';
@@ -21,7 +21,7 @@ const senderTypeIcons: Record<string, React.ReactNode> = {
 };
 
 export default function MessagesPage() {
-    const [activeTab, setActiveTab] = useState('inbox');
+    const [_activeTab, setActiveTab] = useState('inbox');
     const { toast } = useToast();
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
@@ -34,7 +34,16 @@ export default function MessagesPage() {
     );
     const { data: messages, isLoading } = useCollection(messagesQuery);
 
-    const filteredMessages = (messages || []).filter((m: any) =>
+    interface MessageItem {
+        id?: string;
+        sender?: string;
+        subject?: string;
+        excerpt?: string;
+        time?: string;
+        senderType?: string;
+        unread?: boolean;
+    }
+    const filteredMessages = ((messages || []) as MessageItem[]).filter((m) =>
         m.sender?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -81,7 +90,7 @@ export default function MessagesPage() {
                             <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
                             <p>Mesajlarınızı görmek için giriş yapın.</p>
                         </div>
-                    ) : filteredMessages.length > 0 ? filteredMessages.map((msg: any) => (
+                    ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => (
                         <Card key={msg.id} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",
                             msg.unread && "border-l-4 border-l-primary"

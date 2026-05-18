@@ -33,7 +33,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -59,7 +58,7 @@ const statusColor: Record<Status, string> = {
 const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, patch: Partial<Volunteering>) => Promise<void> }) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(opp.title || '');
-  const [description, setDescription] = useState((opp as any).description || '');
+  const [description, setDescription] = useState((opp as Volunteering & { description?: string }).description || '');
   const [organization, setOrganization] = useState(opp.organization || '');
   const [city, setCity] = useState(opp.location?.city || '');
   const [district, setDistrict] = useState(opp.location?.district || '');
@@ -74,10 +73,10 @@ const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, p
         title: title.trim(),
         description: description.trim(),
         organization: organization.trim(),
-        location: { ...(opp.location || {}), city: city.trim(), district: district.trim() } as any,
+        location: { ...(opp.location || {}), city: city.trim(), district: district.trim() } as Volunteering['location'],
         points: Number(points) || 0,
         volunteerCount: { needed: Number(needed) || 0, applications: opp.volunteerCount?.applications || 0 },
-      } as any);
+      });
       setOpen(false);
     } finally {
       setSaving(false);
@@ -225,26 +224,30 @@ export default function VolunteerManagementPage() {
         title: 'İlan Durumu Güncellendi',
         description: newStatus === 'Aktif' ? 'İlan yayına alındı.' : newStatus === 'Pasif' ? 'İlan yayından kaldırıldı.' : 'İlan onay bekliyor.',
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Status update failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Güncelleme başarısız',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Bilinmeyen hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
     }
   };
 
   const handleSave = async (id: string, patch: Partial<Volunteering>) => {
     try {
-      await updateDoc(doc(db, 'volunteering', id), patch as any);
+      await updateDoc(doc(db, 'volunteering', id), patch as Record<string, unknown>);
       toast({ title: 'İlan Güncellendi', description: 'Değişiklikler kaydedildi.' });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Save failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Kaydedilemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için yetkiniz yok.' : (e?.message || 'Bilinmeyen hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için yetkiniz yok.' : message,
       });
       throw e;
     }
@@ -254,12 +257,14 @@ export default function VolunteerManagementPage() {
     try {
       await deleteDoc(doc(db, 'volunteering', id));
       toast({ variant: 'destructive', title: 'İlan Silindi' });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Delete failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Silinemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için yetkiniz yok.' : (e?.message || 'Bilinmeyen hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için yetkiniz yok.' : message,
       });
     }
   };

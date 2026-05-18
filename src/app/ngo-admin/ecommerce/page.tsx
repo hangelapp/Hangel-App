@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, ShoppingCart, Plus, Package, Globe, Copy, KeyRound, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Package, Globe, Copy, KeyRound, ShieldCheck, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';

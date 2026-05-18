@@ -3,11 +3,11 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { allProvinces, districtsData } from '@/lib/data';
 import { Country, State, City } from 'country-state-city';
 import type { User } from '@/lib/types';
 
@@ -29,7 +29,7 @@ const emptyUser: User = {
         address: { country: '', city: '', district: '', neighborhood: '', fullAddress: '' },
         website: null,
         social: { linkedin: null, github: null, behance: null, instagram: null, twitter: null }
-    } as any,
+    } as User['personalInfo'],
     volunteerInfo: {
         skills: [],
         dailySkills: [],
@@ -55,14 +55,11 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Save, Loader2, MapPin, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, Calendar, UserCircle, Droplets, Bell } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, Calendar, UserCircle, Droplets, Bell } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Slider } from '@/components/ui/slider';
-import Image from 'next/image';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
@@ -73,8 +70,8 @@ export default function ProfileSettingsPage() {
   const db = useFirestore();
   
   const [isOnboarding, setIsOnboarding] = useState(false);
-  const [isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
-  const [zoom, setZoom] = useState([1]);
+  const [_isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
+  const [_zoom, _setZoom] = useState([1]);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
@@ -112,11 +109,11 @@ export default function ProfileSettingsPage() {
     }
   }, [userData]);
 
-  const handleChange = (section: string, field: string, value: any) => {
+  const handleChange = (section: string, field: string, value: unknown) => {
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         if (section === 'personalInfo' && field === 'address') {
-            newProfile.personalInfo.address = { ...newProfile.personalInfo.address, ...value };
+            newProfile.personalInfo.address = { ...newProfile.personalInfo.address, ...(value as Record<string, unknown>) };
         } else if (section === 'personalInfo') {
             newProfile.personalInfo[field] = value;
         } else if (section === 'username') {
@@ -142,7 +139,7 @@ export default function ProfileSettingsPage() {
   };
 
   const customLinks: { platform: string; url: string }[] =
-    (profile.personalInfo.social as any)?.custom ?? [];
+    (profile.personalInfo.social as (User['personalInfo']['social'] & { custom?: { platform: string; url: string }[] }) | undefined)?.custom ?? [];
 
   const setCustomLinks = (links: { platform: string; url: string }[]) => {
     setProfile(prev => {
@@ -204,7 +201,6 @@ export default function ProfileSettingsPage() {
   const currentCountry = profile.personalInfo.address.country;
   const currentCity = profile.personalInfo.address.city;
   const currentDistrict = profile.personalInfo.address.district;
-  const currentNeighborhood = profile.personalInfo.address.neighborhood;
   const isTurkey = currentCountry === 'Türkiye' || currentCountry === 'Turkey' || currentCountry === 'TR';
 
   const allCountriesList = useMemo(() => {
@@ -415,7 +411,7 @@ export default function ProfileSettingsPage() {
                         </div>
                     </div>
                     <Switch
-                        checked={!!(profile.personalInfo as any).bloodNotifications}
+                        checked={!!(profile.personalInfo as User['personalInfo'] & { bloodNotifications?: boolean }).bloodNotifications}
                         onCheckedChange={(checked) => handleChange('personalInfo', 'bloodNotifications', checked)}
                     />
                 </div>

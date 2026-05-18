@@ -3,14 +3,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Star, Lightbulb, ShieldCheck, HelpCircle, Users } from 'lucide-react';
+import { ArrowLeft, Star, Lightbulb, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { useWebPage } from '@/hooks/use-site-content';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -27,7 +26,7 @@ const FeedbackValueSection = ({
     title: string, 
     subtitle?: string, 
     description?: string, 
-    icon: any,
+    icon: React.ComponentType<{ className?: string }>,
     theme?: 'light' | 'dark',
     imageUrl?: string,
     imageHint?: string

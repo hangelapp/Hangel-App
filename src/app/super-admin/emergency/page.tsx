@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,39 @@ import { tr } from 'date-fns/locale';
 const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-'];
 
 type ScopeLevel = 'all' | 'city' | 'district' | 'neighborhood';
+
+interface EmergencyDoc {
+  id: string;
+  type?: string;
+  hospitalName?: string;
+  hospitalAddress?: string;
+  bloodType?: string;
+  scope?: string;
+  city?: string;
+  district?: string;
+  neighborhood?: string;
+  message?: string;
+  contactPhone?: string;
+  contactName?: string;
+  unitsNeeded?: number | string;
+  targetCount?: number;
+  status?: string;
+  requestId?: string;
+  requestedByName?: string;
+  requestedByEmail?: string;
+  userName?: string;
+  userEmail?: string;
+  createdAt?: unknown;
+  respondedAt?: unknown;
+}
+
+interface UserDoc {
+  id: string;
+  personalInfo?: {
+    bloodType?: string;
+    address?: { city?: string; district?: string; neighborhood?: string };
+  };
+}
 
 const scopeLabel: Record<ScopeLevel, string> = {
   all: 'Tüm Türkiye',
@@ -48,32 +81,33 @@ export default function EmergencyManagementPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [unitsNeeded, setUnitsNeeded] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const pendingApprovalIdRef = useRef<string | null>(null);
 
   // Tüm kullanıcılar (filtre için)
   const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-  const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
+  const { data: allUsers, isLoading: usersLoading } = useCollection<UserDoc>(usersQuery);
 
   // Geçmiş talepler
   const requestsQuery = useMemoFirebase(() => {
     return query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'), limit(50));
   }, [db]);
-  const { data: requests, isLoading: requestsLoading } = useCollection<any>(requestsQuery);
+  const { data: requests, isLoading: requestsLoading } = useCollection<EmergencyDoc>(requestsQuery);
 
   // Yanıtlar (kullanıcıların kan taleplerine verdikleri cevaplar)
   const responsesQuery = useMemoFirebase(() => {
     return query(collection(db, 'emergencyResponses'), orderBy('respondedAt', 'desc'), limit(200));
   }, [db]);
-  const { data: responses, isLoading: responsesLoading } = useCollection<any>(responsesQuery);
+  const { data: responses, isLoading: responsesLoading } = useCollection<EmergencyDoc>(responsesQuery);
 
   // Kullanıcı tarafından gönderilmiş, super-admin onayı bekleyen talepler
   const pendingRequestsQuery = useMemoFirebase(() => {
     return query(collection(db, 'emergencyRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
   }, [db]);
-  const { data: pendingRequests } = useCollection<any>(pendingRequestsQuery);
+  const { data: pendingRequests } = useCollection<EmergencyDoc>(pendingRequestsQuery);
 
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
-  const neighborhoodOptions = (city && district) ? ((neighborhoodsData as any)[city]?.[district] ?? []) : [];
+  const neighborhoodOptions = (city && district) ? ((neighborhoodsData as Record<string, Record<string, string[]>>)[city]?.[district] ?? []) : [];
 
   // Eşleşen kullanıcı sayısı (anlık önizleme)
   const matchingUsers = useMemo(() => {
@@ -91,19 +125,19 @@ export default function EmergencyManagementPage() {
   }, [allUsers, bloodType, scope, city, district, neighborhood]);
 
   // Kullanıcı talebini forma yükle (preview & onayla)
-  const loadIntoForm = (req: any) => {
+  const loadIntoForm = (req: EmergencyDoc) => {
     setHospitalName(req.hospitalName || '');
     setHospitalAddress(req.hospitalAddress || '');
     setBloodType(req.bloodType || '');
     setMessage(req.message || '');
     setContactPhone(req.contactPhone || '');
     setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
-    setScope(req.scope || 'city');
+    setScope((req.scope as ScopeLevel) || 'city');
     setCity(req.city || '');
     setDistrict(req.district || '');
     setNeighborhood(req.neighborhood || '');
     // Forma gönderilen kullanıcı talebinin id'sini sakla — onay sonrası güncellenecek
-    (window as any).__pendingApprovalId = req.id;
+    pendingApprovalIdRef.current = req.id;
     setActiveTab('blood');
     toast({ title: 'Talep yüklendi', description: 'İl/ilçe/mahalle seçip "Acil Talep Gönder"e basarak yayınlayabilirsiniz.' });
     // Form bölümüne kaydır
@@ -120,8 +154,9 @@ export default function EmergencyManagementPage() {
         rejectedBy: authUser?.uid || null,
       });
       toast({ title: 'Talep reddedildi' });
-    } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Bilinmeyen bir hata oluştu.';
+      toast({ variant: 'destructive', title: 'Hata', description: message });
     }
   };
 
@@ -167,7 +202,7 @@ export default function EmergencyManagementPage() {
       // 2. Eşleşen kullanıcılara bildirim yaz (batched)
       if (matchingUsers.length > 0) {
         // 500 limit per batch (Firestore limit)
-        const batches: any[] = [];
+        const batches: ReturnType<typeof writeBatch>[] = [];
         let current = writeBatch(db);
         let count = 0;
         for (const u of matchingUsers) {
@@ -199,7 +234,7 @@ export default function EmergencyManagementPage() {
       }
 
       // Eğer kullanıcı talebinden geliyorsa, orijinal kaydı 'sent' olarak işaretle
-      const pendingId = (window as any).__pendingApprovalId;
+      const pendingId = pendingApprovalIdRef.current;
       if (pendingId) {
         try {
           await updateDoc(doc(db, 'emergencyRequests', pendingId), {
@@ -215,7 +250,7 @@ export default function EmergencyManagementPage() {
         } catch (e) {
           console.warn('Pending request update failed:', e);
         }
-        (window as any).__pendingApprovalId = null;
+        pendingApprovalIdRef.current = null;
       }
 
       toast({
@@ -234,23 +269,26 @@ export default function EmergencyManagementPage() {
       setContactPhone('');
       setUnitsNeeded('');
       setScope('city');
-    } catch (err: any) {
+    } catch (err) {
       console.error('Emergency request failed:', err);
+      const code = (err as { code?: string } | null)?.code;
+      const errMessage = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Gönderilemedi',
-        description: err?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (err?.message || 'Bilinmeyen bir hata oluştu.'),
+          : errMessage,
       });
     } finally {
       setIsSending(false);
     }
   };
 
-  const formatDate = (createdAt: any) => {
+  const formatDate = (createdAt: unknown) => {
     try {
-      const d = createdAt?.toDate?.() || (createdAt ? new Date(createdAt) : null);
+      const maybeDate = createdAt as { toDate?: () => Date } | null;
+      const d = maybeDate?.toDate?.() || (createdAt ? new Date(createdAt as string | number | Date) : null);
       if (!d) return '—';
       return format(d, 'dd MMM yyyy HH:mm', { locale: tr });
     } catch { return '—'; }
@@ -310,7 +348,7 @@ export default function EmergencyManagementPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {pendingRequests.map((req: any) => (
+                  {pendingRequests.map((req) => (
                     <div key={req.id} className="border rounded-xl p-4 bg-background space-y-3">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2 flex-wrap">

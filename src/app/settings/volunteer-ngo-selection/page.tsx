@@ -33,7 +33,7 @@ export default function VolunteerNgoSelectionPage() {
         return doc(db, 'users', authUser.uid);
     }, [db, authUser]);
 
-    const { data: userData, isLoading: isUserDataLoading } = useDoc<any>(userDocRef);
+    const { data: userData, isLoading: isUserDataLoading } = useDoc<{ volunteerNgos?: string[] }>(userDocRef);
     const [selectedNgos, setSelectedNgos] = useState<string[]>([]);
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -52,7 +52,7 @@ export default function VolunteerNgoSelectionPage() {
 
     // Sadece aktif STK'lar
     const activeNgos = useMemo(
-        () => (ngosData ?? []).filter(n => (n as any).status !== 'Pasif'),
+        () => (ngosData ?? []).filter(n => (n as NGO & { status?: string }).status !== 'Pasif'),
         [ngosData]
     );
 

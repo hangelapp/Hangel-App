@@ -135,6 +135,7 @@ export type NGO = {
         fullAddress: string;
         city: string;
         district: string;
+        country?: string;
     }
   };
   economicEnterpriseUrl?: string;

@@ -49,7 +49,7 @@ export function AccessibilityApplier() {
                 if (s.focusStrength && s.focusStrength !== 'thin') {
                     html.setAttribute('data-a11y-focus', s.focusStrength);
                 }
-            } catch (e) {
+            } catch {
                 // ignore
             }
         };

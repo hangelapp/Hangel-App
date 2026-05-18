@@ -127,14 +127,18 @@ export default function MyBadgesPage() {
     const { data: userData } = useDoc(userDocRef);
 
     // Top-level veya stats.* — invite akışı top-level yazıyor, signup stats altına yazıyor.
+    type UserDataLike = { impactScore?: number; stats?: { impactScore?: number }; areaPoints?: Record<string, number> };
     const impactScore: number = Math.max(
-        Number((userData as any)?.impactScore) || 0,
-        Number((userData as any)?.stats?.impactScore) || 0,
+        Number((userData as UserDataLike | undefined)?.impactScore) || 0,
+        Number((userData as UserDataLike | undefined)?.stats?.impactScore) || 0,
     );
 
     // Sosyal alan bazında puan haritası: userData.areaPoints[socialArea] = number
     // Henüz tanımlı değilse: 0 (rozetler kilitli görünür)
-    const areaPoints: Record<string, number> = (userData as any)?.areaPoints || {};
+    const areaPoints = useMemo<Record<string, number>>(
+        () => (userData as UserDataLike | undefined)?.areaPoints || {},
+        [userData]
+    );
 
     // Rozetlere areaPoints'ten currentPoints aktar
     const enrichedBadges: BadgeType[] = useMemo(() => {

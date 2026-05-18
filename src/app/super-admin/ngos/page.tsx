@@ -27,19 +27,38 @@ import {
   XCircle, Search, Database, Upload, RefreshCw,
 } from 'lucide-react';
 import type { NGO } from '@/lib/types';
+import { normalizePhone } from '@/lib/messaging/phone';
 import seedNgos from '../../../../docs/database-exports/ngos.json';
 
 type NgoItem = (NGO & { id: string }) & {
   source: 'ngos' | 'applications';
   status: string;
-  __raw?: any;
+  __raw?: unknown;
 };
 
-const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
+interface SimpleNgoUser {
+  id: string;
+  name?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  phone?: string;
+  phoneNumber?: string;
+  personalInfo?: { phone?: string; email?: string };
+  [key: string]: unknown;
+}
+
+interface NgoApplication {
+  id: string;
+  name?: string;
+  shortName?: string;
+  sector?: string;
+  status?: string;
+  [key: string]: unknown;
+}
 
 const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
   ngo: NgoItem;
-  allUsers: any[] | null;
+  allUsers: SimpleNgoUser[] | null;
   onAssign: (ngoId: string, newUserId: string, newUserName: string) => Promise<void>;
 }) => {
   const [open, setOpen] = useState(false);
@@ -50,7 +69,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
   const matchedUser = useMemo(() => {
     if (!allUsers || normalizedSearch.length < 3) return null;
     return allUsers.find(u => {
-      const cands = [u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean).map(normalizePhone);
+      const cands = ([u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean) as string[]).map(normalizePhone);
       return cands.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
     }) || null;
   }, [allUsers, normalizedSearch]);
@@ -142,7 +161,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign }: {
 export default function NgosPage() {
   const { toast } = useToast();
   const db = useFirestore();
-  const router = useRouter();
+  const _router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
 
   const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
@@ -152,38 +171,40 @@ export default function NgosPage() {
     query(collection(db, 'applications'), where('entityType', '==', 'NGO')),
     [db],
   );
-  const { data: applications, isLoading: appsLoading } = useCollection<any>(applicationsQuery);
+  const { data: applications, isLoading: appsLoading } = useCollection<NgoApplication>(applicationsQuery);
 
   const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-  const { data: allUsers } = useCollection<any>(usersQuery);
+  const { data: allUsers } = useCollection<SimpleNgoUser>(usersQuery);
 
   const items = useMemo<NgoItem[]>(() => {
     const list: NgoItem[] = [];
 
-    (ngos || []).forEach((n: any) => {
+    (ngos || []).forEach((n) => {
+      const ngoWithStatus = n as NGO & { id: string; status?: string };
       list.push({
-        ...n,
-        id: n.id,
+        ...ngoWithStatus,
+        id: ngoWithStatus.id,
         source: 'ngos',
-        status: n.status || 'Aktif',
+        status: ngoWithStatus.status || 'Aktif',
       });
     });
 
-    (applications || []).forEach((app: any) => {
+    (applications || []).forEach((app) => {
       if (app.status === 'Onaylandı') return; // ngos koleksiyonunda zaten var
+      const appWithExtras = app as NgoApplication & { orgSubType?: string };
       list.push({
         id: app.id,
         name: app.name || 'İsimsiz',
         slug: app.name?.toLowerCase().replace(/\s+/g, '-') || '',
         avatarUrl: '',
         coverPhotoUrl: '',
-        type: app.orgSubType || 'Dernek',
+        type: appWithExtras.orgSubType || 'Dernek',
         category: app.sector || '',
         transparencyScore: 0,
         source: 'applications',
         status: app.status || 'Beklemede',
         __raw: app,
-      } as NgoItem);
+      } as unknown as NgoItem);
     });
 
     return list;
@@ -199,10 +220,10 @@ export default function NgosPage() {
   }, [items, statusFilter]);
 
   const stats = useMemo(() => {
-    const approved = (ngos || []).filter((n: any) => (n.status || 'Aktif') === 'Aktif').length;
-    const passive = (ngos || []).filter((n: any) => n.status === 'Pasif').length;
-    const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
-    const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+    const approved = (ngos || []).filter((n) => ((n as NGO & { status?: string }).status || 'Aktif') === 'Aktif').length;
+    const passive = (ngos || []).filter((n) => (n as NGO & { status?: string }).status === 'Pasif').length;
+    const pending = (applications || []).filter((a) => a.status === 'Beklemede').length;
+    const rejected = (applications || []).filter((a) => a.status === 'Reddedildi').length;
     return { total: approved + passive + pending + rejected, approved, pending, passive, rejected };
   }, [ngos, applications]);
 
@@ -216,13 +237,15 @@ export default function NgosPage() {
           ? 'STK platformdaki tüm listelerde tekrar görünür olacak.'
           : 'STK artık platformdaki public listelerde görünmeyecek.',
       });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Durum güncellenemedi',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     }
   };
@@ -235,13 +258,15 @@ export default function NgosPage() {
         title: 'Kuruluş Kaldırıldı',
         description: `${name} platformdan kalıcı olarak silindi.`,
       });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Silme başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     }
   };
@@ -252,7 +277,7 @@ export default function NgosPage() {
     setBulkOp('clearing');
     try {
       const snap = await getDocs(collection(db, 'ngos'));
-      const batches: any[] = [];
+      const batches: ReturnType<typeof writeBatch>[] = [];
       let current = writeBatch(db);
       let count = 0;
       snap.docs.forEach(d => {
@@ -271,14 +296,16 @@ export default function NgosPage() {
         title: 'STK Listesi Temizlendi',
         description: `${snap.size} STK kaydı silindi.`,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Clear all NGOs failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Temizleme başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Bilinmeyen hata.'),
+          : message,
       });
     } finally {
       setBulkOp('idle');
@@ -289,7 +316,7 @@ export default function NgosPage() {
     setBulkOp('seeding');
     try {
       let count = 0;
-      for (const n of (seedNgos as any[])) {
+      for (const n of (seedNgos as Array<{ id: string } & Record<string, unknown>>)) {
         await setDoc(doc(db, 'ngos', n.id), { ...n, status: 'Aktif' }, { merge: true });
         count += 1;
       }
@@ -297,14 +324,16 @@ export default function NgosPage() {
         title: 'STK Verisi Yüklendi',
         description: `${count} STK Firestore'a aktarıldı (mevcut kayıtların üzerine yazıldı).`,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Seed NGOs failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Yükleme başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Bilinmeyen hata.'),
+          : message,
       });
     } finally {
       setBulkOp('idle');
@@ -324,8 +353,8 @@ export default function NgosPage() {
       // 2. Kullanıcıya ngo-admin rolü ver + bağlı STK ID'sini sakla
       //    AMA super-admin'ler için role'u DEĞİŞTİRME (yetkisini kaybetmesin)
       const userSnap = await getDoc(doc(db, 'users', newUserId));
-      const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
-      const updatePayload: any = { managedNgoId: ngoId };
+      const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
+      const updatePayload: Record<string, unknown> = { managedNgoId: ngoId };
       if (currentRole !== 'super-admin') {
         updatePayload.role = 'ngo-admin';
       }
@@ -347,14 +376,16 @@ export default function NgosPage() {
         title: 'Yetkili Atandı',
         description: `${newUserName} bu STK'nın yöneticisi olarak işaretlendi.`,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Admin transfer failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Yetki ataması başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     }
   };
@@ -412,7 +443,7 @@ export default function NgosPage() {
 
           <Button variant="outline" onClick={handleSeed} disabled={bulkOp !== 'idle'} className="gap-1.5">
             {bulkOp === 'seeding' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            STK Datalarını Yükle ({(seedNgos as any[]).length} kuruluş)
+            STK Datalarını Yükle ({(seedNgos as unknown[]).length} kuruluş)
           </Button>
 
           <AlertDialog>
@@ -425,7 +456,7 @@ export default function NgosPage() {
               <AlertDialogHeader>
                 <AlertDialogTitle>Sıfırla ve Yeniden Yükle?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Önce mevcut tüm STK kayıtları silinir, ardından <strong>{(seedNgos as any[]).length} STK</strong> Firestore'a aktarılır.
+                  Önce mevcut tüm STK kayıtları silinir, ardından <strong>{(seedNgos as unknown[]).length} STK</strong> Firestore'a aktarılır.
                   Bu işlem geri alınamaz.
                 </AlertDialogDescription>
               </AlertDialogHeader>
@@ -479,7 +510,7 @@ export default function NgosPage() {
       <Card className="rounded-2xl border-black/5">
         <CardContent className="p-4 flex items-center gap-3 flex-wrap">
           <Label className="text-sm font-semibold">Durum:</Label>
-          <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'approved' | 'pending' | 'passive' | 'rejected')}>
             <SelectTrigger className="h-9 w-48"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tümü</SelectItem>

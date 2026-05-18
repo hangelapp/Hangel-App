@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Search, Send, Bell, History, MessageSquare, User, Building, School, Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import { Search, Send, Bell, History, MessageSquare, User, Building, School, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -21,6 +21,33 @@ import {
 } from 'firebase/firestore';
 
 type TargetGroup = 'all' | 'all-ngos' | 'all-clubs' | 'all-brands' | 'all-ngo-admins';
+
+interface CommsUser {
+    id: string;
+    name?: string;
+    username?: string;
+    avatarUrl?: string;
+    role?: string;
+    managedNgoId?: string;
+    managedClubId?: string;
+    managedBrandId?: string;
+    personalInfo?: { email?: string; phone?: string };
+    [key: string]: unknown;
+}
+
+interface NotifDoc {
+    id: string;
+    userId?: string;
+    title?: string;
+    body?: string;
+    type?: string;
+    read?: boolean;
+    targetCount?: number;
+    target?: string;
+    createdAt?: unknown;
+    createdBy?: string;
+    [key: string]: unknown;
+}
 
 const TARGET_LABELS: Record<TargetGroup, string> = {
     'all': 'Tüm Kullanıcılar',
@@ -37,13 +64,13 @@ export default function CommunicationsPage() {
 
     // Tüm kullanıcılar (broadcast hedef + DM seçici için)
     const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-    const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
+    const { data: allUsers, isLoading: usersLoading } = useCollection<CommsUser>(usersQuery);
 
     // Geçmiş bildirimler — Trafik İzleme
     const sentNotifsQuery = useMemoFirebase(() =>
         query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(100)),
         [db]);
-    const { data: sentNotifs } = useCollection<any>(sentNotifsQuery);
+    const { data: sentNotifs } = useCollection<NotifDoc>(sentNotifsQuery);
 
     // Broadcast state
     const [target, setTarget] = useState<TargetGroup | ''>('');
@@ -146,7 +173,7 @@ export default function CommunicationsPage() {
         setBcSending(true);
         try {
             // Batched write — Firestore 500/batch limiti, biz 450 kullanıyoruz
-            const batches: any[] = [];
+            const batches: ReturnType<typeof writeBatch>[] = [];
             let current = writeBatch(db);
             let count = 0;
             for (const u of targetUsers) {
@@ -178,14 +205,16 @@ export default function CommunicationsPage() {
             setBcTitle('');
             setBcBody('');
             setTarget('');
-        } catch (e: any) {
+        } catch (e) {
             console.error('Broadcast failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Gönderilemedi',
-                description: e?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Super-admin yetkisi gerekli.'
-                    : (e?.message || 'Hata.'),
+                    : message,
             });
         } finally {
             setBcSending(false);
@@ -219,12 +248,14 @@ export default function CommunicationsPage() {
             setDmBody('');
             setSelectedEntityId(null);
             setEntitySearchTerm('');
-        } catch (e: any) {
+        } catch (e) {
             console.error('DM failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Gönderilemedi',
-                description: e?.code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+                description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : message,
             });
         } finally {
             setDmSending(false);
@@ -234,7 +265,7 @@ export default function CommunicationsPage() {
     // İzleme tablosu
     const filteredLog = useMemo(() => {
         const q = logSearchTerm.toLowerCase();
-        return (sentNotifs || []).filter((n: any) =>
+        return (sentNotifs || []).filter((n) =>
             (n.title || '').toLowerCase().includes(q) ||
             (n.body || '').toLowerCase().includes(q) ||
             (n.type || '').toLowerCase().includes(q),
@@ -370,8 +401,8 @@ export default function CommunicationsPage() {
                                     <Label>Alıcı Türü</Label>
                                     <Select
                                         value={recipientType}
-                                        onValueChange={(v: any) => {
-                                            setRecipientType(v);
+                                        onValueChange={(v) => {
+                                            setRecipientType(v as 'user' | 'ngo' | 'club' | '');
                                             setSelectedEntityId(null);
                                             setEntitySearchTerm('');
                                         }}
@@ -490,7 +521,7 @@ export default function CommunicationsPage() {
                                         <Bell className="h-10 w-10 mx-auto opacity-30 mb-2" />
                                         <p>Bildirim yok.</p>
                                     </div>
-                                ) : filteredLog.slice(0, 50).map((n: any) => (
+                                ) : filteredLog.slice(0, 50).map((n) => (
                                     <div key={n.id} className="p-3 flex items-start justify-between gap-3 hover:bg-muted/30">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
@@ -500,8 +531,8 @@ export default function CommunicationsPage() {
                                             </div>
                                             <p className="text-xs text-muted-foreground line-clamp-1">{n.body}</p>
                                             <p className="text-[10px] text-muted-foreground mt-1">
-                                                {n.userId?.slice(0, 8)}… · {n.createdAt?.toDate
-                                                    ? n.createdAt.toDate().toLocaleString('tr-TR')
+                                                {n.userId?.slice(0, 8)}… · {(n.createdAt as { toDate?: () => Date } | null)?.toDate
+                                                    ? (n.createdAt as { toDate: () => Date }).toDate().toLocaleString('tr-TR')
                                                     : '—'}
                                             </p>
                                         </div>

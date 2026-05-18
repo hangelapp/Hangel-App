@@ -1,9 +1,9 @@
 'use client';
-import React, { useMemo } from 'react';
+import React, { useMemo, type ComponentType } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusCircle, Loader2 } from 'lucide-react';
+import { ChevronRight, Building2, Store, School, Heart, Leaf, ShoppingBag, PlusCircle, Loader2, type LucideProps } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,12 +15,41 @@ const statusVariantMap = {
     'pending': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
 };
 
-const iconMap: { [key: string]: any } = {
+const iconMap: { [key: string]: ComponentType<LucideProps> } = {
     'heart': Heart,
     'leaf': Leaf,
     'school': School,
     'shopping-bag': ShoppingBag,
     'store': Store
+};
+
+type ManagedNgoDoc = {
+  id: string;
+  name?: string;
+  avatarUrl?: string;
+  logoUrl?: string;
+  status?: string;
+};
+
+type ManagedBrandDoc = {
+  id: string;
+  name?: string;
+  logoUrl?: string;
+  status?: string;
+};
+
+type ManagedClubDoc = {
+  id: string;
+  name?: string;
+  avatarUrl?: string;
+  logoUrl?: string;
+  status?: string;
+};
+
+type UserDoc = {
+  managedNgoId?: string;
+  managedBrandId?: string;
+  managedClubId?: string;
 };
 
 type ManagedEntity = {
@@ -51,9 +80,9 @@ export default function AdminPage() {
     return query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid));
   }, [db, authUser?.uid]);
 
-  const { data: managedNgos, isLoading: ngosLoading } = useCollection<any>(ngosQ);
-  const { data: managedBrands, isLoading: brandsLoading } = useCollection<any>(brandsQ);
-  const { data: managedClubs, isLoading: clubsLoading } = useCollection<any>(clubsQ);
+  const { data: managedNgos, isLoading: ngosLoading } = useCollection<ManagedNgoDoc>(ngosQ);
+  const { data: managedBrands, isLoading: brandsLoading } = useCollection<ManagedBrandDoc>(brandsQ);
+  const { data: managedClubs, isLoading: clubsLoading } = useCollection<ManagedClubDoc>(clubsQ);
 
   // User doc — fallback için: super-admin atadığında users/{uid}.managedNgoId vs.
   // de yazılıyor. adminUserId query'si herhangi bir nedenle eşleşmezse,
@@ -62,7 +91,7 @@ export default function AdminPage() {
     () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
     [db, authUser?.uid],
   );
-  const { data: userData } = useDoc<any>(userDocRef);
+  const { data: userData } = useDoc<UserDoc>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
     () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
@@ -76,16 +105,16 @@ export default function AdminPage() {
     () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
     [db, userData?.managedClubId],
   );
-  const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<any>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<any>(fallbackClubRef);
+  const { data: fallbackNgo } = useDoc<ManagedNgoDoc>(fallbackNgoRef);
+  const { data: fallbackBrand } = useDoc<ManagedBrandDoc>(fallbackBrandRef);
+  const { data: fallbackClub } = useDoc<ManagedClubDoc>(fallbackClubRef);
 
   const isLoading = ngosLoading || brandsLoading || clubsLoading;
 
   const managedItems: ManagedEntity[] = useMemo(() => {
     const items: ManagedEntity[] = [];
     const seen = new Set<string>();
-    const pushNgo = (n: any) => {
+    const pushNgo = (n: ManagedNgoDoc | null | undefined) => {
       if (!n || seen.has(`ngo:${n.id}`)) return;
       seen.add(`ngo:${n.id}`);
       items.push({
@@ -98,7 +127,7 @@ export default function AdminPage() {
         status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
       });
     };
-    const pushBrand = (b: any) => {
+    const pushBrand = (b: ManagedBrandDoc | null | undefined) => {
       if (!b || seen.has(`brand:${b.id}`)) return;
       seen.add(`brand:${b.id}`);
       items.push({
@@ -111,7 +140,7 @@ export default function AdminPage() {
         status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
       });
     };
-    const pushClub = (c: any) => {
+    const pushClub = (c: ManagedClubDoc | null | undefined) => {
       if (!c || seen.has(`club:${c.id}`)) return;
       seen.add(`club:${c.id}`);
       items.push({

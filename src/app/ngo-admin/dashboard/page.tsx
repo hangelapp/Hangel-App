@@ -1,7 +1,7 @@
 'use client';
 import React, { Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, Heart, ChevronRight, Globe, TrendingUp, ShieldAlert, Building2, Info, Loader2, Clock } from 'lucide-react';
+import { DollarSign, Users, ChevronRight, ShieldAlert, Building2, Info, Loader2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
@@ -49,7 +49,7 @@ const iconColorMap: { [key: string]: string } = {
 
 const NavLink = ({ href, icon, label, comingSoon }: { href: string, icon: string, label: string, comingSoon?: boolean }) => {
   const iconName = icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-  const Icon = (Icons as any)[iconName] || Info;
+  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
   const color = iconColorMap[icon] || 'bg-gray-500';
   const { toast } = useToast();
 

@@ -39,9 +39,9 @@ type Ticket = {
   userId?: string;
   status?: 'open' | 'answered' | 'closed' | string;
   priority?: 'low' | 'normal' | 'high' | string;
-  createdAt?: any;
+  createdAt?: unknown;
   reply?: string;
-  repliedAt?: any;
+  repliedAt?: unknown;
   repliedBy?: string;
 };
 
@@ -56,10 +56,11 @@ const priorityLabel: Record<string, string> = {
   high: 'Yüksek',
 };
 
-function fmtDate(v: any): string {
+function fmtDate(v: unknown): string {
   if (!v) return '';
   try {
-    const d = v?.toDate?.() || (typeof v === 'string' ? new Date(v) : null);
+    const maybeDate = v as { toDate?: () => Date } | null;
+    const d = maybeDate?.toDate?.() || (typeof v === 'string' ? new Date(v) : null);
     if (!d) return '';
     return format(d, 'd MMM yyyy HH:mm', { locale: tr });
   } catch { return ''; }
@@ -86,7 +87,7 @@ function TicketItem({ ticket, onView }: { ticket: Ticket; onView: (t: Ticket) =>
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           <span className="flex items-center gap-1"><UserIcon className="h-3 w-3" /> {ticket.userName || 'Anonim'}</span>
           {ticket.userEmail && <span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {ticket.userEmail}</span>}
-          {ticket.createdAt && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {fmtDate(ticket.createdAt)}</span>}
+          {!!ticket.createdAt && <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {fmtDate(ticket.createdAt)}</span>}
         </div>
         {ticket.message && (
           <p className="text-sm text-muted-foreground line-clamp-2 pt-1">{ticket.message}</p>
@@ -110,6 +111,7 @@ function TicketDialog({
   const [reply, setReply] = useState('');
 
   React.useEffect(() => {
+     
     if (ticket) setReply(ticket.reply || '');
   }, [ticket?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -244,14 +246,16 @@ export default function SupportPage() {
       }
       toast({ title: 'Yanıt gönderildi', description: 'Kullanıcıya iletildi.' });
       setActiveTicket(null);
-    } catch (e: any) {
+    } catch (e) {
       console.error('Send reply failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Yanıt gönderilemedi',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     } finally {
       setSending(false);
@@ -268,8 +272,9 @@ export default function SupportPage() {
       });
       toast({ title: 'Talep kapandı' });
       setActiveTicket(null);
-    } catch (e: any) {
-      toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Hata oluştu.';
+      toast({ variant: 'destructive', title: 'Hata', description: message });
     } finally {
       setSending(false);
     }

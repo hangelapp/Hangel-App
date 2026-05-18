@@ -16,23 +16,26 @@ function patchDomMethodsForGoogleTranslate() {
   if (typeof Node === 'undefined' || !Node.prototype) return;
   const origRemoveChild = Node.prototype.removeChild;
   // @ts-ignore — runtime patch
-  Node.prototype.removeChild = function (child: any) {
+  Node.prototype.removeChild = function (...args: [Node]) {
+    const child = args[0] as Node & { parentNode?: Node | null };
     if (child?.parentNode !== this) {
       if (child?.parentNode) return child.parentNode.removeChild(child);
       return child;
     }
     // @ts-ignore
-    return origRemoveChild.apply(this, arguments as any);
+    return origRemoveChild.apply(this, args);
   };
   const origInsertBefore = Node.prototype.insertBefore;
   // @ts-ignore — runtime patch
-  Node.prototype.insertBefore = function (newNode: any, refNode: any) {
-    if (refNode && refNode.parentNode !== this) {
+  Node.prototype.insertBefore = function (...args: [Node, Node | null]) {
+    const [newNode, refNode] = args;
+    const ref = refNode as (Node & { parentNode?: Node | null }) | null;
+    if (ref && ref.parentNode !== this) {
       // @ts-ignore
       return origInsertBefore.call(this, newNode, null);
     }
     // @ts-ignore
-    return origInsertBefore.apply(this, arguments as any);
+    return origInsertBefore.apply(this, args);
   };
   domPatched = true;
 }
@@ -134,14 +137,35 @@ function ensureWidget(target: string) {
   if (target === 'tr') return;
   if (document.getElementById('google-translate-script')) return;
 
-  (window as any).googleTranslateElementInit = function () {
-    if (!(window as any).google?.translate?.TranslateElement) return;
-    new (window as any).google.translate.TranslateElement(
+  type TranslateElementConstructor = new (
+    options: {
+      pageLanguage: string;
+      includedLanguages: string;
+      autoDisplay: boolean;
+      layout?: unknown;
+    },
+    elementId: string,
+  ) => unknown;
+  interface GoogleTranslateGlobal {
+    google?: {
+      translate?: {
+        TranslateElement?: TranslateElementConstructor & {
+          InlineLayout?: { SIMPLE?: unknown };
+        };
+      };
+    };
+    googleTranslateElementInit?: () => void;
+  }
+  const w = window as unknown as GoogleTranslateGlobal;
+  w.googleTranslateElementInit = function () {
+    const TranslateElement = w.google?.translate?.TranslateElement;
+    if (!TranslateElement) return;
+    new TranslateElement(
       {
         pageLanguage: 'tr',
         includedLanguages: 'en,ru,ar,fa,es,ha',
         autoDisplay: false,
-        layout: (window as any).google.translate.TranslateElement.InlineLayout?.SIMPLE,
+        layout: TranslateElement.InlineLayout?.SIMPLE,
       },
       'google_translate_element',
     );

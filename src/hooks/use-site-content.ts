@@ -19,24 +19,29 @@ import { doc } from 'firebase/firestore';
 
 const SETTINGS_DOC = 'siteSettings';
 
-function buildGetter(data: any) {
+function buildGetter(data: unknown) {
     return function get<T = string>(path: string, fallback: T): T {
         if (!data) return fallback;
         const keys = path.split('.');
-        let cur: any = data;
+        let cur: unknown = data;
         for (const k of keys) {
             if (cur == null || typeof cur !== 'object') return fallback;
-            cur = cur[k];
+            cur = (cur as Record<string, unknown>)[k];
         }
         if (cur === undefined || cur === null || cur === '') return fallback;
         return cur as T;
     };
 }
 
+type SiteContentDoc = Record<string, unknown> & {
+    pages?: Record<string, Record<string, unknown>>;
+    projectPages?: Record<string, Record<string, unknown>>;
+};
+
 export function useWebContent() {
     const db = useFirestore();
     const ref = useMemoFirebase(() => (db ? doc(db, SETTINGS_DOC, 'webContent') : null), [db]);
-    const { data, isLoading } = useDoc<any>(ref);
+    const { data, isLoading } = useDoc<SiteContentDoc>(ref);
     return { data, isLoading, get: buildGetter(data) };
 }
 
@@ -64,7 +69,7 @@ export function useWebPage(slug: string) {
 export function useAssociationContent() {
     const db = useFirestore();
     const ref = useMemoFirebase(() => (db ? doc(db, SETTINGS_DOC, 'associationContent') : null), [db]);
-    const { data, isLoading } = useDoc<any>(ref);
+    const { data, isLoading } = useDoc<SiteContentDoc>(ref);
     return { data, isLoading, get: buildGetter(data) };
 }
 

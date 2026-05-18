@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send, Sparkles, Target, Users, ShieldAlert, Search, Building, School } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Target, Users, ShieldAlert, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { ngos, studentClubs } from '@/lib/data';

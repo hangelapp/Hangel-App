@@ -2,29 +2,19 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Star, Loader2 } from "lucide-react";
-import React, { useState, useMemo, Suspense } from 'react';
+import { PlusCircle, Loader2 } from "lucide-react";
+import React, { useMemo, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { volunteeringOpportunities } from '@/lib/data';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
 
-
-const initialApplications = [
-  { id: 1, applicant: 'Ayşe Yılmaz', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-21', avatar: 'https://i.pravatar.cc/150?u=ayse', impactScore: 12540 },
-  { id: 2, applicant: 'Mehmet Kaya', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-20', avatar: 'https://i.pravatar.cc/150?u=mehmet', impactScore: 9800 },
-  { id: 3, applicant: 'Zeynep Arslan', opportunity: 'Sosyal Medya İçerik Gönüllüsü', date: '2024-07-19', avatar: 'https://i.pravatar.cc/150?u=zeynep', impactScore: 15200 },
-  { id: 4, applicant: 'Ali Veli', opportunity: 'Afet Bölgesi Yardım Dağıtımı', date: '2024-07-18', avatar: 'https://i.pravatar.cc/150?u=ali', impactScore: 6400 },
-];
 
 const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
     const { toast } = useToast();
@@ -103,7 +93,7 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
 const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities: Volunteering[], isLoading: boolean }) => {
     const { toast } = useToast();
 
-    const handleDeactivate = (oppId: string) => {
+    const handleDeactivate = (_oppId: string) => {
         toast({
             title: "İlan Pasife Alındı",
             description: "Gönüllülük ilanı yayından kaldırıldı (Simüle edildi)."

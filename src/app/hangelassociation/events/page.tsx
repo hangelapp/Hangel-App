@@ -1,18 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    ChevronRight, ArrowLeft, Calendar, MapPin, Users, Heart, Zap, Search, 
-    Filter, ArrowDownUp, GraduationCap, Building2, Landmark, School, Globe,
-    Target, Newspaper, ExternalLink, Award
+import {
+    ChevronRight, ArrowLeft, Calendar, MapPin, GraduationCap, Building2, Landmark, Globe, type LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useAssociationContent } from '@/hooks/use-site-content';
@@ -39,7 +35,18 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const EventCard = ({ day, month, title, desc, location, time, category, onClick }: any) => (
+type EventCardProps = {
+    day: string;
+    month: string;
+    title: string;
+    desc: string;
+    location?: string;
+    time: string;
+    category: string;
+    onClick?: () => void;
+};
+
+const EventCard = ({ day, month, title, desc, location, time, category, onClick }: EventCardProps) => (
     <button onClick={onClick} className="group relative w-full text-left bg-[#f5f5f7] rounded-[2.5rem] p-10 flex flex-col md:flex-row gap-10 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-black/5">
         <div className="flex flex-col items-center justify-center bg-white rounded-3xl w-24 h-24 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
             <span className="text-3xl font-black tracking-tighter leading-none">{day}</span>
@@ -62,7 +69,15 @@ const EventCard = ({ day, month, title, desc, location, time, category, onClick 
     </button>
 );
 
-const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: any) => (
+type InstitutionListProps = {
+    title: string;
+    count: number;
+    items: string[];
+    icon: LucideIcon;
+    onDetailClick?: (item: string) => void;
+};
+
+const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: InstitutionListProps) => (
     <div className="bg-white p-10 md:p-16 rounded-[3.5rem] border border-black/5 shadow-sm hover:shadow-2xl transition-all duration-700">
         <div className="flex items-center justify-between mb-12 border-b border-black/5 pb-8">
             <div className="flex items-center gap-6">
@@ -77,7 +92,7 @@ const InstitutionList = ({ title, count, items, icon: Icon, onDetailClick }: any
             <span className="text-6xl md:text-8xl font-black tracking-tighter text-primary/10">{count}</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-4">
-            {items.map((item: string, i: number) => (
+            {items.map((item, i) => (
                 <button 
                     key={i} 
                     onClick={() => onDetailClick?.(item)}
@@ -180,12 +195,12 @@ export default function AssociationEventsPage() {
 
             <section className="py-32 px-6 bg-white">
                 <div className="container mx-auto max-w-6xl space-y-12">
-                    <InstitutionList icon={GraduationCap} title="Üniversiteler" count={42} items={networkData.universities} onDetailClick={(item: any) => handleEventClick(item)} />
+                    <InstitutionList icon={GraduationCap} title="Üniversiteler" count={42} items={networkData.universities} onDetailClick={(item) => handleEventClick(item)} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                        <InstitutionList icon={Building2} title="Ticaret Odaları" count={12} items={networkData.chambers} onDetailClick={(item: any) => handleEventClick(item)} />
-                        <InstitutionList icon={Landmark} title="Belediyeler" count={17} items={networkData.municipalities} onDetailClick={(item: any) => handleEventClick(item)} />
+                        <InstitutionList icon={Building2} title="Ticaret Odaları" count={12} items={networkData.chambers} onDetailClick={(item) => handleEventClick(item)} />
+                        <InstitutionList icon={Landmark} title="Belediyeler" count={17} items={networkData.municipalities} onDetailClick={(item) => handleEventClick(item)} />
                     </div>
-                    <InstitutionList icon={Globe} title="Sivil Toplum & Networkler" count={22} items={networkData.ngos} onDetailClick={(item: any) => handleEventClick(item)} />
+                    <InstitutionList icon={Globe} title="Sivil Toplum & Networkler" count={22} items={networkData.ngos} onDetailClick={(item) => handleEventClick(item)} />
                 </div>
             </section>
 

@@ -15,7 +15,7 @@ export function ThemeApplier() {
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 html.classList.toggle('dark', prefersDark);
             }
-        } catch (_) {}
+        } catch {}
     }, []);
 
     return null;

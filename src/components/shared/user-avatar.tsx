@@ -14,13 +14,13 @@ export function UserAvatar({ className }: { className?: string }) {
     return doc(db, 'users', user.uid);
   }, [db, user]);
 
-  const { data: userData } = useDoc(userDocRef);
+  const { data: userData } = useDoc<{ avatarUrl?: string }>(userDocRef);
 
   if (isUserLoading) {
     return <div className={cn("w-9 h-9 rounded-full bg-muted animate-pulse", className)} />;
   }
 
-  const avatarUrl = (userData as any)?.avatarUrl || user?.photoURL || undefined;
+  const avatarUrl = userData?.avatarUrl || user?.photoURL || undefined;
 
   const getInitials = () => {
     if (user?.displayName) {

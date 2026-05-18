@@ -31,7 +31,7 @@ const CONTENT_ID = 'associationContent';
 
 type SectionKey = 'homepage' | 'about' | 'events' | 'workshop' | 'legislation' | 'projects' | 'contact' | 'feedback';
 
-type ContentMap = Record<string, any>;
+type ContentMap = Record<string, unknown>;
 
 const DEFAULTS: ContentMap = {
     homepage: {
@@ -127,8 +127,9 @@ function ImageUploader({
             const url = await getDownloadURL(r);
             onChange(url);
             toast({ title: 'Yüklendi', description: 'Görsel kaydet butonuyla kalıcı yapılır.' });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Yükleme hatası', description: e?.message || 'Hata' });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            toast({ variant: 'destructive', title: 'Yükleme hatası', description: message });
         } finally {
             setUploading(false);
         }
@@ -193,8 +194,8 @@ function SectionEditor({
     fields,
 }: {
     sectionKey: SectionKey;
-    section: any;
-    onChange: (key: string, value: any) => void;
+    section: Record<string, unknown>;
+    onChange: (key: string, value: unknown) => void;
     fields: { key: string; label: string; type: 'text' | 'textarea' | 'image' }[];
 }) {
     return (
@@ -205,7 +206,7 @@ function SectionEditor({
                         <ImageUploader
                             key={f.key}
                             label={f.label}
-                            value={section[f.key] || ''}
+                            value={(section[f.key] as string) || ''}
                             onChange={(url) => onChange(f.key, url)}
                             pathPrefix={`siteContent/association/${sectionKey}`}
                         />
@@ -216,13 +217,13 @@ function SectionEditor({
                         <Label className="text-sm font-semibold">{f.label}</Label>
                         {f.type === 'textarea' ? (
                             <Textarea
-                                value={section[f.key] || ''}
+                                value={(section[f.key] as string) || ''}
                                 onChange={e => onChange(f.key, e.target.value)}
                                 rows={3}
                             />
                         ) : (
                             <Input
-                                value={section[f.key] || ''}
+                                value={(section[f.key] as string) || ''}
                                 onChange={e => onChange(f.key, e.target.value)}
                             />
                         )}
@@ -319,7 +320,7 @@ export default function AssociationContentPage() {
                     // Defaults ile merge
                     const merged: ContentMap = {};
                     for (const k of Object.keys(DEFAULTS)) {
-                        merged[k] = { ...DEFAULTS[k], ...(d[k] || {}) };
+                        merged[k] = { ...(DEFAULTS[k] as Record<string, unknown>), ...((d[k] as Record<string, unknown>) || {}) };
                     }
                     setContent(merged);
                     // Project pages (dynamic /hangelassociation/projects/[slug])
@@ -336,10 +337,10 @@ export default function AssociationContentPage() {
         return () => { cancelled = true; };
     }, [db]);
 
-    const updateField = (sectionKey: SectionKey, fieldKey: string, value: any) => {
+    const updateField = (sectionKey: SectionKey, fieldKey: string, value: unknown) => {
         setContent(prev => ({
             ...prev,
-            [sectionKey]: { ...prev[sectionKey], [fieldKey]: value },
+            [sectionKey]: { ...(prev[sectionKey] as Record<string, unknown>), [fieldKey]: value },
         }));
     };
 
@@ -353,8 +354,9 @@ export default function AssociationContentPage() {
                 { merge: true },
             );
             toast({ title: 'Kaydedildi', description: `${label} sayfası güncellendi.` });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message || 'Kaydedilemedi.' });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Kaydedilemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setSavingSection(null);
         }
@@ -396,8 +398,9 @@ export default function AssociationContentPage() {
             setProjectPages(prev => ({ ...prev, [slug]: payload }));
             toast({ title: 'Kaydedildi', description: `Proje sayfası "${slug}" güncellendi.` });
             setEditingProjectSlug(null);
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setSavingProject(false);
         }
@@ -417,8 +420,9 @@ export default function AssociationContentPage() {
                 return next;
             });
             toast({ title: 'Silindi', description: `Proje "${slug}" silindi.` });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Silinemedi', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Silinemedi.';
+            toast({ variant: 'destructive', title: 'Silinemedi', description: message });
         }
     };
 
@@ -468,7 +472,7 @@ export default function AssociationContentPage() {
                             <CardContent className="space-y-6">
                                 <SectionEditor
                                     sectionKey={s.key}
-                                    section={content[s.key]}
+                                    section={(content[s.key] as Record<string, unknown>) || {}}
                                     onChange={(k, v) => updateField(s.key, k, v)}
                                     fields={SECTION_FIELDS[s.key]}
                                 />

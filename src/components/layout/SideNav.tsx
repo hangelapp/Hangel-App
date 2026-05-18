@@ -31,7 +31,7 @@ const iconColorMap: { [key: string]: string } = {
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
     const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-    const Icon = (Icons as any)[iconName] || Info;
+    const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (
@@ -49,7 +49,14 @@ const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
     );
 };
 
-export function SideNav({ mainItems, navItems, userItems, secondaryItems }: any) {
+interface SideNavProps {
+  mainItems: SideNavItem[];
+  navItems: SideNavItem[];
+  userItems: SideNavItem[];
+  secondaryItems: SideNavItem[];
+}
+
+export function SideNav({ mainItems, navItems, userItems, secondaryItems }: SideNavProps) {
   const pathname = usePathname();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
 
@@ -65,17 +72,17 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: any)
         </div>
         <nav className="flex flex-1 flex-col space-y-4">
             <ul className="bg-card rounded-xl border overflow-hidden">
-                {mainItems.map((item: any, i: number) => <NavLink key={i} item={item} isLast={i === mainItems.length - 1} />)}
+                {mainItems.map((item, i) => <NavLink key={i} item={item} isLast={i === mainItems.length - 1} />)}
             </ul>
             <ul className="bg-card rounded-xl border overflow-hidden">
-                {navItems.map((item: any, i: number) => <NavLink key={i} item={item} isLast={i === navItems.length - 1} />)}
+                {navItems.map((item, i) => <NavLink key={i} item={item} isLast={i === navItems.length - 1} />)}
             </ul>
             <ul className="bg-card rounded-xl border overflow-hidden">
-                {userItems.map((item: any, i: number) => <NavLink key={i} item={item} isLast={i === userItems.length - 1} />)}
+                {userItems.map((item, i) => <NavLink key={i} item={item} isLast={i === userItems.length - 1} />)}
             </ul>
             <div className="mt-auto">
                 <ul className="bg-card rounded-xl border overflow-hidden">
-                    {secondaryItems.map((item: any, i: number) => <NavLink key={i} item={item} isLast={i === secondaryItems.length - 1} />)}
+                    {secondaryItems.map((item, i) => <NavLink key={i} item={item} isLast={i === secondaryItems.length - 1} />)}
                 </ul>
             </div>
         </nav>

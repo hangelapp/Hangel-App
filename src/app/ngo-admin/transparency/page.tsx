@@ -6,11 +6,9 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
@@ -140,9 +138,10 @@ export default function TransparencyPage() {
       persistCriteria(next);
 
       toast({ title: 'Belge yüklendi', description: `"${file.name}" kaydedildi.` });
-    } catch (err: any) {
+    } catch (err) {
       console.error('Upload failed', err);
-      toast({ variant: 'destructive', title: 'Yükleme hatası', description: err?.message || 'Bilinmeyen hata.' });
+      const e = err as { message?: string };
+      toast({ variant: 'destructive', title: 'Yükleme hatası', description: e?.message || 'Bilinmeyen hata.' });
     } finally {
       setUploadingId(null);
     }

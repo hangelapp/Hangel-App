@@ -24,6 +24,21 @@ const roles = [
 
 const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
+interface UserInfo {
+  id: string;
+  name?: string;
+  displayName?: string;
+  username?: string;
+  email?: string;
+  avatarUrl?: string;
+  phoneNumber?: string;
+  phone?: string;
+  personalInfo?: {
+    phone?: string;
+    email?: string;
+  };
+}
+
 export default function NewUserPage() {
     const { toast } = useToast();
     const router = useRouter();
@@ -40,17 +55,17 @@ export default function NewUserPage() {
 
     // Tüm üyeleri çek (telefon eşleştirmesi için)
     const usersQuery = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
-    const { data: allUsers, isLoading: usersLoading } = useCollection<any>(usersQuery);
+    const { data: allUsers, isLoading: usersLoading } = useCollection<UserInfo>(usersQuery);
 
     const normalizedSearch = normalizePhone(phone);
     const matchedUser = useMemo(() => {
         if (!allUsers || normalizedSearch.length < 3) return null;
         return allUsers.find(u => {
-            const candidates = [
+            const candidates = ([
                 u.personalInfo?.phone,
                 u.phoneNumber,
                 u.phone,
-            ].filter(Boolean).map(normalizePhone);
+            ].filter(Boolean) as string[]).map(normalizePhone);
             return candidates.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
         }) || null;
     }, [allUsers, normalizedSearch]);
@@ -88,19 +103,19 @@ export default function NewUserPage() {
             try {
                 const ngoSnap = await getDoc(doc(db, 'ngos', ngoId));
                 if (ngoSnap.exists()) {
-                    entityName = (ngoSnap.data() as any).name || 'STK';
+                    entityName = (ngoSnap.data() as { name?: string }).name || 'STK';
                     entityKind = 'STK';
                     entityKindAccusative = "STK'yı";
                 } else {
                     const brandSnap = await getDoc(doc(db, 'brands', ngoId));
                     if (brandSnap.exists()) {
-                        entityName = (brandSnap.data() as any).name || 'Marka';
+                        entityName = (brandSnap.data() as { name?: string }).name || 'Marka';
                         entityKind = 'Marka';
                         entityKindAccusative = 'markayı';
                     } else {
                         const clubSnap = await getDoc(doc(db, 'studentClubs', ngoId));
                         if (clubSnap.exists()) {
-                            entityName = (clubSnap.data() as any).name || 'Öğrenci Kulübü';
+                            entityName = (clubSnap.data() as { name?: string }).name || 'Öğrenci Kulübü';
                             entityKind = 'Öğrenci Kulübü';
                             entityKindAccusative = 'öğrenci kulübünü';
                         }
@@ -188,14 +203,15 @@ export default function NewUserPage() {
                 description: `${matchedUser.name || 'Üye'} kişisine bildirim ve e-posta gönderildi.`,
             });
             router.push('/ngo-admin/users');
-        } catch (err: any) {
+        } catch (err) {
             console.error('Invitation failed:', err);
+            const e = err as { code?: string; message?: string };
             toast({
                 variant: 'destructive',
                 title: 'Davet gönderilemedi',
-                description: err?.code === 'permission-denied'
+                description: e?.code === 'permission-denied'
                     ? 'Bu işlem için yeterli yetkiniz yok.'
-                    : (err?.message || 'Bilinmeyen bir hata oluştu.'),
+                    : (e?.message || 'Bilinmeyen bir hata oluştu.'),
             });
         } finally {
             setIsSending(false);

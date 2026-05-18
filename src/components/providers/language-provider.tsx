@@ -2,7 +2,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations, Language, languages } from '@/lib/translations';
 
-const LanguageContext = createContext<any>(null);
+interface LanguageContextValue {
+  language: Language;
+  changeLanguage: (lang: Language) => void;
+  t: (key: string) => string;
+  isHydrated: boolean;
+}
+
+const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export { languages };
 

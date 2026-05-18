@@ -3,28 +3,26 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, Award, BookOpen, ArrowRight, TrendingUp, Users, ShieldCheck, FileText, Globe, Sparkles, Megaphone, HelpCircle, Plus, Siren, HandCoins, ChevronDown } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, TrendingUp, Users, ShieldCheck, FileText, Siren } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
 import { allEntityLists, volunteeringOpportunities } from '@/lib/data';
 import type { Brand, Volunteering } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import * as Icons from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { differenceInDays, parse } from 'date-fns';
-import { tr } from 'date-fns/locale';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { useUser } from '@/firebase';
 import { UserNav } from '@/components/layout/user-nav';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useWebContent } from '@/hooks/use-site-content';
 
 
@@ -145,7 +143,7 @@ const ProductShowcaseSection = ({
     </section>
 );
 
-const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: any) => (
+const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: { title: string; subtitle?: string; cta?: string; ctaHref: string; imageUrl: string; imageHint?: string }) => (
     <Link href={ctaHref} className="group block h-full">
         <div className={cn(
             "relative rounded-[1.75rem] p-6 text-left flex flex-col overflow-hidden h-[450px] text-white",
@@ -205,7 +203,7 @@ const projectCardsData = [
 ];
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
-    const { language, changeLanguage, t } = useTranslation();
+    const { language, changeLanguage, t: _t } = useTranslation();
     const { user, isUserLoading } = useUser();
     const labels: Record<string, { donation: string; volunteering: string; login: string }> = {
         tr: { donation: 'Bağış', volunteering: 'Gönüllülük', login: 'Giriş Yap' },
@@ -349,7 +347,7 @@ export default function LoginPage() {
     const [mounted, setMounted] = useState(false);
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
     const [totalBrandCount, setTotalBrandCount] = useState(0);
-    const router = useRouter();
+    const _router = useRouter();
     const { get } = useWebContent();
 
     useEffect(() => {

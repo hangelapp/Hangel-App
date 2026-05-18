@@ -4,12 +4,21 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Brain, Scale, Users, Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Brain, Scale, Users, Sparkles, CheckCircle2, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 
-const committeeContents: Record<string, any> = {
+type CommitteeContent = {
+    title: string;
+    subtitle: string;
+    desc: string;
+    icon: LucideIcon;
+    color: string;
+    tasks: string[];
+};
+
+const committeeContents: Record<string, CommitteeContent> = {
     'mevzuat': {
         title: "Etki Mevzuatı ve Politika.",
         subtitle: "Hukuk ve sosyal faydanın kesişimi.",

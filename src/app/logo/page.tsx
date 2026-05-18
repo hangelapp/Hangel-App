@@ -1,59 +1,40 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     Download, 
     ArrowLeft, 
-    FileText, 
-    Palette, 
     Type,
     Copy,
     DownloadCloud,
     Ruler,
     Handshake,
-    Sparkles,
-    Building2,
-    Globe,
-    HeartHandshake, 
-    School, 
-    Store,
-    Library,
-    Users,
-    Brain,
-    BookCopy,
-    Link as LinkIcon,
-    Building,
     Maximize,
     XCircle,
-    Layers,
     FileCheck,
     Package,
     Share2,
     Tv,
-    Landmark,
     Shield,
-    HandCoins,
     ChevronRight,
-    UserCog,
     ShieldCheck,
     MessageSquare,
     Megaphone,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import * as Icons from 'lucide-react';
 
 
-const XIcon = (props: React.ComponentProps<'svg'>) => (
+const _XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
       role="img"
       viewBox="0 0 24 24"
@@ -89,7 +70,7 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
     </Card>
 );
 
-const appArchitecture = [
+const appArchitecture: ReadonlyArray<{ href: string; icon: keyof typeof Icons; label: string; description: string }> = [
     { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
     { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
     { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
@@ -98,7 +79,7 @@ const appArchitecture = [
     { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
-const associationArchitecture = [
+const associationArchitecture: ReadonlyArray<{ href: string; icon: keyof typeof Icons; label: string; description: string }> = [
     { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
     { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
     { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
@@ -113,7 +94,7 @@ const ShowcaseCard = ({
   item: { href: string; icon: keyof typeof Icons; label: string; description: string };
   themeConfig: { bg: string; subtitleColor: string; titleColor: string; linkColor: string; iconColor: string };
 }) => {
-  const Icon = Icons[item.icon] || Icons.HelpCircle;
+  const Icon = (Icons[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
   return (
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-4 text-center flex flex-col justify-between min-h-[180px]", themeConfig.bg)}>
@@ -319,10 +300,10 @@ export default function LogoPage() {
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {appArchitecture.map((item, index) => (
-                                    <ShowcaseCard 
-                                        key={item.href} 
-                                        item={item} 
+                                {appArchitecture.map((item) => (
+                                    <ShowcaseCard
+                                        key={item.href}
+                                        item={item}
                                         themeConfig={themeConfigs[0]}
                                     />
                                 ))}
@@ -332,9 +313,9 @@ export default function LogoPage() {
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {associationArchitecture.map((item, index) => (
-                                    <ShowcaseCard 
-                                        key={index} 
-                                        item={item} 
+                                    <ShowcaseCard
+                                        key={`${item.href}-${index}`}
+                                        item={item}
                                         themeConfig={themeConfigs[0]}
                                     />
                                 ))}

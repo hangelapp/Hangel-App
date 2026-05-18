@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Video, Settings2, KeyRound, ShieldCheck, Globe, Star } from 'lucide-react';
+import { ArrowLeft, KeyRound, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

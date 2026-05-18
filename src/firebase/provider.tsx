@@ -157,11 +157,13 @@ export const useFirebaseApp = (): FirebaseApp => {
 type MemoFirebase <T> = T & {__memo?: boolean};
 
 export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T | (MemoFirebase<T>) {
-  const memoized = useMemo(factory, deps);
-  
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo -- deps is forwarded from caller; this is a generic wrapper around useMemo
+  const memoized = useMemo(factory, [...deps]);
+
   if(typeof memoized !== 'object' || memoized === null) return memoized;
+  // eslint-disable-next-line react-hooks/immutability -- intentional tagging of memoized object to mark it as firebase-memoized for downstream hooks
   (memoized as MemoFirebase<T>).__memo = true;
-  
+
   return memoized;
 }
 

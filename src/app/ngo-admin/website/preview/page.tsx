@@ -5,16 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { 
-    Mail, Phone, Globe, ShieldCheck, HeartHandshake, Newspaper, BarChart3, Instagram, Facebook, Linkedin, 
-    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, Award, Calendar, ShoppingBag,
+    Mail, Phone, Globe, HeartHandshake, Instagram, Facebook, Linkedin, 
+    CreditCard, Landmark, MessageSquare, ArrowRight, CheckCircle, AlertCircle, ChevronRight, Menu, MapPin, Target, ShoppingBag,
     FileText, Eye
 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { cn } from '@/lib/utils';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -47,6 +45,45 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
       </svg>
 );
 
+interface PostDetailDialogProps {
+    post: Post | null;
+    open: boolean;
+    onClose: () => void;
+}
+
+const PostDetailDialog = ({ post, open, onClose }: PostDetailDialogProps) => {
+    if (!post) return null;
+    return (
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent>
+                <DialogHeader>
+                    <div className="flex items-center gap-3">
+                        <Avatar>
+                            <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                            <AvatarFallback>{post.author.name.slice(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <DialogTitle>{post.author.name}</DialogTitle>
+                            <DialogDescription>{post.timestamp}</DialogDescription>
+                        </div>
+                    </div>
+                </DialogHeader>
+                <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+                    {post.imageUrl && (
+                        <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                            <Image src={post.imageUrl} alt="Post image" fill className="object-cover"/>
+                        </div>
+                    )}
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
+                </div>
+                <DialogFooter>
+                    <Button variant="secondary" onClick={onClose}>Kapat</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 function PreviewContent() {
     const searchParams = useSearchParams();
     const ngo = ngos.find(n => n.id === '2'); // Ahbap Derneği
@@ -56,6 +93,16 @@ function PreviewContent() {
     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
     const [isAboutExpanded, setIsAboutExpanded] = useState(false);
 
+    const products = useMemo(
+      () =>
+        Array.from({ length: 10 }, (_, i) => ({
+          id: i,
+          name: `El Yapımı Ürün ${i + 1}`,
+          imageUrl: `https://picsum.photos/seed/product${i}/200/200`,
+          price: `${((i * 13 + 27) % 100 + 20).toFixed(2)} ₺`,
+        })),
+      [],
+    );
 
     if (!ngo) {
         return <div className="h-screen flex items-center justify-center">Kuruluş bulunamadı.</div>;
@@ -95,52 +142,12 @@ function PreviewContent() {
         { name: 'SMS ile', icon: MessageSquare, description: '"AHBAP" yazıp 3406\'ya göndererek 20 TL bağış yapabilirsiniz.' },
     ];
     
-     const products = Array.from({ length: 10 }, (_, i) => ({
-      id: i,
-      name: `El Yapımı Ürün ${i + 1}`,
-      imageUrl: `https://picsum.photos/seed/product${i}/200/200`,
-      price: `${(Math.random() * 100 + 20).toFixed(2)} ₺`,
-    }));
-    
     const governingBodies: { [key: string]: { name: string; logo: React.ElementType } } = {
         'Dernek': { name: 'İçişleri Bakanlığı Sivil Toplumla İlişkiler Genel Müdürlüğü', logo: Landmark },
         'Vakıf': { name: 'Kültür ve Turizm Bakanlığı Vakıflar Genel Müdürlüğü', logo: Landmark },
         'Spor Kulübü': { name: 'Gençlik ve Spor Bakanlığı', logo: Landmark }
     };
     const governingBody = governingBodies[ngo.type];
-
-    const PostDetailDialog = ({ post, open, onClose }: { post: Post | null, open: boolean, onClose: () => void }) => {
-        if (!post) return null;
-        return (
-            <Dialog open={open} onOpenChange={onClose}>
-                <DialogContent>
-                    <DialogHeader>
-                        <div className="flex items-center gap-3">
-                            <Avatar>
-                                <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
-                                <AvatarFallback>{post.author.name.slice(0, 2)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <DialogTitle>{post.author.name}</DialogTitle>
-                                <DialogDescription>{post.timestamp}</DialogDescription>
-                            </div>
-                        </div>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4 max-h-[70vh] overflow-y-auto">
-                        {post.imageUrl && (
-                            <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                                <Image src={post.imageUrl} alt="Post image" fill className="object-cover"/>
-                            </div>
-                        )}
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{post.content}</p>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="secondary" onClick={onClose}>Kapat</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        );
-    };
 
     return (
         <div style={themeStyle} className="bg-background text-foreground min-h-screen">

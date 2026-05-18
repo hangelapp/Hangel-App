@@ -4,12 +4,19 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Target, Users, ShieldCheck, Heart, ShoppingCart, HeartHandshake, Briefcase, Globe, GraduationCap } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 
-const contents: Record<string, any> = {
+type ForContent = {
+    title: string;
+    subtitle: string;
+    desc: string;
+    imageUrl: string;
+    hint: string;
+};
+
+const contents: Record<string, ForContent> = {
     'stk': {
         title: "Sivil Toplum İçin Dijital Gelecek.",
         subtitle: "Kapasitenizi teknolojiyle katlayın.",

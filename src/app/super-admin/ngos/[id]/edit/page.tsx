@@ -111,32 +111,33 @@ export default function NgoEditPage() {
 
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
-    const [form, setForm] = useState<Partial<NGO> & { [k: string]: any }>({});
+    const [form, setForm] = useState<Partial<NGO> & Record<string, unknown>>({});
     const [initialized, setInitialized] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (ngo && !initialized) {
+             
             setForm({ ...ngo });
             setInitialized(true);
         }
     }, [ngo, initialized]);
 
-    const set = (path: string, value: any) => {
+    const set = (path: string, value: unknown) => {
         setForm(prev => {
             const copy = { ...prev };
             const keys = path.split('.');
-            let cur: any = copy;
+            let cur: Record<string, unknown> = copy;
             for (let i = 0; i < keys.length - 1; i++) {
-                cur[keys[i]] = { ...(cur[keys[i]] ?? {}) };
-                cur = cur[keys[i]];
+                cur[keys[i]] = { ...((cur[keys[i]] as Record<string, unknown>) ?? {}) };
+                cur = cur[keys[i]] as Record<string, unknown>;
             }
             cur[keys[keys.length - 1]] = value;
             return copy;
         });
     };
 
-    const c = (form.contact ?? {}) as any;
+    const c = (form.contact ?? {}) as { email?: string; phone?: string; website?: string; social?: Record<string, string>; address?: Record<string, string> };
     const social = c?.social ?? {};
     const address = c?.address ?? {};
     const currentCountry = address.country ?? '';
@@ -175,7 +176,7 @@ export default function NgoEditPage() {
 
     const neighborhoodOptions = useMemo(() => {
         if (!isTurkey || !currentCity || !currentDistrict) return [];
-        return ((neighborhoodsData as any)?.[currentCity]?.[currentDistrict] ?? []) as string[];
+        return ((neighborhoodsData as Record<string, Record<string, string[]>>)?.[currentCity]?.[currentDistrict] ?? []) as string[];
     }, [isTurkey, currentCity, currentDistrict]);
 
     const handleLogoUpload = async (file: File) => {
@@ -198,8 +199,9 @@ export default function NgoEditPage() {
             const url = await getDownloadURL(r);
             set('avatarUrl', url);
             toast({ title: 'Logo yüklendi', description: 'Kaydete bastığınızda kalıcı olarak kaydedilecek.' });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Yükleme hatası', description: e?.message || 'Bilinmeyen hata.' });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
+            toast({ variant: 'destructive', title: 'Yükleme hatası', description: message });
         } finally {
             setUploadingLogo(false);
         }
@@ -211,11 +213,11 @@ export default function NgoEditPage() {
         try {
             // updateDoc undefined değerleri reddeder; ayrıca id ve subcollection benzeri
             // alanları yazmamak için temizliyoruz.
-            const stripUndefined = (v: any): any => {
+            const stripUndefined = (v: unknown): unknown => {
                 if (Array.isArray(v)) return v.map(stripUndefined).filter(x => x !== undefined);
-                if (v && typeof v === 'object' && !(v instanceof Date) && typeof v.toDate !== 'function') {
-                    const out: any = {};
-                    for (const [k, val] of Object.entries(v)) {
+                if (v && typeof v === 'object' && !(v instanceof Date) && typeof (v as { toDate?: unknown }).toDate !== 'function') {
+                    const out: Record<string, unknown> = {};
+                    for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
                         const cleaned = stripUndefined(val);
                         if (cleaned !== undefined) out[k] = cleaned;
                     }
@@ -224,20 +226,21 @@ export default function NgoEditPage() {
                 return v === undefined ? undefined : v;
             };
 
-            const { id: _id, posts: _posts, opportunities: _opps, campaigns: _camps, ...rest } = form as any;
+            const { id: _id, posts: _posts, opportunities: _opps, campaigns: _camps, ...rest } = form as Record<string, unknown>;
             const payload = stripUndefined(rest);
 
-            await updateDoc(ngoDocRef, payload);
+            await updateDoc(ngoDocRef, payload as Record<string, unknown>);
             toast({ title: 'Kaydedildi', description: 'STK bilgileri güncellendi.' });
             router.back();
-        } catch (e: any) {
+        } catch (e) {
             console.error('NGO update failed:', e);
-            const code = e?.code;
+            const code = (e as { code?: string } | null)?.code;
+            const eMessage = e instanceof Error ? e.message : '';
             const description = code === 'permission-denied'
                 ? 'Sunucu izin vermedi. Süper admin yetkinizi ve Firestore kurallarını kontrol edin.'
                 : code === 'invalid-argument'
-                    ? `Geçersiz veri: ${e?.message || ''}`
-                    : (e?.message || 'Güncelleme başarısız.');
+                    ? `Geçersiz veri: ${eMessage}`
+                    : (eMessage || 'Güncelleme başarısız.');
             toast({ variant: 'destructive', title: 'Hata', description });
         } finally {
             setSaving(false);
@@ -257,7 +260,7 @@ export default function NgoEditPage() {
         return <div className="p-8 text-center text-muted-foreground">Kuruluş bulunamadı.</div>;
     }
 
-    const s = (form.stats ?? {}) as any;
+    const s = (form.stats ?? {}) as Record<string, unknown>;
 
     return (
         <div className="space-y-6 pb-20">
@@ -306,7 +309,7 @@ export default function NgoEditPage() {
                         <Input type="number" min={0} max={100} value={form.transparencyScore ?? 0} onChange={e => set('transparencyScore', Number(e.target.value))} />
                     </Field>
                     <Field label="Platform Durumu">
-                        <Select value={(form as any).status ?? 'Aktif'} onValueChange={v => set('status', v)}>
+                        <Select value={(form.status as string) ?? 'Aktif'} onValueChange={v => set('status', v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Aktif">Aktif</SelectItem>
@@ -577,7 +580,7 @@ export default function NgoEditPage() {
                         <Field key={key} label={label}>
                             <Input
                                 type="number"
-                                value={(s as any)[key] ?? 0}
+                                value={(s[key] as number | undefined) ?? 0}
                                 onChange={e => set(`stats.${key}`, Number(e.target.value))}
                             />
                         </Field>

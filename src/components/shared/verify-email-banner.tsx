@@ -29,8 +29,8 @@ export function VerifyEmailBanner() {
         try {
             await initiateEmailVerification(user);
             toast({ title: "Gönderildi", description: "Doğrulama e-postası tekrar gönderildi." });
-        } catch (err: any) {
-            const code = err?.code;
+        } catch (err: unknown) {
+            const code = (err as { code?: string } | undefined)?.code;
             const msg =
                 code === "auth/too-many-requests"
                     ? "Çok fazla deneme. Biraz sonra tekrar deneyin."

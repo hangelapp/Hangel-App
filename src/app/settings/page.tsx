@@ -4,9 +4,9 @@
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { 
-    Bell, ChevronRight, FileText, Globe, HelpCircle, Info, LogOut, Palette, Shield, Trash2, User,
-    HeartHandshake, PersonStanding, Wallet, Users, HandCoins, Store
+import {
+    Bell, ChevronRight, FileText, Globe, LogOut, Palette, Shield, Trash2, User,
+    HeartHandshake, PersonStanding, HandCoins, Store, Megaphone
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -123,6 +123,7 @@ export default function SettingsPage() {
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/notifications" icon={Bell} label="Bildirim Ayarları" iconColor="bg-red-500" />
+                    <SettingsLink href="/settings/marketing-consent" icon={Megaphone} label="Pazarlama İzinleri (SMS & E-Posta)" iconColor="bg-fuchsia-500" />
                     <SettingsLink href="/settings/theme" icon={Palette} label="Tema Ayarları" iconColor="bg-gray-500" />
                     <SettingsLink href="/settings/language" icon={Globe} label="Dil Ayarları" iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/accessibility" icon={PersonStanding} label="Erişilebilirlik" iconColor="bg-indigo-500" />

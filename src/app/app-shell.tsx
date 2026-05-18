@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import * as Icons from 'lucide-react';
-import { CircleHelp, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -72,9 +72,9 @@ const iconColorMap: { [key: string]: string } = {
   'circle-help': 'bg-teal-500',
 };
 
-const MobileNavLink = ({ item, onClick }: { item: SideNavItem; onClick: () => void }) => {
+const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick: () => void }) => {
     const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-    const Icon = (Icons as any)[iconName] || Info;
+    const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (

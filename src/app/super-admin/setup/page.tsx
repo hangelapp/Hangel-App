@@ -38,36 +38,40 @@ export default function SetupPage() {
         setProgress([]);
         logProgress("Kurulum başlatıldı...");
 
+        type WithId = { id: string };
+        type WithSlug = { slug: string };
+
         try {
             logProgress("Kullanıcılar aktarılıyor...");
-            usersJson.forEach((u: any) => setDocumentNonBlocking(doc(db, 'users', u.id), u, { merge: true }));
+            (usersJson as WithId[]).forEach((u) => setDocumentNonBlocking(doc(db, 'users', u.id), u, { merge: true }));
 
             logProgress("STK'lar aktarılıyor...");
-            ngosJson.forEach((n: any) => setDocumentNonBlocking(doc(db, 'ngos', n.id), n, { merge: true }));
+            (ngosJson as WithId[]).forEach((n) => setDocumentNonBlocking(doc(db, 'ngos', n.id), n, { merge: true }));
 
             logProgress("Markalar aktarılıyor...");
-            brandsJson.forEach((b: any) => setDocumentNonBlocking(doc(db, 'brands', b.id), b, { merge: true }));
+            (brandsJson as WithId[]).forEach((b) => setDocumentNonBlocking(doc(db, 'brands', b.id), b, { merge: true }));
 
             logProgress("Etkinlikler aktarılıyor...");
-            eventsJson.forEach((e: any) => setDocumentNonBlocking(doc(db, 'events', e.id), e, { merge: true }));
+            (eventsJson as WithId[]).forEach((e) => setDocumentNonBlocking(doc(db, 'events', e.id), e, { merge: true }));
 
             logProgress("Gönüllülük ilanları aktarılıyor...");
-            volunteeringJson.forEach((v: any) => setDocumentNonBlocking(doc(db, 'volunteering', v.id), v, { merge: true }));
+            (volunteeringJson as WithId[]).forEach((v) => setDocumentNonBlocking(doc(db, 'volunteering', v.id), v, { merge: true }));
 
             logProgress("Kütüphane içerikleri aktarılıyor...");
-            libraryJson.forEach((l: any) => setDocumentNonBlocking(doc(db, 'library', l.slug), l, { merge: true }));
+            (libraryJson as WithSlug[]).forEach((l) => setDocumentNonBlocking(doc(db, 'library', l.slug), l, { merge: true }));
 
             logProgress("Zaman tüneli gönderileri aktarılıyor...");
-            postsJson.forEach((p: any) => setDocumentNonBlocking(doc(db, 'posts', p.id), p, { merge: true }));
+            (postsJson as WithId[]).forEach((p) => setDocumentNonBlocking(doc(db, 'posts', p.id), p, { merge: true }));
 
             logProgress("Rozet ve sertifikalar (Kullanıcı 1) ekleniyor...");
-            badgesJson.forEach((badge: any) => setDocumentNonBlocking(doc(db, 'users', '1', 'badges', badge.id), badge, { merge: true }));
-            certificatesJson.forEach((cert: any) => setDocumentNonBlocking(doc(db, 'users', '1', 'certificates', cert.id), cert, { merge: true }));
+            (badgesJson as WithId[]).forEach((badge) => setDocumentNonBlocking(doc(db, 'users', '1', 'badges', badge.id), badge, { merge: true }));
+            (certificatesJson as WithId[]).forEach((cert) => setDocumentNonBlocking(doc(db, 'users', '1', 'certificates', cert.id), cert, { merge: true }));
 
             logProgress("Tüm veriler başarıyla kuyruğa alındı!");
             toast({ title: "Kurulum Tamamlandı" });
-        } catch (error: any) {
-            logProgress(`Hata: ${error.message}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Bilinmeyen hata';
+            logProgress(`Hata: ${message}`);
         } finally {
             setIsLoading(false);
         }

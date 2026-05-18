@@ -28,16 +28,17 @@ export async function POST(request: NextRequest) {
                 exists: true,
                 name: user.displayName || '',
             });
-        } catch (error: any) {
-            if (error.code === 'auth/user-not-found') {
+        } catch (error: unknown) {
+            if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'auth/user-not-found') {
                 return NextResponse.json({ exists: false });
             }
             throw error;
         }
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('check-email error:', error);
+        const message = error instanceof Error ? error.message : 'Kontrol başarısız';
         return NextResponse.json(
-            { error: error.message || 'Kontrol başarısız' },
+            { error: message },
             { status: 500 }
         );
     }

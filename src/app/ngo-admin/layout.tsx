@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function NgoAdminLayout({
   children,
@@ -11,7 +11,6 @@ export default function NgoAdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
 
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Building2, MapPin, Coffee, Users, Calendar, ShieldCheck, Loader2, CheckCircle2, Landmark } from 'lucide-react';
+import { ArrowLeft, Building2, MapPin, ShieldCheck, Loader2, CheckCircle2, Landmark } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

@@ -7,7 +7,6 @@ import { Filter, ListFilter, Map, Search, Calendar, MapPin, X, Globe, MapPinned 
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
 import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -22,7 +21,6 @@ import { collection } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
 
 function EventsPageContent() {
-  const { toast } = useToast();
   const searchParams = useSearchParams();
   const db = useFirestore();
   const [sortKey, setSortKey] = useState('date');
@@ -40,7 +38,7 @@ function EventsPageContent() {
   // Fetch events from Firestore
   const eventsRef = useMemoFirebase(() => collection(db, 'events'), [db]);
   const { data: firestoreEvents } = useCollection(eventsRef);
-  const events = (firestoreEvents ?? []) as Event[];
+  const events = useMemo<Event[]>(() => (firestoreEvents ?? []) as Event[], [firestoreEvents]);
 
   // Filters from URL
   const categoryParam = searchParams.get('category');

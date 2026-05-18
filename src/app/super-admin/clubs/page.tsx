@@ -30,14 +30,35 @@ import type { StudentClub } from '@/lib/types';
 type ClubItem = (StudentClub & { id: string }) & {
     source: 'clubs' | 'applications';
     status: string;
-    __raw?: any;
+    __raw?: unknown;
 };
+
+interface SimpleClubUser {
+    id: string;
+    name?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    phone?: string;
+    phoneNumber?: string;
+    personalInfo?: { phone?: string; email?: string };
+    [key: string]: unknown;
+}
+
+interface ClubApplication {
+    id: string;
+    name?: string;
+    status?: string;
+    clubType?: string;
+    universityName?: string;
+    clubCategory?: string;
+    [key: string]: unknown;
+}
 
 const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
 const TransferAdminDialog = ({ club, allUsers, onAssign }: {
     club: ClubItem;
-    allUsers: any[] | null;
+    allUsers: SimpleClubUser[] | null;
     onAssign: (clubId: string, newUserId: string, newUserName: string) => Promise<void>;
 }) => {
     const [open, setOpen] = useState(false);
@@ -48,7 +69,7 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
     const matchedUser = useMemo(() => {
         if (!allUsers || normalizedSearch.length < 3) return null;
         return allUsers.find(u => {
-            const cands = [u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean).map(normalizePhone);
+            const cands = ([u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean) as string[]).map(normalizePhone);
             return cands.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
         }) || null;
     }, [allUsers, normalizedSearch]);
@@ -151,38 +172,40 @@ export default function ClubsAdminPage() {
         () => query(collection(db, 'applications'), where('entityType', '==', 'CLUB')),
         [db],
     );
-    const { data: applications, isLoading: appsLoading } = useCollection<any>(applicationsQuery);
+    const { data: applications, isLoading: appsLoading } = useCollection<ClubApplication>(applicationsQuery);
 
     // Yetkili atama için tüm kullanıcılar
     const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-    const { data: allUsers } = useCollection<any>(usersQuery);
+    const { data: allUsers } = useCollection<SimpleClubUser>(usersQuery);
 
     const items = useMemo<ClubItem[]>(() => {
         const list: ClubItem[] = [];
-        (clubs || []).forEach((c: any) => {
+        (clubs || []).forEach((c) => {
+            const clubWithStatus = c as StudentClub & { id: string; status?: string };
             list.push({
-                ...c,
+                ...clubWithStatus,
                 source: 'clubs',
-                status: c.status || 'Aktif',
+                status: clubWithStatus.status || 'Aktif',
             });
         });
-        (applications || []).forEach((a: any) => {
+        (applications || []).forEach((a) => {
+            const aExt = a as ClubApplication & { org?: string; university?: string; logoUrl?: string; avatarUrl?: string; coverPhotoUrl?: string; about?: string; date?: string; email?: string; phone?: string; website?: string };
             // Onaylanmış başvurular zaten clubs'ta var; çift göstermemek için atla
             if (a.status === 'Onaylandı') return;
             list.push({
                 id: a.id,
-                name: a.name || a.org || 'Adsız Kulüp',
-                university: a.universityName || a.university || '',
-                avatarUrl: a.logoUrl || a.avatarUrl || '',
-                coverPhotoUrl: a.coverPhotoUrl || '',
+                name: a.name || aExt.org || 'Adsız Kulüp',
+                university: a.universityName || aExt.university || '',
+                avatarUrl: aExt.logoUrl || aExt.avatarUrl || '',
+                coverPhotoUrl: aExt.coverPhotoUrl || '',
                 type: a.clubType || 'university',
                 category: a.clubCategory || '',
                 members: 0,
                 points: 0,
-                description: a.about || '',
+                description: aExt.about || '',
                 vision: '',
-                joinDate: a.date || '',
-                contact: { email: a.email || '', phone: a.phone || '', website: a.website || '' },
+                joinDate: aExt.date || '',
+                contact: { email: aExt.email || '', phone: aExt.phone || '', website: aExt.website || '' },
                 source: 'applications',
                 status: a.status || 'Beklemede',
                 __raw: a,
@@ -210,10 +233,10 @@ export default function ClubsAdminPage() {
     }, [items, statusFilter, searchTerm]);
 
     const stats = useMemo(() => {
-        const approved = (clubs || []).filter((c: any) => (c.status || 'Aktif') === 'Aktif').length;
-        const passive = (clubs || []).filter((c: any) => c.status === 'Pasif').length;
-        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
-        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+        const approved = (clubs || []).filter((c) => ((c as StudentClub & { status?: string }).status || 'Aktif') === 'Aktif').length;
+        const passive = (clubs || []).filter((c) => (c as StudentClub & { status?: string }).status === 'Pasif').length;
+        const pending = (applications || []).filter((a) => a.status === 'Beklemede').length;
+        const rejected = (applications || []).filter((a) => a.status === 'Reddedildi').length;
         return { total: approved + passive + pending + rejected, approved, pending, passive, rejected };
     }, [clubs, applications]);
 
@@ -227,13 +250,15 @@ export default function ClubsAdminPage() {
                     ? 'Kulüp /clubs sayfasında tekrar görünür olacak.'
                     : 'Kulüp artık public listelerde görünmeyecek.',
             });
-        } catch (e: any) {
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Durum güncellenemedi',
-                description: e?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : (e?.message || 'Hata.'),
+                    : message,
             });
         }
     };
@@ -246,13 +271,15 @@ export default function ClubsAdminPage() {
                 title: 'Kulüp Kaldırıldı',
                 description: `${name} platformdan kalıcı olarak silindi.`,
             });
-        } catch (e: any) {
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Hata.';
             toast({
                 variant: 'destructive',
                 title: 'Silme başarısız',
-                description: e?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : (e?.message || 'Hata.'),
+                    : message,
             });
         }
     };
@@ -263,8 +290,8 @@ export default function ClubsAdminPage() {
 
             // Super-admin'in rolünü düşürme; sadece henüz super-admin olmayanları yükselt.
             const userSnap = await getDoc(doc(db, 'users', newUserId));
-            const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
-            const updatePayload: any = { managedClubId: clubId };
+            const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
+            const updatePayload: Record<string, unknown> = { managedClubId: clubId };
             if (currentRole !== 'super-admin') {
                 updatePayload.role = 'ngo-admin';
             }
@@ -285,14 +312,16 @@ export default function ClubsAdminPage() {
                 title: 'Yetkili Atandı',
                 description: `${newUserName} bu kulübün yöneticisi olarak işaretlendi.`,
             });
-        } catch (e: any) {
+        } catch (e) {
             console.error('Club admin assign failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
             toast({
                 variant: 'destructive',
                 title: 'Atama başarısız',
-                description: e?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+                    : message,
             });
         }
     };
@@ -362,7 +391,7 @@ export default function ClubsAdminPage() {
                         />
                     </div>
                     <Label className="text-sm font-semibold">Durum:</Label>
-                    <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                    <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'approved' | 'pending' | 'passive' | 'rejected')}>
                         <SelectTrigger className="h-9 w-44"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Tümü</SelectItem>

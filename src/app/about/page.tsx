@@ -3,13 +3,13 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, TrendingUp, Users, ShieldCheck, HeartHandshake, Zap, Award, Target, Landmark, Scale, Brain, Sparkles, Globe, Heart, Shield } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ShieldCheck, Target, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { useWebContent } from '@/hooks/use-site-content';
@@ -82,7 +82,7 @@ const AppleSection = ({
     </section>
 );
 
-const FeatureCard = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
+const FeatureCard = ({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>, title: string, description: string }) => (
     <Card className="rounded-[2.5rem] p-8 border-none shadow-lg bg-white group hover:shadow-2xl transition-all duration-500 text-left">
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
             <Icon className="h-7 w-7 text-primary group-hover:text-white" />

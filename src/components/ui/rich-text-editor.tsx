@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Bold, Italic, Underline as UnderlineIcon, List, ListOrdered,
-    Heading2, Heading3, Link2, Code as CodeIcon, Quote, Eraser, Eye, Pencil,
+    Heading2, Heading3, Link2, Code as CodeIcon, Quote, Eraser, Pencil,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

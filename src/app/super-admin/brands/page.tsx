@@ -16,17 +16,51 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Loader2, Store, Trash2, Power, PowerOff, Pencil, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3 } from 'lucide-react';
+import { Loader2, Trash2, Power, PowerOff, Search, Inbox, Eye, UserCog, CheckCircle, XCircle, Edit3 } from 'lucide-react';
 import type { Brand } from "@/lib/types";
 import Link from 'next/link';
 
 type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
 
+type EditFormData = Partial<BrandItem> & {
+    _email?: string;
+    _phone?: string;
+    _website?: string;
+    _instagram?: string;
+    _twitter?: string;
+    _facebook?: string;
+    _linkedin?: string;
+    agency?: string;
+    link?: string;
+};
+
+type StatusFilter = 'all' | 'approved' | 'pending' | 'passive' | 'rejected';
+
+interface BrandApplication {
+    id: string;
+    name?: string;
+    sector?: string;
+    brandStatus?: string;
+    status?: string;
+    [key: string]: unknown;
+}
+
+interface SimpleUser {
+    id: string;
+    name?: string;
+    displayName?: string;
+    avatarUrl?: string;
+    phone?: string;
+    phoneNumber?: string;
+    personalInfo?: { phone?: string; email?: string };
+    [key: string]: unknown;
+}
+
 const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
 const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: {
     brand: BrandItem;
-    allUsers: any[] | null;
+    allUsers: SimpleUser[] | null;
     onAssign: (brandId: string, userId: string, userName: string) => Promise<void>;
 }) => {
     const [open, setOpen] = useState(false);
@@ -37,7 +71,7 @@ const TransferBrandAdminDialog = ({ brand, allUsers, onAssign }: {
     const matchedUser = useMemo(() => {
         if (!allUsers || normalizedSearch.length < 3) return null;
         return allUsers.find(u => {
-            const cands = [u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean).map(normalizePhone);
+            const cands = ([u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean) as string[]).map(normalizePhone);
             return cands.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
         }) || null;
     }, [allUsers, normalizedSearch]);
@@ -131,9 +165,9 @@ export default function BrandsPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
-    const [editFormData, setEditFormData] = useState<Partial<BrandItem>>({});
+    const [editFormData, setEditFormData] = useState<EditFormData>({});
 
     // Load approved brands
     const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
@@ -148,7 +182,7 @@ export default function BrandsPage() {
 
     // Yetkili atama için tüm kullanıcılar
     const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
-    const { data: allUsers } = useCollection<any>(usersQuery);
+    const { data: allUsers } = useCollection<SimpleUser>(usersQuery);
 
     // Combine and filter brands
     const filteredBrands = useMemo(() => {
@@ -160,18 +194,17 @@ export default function BrandsPage() {
                 combinedList.push({
                     ...brand,
                     source: 'brands',
-                    status: (brand as any).status || 'Aktif'
+                    status: (brand as Brand & { status?: string }).status || 'Aktif'
                 });
             });
         }
 
         // Add applications (all statuses)
         if (applications) {
-            applications.forEach((app: any) => {
+            applications.forEach((app: BrandApplication) => {
                 // Onaylanmış başvurular zaten brands koleksiyonunda; çift göstermemek için atla
                 if (app.status === 'Onaylandı') return;
                 combinedList.push({
-                    id: app.id,
                     name: app.name,
                     slug: app.name?.toLowerCase().replace(/\s+/g, '-') || '',
                     logoUrl: '',
@@ -181,6 +214,7 @@ export default function BrandsPage() {
                     category: app.sector || 'Diğer',
                     status: app.status || 'Beklemede',
                     ...app,
+                    id: app.id,
                     source: 'applications' as const, // spread'den sonra override garantili
                 } as BrandItem);
             });
@@ -242,8 +276,8 @@ export default function BrandsPage() {
             // 2. Kullanıcıya ngo-admin rolü ver + bağlı brand ID'sini sakla
             //    Super-admin'lerin rolü değişmez (yetkisini kaybetmesin)
             const userSnap = await getDoc(doc(db, 'users', newUserId));
-            const currentRole = userSnap.exists() ? (userSnap.data() as any).role : null;
-            const updatePayload: any = { managedBrandId: brandId };
+            const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
+            const updatePayload: Record<string, unknown> = { managedBrandId: brandId };
             if (currentRole !== 'super-admin') {
                 updatePayload.role = 'ngo-admin';
             }
@@ -265,14 +299,16 @@ export default function BrandsPage() {
                 title: 'Yetkili Atandı',
                 description: `${newUserName} bu markanın yöneticisi olarak işaretlendi.`,
             });
-        } catch (e: any) {
+        } catch (e) {
             console.error('Brand admin assign failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
             toast({
                 variant: 'destructive',
                 title: 'Atama başarısız',
-                description: e?.code === 'permission-denied'
+                description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+                    : message,
             });
         }
     };
@@ -291,21 +327,21 @@ export default function BrandsPage() {
             agency: brand.agency,
             link: brand.link || '',
             // Flatten contact fields for form state
-            _email: brand.contact?.email || (brand as any).email || '',
-            _phone: (brand as any).phone || '',
-            _website: brand.contact?.website || (brand as any).website || '',
+            _email: brand.contact?.email || (brand as Brand & { email?: string }).email || '',
+            _phone: (brand as Brand & { phone?: string }).phone || '',
+            _website: brand.contact?.website || (brand as Brand & { website?: string }).website || '',
             _instagram: brand.contact?.social?.instagram || '',
             _twitter: brand.contact?.social?.twitter || '',
             _facebook: brand.contact?.social?.facebook || '',
             _linkedin: brand.contact?.social?.linkedin || '',
-        } as any);
+        });
     };
 
     const handleSaveEdit = async () => {
         if (!editingBrand || !editingBrand.id) return;
 
         try {
-            const fd = editFormData as any;
+            const fd = editFormData;
             const brandRef = doc(db, 'brands', editingBrand.id);
             updateDocumentNonBlocking(brandRef, {
                 name: fd.name,
@@ -334,7 +370,7 @@ export default function BrandsPage() {
                 description: "Değişiklikler başarıyla kaydedildi."
             });
             setEditingBrand(null);
-        } catch (error) {
+        } catch {
             toast({
                 variant: 'destructive',
                 title: "Hata",
@@ -347,10 +383,10 @@ export default function BrandsPage() {
 
     // useMemo, conditional return'den ÖNCE çağrılmalı (Rules of Hooks)
     const stats = useMemo(() => {
-        const approved = (brands || []).filter((b: any) => (b.status || 'Aktif') === 'Aktif').length;
-        const passive = (brands || []).filter((b: any) => b.status === 'Pasif').length;
-        const pending = (applications || []).filter((a: any) => a.status === 'Beklemede').length;
-        const rejected = (applications || []).filter((a: any) => a.status === 'Reddedildi').length;
+        const approved = (brands || []).filter((b) => ((b as Brand & { status?: string }).status || 'Aktif') === 'Aktif').length;
+        const passive = (brands || []).filter((b) => (b as Brand & { status?: string }).status === 'Pasif').length;
+        const pending = (applications || []).filter((a) => (a as { status?: string }).status === 'Beklemede').length;
+        const rejected = (applications || []).filter((a) => (a as { status?: string }).status === 'Reddedildi').length;
         return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
     }, [brands, applications]);
 
@@ -423,7 +459,7 @@ export default function BrandsPage() {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="status" className="text-sm font-semibold">Durum</Label>
-                            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
                                 <SelectTrigger id="status" className="h-10 rounded-xl">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -598,8 +634,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-agency" className="text-sm font-semibold">Ajans</Label>
                                                                         <Input
                                                                             id="edit-agency"
-                                                                            value={(editFormData as any).agency || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, agency: e.target.value } as any)}
+                                                                            value={editFormData.agency || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, agency: e.target.value })}
                                                                             className="rounded-xl"
                                                                         />
                                                                     </div>
@@ -607,8 +643,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-link" className="text-sm font-semibold">Affiliate / Alışveriş Linki</Label>
                                                                         <Input
                                                                             id="edit-link"
-                                                                            value={(editFormData as any).link || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value } as any)}
+                                                                            value={editFormData.link || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, link: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://..."
                                                                         />
@@ -627,8 +663,8 @@ export default function BrandsPage() {
                                                                         <Input
                                                                             id="edit-email"
                                                                             type="email"
-                                                                            value={(editFormData as any)._email || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _email: e.target.value } as any)}
+                                                                            value={editFormData._email || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _email: e.target.value })}
                                                                             className="rounded-xl"
                                                                         />
                                                                     </div>
@@ -636,8 +672,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-phone" className="text-sm font-semibold">Telefon</Label>
                                                                         <Input
                                                                             id="edit-phone"
-                                                                            value={(editFormData as any)._phone || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _phone: e.target.value } as any)}
+                                                                            value={editFormData._phone || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _phone: e.target.value })}
                                                                             className="rounded-xl"
                                                                         />
                                                                     </div>
@@ -645,8 +681,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-website" className="text-sm font-semibold">Web Sitesi</Label>
                                                                         <Input
                                                                             id="edit-website"
-                                                                            value={(editFormData as any)._website || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _website: e.target.value } as any)}
+                                                                            value={editFormData._website || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _website: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://..."
                                                                         />
@@ -664,8 +700,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-instagram" className="text-sm font-semibold">Instagram</Label>
                                                                         <Input
                                                                             id="edit-instagram"
-                                                                            value={(editFormData as any)._instagram || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _instagram: e.target.value } as any)}
+                                                                            value={editFormData._instagram || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _instagram: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://instagram.com/..."
                                                                         />
@@ -674,8 +710,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-twitter" className="text-sm font-semibold">Twitter / X</Label>
                                                                         <Input
                                                                             id="edit-twitter"
-                                                                            value={(editFormData as any)._twitter || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _twitter: e.target.value } as any)}
+                                                                            value={editFormData._twitter || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _twitter: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://x.com/..."
                                                                         />
@@ -684,8 +720,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-facebook" className="text-sm font-semibold">Facebook</Label>
                                                                         <Input
                                                                             id="edit-facebook"
-                                                                            value={(editFormData as any)._facebook || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _facebook: e.target.value } as any)}
+                                                                            value={editFormData._facebook || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _facebook: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://facebook.com/..."
                                                                         />
@@ -694,8 +730,8 @@ export default function BrandsPage() {
                                                                         <Label htmlFor="edit-linkedin" className="text-sm font-semibold">LinkedIn</Label>
                                                                         <Input
                                                                             id="edit-linkedin"
-                                                                            value={(editFormData as any)._linkedin || ''}
-                                                                            onChange={(e) => setEditFormData({ ...editFormData, _linkedin: e.target.value } as any)}
+                                                                            value={editFormData._linkedin || ''}
+                                                                            onChange={(e) => setEditFormData({ ...editFormData, _linkedin: e.target.value })}
                                                                             className="rounded-xl"
                                                                             placeholder="https://linkedin.com/..."
                                                                         />

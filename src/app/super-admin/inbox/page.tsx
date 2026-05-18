@@ -8,8 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import * as Icons from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Input } from '@/components/ui/input';
 
 const notifications = [
     { id: 1, icon: 'FileText', title: 'Yeni STK Başvurusu', description: 'Doğa Koruma Derneği platforma katılmak için başvurdu.', time: '15 dakika önce', read: false, link: '/super-admin/applications' },
@@ -18,7 +16,7 @@ const notifications = [
     { id: 4, icon: 'Bot', title: 'Haftalık Analiz Raporu Hazır', description: 'Platformun haftalık performans raporunu görüntüleyebilirsiniz.', time: '1 gün önce', read: true, link: '/super-admin/analytics' },
 ];
 
-const sentMessages = [
+const _sentMessages = [
     { id: 101, recipient: 'Aktif Gönüllüler', subject: 'Haftalık Bilgilendirme', time: '1 gün önce', status: 'İletildi' },
     { id: 102, recipient: 'Hangel Sistem Yöneticisi', subject: 'Belge Onayı Hakkında', time: '3 gün önce', status: 'Okundu' },
     { id: 103, recipient: 'Bağışçılarım', subject: 'Aylık Faaliyet Özeti', time: '5 gün önce', status: 'İletildi' },
@@ -50,7 +48,7 @@ export default function InboxPage() {
                         </TabsList>
                         <TabsContent value="all" className="mt-4 space-y-4">
                             {data.map(notification => {
-                                const Icon = Icons[notification.icon as keyof typeof Icons] || Icons.Bell;
+                                const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[notification.icon] || Icons.Bell) as React.ComponentType<{ className?: string }>;
                                 return (
                                 <div key={notification.id} className={`p-4 border rounded-lg flex items-start gap-4 ${notification.read ? 'opacity-60' : ''}`}>
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
@@ -65,7 +63,7 @@ export default function InboxPage() {
                         </TabsContent>
                         <TabsContent value="unread" className="mt-4 space-y-4">
                             {data.filter(n => !n.read).map(notification => {
-                                const Icon = Icons[notification.icon as keyof typeof Icons] || Icons.Bell;
+                                const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[notification.icon] || Icons.Bell) as React.ComponentType<{ className?: string }>;
                                 return (
                                 <div key={notification.id} className="p-4 border rounded-lg flex items-start gap-4">
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />

@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Filter, ArrowDownUp } from 'lucide-react';
-import { marketCategories } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShieldCheck, FileText, CheckCircle2, ChevronRight, Briefcase, Landmark, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, CheckCircle2, ChevronRight, Landmark, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -30,7 +30,16 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const DetailSection = ({ title, subtitle, description, image, hint, theme = 'light' }: any) => (
+interface DetailSectionProps {
+    title: string;
+    subtitle: string;
+    description: string;
+    image: string;
+    hint: string;
+    theme?: 'light' | 'dark';
+}
+
+const DetailSection = ({ title, subtitle, description, image, hint, theme = 'light' }: DetailSectionProps) => (
     <section className={cn(
         "relative min-h-[80vh] flex flex-col items-center pt-24 text-center border-b border-black/5 overflow-hidden",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"

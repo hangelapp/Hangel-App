@@ -1,9 +1,8 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { volunteeringOpportunities, ngos } from '@/lib/data';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Award, CheckCircle, XCircle, Briefcase, FileText, Plane, Building, School, Languages, Laptop, Badge as BadgeIcon, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Award, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import Image from 'next/image';
@@ -34,7 +33,7 @@ export default function VolunteeringDetailPage() {
     return doc(db, 'ngos', opportunity.ngoId);
   }, [db, opportunity?.ngoId]);
 
-  const { data: ngo, isLoading: isNgoLoading } = useDoc<NGO>(ngoDocRef);
+  const { data: ngo } = useDoc<NGO>(ngoDocRef);
 
   const [profileUrl, setProfileUrl] = useState('');
   const { user: authUser } = useUser();
@@ -86,8 +85,9 @@ export default function VolunteeringDetailPage() {
     }
   })();
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
-  const providesCertificate = (opportunity as any).providesCertificate ?? (opportunity as any).amenities?.providesCertificate ?? false;
-  const taskType = (opportunity as any).taskType || (opportunity as any).commitment || '—';
+  const opp = opportunity as Volunteering & { providesCertificate?: boolean; amenities?: { providesCertificate?: boolean }; taskType?: string; commitment?: string };
+  const providesCertificate = opp.providesCertificate ?? opp.amenities?.providesCertificate ?? false;
+  const taskType = opp.taskType || opp.commitment || '—';
 
   const handleApply = () => {
     if (!authUser) {

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ArrowLeft, Calendar, MapPin, Users, Heart, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Heart } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -33,7 +33,17 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     );
 };
 
-const EventLineup = ({ title, date, location, image, hint, description, category }: any) => (
+interface EventLineupProps {
+    title: string;
+    date: string;
+    location: string;
+    image: string;
+    hint: string;
+    description: string;
+    category: string;
+}
+
+const EventLineup = ({ title, date, location, image, hint, description, category }: EventLineupProps) => (
     <div className="group relative w-full border-b border-black/5 py-16 flex flex-col md:flex-row items-center gap-12 px-6 hover:bg-[#f5f5f7]/50 transition-colors">
         <div className="relative w-full md:w-80 aspect-video rounded-[2rem] overflow-hidden shadow-2xl shrink-0">
             <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={hint} />

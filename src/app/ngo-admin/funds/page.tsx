@@ -25,12 +25,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 
-const fallbackFunds: any[] = [
+interface Fund {
+  id: string;
+  name: string;
+  provider: string;
+  status: string;
+  deadline: string;
+  areas?: string[];
+  description: string;
+  budget?: string;
+  requirements?: string;
+  url?: string;
+}
+
+const fallbackFunds: Fund[] = [
     { 
         id: '1', 
         name: 'Avrupa Birliği Sivil Toplum Destek Programı', 
@@ -86,7 +98,7 @@ export default function FundsPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedFund, setSelectedFund] = useState<any | null>(null);
+    const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Filtering and Sorting States
@@ -99,14 +111,14 @@ export default function FundsPage() {
         () => (db ? query(collection(db, 'funds'), orderBy('deadline', 'asc')) : null),
         [db],
     );
-    const { data: cmsFunds } = useCollection<any>(fundsQuery);
+    const { data: cmsFunds } = useCollection<Fund>(fundsQuery);
     const funds = useMemo(() => {
         if (cmsFunds && cmsFunds.length > 0) return cmsFunds;
         return fallbackFunds;
     }, [cmsFunds]);
 
     const allPossibleAreas = useMemo(
-        () => Array.from(new Set((funds as any[]).flatMap((f: any) => f.areas || []))).sort(),
+        () => Array.from(new Set(funds.flatMap((f) => f.areas || []))).sort(),
         [funds],
     );
 
@@ -149,7 +161,7 @@ export default function FundsPage() {
         });
 
         return result;
-    }, [searchTerm, statusFilter, areaFilters, sortConfig]);
+    }, [searchTerm, statusFilter, areaFilters, sortConfig, funds]);
 
     const handleOpenDetails = (fund: typeof funds[0]) => {
         setSelectedFund(fund);

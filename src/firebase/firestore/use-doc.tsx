@@ -38,6 +38,7 @@ export interface UseDocResult<T> {
  * The Firestore DocumentReference. Waits if null/undefined.
  * @returns {UseDocResult<T>} Object with data, isLoading, error.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- T defaults to `any` so untyped callsites preserve property access ergonomics; changing default to DocumentData/unknown cascades errors across many pages
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
 ): UseDocResult<T> {
@@ -68,7 +69,7 @@ export function useDoc<T = any>(
         setError(null);
         setResolvedPath(memoizedDocRef.path);
       },
-      (error: FirestoreError) => {
+      (_error: FirestoreError) => {
         const contextualError = new FirestorePermissionError({
           operation: 'get',
           path: memoizedDocRef.path,

@@ -26,7 +26,7 @@ export function EventMapDialog({
   events: Event[];
 }) {
   const physicalEvents = useMemo(
-    () => events.filter(e => (e as any).type !== 'Online'),
+    () => events.filter(e => e.type !== 'Online'),
     [events],
   );
 

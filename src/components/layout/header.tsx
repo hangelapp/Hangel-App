@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Menu, Siren, Globe, Bell,
+  Menu, Siren, Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
@@ -30,7 +30,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
       where('read', '==', false),
     );
   }, [db, user?.uid]);
-  const { data: unreadNotifs } = useCollection<any>(notifQuery);
+  const { data: unreadNotifs } = useCollection<unknown>(notifQuery);
   const unreadCount = (unreadNotifs || []).length;
 
   if (isAuthPage) return null;

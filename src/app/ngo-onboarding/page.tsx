@@ -33,11 +33,11 @@ import {
     Sparkles,
     Briefcase,
     Network,
-    LineChart
+    LineChart,
+    type LucideIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +50,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import * as Icons from 'lucide-react';
 
 const AdvantageCard = ({
   category,
@@ -94,7 +93,7 @@ const FeatureShowcaseCard = ({
 }: {
   title: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
 }) => (
   <div className="group relative bg-white rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-between min-h-[450px]">
     <div className="relative z-10">
@@ -116,7 +115,7 @@ const FeatureShowcaseCard = ({
 
 
 // New component for smaller feature items
-const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: any, title: string, description: string, tag?: string, href: string }) => (
+const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: LucideIcon, title: string, description: string, tag?: string, href: string }) => (
     <Link href={href} className="group block h-full">
         <div className="relative flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all h-full">
             {tag && (

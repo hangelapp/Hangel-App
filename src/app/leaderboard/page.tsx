@@ -2,44 +2,59 @@
 import { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Crown, Star, Heart, Handshake, Users, Globe, Loader2 } from 'lucide-react';
+import { Crown, Star, Heart, Handshake, Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React from 'react';
 import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
-export default function LeaderboardPage() {
-  const [scope, setScope] = useState('country');
-  const { user: authUser } = useUser();
-  const db = useFirestore();
+type LeaderboardUser = {
+  id?: string;
+  name?: string;
+  username?: string;
+  avatarUrl?: string;
+  stats?: { impactScore?: number; volunteerHours?: number; totalDonation?: number };
+  impactScore?: number;
+  volunteerHours?: number;
+  totalDonation?: number;
+  personalInfo?: { address?: { school?: string; city?: string } };
+  volunteerInfo?: { education?: Array<{ school?: string }> };
+  _value?: number;
+};
 
-  const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
-  const { data: allUsers, isLoading } = useCollection(usersRef);
+// Veri farklı yerlerde olabiliyor: stats.* (yeni şema) veya top-level (eski/invite akışı). İkisini de okuyup maks alıyoruz.
+const getValue = (u: LeaderboardUser, key: 'impactScore' | 'volunteerHours' | 'totalDonation'): number => {
+  const fromStats = Number(u?.stats?.[key]) || 0;
+  const fromTop = Number(u?.[key]) || 0;
+  return Math.max(fromStats, fromTop);
+};
 
-  // Veri farklı yerlerde olabiliyor: stats.* (yeni şema) veya top-level (eski/invite akışı). İkisini de okuyup maks alıyoruz.
-  const getValue = (u: any, key: 'impactScore' | 'volunteerHours' | 'totalDonation'): number => {
-    const fromStats = Number(u?.stats?.[key]) || 0;
-    const fromTop = Number(u?.[key]) || 0;
-    return Math.max(fromStats, fromTop);
-  };
+const userSchools = (u: LeaderboardUser): string[] => {
+  const list: string[] = [];
+  if (u?.personalInfo?.address?.school) list.push(u.personalInfo.address.school);
+  if (Array.isArray(u?.volunteerInfo?.education)) {
+    u.volunteerInfo.education.forEach((e) => {
+      if (e?.school) list.push(e.school);
+    });
+  }
+  return list;
+};
 
-  const userSchools = (u: any): string[] => {
-    const list: string[] = [];
-    if (u?.personalInfo?.address?.school) list.push(u.personalInfo.address.school);
-    if (Array.isArray(u?.volunteerInfo?.education)) {
-      u.volunteerInfo.education.forEach((e: any) => {
-        if (e?.school) list.push(e.school);
-      });
-    }
-    return list;
-  };
+type LeaderboardTableProps = {
+  valueKey: 'impactScore' | 'volunteerHours' | 'totalDonation';
+  unit: string;
+  allUsers: LeaderboardUser[] | null | undefined;
+  authUserId: string | undefined;
+  scope: string;
+  isLoading: boolean;
+};
 
-  const LeaderboardTable = ({ valueKey, unit }: { valueKey: 'impactScore' | 'volunteerHours' | 'totalDonation', unit: string }) => {
-    const sortedData = useMemo(() => {
-      if (!allUsers) return [];
-      let dataToFilter = allUsers as any[];
-      const me = authUser ? dataToFilter.find(u => u.id === authUser.uid) : null;
+const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading }: LeaderboardTableProps) => {
+  const sortedData = useMemo(() => {
+    if (!allUsers) return [];
+    let dataToFilter = allUsers;
+    const me = authUserId ? dataToFilter.find(u => u.id === authUserId) : null;
 
       if (scope === 'city' && me) {
         const city = me.personalInfo?.address?.city;
@@ -51,22 +66,22 @@ export default function LeaderboardPage() {
         }
       }
 
-      return [...dataToFilter]
-        .map(u => ({ user: u, value: getValue(u, valueKey) }))
-        .filter(x => x.value > 0)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 100)
-        .map(x => ({ ...x.user, _value: x.value }));
-    }, [allUsers, valueKey, scope]);
+    return [...dataToFilter]
+      .map(u => ({ user: u, value: getValue(u, valueKey) }))
+      .filter(x => x.value > 0)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 100)
+      .map(x => ({ ...x.user, _value: x.value }));
+  }, [allUsers, valueKey, scope, authUserId]);
 
-    const headerLabel = unit === 'Puan' ? 'Puan' : (unit === 'Saat' ? 'Saat' : 'Tutar');
+  const headerLabel = unit === 'Puan' ? 'Puan' : (unit === 'Saat' ? 'Saat' : 'Tutar');
 
-    if (isLoading) {
-      return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-    }
+  if (isLoading) {
+    return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  }
 
-    return (
-      <Table>
+  return (
+    <Table>
         <TableHeader>
           <TableRow>
             <TableHead className="w-16">Sıra</TableHead>
@@ -75,7 +90,7 @@ export default function LeaderboardPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.length > 0 ? sortedData.map((userItem: any, index: number) => (
+          {sortedData.length > 0 ? sortedData.map((userItem: LeaderboardUser, index: number) => (
             <TableRow key={userItem.id} className={cn(index < 3 && 'bg-accent')}>
               <TableCell className="font-bold text-lg text-center">
                 {index === 0 ? <Crown className="text-yellow-500 w-6 h-6 mx-auto" /> : index + 1}
@@ -114,7 +129,15 @@ export default function LeaderboardPage() {
     );
   };
 
-  const MemoizedLeaderboardTable = React.memo(LeaderboardTable);
+const MemoizedLeaderboardTable = React.memo(LeaderboardTable);
+
+export default function LeaderboardPage() {
+  const [scope, setScope] = useState('country');
+  const { user: authUser } = useUser();
+  const db = useFirestore();
+
+  const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
   return (
     <div className="p-4 space-y-4">
@@ -137,13 +160,13 @@ export default function LeaderboardPage() {
         </TabsList>
 
         <TabsContent value="impact" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="impactScore" unit="Puan" />
+          <MemoizedLeaderboardTable valueKey="impactScore" unit="Puan" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
         </TabsContent>
         <TabsContent value="volunteer" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="volunteerHours" unit="Saat" />
+          <MemoizedLeaderboardTable valueKey="volunteerHours" unit="Saat" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
         </TabsContent>
         <TabsContent value="donation" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="totalDonation" unit="₺" />
+          <MemoizedLeaderboardTable valueKey="totalDonation" unit="₺" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
@@ -17,7 +16,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
   AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, Save, Download, Upload as UploadIcon, Info } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, Upload as UploadIcon, Info } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -32,7 +31,7 @@ type Contract = {
   title: string;
   content: string;
   group?: string;
-  updatedAt?: any;
+  updatedAt?: unknown;
   source?: 'firestore' | 'seed';
 };
 
@@ -184,11 +183,13 @@ export default function ContractsAdminPage() {
         updatedAt: new Date().toISOString(),
       }, { merge: true });
       toast({ title: 'Kaydedildi', description: `"${c.title}" güncellendi.` });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Hata.';
       toast({
         variant: 'destructive',
         title: 'Kaydedilemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
       throw e;
     }
@@ -198,11 +199,13 @@ export default function ContractsAdminPage() {
     try {
       await deleteDoc(doc(db, 'contracts', c.slug));
       toast({ variant: 'destructive', title: 'Silindi', description: `"${c.title}" kaldırıldı (varsayılan içerik gösterilebilir).` });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Hata.';
       toast({
         variant: 'destructive',
         title: 'Silinemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
     }
   };
@@ -221,11 +224,13 @@ export default function ContractsAdminPage() {
         count += 1;
       }
       toast({ title: 'İçe Aktarma Tamamlandı', description: `${count} sözleşme Firestore'a aktarıldı. Artık düzenlenebilir.` });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Hata.';
       toast({
         variant: 'destructive',
         title: 'Aktarma başarısız',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
     } finally {
       setSeeding(false);

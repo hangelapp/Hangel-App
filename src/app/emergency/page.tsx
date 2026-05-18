@@ -2,11 +2,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Droplets, Siren, Zap, CloudRain, Flame, Ambulance, UserSearch, Info, MapPin, Loader2 } from 'lucide-react';
+import { Droplets, Siren, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { countryPhoneCodes } from '@/lib/data';
 import { useFirestore, useUser } from '@/firebase';
@@ -29,7 +28,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -54,7 +52,82 @@ const initialPastApplications = [
     { id: 100, type: 'Kan İhtiyacı', details: '0 Rh-', location: 'İstanbul Çapa Tıp Fak.', status: 'Başvuruldu' as const },
 ];
 
-const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOpenChange: (open: boolean) => void, onSubmit: (data: any) => void }) => {
+interface BloodNeedFormData {
+    hospital: string;
+    bloodType: string;
+    contactName: string;
+    contactPhone: string;
+    notes: string;
+}
+
+interface ReportTabContentProps {
+    isReporting: string | null;
+    onReportClick: (type: string, details: string) => void;
+    onOpenBloodDialog: () => void;
+}
+
+const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: ReportTabContentProps) => (
+    <div className="flex flex-col gap-4 p-4">
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <Button
+                    className="h-24 text-lg flex-col gap-2"
+                    variant="destructive"
+                    disabled={!!isReporting}
+                >
+                    {isReporting === 'Genel Afet Bildirimi' ? <Loader2 className="h-8 w-8 animate-spin" /> : <Siren className="h-8 w-8" />}
+                    Afet Bildirimi
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        <strong>Genel Afet</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-2 py-2">
+                    <Label htmlFor="disaster-details">Acil Durum Detayları (İsteğe Bağlı)</Label>
+                    <Textarea
+                        id="disaster-details"
+                        placeholder="Durumu kısaca açıklayın. Örn: 'Bina çökmesi', 'Büyük trafik kazası', 'Ormanlık alanda duman görülüyor'..."
+                        className="min-h-[80px] placeholder:text-xs"
+                    />
+                </div>
+                <div className="py-2">
+                    <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
+                        <Siren className="h-4 w-4" />
+                        <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
+                        <AlertDescription className="text-xs font-bold leading-tight">
+                            Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+                <AlertDialogFooter className="gap-2 mt-4">
+                    <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={() => onReportClick('disaster', 'Genel Afet Bildirimi')}
+                        className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
+                    >
+                        Bildirimi Gönder
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+        <Button
+            className="h-24 text-lg flex-col gap-2"
+            variant="outline"
+            disabled={!!isReporting}
+            onClick={onOpenBloodDialog}
+        >
+            <Droplets className="h-8 w-8 text-red-600" />
+            Kan İhtiyacı Bildirimi
+        </Button>
+    </div>
+);
+
+const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOpenChange: (open: boolean) => void, onSubmit: (data: BloodNeedFormData) => void }) => {
     const [formData, setFormData] = useState({
         hospital: '',
         bloodType: '',
@@ -158,7 +231,7 @@ export default function EmergencyPage() {
         }, 2000);
     };
 
-    const handleBloodNeedSubmit = async (data: any) => {
+    const handleBloodNeedSubmit = async (data: BloodNeedFormData) => {
         if (!authUser) {
             toast({
                 variant: 'destructive',
@@ -185,14 +258,15 @@ export default function EmergencyPage() {
                 title: '✅ Kan İhtiyacı Bildirimi Alındı',
                 description: 'Talebiniz süper admin onayından sonra yakındaki kullanıcılara bildirim olarak gönderilecek.',
             });
-        } catch (e: any) {
+        } catch (e) {
             console.error('Blood request submit failed:', e);
+            const err = e as { code?: string; message?: string };
             toast({
                 variant: 'destructive',
                 title: 'Gönderilemedi',
-                description: e?.code === 'permission-denied'
+                description: err?.code === 'permission-denied'
                     ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
-                    : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+                    : (err?.message || 'Beklenmeyen bir hata oluştu.'),
             });
         }
     };
@@ -211,67 +285,6 @@ export default function EmergencyPage() {
             description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
         });
     };
-
-    const ReportTabContent = () => (
-        <div className="flex flex-col gap-4 p-4">
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button 
-                        className="h-24 text-lg flex-col gap-2" 
-                        variant="destructive"
-                        disabled={!!isReporting}
-                    >
-                        {isReporting === 'Genel Afet Bildirimi' ? <Loader2 className="h-8 w-8 animate-spin" /> : <Siren className="h-8 w-8" />}
-                        Afet Bildirimi
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-3xl">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            <strong>Genel Afet</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <div className="space-y-2 py-2">
-                        <Label htmlFor="disaster-details">Acil Durum Detayları (İsteğe Bağlı)</Label>
-                        <Textarea 
-                            id="disaster-details" 
-                            placeholder="Durumu kısaca açıklayın. Örn: 'Bina çökmesi', 'Büyük trafik kazası', 'Ormanlık alanda duman görülüyor'..."
-                            className="min-h-[80px] placeholder:text-xs"
-                        />
-                    </div>
-                    <div className="py-2">
-                        <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
-                            <Siren className="h-4 w-4" />
-                            <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
-                            <AlertDescription className="text-xs font-bold leading-tight">
-                                Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
-                            </AlertDescription>
-                        </Alert>
-                    </div>
-                    <AlertDialogFooter className="gap-2 mt-4">
-                        <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={() => handleReportClick('disaster', 'Genel Afet Bildirimi')}
-                            className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
-                        >
-                            Bildirimi Gönder
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-    
-            <Button 
-                className="h-24 text-lg flex-col gap-2" 
-                variant="outline"
-                disabled={!!isReporting}
-                onClick={() => setIsBloodDialogOpen(true)}
-            >
-                <Droplets className="h-8 w-8 text-red-600" />
-                Kan İhtiyacı Bildirimi
-            </Button>
-        </div>
-    );
 
   return (
     <div className="h-[calc(100vh-144px)] overflow-hidden bg-secondary/30 animate-in fade-in-0 flex flex-col">
@@ -292,7 +305,11 @@ export default function EmergencyPage() {
                 </TabsList>
 
                 <TabsContent value="report" className="mt-0 flex-1 overflow-y-auto no-scrollbar">
-                    <ReportTabContent />
+                    <ReportTabContent
+                        isReporting={isReporting}
+                        onReportClick={handleReportClick}
+                        onOpenBloodDialog={() => setIsBloodDialogOpen(true)}
+                    />
                 </TabsContent>
 
                 <TabsContent value="calls" className="mt-4 flex-1 overflow-y-auto no-scrollbar space-y-6 pb-20">

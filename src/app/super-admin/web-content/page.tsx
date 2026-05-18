@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, ImageIcon, X, FileText, Pencil, ExternalLink } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -75,8 +75,9 @@ function ImageUploaderCompact({
             const url = await getDownloadURL(r);
             onChange(url);
             toast({ title: 'Yüklendi' });
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setUploading(false);
         }
@@ -199,7 +200,7 @@ export default function WebContentPage() {
                         setHomeHeroImageUrl(d.home.heroImageUrl || '');
                     }
                 }
-            } catch (e) {
+            } catch {
                 // No settings yet, use defaults
             } finally {
                 setIsLoading(false);
@@ -294,8 +295,9 @@ export default function WebContentPage() {
             setPages(prev => ({ ...prev, [editingSlug]: editPage }));
             toast({ title: 'Kaydedildi', description: 'Sayfa içeriği güncellendi.' });
             setEditingSlug(null);
-        } catch (e: any) {
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setSavingPage(false);
         }

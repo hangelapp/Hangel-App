@@ -3,12 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, HeartHandshake, Award, Clock, Users, Sparkles, Map, ShieldCheck, Briefcase } from 'lucide-react';
+import { ArrowLeft, ArrowRight, HeartHandshake, Award, Clock, Users, Sparkles, ShieldCheck, Briefcase } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { cn } from '@/lib/utils';
 
-const ImpactSection = ({ title, subtitle, description, theme = 'light', className, children, id }: any) => (
+const ImpactSection = ({ title, subtitle, description, theme = 'light', className, children, id }: { title: string; subtitle?: string; description?: string; theme?: 'light' | 'dark'; className?: string; children?: React.ReactNode; id?: string }) => (
   <section id={id} className={cn(
     'relative min-h-[80vh] flex flex-col items-center justify-center pt-24 pb-16 text-center overflow-hidden border-b border-black/5',
     theme === 'dark' ? 'bg-[#042654] text-white' : 'bg-white text-[#1d1d1f]',
@@ -23,7 +23,7 @@ const ImpactSection = ({ title, subtitle, description, theme = 'light', classNam
   </section>
 );
 
-const FeatureCard = ({ icon: Icon, title, description }: any) => (
+const FeatureCard = ({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string }) => (
   <div className="bg-white rounded-3xl p-8 flex flex-col gap-3 text-left shadow-sm border border-black/5 h-full">
     <div className="p-3 bg-primary/10 rounded-2xl w-fit">
       <Icon className="h-6 w-6 text-primary" />
@@ -33,7 +33,7 @@ const FeatureCard = ({ icon: Icon, title, description }: any) => (
   </div>
 );
 
-const StepCard = ({ step, title, description }: any) => (
+const StepCard = ({ step, title, description }: { step: number | string; title: string; description: string }) => (
   <div className="relative bg-[#0c3168] rounded-3xl p-8 text-left">
     <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-black text-lg shadow-lg">
       {step}

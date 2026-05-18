@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin } from 'lucide-react';
+import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,7 +49,7 @@ export default function ClubsPage() {
 
   // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
   const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null), [db, authUser?.uid]);
-  const { data: userData } = useDoc<any>(userDocRef);
+  const { data: userData } = useDoc<{ personalInfo?: { address?: { country?: string; city?: string } } }>(userDocRef);
   const userCountry = userData?.personalInfo?.address?.country || '';
   const userCity = userData?.personalInfo?.address?.city || '';
 
@@ -59,9 +59,9 @@ export default function ClubsPage() {
 
     // Konum filtresi: club.location.country / club.location.city
     if (locationFilter === 'country' && userCountry) {
-      result = result.filter(c => (c as any).location?.country === userCountry);
+      result = result.filter(c => (c as StudentClub & { location?: { country?: string; city?: string } }).location?.country === userCountry);
     } else if (locationFilter === 'city' && userCity) {
-      result = result.filter(c => (c as any).location?.city === userCity);
+      result = result.filter(c => (c as StudentClub & { location?: { country?: string; city?: string } }).location?.city === userCity);
     }
 
     // Arama
@@ -83,7 +83,7 @@ export default function ClubsPage() {
       if (!map.has(uni)) map.set(uni, []);
       map.get(uni)!.push(c);
     }
-    let list = Array.from(map.entries()).map(([university, clubsArr]) => ({
+    const list = Array.from(map.entries()).map(([university, clubsArr]) => ({
       university,
       clubs: clubsArr,
       memberTotal: clubsArr.reduce((s, c) => s + (c.members || 0), 0),
@@ -99,7 +99,7 @@ export default function ClubsPage() {
     return list;
   }, [filteredClubs, sortMode]);
 
-  const locationTabs: { value: 'global' | 'country' | 'city'; label: string; icon: any; sublabel?: string }[] = [
+  const locationTabs: { value: 'global' | 'country' | 'city'; label: string; icon: LucideIcon; sublabel?: string }[] = [
     { value: 'global', label: 'Global', icon: Globe },
     { value: 'country', label: 'Ülkemde', icon: MapPin, sublabel: userCountry || undefined },
     { value: 'city', label: 'Şehrimde', icon: MapPin, sublabel: userCity || undefined },
@@ -134,7 +134,7 @@ export default function ClubsPage() {
       </div>
 
       {/* Konum tabları: Global / Ülkemde / Şehrimde */}
-      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as any)}>
+      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as 'global' | 'country' | 'city')}>
         <TabsList className="grid w-full grid-cols-3 p-1 h-12 rounded-2xl bg-muted/50">
           {locationTabs.map(t => {
             const Icon = t.icon;

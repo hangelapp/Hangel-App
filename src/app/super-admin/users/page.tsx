@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ShieldAlert, UserCog, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe, Calendar, Users as UsersIcon } from 'lucide-react';
+import { Search, ShieldAlert, Loader2, Trash2, Pencil, Eye, Mail, Phone, MapPin, Cake, Globe } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -56,8 +56,17 @@ const roleLabel: Record<string, string> = {
 // View (read-only) dialog
 const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow | null; open: boolean; onOpenChange: (o: boolean) => void; }) => {
   if (!user) return null;
-  const pi = user.personalInfo || ({} as any);
-  const addr = pi.address || ({} as any);
+  const pi = (user.personalInfo || {}) as Partial<{
+    email: string;
+    phone: string;
+    birthDate: string;
+    gender: string;
+    nationality: string;
+    bloodType: string;
+    website: string;
+    address: Record<string, string | undefined>;
+  }>;
+  const addr = (pi.address || {}) as Record<string, string | undefined>;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-[2rem] max-w-lg">
@@ -112,7 +121,7 @@ const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow | null;
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">Etki Puanı</p>
               </div>
               <div className="p-3 bg-muted/40 rounded-lg text-center">
-                <p className="text-lg font-black">{(user as any).inviteCount || 0}</p>
+                <p className="text-lg font-black">{((user as UserRow & { inviteCount?: number }).inviteCount) || 0}</p>
                 <p className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">Davet</p>
               </div>
               <div className="p-3 bg-muted/40 rounded-lg text-center">
@@ -135,7 +144,7 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   user: UserRow | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSave: (id: string, patch: any) => Promise<void>;
+  onSave: (id: string, patch: Record<string, unknown>) => Promise<void>;
 }) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -146,11 +155,12 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
 
   React.useEffect(() => {
     if (user) {
+       
       setName(user.name || '');
       setUsername(user.username || '');
       setEmail(user.personalInfo?.email || '');
       setPhone(user.personalInfo?.phone || '');
-      setRole((user.role as any) || 'user');
+      setRole((user.role as 'user' | 'ngo-admin' | 'super-admin') || 'user');
     }
   }, [user]);
 
@@ -203,7 +213,7 @@ const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
           </div>
           <div className="space-y-2">
             <Label>Platform Yetkisi</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as any)}>
+            <Select value={role} onValueChange={(v) => setRole(v as 'user' | 'ngo-admin' | 'super-admin')}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="user">Standart Kullanıcı</SelectItem>
@@ -256,17 +266,19 @@ export default function UsersPage() {
       );
 
     // En yeni kullanıcı en üstte: createdAt → joinDate → fallback (eklenme sırası)
-    const ts = (u: any): number => {
-      const c = u.createdAt;
-      if (c?.toDate) {
-        try { return c.toDate().getTime(); } catch { /* ignore */ }
+    const ts = (u: UserRow): number => {
+      const c = (u as UserRow & { createdAt?: unknown }).createdAt;
+      const maybeDate = c as { toDate?: () => Date } | null;
+      if (maybeDate?.toDate) {
+        try { return maybeDate.toDate().getTime(); } catch { /* ignore */ }
       }
       if (typeof c === 'string') {
         const t = Date.parse(c);
         if (!Number.isNaN(t)) return t;
       }
-      if (typeof u.joinDate === 'string') {
-        const t = Date.parse(u.joinDate);
+      const joinDate = (u as UserRow & { joinDate?: unknown }).joinDate;
+      if (typeof joinDate === 'string') {
+        const t = Date.parse(joinDate);
         if (!Number.isNaN(t)) return t;
       }
       return 0;
@@ -282,14 +294,16 @@ export default function UsersPage() {
         title: 'Kullanıcı Durumu Güncellendi',
         description: `${name} → ${newStatus.toLowerCase()}.`,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Toggle status failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Güncelleme başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     }
   };
@@ -302,14 +316,16 @@ export default function UsersPage() {
         title: 'Kullanıcı Silindi',
         description: `${user.name || 'Kullanıcı'} kaydı silindi. Not: Firebase Auth hesabı ayrıca silinmelidir.`,
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Delete failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Silme başarısız',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
     }
   };
@@ -346,18 +362,20 @@ export default function UsersPage() {
     });
   };
 
-  const handleSaveUser = async (userId: string, patch: any) => {
+  const handleSaveUser = async (userId: string, patch: Record<string, unknown>) => {
     try {
       await updateDoc(doc(db, 'users', userId), patch);
       toast({ title: 'Bilgiler Güncellendi', description: 'Kullanıcı bilgileri kaydedildi.' });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Save user failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Kaydedilemedi',
-        description: e?.code === 'permission-denied'
+        description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : (e?.message || 'Beklenmeyen bir hata oluştu.'),
+          : message,
       });
       throw e;
     }
@@ -470,7 +488,7 @@ export default function UsersPage() {
         <CardContent className="p-0">
           <div className="divide-y border-t border-black/5">
             {filteredUsers.map(user => {
-              const status = (user as any).status || 'Aktif';
+              const status = (user as UserRow & { status?: string }).status || 'Aktif';
               const isSuspended = status === 'Askıda';
               return (
                 <div key={user.id} className={cn(

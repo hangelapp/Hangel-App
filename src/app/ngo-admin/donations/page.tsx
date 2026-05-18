@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -113,8 +113,8 @@ export default function DonationsPage() {
 
     const { data: monthlyEarnings, isLoading: isEarningsLoading } = useCollection<MonthlyEarning>(earningsQuery);
 
-    const transactions = donationHistory || [];
-    const earnings = monthlyEarnings || [];
+    const transactions = useMemo(() => donationHistory || [], [donationHistory]);
+    const earnings = useMemo(() => monthlyEarnings || [], [monthlyEarnings]);
 
     const pastTransactions = transactions.filter(tx => tx.status === 'Tamamlandı');
     const futureTransactions = transactions.filter(tx => tx.status === 'Beklemede');

@@ -7,27 +7,15 @@ import {
     ArrowLeft, 
     Eye, 
     Ear, 
-    MousePointer2, 
-    Brain, 
-    Move, 
     ShieldCheck, 
     Globe, 
-    Scale, 
-    UserCheck,
-    CheckCircle2,
+    Scale,
     Clock,
-    Zap,
-    Info,
     Type,
     Layers,
     Target,
-    BookText,
-    KeyRound,
     Volume2,
-    FileText,
     History,
-    Pointer,
-    RotateCcw,
     MessageSquareWarning,
     Languages,
     Contrast,
@@ -58,19 +46,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useWebPage } from '@/hooks/use-site-content';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+
+
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
-const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, title: string, description: string, badge?: string }) => (
+const _FeatureCard = ({ icon: Icon, title, description, badge }: { icon: React.ComponentType<{ className?: string }>, title: string, description: string, badge?: string }) => (
     <Card className="bg-white rounded-[2rem] p-6 md:p-8 border border-black/5 shadow-sm hover:shadow-xl transition-all duration-500 group h-full">
         <div className="flex flex-col h-full">
             <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[#f5f5f7] flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
@@ -87,7 +69,7 @@ const FeatureCard = ({ icon: Icon, title, description, badge }: { icon: any, tit
     </Card>
 );
 
-const TechnicalItem = ({ icon: Icon, title, description }: { icon: any, title: string, description: string }) => (
+const _TechnicalItem = ({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>, title: string, description: string }) => (
     <div className="flex gap-6 p-6 md:p-8 bg-[#f5f5f7] rounded-[2rem] border border-black/5 items-start">
         <div className="p-3 bg-white rounded-xl shadow-sm text-primary">
             <Icon className="h-6 w-6" />
@@ -99,7 +81,7 @@ const TechnicalItem = ({ icon: Icon, title, description }: { icon: any, title: s
     </div>
 );
 
-const complianceRates = [
+const _complianceRates = [
     { standard: "European Accessibility Act (EAA)", region: "Avrupa Birliği", scope: "Dijital ürün ve hizmetlerde erişilebilirlik yükümlülükleri", rate: "75–80", desc: "Ürün mimarisi ve kullanıcı deneyimi EAA’ya uyumlu olacak şekilde tasarlanmıştır. Resmî uygunluk beyanı için sürekli izleme gereklidir." },
     { standard: "EN 301 549", region: "Avrupa", scope: "Kamuya açık dijital ürünler için teknik erişilebilirlik", rate: "80–85", desc: "WCAG tabanlı kriterlerin büyük bölümü sağlanmakta, bazı kamuya özgü dokümantasyon gereklilikleri kapsam dışındadır." },
     { standard: "ISO 9241-171", region: "Uluslararası", scope: "İnsan–bilgisayar etkileşimi ve kullanılabilirlik", rate: "70–75", desc: "Kullanılabilirlik ilkeleri uygulanmaktadır; kullanıcı testlerinin sürekliliğiyle artırılabilir." },
@@ -130,7 +112,7 @@ export default function AccessibilityPublicPage() {
     const heroImage = PlaceHolderImages.find(img => img.id === 'accessibility-hero');
     const cms = useWebPage('accessibility');
 
-    const [isSaving, setIsSaving] = useState(false);
+    const [_isSaving, setIsSaving] = useState(false);
 
     // --- State Definition ---
     // Visual
@@ -240,7 +222,7 @@ export default function AccessibilityPublicPage() {
         }
     }, []);
 
-    const handleSave = () => {
+    const _handleSave = () => {
         setIsSaving(true);
         const settings = {
             highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo, reflowMode,

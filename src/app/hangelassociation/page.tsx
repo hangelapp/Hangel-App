@@ -1,24 +1,16 @@
 
 'use client';
 
-import React, { useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-    ChevronRight, ArrowLeft, Globe, Users, Heart, ShieldCheck, Newspaper, Target, ArrowRight, 
-    Briefcase, Brain, Scale, UserCheck, Map as MapIcon, BookOpen, DollarSign, GraduationCap, 
-    FileText, Sparkles, ShoppingCart, HeartHandshake, Landmark, Search, Filter, ArrowDownUp,
-    Store, MessageSquare, Download, School, ExternalLink
+    ChevronRight, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { HangelLogo } from '@/components/icons';
-import { useToast } from '@/hooks/use-toast';
 import { useAssociationContent } from '@/hooks/use-site-content';
 
 const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
@@ -107,7 +99,17 @@ const GridSection = ({ children, className }: { children: React.ReactNode, class
     </section>
 );
 
-const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 'light' }: any) => (
+type GridCardProps = {
+    title: string;
+    subtitle: string;
+    cta: string;
+    ctaHref: string;
+    imageUrl: string;
+    imageHint?: string;
+    theme?: 'light' | 'dark';
+};
+
+const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 'light' }: GridCardProps) => (
     <div className={cn(
         "relative rounded-[2.5rem] p-10 text-center flex flex-col overflow-hidden min-h-[550px]",
         theme === 'dark' ? 'bg-black text-white' : 'bg-[#f5f5f7] text-[#1d1d1f]'
@@ -158,7 +160,6 @@ const PressSection = () => (
 
 
 export default function AssociationHomePage() {
-    const { toast } = useToast();
     const { get } = useAssociationContent();
 
     return (

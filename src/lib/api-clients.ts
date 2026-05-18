@@ -8,12 +8,12 @@ const cleanBrandName = (name: string): string => {
     .replace(/\(.*?\)/g, '')
     .replace(/\b(CPS|CPL|CPA|CPO|İndirim|Online|Campaign|Kampanyası|Offer|BPC)\b/gi, '')
     .replace(/(?<!\.)(\b(Sale|Mobil|TR)\b)/gi, '')
-    .replace(/[\-\|]/g, '')
+    .replace(/[-|]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 };
 
-const parseRate = (rate: any): number => {
+const parseRate = (rate: unknown): number => {
   if (!rate) return 5;
   if (typeof rate === 'number') return Math.round(rate);
   const cleaned = String(rate).replace('%', '').replace(',', '.').trim();
@@ -27,7 +27,7 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
       const full = urlString.startsWith('//') ? `https:${urlString}` : urlString;
       return new URL(full).hostname.replace('www.', '');
     }
-  } catch (_) {}
+  } catch {}
   return fallback;
 };
 
@@ -99,7 +99,12 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
     const pageData = resp?.data?.data;
     if (!pageData || typeof pageData !== 'object') break;
 
-    const offerEntries = Object.values(pageData) as any[];
+    type OfferEntry = {
+      Offer?: { id?: string; name?: string; description?: string; preview_url?: string; offer_url?: string; payout_type?: string; percent_payout?: string; default_payout?: string };
+      Thumbnail?: { thumbnail?: string; display?: string };
+      OfferCategory?: Record<string, { name?: string }>;
+    };
+    const offerEntries = Object.values(pageData) as OfferEntry[];
     if (offerEntries.length === 0) break;
 
     for (const entry of offerEntries) {
@@ -128,7 +133,7 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       let category = 'Genel';
       const cats = entry?.OfferCategory;
       if (cats && typeof cats === 'object') {
-        const firstCat = Object.values(cats)[0] as any;
+        const firstCat = Object.values(cats)[0] as { name?: string } | undefined;
         if (firstCat?.name) category = firstCat.name;
       }
 

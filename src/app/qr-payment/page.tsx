@@ -3,8 +3,8 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, RotateCw, SlidersHorizontal, KeyRound, Power, MessageSquareWarning, MinusCircle, Link as LinkIcon, Contact, Copy, CreditCard, ShoppingBag, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ArrowRightLeft, QrCode, ScanLine, Plus, Search, Filter, ArrowDownUp, Eye, Download, Share2, MoreHorizontal, Contact, Copy, ShoppingBag } from 'lucide-react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
@@ -27,17 +27,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
+
 import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -66,7 +57,7 @@ const donationTransactions = [
     { id: '21', type: 'expense', brand: 'Süpermarket', purchaseAmount: '180.25', donationAmount: '18.03', ngo: ['LÖSEV', 'Uluslararası Sosyal Fayda Derneği'], date: '2024-07-03', time: '18:15' },
 ];
 
-const ActivationDialog = ({ card, open, onClose, onActivate }: { card: any, open: boolean, onClose: () => void, onActivate: (id: string) => void }) => {
+const ActivationDialog = ({ card, open, onClose, onActivate }: { card: { id: string; type: string } | null, open: boolean, onClose: () => void, onActivate: (id: string) => void }) => {
     if (!card) return null;
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -128,7 +119,10 @@ export default function QrPaymentPage() {
     if (!db || !authUser?.uid) return null;
     return doc(db, 'users', authUser.uid);
   }, [db, authUser?.uid]);
-  const { data: userData } = useDoc<any>(userDocRef);
+  interface UserData {
+    username?: string;
+  }
+  const { data: userData } = useDoc<UserData>(userDocRef);
 
   const username = userData?.username || authUser?.email?.split('@')[0] || authUser?.uid || 'kullanici';
   const qrHandle = String(username).replace(/^@/, '');

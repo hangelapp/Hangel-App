@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, CreditCard, ShieldCheck, Landmark, DollarSign, KeyRound } from 'lucide-react';
+import { ArrowLeft, KeyRound } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';

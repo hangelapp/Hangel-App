@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -152,7 +152,7 @@ const PageEditDialog = ({ page, onSave }: { page?: SitePage; onSave: (p: SitePag
               onChange={e => setContent(e.target.value)}
               rows={14}
               className="font-mono text-xs"
-              placeholder={`<h2>Bölüm Başlığı</h2>\n<p>Metin paragrafı...</p>\n<img src=\"https://...\" alt=\"...\" />`}
+              placeholder={`<h2>Bölüm Başlığı</h2>\n<p>Metin paragrafı...</p>\n<img src="https://..." alt="..." />`}
             />
           </div>
           <div className="flex items-center gap-3 p-3 border rounded-lg">
@@ -205,11 +205,13 @@ export default function SitePagesAdmin() {
     try {
       await setDoc(doc(db, 'sitePages', p.slug), p, { merge: true });
       toast({ title: 'Sayfa Kaydedildi', description: `"${p.title}" güncellendi.` });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Hata.';
       toast({
         variant: 'destructive',
         title: 'Kaydedilemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
       throw e;
     }
@@ -219,11 +221,13 @@ export default function SitePagesAdmin() {
     try {
       await deleteDoc(doc(db, 'sitePages', p.slug));
       toast({ variant: 'destructive', title: 'Sayfa Silindi', description: `"${p.title}" kaldırıldı.` });
-    } catch (e: any) {
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Hata.';
       toast({
         variant: 'destructive',
         title: 'Silinemedi',
-        description: e?.code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : (e?.message || 'Hata.'),
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
       });
     }
   };

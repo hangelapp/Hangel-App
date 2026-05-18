@@ -1,18 +1,20 @@
 
 'use client';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, Users, MessageSquare, Edit, School, Tag } from 'lucide-react';
-import { studentClubs as studentClubsData, schoolRepresentatives } from '@/lib/data';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, Twitter, Instagram, Facebook, Linkedin, School, Tag, Info } from 'lucide-react';
+import { studentClubs as studentClubsData, schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
+import type { SchoolRepresentative } from '@/lib/types';
+
+const schoolRepresentatives = schoolRepresentativesRaw as SchoolRepresentative[];
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import type { StudentClub } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -148,7 +150,7 @@ export default function ClubProfilePage() {
                         </div>
                     )}
                     <p className="leading-relaxed">
-                        {club.description} Kulübümüz, öğrenciler arasında {club.category.toLowerCase()} ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
+                        {club.description} Kulübümüz, öğrenciler arasında {(club.category ?? 'genel').toLowerCase()} ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
                     </p>
                     <p className="text-xs pt-4 border-t italic">hangel'a Katılım Tarihi: {club.joinDate}</p>
                 </CardContent>

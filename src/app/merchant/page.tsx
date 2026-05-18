@@ -5,26 +5,14 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { 
     ChevronRight, 
-    ArrowLeft,
-    QrCode,
-    TrendingUp,
-    LayoutGrid,
-    ShieldCheck,
-    Smartphone,
-    CreditCard,
-    Zap,
-    ChevronDown
+    ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+
+
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
 

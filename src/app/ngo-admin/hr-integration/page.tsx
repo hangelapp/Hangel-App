@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Briefcase, Building2, ShieldCheck, Link as LinkIcon, Users, CheckCircle2, Loader2, Workflow } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Users, Loader2, Workflow } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,6 @@ export default function HrIntegrationPage() {
     const { toast } = useToast();
     const router = useRouter();
     const [connectingId, setConnectingId] = useState<string | null>(null);
-    const [isSaving, setIsSaving] = useState(false);
 
     const handleConnect = (id: string, name: string) => {
         setConnectingId(id);

@@ -36,7 +36,17 @@ export default function PrivacySettingsPage() {
         return doc(db, 'users', authUser.uid);
     }, [db, authUser]);
 
-    const { data: userData } = useDoc<any>(userDocRef);
+    type PrivacySettings = {
+        isPrivate?: boolean;
+        hideScore?: boolean;
+        hideAbout?: boolean;
+        hideVolunteer?: boolean;
+        hideBadges?: boolean;
+        hideCertificates?: boolean;
+        hidePosts?: boolean;
+        hideDonations?: boolean;
+    };
+    const { data: userData } = useDoc<{ privacySettings?: PrivacySettings }>(userDocRef);
 
     const [isPrivate, setIsPrivate] = useState(false);
     const [hideScore, setHideScore] = useState(false);

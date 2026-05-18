@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,12 +9,12 @@ import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
-const typeIcon: Record<string, any> = {
+const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'invitation': UserPlus,
   'emergency-blood': Droplet,
   'volunteer': Heart,
@@ -42,11 +43,26 @@ export default function NotificationsPage() {
     );
   }, [db, authUser?.uid]);
 
-  const { data: notifications, isLoading } = useCollection<any>(notifQuery);
+  interface NotifItem {
+    id: string;
+    type?: string;
+    title?: string;
+    message?: string;
+    body?: string;
+    createdAt?: { toDate?: () => Date } | string | null;
+    read?: boolean;
+    responseStatus?: 'positive' | 'negative';
+    data?: { requestId?: string; bloodType?: string; hospitalName?: string };
+  }
+  const { data: notifications, isLoading } = useCollection<NotifItem>(notifQuery);
 
-  const formatTime = (createdAt: any) => {
+  const formatTime = (createdAt: NotifItem['createdAt']) => {
     try {
-      const d = createdAt?.toDate?.() || (createdAt ? new Date(createdAt) : null);
+      const fromObj = typeof createdAt === 'object' && createdAt !== null && 'toDate' in createdAt && typeof createdAt.toDate === 'function'
+        ? createdAt.toDate()
+        : null;
+      const fromStr = !fromObj && typeof createdAt === 'string' ? new Date(createdAt) : null;
+      const d = fromObj || fromStr;
       if (!d) return '';
       return formatDistanceToNow(d, { addSuffix: true, locale: tr });
     } catch { return ''; }
@@ -58,12 +74,12 @@ export default function NotificationsPage() {
         read: true,
         readAt: new Date().toISOString(),
       });
-    } catch (e: any) {
+    } catch (e) {
       console.error('Mark read failed:', e);
     }
   };
 
-  const handleEmergencyResponse = async (notif: any, status: 'positive' | 'negative') => {
+  const handleEmergencyResponse = async (notif: NotifItem, status: 'positive' | 'negative') => {
     if (!authUser) return;
     try {
       // 1. Yanıt kaydı oluştur
@@ -93,12 +109,13 @@ export default function NotificationsPage() {
           ? 'Hastane sizinle iletişime geçecektir.'
           : 'Yanıtınız kaydedildi.',
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Response failed:', e);
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
       toast({
         variant: 'destructive',
         title: 'Yanıt gönderilemedi',
-        description: e?.message || 'Bilinmeyen hata.',
+        description: message,
       });
     }
   };
@@ -134,8 +151,8 @@ export default function NotificationsPage() {
       ) : (
         <div className="space-y-3">
           {notifications.map(n => {
-            const Icon = typeIcon[n.type] || Bell;
-            const colorClass = typeColor[n.type] || 'text-gray-600 bg-gray-100';
+            const Icon = (n.type ? typeIcon[n.type] : undefined) || Bell;
+            const colorClass = (n.type ? typeColor[n.type] : undefined) || 'text-gray-600 bg-gray-100';
             const invitationLink = n.type === 'invitation' ? '/my-applications' : null;
             return (
               <Card

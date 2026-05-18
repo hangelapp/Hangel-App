@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { ImagePlus, Send, Heart, Share2, Trash2, Pencil, X, Check, Loader2, Inbox, ExternalLink } from 'lucide-react';
@@ -35,13 +35,13 @@ export default function PostsPage() {
         );
     }, [firestore, authUser?.uid]);
 
-    const { data: firestorePosts, isLoading } = useCollection<Post & { authorId: string; createdAt: any }>(postsQuery);
+    const { data: firestorePosts, isLoading } = useCollection<Post & { authorId: string; createdAt: unknown }>(postsQuery);
 
     const posts = useMemo(() => {
         const list = firestorePosts || [];
-        const ts = (p: any): number => {
-            const c = p.createdAt;
-            if (c?.toDate) { try { return c.toDate().getTime(); } catch {} }
+        const ts = (p: Post & { createdAt?: unknown; timestamp?: string }): number => {
+            const c = p.createdAt as { toDate?: () => Date } | number | string | undefined;
+            if (c && typeof c === 'object' && typeof c.toDate === 'function') { try { return c.toDate().getTime(); } catch {} }
             if (typeof c === 'number') return c;
             if (typeof c === 'string') { const t = Date.parse(c); if (!Number.isNaN(t)) return t; }
             if (p.timestamp) { const t = Date.parse(p.timestamp); if (!Number.isNaN(t)) return t; }
@@ -80,12 +80,13 @@ export default function PostsPage() {
             await addDoc(collection(firestore, 'posts'), newPost);
             setNewPostContent('');
             toast({ title: 'Gönderi paylaşıldı!', description: 'Yeni gönderiniz zaman tünelinde yayınlandı.' });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Post create failed:', error);
+            const err = error as { code?: string; message?: string };
             toast({
                 variant: 'destructive',
                 title: 'Gönderi paylaşılamadı.',
-                description: error?.code === 'permission-denied' ? 'Sunucu izin vermedi.' : (error?.message || 'Beklenmeyen bir hata oluştu.'),
+                description: err?.code === 'permission-denied' ? 'Sunucu izin vermedi.' : (err?.message || 'Beklenmeyen bir hata oluştu.'),
             });
         }
 
@@ -97,9 +98,10 @@ export default function PostsPage() {
         try {
             await deleteDoc(doc(firestore, 'posts', id));
             toast({ variant: 'destructive', title: 'Gönderi silindi.' });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Post delete failed:', error);
-            toast({ variant: 'destructive', title: 'Gönderi silinemedi.', description: error?.message });
+            const err = error as { message?: string };
+            toast({ variant: 'destructive', title: 'Gönderi silinemedi.', description: err?.message });
         }
     };
 
@@ -127,9 +129,10 @@ export default function PostsPage() {
             toast({ title: 'Gönderi güncellendi!' });
             setEditingPostId(null);
             setEditContent('');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Post update failed:', error);
-            toast({ variant: 'destructive', title: 'Gönderi güncellenemedi.', description: error?.message });
+            const err = error as { message?: string };
+            toast({ variant: 'destructive', title: 'Gönderi güncellenemedi.', description: err?.message });
         }
     };
 

@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { 
@@ -9,7 +9,6 @@ import {
     ShieldCheck, 
     ArrowLeft, 
     Copy, 
-    Upload, 
     Image as ImageIcon, 
     MessageSquare, 
     Monitor, 
@@ -24,9 +23,7 @@ import {
     Save, 
     PlusCircle, 
     Landmark, 
-    Info, 
     Phone, 
-    MapPin, 
     Building2,
     ExternalLink,
     Loader2,
@@ -79,19 +76,47 @@ const transparencyDocs = [
 
 const REQUIRED_NS = ['ns1.hangel.org', 'ns2.hangel.org'];
 
+interface NgoSiteBanner { id?: string; url: string; isPrimary?: boolean }
+interface NgoSiteSettings {
+  domain?: string;
+  registrar?: string;
+  primaryColor?: string;
+  presidentName?: string;
+  presidentMessage?: string;
+  banners?: NgoSiteBanner[];
+  sections?: Record<string, boolean>;
+  stats?: { volunteers?: number; donors?: number; foundedYear?: number; activeCampaigns?: number };
+  publishedAt?: { toDate?: () => Date } | string;
+  updatedAt?: unknown;
+}
+interface NgoDoc {
+  id: string;
+  name?: string;
+  adminUserId?: string;
+  primaryColor?: string;
+  website?: string;
+  presidentName?: string;
+  presidentMessage?: string;
+  foundedYear?: number;
+  coverUrl?: string;
+  stats?: { volunteers?: number; donors?: number; activeCampaigns?: number };
+  siteSettings?: NgoSiteSettings;
+}
+
 async function checkDnsRecords(domain: string): Promise<{ ok: boolean; foundNS: string[]; error?: string }> {
     try {
         const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=NS`, { cache: 'no-store' });
         if (!res.ok) return { ok: false, foundNS: [], error: `DNS sorgusu başarısız: HTTP ${res.status}` };
         const data = await res.json();
-        const answers: any[] = data?.Answer || [];
+        const answers: Array<{ type?: number; data?: string }> = data?.Answer || [];
         const foundNS = answers
             .filter(a => a?.type === 2)
             .map(a => String(a.data || '').toLowerCase().replace(/\.$/, ''));
         const ok = REQUIRED_NS.every(ns => foundNS.some(found => found.endsWith(ns)));
         return { ok, foundNS };
-    } catch (e: any) {
-        return { ok: false, foundNS: [], error: e?.message || 'DNS sorgusu başarısız' };
+    } catch (e) {
+        const err = e as { message?: string };
+        return { ok: false, foundNS: [], error: err?.message || 'DNS sorgusu başarısız' };
     }
 }
 
@@ -106,17 +131,17 @@ export default function WebsiteBuilderPage() {
         () => (db && authUser?.uid ? query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
         [db, authUser?.uid],
     );
-    const { data: adminNgos } = useCollection<any>(adminNgosQ);
+    const { data: adminNgos } = useCollection<NgoDoc>(adminNgosQ);
     const userDocRef = useMemoFirebase(
         () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
         [db, authUser?.uid],
     );
-    const { data: userData } = useDoc<any>(userDocRef);
+    const { data: userData } = useDoc<{ managedNgoId?: string }>(userDocRef);
     const fallbackNgoRef = useMemoFirebase(
         () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
         [db, userData?.managedNgoId],
     );
-    const { data: fallbackNgo } = useDoc<any>(fallbackNgoRef);
+    const { data: fallbackNgo } = useDoc<NgoDoc>(fallbackNgoRef);
 
     const ngoData = useMemo(() => (adminNgos && adminNgos[0]) || fallbackNgo || null, [adminNgos, fallbackNgo]);
     const ngoId: string | null = ngoData?.id || null;
@@ -175,7 +200,7 @@ export default function WebsiteBuilderPage() {
             activeCampaigns: String(s.stats?.activeCampaigns ?? ngoData.stats?.activeCampaigns ?? ''),
         });
         if (Array.isArray(s.banners) && s.banners.length > 0) {
-            setBanners(s.banners.map((b: any, i: number) => ({
+            setBanners(s.banners.map((b: NgoSiteBanner, i: number) => ({
                 id: b.id || String(i + 1),
                 url: b.url,
                 isPrimary: !!b.isPrimary || i === 0,
@@ -185,7 +210,8 @@ export default function WebsiteBuilderPage() {
         }
         if (s.publishedAt) {
             try {
-                const d = s.publishedAt.toDate ? s.publishedAt.toDate() : new Date(s.publishedAt);
+                const pub = s.publishedAt as { toDate?: () => Date } | string;
+                const d = typeof pub === 'object' && pub.toDate ? pub.toDate() : new Date(pub as string);
                 setLastUpdated(d.toLocaleTimeString('tr-TR'));
             } catch {}
         }
@@ -226,14 +252,15 @@ export default function WebsiteBuilderPage() {
         }
         setIsSaving(true);
         try {
-            await updateDoc(doc(db, 'ngos', ngoId), buildPayload() as any);
+            await updateDoc(doc(db, 'ngos', ngoId), buildPayload() as Record<string, unknown>);
             setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
             if (!silent) {
                 toast({ title: 'Tüm Değişiklikler Kaydedildi', description: 'Web siteniz güncel bilgilerle yayına hazır.' });
             }
             return true;
-        } catch (err: any) {
-            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+        } catch (err) {
+            const e = err as { message?: string };
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
             return false;
         } finally {
             setIsSaving(false);
@@ -1029,12 +1056,13 @@ export default function WebsiteBuilderPage() {
                                         'siteSettings.publishedAt': serverTimestamp(),
                                         'siteSettings.dnsVerified': true,
                                         'siteSettings.dnsVerifiedAt': serverTimestamp(),
-                                    } as any);
+                                    } as Record<string, unknown>);
                                     setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
                                     toast({ title: 'Siteniz Yayınlandı!', description: 'DNS doğrulandı, içerikler kaydedildi. Önizleme yeni sekmede açılıyor...' });
                                     window.open(`/ngo-admin/website/preview?primary=${primaryColor.replace('#', '')}&id=${ngoId}`, '_blank');
-                                } catch (err: any) {
-                                    toast({ variant: 'destructive', title: 'Yayınlama başarısız', description: err?.message || 'Beklenmeyen bir hata oluştu.' });
+                                } catch (err) {
+                                    const e = err as { message?: string };
+                                    toast({ variant: 'destructive', title: 'Yayınlama başarısız', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
                                 } finally {
                                     setIsSaving(false);
                                 }

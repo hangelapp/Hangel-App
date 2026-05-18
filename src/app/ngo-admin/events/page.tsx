@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Calendar, Plus, Users, MapPin, Landmark, Store, Building2, Info, CheckCircle2, ChevronRight, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';

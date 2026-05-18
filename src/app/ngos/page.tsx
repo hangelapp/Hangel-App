@@ -20,7 +20,7 @@ export default function NgosPage() {
     const db = useFirestore();
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: 'viewCount', direction: 'desc' });
+    const [sortConfig] = useState({ key: 'viewCount', direction: 'desc' });
 
     const ngosQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -32,7 +32,7 @@ export default function NgosPage() {
     const filteredNgos = useMemo(() => {
         if (!ngosData) return [];
         // Pasif kuruluşları public listeden gizle
-        let filtered = ngosData.filter(ngo => (ngo as any).status !== 'Pasif');
+        let filtered = ngosData.filter(ngo => (ngo as NGO & { status?: string }).status !== 'Pasif');
 
         if (typeFilter !== 'Tümü') {
             filtered = filtered.filter(ngo => ngo.type === typeFilter);

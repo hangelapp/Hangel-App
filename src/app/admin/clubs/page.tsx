@@ -1,14 +1,13 @@
 'use client';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowDownUp, Filter, Users, BrainCircuit, Calendar, ChevronRight } from 'lucide-react';
+import { Search, ArrowDownUp, Filter, Users, BrainCircuit, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import { studentClubs } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
 
@@ -35,11 +34,79 @@ const ClubCard = ({ club }: { club: StudentClub }) => (
     </Link>
 );
 
+type ClubListProps = {
+    finalClubs: StudentClub[];
+    type?: 'university' | 'high-school';
+};
+
+const ClubList = ({ finalClubs, type }: ClubListProps) => {
+    const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;
+    return (
+        <div className='space-y-3'>
+            {filteredClubs.length > 0 ? filteredClubs.map((club) => (
+                <ClubCard key={club.id} club={club} />
+            )) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>}
+        </div>
+    );
+};
+
+type SchoolTypeTabsProps = {
+    finalClubs: StudentClub[];
+};
+
+const SchoolTypeTabs = ({ finalClubs }: SchoolTypeTabsProps) => {
+    const clubContent = (
+        <>
+            <TabsContent value="university" className="mt-4"><ClubList finalClubs={finalClubs} type="university" /></TabsContent>
+            <TabsContent value="high-school" className="mt-4"><ClubList finalClubs={finalClubs} type="high-school" /></TabsContent>
+        </>
+    );
+
+    return (
+        <Tabs defaultValue="university" className='w-full mt-2'>
+            <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger value="university">Üniversite</TabsTrigger>
+                <TabsTrigger value="high-school">Lise</TabsTrigger>
+            </TabsList>
+            {clubContent}
+        </Tabs>
+    );
+};
+
+type SubTabsProps = {
+    finalClubs: StudentClub[];
+    activeSubTab: string;
+    setActiveSubTab: (v: string) => void;
+};
+
+const SubTabs = ({ finalClubs, activeSubTab, setActiveSubTab }: SubTabsProps) => {
+    const clubListAll = <ClubList finalClubs={finalClubs} />;
+    const schoolTypeTabs = <SchoolTypeTabs finalClubs={finalClubs} />;
+
+    return (
+        <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
+            <TabsList className='grid w-full grid-cols-4'>
+                <TabsTrigger value="all">Tümü</TabsTrigger>
+                <TabsTrigger value="country">Ülkemde</TabsTrigger>
+                <TabsTrigger value="school">Okulumda</TabsTrigger>
+                <TabsTrigger value="city">Şehrimde</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all" className="mt-4">
+                {['all'].includes(activeSubTab) ? schoolTypeTabs : clubListAll}
+            </TabsContent>
+            <TabsContent value="country" className="mt-4">
+                {['country'].includes(activeSubTab) && schoolTypeTabs}
+            </TabsContent>
+            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
+            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
+        </Tabs>
+    );
+};
+
 export default function StudentClubsPage() {
   const [clubs, setClubs] = useState<StudentClub[]>([]);
   const [activeSubTab, setActiveSubTab] = useState('all');
   const [sortConfig, setSortConfig] = useState<{ key: keyof StudentClub | 'members' | 'points'; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
-  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [universityFilter, setUniversityFilter] = useState<string[]>([]);
 
@@ -53,13 +120,15 @@ export default function StudentClubsPage() {
   }, []);
 
   const sortedClubs = useMemo(() => {
-    let sortableClubs = [...clubs];
+    const sortableClubs = [...clubs];
     sortableClubs.sort((a, b) => {
         const key = sortConfig.key as keyof StudentClub;
-        if (a[key] < b[key]) {
+        const aVal = a[key] ?? '';
+        const bVal = b[key] ?? '';
+        if (aVal < bVal) {
             return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (a[key] > b[key]) {
+        if (aVal > bVal) {
             return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
@@ -91,61 +160,6 @@ export default function StudentClubsPage() {
         club.university.toLowerCase().includes(lowercased)
     );
   }, [sortedClubs, searchTerm, universityFilter]);
-
-  const ClubList = ({type}: {type?: 'university' | 'high-school'}) => {
-    const filteredClubs = type ? finalClubs.filter(c => c.type === type) : finalClubs;
-    return (
-        <div className='space-y-3'>
-            {filteredClubs.length > 0 ? filteredClubs.map((club) => (
-                <ClubCard key={club.id} club={club} />
-            )) : <div className="text-center text-muted-foreground p-8">Bu kategoride kulüp bulunmuyor.</div>}
-        </div>
-    )
-  }
-  
-  const SchoolTypeTabs = () => {
-    const clubContent = (
-      <>
-        <TabsContent value="university" className="mt-4"><ClubList type="university" /></TabsContent>
-        <TabsContent value="high-school" className="mt-4"><ClubList type="high-school" /></TabsContent>
-      </>
-    );
-
-    return (
-        <Tabs defaultValue="university" className='w-full mt-2'>
-            <TabsList className='grid w-full grid-cols-2'>
-                <TabsTrigger value="university">Üniversite</TabsTrigger>
-                <TabsTrigger value="high-school">Lise</TabsTrigger>
-            </TabsList>
-            {clubContent}
-        </Tabs>
-    );
-  };
-
-  const SubTabs = () => {
-    const clubListAll = <ClubList />;
-    const schoolTypeTabs = <SchoolTypeTabs />;
-
-    return (
-        <Tabs defaultValue="all" className='w-full mt-4' onValueChange={setActiveSubTab}>
-            <TabsList className='grid w-full grid-cols-4'>
-                <TabsTrigger value="all">Tümü</TabsTrigger>
-                <TabsTrigger value="country">Ülkemde</TabsTrigger>
-                <TabsTrigger value="school">Okulumda</TabsTrigger>
-                <TabsTrigger value="city">Şehrimde</TabsTrigger>
-            </TabsList>
-            <TabsContent value="all" className="mt-4">
-                {['all'].includes(activeSubTab) ? schoolTypeTabs : clubListAll}
-            </TabsContent>
-            <TabsContent value="country" className="mt-4">
-                 {['country'].includes(activeSubTab) && schoolTypeTabs}
-            </TabsContent>
-            <TabsContent value="school" className="mt-4 text-center text-muted-foreground py-8">Okulunuzdaki içerik yakında burada.</TabsContent>
-            <TabsContent value="city" className="mt-4 text-center text-muted-foreground py-8">Şehrinizdeki içerik yakında burada.</TabsContent>
-        </Tabs>
-    )
-  };
-
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
@@ -201,7 +215,7 @@ export default function StudentClubsPage() {
                 </DropdownMenuContent>
             </DropdownMenu>
       </div>
-      <SubTabs />
+      <SubTabs finalClubs={finalClubs} activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab} />
     </div>
   );
 }

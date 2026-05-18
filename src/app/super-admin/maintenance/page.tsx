@@ -40,7 +40,7 @@ export default function MaintenancePage() {
                 const data = d.data();
                 if (data.createdAt) { skipped++; continue; }
 
-                let createdAt: any = serverTimestamp();
+                let createdAt: ReturnType<typeof serverTimestamp> | Timestamp = serverTimestamp();
                 const jd = data.joinDate;
                 if (typeof jd === 'string' && /^\d{4}-\d{2}-\d{2}/.test(jd)) {
                     const parsed = new Date(jd);
@@ -51,7 +51,7 @@ export default function MaintenancePage() {
                 try {
                     await updateDoc(doc(db, 'users', d.id), { createdAt });
                     updated++;
-                } catch (e: any) {
+                } catch (e) {
                     failed++;
                     console.error(`Backfill failed for ${d.id}:`, e);
                 }
@@ -59,9 +59,10 @@ export default function MaintenancePage() {
 
             log('ok', `Tamamlandı: ${updated} güncellendi, ${skipped} zaten vardı, ${failed} hata.`);
             toast({ title: 'Backfill tamamlandı', description: `${updated} kullanıcıya createdAt eklendi.` });
-        } catch (e: any) {
-            log('err', e?.message || 'Hata');
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setRunning(null);
         }
@@ -191,9 +192,10 @@ export default function MaintenancePage() {
 
             log('ok', `${films.length} film eklendi/güncellendi.`);
             toast({ title: 'Filmler tohumlandı', description: `${films.length} kayıt yüklendi.` });
-        } catch (e: any) {
-            log('err', e?.message || 'Hata');
-            toast({ variant: 'destructive', title: 'Hata', description: e?.message });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setRunning(null);
         }

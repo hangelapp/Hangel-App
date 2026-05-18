@@ -50,9 +50,10 @@ export default function SetSuperAdminPage() {
 
             // Delay before finishing
             await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error: any) {
-            setStatus(`Hata: ${error.message}`);
-            toast({ variant: 'destructive', title: "Hata", description: error.message });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Bilinmeyen hata';
+            setStatus(`Hata: ${message}`);
+            toast({ variant: 'destructive', title: "Hata", description: message });
         } finally {
             setIsLoading(false);
         }

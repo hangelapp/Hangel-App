@@ -6,10 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
+import { Heart, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useRef, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   Carousel,
@@ -20,7 +19,6 @@ import Autoplay from "embla-carousel-autoplay"
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Progress } from '@/components/ui/progress';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -94,13 +92,14 @@ export default function TimelinePage() {
     }
     
     posts.sort((a, b) => {
-        let valA: any, valB: any;
+        let valA: number | string, valB: number | string;
         if (sortKey === 'id') {
             // Prefer createdAt (Firestore Timestamp or ISO), fallback to id
-            const toTime = (p: any) => {
-                if (p.createdAt?.toMillis) return p.createdAt.toMillis();
-                if (p.createdAt?.seconds) return p.createdAt.seconds * 1000;
-                if (typeof p.createdAt === 'string') return new Date(p.createdAt).getTime() || 0;
+            const toTime = (p: Post): number => {
+                const ca = (p as Post & { createdAt?: { toMillis?: () => number; seconds?: number } | string }).createdAt;
+                if (ca && typeof ca === 'object' && ca.toMillis) return ca.toMillis();
+                if (ca && typeof ca === 'object' && ca.seconds) return (ca.seconds || 0) * 1000;
+                if (typeof ca === 'string') return new Date(ca).getTime() || 0;
                 return 0;
             };
             const tA = toTime(a);
