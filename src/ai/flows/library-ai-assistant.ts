@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 
 const AskLibraryAssistantInputSchema = z.object({
   userQuestion: z.string().describe("The user's question about the resources in the library."),
@@ -23,12 +24,21 @@ const AskLibraryAssistantOutputSchema = z.object({
 export type AskLibraryAssistantOutput = z.infer<typeof AskLibraryAssistantOutputSchema>;
 
 export async function askLibraryAssistant(input: AskLibraryAssistantInput): Promise<AskLibraryAssistantOutput> {
-  return getLibraryAnswerFlow(input);
+  // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
+  // prompt interpolation. TODO(P1-8c): wire quota when caller userId is
+  // plumbed through.
+  const safeInput: AskLibraryAssistantInput = {
+    userQuestion: sanitizeUserInput(input.userQuestion, 2000),
+    libraryContext: sanitizeUserInput(input.libraryContext, 8000),
+  };
+  return getLibraryAnswerFlow(safeInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'getLibraryAnswerPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
+  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: AskLibraryAssistantInputSchema},
   output: {schema: AskLibraryAssistantOutputSchema},
   prompt: `You are the "Hangel Kütüphane Asistanı" (Library Assistant). Your goal is to help users navigate and understand the resources available in the Hangel Library.
@@ -51,6 +61,8 @@ const getLibraryAnswerFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    const safe = output!;
+    // P2-9: post-clamp output as a last-resort guard against oversized responses.
+    return {...safe, answer: clampOutputText(safe.answer)};
   }
 );

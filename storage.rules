@@ -19,9 +19,16 @@ service firebase.storage {
     }
 
     // STK şeffaflık belgeleri
+    // P1-4 (KVKK): public read kaldırıldı — finansal raporlar / üye listeleri PII içeriyor.
+    // Okuma: belge sahibi (NGO uid), NGO admin'i (managedNgoId), veya super-admin.
+    // Yazma: aynı.
     match /transparency/{userId}/{allPaths=**} {
-      allow read: if true; // public — belgeler destekçilere açık
-      allow write: if (request.auth != null && request.auth.uid == userId) || isSuperAdmin();
+      allow read: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == userId) ||
+        isManagedEntity('Ngo', userId);
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == userId) ||
+        isManagedEntity('Ngo', userId);
     }
 
     // STK/Marka/Kulüp logoları ve kapak fotoğrafları

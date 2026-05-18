@@ -42,7 +42,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
       <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label="Menüyü aç">
+            <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label={t('a11y.openMenu')}>
                 <Menu className="h-6 w-6" />
             </Button>
             <Link href="/home" className="flex items-center">
@@ -64,11 +64,11 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                     </SelectContent>
                 </Select>
             </div>
-            <Button asChild variant="ghost" size="icon" aria-label="Acil Durum"><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
+            <Button asChild variant="ghost" size="icon" aria-label={t('a11y.emergency')}><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
 
             {/* Bildirim ikonu — sadece giriş yapmış kullanıcılar görür */}
             {user && (
-              <Button asChild variant="ghost" size="icon" className="relative" aria-label="Bildirimler">
+              <Button asChild variant="ghost" size="icon" className="relative" aria-label={t('a11y.notifications')}>
                 <Link href="/notifications">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (

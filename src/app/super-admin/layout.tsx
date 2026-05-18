@@ -1,13 +1,16 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 
 export default function SuperAdminLayout({
   children,
@@ -17,6 +20,63 @@ export default function SuperAdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
+  const { user: authUser, isUserLoading } = useUser();
+  const db = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, 'users', authUser.uid);
+  }, [db, authUser]);
+
+  const { data: userData, isLoading: isUserDocLoading } = useDoc<User>(userDocRef);
+
+  // Custom claims role — primary signal for super-admin.
+  const [claimsRole, setClaimsRole] = useState<string | null>(null);
+  useEffect(() => {
+    if (!authUser) {
+      setClaimsRole(null);
+      return;
+    }
+    let cancelled = false;
+    authUser
+      .getIdTokenResult()
+      .then((res) => {
+        if (!cancelled) {
+          const role = (res.claims as { role?: unknown }).role;
+          setClaimsRole(typeof role === 'string' ? role : null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setClaimsRole(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authUser]);
+
+  // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
+  const isSuperAdmin = useMemo(() => {
+    if (!authUser) return false;
+    return claimsRole === 'super-admin' || userData?.role === 'super-admin';
+  }, [authUser, claimsRole, userData]);
+
+  // While we still don't know who the user is, keep waiting (no admin shell flash).
+  const isAuthResolving = isUserLoading || (!!authUser && isUserDocLoading && !userData);
+
+  useEffect(() => {
+    if (isAuthResolving) return;
+
+    if (!authUser) {
+      const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(pathname)}`;
+      router.replace(redirectUrl);
+      return;
+    }
+
+    if (!isSuperAdmin) {
+      router.replace('/market');
+    }
+  }, [isAuthResolving, authUser, isSuperAdmin, pathname, router]);
+
   const handleBackClick = () => {
     if (pathname === '/super-admin') {
       router.push('/market');
@@ -24,6 +84,14 @@ export default function SuperAdminLayout({
       router.push('/super-admin');
     }
   };
+
+  if (isAuthResolving || !authUser || !isSuperAdmin) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-label="Yükleniyor" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full">

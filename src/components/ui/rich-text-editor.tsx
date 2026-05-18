@@ -7,6 +7,7 @@ import {
     Heading2, Heading3, Link2, Code as CodeIcon, Quote, Eraser, Pencil,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 type RichTextEditorProps = {
     value: string;
@@ -136,7 +137,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, minHei
                         '[&[contenteditable=true]:empty]:before:pointer-events-none',
                     )}
                     style={{ minHeight }}
-                    dangerouslySetInnerHTML={{ __html: value || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(value || '') }}
                 />
             ) : (
                 <textarea

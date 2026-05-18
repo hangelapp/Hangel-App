@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function LibraryItemPage() {
   const router = useRouter();
@@ -123,7 +124,7 @@ export default function LibraryItemPage() {
       </div>
       <article
         className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"
-        dangerouslySetInnerHTML={{ __html: item.content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.content) }}
       />
        <Card className="mt-8">
         <CardHeader>

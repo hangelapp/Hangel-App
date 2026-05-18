@@ -527,7 +527,7 @@ export default function WebContentPage() {
                                                             ) : (
                                                                 <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
                                                             )}
-                                                            <Link href={p.href} target="_blank" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+                                                            <Link href={p.href} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
                                                                 {p.href} <ExternalLink className="h-3 w-3" />
                                                             </Link>
                                                         </div>

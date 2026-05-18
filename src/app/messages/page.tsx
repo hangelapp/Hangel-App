@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { addDoc, collection, query, serverTimestamp, where } from 'firebase/firestore';
+import { EmptyState } from '@/components/shared/empty-state';
 
 const senderTypeIcons: Record<string, React.ReactNode> = {
     ngo: <Building className="h-3 w-3" />,
@@ -172,6 +173,12 @@ export default function MessagesPage() {
                             <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
                             <p>Mesajlarınızı görmek için giriş yapın.</p>
                         </div>
+                    ) : (messages || []).length === 0 ? (
+                        <EmptyState
+                            icon={MessageSquare}
+                            title="Henüz mesajın yok"
+                            description="İletişim için yeni bir mesaj başlat."
+                        />
                     ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => (
                         <Card key={msg.id} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",

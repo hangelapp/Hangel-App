@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function SupportTopicPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function SupportTopicPage() {
               <AccordionContent>
                 <div
                   className="prose prose-sm dark:prose-invert max-w-none pt-4 border-t"
-                  dangerouslySetInnerHTML={{ __html: subtopic.content }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(subtopic.content) }}
                 />
                 <div className="mt-6 pt-4 text-center border-t">
                     <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>

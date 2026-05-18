@@ -7,6 +7,7 @@
  */
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { Channel, UseCase } from './types';
 
 export interface MarketingConsentDoc {
@@ -32,7 +33,7 @@ export async function canSendTo(
   }
 
   const db = getAdminFirestore();
-  const snap = await db.collection('userMarketingConsent').doc(userId).get();
+  const snap = await db.collection(COLLECTIONS.userMarketingConsent).doc(userId).get();
   if (!snap.exists) return { allowed: false, reason: 'no_consent_record' };
 
   const data = snap.data() as MarketingConsentDoc | undefined;
@@ -59,7 +60,7 @@ export async function filterConsentedUserIds(
   const CHUNK = 30;
   for (let i = 0; i < userIds.length; i += CHUNK) {
     const chunk = userIds.slice(i, i + CHUNK);
-    const refs = chunk.map((uid) => db.collection('userMarketingConsent').doc(uid));
+    const refs = chunk.map((uid) => db.collection(COLLECTIONS.userMarketingConsent).doc(uid));
     const snaps = await db.getAll(...refs);
     for (let j = 0; j < snaps.length; j++) {
       const uid = chunk[j];

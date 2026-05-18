@@ -11,6 +11,7 @@
  */
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { COLLECTIONS } from '@/firebase/collections';
 import { toE164TR } from './phone';
 import { normalizeEmail, isValidEmail } from './email';
 import { filterConsentedUserIds } from './consent';
@@ -152,7 +153,7 @@ async function loadByFilters(
   const db = getAdminFirestore();
   // Şimdilik tüm users üzerinden tara — küçük-orta kullanıcı sayısı için yeterli.
   // İleride composite index + chained where ile optimize edilebilir.
-  const snap = await db.collection('users').get();
+  const snap = await db.collection(COLLECTIONS.users).get();
   const out: Array<{ userId: string; user: UserDoc }> = [];
   for (const doc of snap.docs) {
     const user = doc.data() as UserDoc;
@@ -166,7 +167,7 @@ async function loadByFilters(
 async function loadSegments(segmentIds: string[], scopedNgoId?: string): Promise<SegmentFilters[]> {
   const db = getAdminFirestore();
   // NGO scope'da ngoRecipientSegments koleksiyonundan çek; aksi halde recipientSegments (system-scoped)
-  const collectionName = scopedNgoId ? 'ngoRecipientSegments' : 'recipientSegments';
+  const collectionName = scopedNgoId ? COLLECTIONS.ngoRecipientSegments : COLLECTIONS.recipientSegments;
   const refs = segmentIds.map((id) => db.collection(collectionName).doc(id));
   if (refs.length === 0) return [];
   const snaps = await db.getAll(...refs);
@@ -189,7 +190,7 @@ async function loadUsersByIds(
   const result = new Map<string, UserDoc>();
   for (let i = 0; i < userIds.length; i += CHUNK) {
     const chunk = userIds.slice(i, i + CHUNK);
-    const refs = chunk.map((uid) => db.collection('users').doc(uid));
+    const refs = chunk.map((uid) => db.collection(COLLECTIONS.users).doc(uid));
     const snaps = await db.getAll(...refs);
     for (const snap of snaps) {
       if (snap.exists) result.set(snap.id, snap.data() as UserDoc);
@@ -206,7 +207,7 @@ interface CsvRow {
 
 async function loadCsvRows(csvUploadId: string, scopedNgoId?: string): Promise<CsvRow[]> {
   const db = getAdminFirestore();
-  const snap = await db.collection('csvUploads').doc(csvUploadId).get();
+  const snap = await db.collection(COLLECTIONS.csvUploads).doc(csvUploadId).get();
   if (!snap.exists) return [];
   const data = snap.data() as { rows?: CsvRow[]; ngoId?: string } | undefined;
   // NGO scope: CSV upload başka NGO'ya aitse reddet

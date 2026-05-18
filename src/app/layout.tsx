@@ -14,7 +14,8 @@ import { ThemeApplier } from '@/components/shared/theme-applier';
 
 const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
+  // P3-2: dropped 800 (extrabold) — 0 usages in src. Kept 900 (black) — 371 usages.
+  weight: ['400', '500', '600', '700', '900'],
   variable: '--font-poppins',
 });
 

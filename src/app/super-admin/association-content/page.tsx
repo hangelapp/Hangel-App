@@ -603,6 +603,7 @@ export default function AssociationContentPage() {
                                             <Link
                                                 href={`/hangelassociation/projects/${slug}`}
                                                 target="_blank"
+                                                rel="noopener noreferrer"
                                                 className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
                                             >
                                                 aç <ExternalLink className="h-3 w-3" />

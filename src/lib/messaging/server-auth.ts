@@ -7,8 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
-
-const SUPER_ADMIN_EMAIL = 'ismailhilmi@hangel.org';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export function checkMessagingKey(req: Request): NextResponse | null {
   const expected = process.env.MESSAGING_WORKER_KEY;
@@ -39,19 +38,21 @@ export async function requireSuperAdmin(
     return { error: NextResponse.json({ error: 'Token gerekli' }, { status: 401 }) };
   }
 
-  let decoded: { uid: string; email?: string };
+  let decoded: { uid: string; email?: string; role?: string };
   try {
-    decoded = await getAdminAuth().verifyIdToken(token);
+    decoded = (await getAdminAuth().verifyIdToken(token)) as typeof decoded;
   } catch {
     return { error: NextResponse.json({ error: 'Geçersiz token' }, { status: 401 }) };
   }
 
   const email = decoded.email ?? null;
-  if (email === SUPER_ADMIN_EMAIL) {
+  // Primary check: custom claim role == 'super-admin'
+  if (decoded.role === 'super-admin') {
     return { actor: { uid: decoded.uid, email } };
   }
 
-  const snap = await getAdminFirestore().collection('users').doc(decoded.uid).get();
+  // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
+  const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
   if (!snap.exists) {
     return { error: NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 403 }) };
   }
@@ -89,9 +90,9 @@ export async function requireNgoAdmin(
     return { error: NextResponse.json({ error: 'Token gerekli' }, { status: 401 }) };
   }
 
-  let decoded: { uid: string; email?: string };
+  let decoded: { uid: string; email?: string; role?: string };
   try {
-    decoded = await getAdminAuth().verifyIdToken(token);
+    decoded = (await getAdminAuth().verifyIdToken(token)) as typeof decoded;
   } catch {
     return { error: NextResponse.json({ error: 'Geçersiz token' }, { status: 401 }) };
   }
@@ -99,11 +100,13 @@ export async function requireNgoAdmin(
   const email = decoded.email ?? null;
   const allowSuperAdmin = options?.allowSuperAdmin ?? true;
 
-  const userSnap = await getAdminFirestore().collection('users').doc(decoded.uid).get();
+  const userSnap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
   const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string }) : null;
 
+  // Primary check: custom claim. Fallback to users/{uid}.role for transition.
+  // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
   const isSuperAdmin =
-    email === SUPER_ADMIN_EMAIL || userData?.role === 'super-admin';
+    decoded.role === 'super-admin' || userData?.role === 'super-admin';
 
   if (isSuperAdmin && allowSuperAdmin) {
     const ngoId = options?.targetNgoId ?? userData?.managedNgoId ?? '';

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function InformationSocietyServicesPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function InformationSocietyServicesPage() {
             {cms.description || '5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.'}
           </p>
           {cms.body && (
-            <div className="prose prose-lg max-w-3xl mt-4" dangerouslySetInnerHTML={{ __html: cms.body }} />
+            <div className="prose prose-lg max-w-3xl mt-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(cms.body) }} />
           )}
         </div>
 

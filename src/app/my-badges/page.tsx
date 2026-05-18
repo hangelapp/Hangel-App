@@ -2,7 +2,8 @@
 
 import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, Milestone, CheckCircle, Lock } from 'lucide-react';
+import { Star, Milestone, CheckCircle, Lock, Award } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { badges } from '@/lib/data';
 import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
@@ -205,6 +206,14 @@ export default function MyBadgesPage() {
                 </TabsContent>
 
                 <TabsContent value="badges" className="mt-8 space-y-12">
+                    {enrichedBadges.length === 0 && (
+                        <EmptyState
+                            icon={Award}
+                            title="Henüz rozetin yok"
+                            description="Gönüllülük ve katılımla rozetler kazanmaya başla."
+                            action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+                        />
+                    )}
                     {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => {
                         const areaCurrent = Number(areaPoints[socialArea]) || 0;
                         return (

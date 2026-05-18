@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 
 const ImpactStoryInputSchema = z.object({
   userName: z.string().describe("The user's first name."),
@@ -25,12 +26,24 @@ const ImpactStoryOutputSchema = z.object({
 export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
 
 export async function getImpactStory(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
-  return generateImpactStoryFlow(input);
+  // P1-8: clamp + strip control chars on every user-influenced string before it
+  // hits the prompt template. TODO(P1-8c): wire quota when caller userId is
+  // plumbed through (this flow is invoked from `src/app/profile/page.tsx`
+  // without an explicit userId arg today).
+  const safeInput: ImpactStoryInput = {
+    userName: sanitizeUserInput(input.userName, 80),
+    donations: sanitizeUserInput(input.donations, 1000),
+    volunteering: sanitizeUserInput(input.volunteering, 1000),
+    badges: sanitizeUserInput(input.badges, 1000),
+  };
+  return generateImpactStoryFlow(safeInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'generateImpactStoryPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
+  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: ImpactStoryInputSchema},
   output: {schema: ImpactStoryOutputSchema},
   prompt: `You are "Hangel's Etki Asistanı" (Impact Assistant), a cheerful and inspiring AI friend. Your purpose is to celebrate a user's positive impact in a short, personal, and heartfelt story. The story should feel like a warm message from a friend, not a corporate announcement. It should be perfect for sharing on social media.
@@ -73,6 +86,8 @@ const generateImpactStoryFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    const safe = output!;
+    // P2-9: post-clamp output as a last-resort guard against oversized responses.
+    return {...safe, story: clampOutputText(safe.story)};
   }
 );

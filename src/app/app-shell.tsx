@@ -9,8 +9,54 @@ import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescript
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import { UserAvatar } from '@/components/shared/user-avatar';
-import * as Icons from 'lucide-react';
-import { Info } from 'lucide-react';
+import {
+  ChevronRight,
+  X,
+  Info,
+  LayoutGrid,
+  Store,
+  Building,
+  Users,
+  Calendar,
+  Library,
+  DollarSign,
+  FileText,
+  Award,
+  MessageSquare,
+  BarChart,
+  Send,
+  Shield,
+  Settings,
+  Globe,
+  Zap,
+  HeartHandshake,
+  CircleHelp,
+} from 'lucide-react';
+
+// P2-4: Replaces `import * as Icons from 'lucide-react'`. Only the icons used
+// by nav groups (group1Items..group4Items) are bundled; SideNav consumes the
+// same icon name strings, so the closed set is determined here.
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  'layout-grid': LayoutGrid,
+  store: Store,
+  building: Building,
+  users: Users,
+  calendar: Calendar,
+  library: Library,
+  'dollar-sign': DollarSign,
+  'file-text': FileText,
+  award: Award,
+  'message-square': MessageSquare,
+  'bar-chart': BarChart,
+  send: Send,
+  shield: Shield,
+  settings: Settings,
+  info: Info,
+  globe: Globe,
+  zap: Zap,
+  HeartHandshake: HeartHandshake,
+  'circle-help': CircleHelp,
+};
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -76,8 +122,8 @@ const iconColorMap: { [key: string]: string } = {
 };
 
 const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick: () => void }) => {
-    const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-    const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
+    // P2-4: lookup happens via explicit iconMap (kebab-case + HeartHandshake exception).
+    const Icon = iconMap[item.icon] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (
@@ -89,7 +135,7 @@ const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick
                     </div>
                     <span className='text-sm font-semibold text-foreground'>{item.label}</span>
                 </div>
-                <Icons.ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
             </Link>
         </SheetClose>
     );
@@ -121,11 +167,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         setIsMounted(true);
     }, []);
 
+    // Custom claims role — fetched once auth user resolves. Primary signal for super-admin.
+    const [claimsRole, setClaimsRole] = useState<string | null>(null);
+    useEffect(() => {
+        if (!authUser) {
+            setClaimsRole(null);
+            return;
+        }
+        let cancelled = false;
+        authUser
+            .getIdTokenResult()
+            .then((res) => {
+                if (!cancelled) {
+                    const role = (res.claims as { role?: unknown }).role;
+                    setClaimsRole(typeof role === 'string' ? role : null);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setClaimsRole(null);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [authUser]);
+
     // Authorization Flags
+    // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
     const isSuperAdmin = useMemo(() => {
         if (!authUser) return false;
-        return authUser.email === '5384009090@hangel.org' || userData?.role === 'super-admin';
-    }, [authUser, userData]);
+        return claimsRole === 'super-admin' || userData?.role === 'super-admin';
+    }, [authUser, claimsRole, userData]);
 
     const isNgoAdmin = useMemo(() => {
         return isSuperAdmin || userData?.role === 'ngo-admin';
@@ -317,7 +388,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                                     <HangelLogo className="text-2xl" />
                                 </Link>
                                 <SheetClose>
-                                    <Icons.X className="h-6 w-6 text-muted-foreground" />
+                                    <X className="h-6 w-6 text-muted-foreground" />
                                 </SheetClose>
                             </div>
                             <Link href="/profile" className="flex items-center gap-3">

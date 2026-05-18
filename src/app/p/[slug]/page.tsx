@@ -7,6 +7,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Image from 'next/image';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function SitePageView() {
   const router = useRouter();
@@ -80,7 +81,7 @@ export default function SitePageView() {
 
           <article
             className="prose prose-sm sm:prose-base max-w-none mt-8 space-y-4"
-            dangerouslySetInnerHTML={{ __html: page.content || '' }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.content || '') }}
           />
         </div>
       </main>

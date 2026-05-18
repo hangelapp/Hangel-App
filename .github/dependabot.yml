@@ -1,0 +1,32 @@
+version: 2
+
+# P3-4: Dependabot policy. Renovate is not used.
+# Weekly schedule keeps PR noise low; groups bundle related updates.
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      firebase:
+        patterns:
+          - "firebase*"
+          - "@firebase/*"
+      next:
+        patterns:
+          - "next"
+          - "@next/*"
+      genkit:
+        patterns:
+          - "@genkit-ai/*"
+          - "genkit"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

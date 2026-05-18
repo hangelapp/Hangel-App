@@ -5,8 +5,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import * as Icons from 'lucide-react';
+// P2-4: closed icon set for notifications lookup — replaces `import * as Icons`.
+import { Bell, Bot, FileText, Shield, UserCog } from 'lucide-react';
 import React, { useState } from 'react';
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    Bell,
+    Bot,
+    FileText,
+    Shield,
+    UserCog,
+};
 import { useRouter } from 'next/navigation';
 
 const notifications = [
@@ -48,7 +57,7 @@ export default function InboxPage() {
                         </TabsList>
                         <TabsContent value="all" className="mt-4 space-y-4">
                             {data.map(notification => {
-                                const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[notification.icon] || Icons.Bell) as React.ComponentType<{ className?: string }>;
+                                const Icon = iconMap[notification.icon] || Bell;
                                 return (
                                 <div key={notification.id} className={`p-4 border rounded-lg flex items-start gap-4 ${notification.read ? 'opacity-60' : ''}`}>
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />
@@ -63,7 +72,7 @@ export default function InboxPage() {
                         </TabsContent>
                         <TabsContent value="unread" className="mt-4 space-y-4">
                             {data.filter(n => !n.read).map(notification => {
-                                const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[notification.icon] || Icons.Bell) as React.ComponentType<{ className?: string }>;
+                                const Icon = iconMap[notification.icon] || Bell;
                                 return (
                                 <div key={notification.id} className="p-4 border rounded-lg flex items-start gap-4">
                                     <Icon className="h-5 w-5 mt-1 text-muted-foreground" />

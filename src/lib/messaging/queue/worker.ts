@@ -10,6 +10,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { CanonicalErrorCode, JobStatus, SendResult, WhatsAppConversationCategory, WhatsAppTemplateComponent } from '../types';
 import { getSmsProvider } from '../providers/sms';
 import { getEmailProvider } from '../providers/email';
@@ -79,7 +80,7 @@ export async function workerTick(opts: { batch?: number; workerId?: string } = {
   const now = Timestamp.now();
 
   const candidates = await db
-    .collection('messageJobs')
+    .collection(COLLECTIONS.messageJobs)
     .where('status', '==', 'pending')
     .where('nextAttemptAt', '<=', now)
     .orderBy('nextAttemptAt')
@@ -206,7 +207,7 @@ async function persistResult(
   tally: WorkerTickResult
 ): Promise<void> {
   const db = getAdminFirestore();
-  const campRef = db.collection('campaigns').doc(job.campaignId);
+  const campRef = db.collection(COLLECTIONS.campaigns).doc(job.campaignId);
   const recipientRef = db.doc(job.recipientPath);
 
   if (res.ok) {
@@ -227,7 +228,7 @@ async function persistResult(
       'stats.sent': FieldValue.increment(1),
     });
     batch.set(
-      db.collection('deliveryEvents').doc(),
+      db.collection(COLLECTIONS.deliveryEvents).doc(),
       {
         campaignId: job.campaignId,
         recipientPath: job.recipientPath,
@@ -295,7 +296,7 @@ async function persistResult(
       'stats.failed': FieldValue.increment(1),
     });
     batch.set(
-      db.collection('deliveryEvents').doc(),
+      db.collection(COLLECTIONS.deliveryEvents).doc(),
       {
         campaignId: job.campaignId,
         recipientPath: job.recipientPath,

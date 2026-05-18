@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 
 const ProjectWriterInputSchema = z.object({
   institution: z.string().describe('The target institution for the project (e.g., EU, UNDP, Ministry).'),
@@ -31,12 +32,29 @@ const ProjectWriterOutputSchema = z.object({
 export type ProjectWriterOutput = z.infer<typeof ProjectWriterOutputSchema>;
 
 export async function writeProjectProposal(input: ProjectWriterInput): Promise<ProjectWriterOutput> {
-  return projectWriterFlow(input);
+  // P1-8: sanitize every user-supplied string (clamp + strip control chars)
+  // before prompt interpolation. TODO(P1-8c): wire quota when caller userId
+  // is plumbed through.
+  const safeInput: ProjectWriterInput = {
+    institution: sanitizeUserInput(input.institution, 200),
+    sections: {
+      summary: input.sections.summary !== undefined ? sanitizeUserInput(input.sections.summary, 4000) : undefined,
+      goals: input.sections.goals !== undefined ? sanitizeUserInput(input.sections.goals, 4000) : undefined,
+      audience: input.sections.audience !== undefined ? sanitizeUserInput(input.sections.audience, 4000) : undefined,
+      activities: input.sections.activities !== undefined ? sanitizeUserInput(input.sections.activities, 4000) : undefined,
+      budget: input.sections.budget !== undefined ? sanitizeUserInput(input.sections.budget, 4000) : undefined,
+      impact: input.sections.impact !== undefined ? sanitizeUserInput(input.sections.impact, 4000) : undefined,
+    },
+    libraryContext: sanitizeUserInput(input.libraryContext, 8000),
+  };
+  return projectWriterFlow(safeInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'projectWriterPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
+  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: ProjectWriterInputSchema},
   output: {schema: ProjectWriterOutputSchema},
   prompt: `You are an expert Social Project Writer. Your goal is to transform user notes into a professional project proposal suitable for {{{institution}}}.
@@ -70,6 +88,8 @@ const projectWriterFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    const safe = output!;
+    // P2-9: post-clamp output as a last-resort guard against oversized responses.
+    return {...safe, fullProposal: clampOutputText(safe.fullProposal)};
   }
 );

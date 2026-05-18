@@ -5,13 +5,14 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { JobStatus } from '../types';
 
 export async function reclaimExpiredLeases(limit = 200): Promise<{ reclaimed: number }> {
   const db = getAdminFirestore();
   const now = Timestamp.now();
   const snap = await db
-    .collection('messageJobs')
+    .collection(COLLECTIONS.messageJobs)
     .where('status', '==', 'leased')
     .where('leasedUntil', '<=', now)
     .limit(limit)

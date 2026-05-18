@@ -28,7 +28,10 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    unoptimized: true, 
+    // P2-3: Image optimization re-enabled (was `unoptimized: true`). Capacitor
+    // mobile shell loads `https://hangel.org.tr` (server.url in capacitor.config.ts),
+    // so the production Next.js server serves optimized images. The `webDir: 'out'`
+    // static export is now a stale dev artifact and not consumed at runtime.
     remotePatterns: [
       {
         protocol: 'https',

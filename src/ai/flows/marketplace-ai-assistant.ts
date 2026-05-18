@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 
 const AskMarketAssistantInputSchema = z.object({
   userQuestion: z.string().describe("The user's question about the brands in the marketplace."),
@@ -23,12 +24,21 @@ const AskMarketAssistantOutputSchema = z.object({
 export type AskMarketAssistantOutput = z.infer<typeof AskMarketAssistantOutputSchema>;
 
 export async function askMarketAssistant(input: AskMarketAssistantInput): Promise<AskMarketAssistantOutput> {
-  return getMarketplaceAnswerFlow(input);
+  // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
+  // prompt interpolation. TODO(P1-8c): wire quota when caller userId is
+  // plumbed through.
+  const safeInput: AskMarketAssistantInput = {
+    userQuestion: sanitizeUserInput(input.userQuestion, 2000),
+    brandsContext: sanitizeUserInput(input.brandsContext, 8000),
+  };
+  return getMarketplaceAnswerFlow(safeInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'getMarketplaceAnswerPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
+  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: AskMarketAssistantInputSchema},
   output: {schema: AskMarketAssistantOutputSchema},
   prompt: `You are a personal shopping assistant for "Hangel", a marketplace for social-impact brands. Your goal is to recommend the best brands to the user based on what they want to buy and their values.
@@ -56,6 +66,8 @@ const getMarketplaceAnswerFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    const safe = output!;
+    // P2-9: post-clamp output as a last-resort guard against oversized responses.
+    return {...safe, answer: clampOutputText(safe.answer)};
   }
 );

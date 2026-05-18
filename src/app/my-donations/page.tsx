@@ -3,7 +3,8 @@
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2, Loader2, Clock, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, Search, Filter, ArrowDownUp, Eye, Download, Share2, Loader2, Clock, CheckCircle2, HandHeart } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format, parse } from 'date-fns';
@@ -192,7 +193,12 @@ export default function MyDonationsPage() {
           ) : !authUser ? (
             <p className="text-center text-muted-foreground p-8">İşlem geçmişini görmek için giriş yapın.</p>
           ) : sortedAndFilteredDonations.length === 0 ? (
-            <p className="text-center text-muted-foreground p-8">Henüz işlem bulunmuyor.</p>
+            <EmptyState
+              icon={HandHeart}
+              title="Henüz bağışın yok"
+              description="Etkilenmek istediğin bir kampanyaya bağış yaparak başla."
+              action={{ label: 'Bağış kampanyaları', href: '/funds' }}
+            />
           ) : (
             <Accordion type="single" collapsible className="w-full">
               {sortedAndFilteredDonations.map(donation => {

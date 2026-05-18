@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 const SitemapGroup = ({ title, links }: { title: string, links: { label: string, href: string, indent?: number }[] }) => (
     <div className="space-y-6">
@@ -26,7 +27,7 @@ const SitemapGroup = ({ title, links }: { title: string, links: { label: string,
                         link.indent === 4 && "ml-20"
                     )}
                 >
-                    <span dangerouslySetInnerHTML={{ __html: link.label.replace(/ /g, '&nbsp;') }} />
+                    <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(link.label.replace(/ /g, '&nbsp;')) }} />
                     <ChevronRight className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </Link>
             ))}

@@ -20,6 +20,7 @@ import { extractVariables, render } from '@/lib/messaging/template';
 import { segmentInfo } from '@/lib/messaging/sms-segments';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import Link from 'next/link';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function TemplateEditPage() {
   const router = useRouter();
@@ -335,7 +336,7 @@ export default function TemplateEditPage() {
                 <p className="text-xs font-semibold mb-2">Konu: {rendered.subject}</p>
               )}
               {channel === 'email' ? (
-                <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: rendered.body || '<em class="text-muted-foreground">boş</em>' }} />
+                <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(rendered.body || '<em class="text-muted-foreground">boş</em>') }} />
               ) : (
                 <pre className="text-sm whitespace-pre-wrap font-sans">{rendered.body || '(boş)'}</pre>
               )}

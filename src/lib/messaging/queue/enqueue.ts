@@ -12,6 +12,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type {
   CampaignStats,
   CampaignStatus,
@@ -67,7 +68,7 @@ interface CampaignDoc {
 
 export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult> {
   const db = getAdminFirestore();
-  const campRef = db.collection('campaigns').doc(campaignId);
+  const campRef = db.collection(COLLECTIONS.campaigns).doc(campaignId);
   const campSnap = await campRef.get();
   if (!campSnap.exists) throw new Error(`Campaign not found: ${campaignId}`);
 
@@ -81,7 +82,7 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
     startedAt: FieldValue.serverTimestamp(),
   });
 
-  const recipientsRef = campRef.collection('recipients');
+  const recipientsRef = campRef.collection(COLLECTIONS.recipients);
   const defaultDriverFor = (channel: Channel): string => {
     if (channel === 'sms') return process.env.SMS_DRIVER ?? 'mock';
     if (channel === 'email') return process.env.EMAIL_DRIVER ?? 'mock';
@@ -110,7 +111,7 @@ export async function enqueueCampaign(campaignId: string): Promise<EnqueueResult
         continue;
       }
 
-      const jobRef = db.collection('messageJobs').doc();
+      const jobRef = db.collection(COLLECTIONS.messageJobs).doc();
       let payload: Record<string, unknown>;
       if (camp.channel === 'sms') {
         payload = { body: camp.body, senderId: camp.senderId, vars: r.vars };

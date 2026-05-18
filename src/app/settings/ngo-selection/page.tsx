@@ -514,7 +514,7 @@ export default function NgoSelectionPage() {
                                 )}
                                 <div className="flex gap-2 pt-2">
                                     <Button asChild variant="outline" className="flex-1 rounded-xl">
-                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noreferrer">Profili Aç</a>
+                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">Profili Aç</a>
                                     </Button>
                                     <Button
                                         className="flex-1 rounded-xl"

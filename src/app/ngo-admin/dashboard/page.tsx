@@ -1,10 +1,87 @@
 'use client';
 import React, { Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Users, ChevronRight, ShieldAlert, Building2, Info, Loader2, Clock } from 'lucide-react';
+import {
+  DollarSign,
+  Users,
+  ChevronRight,
+  ShieldAlert,
+  Building2,
+  Info,
+  Loader2,
+  Clock,
+  // P2-4: explicit named imports for the closed icon set used by NavLink.
+  HandCoins,
+  BarChart,
+  Bell,
+  Briefcase,
+  Calculator,
+  Calendar,
+  CreditCard,
+  Database,
+  Globe,
+  GraduationCap,
+  HeartHandshake,
+  HelpCircle,
+  LineChart,
+  Mail,
+  MapPin,
+  Megaphone,
+  MessageCircle,
+  MessageSquare,
+  Network,
+  Newspaper,
+  Palette,
+  PhoneCall,
+  QrCode,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Target,
+  UserCog,
+  Video,
+} from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import * as Icons from 'lucide-react';
+
+// P2-4: keys are PascalCase icon names (matches the kebab→PascalCase derivation
+// in NavLink). Closed set built from the unique `icon:` fields in navGroups below.
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  HandCoins,
+  BarChart,
+  Bell,
+  Briefcase,
+  Building2,
+  Calculator,
+  Calendar,
+  CreditCard,
+  Database,
+  DollarSign,
+  Globe,
+  GraduationCap,
+  HeartHandshake,
+  HelpCircle,
+  LineChart,
+  Mail,
+  MapPin,
+  Megaphone,
+  MessageCircle,
+  MessageSquare,
+  Network,
+  Newspaper,
+  Palette,
+  PhoneCall,
+  QrCode,
+  Settings,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Target,
+  UserCog,
+  Users,
+  Video,
+};
 import { useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -48,8 +125,9 @@ const iconColorMap: { [key: string]: string } = {
 };
 
 const NavLink = ({ href, icon, label, comingSoon }: { href: string, icon: string, label: string, comingSoon?: boolean }) => {
+  // P2-4: normalize kebab → PascalCase, then look up via explicit iconMap.
   const iconName = icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
+  const Icon = iconMap[iconName] || Info;
   const color = iconColorMap[icon] || 'bg-gray-500';
   const { toast } = useToast();
 

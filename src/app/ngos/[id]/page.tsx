@@ -255,7 +255,7 @@ export default function NgoProfilePage() {
                 </Button>
                 <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
                 <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Web sitesini görüntüle">
-                  <Link href={`/ngo-admin/website/preview`} target="_blank">
+                  <Link href={`/ngo-admin/website/preview`} target="_blank" rel="noopener noreferrer">
                     <Globe className="h-4 w-4" />
                   </Link>
                 </Button>

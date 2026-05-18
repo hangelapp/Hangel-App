@@ -4,15 +4,61 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import * as Icons from 'lucide-react';
+// P2-4: closed icon set for superAdminNavItems lookup — replaces `import * as Icons`.
 import {
-  Building,
-  Store,
-  Users,
-  FileText,
   Activity,
-  ChevronRight
+  BarChart3,
+  Brain,
+  Building,
+  Calendar,
+  ChevronRight,
+  FileEdit,
+  FileText,
+  Globe,
+  HandCoins,
+  HeartHandshake,
+  HelpCircle,
+  LifeBuoy,
+  Megaphone,
+  MessageSquare,
+  Newspaper,
+  School,
+  Send,
+  Settings,
+  Shield,
+  Siren,
+  Star,
+  Store,
+  UserCog,
+  Users,
 } from "lucide-react";
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Activity,
+  BarChart3,
+  Brain,
+  Building,
+  Calendar,
+  FileEdit,
+  FileText,
+  Globe,
+  HandCoins,
+  HeartHandshake,
+  HelpCircle,
+  LifeBuoy,
+  Megaphone,
+  MessageSquare,
+  Newspaper,
+  School,
+  Send,
+  Settings,
+  Shield,
+  Siren,
+  Star,
+  Store,
+  UserCog,
+  Users,
+};
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 
@@ -162,7 +208,7 @@ export default function SuperAdminDashboard() {
             <CardContent className="p-0">
                 <div className="divide-y border-black/5">
                     {superAdminNavItems.map(item => {
-                        const Icon = ((Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
+                        const Icon = iconMap[item.icon] || HelpCircle;
                         const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
                         return (
                             <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">

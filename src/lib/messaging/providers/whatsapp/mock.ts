@@ -4,6 +4,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type {
   SendResult,
   WhatsAppProvider,
@@ -27,7 +28,7 @@ export class MockWhatsAppProvider implements WhatsAppProvider {
 
     try {
       const db = getAdminFirestore();
-      await db.collection('_devOutbox').add({
+      await db.collection(COLLECTIONS._devOutbox).add({
         channel: 'whatsapp',
         driver: this.driver,
         providerMessageId,

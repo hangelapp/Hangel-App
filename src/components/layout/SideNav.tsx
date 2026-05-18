@@ -3,10 +3,55 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import * as Icons from 'lucide-react';
-import { Info } from 'lucide-react';
+import {
+  ChevronRight,
+  Info,
+  LayoutGrid,
+  Store,
+  Building,
+  Users,
+  Calendar,
+  Library,
+  DollarSign,
+  FileText,
+  Award,
+  MessageSquare,
+  BarChart,
+  Send,
+  Shield,
+  Settings,
+  Globe,
+  Zap,
+  HeartHandshake,
+  CircleHelp,
+} from 'lucide-react';
 import type { SideNavItem } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
+
+// P2-4: mirrors src/app/app-shell.tsx iconMap. Closed set from the
+// group1Items..group4Items nav config in app-shell. If a new nav icon is added
+// there, also add it here (and to iconColorMap below if a color is wanted).
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  'layout-grid': LayoutGrid,
+  store: Store,
+  building: Building,
+  users: Users,
+  calendar: Calendar,
+  library: Library,
+  'dollar-sign': DollarSign,
+  'file-text': FileText,
+  award: Award,
+  'message-square': MessageSquare,
+  'bar-chart': BarChart,
+  send: Send,
+  shield: Shield,
+  settings: Settings,
+  info: Info,
+  globe: Globe,
+  zap: Zap,
+  HeartHandshake: HeartHandshake,
+  'circle-help': CircleHelp,
+};
 
 const iconColorMap: { [key: string]: string } = {
   store: 'bg-green-500',
@@ -30,8 +75,9 @@ const iconColorMap: { [key: string]: string } = {
 };
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
-    const iconName = item.icon.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
-    const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[iconName] || Info;
+    // P2-4: lookup via explicit iconMap; falls back to Info if a new nav icon
+    // is added in app-shell without registering it here.
+    const Icon = iconMap[item.icon] || Info;
     const color = iconColorMap[item.icon] || 'bg-gray-500';
 
     return (
@@ -43,7 +89,7 @@ const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {
                     </div>
                     <span className='text-sm font-medium text-foreground'>{item.label}</span>
                 </div>
-                <Icons.ChevronRight className="h-4 w-4 text-muted-foreground/50" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
             </Link>
         </li>
     );

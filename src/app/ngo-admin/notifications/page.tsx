@@ -4,10 +4,30 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import * as Icons from 'lucide-react';
-import { PlusCircle, Send, Bell, Inbox, SendHorizontal, Search, Filter } from 'lucide-react';
+// P2-4: closed icon set for notifications lookup — replaces `import * as Icons`.
+import {
+    PlusCircle,
+    Send,
+    Bell,
+    Inbox,
+    SendHorizontal,
+    Search,
+    Filter,
+    HeartHandshake,
+    DollarSign,
+    Newspaper,
+    ShieldCheck,
+} from 'lucide-react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    HeartHandshake,
+    DollarSign,
+    Newspaper,
+    ShieldCheck,
+    Bell,
+};
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 
@@ -76,7 +96,7 @@ export default function NgoNotificationsPage() {
                         
                         <TabsContent value="all" className="mt-6 space-y-3">
                             {data.map(notification => {
-                                const IconComp = (Icons[notification.icon as keyof typeof Icons] || Icons.Bell) as React.ElementType;
+                                const IconComp = (iconMap[notification.icon] || Bell) as React.ElementType;
                                 return (
                                 <div key={notification.id} className={`p-4 bg-background border rounded-xl flex items-start gap-4 transition-all hover:border-primary/30 group ${notification.read ? 'opacity-70' : 'border-l-4 border-l-primary shadow-sm'}`}>
                                     <div className={`p-2 rounded-lg ${notification.read ? 'bg-muted' : 'bg-primary/10 text-primary'}`}>
@@ -98,7 +118,7 @@ export default function NgoNotificationsPage() {
 
                         <TabsContent value="unread" className="mt-6 space-y-3">
                             {data.filter(n => !n.read).map(notification => {
-                                const IconComp = (Icons[notification.icon as keyof typeof Icons] || Icons.Bell) as React.ElementType;
+                                const IconComp = (iconMap[notification.icon] || Bell) as React.ElementType;
                                 return (
                                 <div key={notification.id} className="p-4 bg-background border border-l-4 border-l-primary rounded-xl flex items-start gap-4 shadow-sm">
                                     <div className="p-2 bg-primary/10 text-primary rounded-lg">

@@ -8,11 +8,7 @@ service cloud.firestore {
     }
     
     function isSuperAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'ismailhilmi@hangel.org' ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super-admin')
-      );
+      return isSignedIn() && request.auth.token.role == 'super-admin';
     }
 
     function isOwner(userId) {

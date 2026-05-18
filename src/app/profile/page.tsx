@@ -4,13 +4,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-// badges, pastVolunteering, certificates will come from Firebase in future
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const badges: any[] = [];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const pastVolunteering: any[] = [];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const certificates: any[] = [];
+import { EmptyState } from '@/components/shared/empty-state';
+import { COLLECTIONS } from '@/firebase/collections';
 import {
     Star, Briefcase, School, FileText, Languages,
     HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut
@@ -32,6 +27,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useCollection 
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -185,7 +181,46 @@ export default function ProfilePage() {
     const { data: volunteerNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(volunteerNgosQuery);
     const { data: followedBrandsData } = useCollection<{ name?: string; logoUrl?: string; slug?: string }>(followedBrandsQuery);
     const { data: joinedClubsData } = useCollection<{ name?: string; avatarUrl?: string }>(joinedClubsQuery);
-    
+
+    // P1-10: badges / certificates / pastVolunteering were hardcoded empty
+    // arrays. Now fetched from Firestore sub-collections under
+    // `users/{uid}`. Empty states are rendered via the shared <EmptyState/>
+    // component (my-applications PoC pattern).
+    type BadgeDoc = { id?: string; name?: string; level?: string; iconName?: React.ElementType; currentPoints?: number; pointsRequired?: number };
+    type CertificateDoc = { id?: string; title: string; organization: string; date: string };
+    type PastVolunteeringDoc = {
+        id: string;
+        title: string;
+        organization: string;
+        description?: string;
+        dates: { eventEnd: string };
+        review?: { rating: number; comment: string };
+    };
+
+    // P2-8c: depend on the stable uid string, not the authUser object reference
+    // (which is a new object every render and forces the listener to rebuild).
+    const badgesRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.badges) : null),
+        [db, authUser?.uid],
+    );
+    const certificatesRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.certificates) : null),
+        [db, authUser?.uid],
+    );
+    const pastVolunteeringRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.pastVolunteering) : null),
+        [db, authUser?.uid],
+    );
+
+    const { data: badgesData } = useCollection<BadgeDoc>(badgesRef);
+    const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
+    const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
+
+    const badges = useMemo(() => badgesData ?? [], [badgesData]);
+    const certificates = useMemo(() => certificatesData ?? [], [certificatesData]);
+    const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
+
+
     const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
             const { default: jsPDF } = await import('jspdf');
@@ -258,7 +293,7 @@ export default function ProfilePage() {
                     userName: currentUser.name.split(' ')[0],
                     donations: `${currentUser.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${currentUser.stats.mostSupportedNgo}.`,
                     volunteering: `${currentUser.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${currentUser.stats.mostActiveVolunteerArea}.`,
-                    badges: `Toplamda ${badges.filter(b => b.currentPoints >= b.pointsRequired).length} rozet kazanıldı.`
+                    badges: `Toplamda ${badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length} rozet kazanıldı.`
                 })
             );
             const results = await Promise.all(storyPromises);
@@ -335,11 +370,11 @@ export default function ProfilePage() {
                             <div className="border-t pt-4">
                                 <div className="flex items-center gap-1">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={cn("h-5 w-5", i < item.review.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
+                                        <Star key={i} className={cn("h-5 w-5", i < (item.review?.rating ?? 0) ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/30")} />
                                     ))}
-                                    <span className="ml-2 text-sm font-bold">{item.review.rating}/5</span>
+                                    <span className="ml-2 text-sm font-bold">{item.review?.rating ?? 0}/5</span>
                                 </div>
-                                <p className="text-sm text-muted-foreground mt-2 italic">"{item.review.comment}"</p>
+                                <p className="text-sm text-muted-foreground mt-2 italic">"{item.review?.comment ?? ''}"</p>
                             </div>
                         )}
                     </AccordionContent>
@@ -349,12 +384,15 @@ export default function ProfilePage() {
     );
     
     const BadgeDisplay = ({ badge }: { badge: (typeof badges)[0] }) => {
-        const isEarned = badge.currentPoints >= badge.pointsRequired;
-        const pointsNeeded = badge.pointsRequired - badge.currentPoints;
+        const currentPoints = badge.currentPoints ?? 0;
+        const pointsRequired = badge.pointsRequired ?? 0;
+        const isEarned = currentPoints >= pointsRequired;
+        const pointsNeeded = pointsRequired - currentPoints;
+        const IconName = badge.iconName ?? Award;
         return (
              <div className="flex flex-col items-center text-center">
                  <div className={`p-3 rounded-full ${isEarned ? 'bg-amber-100' : 'bg-muted'}`}>
-                    <badge.iconName className={`h-8 w-8 ${isEarned ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                    <IconName className={`h-8 w-8 ${isEarned ? 'text-amber-500' : 'text-muted-foreground'}`} />
                  </div>
                  <p className="text-xs font-semibold mt-2">{badge.level}</p>
                  <p className="text-xs text-muted-foreground">{badge.name}</p>
@@ -362,7 +400,7 @@ export default function ProfilePage() {
                     <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
                 ) : (
                     <p className="text-xs text-muted-foreground mt-1">
-                        {pointsNeeded > 0 ? `${pointsNeeded} Puan Kaldı` : `${badge.currentPoints}/${badge.pointsRequired} Puan`}
+                        {pointsNeeded > 0 ? `${pointsNeeded} Puan Kaldı` : `${currentPoints}/${pointsRequired} Puan`}
                     </p>
                 )}
             </div>
@@ -682,7 +720,12 @@ export default function ProfilePage() {
                                  {pastVolunteering.length > 0 ? (
                                      pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)
                                  ) : (
-                                     <p className="text-center text-muted-foreground text-sm py-8">Henüz tamamlanmış bir gönüllülük faaliyetiniz yok.</p>
+                                     <EmptyState
+                                         icon={Handshake}
+                                         title="Henüz tamamlanmış gönüllülük yok"
+                                         description="Etkinliklere katılınca burada görünecek."
+                                         action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+                                     />
                                  )}
                                  <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
                              </CardContent>
@@ -698,7 +741,11 @@ export default function ProfilePage() {
                                         {badges.slice(0, 6).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
                                     </div>
                                 ) : (
-                                    <p className="text-center text-muted-foreground text-sm py-8">Henüz kazanılmış bir rozetiniz bulunmuyor.</p>
+                                    <EmptyState
+                                        icon={Award}
+                                        title="Henüz rozet yok"
+                                        description="Bağış ve gönüllülük yaparak rozet kazanmaya başla."
+                                    />
                                 )}
                             </CardContent>
                              <CardFooter className='pt-4'>
@@ -737,9 +784,11 @@ export default function ProfilePage() {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center text-muted-foreground py-12">
-                                    <p>Henüz kazanılmış bir sertifikanız bulunmuyor.</p>
-                                </div>
+                                <EmptyState
+                                    icon={FileText}
+                                    title="Henüz sertifika yok"
+                                    description="Tamamladığın programlardan kazanacağın sertifikalar burada listelenir."
+                                />
                             )}
                             </CardContent>
                         </Card>
@@ -765,7 +814,7 @@ export default function ProfilePage() {
                                     <div className="space-y-4">
                                         {stories.map((story, index) => (
                                             <div key={index} className="prose prose-sm dark:prose-invert max-w-none p-4 bg-muted rounded-lg"
-                                                 dangerouslySetInnerHTML={{ __html: story }}
+                                                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(story) }}
                                             />
                                         ))}
                                     </div>

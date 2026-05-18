@@ -1,9 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+
+export const runtime = 'nodejs';
+
+// Basic in-memory rate limiter. NOTE: Per-instance only; does not survive cold
+// starts / scale-out. Acceptable placeholder for P0-3; tighter hardening tracked
+// under the P1-1 family.
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: NextRequest): string {
+  const fwd = req.headers.get('x-forwarded-for');
+  if (fwd) return fwd.split(',')[0]!.trim();
+  const real = req.headers.get('x-real-ip');
+  if (real) return real.trim();
+  return 'unknown';
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const bucket = rateBuckets.get(ip);
+  if (!bucket || bucket.resetAt <= now) {
+    rateBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  if (bucket.count >= RATE_LIMIT_MAX) {
+    return true;
+  }
+  bucket.count += 1;
+  return false;
+}
 
 // Check admin authorization
-async function checkAuth(req: NextRequest) {
+function checkAuth(req: NextRequest): boolean {
   const authHeader = req.headers.get('x-admin-key');
   const adminKey = process.env.ADMIN_IMPORT_KEY;
 
@@ -15,50 +46,54 @@ async function checkAuth(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const isAuthorized = await checkAuth(req);
-    if (!isAuthorized) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const ip = getClientIp(req);
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { errorCode: 'rate_limited', message: 'Çok fazla istek. Lütfen sonra tekrar deneyin.' },
+        { status: 429 }
+      );
     }
 
-    const body = await req.json();
-    const { dataType, records } = body;
-
-    if (!dataType || !Array.isArray(records)) {
+    if (!checkAuth(req)) {
       return NextResponse.json(
-        { error: 'Missing dataType or records' },
+        { errorCode: 'unauthorized', message: 'Yetkisiz erişim.' },
+        { status: 401 }
+      );
+    }
+
+    let body: { dataType?: string; records?: unknown };
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { errorCode: 'invalid_json', message: 'Geçersiz JSON gövdesi.' },
         { status: 400 }
       );
     }
 
-    // Initialize Firebase if not already done
-    if (!getApps().length) {
-      initializeApp({
-        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      });
+    const { dataType, records } = body;
+    if (!dataType || typeof dataType !== 'string' || !Array.isArray(records)) {
+      return NextResponse.json(
+        { errorCode: 'invalid_payload', message: 'dataType veya records eksik/yanlış.' },
+        { status: 400 }
+      );
     }
 
-    const db = getFirestore();
-    const collectionRef = collection(db, 'ngos');
+    const db = getAdminFirestore();
+    const collectionRef = db.collection('ngos');
 
     let importedCount = 0;
-
     for (const record of records) {
       try {
-        await addDoc(collectionRef, {
-          ...record,
+        await collectionRef.add({
+          ...(record as Record<string, unknown>),
           dataType,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
         });
-        importedCount++;
+        importedCount += 1;
       } catch (err) {
-        console.error(`Failed to import record:`, err, record);
+        console.error('[import-data] Failed to import record:', err, record);
         // Continue with next record
       }
     }
@@ -70,9 +105,9 @@ export async function POST(req: NextRequest) {
       totalRecords: records.length,
     });
   } catch (error) {
-    console.error('Import API error:', error);
+    console.error('[import-data] Internal error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: String(error) },
+      { errorCode: 'internal_error', message: 'Sunucu hatası.' },
       { status: 500 }
     );
   }

@@ -35,6 +35,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests (vitest)
+        # P0-6: Non-rules unit tests. Rules tests run in the separate `rules-tests` job
+        # because they need the Firestore emulator (Java).
+        run: npm run test -- --exclude 'tests/rules/**'
+
       - name: Build
         run: npm run build
         env:
@@ -46,3 +51,32 @@ jobs:
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci.appspot.com
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '0'
           NEXT_PUBLIC_FIREBASE_APP_ID: 'ci-app'
+
+  rules-tests:
+    name: Firestore Rules (emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # TODO(P0-6b): make rules tests blocking once Java setup verified in CI.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run rules tests (Firestore emulator)
+        run: npm run test:rules

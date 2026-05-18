@@ -28,6 +28,7 @@ import { extractVariables } from '@/lib/messaging/template';
 import type { RecipientSourceSpec, ResolvedRecipient, SegmentFilters } from '@/lib/messaging/types';
 import { allProvinces } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 type Channel = 'sms' | 'email';
 type UseCase = 'transactional' | 'marketing' | 'emergency';
@@ -763,7 +764,7 @@ function PreviewPane({
         <p className="text-xs font-semibold mb-2">Konu: {renderedSubject}</p>
       )}
       {channel === 'email' ? (
-        <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: renderedBody || '<em>boş</em>' }} />
+        <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(renderedBody || '<em>boş</em>') }} />
       ) : (
         <pre className="text-sm whitespace-pre-wrap font-sans">{renderedBody || '(boş)'}</pre>
       )}

@@ -7,6 +7,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import { getThrottleMultiplier } from '../trust-score';
 
 export interface RateLimitConfig {
@@ -42,7 +43,7 @@ export async function tryTakeToken(
   cfg: RateLimitConfig
 ): Promise<TakeResult> {
   const db = getAdminFirestore();
-  const ref = db.collection('messagingRateState').doc(driver);
+  const ref = db.collection(COLLECTIONS.messagingRateState).doc(driver);
 
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);

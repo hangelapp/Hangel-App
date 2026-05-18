@@ -4,6 +4,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import { enqueueCampaign } from './enqueue';
 
 export interface PromoteResult {
@@ -17,7 +18,7 @@ export async function promoteScheduledCampaigns(limit = 50): Promise<PromoteResu
   const now = Timestamp.now();
 
   const snap = await db
-    .collection('campaigns')
+    .collection(COLLECTIONS.campaigns)
     .where('status', '==', 'scheduled')
     .where('schedule.scheduledAt', '<=', now)
     .orderBy('schedule.scheduledAt')

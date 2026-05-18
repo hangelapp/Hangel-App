@@ -6,6 +6,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export type AuditAction =
   | 'campaign.created'
@@ -56,7 +57,7 @@ export async function logAudit(
   context: AuditContext = {}
 ): Promise<void> {
   const db = getAdminFirestore();
-  await db.collection('messagingAuditLogs').add({
+  await db.collection(COLLECTIONS.messagingAuditLogs).add({
     at: FieldValue.serverTimestamp(),
     actorUid: actor.uid,
     actorEmail: actor.email ?? null,

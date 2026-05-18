@@ -5,6 +5,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { EmailProvider, EmailSendInput, SendResult } from '../../types';
 
 export class MockEmailProvider implements EmailProvider {
@@ -23,7 +24,7 @@ export class MockEmailProvider implements EmailProvider {
 
     try {
       const db = getAdminFirestore();
-      await db.collection('_devOutbox').add({
+      await db.collection(COLLECTIONS._devOutbox).add({
         channel: 'email',
         driver: this.driver,
         providerMessageId,

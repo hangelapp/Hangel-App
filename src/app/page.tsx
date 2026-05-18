@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, TrendingUp, Users, ShieldCheck, FileText, Siren } from 'lucide-react';
+import { ChevronRight, Menu, ShoppingBag, HeartHandshake, MapPin, TrendingUp, Users, ShieldCheck, FileText, Siren, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { HangelLogo } from '@/components/icons';
@@ -13,7 +13,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { languages, useTranslation } from '@/components/providers/language-provider';
-import * as Icons from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -204,23 +203,13 @@ const projectCardsData = [
 ];
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
-    const { language, changeLanguage, t: _t } = useTranslation();
+    const { language, changeLanguage, t } = useTranslation();
     const { user, isUserLoading } = useUser();
-    const labels: Record<string, { donation: string; volunteering: string; login: string }> = {
-        tr: { donation: 'Bağış', volunteering: 'Gönüllülük', login: 'Giriş Yap' },
-        en: { donation: 'Donation', volunteering: 'Volunteering', login: 'Log In' },
-        ru: { donation: 'Пожертвование', volunteering: 'Волонтёрство', login: 'Войти' },
-        ar: { donation: 'التبرع', volunteering: 'التطوع', login: 'تسجيل الدخول' },
-        fa: { donation: 'کمک', volunteering: 'داوطلبی', login: 'ورود' },
-        es: { donation: 'Donación', volunteering: 'Voluntariado', login: 'Iniciar Sesión' },
-        ha: { donation: 'Gudummuwa', volunteering: 'Sa Kai', login: 'Shiga' },
-    };
-    const L = labels[language] || labels.tr;
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick} aria-label="Menüyü aç">
+                    <Button variant="ghost" size="icon" className="md:hidden h-8 w-8" onClick={onMenuClick} aria-label={t('a11y.openMenu')}>
                         <Menu className="h-5 w-5" />
                     </Button>
                     <HangelLogo className="text-xl" />
@@ -228,17 +217,17 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                 <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#1d1d1f]/80">
                     <Link href="#bagis" className="hover:text-primary transition-colors flex items-center gap-2">
                         <ShoppingBag className="h-4 w-4" />
-                        <span>{L.donation}</span>
+                        <span>{t('landing.donationLabel')}</span>
                     </Link>
                     <Link href="#gonulluluk" className="hover:text-primary transition-colors flex items-center gap-2">
                         <HeartHandshake className="h-4 w-4" />
-                        <span>{L.volunteering}</span>
+                        <span>{t('landing.volunteeringLabel')}</span>
                     </Link>
                 </nav>
                 <div className="flex items-center gap-2">
                     <Select value={language} onValueChange={changeLanguage}>
                         <SelectTrigger className="w-auto border-none bg-transparent gap-1 h-8 px-2 text-xs font-normal text-[#1d1d1f]/80 hover:text-primary transition-colors focus:ring-0">
-                            <Icons.Globe className="h-3.5 w-3.5" />
+                            <Globe className="h-3.5 w-3.5" />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent align="end">
@@ -247,7 +236,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={user ? 'hangel Tanıtım' : 'Acil Durum'} aria-label={user ? 'hangel Tanıtım' : 'Acil Durum'}>
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={user ? t('a11y.hangelIntro') : t('a11y.emergency')} aria-label={user ? t('a11y.hangelIntro') : t('a11y.emergency')}>
                         <Link href={user ? '/about' : '/emergency'}><Siren className="h-5 w-5" /></Link>
                     </Button>
                     {isUserLoading ? (
@@ -256,7 +245,7 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                         <UserNav />
                     ) : (
                         <Button asChild size="sm" className="h-8 rounded-full px-5 text-xs font-bold">
-                            <Link href="/login/selection?action=login">{L.login}</Link>
+                            <Link href="/login/selection?action=login">{t('nav.login')}</Link>
                         </Button>
                     )}
                 </div>
@@ -350,6 +339,7 @@ export default function LoginPage() {
     const [totalBrandCount, setTotalBrandCount] = useState(0);
     const _router = useRouter();
     const { get } = useWebContent();
+    const { t } = useTranslation();
 
     const db = useFirestore();
     const volunteeringQuery = useMemoFirebase(
@@ -614,8 +604,8 @@ export default function LoginPage() {
                 <section id="kurumlar-grid" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto px-4 max-w-7xl">
                         <div className="text-center mb-12 space-y-2">
-                            <h2 className="text-4xl font-bold tracking-tight">hangel'i Keşfedin</h2>
-                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Kurumlar ve bireyler için sunduğumuz çözümlerle tanışın.</p>
+                            <h2 className="text-4xl font-bold tracking-tight">{t('landing.discoverTitle')}</h2>
+                            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('landing.discoverDescription')}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
                             {discoveryItems.map((item, index) => (
@@ -628,10 +618,10 @@ export default function LoginPage() {
                 <section id="projeler" className="py-16 md:py-24 bg-white">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center mb-12 space-y-4">
-                            <h2 className="text-4xl font-bold tracking-tight">hangel derneği</h2>
-                            <p className="text-muted-foreground mt-2">Derneğimizin öncülük ettiği projeler ve çalışmalar.</p>
+                            <h2 className="text-4xl font-bold tracking-tight">{t('landing.associationTitle')}</h2>
+                            <p className="text-muted-foreground mt-2">{t('landing.associationDescription')}</p>
                             <Link href="/hangelassociation" className="text-primary hover:underline flex items-center justify-center text-lg font-medium group">
-                                Derneğin ana sayfasını görüntüle <ChevronRight className="h-5 w-5 ml-0.5" />
+                                {t('landing.associationCta')} <ChevronRight className="h-5 w-5 ml-0.5" />
                             </Link>
                         </div>
                         <Carousel

@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 
 const GetProductDescriptionInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
@@ -24,12 +25,22 @@ const GetProductDescriptionOutputSchema = z.object({
 export type GetProductDescriptionOutput = z.infer<typeof GetProductDescriptionOutputSchema>;
 
 export async function getProductDescription(input: GetProductDescriptionInput): Promise<GetProductDescriptionOutput> {
-  return getProductDescriptionFlow(input);
+  // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
+  // prompt interpolation. TODO(P1-8c): wire quota when caller userId is
+  // plumbed through.
+  const safeInput: GetProductDescriptionInput = {
+    productName: sanitizeUserInput(input.productName, 200),
+    productDescription: sanitizeUserInput(input.productDescription, 4000),
+    userQuestion: sanitizeUserInput(input.userQuestion, 2000),
+  };
+  return getProductDescriptionFlow(safeInput);
 }
 
 const prompt = ai.definePrompt({
   name: 'getProductDescriptionPrompt',
   model: 'googleai/gemini-1.5-flash-latest',
+  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
+  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: GetProductDescriptionInputSchema},
   output: {schema: GetProductDescriptionOutputSchema},
   prompt: `You are a helpful AI assistant that answers questions about products in a marketplace.
@@ -52,6 +63,8 @@ const getProductDescriptionFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    const safe = output!;
+    // P2-9: post-clamp output as a last-resort guard against oversized responses.
+    return {...safe, answer: clampOutputText(safe.answer)};
   }
 );

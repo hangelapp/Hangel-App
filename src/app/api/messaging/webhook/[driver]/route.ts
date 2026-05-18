@@ -3,11 +3,19 @@
  *
  * Çağrı yolu: POST /api/messaging/webhook/{driver}
  *
- * Şimdilik basit shared-secret doğrulaması:
- *  - URL ?key=... query parametresi veya x-webhook-secret header'ı
- *  - process.env.MESSAGING_WEBHOOK_SECRET ile eşleşmeli
+ * Auth (P1-2):
+ *  - `resend`: Svix HMAC SHA256 (svix-id/svix-timestamp/svix-signature) — RESEND_WEBHOOK_SECRET ile.
+ *  - `netgsm`: Netgsm webhook'unda HMAC yok; geçici olarak IP whitelist
+ *    (NETGSM_WEBHOOK_ALLOWED_IPS). TODO(P1-2b): Netgsm gerçek imza sağladığında değiştir.
  *
- * Production: Resend için Svix HMAC, Netgsm için IP whitelist + sırrı header eklenmeli.
+ * Replay protection (P1-3):
+ *  - timestamp 5 dakikalık pencere içinde olmalı (driver'da yoksa receive zamanı temel alınır).
+ *  - eventId (svix-id veya jobid) `webhookReplayIds` koleksiyonunda atomik create-or-fail.
+ *
+ * Hata kodları:
+ *  - 401 { errorCode: 'INVALID_SIGNATURE' } — imza/IP doğrulaması başarısız.
+ *  - 401 { errorCode: 'STALE_TIMESTAMP' } — webhook 5 dk eski.
+ *  - 409 { errorCode: 'REPLAY_DETECTED' } — eventId tekrar.
  */
 
 import { NextResponse } from 'next/server';
@@ -15,17 +23,15 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getEmailProvider } from '@/lib/messaging/providers/email';
 import type { DeliveryEventInput } from '@/lib/messaging/types';
+import {
+  verifySvixSignature,
+  extractClientIp,
+  isIpAllowed,
+  isTimestampFresh,
+  rememberWebhookEvent,
+} from '@/lib/messaging/webhook-replay';
 
 export const runtime = 'nodejs';
-
-function verifySecret(req: Request): boolean {
-  const expected = process.env.MESSAGING_WEBHOOK_SECRET;
-  if (!expected) return false;
-  const url = new URL(req.url);
-  const queryKey = url.searchParams.get('key');
-  const headerKey = req.headers.get('x-webhook-secret');
-  return queryKey === expected || headerKey === expected;
-}
 
 async function applyEvent(event: DeliveryEventInput, driver: string): Promise<void> {
   const db = getAdminFirestore();
@@ -105,12 +111,56 @@ async function applyEvent(event: DeliveryEventInput, driver: string): Promise<vo
   ]);
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ driver: string }> }) {
-  if (!verifySecret(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+function invalidSignature(): NextResponse {
+  return NextResponse.json({ errorCode: 'INVALID_SIGNATURE' }, { status: 401 });
+}
 
+function staleTimestamp(): NextResponse {
+  return NextResponse.json({ errorCode: 'STALE_TIMESTAMP' }, { status: 401 });
+}
+
+function replayDetected(): NextResponse {
+  return NextResponse.json({ errorCode: 'REPLAY_DETECTED' }, { status: 409 });
+}
+
+export async function POST(req: Request, { params }: { params: Promise<{ driver: string }> }) {
   const { driver } = await params;
+
+  // Tüm driver'lar için raw body'yi bir kez oku — HMAC payload + JSON parse aynı string olmalı.
+  const rawBody = await req.text();
+
+  let eventId: string | null = null;
+
+  if (driver === 'resend') {
+    const secret = process.env.RESEND_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error('[webhook] RESEND_WEBHOOK_SECRET env not configured');
+      return invalidSignature();
+    }
+    const svixId = req.headers.get('svix-id');
+    const svixTimestamp = req.headers.get('svix-timestamp');
+    const svixSignatureHeader = req.headers.get('svix-signature');
+
+    if (!verifySvixSignature({ rawBody, svixId, svixTimestamp, svixSignatureHeader, secret })) {
+      return invalidSignature();
+    }
+    if (!isTimestampFresh(svixTimestamp)) return staleTimestamp();
+    eventId = svixId;
+  } else if (driver === 'netgsm') {
+    // TODO(P1-2b): Netgsm gerçek HMAC sağlayınca burası RESEND benzeri imza kontrolüne çevrilecek.
+    // Bugün için: IP whitelist + jobid bazlı replay reddi.
+    const allowed = process.env.NETGSM_WEBHOOK_ALLOWED_IPS;
+    if (!allowed) {
+      console.error('[webhook] NETGSM_WEBHOOK_ALLOWED_IPS env not configured');
+      return invalidSignature();
+    }
+    const ip = extractClientIp(req);
+    if (!isIpAllowed(ip, allowed)) return invalidSignature();
+    // Netgsm timestamp header'ı yok; receive-time freshness'i implicit (her istek "şimdi").
+    // jobid'i body'den replay anahtarı olarak alacağız (aşağıda).
+  } else {
+    return NextResponse.json({ error: 'Bilinmeyen driver' }, { status: 400 });
+  }
 
   try {
     let events: DeliveryEventInput[] = [];
@@ -118,20 +168,30 @@ export async function POST(req: Request, { params }: { params: Promise<{ driver:
     if (driver === 'resend') {
       const provider = getEmailProvider();
       if (provider.parseWebhook) {
-        events = await provider.parseWebhook(req);
+        // parseWebhook req.json() çağırıyor — aynı rawBody ile yeni Request oluştur.
+        const cloned = new Request(req.url, {
+          method: 'POST',
+          headers: req.headers,
+          body: rawBody,
+        });
+        events = await provider.parseWebhook(cloned);
       }
     } else if (driver === 'netgsm') {
-      // Netgsm SMS delivery webhook'u — şimdilik raw event olarak kaydet
-      const json = (await req.json()) as { jobid?: string; status?: string };
+      const json = JSON.parse(rawBody || '{}') as { jobid?: string; status?: string };
       if (json.jobid) {
+        eventId = String(json.jobid);
         const mapped: DeliveryEventInput['type'] =
           json.status === '1' || json.status === 'DELIVERED' ? 'delivered'
           : json.status === '2' || json.status === 'UNDELIVERED' ? 'failed'
           : 'sent';
         events = [{ providerMessageId: json.jobid, type: mapped, at: new Date(), raw: json }];
       }
-    } else {
-      return NextResponse.json({ error: 'Bilinmeyen driver' }, { status: 400 });
+    }
+
+    // P1-3 — replay rejection (eventId varsa).
+    if (eventId) {
+      const replayResult = await rememberWebhookEvent(driver, eventId);
+      if (replayResult === 'replay') return replayDetected();
     }
 
     for (const event of events) {

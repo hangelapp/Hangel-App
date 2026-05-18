@@ -8,6 +8,7 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 export default function ContractDetailPage() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function ContractDetailPage() {
         </div>
         <article
           className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"
-          dangerouslySetInnerHTML={{ __html: contract.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
         />
       </main>
       <PublicFooter currentPageLabel={contract.title} />

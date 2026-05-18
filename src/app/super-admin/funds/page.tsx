@@ -387,7 +387,7 @@ export default function FundsAdminPage() {
                                     </div>
                                 )}
                                 {fund.url && (
-                                    <Link href={fund.url} target="_blank" className="ml-auto flex items-center gap-1 text-primary hover:underline">
+                                    <Link href={fund.url} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-1 text-primary hover:underline">
                                         Web sitesi <ExternalLink className="h-3 w-3" />
                                     </Link>
                                 )}

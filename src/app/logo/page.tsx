@@ -3,9 +3,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-    Download, 
-    ArrowLeft, 
+import {
+    Download,
+    ArrowLeft,
     Type,
     Copy,
     DownloadCloud,
@@ -22,6 +22,19 @@ import {
     ShieldCheck,
     MessageSquare,
     Megaphone,
+    // P2-4: explicit named imports for the closed icon enum below.
+    HeartHandshake,
+    HandCoins,
+    School,
+    Store,
+    Building2,
+    Library,
+    Sparkles,
+    Palette,
+    Globe,
+    BookCopy,
+    Users,
+    HelpCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
@@ -31,7 +44,35 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import * as Icons from 'lucide-react';
+import { sanitizeHtml } from '@/lib/sanitize-html';
+
+// P2-4: closed enum for ShowcaseCard icon lookup — replaces `Icons[item.icon]`.
+type LogoIconName =
+    | 'HeartHandshake'
+    | 'HandCoins'
+    | 'School'
+    | 'Store'
+    | 'Building2'
+    | 'Library'
+    | 'Sparkles'
+    | 'Palette'
+    | 'Globe'
+    | 'BookCopy'
+    | 'Users';
+
+const iconMap: Record<LogoIconName, React.ComponentType<{ className?: string }>> = {
+    HeartHandshake,
+    HandCoins,
+    School,
+    Store,
+    Building2,
+    Library,
+    Sparkles,
+    Palette,
+    Globe,
+    BookCopy,
+    Users,
+};
 
 
 const _XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -70,7 +111,7 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
     </Card>
 );
 
-const appArchitecture: ReadonlyArray<{ href: string; icon: keyof typeof Icons; label: string; description: string }> = [
+const appArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
     { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
     { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
     { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
@@ -79,7 +120,7 @@ const appArchitecture: ReadonlyArray<{ href: string; icon: keyof typeof Icons; l
     { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
-const associationArchitecture: ReadonlyArray<{ href: string; icon: keyof typeof Icons; label: string; description: string }> = [
+const associationArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
     { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
     { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
     { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
@@ -91,10 +132,10 @@ const ShowcaseCard = ({
   item,
   themeConfig,
 }: {
-  item: { href: string; icon: keyof typeof Icons; label: string; description: string };
+  item: { href: string; icon: LogoIconName; label: string; description: string };
   themeConfig: { bg: string; subtitleColor: string; titleColor: string; linkColor: string; iconColor: string };
 }) => {
-  const Icon = (Icons[item.icon] || Icons.HelpCircle) as React.ComponentType<{ className?: string }>;
+  const Icon = iconMap[item.icon] || HelpCircle;
   return (
     <Link href={item.href} className="group block h-full">
       <div className={cn("rounded-[2rem] p-4 text-center flex flex-col justify-between min-h-[180px]", themeConfig.bg)}>
@@ -415,7 +456,7 @@ export default function LogoPage() {
                         {rules.map((rule) => (
                             <RuleCard key={rule.id} icon={rule.icon} title={rule.title}>
                                  <div className="space-y-3">
-                                    {rule.content.map((text, i) => <p key={i} dangerouslySetInnerHTML={{ __html: text.replace(/•/g, '<span class="mr-2">•</span>') }} />)}
+                                    {rule.content.map((text, i) => <p key={i} dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.replace(/•/g, '<span class="mr-2">•</span>')) }} />)}
                                 </div>
                             </RuleCard>
                         ))}

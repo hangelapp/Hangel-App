@@ -1,0 +1,102 @@
+/**
+ * Single source of truth for Firestore collection (and known sub-collection)
+ * names used in the Hangel codebase.
+ *
+ * Use `COLLECTIONS.foo` instead of literal `'foo'` strings when calling Firestore
+ * (client modular SDK `collection(db, ...)` / `doc(db, ...)`, or admin SDK
+ * `db.collection(...)`). This prevents typos and gives us a single place to
+ * audit collection names against `firestore.rules`.
+ *
+ * Scope: This file is intentionally pure — no imports, no side effects. It
+ * only exports the `COLLECTIONS` constant map and a `CollectionName` type
+ * alias. Caller migration is tracked separately as task P2-7b.
+ *
+ * Entries are grouped by domain. Sub-collections appear after their parent
+ * with a comment indicating the parent path (e.g. `recipients` lives under
+ * `campaigns/{id}/recipients`).
+ */
+
+export const COLLECTIONS = {
+  // Users / identity
+  users: 'users',
+  userInvitations: 'userInvitations',
+  invites: 'invites',
+  userMarketingConsent: 'userMarketingConsent',
+  applications: 'applications',
+  // Sub-collections under users/{uid}
+  badges: 'badges',
+  certificates: 'certificates',
+  pastVolunteering: 'pastVolunteering',
+
+  // Entities (NGO / Brand / Club)
+  ngos: 'ngos',
+  brands: 'brands',
+  clubs: 'clubs',
+  studentClubs: 'studentClubs',
+  ngoTrustScores: 'ngoTrustScores',
+
+  // Content / engagement
+  posts: 'posts',
+  events: 'events',
+  volunteering: 'volunteering',
+  library: 'library',
+  notifications: 'notifications',
+  messages: 'messages',
+  surveys: 'surveys',
+  ratings: 'ratings',
+  supportTickets: 'supportTickets',
+  sitePages: 'sitePages',
+  siteSettings: 'siteSettings',
+  contracts: 'contracts',
+  aiAssistantConfig: 'aiAssistantConfig',
+  mailQueue: 'mailQueue',
+
+  // Transparency
+  transparency: 'transparency',
+  transparencyCriteria: 'transparencyCriteria',
+
+  // Emergency / requests
+  emergencyRequests: 'emergencyRequests',
+  emergencyResponses: 'emergencyResponses',
+  bloodRequests: 'bloodRequests',
+  userRequests: 'userRequests',
+
+  // Donations / funds / earnings
+  donations: 'donations',
+  funds: 'funds',
+  fundApplications: 'fundApplications',
+  monthlyEarnings: 'monthlyEarnings',
+
+  // Messaging — campaigns & templating
+  campaigns: 'campaigns',
+  // Sub-collection under campaigns/{id}/recipients
+  recipients: 'recipients',
+  messageTemplates: 'messageTemplates',
+  messageJobs: 'messageJobs',
+  deliveryEvents: 'deliveryEvents',
+  recipientSegments: 'recipientSegments',
+  ngoRecipientSegments: 'ngoRecipientSegments',
+  whatsappTemplates: 'whatsappTemplates',
+  csvUploads: 'csvUploads',
+
+  // Messaging — billing / wallet
+  messagingPackages: 'messagingPackages',
+  messagingPricing: 'messagingPricing',
+  messagingTransactions: 'messagingTransactions',
+  messagingInvoices: 'messagingInvoices',
+  messagingAuditLogs: 'messagingAuditLogs',
+  messagingRateState: 'messagingRateState',
+  ngoMessagingWallets: 'ngoMessagingWallets',
+  ngoSenders: 'ngoSenders',
+  // Sub-collection under ngoSenders/{ngoId}/senders
+  senders: 'senders',
+  paymentOrders: 'paymentOrders',
+
+  // Messaging — webhooks
+  webhookReplayIds: 'webhookReplayIds',
+
+  // Internal / dev only
+  _devOutbox: '_devOutbox',
+} as const;
+
+export type CollectionName = (typeof COLLECTIONS)[keyof typeof COLLECTIONS];

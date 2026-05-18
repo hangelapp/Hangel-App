@@ -299,7 +299,7 @@ export default function ContractsAdminPage() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button variant="ghost" size="sm" asChild className="gap-1.5">
-                      <Link href={`/settings/contracts/${c.slug}`} target="_blank">
+                      <Link href={`/settings/contracts/${c.slug}`} target="_blank" rel="noopener noreferrer">
                         <Eye className="h-4 w-4" /> Önizle
                       </Link>
                     </Button>

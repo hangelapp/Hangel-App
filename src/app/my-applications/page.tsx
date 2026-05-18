@@ -27,6 +27,8 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { EmptyState } from '@/components/shared/empty-state';
+import { FileSearch, Inbox } from 'lucide-react';
 
 
 export default function MyApplicationsPage() {
@@ -154,8 +156,12 @@ export default function MyApplicationsPage() {
     );
   };
 
-  const EmptyState = () => (
-    <div className="text-center text-muted-foreground p-16">Bu kriterlere uygun başvuru bulunmuyor.</div>
+  const NoMatchState = () => (
+    <EmptyState
+      icon={FileSearch}
+      title="Eşleşen başvuru yok"
+      description="Bu kriterlere uygun başvuru bulunmuyor."
+    />
   );
 
   return (
@@ -216,6 +222,13 @@ export default function MyApplicationsPage() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : !authUser ? (
         <div className="text-center text-muted-foreground p-16">Başvurularınızı görmek için giriş yapın.</div>
+      ) : applications.length === 0 ? (
+        <EmptyState
+          icon={Inbox}
+          title="Henüz başvurun yok"
+          description="İlginç fırsatlara başvurmak için etkinliklere göz at."
+          action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+        />
       ) : (
         <Tabs defaultValue="Gönüllülük" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
@@ -230,7 +243,7 @@ export default function MyApplicationsPage() {
                 <div className="space-y-4">
                   {filteredApps.map(app => <ApplicationCard key={app.id} app={app} onWithdraw={handleWithdrawApplication} />)}
                 </div>
-              ) : <EmptyState />}
+              ) : <NoMatchState />}
             </TabsContent>
           ))}
         </Tabs>

@@ -5,6 +5,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 function generateToken(): string {
   const ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -22,7 +23,7 @@ function generateToken(): string {
 export async function ensureUnsubscribeToken(userId: string | null): Promise<string | null> {
   if (!userId) return null;
   const db = getAdminFirestore();
-  const ref = db.collection('userMarketingConsent').doc(userId);
+  const ref = db.collection(COLLECTIONS.userMarketingConsent).doc(userId);
   const snap = await ref.get();
   if (snap.exists) {
     const existing = (snap.data() as { unsubscribeToken?: string } | undefined)?.unsubscribeToken;

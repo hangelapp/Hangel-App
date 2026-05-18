@@ -17,6 +17,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export interface TrustScore {
   ngoId: string;
@@ -69,7 +70,7 @@ export async function recomputeTrustScore(ngoId: string): Promise<TrustScore> {
 
   // 7-day window içindeki kampanya stats'larını topla
   const campsSnap = await db
-    .collection('campaigns')
+    .collection(COLLECTIONS.campaigns)
     .where('ngoId', '==', ngoId)
     .where('createdAt', '>=', since)
     .get();
@@ -88,7 +89,7 @@ export async function recomputeTrustScore(ngoId: string): Promise<TrustScore> {
 
   // complaints: deliveryEvents type='complained'
   const complaintsSnap = await db
-    .collection('deliveryEvents')
+    .collection(COLLECTIONS.deliveryEvents)
     .where('type', '==', 'complained')
     .where('receivedAt', '>=', since)
     .get();
@@ -111,13 +112,13 @@ export async function recomputeTrustScore(ngoId: string): Promise<TrustScore> {
     lastComputedAt: FieldValue.serverTimestamp(),
   };
 
-  await db.collection('ngoTrustScores').doc(ngoId).set(trust, { merge: true });
+  await db.collection(COLLECTIONS.ngoTrustScores).doc(ngoId).set(trust, { merge: true });
   return trust;
 }
 
 export async function getThrottleMultiplier(ngoId: string): Promise<number> {
   const db = getAdminFirestore();
-  const snap = await db.collection('ngoTrustScores').doc(ngoId).get();
+  const snap = await db.collection(COLLECTIONS.ngoTrustScores).doc(ngoId).get();
   if (!snap.exists) return 1.0;
   const data = snap.data() as { throttleMultiplier?: number };
   return data.throttleMultiplier ?? 1.0;

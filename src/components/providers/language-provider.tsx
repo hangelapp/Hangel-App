@@ -45,7 +45,9 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
       for (const k of keys) {
         result = result?.[k];
       }
-      return typeof result === 'string' ? result : undefined;
+      // P2-5d: empty strings ("yet untranslated") fall through to the TR fallback
+      // instead of rendering blank. Real intentionally-blank values are not used in this codebase.
+      return typeof result === 'string' && result.length > 0 ? result : undefined;
     };
     return lookup(language) ?? lookup('tr') ?? key;
   };

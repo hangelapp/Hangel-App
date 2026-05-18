@@ -69,11 +69,12 @@ const AppleSection = ({
         {imageUrl && (
             <div className="relative w-full flex-1 flex items-end justify-center mt-12 px-4 max-w-6xl mx-auto">
                 <div className="relative w-full aspect-[16/10] md:aspect-[21/9] rounded-t-[3rem] overflow-hidden shadow-2xl transition-transform duration-1000 hover:scale-[1.02]">
-                    <Image 
-                        src={imageUrl} 
-                        alt={title} 
-                        fill 
-                        className="object-cover" 
+                    <Image
+                        src={imageUrl}
+                        alt={title}
+                        fill
+                        priority
+                        className="object-cover"
                         data-ai-hint={imageHint}
                     />
                 </div>

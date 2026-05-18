@@ -6,6 +6,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { SendResult, SmsProvider, SmsSendInput } from '../../types';
 
 export class MockSmsProvider implements SmsProvider {
@@ -23,7 +24,7 @@ export class MockSmsProvider implements SmsProvider {
 
     try {
       const db = getAdminFirestore();
-      await db.collection('_devOutbox').add({
+      await db.collection(COLLECTIONS._devOutbox).add({
         channel: 'sms',
         driver: this.driver,
         providerMessageId,

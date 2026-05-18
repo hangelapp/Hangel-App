@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWebPage } from '@/hooks/use-site-content';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 const StatCard = ({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: string, label: string }) => (
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-black/5 text-center transition-all hover:scale-105 hover:shadow-xl">
@@ -135,7 +136,7 @@ export default function PressPage() {
                     <section className="container mx-auto px-4 mb-16 max-w-4xl">
                         <Card className="rounded-[2.5rem] border-none shadow-lg bg-white">
                             <CardContent className="p-8 prose prose-lg max-w-none">
-                                <div dangerouslySetInnerHTML={{ __html: cms.body }} />
+                                <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(cms.body) }} />
                             </CardContent>
                         </Card>
                     </section>

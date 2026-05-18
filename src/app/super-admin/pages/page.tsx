@@ -24,6 +24,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 type SitePage = {
   id: string;
@@ -165,7 +166,7 @@ const PageEditDialog = ({ page, onSave }: { page?: SitePage; onSave: (p: SitePag
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Önizleme</Label>
               <div
                 className="prose prose-sm max-w-none p-4 border rounded-lg bg-muted/30 max-h-60 overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
               />
             </div>
           )}
@@ -298,7 +299,7 @@ export default function SitePagesAdmin() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button variant="ghost" size="sm" asChild className="gap-1.5">
-                      <Link href={`/p/${p.slug}`} target="_blank">
+                      <Link href={`/p/${p.slug}`} target="_blank" rel="noopener noreferrer">
                         <Eye className="h-4 w-4" /> Önizle
                       </Link>
                     </Button>

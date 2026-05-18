@@ -11,6 +11,7 @@
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export type TransactionType = 'topup' | 'reserve' | 'debit' | 'refund' | 'cancel_release' | 'admin_adjust';
 
@@ -28,7 +29,7 @@ export interface WalletDoc {
 const DEFAULT_LOW_BALANCE_THRESHOLD = 100;
 
 function walletRef(ngoId: string) {
-  return getAdminFirestore().collection('ngoMessagingWallets').doc(ngoId);
+  return getAdminFirestore().collection(COLLECTIONS.ngoMessagingWallets).doc(ngoId);
 }
 
 export async function getWallet(ngoId: string): Promise<WalletDoc> {
@@ -55,7 +56,7 @@ async function writeTransaction(
   extra: Record<string, unknown> = {}
 ): Promise<void> {
   const db = getAdminFirestore();
-  await db.collection('messagingTransactions').add({
+  await db.collection(COLLECTIONS.messagingTransactions).add({
     ngoId,
     type,
     amount,

@@ -9,6 +9,7 @@ import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase
 import { doc, collection, orderBy, query, limit } from 'firebase/firestore';
 import { ArrowLeft, Mail, MessageSquare, Loader2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 interface CampaignDoc {
   name?: string;
@@ -157,7 +158,7 @@ export default function CampaignDetailPage() {
           <CardContent>
             {data.subject && <p className="text-sm font-semibold mb-2">Konu: {data.subject}</p>}
             {data.channel === 'email' ? (
-              <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: data.body ?? '' }} />
+              <div className="text-sm prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(data.body ?? '') }} />
             ) : (
               <pre className="text-sm whitespace-pre-wrap font-sans bg-muted/30 p-2 rounded">{data.body}</pre>
             )}

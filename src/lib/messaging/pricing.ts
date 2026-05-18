@@ -11,6 +11,7 @@
  */
 
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { COLLECTIONS } from '@/firebase/collections';
 import { segmentInfo } from './sms-segments';
 import type { Channel, WhatsAppConversationCategory } from './types';
 
@@ -77,7 +78,7 @@ export async function getPricing(force = false): Promise<PricingConfig> {
     return cachedPricing.value;
   }
   const db = getAdminFirestore();
-  const snap = await db.collection('messagingPricing').doc('global').get();
+  const snap = await db.collection(COLLECTIONS.messagingPricing).doc('global').get();
   const value: PricingConfig = snap.exists
     ? { ...DEFAULT_PRICING, ...(snap.data() as Partial<PricingConfig>) }
     : DEFAULT_PRICING;

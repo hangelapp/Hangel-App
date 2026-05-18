@@ -4,7 +4,8 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, Inbox, AlertCircle } from 'lucide-react';
+import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -149,13 +150,11 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
       ) : !notifications || notifications.length === 0 ? (
-        <Card className="rounded-2xl">
-          <CardContent className="py-16 text-center">
-            <Inbox className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="text-muted-foreground font-medium">Henüz bildirimin yok</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Davetler, acil kan talepleri ve diğer güncellemeler burada görünecek.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Bell}
+          title="Henüz bildirimin yok"
+          description="Aktivitelerinden ve sistemden bildirimler burada görünür."
+        />
       ) : (
         <div className="space-y-3">
           {notifications.map(n => {

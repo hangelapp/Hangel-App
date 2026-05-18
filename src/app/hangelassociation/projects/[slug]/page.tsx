@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
 import { useAssociationProject } from '@/hooks/use-site-content';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 type ProjectContent = {
     title: string;
@@ -112,7 +113,7 @@ export default function ProjectSlugPage() {
                     </div>
 
                     {content.body && (
-                        <div className="prose prose-lg max-w-3xl mx-auto" dangerouslySetInnerHTML={{ __html: content.body }} />
+                        <div className="prose prose-lg max-w-3xl mx-auto" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content.body) }} />
                     )}
                 </section>
             </main>
