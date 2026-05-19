@@ -1413,3 +1413,86 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   A `FAILED` state on the latest entry means production is frozen on the previous `READY` one.
 
 - **Recovery commits**: `cac4f071` (Promise<params> + ShieldX cleanup), `b2aba824` (UserRow bracket access). Final READY build: `build-2026-05-19-003` at 18:56 GMT.
+
+---
+
+## 2026-05-19 — PDF Audit Triage (kullanıcı `hangel.org.tr HATA.pdf`)
+
+**Bağlam**: Kullanıcı 6 sayfalık PDF ile ~90 madde rapor etti. Orchestrator 7 wave'de paralel lead dispatch ile ele aldı (5 frontend + 4 backend + 3 security + 2 devops + 5 surgical-coder). Toplam: 72 dosya değişti, ~4500 satır eklendi, 11 yeni test dosyası (5 rules + 2 API + 1 firebase + 3 extension), 5 yeni page (`emergency/about`, `hangelassociation/{press,conferences}`, `posts/[id]`, `brand-admin/posts`, `club-admin/posts`), 4 yeni API route (`/api/library/{chat,project}`, `/api/admin/users/[uid]/{disable,delete}`), 3 yeni runbook.
+
+### Tek-seferlik kararlar
+
+1. **Demo data temizleme yaklaşımı**: Hardcoded mock değerler (1.240 takipçi vs.) kod yerine UI'da `<EmptyState>` fallback. Gerçek demo doc'ların silimi data ops işi (runbook).
+
+2. **Like model**: `posts.likedBy[]` array → `posts/{id}/likes/{uid}` subcollection. Sebep: array-based model rule eşleştirmesi (`authorId == auth.uid`) non-author'ları engelliyordu. Subcollection per-user write izni. Legacy `likedBy[]` field opsiyonel olarak read fallback'te (eski post'lar için).
+
+3. **30-gün donor lock**: `users/{uid}.lastNgoSelectionChange` field zaten `settings/ngo-selection`'da var; aynı field NGO profil sayfasında reuse edildi. Yeni field eklenmedi.
+
+4. **Kulüp katılım okul kontrolü**: `volunteerInfo.education[].school` (lowercase trim) vs `club.university` (lowercase trim) substring match. Heuristic — `schoolId` typed field future task (PDF-USER-SCHOOL-TYPED).
+
+5. **User delete = soft delete**: Yeni `/api/admin/users/[uid]/delete` Firebase Auth account silimi + Firestore doc delete. Disable mode opsiyonel (`disabled: true` flag, Auth disable). Self-delete guard var.
+
+6. **Affiliate webhook sale flow**: Market "alışverişe başla" tıklaması ARTIK donations/notifications create ETMİYOR. Tüm donation create akışı `/api/affiliate/webhook/[brandId]` üzerinden (brand sale confirmation → idempotency anchor → donations + notification + impactScore atomic transaction).
+
+7. **CMS yaklaşımı**: Yeni koleksiyon yaratılmadı. Mevcut `siteSettings/{webContent,associationContent}` doc + `useWebPage(slug)`/`useAssociationContent.get(path, fallback)` hook'ları reuse edildi. 2 yeni route (`press`, `conferences`) + sitemap rewire. Tam structured CMS (`cmsPages` schema) defer.
+
+8. **Library AI**: Mevcut Genkit flow'lar (`library-ai-assistant.ts`, `project-writer-flow.ts`) zaten P1-8 sanitization + P1-8c quota + P2-9 token cap. Yeni: 2 API route (chat + project) + frontend ProjectWriterDialog + super-admin `ai-management` page (pre-existing) için `aiAssistantConfig` rule. Full RAG (embedding + retrieval) defer.
+
+9. **Consent slug fix**: 12 mismatch href düzeltildi + 5 yeni entity-spesifik contract entry (`stk-uyelik`, `seffaflik`, `marka-uyelik`, `affiliate-politikasi`, `ogrenci-kulup`).
+
+10. **Brand/Club admin posts**: `/ngo-admin/posts/page.tsx` zaten entity-aware (`managedBrandId`/`managedClubId` resolution). Yeni `/brand-admin/posts/page.tsx` ve `/club-admin/posts/page.tsx` 12-LoC wrapper'lar (URL discoverability). Sidebar nav extension defer.
+
+### Wave map (kim ne yaptı)
+
+| Wave | Lead | PDF maddeleri | Status |
+|---|---|---|---|
+| 1A | backend-lead | PDF-1, PDF-2, PDF-3, PDF-4 (brand+market) | ✅ |
+| 1B | frontend-lead | PDF-5 + login redirect + logo verified | ✅ |
+| 1C | frontend-lead | PDF-6 (notifications investigation) | 🟡 (defer 2B+2C) |
+| 1D | frontend-lead | PDF-7 (timeline investigation) | 🟡 (defer 2A+2D) |
+| 1E | frontend-lead | clubs new tabs (Okulumda/Üniversite/Lise) | ✅ |
+| 2A | security-lead | posts likes subcoll rule + 9 test | ✅ (deploy gerek) |
+| 2B | devops-lead | firestore.indexes.json + 2 composite | ✅ (deploy gerek) |
+| 2C | backend-lead | clubs Firestore migration + use-collection error mask helper + 5 test | ✅ |
+| 2D | frontend-lead | timeline like swap + share URL anchor | ✅ |
+| 3A | frontend-lead | profile aggregation verified (pre-existing) | ✅ |
+| 3B | frontend-lead | PDF-10, PDF-11 (messages) | ✅ |
+| 3C | frontend-lead | PDF-12 (invite contacts permission) | ✅ |
+| 3D | frontend-lead | PDF-15..18 (ngo-admin manage-profile/funds/impact/posts) | ✅ |
+| 4A | security-lead | fundApplications + impact-stories storage + managedNgoId fallback + 15 test | ✅ (deploy gerek) |
+| 4B | frontend-lead | PDF-19 events admin (verified pre-existing) + public filter | ✅ |
+| 4C | backend-lead | PDF-20+21+22+23 (donations flow) | ✅ |
+| 4D | frontend-lead | PDF-24+25+26+27 (entity buttons) | ✅ |
+| 4E | security-lead | events approve/reject rule + 10 test | ✅ (deploy gerek) |
+| 5A | backend-lead | PDF-28..31 (super-admin/users) | ✅ |
+| 5B-impl | surgical-coder | PDF-32..35 (consent slugs + 5 contracts) | ✅ |
+| 5C-impl | surgical-coder | PDF-36..39 (press + conferences) | ✅ |
+| 6A | frontend-lead | PDF-71 (frontend) + PDF-73 (FAB+filter+ProjectWriter) | ✅ |
+| 6D | frontend-lead | PDF-80 (login auto-action ref param) | ✅ |
+| 6E | frontend-lead | PDF-81..85 (surveys/emergency/leaderboard verify) | ✅ |
+| 6F | backend-lead | PDF-71-impl (2 API routes + 17 test) | ✅ |
+| 6G | security-lead | PDF-72 + PDF-81b + PDF-30b + 28 test | ✅ (deploy gerek) |
+| 6H | frontend-lead | PDF-86 (ngos demo) + PDF-87 (admin posts) + PDF-88 (permalink) | ✅ |
+
+### Defer kararları
+
+- **PDF-13b** (Gmail/Outlook OAuth + IMAP proxy): OAuth client setup + Firestore credential storage rules + backend route'lar = 3-5 günlük iş. Defer.
+- **PDF-50+** (Kütük lookup): Vakıf/Dernek registry data import (Google Sheets) + lookup API + form auto-fill = 2-3 günlük iş. Runbook üretilecek (PDF içinde data URL'leri verildi); kullanıcı CSV indirip Firestore'a import edebilir.
+- **PDF-9a, PDF-71-rl, PDF-71-sysprompt, PDF-90**: Küçük follow-up'lar. Sonraki wave'lerde alınacak.
+- **P-FCM-DELIVERY**: iOS/Android push delivery — Capacitor plugin install + APNs cert + foreground handler.
+
+### Gates (session bitiminde)
+
+- `npm run typecheck` — PASS (0 errors)
+- `npm run lint` — PASS (0 errors / 0 warnings)
+- `npm run test` — 127 passed / 116 skipped (rules emülatör gated) / 0 failed
+- `npm run test:rules` — sandbox'ta Java yok, CI doğrulayacak; toplam 70+ rules test case (W2A 9 + W4A 15 + W4E 10 + W6G 28 + diğer pre-existing).
+
+### Deploy gereksinimi
+
+Tüm rules/storage/indexes değişiklikleri tek komut:
+```
+firebase deploy --only firestore:rules,firestore:indexes,storage --project hangel-new-v18-87297865-9bcc3
+```
+
+Detay + sıralama: `runbooks/pdf-audit-2026-05-19-deploy.md`.
