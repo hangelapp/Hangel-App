@@ -659,3 +659,34 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   - `git push origin main` (kod deploy; öncesinde RESEND_WEBHOOK_SECRET, NETGSM_WEBHOOK_ALLOWED_IPS App Hosting secret olarak set edilmeli)
   - Git history purge (destructive)
 - **Notlar**: 4 admin kullanıcıya çıkış-giriş yapmalarını bildir; aksi halde fallback UI'da çalışmaya devam ederler ama Firestore client write'lar reddedilir.
+
+---
+
+## 2026-05-18 — P0-1 + P0-1b — service account rotate + git history purge (orchestrator autonomous)
+
+- **Lead**: orchestrator (per user "purge yap" + earlier "yapabildiklerini yap")
+- **Yapılan adımlar**:
+  1. **Defensive code fix**: `src/lib/firebase-admin.ts` artık `applicationDefault()` fallback yapıyor — local'de `.firebase-service-account.json` varsa cert, yoksa ADC (Cloud Run runtime SA). Prod build'i artık dosya yokluğuna dayanıklı.
+  2. **Yeni anahtar üretimi**: `gcloud iam service-accounts keys create` → key ID `ad33f7edd1e8647be1abb5f14de535164db5df9b` for `firebase-adminsdk-fbsvc@hangel-new-v18-87297865-9bcc3.iam.gserviceaccount.com`.
+  3. **Local replace**: yeni anahtar `.firebase-service-account.json`'a yazıldı (gitignore'da). Yeni anahtar test: `getUser` çağrısı `ismailhilmi@hangel.org` döndü.
+  4. **Old key disable**: `gcloud iam service-accounts keys disable e1312f88da4770e44ac15f3814399b48539de0e8` → `DISABLED: True, REASON: SERVICE_ACCOUNT_KEY_DISABLE_REASON_USER_INITIATED`. Eski anahtar artık çalışmaz.
+  5. **Backup**: `/Users/ake/Documents/hangelapp.pre-purge-bk/` (rsync; node_modules + .next hariç).
+  6. **History purge**: `git filter-repo --invert-paths --path .firebase-service-account.json --force` → 1896 commit yeniden yazıldı. Eski hash `faadf485` → yeni hash `fa2a72bc` (örneğin). Bütün main branch'in commit ID'leri değişti.
+  7. **Force-push**: `git push --force-with-lease=main:faadf485... origin main` başarılı. `faadf485 → 9f5d4811 (forced update)`.
+  8. **Doğrulama**:
+     - `gh api /repos/hangelapp/new-app/contents/.firebase-service-account.json?ref=main` → 404 Not Found
+     - `gh api /search/code?q=e1312f88...` → `"total_count":0`
+     - `git log --all -- .firebase-service-account.json` → boş
+- **Risk profili**: 
+  - Yüksek (force-push) ama backup mevcut.
+  - App Hosting otomatik rollout başlayacak — yeni HEAD'den build. Eğer webhook env'leri (RESEND_WEBHOOK_SECRET, NETGSM_*) set edilmediyse webhook'lar 401 dönecek (delivery event akışı durur, user-facing flow etkilenmez).
+  - `firebase-admin.ts` ADC fallback nedeniyle prod runtime'da `applicationDefault()` çalışır; ek key file gerekmez.
+- **Rollback**:
+  - Eğer yeni rollout patlarsa: `git reset --hard 9f5d4811`'i `cd /Users/ake/Documents/hangelapp.pre-purge-bk && git reset --hard faadf485 && force-push` ile geri al.
+  - Disable edilen eski key: tek yönlü; Firebase Console → IAM → service account → enable mümkün, ama leaked key olduğu için ASLA enable etmemeli.
+- **GitHub cache**: GitHub'ın cache invalidation talebi opsiyonel (`https://docs.github.com/.../removing-sensitive-data-from-a-repository`); public repo değil görünüyor (fork count = 0). Search ve content endpoint'leri zaten temiz.
+- **Yeni anahtar bilgisi**: 
+  - Aktif: `ad33f7edd1e8647be1abb5f14de535164db5df9b` (yeni, local)
+  - Aktif: `821aee5c5f15d6abaf3bbda068a501b299c55827` (var olan, dokunulmadı)
+  - Aktif: `0c59742f78e5736abc758ebf93d93f78dfcb6e80` (var olan, dokunulmadı)
+  - **DISABLED**: `e1312f88da4770e44ac15f3814399b48539de0e8` (eski leaked, revoked)

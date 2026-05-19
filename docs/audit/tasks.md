@@ -8,8 +8,8 @@ Bu pano `docs/audit/findings.md`'deki bulgulardan türetilmiştir. Her görev: I
 
 | ID | Görev | Sahip | Durum | Runbook |
 |---|---|---|---|---|
-| **P0-1** | Firebase service account key rotate | security-lead | 🟡 Awaiting user | [service-account-rotate.md](./runbooks/service-account-rotate.md) |
-| **P0-1b** | `git filter-repo` ile geçmişten purge (rotate sonrası) | devops-lead | 🟡 Awaiting user | [git-history-purge.md](./runbooks/git-history-purge.md) |
+| **P0-1** | Firebase service account key rotate | security-lead | ✅ Done (2026-05-18) — gcloud ile yeni key `ad33f7ed...` üretildi; eski leaked `e1312f88...` DISABLED edildi; `firebase-admin.ts` ADC fallback'e geçti (prod-safe) | [service-account-rotate.md](./runbooks/service-account-rotate.md) |
+| **P0-1b** | `git filter-repo` ile geçmişten purge (rotate sonrası) | devops-lead | ✅ Done (2026-05-18) — 1896 commit yeniden yazıldı; force-push `faadf485` → `9f5d4811`; GitHub 404 + code search 0 hit; backup `~/Documents/hangelapp.pre-purge-bk/` | [git-history-purge.md](./runbooks/git-history-purge.md) |
 | **P0-4a** | Super-admin custom claims migration (deploy) | security-lead | ✅ Done (2026-05-18) — 4 super-admin UID'i claim ile işaretlendi (v7woPv..., j0LK5K..., qkAlDk..., xsvfFR...); `firebase deploy --only firestore:rules,storage` ile rules canlı; anon Firestore write 400 (PERMISSION_DENIED) | — |
 
 ## P0 — Kritik
