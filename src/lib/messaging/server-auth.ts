@@ -46,21 +46,12 @@ export async function requireSuperAdmin(
   }
 
   const email = decoded.email ?? null;
-  // Primary check: custom claim role == 'super-admin'
-  if (decoded.role === 'super-admin') {
-    return { actor: { uid: decoded.uid, email } };
-  }
-
-  // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
-  const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
-  if (!snap.exists) {
-    return { error: NextResponse.json({ error: 'Kullanıcı bulunamadı' }, { status: 403 }) };
-  }
-  const data = snap.data() as { role?: string } | undefined;
-  if (data?.role !== 'super-admin') {
+  // P0-4b: claim-only auth. Firestore role-doc fallback removed; all super-admin
+  // UIDs were claim-stamped on 2026-05-18. Tokens auto-refresh hourly so any
+  // admin active in the last hour carries the claim.
+  if (decoded.role !== 'super-admin') {
     return { error: NextResponse.json({ error: 'Super-admin yetkisi gerekli' }, { status: 403 }) };
   }
-
   return { actor: { uid: decoded.uid, email } };
 }
 
@@ -103,10 +94,10 @@ export async function requireNgoAdmin(
   const userSnap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
   const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string }) : null;
 
-  // Primary check: custom claim. Fallback to users/{uid}.role for transition.
-  // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
-  const isSuperAdmin =
-    decoded.role === 'super-admin' || userData?.role === 'super-admin';
+  // P0-4b: claim-only super-admin check (Firestore role-doc fallback removed).
+  // NGO-admin still uses userData.managedNgoId since that's the scoped identity,
+  // not a privilege check.
+  const isSuperAdmin = decoded.role === 'super-admin';
 
   if (isSuperAdmin && allowSuperAdmin) {
     const ngoId = options?.targetNgoId ?? userData?.managedNgoId ?? '';

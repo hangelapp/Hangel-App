@@ -193,11 +193,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [authUser]);
 
     // Authorization Flags
-    // TODO(P0-4b): remove userData.role fallback once all super-admins have custom claims.
+    // P0-4b: claim-only super-admin gate (userData.role fallback removed —
+    // claims set + rules deployed 2026-05-18). Tokens auto-refresh hourly.
     const isSuperAdmin = useMemo(() => {
         if (!authUser) return false;
-        return claimsRole === 'super-admin' || userData?.role === 'super-admin';
-    }, [authUser, claimsRole, userData]);
+        return claimsRole === 'super-admin';
+    }, [authUser, claimsRole]);
 
     const isNgoAdmin = useMemo(() => {
         return isSuperAdmin || userData?.role === 'ngo-admin';
