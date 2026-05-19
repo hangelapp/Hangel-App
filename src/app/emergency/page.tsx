@@ -214,16 +214,40 @@ export default function EmergencyPage() {
     const [isReporting, setIsReporting] = useState<string | null>(null);
     const [isBloodDialogOpen, setIsBloodDialogOpen] = useState(false);
     
-    const handleReportClick = (type: string, details: string) => {
+    const handleReportClick = async (type: string, details: string) => {
+        if (!authUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Giriş gerekli',
+                description: 'Acil durum bildirimi göndermek için giriş yapmalısınız.',
+            });
+            return;
+        }
         setIsReporting(details);
-        
-        setTimeout(() => {
+        try {
+            await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
+                type,
+                details,
+                status: 'pending',
+                requestedBy: authUser.uid,
+                requestedByName: authUser.displayName || authUser.email || '',
+                requestedByEmail: authUser.email || '',
+                createdAt: serverTimestamp(),
+            });
             toast({
                 title: 'İhbar İletildi',
                 description: `${details} durumu konumunuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
             });
+        } catch (e) {
+            console.error('Report submit failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Gönderilemedi',
+                description: 'İhbar iletilemedi. Lütfen tekrar deneyin.',
+            });
+        } finally {
             setIsReporting(null);
-        }, 2000);
+        }
     };
 
     const handleBloodNeedSubmit = async (data: BloodNeedFormData) => {
@@ -266,19 +290,42 @@ export default function EmergencyPage() {
         }
     };
 
-    const handleHelpClick = (call: typeof initialActiveCalls[0]) => {
+    const handleHelpClick = async (call: typeof initialActiveCalls[0]) => {
+        if (!authUser) {
+            toast({
+                variant: 'destructive',
+                title: 'Giriş gerekli',
+                description: 'Yardım için giriş yapmalısınız.',
+            });
+            return;
+        }
+        // Optimistic UI update
         setActiveCalls(prev => prev.filter(c => c.id !== call.id));
-        
-        const newApp = {
-            ...call,
-            status: 'Başvuruldu' as const,
-        };
+        const newApp = { ...call, status: 'Başvuruldu' as const };
         setPastApplications(prev => [newApp, ...prev]);
-
-        toast({
-            title: 'Yardım Talebi Alındı',
-            description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
-        });
+        try {
+            await addDoc(collection(db, COLLECTIONS.emergencyResponses), {
+                callId: call.id,
+                callType: call.type,
+                callDetails: call.details,
+                callLocation: call.location,
+                volunteerUid: authUser.uid,
+                volunteerName: authUser.displayName || authUser.email || '',
+                status: 'applied',
+                createdAt: serverTimestamp(),
+            });
+            toast({
+                title: 'Yardım Talebi Alındı',
+                description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
+            });
+        } catch (e) {
+            console.error('Help request failed:', e);
+            toast({
+                variant: 'destructive',
+                title: 'Gönderilemedi',
+                description: 'Yardım talebiniz gönderilemedi. Lütfen tekrar deneyin.',
+            });
+        }
     };
 
   return (

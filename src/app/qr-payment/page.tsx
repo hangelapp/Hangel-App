@@ -17,7 +17,7 @@ import { tr } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { qrPaymentCardData } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import {
@@ -245,10 +245,30 @@ export default function QrPaymentPage() {
       setIsActivationOpen(true);
   };
 
-  const handleActivate = (cardId: string) => {
-      setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: 'Aktif' } : c));
-      setIsActivationOpen(false);
-      toast({ title: "Kart Aktive Edildi!", description: `${activatingCard?.type} kartınız artık kullanıma hazır.` });
+  const handleActivate = async (cardId: string) => {
+      if (!authUser || !db) {
+          toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Kart aktivasyonu için giriş yapmalısınız.' });
+          return;
+      }
+      const cardType = activatingCard?.type === 'Ticari' ? 'ticari' : 'ogrenci';
+      try {
+          // Deterministic doc id: one pending application per (user, cardType).
+          const activationRef = doc(db, COLLECTIONS.qrCardActivations, `${authUser.uid}__${cardType}`);
+          await setDoc(activationRef, {
+              userId: authUser.uid,
+              userName: authUser.displayName || authUser.email || '',
+              cardId,
+              cardType,
+              status: 'pending',
+              createdAt: serverTimestamp(),
+          }, { merge: true });
+          setCards(prev => prev.map(c => c.id === cardId ? { ...c, status: 'Aktif' } : c));
+          setIsActivationOpen(false);
+          toast({ title: 'Başvurun alındı', description: `${activatingCard?.type} kartı başvurun 1-2 iş günü içinde değerlendirilecek.` });
+      } catch (e) {
+          console.error('QR card activation failed:', e);
+          toast({ variant: 'destructive', title: 'Gönderilemedi', description: 'Aktivasyon başvurusu gönderilemedi.' });
+      }
   };
   
   const handleCardSelect = (cardId: string) => {

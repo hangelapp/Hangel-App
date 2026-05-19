@@ -101,6 +101,9 @@ export const COLLECTIONS = {
   // Infra — distributed rate limiter buckets (Admin SDK only; client rules deny)
   rateLimits: 'rateLimits',
 
+  // QR card activation requests (öğrenci / ticari)
+  qrCardActivations: 'qrCardActivations',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;
