@@ -48,15 +48,16 @@ export default function ThemeSettingsPage() {
     const handleSave = () => {
         localStorage.setItem(THEME_KEY, theme);
         applyTheme(theme);
+        const label = theme === 'light' ? t('dashboard.settingsTheme.light') : theme === 'dark' ? t('dashboard.settingsTheme.dark') : t('dashboard.settingsTheme.system');
         toast({
-            title: "Tema Ayarları Kaydedildi",
-            description: `Tema "${theme === 'light' ? 'Açık' : theme === 'dark' ? 'Koyu' : 'Sistem'}" olarak ayarlandı.`,
+            title: t('dashboard.settingsTheme.toastSavedTitle'),
+            description: `${t('dashboard.settingsTheme.toastSavedDescPrefix')}${label}${t('dashboard.settingsTheme.toastSavedDescSuffix')}`,
         });
     };
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>

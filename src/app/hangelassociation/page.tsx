@@ -197,7 +197,7 @@ export default function AssociationHomePage() {
                     subtitle={get('homepage.workshopSubtitle', 'Küresel Diyalog')}
                     title={get('homepage.workshopTitle', 'Uluslararası Sosyal Girişimcilik Çalıştayı.')}
                     description={get('homepage.workshopDescription', "54 ülkeden vizyoner liderlerle ortak sorunlara kolektif çözümler üretiyoruz. Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik.")}
-                    cta1="Çalıştayı Keşfet"
+                    cta1={t('marketing.association.workshopCta')}
                     cta1Href="/hangelassociation/workshop"
                     imageUrl={get('homepage.heroImageUrl', 'https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop')}
                     imageHint="international conference"
@@ -209,43 +209,43 @@ export default function AssociationHomePage() {
                     subtitle={get('homepage.legislationSubtitle', 'Hukuki Reform')}
                     title={get('homepage.legislationTitle', 'Sosyal Girişimcilik Kanunu Teklifi.')}
                     description={get('homepage.legislationDescription', '29 maddelik kanun teklifimizle, sosyal girişimciliğin yasal statüsünü, denetim standartlarını ve teşvik mekanizmalarını tanımlıyoruz.')}
-                    cta1="Taslağı İncele"
+                    cta1={t('marketing.association.legislationCta')}
                     cta1Href="/hangelassociation/legislation"
                     imageUrl="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
                     imageHint="legal documents"
                 />
 
                 <GridSection>
-                    <GridCard 
-                        title="Etki Odaklı İstihdam"
-                        subtitle="Gönüllülüğü kariyere dönüştüren ilk model."
-                        cta="Protokolü İncele"
+                    <GridCard
+                        title={t('marketing.association.gridIstihdamTitle')}
+                        subtitle={t('marketing.association.gridIstihdamSubtitle')}
+                        cta={t('marketing.association.gridIstihdamCta')}
                         ctaHref="/hangelassociation/projects/istihdam-protokolu"
                         imageUrl="https://picsum.photos/seed/protocol/600/400"
                         imageHint="handshake meeting"
                     />
-                     <GridCard 
-                        title="Akademik Programlar"
-                        subtitle="Üniversitelerde sosyal inovasyon müfredatı."
-                        cta="Programları Gör"
+                     <GridCard
+                        title={t('marketing.association.gridAkademikTitle')}
+                        subtitle={t('marketing.association.gridAkademikSubtitle')}
+                        cta={t('marketing.association.gridAkademikCta')}
                         ctaHref="/hangelassociation/workshop"
                         imageUrl="https://picsum.photos/seed/academy/600/400"
                         imageHint="university graduation"
                         theme="dark"
                     />
-                     <GridCard 
-                        title="Sosyal Etki Atlası"
-                        subtitle="Türkiye'nin iyilik haritasını çiziyoruz."
-                        cta="Atlası Keşfet"
+                     <GridCard
+                        title={t('marketing.association.gridAtlasTitle')}
+                        subtitle={t('marketing.association.gridAtlasSubtitle')}
+                        cta={t('marketing.association.gridAtlasCta')}
                         ctaHref="/hangelassociation/projects/etki-atlasi"
                         imageUrl="https://picsum.photos/seed/atlas/600/400"
                         imageHint="digital map"
                         theme="dark"
                     />
-                     <GridCard 
-                        title="Girişimcilik Kütüphanesi"
-                        subtitle="21 merkezde bilgi ve tecrübe temelli yol haritaları."
-                        cta="Kütüphaneye Git"
+                     <GridCard
+                        title={t('marketing.association.gridKutuphaneTitle')}
+                        subtitle={t('marketing.association.gridKutuphaneSubtitle')}
+                        cta={t('marketing.association.gridKutuphaneCta')}
                         ctaHref="/hangelassociation/workshop"
                         imageUrl="https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop"
                         imageHint="modern library"

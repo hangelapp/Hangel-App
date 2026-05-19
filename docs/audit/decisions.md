@@ -1064,3 +1064,54 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Risk**: L — TR+EN dolu, fallback TR. Yapısal değişiklik yok, sadece literal → `t('marketing.<page>.tail.<slug>')`.
 - **Test sonucu**: orchestrator gates pending.
 - **Rollback**: `git revert` veya `marketing.*` namespace tail key'lerin diff'i + 14 sayfa Edit'leri geri al.
+
+---
+
+## 2026-05-18 — P1-1b (partial): Distributed Firestore-backed rate limiter
+- **ID**: P1-1b (storage migration only; response normalization deferred to P1-1b-tail)
+- **Lead**: hangel-security-lead
+- **Sorun**: `check-email` ve `admin/import-data` route'ları process-local `Map<ip, { count, resetAt }>` kullanıyordu. App Hosting `maxInstances: 3` → her instance kendi kovasını tutuyor; cold-start sıfırlıyor. Saldırgan 3× burst yapabiliyor, restart'lar limiti sıfırlıyor.
+- **Karar**: Redis/Upstash yerine **Firestore-based sliding window** seçildi — yeni dependency yok, Admin SDK zaten kurulu. Trade-off: çağrı başına ~50ms Firestore tx latency. Düşük-RPS public endpoint'lerde (5/dk/IP, 10/dk/IP) kabul edilebilir.
+- **Yeni helper** (`src/lib/rate-limit.ts`):
+  - `checkRateLimit({ bucket, key, limit, windowMs }): Promise<RateLimitResult>`
+  - Doc: `rateLimits/{bucket}__{key}` `{ count, windowStart, lastSeen }`.
+  - `runTransaction`: window dolduysa fresh reset, dolmadıysa atomik increment; `count >= limit` ⇒ `allowed: false`.
+  - **Fail-open**: Admin SDK init throw veya tx throw → `allowed: true` döner (cold-start / network blip senaryolarında prod kırılmaz). Logged with `console.warn`.
+  - Doc-id sanitization (`A-Za-z0-9._:-`, max 100 chars).
+- **Migrate edilen route'lar**:
+  - `src/app/api/auth/check-email/route.ts` — `ipBuckets` Map + `rateLimit()` helper silindi; `checkRateLimit({ bucket: 'check-email', key: ip, limit: 5, windowMs: 60_000 })`. Response shape DEĞİŞMEDİ (`{ errorCode: 'rate_limited', message }` + `Retry-After`).
+  - `src/app/api/admin/import-data/route.ts` — `rateBuckets` + `isRateLimited()` silindi; `checkRateLimit({ bucket: 'admin-import-data', key: ip, limit: 10, windowMs: 60_000 })`.
+  - `src/app/api/messaging/enqueue/route.ts` — **rate limit yoktu**, skip (`checkMessagingKey` worker-key auth zaten gate ediyor; sadece authenticated worker çağırır, per-IP rate limit gereksiz).
+- **COLLECTIONS güncellemesi**: `rateLimits: 'rateLimits'` eklendi (P2-7 sabit dosyası).
+- **Rules** (`firestore.rules` — kod-only, deploy edilmedi):
+  ```
+  match /rateLimits/{bucketId} {
+    allow read, write: if false;
+  }
+  ```
+  Specific match `allPaths=**` super-admin fallback'ten önce geliyor → tüm client erişimi (super-admin dahil) reddediliyor. Admin SDK rules'ı bypass ettiği için route'lar etkilenmiyor.
+- **Tests**: `tests/api/check-email.test.ts` ve `tests/api/import-data.test.ts` `vi.mock('@/lib/rate-limit')` ile per-test sliding-window mock kazandı; hoisted `rateBuckets` Map her `beforeEach`'te `.clear()` ediliyor. Original test senaryoları (5/dk, 10/dk threshold + IP isolation) korundu — gerçek Firestore çağrısı yok.
+- **Gate sonucu**: `npm run typecheck` PASS, `npm run lint` PASS (0 errors), `npm test -- --run` PASS (13 files / 57 tests / 54 skip — baseline ile bire-bir aynı, 4.43s).
+- **Açık iş**: Response shape homojenleştirme (`{ status: 'ok' }` ile `exists` flag'ini gizleme) + `selection/page.tsx` signup-attempt-driven redesign halen `P1-1b-tail` altında bekliyor — frontend dependency olduğu için bu agent'ta scope dışı.
+- **Risk**: L — fail-open kontrat sayesinde Firestore outage = limiter no-op (route hâlâ çalışır). Worst case: gerçek Firestore latency'si 50-200ms artırır check-email'i; sabit 250ms anti-timing gecikme bunu zaten absorbe ediyor.
+- **Rollback**: `git revert` veya `checkRateLimit` çağrılarını manuel `Map` koduyla geri al; `rateLimits` doc'ları kalsa zarar yok (rules deny + Admin SDK bypass).
+
+---
+
+## 2026-05-18 — P2-5c-rest: i18n dashboards tail (toasts + aria + appearance/wallet)
+- **ID**: P2-5c-rest
+- **Lead**: frontend-lead
+- **Scope**: P2-5c'nin tail'i. Top-priority başlık/CTA stringleri zaten P2-5c'de migrate edildi; bu PR toast title/description çiftlerini, tekrar eden `aria-label` Geri/Filtrele/Sırala değerlerini, settings/appearance + settings/wallet alt sayfalarının tüm görünür stringlerini, ve `my-applications` + `messages` + `settings/language` + `settings/theme` + `settings/ngo-selection` içindeki string-interpolasyonlu açıklamaları kapsar.
+- **Key naming**:
+  - Toast keys: `dashboard.<page>.toast<Kind>` (e.g., `dashboard.applications.toastWithdrawnTitle`/`toastWithdrawnDescPrefix`/`toastWithdrawnDescSuffix` — interpolation `prefix + ${var} + suffix` pattern).
+  - ARIA keys: shared `aria.back` / `aria.filter` / `aria.sort` (yeni namespace) — `Geri`/`Filtrele`/`Sırala` 30+ yerde tekrar eden değerler. Markaya özel olmadığı için merkezi tek nokta tutuldu.
+  - Yeni sayfa namespace'leri: `dashboard.settingsAppearance.*` (24 key), `dashboard.settingsWallet.*` (24 key).
+- **Interpolation pattern**: `t()` template tutmuyor; bu nedenle interpolated description'lar `prefix + ${var} + suffix` parça keys'iyle render edildi (`${t('dashboard.applications.toastWithdrawnDescPrefix')}${appTitle}${t('dashboard.applications.toastWithdrawnDescSuffix')}`). Beş yerde uygulandı: my-applications withdraw, messages send success, settings/language saved, settings/theme saved, settings/ngo-selection locked, settings/wallet card-delete dialog.
+- **Files touched**:
+  - `src/lib/translations.ts`: TR + EN dashboard.* + yeni `aria.*` namespace. ~98 yeni key × 2 dil ≈ +196 satır.
+  - Migrated: `my-applications/page.tsx`, `my-applications/new/page.tsx`, `my-donations/page.tsx`, `messages/page.tsx`, `notifications/page.tsx`, `profile/page.tsx` (sadece aria), `settings/language/page.tsx`, `settings/theme/page.tsx`, `settings/security/page.tsx`, `settings/profile/page.tsx`, `settings/volunteer/page.tsx`, `settings/notifications/page.tsx`, `settings/marketing-consent/page.tsx`, `settings/brands/page.tsx`, `settings/ngo-selection/page.tsx`, `settings/volunteer-ngo-selection/page.tsx`, `settings/accessibility/page.tsx`, `settings/privacy/page.tsx`, `settings/contracts/page.tsx`, `settings/appearance/page.tsx` (FULL — heading/sub/cardTitles/24 labels/save/toast), `settings/wallet/page.tsx` (FULL — heading/sub/cardTitles/dialogs/labels/24 labels/toast).
+  - DOKUNULMADI: super-admin/ngo-admin/admin, marketing pages, landing, /clubs, /ngos, /market, /events, /volunteering, /timeline, /qr-payment, /invite, /events, /support, /library, /p — bunlar `aria-label="Geri/Filtrele/Sırala"` içerse de scope dışı (P2-5e veya başka agent owner).
+- **Toplam migrate edilen string**: ~75 distinct (toast title+desc çiftleri 30+, ARIA 23, settings/appearance 17, settings/wallet 19). Yeni key counts: dashboard.* +88, aria.* +3. Toplam +91 key × 2 dil ≈ +182 satır translations.ts.
+- **Gate sonucu**: `npx tsc --noEmit` PASS (no output), `npm run lint` PASS (0 errors).
+- **Risk**: L — pure string move; no logic/behavior change. Toast variant + title/description placement same. ARIA semantics preserved. Rollback = single revert. Other 5 langs (ru/ar/fa/es/ha) `aria.*` doldurulmadı → P2-5d empty-string-fallback gereği TR fallback otomatik.
+- **Açık iş**: marketing pages içindeki ARIA tekrarları (P2-5e agent owner). Other-locale `aria.*` çevirileri tek-kelime olduğu için gerektikçe basit ekleme (back/filter/sort).

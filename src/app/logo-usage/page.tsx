@@ -341,15 +341,15 @@ export default function LogoUsagePage() {
                 <Section id="mimari" className="bg-white">
                     <SectionTitle>{t('marketing.logo.architectureTitle')}</SectionTitle>
                      <p className="text-center text-muted-foreground mt-4 max-w-3xl mx-auto">
-                        hangel, farklı kitlelere ve amaçlara hizmet eden çeşitli alt markalardan oluşan bir ekosistemdir. Her bir alt marka, ana markamızın değerlerini taşırken kendi özel misyonuna odaklanır.
+                        {t('marketing.logo.archIntro')}
                     </p>
                     <div className="space-y-16 mt-16">
                          <div className="text-center space-y-2">
-                             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Ana Marka</h3>
+                             <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('marketing.logo.anaMarka')}</h3>
                              <HangelLogo className="text-5xl" />
                         </div>
                         <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel App Alt Markaları</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.appSubBrandsTitle')}</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {appArchitecture.map((item) => (
                                     <ShowcaseCard
@@ -361,7 +361,7 @@ export default function LogoUsagePage() {
                             </div>
                         </div>
                          <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">hangel Derneği Alt Markaları</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.dernekSubBrandsTitle')}</h3>
                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard
@@ -374,8 +374,8 @@ export default function LogoUsagePage() {
                         </div>
                     </div>
                      <div className="mt-16 text-center text-sm text-muted-foreground max-w-2xl mx-auto">
-                        <h4 className="font-bold text-foreground mb-2">Daha fazla ürün</h4>
-                        <p>Aradığınız ürünü bulamıyorsanız, ürünün özel kullanım yönergeleri olmayabilir. Bunun yerine, ürün simgelerinin kullanımıyla ilgili genel kılavuzumuza, API ve ürün entegrasyonu yönergelerimize veya ticari marka kurallarımıza başvurarak doğru kullanım hakkında bilgi edinebilirsiniz.</p>
+                        <h4 className="font-bold text-foreground mb-2">{t('marketing.logo.moreProductsTitle')}</h4>
+                        <p>{t('marketing.logo.moreProductsDesc')}</p>
                     </div>
                 </Section>
                 
@@ -384,10 +384,10 @@ export default function LogoUsagePage() {
                         <SectionTitle>{t('marketing.logo.mediaKitTitle')}</SectionTitle>
                         
                         <div className="space-y-12">
-                            <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.logolarTitle')}</h3>
                             <div className="space-y-12">
                                 <div className='space-y-6'>
-                                    <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel A.Ş. Logoları</h4>
+                                    <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">{t('marketing.logo.asLogolarTitle')}</h4>
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         {asLogos.map((logo, index) => (
                                             <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
@@ -397,7 +397,7 @@ export default function LogoUsagePage() {
                                     </div>
                                 </div>
                                 <div className='space-y-6'>
-                                    <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">hangel Derneği Logoları</h4>
+                                    <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">{t('marketing.logo.dernekLogolarTitle')}</h4>
                                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         {dernekLogos.map((logo, index) => (
                                             <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
@@ -410,49 +410,49 @@ export default function LogoUsagePage() {
                         </div>
 
                         <div className="space-y-12">
-                            <h3 className="text-3xl font-bold tracking-tight text-center">Yazı Tipleri</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.fontsTitle')}</h3>
                             <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
                                <CardHeader className="text-center">
-                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                                   <CardTitle>{t('marketing.logo.fontGuideTitle')}</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                   <FontCard title={t('marketing.logo.logoFontCardTitle')} fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
+                                   <FontCard title={t('marketing.logo.headingFontCardTitle')} fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
+                                   <FontCard title={t('marketing.logo.bodyFontCardTitle')} fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
                                </CardContent>
                            </Card>
                         </div>
-                        
+
                         <div className="space-y-12">
-                            <h3 className="text-3xl font-bold tracking-tight text-center">Renkler</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.colorsTitle')}</h3>
                              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                                 {colors.map((color, index) => (
                                     <ColorCard key={index} {...color} onCopy={() => copyColor(color.hex)} />
                                 ))}
                             </div>
                         </div>
-                        
+
                         <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center">Kurumsal Kimlik</h3>
+                            <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.kurumsalKimlikTitle')}</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                                  <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
                                      <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
                                      <div className="space-y-1">
-                                         <h3 className="text-2xl font-bold">Kimlik Kılavuzu</h3>
-                                         <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                                         <h3 className="text-2xl font-bold">{t('marketing.logo.kimlikKilavuzuTitle')}</h3>
+                                         <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.logo.kimlikKilavuzuDesc')}</p>
                                      </div>
                                      <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                         PDF Olarak İndir
+                                         {t('marketing.logo.downloadPdf')}
                                      </Button>
                                  </Card>
                                  <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
                                      <Image src="https://logo.clearbit.com/canva.com" alt="Canva Logo" width={64} height={64} className="mx-auto h-16 w-16" />
                                      <div className="space-y-1">
-                                         <h3 className="text-2xl font-bold">hangel Canva Marka Kiti</h3>
-                                         <p className="text-muted-foreground max-w-md mx-auto">Logo kullanımları, renk paletleri, yazı fontları ve görseller için tasarımlarınızda kullanın.</p>
+                                         <h3 className="text-2xl font-bold">{t('marketing.logo.canvaTitle')}</h3>
+                                         <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.logo.canvaDesc')}</p>
                                      </div>
                                      <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold">
-                                         <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer">Canva Marka Kiti için tıklayınız</a>
+                                         <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer">{t('marketing.logo.canvaCta')}</a>
                                      </Button>
                                  </Card>
                              </div>
@@ -476,7 +476,7 @@ export default function LogoUsagePage() {
                 <Section className="text-left">
                     <div className="text-sm text-muted-foreground max-w-3xl space-y-4">
                         <p>
-                           hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür. hangel ticari markaları tescil ettirilemez, üzerinde hak iddia edilemez, benzer şekilde kullanılamaz veya zayıflatılamaz. Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır. hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar.
+                           {t('marketing.logo.legalBlurb')}
                         </p>
                     </div>
                 </Section>
@@ -485,14 +485,12 @@ export default function LogoUsagePage() {
                     <Card className="max-w-3xl mx-auto rounded-3xl p-12 space-y-6 shadow-xl bg-white">
                         <ShieldCheck className="h-16 w-16 mx-auto text-primary" />
                         <div className="space-y-2">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">SON SÖZ</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('marketing.logo.sonSozLabel')}</h3>
                             <p className="text-xl md:text-2xl font-medium text-foreground max-w-2xl mx-auto">
-                                hangel logosu; tarafsızlığın, kolektif üretimin ve eşit mesafede durmanın sembolüdür. Her doğru kullanım; kurumsal itibarı güçlendirir, kamusal güveni artırır ve dayanışmayı görünür kılar.
+                                {t('marketing.logo.sonSozBody')}
                             </p>
                         </div>
-                        <p className="text-lg font-bold text-foreground">
-                            Marka, bir görselden ibaret değildir. <br /> Marka, bir taahhüttür.
-                        </p>
+                        <p className="text-lg font-bold text-foreground" dangerouslySetInnerHTML={{ __html: t('marketing.logo.sonSozMotto') }} />
                     </Card>
                 </Section>
             </main>

@@ -17,15 +17,15 @@ export default function InformationSocietyServicesPage() {
   const { t } = useTranslation();
 
   const boardMembers = [
-    { name: 'İsmail Hilmi Adıgüzel', role: 'Yönetim Kurulu Başkanı' },
-    { name: 'Ayşe Yılmaz', role: 'Yönetim Kurulu Başkan Yrd.' },
-    { name: 'Mehmet Öztürk', role: 'Yönetim Kurulu Üyesi' },
+    { name: 'İsmail Hilmi Adıgüzel', role: t('marketing.info.boardRoleChair') },
+    { name: 'Ayşe Yılmaz', role: t('marketing.info.boardRoleViceChair') },
+    { name: 'Mehmet Öztürk', role: t('marketing.info.boardRoleMember') },
   ];
 
   const legalDocuments = [
-    { name: 'Ticaret Sicil Gazetesi', url: '#' },
-    { name: 'Vergi Levhası', url: '#' },
-    { name: 'Faaliyet Belgesi', url: '#' },
+    { name: t('marketing.info.legalDocTicaret'), url: '#' },
+    { name: t('marketing.info.legalDocVergi'), url: '#' },
+    { name: t('marketing.info.legalDocFaaliyet'), url: '#' },
   ];
 
   return (
@@ -62,12 +62,12 @@ export default function InformationSocietyServicesPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p><strong>Ticari Unvan:</strong> hangel teknoloji ve sosyal etki anonim şirketi</p>
-            <p><strong>MERSİS Numarası:</strong> 0123456789101112</p>
-            <p><strong>Merkez Adresi:</strong> Caferağa Mah. Moda Cad. No: 123 D:4, Kadıköy, İstanbul</p>
-            <p><strong>Sorumlu Kişi:</strong> İsmail Hilmi Adıgüzel</p>
-            <p><strong>Kayıtlı Elektronik Posta (KEP) Adresi:</strong> hangel@hs01.kep.tr</p>
-            <p><strong>Yer Sağlayıcı:</strong> Google Cloud</p>
+            <p><strong>{t('marketing.info.labelCommercialName')}</strong> {t('marketing.info.valueCommercialName')}</p>
+            <p><strong>{t('marketing.info.labelMersis')}</strong> {t('marketing.info.valueMersis')}</p>
+            <p><strong>{t('marketing.info.labelAddress')}</strong> {t('marketing.info.valueAddress')}</p>
+            <p><strong>{t('marketing.info.labelContactPerson')}</strong> {t('marketing.info.valueContactPerson')}</p>
+            <p><strong>{t('marketing.info.labelKep')}</strong> {t('marketing.info.valueKep')}</p>
+            <p><strong>{t('marketing.info.labelHosting')}</strong> {t('marketing.info.valueHosting')}</p>
           </CardContent>
         </Card>
 

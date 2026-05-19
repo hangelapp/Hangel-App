@@ -8,6 +8,7 @@ import { ArrowLeft, Building2, Store, School, HeartHandshake, ChevronRight, Load
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
+import { useTranslation } from '@/components/providers/language-provider';
 
 /**
  * @fileOverview Yeni Başvuru Seçim Sayfası
@@ -18,6 +19,7 @@ import { useUser } from '@/firebase';
 export default function NewApplicationPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
 
   // Oturumsuz kullanıcıyı şifresiz başvuru akışına (kurumsal sekme) yönlendir.
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function NewApplicationPage() {
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-8 animate-in fade-in-0">
       <div className="flex items-center gap-2">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <h1 className="text-2xl font-bold font-headline tracking-tight text-[#1d1d1f]">Yeni Başvuru</h1>

@@ -25,21 +25,24 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
 import { useTranslation } from '@/components/providers/language-provider';
 
-const AdvantageCard = ({ 
-    title, 
-    description, 
-    icon: Icon, 
+const AdvantageCard = ({
+    title,
+    description,
+    icon: Icon,
     className,
     isLarge = false,
     image
-}: { 
-    title: string, 
-    description: string, 
+}: {
+    title: string,
+    description: string,
     icon: React.ComponentType<{ className?: string }>,
     className?: string,
     isLarge?: boolean,
     image?: string
-}) => (
+}) => {
+    const { t: tExploreT } = useTranslation();
+    const tExplore = tExploreT('marketing.campus.exploreProgram');
+    return (
     <div className={cn(
         "group relative flex flex-col bg-white rounded-[2.5rem] p-8 transition-all hover:shadow-2xl border border-black/5 overflow-hidden",
         isLarge ? "md:col-span-2 min-h-[450px] justify-between" : "min-h-[300px] justify-start",
@@ -66,12 +69,13 @@ const AdvantageCard = ({
         {isLarge && (
             <div className="relative z-10 pt-8">
                 <span className="text-primary font-bold flex items-center text-sm md:text-base">
-                    Programı Keşfet <ChevronRight className="h-4 w-4 ml-1" />
+                    {tExplore} <ChevronRight className="h-4 w-4 ml-1" />
                 </span>
             </div>
         )}
     </div>
-);
+    );
+};
 
 export default function CampusAdvantagesPage() {
     const router = useRouter();
@@ -111,32 +115,32 @@ export default function CampusAdvantagesPage() {
 
             {/* Main Advantages - Large Cards */}
             <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-                <AdvantageCard 
+                <AdvantageCard
                     isLarge
                     icon={LayoutGrid}
-                    title="Dijital Yönetim Paneli"
-                    description="Üye listelerinizi yönetin, etkinliklerinizi planlayın ve kulüp arşivinizi tek bir dijital merkezde güvenle saklayın."
+                    title={t('marketing.campus.advLargeDijitalTitle')}
+                    description={t('marketing.campus.advLargeDijitalDesc')}
                     image="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
                 />
-                <AdvantageCard 
+                <AdvantageCard
                     isLarge
                     icon={Award}
-                    title="Sosyal Etki Karnesi"
-                    description="Kulübünüzün yıl boyunca gerçekleştirdiği faaliyetlerin toplumsal değerini ölçümleyin ve şeffaf bir başarı raporu oluşturun."
+                    title={t('marketing.campus.advLargeKarneTitle')}
+                    description={t('marketing.campus.advLargeKarneDesc')}
                     image="https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2070&auto=format&fit=crop"
                 />
-                <AdvantageCard 
+                <AdvantageCard
                     isLarge
                     icon={Users}
-                    title="Geniş Networking Ağı"
-                    description="Türkiye'nin önde gelen STK'ları ve sosyal sorumluluk sahibi markalarıyla doğrudan iş birliği kanalları kurun."
+                    title={t('marketing.campus.advLargeNetworkTitle')}
+                    description={t('marketing.campus.advLargeNetworkDesc')}
                     image="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop"
                 />
-                <AdvantageCard 
+                <AdvantageCard
                     isLarge
                     icon={Briefcase}
-                    title="Kariyer ve Staj Önceliği"
-                    description="Aktif rol alan üyelerinize, partner markalarımız ve STK'larımız bünyesinde özel staj ve iş fırsatları sunun."
+                    title={t('marketing.campus.advLargeKariyerTitle')}
+                    description={t('marketing.campus.advLargeKariyerDesc')}
                     image="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
                 />
             </section>
@@ -144,40 +148,40 @@ export default function CampusAdvantagesPage() {
             {/* Detailed Benefits Grid */}
             <section className="container mx-auto px-4 space-y-12">
                 <div className="text-left md:text-center space-y-2">
-                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1d1d1f]">Kulübünüz İçin Eksiksiz Araçlar.</h2>
-                    <p className="text-lg text-muted-foreground font-medium">Hangel Kampüs ile sahip olacağınız diğer ayrıcalıklar.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.campus.toolsTitle')}</h2>
+                    <p className="text-lg text-muted-foreground font-medium">{t('marketing.campus.toolsSubtitle')}</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <AdvantageCard 
-                        icon={Globe} 
-                        title="Ücretsiz Web Sitesi" 
-                        description="Kulübünüze özel, otomatik güncellenen ve mobil uyumlu bir kurumsal web sitesine sahip olun." 
+                    <AdvantageCard
+                        icon={Globe}
+                        title={t('marketing.campus.advWebTitle')}
+                        description={t('marketing.campus.advWebDesc')}
                     />
-                    <AdvantageCard 
-                        icon={Zap} 
-                        title="Sponsorluk Kanalları" 
-                        description="Markaların kampüs projelerine ayırdığı fonlara ve ürün desteğine Hangel üzerinden başvurun." 
+                    <AdvantageCard
+                        icon={Zap}
+                        title={t('marketing.campus.advSponsorTitle')}
+                        description={t('marketing.campus.advSponsorDesc')}
                     />
-                    <AdvantageCard 
-                        icon={Target} 
-                        title="Görünürlük Desteği" 
-                        description="Etkinliklerinizi platformdaki binlerce bilinçli öğrenciye ve destekçiye ücretsiz duyurun." 
+                    <AdvantageCard
+                        icon={Target}
+                        title={t('marketing.campus.advVisibilityTitle')}
+                        description={t('marketing.campus.advVisibilityDesc')}
                     />
-                    <AdvantageCard 
-                        icon={School} 
-                        title="Akademik Kredi Desteği" 
-                        description="Gönüllülük faaliyetlerinizi 'Sosyal Sorumluluk Dersi' kapsamında akademik krediye dönüştürün." 
+                    <AdvantageCard
+                        icon={School}
+                        title={t('marketing.campus.advAkademikTitle')}
+                        description={t('marketing.campus.advAkademikDesc')}
                     />
-                    <AdvantageCard 
-                        icon={Award} 
-                        title="Resmi Sertifikasyon" 
-                        description="Üyelerinizin başarılarını Hangel ve ilgili STK onaylı dijital sertifikalarla tescilleyin." 
+                    <AdvantageCard
+                        icon={Award}
+                        title={t('marketing.campus.advSertifikaTitle')}
+                        description={t('marketing.campus.advSertifikaDesc')}
                     />
-                    <AdvantageCard 
-                        icon={ShieldCheck} 
-                        title="Kurumsal Güven" 
-                        description="Hangel Şeffaflık Endeksi'ne dahil olarak kulübünüzün kurumsal itibarını kampüste güçlendirin." 
+                    <AdvantageCard
+                        icon={ShieldCheck}
+                        title={t('marketing.campus.advGuvenTitle')}
+                        description={t('marketing.campus.advGuvenDesc')}
                     />
                 </div>
             </section>

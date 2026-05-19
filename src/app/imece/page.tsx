@@ -76,10 +76,10 @@ export default function ImecePage() {
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('marketing.imece.howDescription')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StepCard step="1" title="Profil Oluştur" description="Yetkinliklerini, ilgi alanlarını ve müsaitliğini paylaş. hangel sana en uygun fırsatları getirsin." />
-              <StepCard step="2" title="Eşleş" description="Profiline uygun gönüllülük ilanlarını uygunluk yüzdesiyle gör; hassasiyet, yetkinlik ve konum filtreleriyle daralt." />
-              <StepCard step="3" title="Katıl" description="Tek tıkla başvur. STK seni inceler, kabul eder ve süreç başlar — eğitim, ulaşım, koordinasyon hangel üstünden." />
-              <StepCard step="4" title="Etki Ölç" description="Gönüllülük saatin, kazandığın rozetler ve sosyal etki puanın profiline işlenir. CV'ne dahil edebilir, paylaşabilirsin." />
+              <StepCard step="1" title={t('marketing.imece.step1Title')} description={t('marketing.imece.step1Desc')} />
+              <StepCard step="2" title={t('marketing.imece.step2Title')} description={t('marketing.imece.step2Desc')} />
+              <StepCard step="3" title={t('marketing.imece.step3Title')} description={t('marketing.imece.step3Desc')} />
+              <StepCard step="4" title={t('marketing.imece.step4Title')} description={t('marketing.imece.step4Desc')} />
             </div>
           </div>
         </section>
@@ -93,33 +93,33 @@ export default function ImecePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard
                 icon={Sparkles}
-                title="Akıllı Eşleşme"
-                description="Yetkinlik, sosyal alan ve müsaitlik bilgilerinden otomatik uygunluk yüzdesi hesaplanır. Sana uymayan ilanları görmek zorunda değilsin."
+                title={t('marketing.imece.featMatchTitle')}
+                description={t('marketing.imece.featMatchDesc')}
               />
               <FeatureCard
                 icon={Award}
-                title="Sosyal Etki Puanı"
-                description="Her gönüllülük saatin, her başvurun, her tamamladığın proje sosyal etki puanına dönüşür. Liderlik tablolarında yerini al."
+                title={t('marketing.imece.featPointsTitle')}
+                description={t('marketing.imece.featPointsDesc')}
               />
               <FeatureCard
                 icon={Clock}
-                title="Esnek Müsaitlik"
-                description="Hafta içi/sonu, gündüz/akşam, sahada/online/hibrit tercihlerine göre filtrelenir. Yoğun temposunla uyumlu fırsatlar."
+                title={t('marketing.imece.featFlexTitle')}
+                description={t('marketing.imece.featFlexDesc')}
               />
               <FeatureCard
                 icon={Users}
-                title="Topluluk"
-                description="Aynı amaca koşan binlerce gönüllüyle bağlantı kur. Aidiyet duygusu, network ve yeni dostluklar."
+                title={t('marketing.imece.featCommunityTitle')}
+                description={t('marketing.imece.featCommunityDesc')}
               />
               <FeatureCard
                 icon={ShieldCheck}
-                title="Şeffaflık"
-                description="Her STK'nın şeffaflık endeksi, mali tabloları ve etki raporları açık erişilebilir. Bilinçli seçim yap."
+                title={t('marketing.imece.featTransparencyTitle')}
+                description={t('marketing.imece.featTransparencyDesc')}
               />
               <FeatureCard
                 icon={Briefcase}
-                title="CV Katkısı"
-                description="Gönüllülük geçmişin, kazandığın sertifikalar ve rozetler profesyonel olarak kullanılabilir. İnsan kaynakları entegrasyonları yakında."
+                title={t('marketing.imece.featCvTitle')}
+                description={t('marketing.imece.featCvDesc')}
               />
             </div>
           </div>

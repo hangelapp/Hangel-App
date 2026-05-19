@@ -147,10 +147,10 @@ export default function PressPage() {
                 {/* Stats */}
                 <section className="container mx-auto px-4 mb-24">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <StatCard icon={Globe} value="21" label="Ülkede Aktif" />
-                        <StatCard icon={Users} value="1.2M+" label="Kullanıcı" />
-                        <StatCard icon={BarChart3} value="12.5M ₺" label="Toplam Etki" />
-                        <StatCard icon={TrendingUp} value="%120" label="Yıllık Büyüme" />
+                        <StatCard icon={Globe} value="21" label={t('marketing.press.statCountries')} />
+                        <StatCard icon={Users} value="1.2M+" label={t('marketing.press.statUsers')} />
+                        <StatCard icon={BarChart3} value="12.5M ₺" label={t('marketing.press.statImpact')} />
+                        <StatCard icon={TrendingUp} value="%120" label={t('marketing.press.statGrowth')} />
                     </div>
                 </section>
                 
@@ -169,7 +169,7 @@ export default function PressPage() {
                                         <p className="text-xs text-muted-foreground mt-1">{release.date} • <span className="font-semibold">{release.lang}</span></p>
                                     </div>
                                     <div className="flex gap-2 mt-3 sm:mt-0">
-                                        <Button size="sm" variant="ghost" onClick={() => handleDownload(`${release.title}.pdf`)}><Download className="mr-2 h-4 w-4" /> İndir</Button>
+                                        <Button size="sm" variant="ghost" onClick={() => handleDownload(`${release.title}.pdf`)}><Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadAction')}</Button>
                                     </div>
                                 </div>
                             ))}
@@ -181,11 +181,11 @@ export default function PressPage() {
                 <section className="container mx-auto px-4 mb-24">
                     <Tabs defaultValue="logos" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-4xl mx-auto h-auto mb-12">
-                            <TabsTrigger value="logos" className="h-12 text-sm"><Palette className="mr-2"/>Logolar</TabsTrigger>
-                            <TabsTrigger value="fonts" className="h-12 text-sm"><Type className="mr-2"/>Yazı Tipleri</TabsTrigger>
-                            <TabsTrigger value="colors" className="h-12 text-sm"><Palette className="mr-2"/>Renkler</TabsTrigger>
-                            <TabsTrigger value="photos" className="h-12 text-sm"><ImageIcon className="mr-2"/>Kurumsal Fotoğraflar</TabsTrigger>
-                            <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>Kimlik Klavuzu</TabsTrigger>
+                            <TabsTrigger value="logos" className="h-12 text-sm"><Palette className="mr-2"/>{t('marketing.press.tabLogos')}</TabsTrigger>
+                            <TabsTrigger value="fonts" className="h-12 text-sm"><Type className="mr-2"/>{t('marketing.press.tabFonts')}</TabsTrigger>
+                            <TabsTrigger value="colors" className="h-12 text-sm"><Palette className="mr-2"/>{t('marketing.press.tabColors')}</TabsTrigger>
+                            <TabsTrigger value="photos" className="h-12 text-sm"><ImageIcon className="mr-2"/>{t('marketing.press.tabPhotos')}</TabsTrigger>
+                            <TabsTrigger value="guide" className="h-12 text-sm"><FileText className="mr-2"/>{t('marketing.press.tabGuide')}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="logos">
@@ -210,7 +210,7 @@ export default function PressPage() {
                         <TabsContent value="fonts">
                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
                                <CardHeader className="text-center">
-                                   <CardTitle>Font Kullanım Yönergesi</CardTitle>
+                                   <CardTitle>{t('marketing.press.fontGuideTitle')}</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                                    <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
@@ -223,7 +223,7 @@ export default function PressPage() {
                         <TabsContent value="colors">
                              <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
                                <CardHeader className="text-center">
-                                   <CardTitle>Renk Kullanım Yönergesi</CardTitle>
+                                   <CardTitle>{t('marketing.press.colorGuideTitle')}</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
                                    <ColorCard hex="#f34723" name="hangel Mercan" onCopy={() => copyColor('#f34723')} />
@@ -250,7 +250,7 @@ export default function PressPage() {
                                                 className="w-full text-xs"
                                                 onClick={() => handleDownload(`kurumsal-fotograf-${photo.id}.jpg`)}
                                             >
-                                                <Download className="mr-2 h-4 w-4" /> Yüksek Çözünürlüklü İndir
+                                                <Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadHighRes')}
                                             </Button>
                                         </CardFooter>
                                     </Card>
@@ -262,11 +262,11 @@ export default function PressPage() {
                            <Card className="max-w-3xl mx-auto rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
                                <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
                                <div className="space-y-1">
-                                   <h3 className="text-2xl font-bold">Kurumsal Kimlik Kılavuzu</h3>
-                                   <p className="text-muted-foreground max-w-md mx-auto">Marka değerlerimizi, logo kullanım standartlarımızı ve iletişim dilimizi içeren rehber.</p>
+                                   <h3 className="text-2xl font-bold">{t('marketing.press.identityGuideTitle')}</h3>
+                                   <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.press.identityGuideDesc')}</p>
                                </div>
                                <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
-                                    PDF Olarak İndir
+                                    {t('marketing.press.downloadPdf')}
                                </Button>
                            </Card>
                         </TabsContent>

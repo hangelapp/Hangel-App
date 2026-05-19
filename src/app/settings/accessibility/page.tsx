@@ -213,8 +213,8 @@ export default function AccessibilitySettingsPage() {
         setTimeout(() => {
             setIsSaving(false);
             toast({
-                title: "Ayarlar Kaydedildi",
-                description: "Erişilebilirlik tercihleriniz tüm platformda aktif hale getirildi.",
+                title: t('dashboard.settingsAccessibility.toastSavedTitle'),
+                description: t('dashboard.settingsAccessibility.toastSavedDesc'),
             });
         }, 800);
     };
@@ -223,7 +223,7 @@ export default function AccessibilitySettingsPage() {
         <div className="p-4 space-y-10 animate-in fade-in-0 max-w-3xl mx-auto pb-32">
             {/* --- Header Section --- */}
             <div className="space-y-6">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div className="space-y-4">

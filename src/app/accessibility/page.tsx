@@ -294,9 +294,9 @@ export default function AccessibilityPublicPage() {
                             <CardHeader className="bg-[#f5f5f7] border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Eye className="h-5 w-5 text-indigo-500" />
-                                    Görsel & Okuma
+                                    {t('marketing.accessibility.groupVisualTitle')}
                                 </CardTitle>
-                                <CardDescription className="text-xs font-medium">Okunabilirlik ve görsel algı tercihleriniz. (WCAG 1.3 / 1.4)</CardDescription>
+                                <CardDescription className="text-xs font-medium">{t('marketing.accessibility.groupVisualDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
@@ -365,9 +365,9 @@ export default function AccessibilityPublicPage() {
                             <CardHeader className="bg-[#f5f5f7] border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Layers className="h-5 w-5 text-orange-500" />
-                                    Bilişsel & Anlama
+                                    {t('marketing.accessibility.groupCognitiveTitle')}
                                 </CardTitle>
-                                <CardDescription className="text-xs font-medium">Bilişsel yükü azaltma ve netlik ayarları. (WCAG 3.x / AAA)</CardDescription>
+                                <CardDescription className="text-xs font-medium">{t('marketing.accessibility.groupCognitiveDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
@@ -402,9 +402,9 @@ export default function AccessibilityPublicPage() {
                             <CardHeader className="bg-[#f5f5f7] border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <MousePointerClick className="h-5 w-5 text-teal-500" />
-                                    Etkileşim & Motor
+                                    {t('marketing.accessibility.groupMotorTitle')}
                                 </CardTitle>
-                                <CardDescription className="text-xs font-medium">Motor beceri ve fiziksel erişim kolaylıkları. (WCAG 2.5 / 2.2)</CardDescription>
+                                <CardDescription className="text-xs font-medium">{t('marketing.accessibility.groupMotorDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
@@ -439,9 +439,9 @@ export default function AccessibilityPublicPage() {
                             <CardHeader className="bg-[#f5f5f7] border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Volume2 className="h-5 w-5 text-blue-500" />
-                                    Ekran Okuyucu & Medya
+                                    {t('marketing.accessibility.groupMediaTitle')}
                                 </CardTitle>
-                                <CardDescription className="text-xs font-medium">Sesli geri bildirim ve medya erişilebilirliği. (WCAG 1.1 / 1.2)</CardDescription>
+                                <CardDescription className="text-xs font-medium">{t('marketing.accessibility.groupMediaDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
@@ -472,9 +472,9 @@ export default function AccessibilityPublicPage() {
                             <CardHeader className="bg-[#f5f5f7] border-b">
                                 <CardTitle className="text-lg flex items-center gap-2">
                                     <Clock className="h-5 w-5 text-slate-600" />
-                                    Zaman & Kontrol Yönetimi
+                                    {t('marketing.accessibility.groupTimeTitle')}
                                 </CardTitle>
-                                <CardDescription className="text-xs font-medium">Zaman kısıtları ve veri güvenliği ayarları. (WCAG 2.2 AAA)</CardDescription>
+                                <CardDescription className="text-xs font-medium">{t('marketing.accessibility.groupTimeDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
@@ -514,23 +514,23 @@ export default function AccessibilityPublicPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
                                 <div className="p-3 bg-indigo-50 rounded-2xl w-fit"><Scale className="h-6 w-6 text-indigo-600" /></div>
-                                <h4 className="font-bold text-sm">Yasal Uyumluluk</h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Tercihleriniz, EN 301 549 Avrupa standardı ve yerel mevzuatlarla tam uyumlu olacak şekilde işlenir.</p>
+                                <h4 className="font-bold text-sm">{t('marketing.accessibility.legalComplianceTitle')}</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{t('marketing.accessibility.legalComplianceDesc')}</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="p-3 bg-orange-50 rounded-2xl w-fit"><Globe className="h-6 w-6 text-orange-600" /></div>
-                                <h4 className="font-bold text-sm">Evrensel Tasarım</h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Erişilebilirlik bir 'eklenti' değil, hangel'in her hücresine entegre edilmiş bir tasarım felsefesidir.</p>
+                                <h4 className="font-bold text-sm">{t('marketing.accessibility.universalDesignTitle')}</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{t('marketing.accessibility.universalDesignDesc')}</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="p-3 bg-teal-50 rounded-2xl w-fit"><Target className="h-6 w-6 text-teal-600" /></div>
-                                <h4 className="font-bold text-sm">Sürekli İyileştirme</h4>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Deneyiminizi geliştirmek için WCAG güncellemelerini ve geri bildirimlerinizi anlık olarak takip ediyoruz.</p>
+                                <h4 className="font-bold text-sm">{t('marketing.accessibility.continuousImprovementTitle')}</h4>
+                                <p className="text-xs text-muted-foreground leading-relaxed">{t('marketing.accessibility.continuousImprovementDesc')}</p>
                             </div>
                         </div>
-                        
+
                         <div className="p-6 bg-primary/5 rounded-[2rem] text-center border border-primary/10">
-                            <p className="text-sm font-bold text-primary">Daha kapsayıcı bir dünya için birlikte çalışıyoruz.</p>
+                            <p className="text-sm font-bold text-primary">{t('marketing.accessibility.together')}</p>
                         </div>
                     </div>
                 </section>
@@ -539,23 +539,23 @@ export default function AccessibilityPublicPage() {
                 <section className="py-16 md:py-24 px-6 text-center bg-[#f5f5f7]">
                     <div className="container mx-auto max-w-3xl space-y-8 md:space-y-10">
                         <ShieldCheck className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-4 md:mb-6" />
-                        <h2 className="text-3xl md:text-4xl font-black tracking-tighter">Sürekli İyileştirme Taahhüdü.</h2>
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tighter">{t('marketing.accessibility.finalCommitTitle')}</h2>
                         <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
-                            hangel olarak erişilebilirliği bitmiş bir süreç değil, sürekli bir gelişim yolculuğu olarak görüyoruz. Teknik ve içerik ekiplerimiz, en yüksek erişilebilirlik farkındalığıyla platformu her gün daha kapsayıcı hale getirmek için çalışmaktadır.
+                            {t('marketing.accessibility.finalCommitDesc')}
                         </p>
                         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                             <Button asChild size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold shadow-xl shadow-primary/20 text-base md:text-lg w-full sm:w-auto">
-                                <Link href="/feedback">Geri Bildirim Ver</Link>
+                                <Link href="/feedback">{t('marketing.accessibility.feedbackCta')}</Link>
                             </Button>
                             <Button asChild variant="ghost" size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold border border-black/10 hover:bg-white text-base md:text-lg w-full sm:w-auto">
-                                <Link href="/support">Destek Al</Link>
+                                <Link href="/support">{t('marketing.accessibility.supportCta')}</Link>
                             </Button>
                         </div>
                     </div>
                 </section>
             </main>
 
-            <PublicFooter currentPageLabel="Erişilebilirlik" />
+            <PublicFooter currentPageLabel={t('marketing.accessibility.footerLabel')} />
         </div>
     );
 }

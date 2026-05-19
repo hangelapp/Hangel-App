@@ -436,7 +436,7 @@ export default function ProfilePage() {
     return (
         <div className="animate-in fade-in-0 bg-secondary min-h-screen">
             <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('aria.back')}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Çıkış yap">
@@ -508,7 +508,7 @@ export default function ProfilePage() {
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Filtrele">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('aria.filter')}>
                                                 <Filter className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -530,7 +530,7 @@ export default function ProfilePage() {
                                     </DropdownMenu>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Sırala">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t('aria.sort')}>
                                                 <ArrowDownUp className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>

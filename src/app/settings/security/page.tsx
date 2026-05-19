@@ -24,14 +24,14 @@ export default function SecuritySettingsPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         toast({
-            title: "Ayarlar Kaydedildi",
-            description: "Güvenlik ayarlarınız başarıyla güncellendi.",
+            title: t('dashboard.settingsSecurity.toastSavedTitle'),
+            description: t('dashboard.settingsSecurity.toastSavedDesc'),
         });
     };
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
@@ -53,7 +53,7 @@ export default function SecuritySettingsPage() {
                            </div>
                             <Switch id="2fa-switch" checked={twoFactorEnabled} onCheckedChange={(checked) => {
                                 setTwoFactorEnabled(checked);
-                                toast({ title: 'İki Adımlı Doğrulama', description: checked ? 'Aktif edildi.' : 'Devre dışı bırakıldı.'});
+                                toast({ title: t('dashboard.settingsSecurity.toast2faTitle'), description: checked ? t('dashboard.settingsSecurity.toast2faOn') : t('dashboard.settingsSecurity.toast2faOff')});
                             }} />
                         </div>
                     </CardContent>
@@ -79,7 +79,7 @@ export default function SecuritySettingsPage() {
                                 </div>
                             )
                         })}
-                         <Button type="button" variant="outline" className="w-full" onClick={() => toast({ title: 'Oturumlar Kapatıldı', description: 'Mevcut oturum dışındaki tüm oturumlarınız sonlandırıldı.'})}>{t('dashboard.settingsSecurity.closeOtherSessions')}</Button>
+                         <Button type="button" variant="outline" className="w-full" onClick={() => toast({ title: t('dashboard.settingsSecurity.toastSessionsClosedTitle'), description: t('dashboard.settingsSecurity.toastSessionsClosedDesc')})}>{t('dashboard.settingsSecurity.closeOtherSessions')}</Button>
                     </CardContent>
                 </Card>
                 

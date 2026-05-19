@@ -107,9 +107,9 @@ export default function MessagesPage() {
     };
 
     const handleSend = async () => {
-        if (!authUser) { toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Mesaj göndermek için giriş yapın.' }); return; }
-        if (!selectedRecipient) { toast({ variant: 'destructive', title: 'Alıcı seçin', description: 'Mesaj göndermek için bir alıcı seçin.' }); return; }
-        if (!content.trim()) { toast({ variant: 'destructive', title: 'Boş mesaj', description: 'Mesaj içeriği boş olamaz.' }); return; }
+        if (!authUser) { toast({ variant: 'destructive', title: t('dashboard.messages.toastLoginRequiredTitle'), description: t('dashboard.messages.toastLoginRequiredDesc') }); return; }
+        if (!selectedRecipient) { toast({ variant: 'destructive', title: t('dashboard.messages.toastRecipientRequiredTitle'), description: t('dashboard.messages.toastRecipientRequiredDesc') }); return; }
+        if (!content.trim()) { toast({ variant: 'destructive', title: t('dashboard.messages.toastEmptyTitle'), description: t('dashboard.messages.toastEmptyDesc') }); return; }
         setSending(true);
         try {
             const recipientName = selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || 'Kullanıcı';
@@ -121,11 +121,11 @@ export default function MessagesPage() {
                 subject: subject.trim() || '(Konu yok)', content: content.trim(),
                 timestamp: serverTimestamp(), status: 'sent',
             });
-            toast({ title: 'Mesaj gönderildi', description: `${recipientName} kişisine mesajınız iletildi.` });
+            toast({ title: t('dashboard.messages.toastSentTitle'), description: `${recipientName}${t('dashboard.messages.toastSentDescSuffix')}` });
             setComposeOpen(false); resetCompose();
         } catch (err) {
             console.error('send message failed', err);
-            toast({ variant: 'destructive', title: 'Gönderilemedi', description: 'Bir hata oluştu, lütfen tekrar deneyin.' });
+            toast({ variant: 'destructive', title: t('dashboard.messages.toastFailTitle'), description: t('dashboard.messages.toastFailDesc') });
         } finally { setSending(false); }
     };
 
@@ -138,7 +138,7 @@ export default function MessagesPage() {
         <div className="p-4 sm:p-6 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <h1 className="text-2xl font-bold font-headline">{t('dashboard.messages.heading')}</h1>

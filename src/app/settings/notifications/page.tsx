@@ -89,7 +89,7 @@ export default function NotificationSettingsPage() {
         }
         setTimeout(() => {
             setSaving(false);
-            toast({ title: 'Ayarlar Kaydedildi', description: 'Bildirim tercihleriniz başarıyla güncellendi.' });
+            toast({ title: t('dashboard.settingsNotifications.toastSavedTitle'), description: t('dashboard.settingsNotifications.toastSavedDesc') });
         }, 500);
     };
 
@@ -99,7 +99,7 @@ export default function NotificationSettingsPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>

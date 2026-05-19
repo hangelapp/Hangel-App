@@ -108,17 +108,17 @@ export default function NotificationsPage() {
       });
 
       toast({
-        title: status === 'positive' ? '🙏 Teşekkürler!' : 'Yanıtınız Alındı',
+        title: status === 'positive' ? t('dashboard.notifications.toastThanksTitle') : t('dashboard.notifications.toastReceivedTitle'),
         description: status === 'positive'
-          ? 'Hastane sizinle iletişime geçecektir.'
-          : 'Yanıtınız kaydedildi.',
+          ? t('dashboard.notifications.toastThanksDesc')
+          : t('dashboard.notifications.toastReceivedDesc'),
       });
     } catch (e: unknown) {
       console.error('Response failed:', e);
-      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
+      const message = e instanceof Error ? e.message : t('dashboard.notifications.toastUnknownError');
       toast({
         variant: 'destructive',
-        title: 'Yanıt gönderilemedi',
+        title: t('dashboard.notifications.toastFailTitle'),
         description: message,
       });
     }
@@ -129,7 +129,7 @@ export default function NotificationsPage() {
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0 max-w-2xl mx-auto">
       <div className="flex items-center gap-2">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <h1 className="text-2xl font-bold font-headline flex items-center gap-2">

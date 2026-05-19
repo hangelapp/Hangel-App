@@ -58,11 +58,11 @@ export default function MarketingConsentPage() {
         updatedAt: serverTimestamp(),
       };
       await setDoc(ref, payload, { merge: true });
-      toast({ title: 'Tercihler kaydedildi' });
+      toast({ title: t('dashboard.settingsMarketing.toastSavedTitle') });
       setExistingDoc(true);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      toast({ variant: 'destructive', title: 'Hata', description: message });
+      toast({ variant: 'destructive', title: t('dashboard.settingsMarketing.toastErrorTitle'), description: message });
     } finally {
       setSaving(false);
     }

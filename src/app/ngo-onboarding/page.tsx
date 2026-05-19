@@ -95,7 +95,9 @@ const FeatureShowcaseCard = ({
   title: string;
   description: string;
   icon: LucideIcon;
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <div className="group relative bg-white rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-between min-h-[450px]">
     <div className="relative z-10">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-white border shadow-sm">
@@ -108,11 +110,12 @@ const FeatureShowcaseCard = ({
     </div>
     <div className="relative z-10 pt-8">
       <span className="text-primary font-bold flex items-center text-base opacity-70 group-hover:opacity-100 transition-opacity">
-        Daha Fazla Bilgi <ChevronRight className="h-4 w-4 ml-1" />
+        {t('marketing.ngoOnboarding.moreInfoInline')} <ChevronRight className="h-4 w-4 ml-1" />
       </span>
     </div>
   </div>
-);
+  );
+};
 
 
 // New component for smaller feature items
@@ -183,25 +186,25 @@ export default function NgoOnboardingPage() {
     ];
 
     const mainFeatures = [
-        { 
+        {
             icon: ShieldCheck,
-            title: "Şeffaflık Endeksi",
-            description: "Kurumsal güveninizi dijital ortamda tescilleyin. Şeffaflık puanınızla bağışçıların ve gönüllülerin öncelikli tercihi olun.",
+            title: t('marketing.ngoOnboarding.mainFeatTransparencyTitle'),
+            description: t('marketing.ngoOnboarding.mainFeatTransparencyDesc'),
         },
-        { 
+        {
             icon: HeartHandshake,
-            title: "Gönüllülük Yönetimi",
-            description: "Yetenek bazlı ilanlar oluşturun, binlerce hevesli gönüllüye ulaşın ve tüm başvuru süreçlerini profesyonelce koordine edin.",
+            title: t('marketing.ngoOnboarding.mainFeatVolunteerTitle'),
+            description: t('marketing.ngoOnboarding.mainFeatVolunteerDesc'),
         },
-        { 
+        {
             icon: HandCoins,
-            title: "hangel Bağışı",
-            description: "Sürdürülebilir kaynak yaratın. Destekçilerinizin anlaşmalı markalardan yaptığı alışverişleri kurumunuz için ek fona dönüştürün.",
+            title: t('marketing.ngoOnboarding.mainFeatDonationTitle'),
+            description: t('marketing.ngoOnboarding.mainFeatDonationDesc'),
         },
-        { 
+        {
             icon: BarChart3,
-            title: "Demografi Analizi",
-            description: "Topluluğunuzu verilerle tanıyın. Destekçilerinizin yaş, şehir ve ilgi alanı dağılımlarını analiz ederek stratejinizi güçlendirin.",
+            title: t('marketing.ngoOnboarding.mainFeatDemoTitle'),
+            description: t('marketing.ngoOnboarding.mainFeatDemoDesc'),
         }
     ];
 
@@ -301,9 +304,9 @@ export default function NgoOnboardingPage() {
             {/* Toolset Section */}
             <section className="container mx-auto px-4 space-y-16">
                 <div className="text-center space-y-4 max-w-3xl mx-auto">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Eksiksiz Bir Yönetim Paneli.</h2>
-                    <p className="text-lg text-muted-foreground font-medium">İhtiyacınız olan her araç, profesyonel standartlarda elinizin altında.</p>
-                     <p className="text-base text-muted-foreground max-w-2xl mx-auto">SMS ve e-posta gibi iletişim araçlarından CRM ve muhasebe gibi profesyonel çözümlere kadar tüm operasyonel ihtiyaçlarınızı hangel'in entegre ekosistemi üzerinden yönetin.</p>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('marketing.ngoOnboarding.toolsetTitle')}</h2>
+                    <p className="text-lg text-muted-foreground font-medium">{t('marketing.ngoOnboarding.toolsetSubtitle')}</p>
+                     <p className="text-base text-muted-foreground max-w-2xl mx-auto">{t('marketing.ngoOnboarding.toolsetDescription')}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {toolsetFeatures.map(tool => <ToolGridItem key={tool.title} {...tool} />)}
@@ -314,13 +317,13 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-24">
                 <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[3rem] p-12 text-center space-y-8">
                     <Sparkles className="h-12 w-12 text-primary mx-auto" />
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">İş Ortağımız Olun.</h2>
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">{t('marketing.ngoOnboarding.partnerTitle')}</h2>
                     <p className="text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto relative z-10">
-                        Sosyal sorunlar bireysel değil, çözümleri de öyle olmamalı. Sosyal sorunlarla mücadelede çözümün bir parçası olun, ürün ve hizmetlerinizi sivil toplum kuruluşlarıyla buluşturun.
+                        {t('marketing.ngoOnboarding.partnerDesc')}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
                         <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
-                            <Link href="/contact/companies">İletişime Geçin</Link>
+                            <Link href="/contact/companies">{t('marketing.ngoOnboarding.partnerCta')}</Link>
                         </Button>
                     </div>
                 </div>
@@ -331,16 +334,16 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-24 pb-12">
                 <div className="bg-black rounded-[3rem] p-12 text-center text-white space-y-8 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10">Dijital Dönüşümü <br/>Bugün Başlatın.</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10" dangerouslySetInnerHTML={{ __html: t('marketing.ngoOnboarding.finalTitle') }} />
                     <p className="text-lg md:text-xl text-white/70 max-w-xl mx-auto relative z-10">
-                        Kuruluşunuzun etkisini teknolojiyle katlayın. Başvurunuzu yapın, ekibimiz sizinle iletişime geçsin.
+                        {t('marketing.ngoOnboarding.finalDesc')}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
                         <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold bg-white text-black hover:bg-white/90">
-                            <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
+                            <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.finalApply')}</Link>
                         </Button>
                         <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold text-white hover:bg-white/10 hover:text-white">
-                            <Link href="/support">Destek Al</Link>
+                            <Link href="/support">{t('marketing.ngoOnboarding.finalSupport')}</Link>
                         </Button>
                     </div>
                 </div>

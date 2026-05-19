@@ -142,27 +142,27 @@ export default function SupportPage() {
             </div>
             <Accordion type="single" collapsible className="w-full bg-white p-4 rounded-3xl shadow-lg border border-black/5">
                 <AccordionItem value="item-1">
-                    <AccordionTrigger>Sosyal etki puanı nedir?</AccordionTrigger>
+                    <AccordionTrigger>{t('marketing.support.faqQ1')}</AccordionTrigger>
                     <AccordionContent>
-                        Sosyal etki puanı, platformdaki olumlu katkılarınızı ölçen bir sistemdir. Gönüllülük faaliyetleri, bağışlar ve platforma yeni üyeler kazandırma gibi eylemlerle puan kazanırsınız. Bu puanlar, hem topluluk içindeki statünüzü gösterir hem de size özel avantajlar sunar.
+                        {t('marketing.support.faqA1')}
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                    <AccordionTrigger>hangel'i kullanmak ücretli mi?</AccordionTrigger>
+                    <AccordionTrigger>{t('marketing.support.faqQ2')}</AccordionTrigger>
                     <AccordionContent>
-                        hangel'i kullanmak tamamen ücretsizdir. Alışverişlerinizden doğan bağışlar, markalar tarafından karşılanır ve size ek bir maliyet yansıtılmaz.
+                        {t('marketing.support.faqA2')}
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
-                    <AccordionTrigger>Gönüllülük faaliyetlerinden puan kazanıyor muyum?</AccordionTrigger>
+                    <AccordionTrigger>{t('marketing.support.faqQ3')}</AccordionTrigger>
                     <AccordionContent>
-                        Evet, tamamladığınız her gönüllülük faaliyeti için sosyal etki puanı kazanırsınız. Bu puanlar liderlik tablosundaki sıralamanızı ve rozetlerinizi etkiler.
+                        {t('marketing.support.faqA3')}
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-4">
-                    <AccordionTrigger>Yaptığım bağışların doğru STK'ya ulaştığından nasıl emin olabilirim?</AccordionTrigger>
+                    <AccordionTrigger>{t('marketing.support.faqQ4')}</AccordionTrigger>
                     <AccordionContent>
-                        Tüm bağış süreçleri şeffaftır. Profilinizdeki "Bağışlarım" bölümünden her işlemin detayını, hangi STK'ya ne kadar bağış yapıldığını ve işlem durumunu anlık olarak takip edebilirsiniz.
+                        {t('marketing.support.faqA4')}
                     </AccordionContent>
                 </AccordionItem>
             </Accordion>
@@ -182,28 +182,28 @@ export default function SupportPage() {
 
         {/* Categories Section */}
         <section className="grid grid-cols-3 sm:grid-cols-6 gap-x-4 gap-y-8 max-w-4xl mx-auto">
-            <CategoryLink href="/support/bireysel-kullanicilar" icon={User} label="Bireysel" />
-            <CategoryLink href="/support/stk-yoneticileri" icon={Building} label="STK'lar" />
-            <CategoryLink href="/support/marka-yoneticileri" icon={Store} label="Markalar" />
-            <CategoryLink href="/support/kulup-yoneticileri" icon={School} label="Kulüpler" />
-            <CategoryLink href="/support" icon={HelpCircle} label="Genel" />
-            <CategoryLink href="/support" icon={Settings} label="Teknik" />
+            <CategoryLink href="/support/bireysel-kullanicilar" icon={User} label={t('marketing.support.catBireysel')} />
+            <CategoryLink href="/support/stk-yoneticileri" icon={Building} label={t('marketing.support.catStk')} />
+            <CategoryLink href="/support/marka-yoneticileri" icon={Store} label={t('marketing.support.catMarkalar')} />
+            <CategoryLink href="/support/kulup-yoneticileri" icon={School} label={t('marketing.support.catKulupler')} />
+            <CategoryLink href="/support" icon={HelpCircle} label={t('marketing.support.catGenel')} />
+            <CategoryLink href="/support" icon={Settings} label={t('marketing.support.catTeknik')} />
         </section>
 
         {/* Quick Actions */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            <QuickActionCard title="Etki Puanım neden artmıyor?" href="/support/bireysel-kullanicilar" />
-            <QuickActionCard title="Şeffaflık belgelerim neden reddedildi?" href="/support/stk-yoneticileri" />
-            <QuickActionCard title="Bağış oranlarımı nasıl ayarlarım?" href="/support/marka-yoneticileri" />
+            <QuickActionCard title={t('marketing.support.quickAction1')} href="/support/bireysel-kullanicilar" />
+            <QuickActionCard title={t('marketing.support.quickAction2')} href="/support/stk-yoneticileri" />
+            <QuickActionCard title={t('marketing.support.quickAction3')} href="/support/marka-yoneticileri" />
         </section>
 
         {/* Search Section */}
         <section className="max-w-xl mx-auto text-center space-y-4">
-            <h3 className="text-2xl font-bold">Daha Fazla Konu Ara</h3>
+            <h3 className="text-2xl font-bold">{t('marketing.support.searchTitle')}</h3>
             <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                    placeholder="Arama yapın..."
+                <Input
+                    placeholder={t('marketing.support.searchPlaceholder')}
                     className="pl-12 h-14 rounded-full text-lg border-2"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -221,12 +221,12 @@ export default function SupportPage() {
                 <div className="inline-block p-3 bg-primary/10 rounded-2xl">
                     <Bot className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold">Yapay Zeka Destekli Asistan</h3>
+                <h3 className="text-3xl font-bold">{t('marketing.support.aiTitle')}</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                    Sorularınıza anında yanıt alın. Yapay zeka asistanımız, kütüphanemizdeki binlerce makale ve yardım belgesini tarayarak size en doğru bilgiyi saniyeler içinde sunar.
+                    {t('marketing.support.aiDesc')}
                 </p>
                  <Button asChild variant="link" className="text-lg px-0">
-                    <Link href="/library">Asistanı Dene <ChevronRight className="ml-1" /></Link>
+                    <Link href="/library">{t('marketing.support.aiCta')} <ChevronRight className="ml-1" /></Link>
                  </Button>
             </div>
         </section>
@@ -239,19 +239,19 @@ export default function SupportPage() {
                  <div className="inline-block p-3 bg-primary/10 rounded-2xl">
                     <FileText className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-3xl font-bold">Şeffaflık & Raporlama</h3>
+                <h3 className="text-3xl font-bold">{t('marketing.support.transparencyTitle')}</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                    Bağışlarınızın yolculuğunu ve STK'ların finansal raporlarını şeffaflık ilkemiz gereği kolayca inceleyebilirsiniz. Güven üzerine kurulu bir ekosistem için çalışıyoruz.
+                    {t('marketing.support.transparencyDesc')}
                 </p>
                  <Button asChild variant="link" className="text-lg px-0">
-                    <Link href="/ngo-admin/transparency">Raporları İncele <ChevronRight className="ml-1" /></Link>
+                    <Link href="/ngo-admin/transparency">{t('marketing.support.transparencyCta')} <ChevronRight className="ml-1" /></Link>
                  </Button>
             </div>
         </section>
 
         {/* More to Explore */}
         <section className="max-w-6xl mx-auto space-y-12 pt-12">
-            <h3 className="text-3xl font-bold text-center">Keşfedilecek Daha Fazla Şey Var</h3>
+            <h3 className="text-3xl font-bold text-center">{t('marketing.support.exploreTitle')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="rounded-[2rem] overflow-hidden group">
                     <CardContent className="p-0">
@@ -259,10 +259,10 @@ export default function SupportPage() {
                             <Image src="https://images.unsplash.com/photo-1586717791821-3f4ea5654ff3?q=80&w=2070&auto=format&fit=crop" alt="Library" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                         <div className="p-6 space-y-2">
-                            <h4 className="font-bold text-xl">hangel Kütüphanesi</h4>
-                            <p className="text-sm text-muted-foreground">Sosyal etki, gönüllülük ve sivil toplum hakkında yüzlerce makale, rapor ve rehbere ulaşın.</p>
+                            <h4 className="font-bold text-xl">{t('marketing.support.libraryCardTitle')}</h4>
+                            <p className="text-sm text-muted-foreground">{t('marketing.support.libraryCardDesc')}</p>
                             <Button asChild variant="link" className="px-0">
-                                <Link href="/library">Kütüphaneye git</Link>
+                                <Link href="/library">{t('marketing.support.libraryCardCta')}</Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -273,10 +273,10 @@ export default function SupportPage() {
                             <Image src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop" alt="Video Guides" fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                         <div className="p-6 space-y-2">
-                            <h4 className="font-bold text-xl">Video Rehberler</h4>
-                            <p className="text-sm text-muted-foreground">Platformu nasıl daha etkili kullanabileceğinizi anlatan kısa ve eğitici videolarımızı izleyin.</p>
+                            <h4 className="font-bold text-xl">{t('marketing.support.videoCardTitle')}</h4>
+                            <p className="text-sm text-muted-foreground">{t('marketing.support.videoCardDesc')}</p>
                              <Button asChild variant="link" className="px-0">
-                                <Link href="#">Yakında...</Link>
+                                <Link href="#">{t('marketing.support.comingSoon')}</Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -287,10 +287,10 @@ export default function SupportPage() {
                             <Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Community" fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint="university students" />
                         </div>
                         <div className="p-6 space-y-2">
-                            <h4 className="font-bold text-xl">Topluluk Forumu</h4>
-                            <p className="text-sm text-muted-foreground">Diğer kullanıcılar, STK yöneticileri ve marka temsilcileriyle fikir alışverişinde bulunun.</p>
+                            <h4 className="font-bold text-xl">{t('marketing.support.communityCardTitle')}</h4>
+                            <p className="text-sm text-muted-foreground">{t('marketing.support.communityCardDesc')}</p>
                             <Button asChild variant="link" className="px-0">
-                                <Link href="#">Yakında...</Link>
+                                <Link href="#">{t('marketing.support.comingSoon')}</Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -313,7 +313,7 @@ export default function SupportPage() {
                     <form onSubmit={handleCreateTicket} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="ticket-name">Adınız (opsiyonel)</Label>
+                                <Label htmlFor="ticket-name">{t('marketing.support.ticketNameLabel')}</Label>
                                 <Input
                                     id="ticket-name"
                                     placeholder={authUser?.displayName || 'Adınız'}
@@ -322,7 +322,7 @@ export default function SupportPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="ticket-email">E-posta (opsiyonel)</Label>
+                                <Label htmlFor="ticket-email">{t('marketing.support.ticketEmailLabel')}</Label>
                                 <Input
                                     id="ticket-email"
                                     type="email"
@@ -333,33 +333,33 @@ export default function SupportPage() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ticket-subject">Konu *</Label>
+                            <Label htmlFor="ticket-subject">{t('marketing.support.ticketSubjectLabel')}</Label>
                             <Input
                                 id="ticket-subject"
                                 required
-                                placeholder="Örn: Bağışım STK profilinde görünmüyor"
+                                placeholder={t('marketing.support.ticketSubjectPlaceholder')}
                                 value={ticketSubject}
                                 onChange={(e) => setTicketSubject(e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ticket-priority">Öncelik</Label>
+                            <Label htmlFor="ticket-priority">{t('marketing.support.ticketPriorityLabel')}</Label>
                             <Select value={ticketPriority} onValueChange={(v: string) => setTicketPriority(v as 'low' | 'normal' | 'high')}>
                                 <SelectTrigger id="ticket-priority"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="low">Düşük</SelectItem>
-                                    <SelectItem value="normal">Normal</SelectItem>
-                                    <SelectItem value="high">Yüksek (acil)</SelectItem>
+                                    <SelectItem value="low">{t('marketing.support.priorityLow')}</SelectItem>
+                                    <SelectItem value="normal">{t('marketing.support.priorityNormal')}</SelectItem>
+                                    <SelectItem value="high">{t('marketing.support.priorityHigh')}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ticket-message">Mesajınız *</Label>
+                            <Label htmlFor="ticket-message">{t('marketing.support.ticketMessageLabel')}</Label>
                             <Textarea
                                 id="ticket-message"
                                 required
                                 rows={6}
-                                placeholder="Sorununuzu detaylı olarak açıklayın..."
+                                placeholder={t('marketing.support.ticketMessagePlaceholder')}
                                 value={ticketMessage}
                                 onChange={(e) => setTicketMessage(e.target.value)}
                                 className="resize-none"
@@ -367,8 +367,8 @@ export default function SupportPage() {
                         </div>
                         {!authUser && (
                             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                                Talep oluşturmak için giriş yapmanız gerekir.
-                                <Link href="/login/selection?action=login" className="ml-1 underline font-bold">Giriş yap</Link>
+                                {t('marketing.support.ticketLoginPrompt')}
+                                <Link href="/login/selection?action=login" className="ml-1 underline font-bold">{t('marketing.support.ticketLoginCta')}</Link>
                             </p>
                         )}
                         <Button
@@ -381,7 +381,7 @@ export default function SupportPage() {
                             ) : (
                                 <Send className="mr-2 h-5 w-5" />
                             )}
-                            Destek Talebi Gönder
+                            {t('marketing.support.ticketSubmit')}
                         </Button>
                     </form>
                 </CardContent>
@@ -389,9 +389,9 @@ export default function SupportPage() {
         </section>
 
         <section className="max-w-4xl mx-auto pt-16 text-center">
-            <h4 className="text-xl font-bold">Toplumsal Fayda için Tasarım</h4>
+            <h4 className="text-xl font-bold">{t('marketing.support.designTitle')}</h4>
             <p className="mt-4 text-muted-foreground leading-relaxed">
-                Hangel olarak, paydaşlarımız için her zaman en iyi deneyimi yaratmak için çalışıyoruz. Bu nedenle tüm ürünlerimiz, en yüksek şeffaflık, güvenlik ve sosyal etki standartları göz önünde bulundurularak tasarlanmıştır. Bu güven, emniyet ve gizlilikten ödün vermeden bilinçli ve sürdürülebilir bir gelecek inşa etme taahhüdümüzdür.
+                {t('marketing.support.designDesc')}
             </p>
         </section>
 

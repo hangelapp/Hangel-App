@@ -74,9 +74,9 @@ const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: Do
                     )}
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Kapat</Button>
-                    <Button onClick={() => toast({ title: 'Dekont indiriliyor...' })}>
-                        <Download className="mr-2 h-4 w-4" /> PDF İndir
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>{t('dashboard.donations.receiptClose')}</Button>
+                    <Button onClick={() => toast({ title: t('dashboard.donations.toastReceiptDownloading') })}>
+                        <Download className="mr-2 h-4 w-4" /> {t('dashboard.donations.receiptDownload')}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -165,7 +165,7 @@ export default function MyDonationsPage() {
               <div className='flex'>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Filtrele"><Filter className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label={t('aria.filter')}><Filter className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setFilterType('all')}>{t('dashboard.donations.filterAll')}</DropdownMenuItem>
@@ -175,7 +175,7 @@ export default function MyDonationsPage() {
                 </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Sırala"><ArrowDownUp className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" aria-label={t('aria.sort')}><ArrowDownUp className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>{t('dashboard.applications.sortNewest')}</DropdownMenuItem>
@@ -283,8 +283,8 @@ export default function MyDonationsPage() {
                           </div>
                           <div className="flex">
                             <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }} aria-label="Dekontu görüntüle"><Eye className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Dekont indiriliyor...' })} aria-label="Dekontu indir"><Download className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: 'Paylaşım seçenekleri açılıyor...' })} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastReceiptDownloading') })} aria-label="Dekontu indir"><Download className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastShareOpening') })} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
                           </div>
                         </div>
                       </div>

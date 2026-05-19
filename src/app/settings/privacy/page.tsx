@@ -85,7 +85,7 @@ export default function PrivacySettingsPage() {
         }
         setTimeout(() => {
             setSaving(false);
-            toast({ title: 'Ayarlar Kaydedildi', description: 'Gizlilik tercihleriniz başarıyla güncellendi.' });
+            toast({ title: t('dashboard.settingsPrivacy.toastSavedTitle'), description: t('dashboard.settingsPrivacy.toastSavedDesc') });
         }, 500);
     };
 
@@ -95,7 +95,7 @@ export default function PrivacySettingsPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>

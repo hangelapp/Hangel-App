@@ -87,20 +87,20 @@ export default function CareersPage() {
             />
 
             {/* Values */}
-            <CareerSection 
+            <CareerSection
                 theme="dark"
-                title="Değerlerimizle Güçlüyüz."
-                subtitle="Yaratıcılık, Şeffaflık ve Cesaret."
-                description="Sınırları zorlamayı seviyoruz. Hiyerarşiden uzak, fikirlerin özgürce paylaşıldığı ve sosyal etkinin her şeyin önünde olduğu bir ekosistemde çalışıyoruz."
+                title={t('marketing.careers.valuesTitle')}
+                subtitle={t('marketing.careers.valuesSubtitle')}
+                description={t('marketing.careers.valuesDescription')}
                 imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
                 imageHint="collaborative meeting brainstorming"
             />
 
             {/* Global Impact */}
-            <CareerSection 
-                title="Global Bir Vizyon."
-                subtitle="Türkiye'den dünyaya uzanan iyilik köprüsü."
-                description="Yerel sorunlara global standartlarda çözümler üretiyoruz. Teknoloji ekibimizden saha koordinatörlerimize kadar hepimiz aynı tutkuyla çalışıyoruz."
+            <CareerSection
+                title={t('marketing.careers.globalTitle')}
+                subtitle={t('marketing.careers.globalSubtitle')}
+                description={t('marketing.careers.globalDescription')}
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="students group study discussion"
             />

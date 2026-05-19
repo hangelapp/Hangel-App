@@ -219,8 +219,8 @@ export default function VolunteerSettingsPage() {
     if (missingConsent) {
       toast({
         variant: 'destructive',
-        title: 'Onaylar Eksik',
-        description: 'Tüm zorunlu Gönüllülük Beyanı maddelerini onaylamanız gerekir.',
+        title: t('dashboard.settingsVolunteer.toastConsentsMissingTitle'),
+        description: t('dashboard.settingsVolunteer.toastConsentsMissingDesc'),
       });
       return;
     }
@@ -273,11 +273,11 @@ export default function VolunteerSettingsPage() {
     updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch });
 
     if (isOnboarding) {
-      toast({ title: "Gönüllülük Bilgilerin Kaydedildi", description: "Şimdi bağış yapacağın STK'ları seçelim." });
+      toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });
       localStorage.setItem('onboardingStep', 'ngo-selection');
       router.push('/settings/ngo-selection');
     } else {
-      toast({ title: "Bilgiler Güncellendi", description: "Değişiklikler kaydedildi." });
+      toast({ title: t('dashboard.settingsVolunteer.toastUpdatedTitle'), description: t('dashboard.settingsVolunteer.toastUpdatedDesc') });
       router.push('/settings');
     }
   };
@@ -288,7 +288,7 @@ export default function VolunteerSettingsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">

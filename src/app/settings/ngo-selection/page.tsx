@@ -197,11 +197,11 @@ export default function NgoSelectionPage() {
     const handleNgoSelect = (ngoId: string) => {
         const isSelected = selectedNgos.includes(ngoId);
         if (!canChangeSelection && !isOnboarding) {
-            toast({ variant: 'destructive', title: 'Değiştirme Süresi Kilitli', description: `Seçiminizi değiştirebilmek için ${remainingDays} gün daha beklemelisiniz.` });
+            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLockedTitle'), description: `${t('dashboard.settingsNgoSelection.toastLockedDescPrefix')}${remainingDays}${t('dashboard.settingsNgoSelection.toastLockedDescSuffix')}` });
             return;
         }
         if (!isSelected && selectedNgos.length >= 2) {
-            toast({ variant: 'destructive', title: 'Limit Doldu', description: 'En fazla 2 STK seçebilirsiniz.' });
+            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: t('dashboard.settingsNgoSelection.toastLimitDesc') });
             return;
         }
         setSelectedNgos(prev => isSelected ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
@@ -215,7 +215,7 @@ export default function NgoSelectionPage() {
         const payload: Record<string, unknown> = { supportedNgos: selectedNgos };
         if (changed) payload.lastNgoSelectionChange = serverTimestamp();
         updateDocumentNonBlocking(userDocRef, payload);
-        toast({ title: 'Tercihler Kaydedildi', description: 'Varsayılan STK seçimleriniz güncellendi.' });
+        toast({ title: t('dashboard.settingsNgoSelection.toastSavedTitle'), description: t('dashboard.settingsNgoSelection.toastSavedDesc') });
         if (isOnboarding) {
             localStorage.setItem('onboardingStep', 'volunteer-ngo-selection');
             router.push('/settings/volunteer-ngo-selection');
@@ -230,7 +230,7 @@ export default function NgoSelectionPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
@@ -259,7 +259,7 @@ export default function NgoSelectionPage() {
                 </div>
                 <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11 relative rounded-2xl" aria-label="Filtrele">
+                        <Button variant="outline" size="icon" className="h-11 w-11 relative rounded-2xl" aria-label={t('aria.filter')}>
                             <Filter className="h-5 w-5" />
                             {activeFilterCount > 0 && (
                                 <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
@@ -397,7 +397,7 @@ export default function NgoSelectionPage() {
                 </Sheet>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
+                        <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>

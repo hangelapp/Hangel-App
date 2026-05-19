@@ -17,22 +17,22 @@ import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
 import { useTranslation } from '@/components/providers/language-provider';
 
-const ProductSection = ({ 
-    title, 
-    subtitle, 
-    description, 
-    cta1 = "Daha Fazla Bilgi", 
-    cta2 = "Hemen Başvur", 
+const ProductSection = ({
+    title,
+    subtitle,
+    description,
+    cta1,
+    cta2,
     theme = 'light',
     imageUrl,
     imageHint,
     className
-}: { 
-    title: string, 
-    subtitle?: string, 
-    description?: string, 
-    cta1?: string, 
-    cta2?: string, 
+}: {
+    title: string,
+    subtitle?: string,
+    description?: string,
+    cta1?: string,
+    cta2?: string,
     theme?: 'light' | 'dark',
     imageUrl: string,
     imageHint: string,
@@ -99,35 +99,43 @@ export default function MerchantAdvantagesPage() {
                 title={cms.title || t('marketing.merchant.heroTitle')}
                 subtitle={cms.subtitle || t('marketing.merchant.heroSubtitle')}
                 description={cms.description || t('marketing.merchant.heroDescription')}
+                cta1={t('marketing.merchant.sectionCta1Default')}
+                cta2={t('marketing.merchant.sectionCta2Default')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="modern minimalist retail store interior"
             />
 
             {/* QR Payment Section */}
-            <ProductSection 
+            <ProductSection
                 theme="dark"
-                title="QR ile Temassız Ödeme."
-                subtitle="Saniyeler içinde, güvenle."
-                description="Kasa hızınızı artırın. Müşterileriniz sadece QR kod okutarak ödemesini tamamlasın, bağışını seçsin."
+                title={t('marketing.merchant.qrTitle')}
+                subtitle={t('marketing.merchant.qrSubtitle')}
+                description={t('marketing.merchant.qrDescription')}
+                cta1={t('marketing.merchant.sectionCta1Default')}
+                cta2={t('marketing.merchant.sectionCta2Default')}
                 imageUrl="https://images.unsplash.com/photo-1556742049-02e1f6c40b12?q=80&w=2070&auto=format&fit=crop"
                 imageHint="smartphone scanning qr code checkout"
             />
 
             {/* Loyalty Section */}
-            <ProductSection 
-                title="Marka Sadakatini Artırın."
-                subtitle="Her alışveriş bir iyilik hikayesi."
-                description="Bilinçli tüketiciler için tercih sebebi olun. Yapılan her alışverişin bir STK'ya bağışlanması, müşteri bağlılığını %40'a kadar artırır."
+            <ProductSection
+                title={t('marketing.merchant.loyaltyTitle')}
+                subtitle={t('marketing.merchant.loyaltySubtitle')}
+                description={t('marketing.merchant.loyaltyDescription')}
+                cta1={t('marketing.merchant.sectionCta1Default')}
+                cta2={t('marketing.merchant.sectionCta2Default')}
                 imageUrl="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
                 imageHint="happy customer shopping in high end store"
             />
 
             {/* Management Section */}
-            <ProductSection 
+            <ProductSection
                 theme="dark"
-                title="Tam Kontrol Panelinizde."
-                subtitle="Veriye dayalı yönetim araçları."
-                description="Günlük cirolarınızı, bağış hacminizi ve müşteri demografinizi şeffaf bir şekilde takip edin. Raporlarınızı tek tıkla alın."
+                title={t('marketing.merchant.managementTitle')}
+                subtitle={t('marketing.merchant.managementSubtitle')}
+                description={t('marketing.merchant.managementDescription')}
+                cta1={t('marketing.merchant.sectionCta1Default')}
+                cta2={t('marketing.merchant.sectionCta2Default')}
                 imageUrl="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
                 imageHint="sleek minimalist dashboard on tablet screen"
             />

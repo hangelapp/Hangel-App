@@ -129,7 +129,7 @@ export default function FollowedBrandsPage() {
 
   const handleSave = () => {
     if (userDocRef) updateDocumentNonBlocking(userDocRef, { followedBrands: selectedBrands });
-    toast({ title: 'Tercihler Kaydedildi', description: 'Takip ettiğiniz markalar güncellendi.' });
+    toast({ title: t('dashboard.settingsBrands.toastSavedTitle'), description: t('dashboard.settingsBrands.toastSavedDesc') });
     router.push('/settings');
   };
 
@@ -139,7 +139,7 @@ export default function FollowedBrandsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div>
@@ -154,7 +154,7 @@ export default function FollowedBrandsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.filter')}><Filter className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
@@ -170,7 +170,7 @@ export default function FollowedBrandsPage() {
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>

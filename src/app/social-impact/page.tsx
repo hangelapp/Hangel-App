@@ -88,32 +88,32 @@ export default function SocialImpactPage() {
             />
 
             {/* Donation Value */}
-            <ImpactSection 
+            <ImpactSection
                 theme="dark"
-                title="Sürdürülebilir Kaynak."
+                title={t('marketing.socialImpact.donationTitle')}
                 stat="12.5M ₺"
-                subtitle="Aktarılan toplam bağış hacmi."
-                description="Alışverişi iyiliğe dönüştüren modelimizle, sivil toplumun finansal sürdürülebilirliğini sağlıyoruz. Ek ücret yok, sadece somut fayda var."
+                subtitle={t('marketing.socialImpact.donationSubtitle')}
+                description={t('marketing.socialImpact.donationDescription')}
                 imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
                 imageHint="coins gold stack donation"
             />
 
             {/* Volunteer Hours */}
-            <ImpactSection 
-                title="İmece Gücüyle."
+            <ImpactSection
+                title={t('marketing.socialImpact.volunteerSecTitle')}
                 stat="500K+"
-                subtitle="Tamamlanan gönüllülük saati."
-                description="Zamanını ve yeteneklerini toplumsal sorunların çözümü için seferber eden dev gönüllü ordumuzla her sahada varız."
+                subtitle={t('marketing.socialImpact.volunteerSecSubtitle')}
+                description={t('marketing.socialImpact.volunteerSecDescription')}
                 imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
                 imageHint="volunteers working together collaboration"
             />
 
             {/* SDG Goals */}
-            <ImpactSection 
+            <ImpactSection
                 theme="dark"
-                title="Küresel Hedefler."
-                subtitle="BM Sürdürülebilir Kalkınma Amaçları."
-                description="Yoksullukla mücadeleden iklim eylemine kadar 17 temel hedefin 12'sinde aktif olarak projeler geliştiriyor ve destekliyoruz."
+                title={t('marketing.socialImpact.sdgTitle')}
+                subtitle={t('marketing.socialImpact.sdgSubtitle')}
+                description={t('marketing.socialImpact.sdgDescription')}
                 imageUrl="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop"
                 imageHint="world connection data visualization"
             />
@@ -133,11 +133,11 @@ export default function SocialImpactPage() {
                             <div key={report.year} className="flex flex-col items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
                                 <FileText className="h-10 w-10 text-primary" />
                                 <div className="text-center">
-                                    <h3 className="font-bold text-lg">{report.year} Sürdürülebilirlik Raporu</h3>
-                                    <p className="text-xs text-muted-foreground">PDF - 5.2MB</p>
+                                    <h3 className="font-bold text-lg">{report.year} {t('marketing.socialImpact.reportLabel')}</h3>
+                                    <p className="text-xs text-muted-foreground">{t('marketing.socialImpact.reportFileMeta')}</p>
                                 </div>
                                 <Button asChild variant="outline" className="w-full">
-                                    <Link href={report.link}>İndir <Download className="h-4 w-4 ml-2"/></Link>
+                                    <Link href={report.link}>{t('marketing.socialImpact.reportDownload')} <Download className="h-4 w-4 ml-2"/></Link>
                                 </Button>
                             </div>
                         ))}

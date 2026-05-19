@@ -60,7 +60,7 @@ export default function MyApplicationsPage() {
     setWithdrawnIds(prev => [...prev, appId]);
     toast({
       title: t('dashboard.applications.toastWithdrawnTitle'),
-      description: `"${appTitle}" başvurunuz başarıyla iptal edildi.`,
+      description: `${t('dashboard.applications.toastWithdrawnDescPrefix')}${appTitle}${t('dashboard.applications.toastWithdrawnDescSuffix')}`,
     });
   };
 
@@ -194,7 +194,7 @@ export default function MyApplicationsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.filter')}><Filter className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{t('dashboard.applications.filterByStatus')}</DropdownMenuLabel>
@@ -212,7 +212,7 @@ export default function MyApplicationsPage() {
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setSortOrder('desc')}>{t('dashboard.applications.sortNewest')}</DropdownMenuItem>

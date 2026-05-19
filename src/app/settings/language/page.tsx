@@ -29,14 +29,14 @@ export default function LanguageSettingsPage() {
             updateDocumentNonBlocking(userDocRef, { language });
         }
         toast({
-            title: "Dil Ayarları Kaydedildi",
-            description: `Dil tercihiniz "${langName}" olarak kaydedildi. Sayfa yeniden yüklendiğinde değişiklik aktif olacak.`,
+            title: t('dashboard.settingsLanguage.toastSavedTitle'),
+            description: `${t('dashboard.settingsLanguage.toastSavedDescPrefix')}${langName}${t('dashboard.settingsLanguage.toastSavedDescSuffix')}`,
         });
     };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
             <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>

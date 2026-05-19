@@ -140,20 +140,20 @@ export default function AboutPage() {
                         <h2 className="text-4xl md:text-6xl font-black tracking-tighter">{t('marketing.about.valuesTitle')}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard 
+                        <FeatureCard
                             icon={Target}
-                            title="Sosyal Fayda"
-                            description="Tüm teknolojik altyapımızı ve operasyonlarımızı toplumsal sorunların çözümüne odaklıyoruz."
+                            title={t('marketing.about.valueSosyalFaydaTitle')}
+                            description={t('marketing.about.valueSosyalFaydaDesc')}
                         />
-                        <FeatureCard 
+                        <FeatureCard
                             icon={ShieldCheck}
-                            title="Tam Şeffaflık"
-                            description="Blockchain şeffaflığında raporlama ile her bağışın ve etkinin izini sürebilirsiniz."
+                            title={t('marketing.about.valueSeffaflikTitle')}
+                            description={t('marketing.about.valueSeffaflikDesc')}
                         />
-                        <FeatureCard 
+                        <FeatureCard
                             icon={Globe}
-                            title="Küresel Erişim"
-                            description="21 ülkede aktif olan ağımızla yerel sorunlara küresel çözümler üretiyoruz."
+                            title={t('marketing.about.valueKureselTitle')}
+                            description={t('marketing.about.valueKureselDesc')}
                         />
                     </div>
                 </div>
@@ -162,44 +162,44 @@ export default function AboutPage() {
             {/* Social Enterprise Section */}
             <AppleSection
                 theme="dark"
-                title={get('about.socialTitle', 'Bir Sosyal Girişim Hikayesi.')}
-                description={get('about.socialDesc', 'Hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır.')}
-                cta1="Sosyal Girişimcilik Nedir?"
+                title={get('about.socialTitle', t('marketing.about.socialTitle'))}
+                description={get('about.socialDesc', t('marketing.about.socialDesc'))}
+                cta1={t('marketing.about.socialCta')}
                 cta1Href="/social-entrepreneurship"
                 imageUrl="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop"
                 imageHint="people discussing business strategy"
             />
-            
+
             {/* Impact Numbers */}
             <section className="bg-white py-32 text-center border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-6xl">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-16">
                         <div className="space-y-2">
                             <p className="text-6xl font-black tracking-tighter text-primary">2.5M+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktif Kullanıcı</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statUsersLabel')}</p>
                         </div>
                         <div className="space-y-2">
                             <p className="text-6xl font-black tracking-tighter text-primary">1.2K+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Kayıtlı STK</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statNgosLabel')}</p>
                         </div>
                         <div className="space-y-2">
                             <p className="text-6xl font-black tracking-tighter text-primary">500+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İş Ortağı Marka</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statBrandsLabel')}</p>
                         </div>
                         <div className="space-y-2">
                             <p className="text-6xl font-black tracking-tighter text-primary">12.5M ₺</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Yıllık Bağış Hacmi</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statDonationsLabel')}</p>
                         </div>
                     </div>
                 </div>
             </section>
-            
+
             {/* Philosophy */}
             <AppleSection
                 theme="light"
                 className="bg-[#fafafa]"
-                title={get('about.foundationTitle', 'Kuruluş Felsefemiz.')}
-                description={get('about.foundationDesc', "Yola çıkarken tek bir mottomuz vardı: 'Yok öyle yalnız başına mücadele etmek'. Toplumsal sorunların kolektif bir bilinç ve teknoloji destekli bir altyapı ile çözüleceğine inanıyoruz.")}
+                title={get('about.foundationTitle', t('marketing.about.foundationTitle'))}
+                description={get('about.foundationDesc', t('marketing.about.foundationDesc'))}
                 imageUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop"
                 imageHint="students working together library"
             />

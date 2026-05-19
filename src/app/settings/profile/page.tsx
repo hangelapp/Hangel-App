@@ -192,7 +192,7 @@ export default function ProfileSettingsPage() {
         personalInfo: profile.personalInfo
     });
 
-    toast({ title: "Profil Güncellendi", description: "Bilgileriniz başarıyla kaydedildi." });
+    toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
     
     if (isOnboarding) {
         localStorage.setItem('onboardingStep', 'volunteer');
@@ -270,7 +270,7 @@ export default function ProfileSettingsPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-2xl mx-auto">
-       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+       <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
             <ArrowLeft className="h-6 w-6" />
         </Button>
       <div>
