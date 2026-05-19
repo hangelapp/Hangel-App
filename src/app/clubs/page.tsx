@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { StudentClub } from '@/lib/types';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 const ClubCard = ({ club }: { club: StudentClub }) => {
@@ -52,7 +53,7 @@ export default function ClubsPage() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
-  const clubsRef = useMemoFirebase(() => collection(db, 'clubs'), [db]);
+  const clubsRef = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
 
   type ClubWithMeta = StudentClub & {
@@ -81,7 +82,7 @@ export default function ClubsPage() {
   const filterCount = selectedSkills.length + selectedInterests.length;
 
   // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
-  const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null), [db, authUser?.uid]);
+  const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null), [db, authUser?.uid]);
   const { data: userData } = useDoc<{ personalInfo?: { address?: { country?: string; city?: string } } }>(userDocRef);
   const userCountry = userData?.personalInfo?.address?.country || '';
   const userCity = userData?.personalInfo?.address?.city || '';

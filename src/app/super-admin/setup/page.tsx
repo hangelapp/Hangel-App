@@ -19,6 +19,7 @@ import badgesJson from '../../../../docs/database-exports/badges.json';
 import certificatesJson from '../../../../docs/database-exports/certificates.json';
 import libraryJson from '../../../../docs/database-exports/library.json';
 import postsJson from '../../../../docs/database-exports/timeline_posts.json';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function SetupPage() {
     const db = useFirestore();
@@ -43,29 +44,29 @@ export default function SetupPage() {
 
         try {
             logProgress("Kullanıcılar aktarılıyor...");
-            (usersJson as WithId[]).forEach((u) => setDocumentNonBlocking(doc(db, 'users', u.id), u, { merge: true }));
+            (usersJson as WithId[]).forEach((u) => setDocumentNonBlocking(doc(db, COLLECTIONS.users, u.id), u, { merge: true }));
 
             logProgress("STK'lar aktarılıyor...");
-            (ngosJson as WithId[]).forEach((n) => setDocumentNonBlocking(doc(db, 'ngos', n.id), n, { merge: true }));
+            (ngosJson as WithId[]).forEach((n) => setDocumentNonBlocking(doc(db, COLLECTIONS.ngos, n.id), n, { merge: true }));
 
             logProgress("Markalar aktarılıyor...");
-            (brandsJson as WithId[]).forEach((b) => setDocumentNonBlocking(doc(db, 'brands', b.id), b, { merge: true }));
+            (brandsJson as WithId[]).forEach((b) => setDocumentNonBlocking(doc(db, COLLECTIONS.brands, b.id), b, { merge: true }));
 
             logProgress("Etkinlikler aktarılıyor...");
-            (eventsJson as WithId[]).forEach((e) => setDocumentNonBlocking(doc(db, 'events', e.id), e, { merge: true }));
+            (eventsJson as WithId[]).forEach((e) => setDocumentNonBlocking(doc(db, COLLECTIONS.events, e.id), e, { merge: true }));
 
             logProgress("Gönüllülük ilanları aktarılıyor...");
-            (volunteeringJson as WithId[]).forEach((v) => setDocumentNonBlocking(doc(db, 'volunteering', v.id), v, { merge: true }));
+            (volunteeringJson as WithId[]).forEach((v) => setDocumentNonBlocking(doc(db, COLLECTIONS.volunteering, v.id), v, { merge: true }));
 
             logProgress("Kütüphane içerikleri aktarılıyor...");
-            (libraryJson as WithSlug[]).forEach((l) => setDocumentNonBlocking(doc(db, 'library', l.slug), l, { merge: true }));
+            (libraryJson as WithSlug[]).forEach((l) => setDocumentNonBlocking(doc(db, COLLECTIONS.library, l.slug), l, { merge: true }));
 
             logProgress("Zaman tüneli gönderileri aktarılıyor...");
-            (postsJson as WithId[]).forEach((p) => setDocumentNonBlocking(doc(db, 'posts', p.id), p, { merge: true }));
+            (postsJson as WithId[]).forEach((p) => setDocumentNonBlocking(doc(db, COLLECTIONS.posts, p.id), p, { merge: true }));
 
             logProgress("Rozet ve sertifikalar (Kullanıcı 1) ekleniyor...");
-            (badgesJson as WithId[]).forEach((badge) => setDocumentNonBlocking(doc(db, 'users', '1', 'badges', badge.id), badge, { merge: true }));
-            (certificatesJson as WithId[]).forEach((cert) => setDocumentNonBlocking(doc(db, 'users', '1', 'certificates', cert.id), cert, { merge: true }));
+            (badgesJson as WithId[]).forEach((badge) => setDocumentNonBlocking(doc(db, COLLECTIONS.users, '1', 'badges', badge.id), badge, { merge: true }));
+            (certificatesJson as WithId[]).forEach((cert) => setDocumentNonBlocking(doc(db, COLLECTIONS.users, '1', 'certificates', cert.id), cert, { merge: true }));
 
             logProgress("Tüm veriler başarıyla kuyruğa alındı!");
             toast({ title: "Kurulum Tamamlandı" });

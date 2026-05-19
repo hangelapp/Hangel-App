@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import { COLLECTIONS } from '@/firebase/collections';
 
 export function UserAvatar({ className }: { className?: string }) {
   const { user, isUserLoading } = useUser();
@@ -11,7 +12,7 @@ export function UserAvatar({ className }: { className?: string }) {
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return doc(db, 'users', user.uid);
+    return doc(db, COLLECTIONS.users, user.uid);
   }, [db, user]);
 
   const { data: userData } = useDoc<{ avatarUrl?: string }>(userDocRef);

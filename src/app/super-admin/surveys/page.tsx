@@ -13,6 +13,7 @@ import { Star, Search, MessageSquare, Radio, Inbox, ArrowDownUp } from 'lucide-r
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface SurveyUser {
     id: string;
@@ -111,18 +112,18 @@ export default function SurveysPage() {
     const [ratingSort, setRatingSort] = useState<'desc' | 'asc'>('desc');
 
     const surveysQuery = useMemoFirebase(() =>
-        query(collection(firestore, 'surveys'), orderBy('createdAt', 'desc')),
+        query(collection(firestore, COLLECTIONS.surveys), orderBy('createdAt', 'desc')),
         [firestore]
     );
     const ratingsQuery = useMemoFirebase(() =>
-        query(collection(firestore, 'ratings'), orderBy('createdAt', 'desc')),
+        query(collection(firestore, COLLECTIONS.ratings), orderBy('createdAt', 'desc')),
         [firestore]
     );
 
     const { data: surveysData, isLoading: surveysLoading } = useCollection<SurveyDoc>(surveysQuery);
     const { data: ratingsData, isLoading: ratingsLoading } = useCollection<RatingDoc>(ratingsQuery);
 
-    const usersQuery = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+    const usersQuery = useMemoFirebase(() => collection(firestore, COLLECTIONS.users), [firestore]);
     const { data: usersData } = useCollection<SurveyUser>(usersQuery);
     const userMap = useMemo(() => {
         const m = new Map<string, SurveyUser>();

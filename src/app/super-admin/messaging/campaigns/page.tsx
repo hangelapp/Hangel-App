@@ -13,6 +13,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { Plus, Send, Mail, MessageSquare, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CampaignRow {
   id: string;
@@ -38,7 +39,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function CampaignsListPage() {
   const db = useFirestore();
   const q = useMemoFirebase(
-    () => query(collection(db, 'campaigns'), orderBy('createdAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.campaigns), orderBy('createdAt', 'desc')),
     [db]
   );
   const { data, isLoading } = useCollection<CampaignRow>(q);

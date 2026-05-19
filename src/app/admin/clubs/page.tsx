@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { StudentClub } from '@/lib/types';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type UserData = {
     personalInfo?: {
@@ -166,7 +167,7 @@ export default function StudentClubsPage() {
   const db = useFirestore();
   const userDocRef = useMemoFirebase(() => {
       if (!db || !authUser?.uid) return null;
-      return doc(db, 'users', authUser.uid);
+      return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser?.uid]);
   const { data: userData } = useDoc<UserData>(userDocRef);
   const userCity = userData?.personalInfo?.address?.city || null;

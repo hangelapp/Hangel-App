@@ -37,6 +37,7 @@ import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPasswo
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { doc, collection, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
+import { COLLECTIONS } from '@/firebase/collections';
 
 // --- Shared UI Components ---
 
@@ -285,7 +286,7 @@ const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean) => vo
                 }
             }
 
-            setDocumentNonBlocking(doc(db, 'users', userId), {
+            setDocumentNonBlocking(doc(db, COLLECTIONS.users, userId), {
                 id: userId,
                 name: name,
                 // Yeni kullanıcılarda demo profil fotoğrafı olmasın; boş bırakıldığında
@@ -537,7 +538,7 @@ const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 entityType === 'BRAND' ? 'Marka' :
                 entityType === 'CLUB' ? 'Kulüpler' : 'Kurumsal Başvuru';
 
-            await addDoc(collection(db, 'applications'), {
+            await addDoc(collection(db, COLLECTIONS.applications), {
                 ...formData,
                 entityType,
                 type: tabType,

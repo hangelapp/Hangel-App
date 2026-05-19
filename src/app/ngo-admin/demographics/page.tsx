@@ -7,6 +7,7 @@ import { Suspense, useState, useEffect, useMemo } from 'react';
 import { Loader2, BarChart3, Users, ShieldAlert } from 'lucide-react';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8', '#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
 
@@ -81,15 +82,15 @@ function DemographicsPageContent() {
 
   // 1) Kullanıcının yönettiği varlığı tespit et: önce NGO/Brand/Club query, sonra user doc fallback
   const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
 
@@ -99,21 +100,21 @@ function DemographicsPageContent() {
 
   // Fallback: user doc'taki managed*Id
   const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
   const { data: userData } = useDoc<UserDocData>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
     [firestore, userData?.managedNgoId],
   );
   const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
     [firestore, userData?.managedBrandId],
   );
   const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
     [firestore, userData?.managedClubId],
   );
   const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
@@ -143,10 +144,10 @@ function DemographicsPageContent() {
   const activeEntity = managedEntities[0] || null;
 
   // Tüm kullanıcıları + tüm markaları oku (filtreleme için)
-  const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'users') : null), [firestore]);
+  const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, COLLECTIONS.users) : null), [firestore]);
   const { data: allUsers, isLoading: usersLoading } = useCollection<UserDocData>(usersQuery);
 
-  const brandsQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'brands') : null), [firestore]);
+  const brandsQuery = useMemoFirebase(() => (firestore ? collection(firestore, COLLECTIONS.brands) : null), [firestore]);
   const { data: allBrands } = useCollection<BrandDoc>(brandsQuery);
 
   const { donors, volunteers, supporters } = useMemo(() => {

@@ -28,6 +28,7 @@ import {
 import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, MapPin, User } from "lucide-react";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 // Map entityType values from the form to Turkish labels
 const entityTypeLabels: Record<string, string> = {
@@ -293,7 +294,7 @@ export default function ApplicationsPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const appsQuery = useMemoFirebase(() => collection(db, 'applications'), [db]);
+  const appsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.applications), [db]);
   const { data: applications, isLoading } = useCollection(appsQuery);
 
   const slugify = (s: string) =>
@@ -334,7 +335,7 @@ export default function ApplicationsPage() {
 
     try {
       if (entityType === 'BRAND') {
-        const ref = await addDoc(collection(db, 'brands'), {
+        const ref = await addDoc(collection(db, COLLECTIONS.brands), {
           ...common,
           type: 'brand',
           category: app.sector || app.category || '',
@@ -346,7 +347,7 @@ export default function ApplicationsPage() {
         return ref.id;
       }
       if (entityType === 'CLUB') {
-        const ref = await addDoc(collection(db, 'clubs'), {
+        const ref = await addDoc(collection(db, COLLECTIONS.clubs), {
           ...common,
           type: app.clubType || 'university',
           university: app.universityName || '',
@@ -357,7 +358,7 @@ export default function ApplicationsPage() {
         return ref.id;
       }
       if (entityType === 'NGO') {
-        const ref = await addDoc(collection(db, 'ngos'), {
+        const ref = await addDoc(collection(db, COLLECTIONS.ngos), {
           ...common,
           type: app.orgSubType || 'Dernek',
           category: app.sector || '',
@@ -379,7 +380,7 @@ export default function ApplicationsPage() {
   };
 
   const handleUpdateStatus = async (id: string, newStatus: 'Beklemede' | 'Onaylandı' | 'Reddedildi', userId?: string) => {
-    const appRef = doc(db, 'applications', id);
+    const appRef = doc(db, COLLECTIONS.applications, id);
     const app = (applications || []).find((a) => (a as ApplicationDoc).id === id) as ApplicationDoc | undefined;
 
     if (newStatus === 'Onaylandı' && app) {
@@ -392,7 +393,7 @@ export default function ApplicationsPage() {
         });
 
         if (userId) {
-          const userRef = doc(db, 'users', userId);
+          const userRef = doc(db, COLLECTIONS.users, userId);
           // Super-admin'in rolünü ngo-admin'e düşürme; sadece henüz super-admin olmayanları yükselt.
           try {
             const userSnap = await getDoc(userRef);

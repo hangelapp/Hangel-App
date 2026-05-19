@@ -38,6 +38,7 @@ import {
   Hourglass,
   Trash2,
 } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif';
 
@@ -170,7 +171,7 @@ export default function SuperAdminEventsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const eventsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, 'events'), orderBy('createdAt', 'desc')) : null),
+    () => (db ? query(collection(db, COLLECTIONS.events), orderBy('createdAt', 'desc')) : null),
     [db],
   );
   const { data: events, isLoading } = useCollection<EventDoc>(eventsQuery);
@@ -188,7 +189,7 @@ export default function SuperAdminEventsPage() {
     if (!db) return;
     setBusyId(id);
     try {
-      await updateDoc(doc(db, 'events', id), {
+      await updateDoc(doc(db, COLLECTIONS.events, id), {
         status: 'Yayında',
         approvedAt: serverTimestamp(),
         approvedBy: authUser?.uid || null,
@@ -211,7 +212,7 @@ export default function SuperAdminEventsPage() {
     if (!db) return;
     setBusyId(id);
     try {
-      await updateDoc(doc(db, 'events', id), {
+      await updateDoc(doc(db, COLLECTIONS.events, id), {
         status: 'Reddedildi',
         rejectedAt: serverTimestamp(),
         rejectionReason: 'Süper admin tarafından reddedildi.',
@@ -239,7 +240,7 @@ export default function SuperAdminEventsPage() {
     if (!db) return;
     setBusyId(id);
     try {
-      await deleteDoc(doc(db, 'events', id));
+      await deleteDoc(doc(db, COLLECTIONS.events, id));
       toast({ variant: 'destructive', title: 'Etkinlik Silindi' });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;

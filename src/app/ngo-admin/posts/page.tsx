@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 interface ManagedEntityDoc {
@@ -50,15 +51,15 @@ export default function PostsPage() {
 
     // ---- Resolve managed entity (NGO / brand / club) so posts publish on entity's behalf ----
     const adminNgosQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const adminBrandsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const adminClubsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const { data: adminNgos } = useCollection<ManagedEntityDoc>(adminNgosQ);
@@ -66,21 +67,21 @@ export default function PostsPage() {
     const { data: adminClubs } = useCollection<ManagedEntityDoc>(adminClubsQ);
 
     const userDocRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
         [firestore, authUser?.uid],
     );
     const { data: userData } = useDoc<UserDocData>(userDocRef);
 
     const fallbackNgoRef = useMemoFirebase(
-        () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+        () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
         [firestore, userData?.managedNgoId],
     );
     const fallbackBrandRef = useMemoFirebase(
-        () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+        () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
         [firestore, userData?.managedBrandId],
     );
     const fallbackClubRef = useMemoFirebase(
-        () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+        () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
         [firestore, userData?.managedClubId],
     );
     const { data: fallbackNgo } = useDoc<ManagedEntityDoc>(fallbackNgoRef);
@@ -88,7 +89,7 @@ export default function PostsPage() {
     const { data: fallbackClub } = useDoc<ManagedEntityDoc>(fallbackClubRef);
 
     const selfNgoRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, 'ngos', authUser.uid) : null),
+        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.ngos, authUser.uid) : null),
         [firestore, authUser?.uid],
     );
     const { data: selfNgo } = useDoc<ManagedEntityDoc>(selfNgoRef);
@@ -108,7 +109,7 @@ export default function PostsPage() {
     const postsQuery = useMemoFirebase(() => {
         if (!authUser?.uid) return null;
         return query(
-            collection(firestore, 'posts'),
+            collection(firestore, COLLECTIONS.posts),
             where('authorId', '==', authUser.uid),
         );
     }, [firestore, authUser?.uid]);
@@ -172,7 +173,7 @@ export default function PostsPage() {
         }
 
         try {
-            await addDoc(collection(firestore, 'posts'), newPost);
+            await addDoc(collection(firestore, COLLECTIONS.posts), newPost);
             setNewPostContent('');
             setImageUrl('');
             toast({ title: 'Gönderi paylaşıldı!', description: 'Yeni gönderiniz zaman tünelinde yayınlandı.' });
@@ -192,7 +193,7 @@ export default function PostsPage() {
     const handleDeletePost = async (id: string) => {
         if (!authUser?.uid) return;
         try {
-            await deleteDoc(doc(firestore, 'posts', id));
+            await deleteDoc(doc(firestore, COLLECTIONS.posts, id));
             toast({ variant: 'destructive', title: 'Gönderi silindi.' });
         } catch (error) {
             console.error('Post delete failed:', error);
@@ -218,7 +219,7 @@ export default function PostsPage() {
         }
 
         try {
-            await updateDoc(doc(firestore, 'posts', id), {
+            await updateDoc(doc(firestore, COLLECTIONS.posts, id), {
                 content: editContent,
                 updatedAt: Timestamp.now(),
             });

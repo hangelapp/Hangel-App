@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, RefreshCw, Search, Loader2, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { messagingFetch } from '@/lib/messaging/client';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface WaTemplate {
   id: string;
@@ -44,7 +45,7 @@ export default function WhatsAppTemplatesPage() {
   const [syncing, setSyncing] = useState(false);
 
   const q = useMemoFirebase(
-    () => query(collection(db, 'whatsappTemplates'), orderBy('syncedAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.whatsappTemplates), orderBy('syncedAt', 'desc')),
     [db]
   );
   const { data, isLoading } = useCollection<WaTemplate>(q);

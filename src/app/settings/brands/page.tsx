@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { Brand } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type BrandTypeFilter = Brand['type'] | 'Tümü';
 
@@ -33,12 +34,12 @@ export default function FollowedBrandsPage() {
   const { user: authUser, isUserLoading } = useUser();
   const db = useFirestore();
 
-  const brandsQuery = useMemoFirebase(() => (db ? collection(db, 'brands') : null), [db]);
+  const brandsQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
   const { data: firestoreBrands, isLoading: isFirestoreLoading } = useCollection<Brand>(brandsQuery);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc<{ followedBrands?: string[] }>(userDocRef);

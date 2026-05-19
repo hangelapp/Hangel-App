@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Coins, Loader2, ShoppingCart } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface Package {
   id: string;
@@ -28,7 +29,7 @@ export default function TopupPage() {
   const [submitting, setSubmitting] = useState<string | null>(null);
 
   const q = useMemoFirebase(
-    () => query(collection(db, 'messagingPackages'), where('active', '==', true)),
+    () => query(collection(db, COLLECTIONS.messagingPackages), where('active', '==', true)),
     [db]
   );
   const { data, isLoading } = useCollection<Package>(q);

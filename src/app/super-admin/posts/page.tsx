@@ -28,6 +28,7 @@ import { collection, doc, query, orderBy, updateDoc, deleteDoc } from 'firebase/
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Post = {
     id: string;
@@ -68,7 +69,7 @@ export default function PostsAdminPage() {
     const [savingEdit, setSavingEdit] = useState(false);
 
     const postsQuery = useMemoFirebase(
-        () => (db ? query(collection(db, 'posts'), orderBy('createdAt', 'desc')) : null),
+        () => (db ? query(collection(db, COLLECTIONS.posts), orderBy('createdAt', 'desc')) : null),
         [db],
     );
     const { data: posts, isLoading } = useCollection<Post>(postsQuery);
@@ -103,7 +104,7 @@ export default function PostsAdminPage() {
     const handleToggleStatus = async (id: string, current?: string) => {
         const newStatus = current === 'Pasif' ? 'Aktif' : 'Pasif';
         try {
-            await updateDoc(doc(db, 'posts', id), { status: newStatus });
+            await updateDoc(doc(db, COLLECTIONS.posts, id), { status: newStatus });
             toast({
                 title: newStatus === 'Aktif' ? 'Gönderi Aktifleştirildi' : 'Gönderi Pasife Alındı',
                 description: newStatus === 'Aktif' ? 'Akışta görünür olacak.' : 'Akıştan kaldırıldı, kullanıcılar göremez.',
@@ -121,7 +122,7 @@ export default function PostsAdminPage() {
 
     const handleApprove = async (id: string) => {
         try {
-            await updateDoc(doc(db, 'posts', id), { status: 'Aktif' });
+            await updateDoc(doc(db, COLLECTIONS.posts, id), { status: 'Aktif' });
             toast({ title: 'Onaylandı', description: 'Gönderi aktifleştirildi.' });
         } catch (e) {
             const message = e instanceof Error ? e.message : 'Hata oluştu.';
@@ -131,7 +132,7 @@ export default function PostsAdminPage() {
 
     const handleDelete = async (id: string, authorName?: string) => {
         try {
-            await deleteDoc(doc(db, 'posts', id));
+            await deleteDoc(doc(db, COLLECTIONS.posts, id));
             toast({
                 variant: 'destructive',
                 title: 'Gönderi Silindi',
@@ -158,7 +159,7 @@ export default function PostsAdminPage() {
         if (!editingPost) return;
         setSavingEdit(true);
         try {
-            await updateDoc(doc(db, 'posts', editingPost.id), {
+            await updateDoc(doc(db, COLLECTIONS.posts, editingPost.id), {
                 content: editContent,
                 imageUrl: editImageUrl || null,
             });

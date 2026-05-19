@@ -24,6 +24,7 @@ import { collection } from 'firebase/firestore';
 import { UserNav } from '@/components/layout/user-nav';
 import { useRouter } from 'next/navigation';
 import { useWebContent } from '@/hooks/use-site-content';
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
@@ -343,7 +344,7 @@ export default function LoginPage() {
 
     const db = useFirestore();
     const volunteeringQuery = useMemoFirebase(
-        () => (db ? collection(db, 'volunteering') : null),
+        () => (db ? collection(db, COLLECTIONS.volunteering) : null),
         [db]
     );
     const { data: fsVolunteering } = useCollection<Volunteering>(volunteeringQuery);

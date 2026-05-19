@@ -25,6 +25,7 @@ import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebas
 import { collection, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -86,7 +87,7 @@ export default function TimelinePage() {
     const isLiked = likedBy.includes(authUser.uid);
     setPendingPostId(post.id);
     try {
-      await updateDoc(doc(db, 'posts', post.id), {
+      await updateDoc(doc(db, COLLECTIONS.posts, post.id), {
         likedBy: isLiked ? arrayRemove(authUser.uid) : arrayUnion(authUser.uid),
       });
     } catch {
@@ -116,7 +117,7 @@ export default function TimelinePage() {
     }
   };
 
-  const postsQuery = useMemoFirebase(() => collection(db, 'posts'), [db]);
+  const postsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.posts), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
 
   const sortedAndFilteredPosts = useMemo(() => {

@@ -11,6 +11,7 @@ import {
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, limit, orderBy, query } from 'firebase/firestore';
 import { ArrowLeft, History, Loader2 } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface AuditRow {
   id: string;
@@ -50,7 +51,7 @@ function fmt(d?: { toDate?: () => Date }) {
 export default function AuditLogPage() {
   const db = useFirestore();
   const q = useMemoFirebase(
-    () => query(collection(db, 'messagingAuditLogs'), orderBy('at', 'desc'), limit(200)),
+    () => query(collection(db, COLLECTIONS.messagingAuditLogs), orderBy('at', 'desc'), limit(200)),
     [db]
   );
   const { data, isLoading } = useCollection<AuditRow>(q);

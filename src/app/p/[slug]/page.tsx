@@ -8,6 +8,7 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import Image from 'next/image';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function SitePageView() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function SitePageView() {
 
   const pageDocRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    return doc(db, 'sitePages', slug);
+    return doc(db, COLLECTIONS.sitePages, slug);
   }, [db, slug]);
 
   interface SitePage {

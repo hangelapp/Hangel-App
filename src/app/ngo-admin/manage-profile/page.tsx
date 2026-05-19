@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, updateDoc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -156,15 +157,15 @@ export default function ManageProfilePage() {
 
   // 1) Try to find entities admin'd by current user
   const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
 
@@ -174,21 +175,21 @@ export default function ManageProfilePage() {
 
   // 2) Fallback through user.managedNgoId / managedBrandId / managedClubId
   const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
   const { data: userData } = useDoc<UserDocData>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
     [firestore, userData?.managedNgoId],
   );
   const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
     [firestore, userData?.managedBrandId],
   );
   const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
     [firestore, userData?.managedClubId],
   );
   const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
@@ -197,7 +198,7 @@ export default function ManageProfilePage() {
 
   // Last resort: try user uid as ngo doc id (common convention)
   const selfNgoRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, 'ngos', authUser.uid) : null),
+    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.ngos, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
   const { data: selfNgo } = useDoc<EntityDoc>(selfNgoRef);

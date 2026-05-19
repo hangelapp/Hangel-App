@@ -10,6 +10,7 @@ import { doc, collection, orderBy, query, limit } from 'firebase/firestore';
 import { ArrowLeft, Mail, MessageSquare, Loader2, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CampaignDoc {
   name?: string;
@@ -65,11 +66,11 @@ export default function CampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const db = useFirestore();
 
-  const campRef = useMemoFirebase(() => doc(db, 'campaigns', params.id), [db, params.id]);
+  const campRef = useMemoFirebase(() => doc(db, COLLECTIONS.campaigns, params.id), [db, params.id]);
   const { data, isLoading } = useDoc<CampaignDoc>(campRef);
 
   const recipientsQuery = useMemoFirebase(
-    () => query(collection(db, 'campaigns', params.id, 'recipients'), orderBy('createdAt', 'desc'), limit(50)),
+    () => query(collection(db, COLLECTIONS.campaigns, params.id, 'recipients'), orderBy('createdAt', 'desc'), limit(50)),
     [db, params.id]
   );
   const { data: recipients } = useCollection<RecipientDoc>(recipientsQuery);

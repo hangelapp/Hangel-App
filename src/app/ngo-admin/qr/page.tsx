@@ -24,6 +24,7 @@ import { collection, doc, query, where } from 'firebase/firestore';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface ImportedContact {
   id: string;
@@ -91,15 +92,15 @@ export default function QrPage() {
   }, []);
 
   const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
   const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
     [firestore, authUser?.uid],
   );
 
@@ -109,21 +110,21 @@ export default function QrPage() {
 
   // Fallback: user doc'taki managed*Id (duplicate doc edge case'i için)
   const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
   const { data: userData } = useDoc<UserDocData>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
     [firestore, userData?.managedNgoId],
   );
   const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
     [firestore, userData?.managedBrandId],
   );
   const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
     [firestore, userData?.managedClubId],
   );
   const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);

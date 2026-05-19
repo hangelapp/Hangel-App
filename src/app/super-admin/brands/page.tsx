@@ -23,6 +23,7 @@ import type { Brand } from "@/lib/types";
 import Link from 'next/link';
 import seedBrands from '../../../../docs/database-exports/brands.json';
 import { neighborhoodsData } from '@/lib/neighborhoods-data';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
 
@@ -133,7 +134,7 @@ const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke }: {
 
     // Daha önce yetkilendirilenleri listele
     const invitationsQuery = useMemoFirebase(
-        () => open ? query(collection(db, 'userInvitations'), where('brandId', '==', brand.id)) : null,
+        () => open ? query(collection(db, COLLECTIONS.userInvitations), where('brandId', '==', brand.id)) : null,
         [db, brand.id, open],
     );
     const { data: invitations } = useCollection<BrandInvitation>(invitationsQuery);
@@ -300,18 +301,18 @@ export default function BrandsPage() {
     const [logoUploading, setLogoUploading] = useState(false);
 
     // Load approved brands
-    const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+    const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
     const { data: brands, isLoading: brandsLoading } = useCollection<Brand>(brandsQuery);
 
     // Load all brand applications (any status)
     const applicationsQuery = useMemoFirebase(() =>
-        query(collection(db, 'applications'), where('entityType', '==', 'BRAND')),
+        query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'BRAND')),
         [db]
     );
     const { data: applications, isLoading: appsLoading } = useCollection(applicationsQuery);
 
     // Yetkili atama için tüm kullanıcılar
-    const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+    const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection<SimpleUser>(usersQuery);
 
     // Combine and filter brands
@@ -379,7 +380,7 @@ export default function BrandsPage() {
 
     const handleToggleStatus = (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
-        const brandRef = doc(db, 'brands', id);
+        const brandRef = doc(db, COLLECTIONS.brands, id);
         updateDocumentNonBlocking(brandRef, { status: isPassive ? 'Aktif' : 'Pasif' });
 
         toast({
@@ -389,7 +390,7 @@ export default function BrandsPage() {
     };
 
     const handleRemove = (id: string, name: string) => {
-        const brandRef = doc(db, 'brands', id);
+        const brandRef = doc(db, COLLECTIONS.brands, id);
         deleteDocumentNonBlocking(brandRef);
         toast({
             variant: 'destructive',
@@ -402,21 +403,21 @@ export default function BrandsPage() {
         try {
             // 1. Brand doc'una yetkili kullanıcıyı işaretle (yalnızca Genel Yönetici ana yetkili olarak kaydedilir)
             if (role === 'Genel Yönetici') {
-                await updateDoc(doc(db, 'brands', brandId), { adminUserId: newUserId });
+                await updateDoc(doc(db, COLLECTIONS.brands, brandId), { adminUserId: newUserId });
             }
 
             // 2. Kullanıcıya ngo-admin rolü ver + bağlı brand ID'sini sakla
             //    Super-admin'lerin rolü değişmez (yetkisini kaybetmesin)
-            const userSnap = await getDoc(doc(db, 'users', newUserId));
+            const userSnap = await getDoc(doc(db, COLLECTIONS.users, newUserId));
             const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
             const updatePayload: Record<string, unknown> = { managedBrandId: brandId, brandRoleTitle: role };
             if (currentRole !== 'super-admin') {
                 updatePayload.role = 'ngo-admin';
             }
-            await updateDoc(doc(db, 'users', newUserId), updatePayload);
+            await updateDoc(doc(db, COLLECTIONS.users, newUserId), updatePayload);
 
             // 3. Davet kaydı (audit + bildirim için)
-            await addDoc(collection(db, 'userInvitations'), {
+            await addDoc(collection(db, COLLECTIONS.userInvitations), {
                 brandId,
                 inviteeUserId: newUserId,
                 inviteeName: newUserName,
@@ -447,7 +448,7 @@ export default function BrandsPage() {
 
     const handleRevokeBrandAdmin = async (invitationId: string, inviteeName: string) => {
         try {
-            await updateDoc(doc(db, 'userInvitations', invitationId), {
+            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
                 status: 'revoked',
                 revokedAt: serverTimestamp(),
                 revokedBy: 'super-admin',
@@ -473,7 +474,7 @@ export default function BrandsPage() {
     const handleClearAll = async () => {
         setBulkOp('clearing');
         try {
-            const snap = await getDocs(collection(db, 'brands'));
+            const snap = await getDocs(collection(db, COLLECTIONS.brands));
             const batches: ReturnType<typeof writeBatch>[] = [];
             let current = writeBatch(db);
             let count = 0;
@@ -514,7 +515,7 @@ export default function BrandsPage() {
         try {
             let count = 0;
             for (const b of (seedBrands as Array<{ id: string } & Record<string, unknown>>)) {
-                await setDoc(doc(db, 'brands', b.id), { ...b, status: 'Aktif' }, { merge: true });
+                await setDoc(doc(db, COLLECTIONS.brands, b.id), { ...b, status: 'Aktif' }, { merge: true });
                 count += 1;
             }
             toast({
@@ -627,7 +628,7 @@ export default function BrandsPage() {
 
         try {
             const fd = editFormData;
-            const brandRef = doc(db, 'brands', editingBrand.id);
+            const brandRef = doc(db, COLLECTIONS.brands, editingBrand.id);
             updateDocumentNonBlocking(brandRef, {
                 name: fd.name,
                 slug: fd.slug,

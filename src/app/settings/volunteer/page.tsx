@@ -30,6 +30,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 // Extended Firestore user doc shape used on this page
 type VolunteerUserDoc = {
@@ -444,7 +445,7 @@ export default function VolunteerSettingsPage() {
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc<VolunteerUserDoc>(userDocRef);

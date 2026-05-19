@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [imgSrc, setImgSrc] = useState(brand.logoUrl || '');
@@ -70,7 +71,7 @@ export default function MarketPage() {
   const [sortBy, setSortBy] = useState<SortOption>('default');
 
   // Firestore brands (manually added/approved)
-  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
   const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
 
   // API brands from affiliate networks (Tune/ReklamAction + others)

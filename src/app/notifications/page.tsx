@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'invitation': UserPlus,
@@ -38,7 +39,7 @@ export default function NotificationsPage() {
   const notifQuery = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
     return query(
-      collection(db, 'notifications'),
+      collection(db, COLLECTIONS.notifications),
       where('userId', '==', authUser.uid),
       orderBy('createdAt', 'desc'),
     );
@@ -71,7 +72,7 @@ export default function NotificationsPage() {
 
   const handleMarkRead = async (id: string) => {
     try {
-      await updateDoc(doc(db, 'notifications', id), {
+      await updateDoc(doc(db, COLLECTIONS.notifications, id), {
         read: true,
         readAt: new Date().toISOString(),
       });
@@ -84,7 +85,7 @@ export default function NotificationsPage() {
     if (!authUser) return;
     try {
       // 1. Yanıt kaydı oluştur
-      await addDoc(collection(db, 'emergencyResponses'), {
+      await addDoc(collection(db, COLLECTIONS.emergencyResponses), {
         requestId: notif.data?.requestId || notif.id,
         notificationId: notif.id,
         userId: authUser.uid,
@@ -97,7 +98,7 @@ export default function NotificationsPage() {
       });
 
       // 2. Bildirimi okundu olarak işaretle + yanıt durumunu kaydet
-      await updateDoc(doc(db, 'notifications', notif.id), {
+      await updateDoc(doc(db, COLLECTIONS.notifications, notif.id), {
         read: true,
         readAt: new Date().toISOString(),
         responseStatus: status,

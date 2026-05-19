@@ -33,6 +33,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { HangelLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const donationTransactions = [
     { id: '1', type: 'expense', brand: 'Doğa Dostu Giyim', purchaseAmount: '250.00', donationAmount: '25.00', ngo: ['TEMA Vakfı', 'LÖSEV'], date: '2024-07-21', time: '14:32' },
@@ -118,7 +119,7 @@ export default function QrPaymentPage() {
   const db = useFirestore();
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser?.uid]);
   interface UserData {
     username?: string;

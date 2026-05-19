@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { useWebContent } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AppleSection = ({ 
     title, 
@@ -96,6 +97,7 @@ const FeatureCard = ({ icon: Icon, title, description }: { icon: React.Component
 export default function AboutPage() {
     const router = useRouter();
     const { get } = useWebContent();
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -103,29 +105,29 @@ export default function AboutPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
                     <div className="flex items-center gap-2">
                         <HangelLogo className="text-base" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">BİZ KİMİZ?</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">{t('marketing.about.navLabel')}</span>
                     </div>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold shadow-lg shadow-primary/20">
-                        <Link href="/login/selection?action=register">Aramıza Katıl</Link>
+                        <Link href="/login/selection?action=register">{t('marketing.common.join')}</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Hero */}
             <AppleSection
-                title={get('about.title', 'İyiliği Dijitalleştirdik.')}
-                subtitle={get('about.subtitle', 'Geleceğin dayanışma modelini inşa ediyoruz.')}
-                description={get('about.description', 'Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, dünyanın en kapsayıcı sosyal etki platformuyuz.')}
+                title={get('about.title', t('marketing.about.heroTitle'))}
+                subtitle={get('about.subtitle', t('marketing.about.heroSubtitle'))}
+                description={get('about.description', t('marketing.about.heroDescription'))}
                 imageUrl={get('about.heroImageUrl', 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')}
                 imageHint="university students working together"
             >
                 <div className="mt-4 flex justify-center">
                     <Link href="/hangelassociation" className="text-primary font-bold hover:underline flex items-center group text-[9px] tracking-tight bg-primary/5 px-4 py-1.5 rounded-full border border-primary/10 transition-all active:scale-95 shadow-sm">
-                        Derneğin ana sayfasını görüntüle <ChevronRight className="ml-0.5 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                        {t('marketing.about.associationCta')} <ChevronRight className="ml-0.5 h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                 </div>
             </AppleSection>
@@ -134,8 +136,8 @@ export default function AboutPage() {
             <section className="py-32 px-6 bg-[#f5f5f7]">
                 <div className="container mx-auto max-w-6xl space-y-16">
                     <div className="text-center space-y-4 max-w-3xl mx-auto">
-                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">TEMEL DEĞERLERİMİZ</Badge>
-                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter">İyilik, Bilgi ve Şeffaflık Üzerine Kurulu.</h2>
+                        <Badge className="bg-primary/10 text-primary border-none text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full">{t('marketing.about.valuesBadge')}</Badge>
+                        <h2 className="text-4xl md:text-6xl font-black tracking-tighter">{t('marketing.about.valuesTitle')}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <FeatureCard 
@@ -202,7 +204,7 @@ export default function AboutPage() {
                 imageHint="students working together library"
             />
             
-            <PublicFooter currentPageLabel="Biz Kimiz?" />
+            <PublicFooter currentPageLabel={t('marketing.about.footerLabel')} />
         </div>
     );
 }

@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { openExternalUrl } from '@/lib/capacitor';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const StatRow = ({ label, value }: { label: string, value: string | number | undefined }) => {
     if (value === undefined) return null;
@@ -76,7 +77,7 @@ export default function BrandProfilePage() {
   const [isDonating, setIsDonating] = useState(false);
 
   // Firestore brands
-  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
   const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
 
   // API brands
@@ -143,7 +144,7 @@ export default function BrandProfilePage() {
     //    "Bağışınız işleme alınmıştır" bildirimini gönderecek bir webhook
     //    handler'ı ekle (örn. /api/webhooks/affiliate). 72 gün sonrası için
     //    clearableAt mantığı orada güncellenecek.
-    addDocumentNonBlocking(collection(db, 'donations'), {
+    addDocumentNonBlocking(collection(db, COLLECTIONS.donations), {
         userId: authUser.uid,
         userName: authUser.displayName || authUser.email || 'Kullanıcı',
         userEmail: authUser.email || null,
@@ -169,7 +170,7 @@ export default function BrandProfilePage() {
     // 2) Kullanıcıya yönlendirme bildirimi — yanıltıcı "işleme alındı" YOK.
     //    Asıl "Bağışınız işleme alınmıştır" bildirimi affiliate webhook
     //    tetiklendikten sonra gönderilmeli.
-    addDocumentNonBlocking(collection(db, 'notifications'), {
+    addDocumentNonBlocking(collection(db, COLLECTIONS.notifications), {
         userId: authUser.uid,
         type: 'donation',
         title: 'Marka sitesi açıldı',

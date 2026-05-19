@@ -12,6 +12,7 @@ import { tr } from 'date-fns/locale';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface DonationTransaction {
     id: string;
@@ -93,7 +94,7 @@ export default function DonationsPage() {
     const donationsQuery = useMemoFirebase(() => {
         if (!authUser?.uid) return null;
         return query(
-            collection(firestore, 'donations'),
+            collection(firestore, COLLECTIONS.donations),
             where('ngoId', '==', authUser.uid),
             orderBy('date', 'desc')
         );
@@ -105,7 +106,7 @@ export default function DonationsPage() {
     const earningsQuery = useMemoFirebase(() => {
         if (!authUser?.uid) return null;
         return query(
-            collection(firestore, 'monthlyEarnings'),
+            collection(firestore, COLLECTIONS.monthlyEarnings),
             where('ngoId', '==', authUser.uid),
             orderBy('month', 'desc')
         );

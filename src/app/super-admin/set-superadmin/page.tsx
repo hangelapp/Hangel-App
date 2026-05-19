@@ -12,6 +12,7 @@ import { useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } 
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const SUPER_ADMIN_PAGES: { slug: string; label: string }[] = [
   { slug: 'web-content', label: 'WEB İçerik Yönetimi' },
@@ -69,7 +70,7 @@ export default function SetSuperAdminPage() {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [assigning, setAssigning] = useState(false);
 
-  const usersQuery = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+  const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
   const { data: usersData } = useCollection<AdminCandidateUser>(usersQuery);
 
   const matchedUsers = useMemo(() => {
@@ -106,7 +107,7 @@ export default function SetSuperAdminPage() {
     if (!db || !selectedUser) return;
     setAssigning(true);
     try {
-      await updateDoc(doc(db, 'users', selectedUser.id), {
+      await updateDoc(doc(db, COLLECTIONS.users, selectedUser.id), {
         role: 'super-admin',
         superAdminPermissions: permissions,
       });
@@ -149,7 +150,7 @@ export default function SetSuperAdminPage() {
         superAdminPermissions: SUPER_ADMIN_PAGES.map(p => p.slug),
         createdAt: new Date().toISOString(),
       };
-      setDocumentNonBlocking(doc(db, 'users', newUserId), superAdminUser, { merge: true });
+      setDocumentNonBlocking(doc(db, COLLECTIONS.users, newUserId), superAdminUser, { merge: true });
       setStatus(`✓ SUPERADMIN ayarlandı!\nTelefon: ${phoneNumber}\nKullanıcı ID: ${newUserId}`);
       toast({ title: 'Başarılı', description: 'SUPERADMIN ayarı tamamlandı.' });
       setIsComplete(true);

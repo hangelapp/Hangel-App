@@ -29,6 +29,7 @@ import type { RecipientSourceSpec, ResolvedRecipient, SegmentFilters } from '@/l
 import { allProvinces } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Channel = 'sms' | 'email';
 type UseCase = 'transactional' | 'marketing' | 'emergency';
@@ -114,14 +115,14 @@ export default function CampaignWizardPage() {
 
   // Load templates and segments
   const tplQuery = useMemoFirebase(
-    () => query(collection(db, 'messageTemplates'), orderBy('updatedAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.messageTemplates), orderBy('updatedAt', 'desc')),
     [db]
   );
   const segQuery = useMemoFirebase(
-    () => query(collection(db, 'recipientSegments'), orderBy('updatedAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.recipientSegments), orderBy('updatedAt', 'desc')),
     [db]
   );
-  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
 
   const { data: templates } = useCollection<TemplateRow>(tplQuery);
   const { data: segments } = useCollection<SegmentRow>(segQuery);

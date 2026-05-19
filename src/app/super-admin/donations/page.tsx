@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Donation = {
     id: string;
@@ -81,7 +82,7 @@ export default function DonationsAdminPage() {
     const [savingEdit, setSavingEdit] = useState(false);
 
     const donationsQuery = useMemoFirebase(
-        () => (db ? query(collection(db, 'donations'), orderBy('createdAt', 'desc')) : null),
+        () => (db ? query(collection(db, COLLECTIONS.donations), orderBy('createdAt', 'desc')) : null),
         [db],
     );
     const { data: donations, isLoading } = useCollection<Donation>(donationsQuery);
@@ -175,7 +176,7 @@ export default function DonationsAdminPage() {
         try {
             const batch = writeBatch(db);
             for (const id of row.pendingIds) {
-                batch.update(doc(db, 'donations', id), {
+                batch.update(doc(db, COLLECTIONS.donations, id), {
                     status: 'Yatırıldı',
                     payoutDate: serverTimestamp(),
                 });
@@ -200,12 +201,12 @@ export default function DonationsAdminPage() {
             if (newStatus === 'Yatırıldı' || newStatus === 'Tamamlandı') {
                 updatePayload.payoutDate = serverTimestamp();
             }
-            await updateDoc(doc(db, 'donations', donationId), updatePayload);
+            await updateDoc(doc(db, COLLECTIONS.donations, donationId), updatePayload);
 
             // Kullanıcıya bildirim gönder
             if (userId && newStatus === 'Yatırıldı') {
                 try {
-                    await addDoc(collection(db, 'notifications'), {
+                    await addDoc(collection(db, COLLECTIONS.notifications), {
                         userId,
                         type: 'donation',
                         title: 'Bağışınız STK\'ya aktarıldı',
@@ -232,7 +233,7 @@ export default function DonationsAdminPage() {
         if (!editingDonation) return;
         setSavingEdit(true);
         try {
-            await updateDoc(doc(db, 'donations', editingDonation.id), {
+            await updateDoc(doc(db, COLLECTIONS.donations, editingDonation.id), {
                 purchaseAmount: editPurchase,
                 donationAmount: editDonation,
             });

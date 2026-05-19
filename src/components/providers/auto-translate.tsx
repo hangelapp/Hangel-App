@@ -3,19 +3,38 @@
 import { useEffect } from 'react';
 import { useTranslation } from '@/components/providers/language-provider';
 
-// Google Translate, sayfadaki metinleri <font> etiketlerine sarar. Bu işlem
-// React'ın virtual DOM kayıtlarıyla çakışır; navigasyon sırasında React,
-// "kendi child'ı olmayan" bir node'u kaldırmaya çalışır ve şu hatayı atar:
-//   NotFoundError: Failed to execute 'removeChild' on 'Node'
-// Bu hatadan kaçınmak için Node.prototype.removeChild ve insertBefore'u bir kere
-// patch'liyoruz: parent eşleşmiyorsa sessizce fallback davranış uyguluyoruz.
-// Ref: https://github.com/facebook/react/issues/11538
+// =============================================================================
+// DEPRECATED — TASK P3-1 (partial). Spawn task P3-1b for full removal.
+// =============================================================================
+// This provider integrates the Google Translate widget as a fallback translation
+// layer for strings NOT yet in `src/lib/translations.ts`. As more strings are
+// migrated to native i18n (P2-5, P2-5b ongoing), this becomes unnecessary.
+//
+// REMOVAL CHECKLIST (must be completed before deleting this file):
+//   1. All user-visible strings across `src/app/**` and `src/components/**`
+//      must be wrapped in `useTranslation().t(...)` with keys in
+//      `src/lib/translations.ts` for all supported languages (tr/en/ru/ar/fa/es/ha).
+//   2. No JSX literal Turkish text remains in render paths (grep for common TR words).
+//   3. Verify language switcher works without reloading the page.
+//   4. Then: remove <AutoTranslate /> from `src/app/layout.tsx`, delete this file.
+//
+// WHY THE Node.prototype PATCH IS HERE:
+//   Google Translate wraps text nodes with <font> elements at runtime. React's
+//   reconciler then tries to removeChild / insertBefore nodes that have been
+//   reparented by Google, and throws:
+//     NotFoundError: Failed to execute 'removeChild' on 'Node'
+//   The patch wraps these two methods so a mismatched parentNode is handled
+//   gracefully instead of throwing. This is a well-known workaround:
+//     https://github.com/facebook/react/issues/11538
+//   It is NOT cosmetic / NOT removable while Google Translate is active.
+// =============================================================================
+
 let domPatched = false;
 function patchDomMethodsForGoogleTranslate() {
   if (domPatched) return;
   if (typeof Node === 'undefined' || !Node.prototype) return;
   const origRemoveChild = Node.prototype.removeChild;
-  // @ts-ignore — runtime patch
+  // @ts-ignore — runtime patch (see deprecation notice above)
   Node.prototype.removeChild = function (...args: [Node]) {
     const child = args[0] as Node & { parentNode?: Node | null };
     if (child?.parentNode !== this) {
@@ -26,7 +45,7 @@ function patchDomMethodsForGoogleTranslate() {
     return origRemoveChild.apply(this, args);
   };
   const origInsertBefore = Node.prototype.insertBefore;
-  // @ts-ignore — runtime patch
+  // @ts-ignore — runtime patch (see deprecation notice above)
   Node.prototype.insertBefore = function (...args: [Node, Node | null]) {
     const [newNode, refNode] = args;
     const ref = refNode as (Node & { parentNode?: Node | null }) | null;

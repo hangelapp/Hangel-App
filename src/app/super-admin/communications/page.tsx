@@ -19,6 +19,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import {
     collection, doc, writeBatch, addDoc, serverTimestamp, query, orderBy, limit,
 } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type TargetGroup = 'all' | 'all-ngos' | 'all-clubs' | 'all-brands' | 'all-ngo-admins';
 
@@ -63,12 +64,12 @@ export default function CommunicationsPage() {
     const { user: authUser } = useUser();
 
     // Tüm kullanıcılar (broadcast hedef + DM seçici için)
-    const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+    const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers, isLoading: usersLoading } = useCollection<CommsUser>(usersQuery);
 
     // Geçmiş bildirimler — Trafik İzleme
     const sentNotifsQuery = useMemoFirebase(() =>
-        query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(100)),
+        query(collection(db, COLLECTIONS.notifications), orderBy('createdAt', 'desc'), limit(100)),
         [db]);
     const { data: sentNotifs } = useCollection<NotifDoc>(sentNotifsQuery);
 
@@ -177,7 +178,7 @@ export default function CommunicationsPage() {
             let current = writeBatch(db);
             let count = 0;
             for (const u of targetUsers) {
-                const notifRef = doc(collection(db, 'notifications'));
+                const notifRef = doc(collection(db, COLLECTIONS.notifications));
                 current.set(notifRef, {
                     userId: u.id,
                     type: 'broadcast',
@@ -233,7 +234,7 @@ export default function CommunicationsPage() {
 
         setDmSending(true);
         try {
-            await addDoc(collection(db, 'notifications'), {
+            await addDoc(collection(db, COLLECTIONS.notifications), {
                 userId: selectedEntityId,
                 type: 'dm',
                 title: dmSubject.trim(),

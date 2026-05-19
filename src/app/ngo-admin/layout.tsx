@@ -31,6 +31,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { collection, doc, query, where } from 'firebase/firestore';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -118,7 +119,7 @@ function useResolvedEntityKind(): { kind: EntityKind | null; isLoading: boolean 
 
   // 1) Fast path: users/{uid}.managed*
   const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
   const { data: userData, isLoading: userDocLoading } = useDoc<UserDocData>(userDocRef);
@@ -143,21 +144,21 @@ function useResolvedEntityKind(): { kind: EntityKind | null; isLoading: boolean 
   const adminNgosQ = useMemoFirebase(
     () =>
       firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid))
+        ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid))
         : null,
     [firestore, authUser?.uid, needsFallback],
   );
   const adminBrandsQ = useMemoFirebase(
     () =>
       firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid))
+        ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid))
         : null,
     [firestore, authUser?.uid, needsFallback],
   );
   const adminClubsQ = useMemoFirebase(
     () =>
       firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid))
+        ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid))
         : null,
     [firestore, authUser?.uid, needsFallback],
   );

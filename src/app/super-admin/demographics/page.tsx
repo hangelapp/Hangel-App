@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b', '#ec4899', '#6366f1'];
 
@@ -190,8 +191,8 @@ export default function DemographicsPage() {
         return () => clearTimeout(t);
     }, [router]);
 
-    const usersQ = useMemoFirebase(() => collection(db, 'users'), [db]);
-    const ngosQ = useMemoFirebase(() => collection(db, 'ngos'), [db]);
+    const usersQ = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+    const ngosQ = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
 
     const { data: users, isLoading } = useCollection<DemoUser>(usersQ);
     const { data: ngos } = useCollection<{ id: string; name?: string }>(ngosQ);

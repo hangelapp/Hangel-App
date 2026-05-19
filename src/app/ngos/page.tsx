@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type NgoType = NGO['type'] | 'Tümü';
 type SortKey = 'viewCount' | 'name-asc' | 'name-desc' | 'transparency-desc' | 'donors-desc' | 'volunteers-desc';
@@ -27,7 +28,7 @@ export default function NgosPage() {
 
     const ngosQuery = useMemoFirebase(() => {
         if (!db) return null;
-        return collection(db, 'ngos');
+        return collection(db, COLLECTIONS.ngos);
     }, [db]);
 
     const { data: ngosData, isLoading } = useCollection<NGO>(ngosQuery);

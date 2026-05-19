@@ -40,6 +40,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { Loader2, Calendar, MapPin, Users } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Status = 'Aktif' | 'Pasif' | 'Beklemede';
 
@@ -214,12 +215,12 @@ export default function VolunteerManagementPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const oppsQuery = useMemoFirebase(() => (db ? collection(db, 'volunteering') : null), [db]);
+  const oppsQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.volunteering) : null), [db]);
   const { data: opportunities, isLoading } = useCollection<Volunteering & { status?: Status }>(oppsQuery);
 
   const handleUpdateStatus = async (id: string, newStatus: Status) => {
     try {
-      await updateDoc(doc(db, 'volunteering', id), { status: newStatus });
+      await updateDoc(doc(db, COLLECTIONS.volunteering, id), { status: newStatus });
       toast({
         title: 'İlan Durumu Güncellendi',
         description: newStatus === 'Aktif' ? 'İlan yayına alındı.' : newStatus === 'Pasif' ? 'İlan yayından kaldırıldı.' : 'İlan onay bekliyor.',
@@ -238,7 +239,7 @@ export default function VolunteerManagementPage() {
 
   const handleSave = async (id: string, patch: Partial<Volunteering>) => {
     try {
-      await updateDoc(doc(db, 'volunteering', id), patch as Record<string, unknown>);
+      await updateDoc(doc(db, COLLECTIONS.volunteering, id), patch as Record<string, unknown>);
       toast({ title: 'İlan Güncellendi', description: 'Değişiklikler kaydedildi.' });
     } catch (e) {
       console.error('Save failed:', e);
@@ -255,7 +256,7 @@ export default function VolunteerManagementPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'volunteering', id));
+      await deleteDoc(doc(db, COLLECTIONS.volunteering, id));
       toast({ variant: 'destructive', title: 'İlan Silindi' });
     } catch (e) {
       console.error('Delete failed:', e);

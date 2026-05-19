@@ -29,6 +29,7 @@ import {
 import type { NGO } from '@/lib/types';
 import { normalizePhone } from '@/lib/messaging/phone';
 import seedNgos from '../../../../docs/database-exports/ngos.json';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type NgoItem = (NGO & { id: string }) & {
   source: 'ngos' | 'applications';
@@ -108,7 +109,7 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke }: {
 
   // Daha önce yetkilendirilenleri listele
   const invitationsQuery = useMemoFirebase(
-    () => open ? query(collection(db, 'userInvitations'), where('ngoId', '==', ngo.id)) : null,
+    () => open ? query(collection(db, COLLECTIONS.userInvitations), where('ngoId', '==', ngo.id)) : null,
     [db, ngo.id, open],
   );
   const { data: invitations } = useCollection<NgoInvitation>(invitationsQuery);
@@ -271,16 +272,16 @@ export default function NgosPage() {
   const _router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
 
-  const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
+  const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
   const { data: ngos, isLoading: ngosLoading } = useCollection<NGO>(ngosQuery);
 
   const applicationsQuery = useMemoFirebase(() =>
-    query(collection(db, 'applications'), where('entityType', '==', 'NGO')),
+    query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'NGO')),
     [db],
   );
   const { data: applications, isLoading: appsLoading } = useCollection<NgoApplication>(applicationsQuery);
 
-  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers } = useCollection<SimpleNgoUser>(usersQuery);
 
   const items = useMemo<NgoItem[]>(() => {
@@ -337,7 +338,7 @@ export default function NgosPage() {
   const handleToggleStatus = async (id: string, currentStatus: string) => {
     const isPassive = currentStatus === 'Pasif';
     try {
-      await updateDoc(doc(db, 'ngos', id), { status: isPassive ? 'Aktif' : 'Pasif' });
+      await updateDoc(doc(db, COLLECTIONS.ngos, id), { status: isPassive ? 'Aktif' : 'Pasif' });
       toast({
         title: isPassive ? 'Kuruluş Aktifleştirildi' : 'Kuruluş Pasife Alındı',
         description: isPassive
@@ -359,7 +360,7 @@ export default function NgosPage() {
 
   const handleRemove = async (id: string, name: string) => {
     try {
-      await deleteDoc(doc(db, 'ngos', id));
+      await deleteDoc(doc(db, COLLECTIONS.ngos, id));
       toast({
         variant: 'destructive',
         title: 'Kuruluş Kaldırıldı',
@@ -383,7 +384,7 @@ export default function NgosPage() {
   const handleClearAll = async () => {
     setBulkOp('clearing');
     try {
-      const snap = await getDocs(collection(db, 'ngos'));
+      const snap = await getDocs(collection(db, COLLECTIONS.ngos));
       const batches: ReturnType<typeof writeBatch>[] = [];
       let current = writeBatch(db);
       let count = 0;
@@ -424,7 +425,7 @@ export default function NgosPage() {
     try {
       let count = 0;
       for (const n of (seedNgos as Array<{ id: string } & Record<string, unknown>>)) {
-        await setDoc(doc(db, 'ngos', n.id), { ...n, status: 'Aktif' }, { merge: true });
+        await setDoc(doc(db, COLLECTIONS.ngos, n.id), { ...n, status: 'Aktif' }, { merge: true });
         count += 1;
       }
       toast({
@@ -456,21 +457,21 @@ export default function NgosPage() {
     try {
       // 1. NGO doc'una yetkili kullanıcıyı işaretle (yalnızca Genel Yönetici ana yetkili olarak kaydedilir)
       if (role === 'Genel Yönetici') {
-        await updateDoc(doc(db, 'ngos', ngoId), { adminUserId: newUserId });
+        await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), { adminUserId: newUserId });
       }
 
       // 2. Kullanıcıya ngo-admin rolü ver + bağlı STK ID'sini sakla
       //    AMA super-admin'ler için role'u DEĞİŞTİRME (yetkisini kaybetmesin)
-      const userSnap = await getDoc(doc(db, 'users', newUserId));
+      const userSnap = await getDoc(doc(db, COLLECTIONS.users, newUserId));
       const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
       const updatePayload: Record<string, unknown> = { managedNgoId: ngoId, ngoRoleTitle: role };
       if (currentRole !== 'super-admin') {
         updatePayload.role = 'ngo-admin';
       }
-      await updateDoc(doc(db, 'users', newUserId), updatePayload);
+      await updateDoc(doc(db, COLLECTIONS.users, newUserId), updatePayload);
 
       // 3. Davet kaydı (audit + bildirim için)
-      await addDoc(collection(db, 'userInvitations'), {
+      await addDoc(collection(db, COLLECTIONS.userInvitations), {
         ngoId,
         inviteeUserId: newUserId,
         inviteeName: newUserName,
@@ -501,7 +502,7 @@ export default function NgosPage() {
 
   const handleRevokeAdmin = async (invitationId: string, inviteeName: string) => {
     try {
-      await updateDoc(doc(db, 'userInvitations', invitationId), {
+      await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
         status: 'revoked',
         revokedAt: serverTimestamp(),
         revokedBy: 'super-admin',

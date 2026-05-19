@@ -15,6 +15,7 @@ import { useWebPage } from '@/hooks/use-site-content';
 import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const StatCard = ({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: string, label: string }) => (
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-black/5 text-center transition-all hover:scale-105 hover:shadow-xl">
@@ -63,6 +64,7 @@ export default function PressPage() {
     const router = useRouter();
     const cms = useWebPage('press');
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const handleDownload = (file: string) => {
         toast({
@@ -104,11 +106,11 @@ export default function PressPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">Basın Odası</span>
+                    <span className="text-[12px] font-bold tracking-tight uppercase">{t('marketing.press.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <a href="mailto:press@hangel.org">İletişime Geç</a>
+                        <a href="mailto:press@hangel.org">{t('marketing.press.contactCta')}</a>
                     </Button>
                 </div>
             </header>
@@ -120,10 +122,10 @@ export default function PressPage() {
                         <p className="text-sm md:text-base font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
                     )}
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                        {cms.title || (<>hangel'in Hikayesi. <br /> Dünyayla Paylaşın.</>)}
+                        {cms.title || t('marketing.press.heroTitleFallback')}
                     </h1>
                     <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                        {cms.description || 'Resmi duyurular, medya kaynakları ve kurumsal kimlik materyallerimiz.'}
+                        {cms.description || t('marketing.press.heroDescriptionFallback')}
                     </p>
                     {cms.heroImageUrl && (
                         <div className="relative w-full max-w-5xl mx-auto aspect-[21/9] rounded-3xl overflow-hidden mt-8 shadow-xl">
@@ -156,8 +158,8 @@ export default function PressPage() {
                 <section className="container mx-auto px-4 mb-24">
                      <Card className="rounded-[2.5rem] border-none shadow-xl bg-white">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-3 text-2xl"><Rss className="h-6 w-6 text-primary" /> Basın Bültenleri</CardTitle>
-                            <CardDescription>En son haberler ve duyurular.</CardDescription>
+                            <CardTitle className="flex items-center gap-3 text-2xl"><Rss className="h-6 w-6 text-primary" /> {t('marketing.press.releasesTitle')}</CardTitle>
+                            <CardDescription>{t('marketing.press.releasesDescription')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {pressReleases.map((release, index) => (
@@ -274,8 +276,8 @@ export default function PressPage() {
                 {/* Contact */}
                 <section className="container mx-auto px-4 my-24">
                      <Card className="bg-black text-white rounded-[2.5rem] p-12 text-center shadow-2xl">
-                        <h3 className="text-3xl font-bold mb-2">Medya İletişim</h3>
-                        <p className="text-white/70 mb-6">Basın ve medya talepleriniz için bize ulaşın.</p>
+                        <h3 className="text-3xl font-bold mb-2">{t('marketing.press.contactTitle')}</h3>
+                        <p className="text-white/70 mb-6">{t('marketing.press.contactDescription')}</p>
                         <Button asChild variant="secondary" size="lg" className="rounded-full h-14 px-10 text-lg font-bold">
                             <a href="mailto:press@hangel.org">press@hangel.org</a>
                         </Button>
@@ -283,7 +285,7 @@ export default function PressPage() {
                 </section>
             </main>
 
-            <PublicFooter currentPageLabel="Basın Odası" />
+            <PublicFooter currentPageLabel={t('marketing.press.footerLabel')} />
         </div>
     );
 }

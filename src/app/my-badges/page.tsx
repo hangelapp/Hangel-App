@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 import { Progress } from '@/components/ui/progress';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800' },
@@ -124,7 +125,7 @@ export default function MyBadgesPage() {
     const { user: authUser } = useUser();
     const db = useFirestore();
     const userDocRef = useMemoFirebase(
-        () => authUser ? doc(db, 'users', authUser.uid) : null,
+        () => authUser ? doc(db, COLLECTIONS.users, authUser.uid) : null,
         [db, authUser?.uid],
     );
     const { data: userData } = useDoc(userDocRef);

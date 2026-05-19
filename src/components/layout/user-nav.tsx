@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase"
 import { doc } from "firebase/firestore"
+import { COLLECTIONS } from '@/firebase/collections';
 
 export function UserNav() {
   const { user } = useUser();
@@ -17,7 +18,7 @@ export function UserNav() {
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return doc(db, 'users', user.uid);
+    return doc(db, COLLECTIONS.users, user.uid);
   }, [db, user]);
 
   const { data: userData } = useDoc<{ avatarUrl?: string; name?: string }>(userDocRef);

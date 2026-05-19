@@ -44,6 +44,7 @@ import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase, useAuth, initiatePasswordResetEmail } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { User } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -533,9 +534,9 @@ const AssignEntityDialog = ({ user, open, onOpenChange }: {
     setRoleTitle(rolesByKind[entityKind][0].value);
   }, [entityKind]);
 
-  const ngosQuery = useMemoFirebase(() => collection(db, 'ngos'), [db]);
-  const brandsQuery = useMemoFirebase(() => collection(db, 'brands'), [db]);
-  const clubsQuery = useMemoFirebase(() => collection(db, 'clubs'), [db]);
+  const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
+  const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+  const clubsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
 
   const { data: ngos, isLoading: ngosLoading } = useCollection<EntityRow>(ngosQuery);
   const { data: brands, isLoading: brandsLoading } = useCollection<EntityRow>(brandsQuery);
@@ -579,7 +580,7 @@ const AssignEntityDialog = ({ user, open, onOpenChange }: {
       if (user.role !== 'super-admin') {
         userPatch.role = 'ngo-admin';
       }
-      await updateDoc(doc(db, 'users', user.id), userPatch);
+      await updateDoc(doc(db, COLLECTIONS.users, user.id), userPatch);
 
       // 2) Sadece Genel Yönetici ise kuruluşun adminUserId'sini bu kullanıcıya bağla
       if (isPrimary) {
@@ -594,7 +595,7 @@ const AssignEntityDialog = ({ user, open, onOpenChange }: {
 
       // 3) userInvitations koleksiyonuna kabul edilmiş davet kaydı ekle
       try {
-        await addDoc(collection(db, 'userInvitations'), {
+        await addDoc(collection(db, COLLECTIONS.userInvitations), {
           [invitationIdField]: selectedEntityId,
           inviteeUserId: user.id,
           role: roleTitle,
@@ -778,7 +779,7 @@ export default function UsersPage() {
   const [assigningUser, setAssigningUser] = useState<UserRow | null>(null);
   const [permError, setPermError] = useState<string | null>(null);
 
-  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: users, isLoading, error: usersError } = useCollection<UserRow>(usersQuery);
 
   React.useEffect(() => {
@@ -832,7 +833,7 @@ export default function UsersPage() {
   const handleToggleStatus = async (userId: string, name: string, currentStatus: string) => {
     const newStatus = currentStatus === 'Aktif' ? 'Askıda' : 'Aktif';
     try {
-      await updateDoc(doc(db, 'users', userId), { status: newStatus });
+      await updateDoc(doc(db, COLLECTIONS.users, userId), { status: newStatus });
       toast({
         title: 'Kullanıcı Durumu Güncellendi',
         description: `${name} → ${newStatus.toLowerCase()}.`,
@@ -856,14 +857,14 @@ export default function UsersPage() {
       // Önce `disabled: true` flag'i yaz ki tekrar giriş engellensin,
       // ardından Firestore dokümanını sil. (Auth hesabı manuel silinmelidir.)
       try {
-        await updateDoc(doc(db, 'users', user.id), {
+        await updateDoc(doc(db, COLLECTIONS.users, user.id), {
           disabled: true,
           disabledAt: serverTimestamp(),
         });
       } catch (flagErr) {
         console.warn('disabled flag yazılamadı:', flagErr);
       }
-      await deleteDoc(doc(db, 'users', user.id));
+      await deleteDoc(doc(db, COLLECTIONS.users, user.id));
       toast({
         variant: 'destructive',
         title: 'Kullanıcı Silindi',
@@ -899,7 +900,7 @@ export default function UsersPage() {
     let failed = 0;
     for (const u of matchingByEmail) {
       try {
-        await deleteDoc(doc(db, 'users', u.id));
+        await deleteDoc(doc(db, COLLECTIONS.users, u.id));
         deleted++;
       } catch (e) {
         console.error(`Bulk delete failed for ${u.id}:`, e);
@@ -923,7 +924,7 @@ export default function UsersPage() {
       if (email) channels.push('email');
       if (user.personalInfo?.phone) channels.push('sms');
 
-      await updateDoc(doc(db, 'users', user.id), {
+      await updateDoc(doc(db, COLLECTIONS.users, user.id), {
         verificationRequestedAt: new Date().toISOString(),
         verificationRequestedChannels: channels,
       });
@@ -973,7 +974,7 @@ export default function UsersPage() {
     try {
       await initiatePasswordResetEmail(auth, email);
       try {
-        await updateDoc(doc(db, 'users', user.id), {
+        await updateDoc(doc(db, COLLECTIONS.users, user.id), {
           passwordResetRequestedAt: new Date().toISOString(),
         });
       } catch (logErr) {
@@ -1008,7 +1009,7 @@ export default function UsersPage() {
 
   const handleSaveUser = async (userId: string, patch: Record<string, unknown>) => {
     try {
-      await updateDoc(doc(db, 'users', userId), patch);
+      await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
       toast({ title: 'Bilgiler Güncellendi', description: 'Kullanıcı bilgileri kaydedildi.' });
     } catch (e) {
       console.error('Save user failed:', e);

@@ -10,6 +10,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { Plus, Filter, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface SegmentRow {
   id: string;
@@ -30,7 +31,7 @@ const useCaseBadge: Record<string, string> = {
 export default function SegmentsListPage() {
   const db = useFirestore();
   const q = useMemoFirebase(
-    () => query(collection(db, 'recipientSegments'), orderBy('updatedAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.recipientSegments), orderBy('updatedAt', 'desc')),
     [db]
   );
   const { data, isLoading } = useCollection<SegmentRow>(q);

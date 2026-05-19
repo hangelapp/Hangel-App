@@ -9,6 +9,7 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { ArrowLeft, Mail, MessageSquare, MessageCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CampaignDoc {
   name?: string;
@@ -43,7 +44,7 @@ function fmt(d?: { toDate?: () => Date }) {
 export default function NgoCampaignDetailPage() {
   const params = useParams<{ id: string }>();
   const db = useFirestore();
-  const ref = useMemoFirebase(() => doc(db, 'campaigns', params.id), [db, params.id]);
+  const ref = useMemoFirebase(() => doc(db, COLLECTIONS.campaigns, params.id), [db, params.id]);
   const { data, isLoading } = useDoc<CampaignDoc>(ref);
 
   if (isLoading) {

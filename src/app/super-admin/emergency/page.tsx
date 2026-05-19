@@ -18,6 +18,7 @@ import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, l
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-'];
 
@@ -91,38 +92,38 @@ export default function EmergencyManagementPage() {
   const pendingApprovalIdRef = useRef<string | null>(null);
 
   // Tüm kullanıcılar (filtre için)
-  const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers, isLoading: usersLoading } = useCollection<UserDoc>(usersQuery);
 
   // Geçmiş talepler
   const requestsQuery = useMemoFirebase(() => {
-    return query(collection(db, 'emergencyRequests'), orderBy('createdAt', 'desc'), limit(50));
+    return query(collection(db, COLLECTIONS.emergencyRequests), orderBy('createdAt', 'desc'), limit(50));
   }, [db]);
   const { data: requests, isLoading: requestsLoading } = useCollection<EmergencyDoc>(requestsQuery);
 
   // Yanıtlar (kullanıcıların kan taleplerine verdikleri cevaplar)
   const responsesQuery = useMemoFirebase(() => {
-    return query(collection(db, 'emergencyResponses'), orderBy('respondedAt', 'desc'), limit(200));
+    return query(collection(db, COLLECTIONS.emergencyResponses), orderBy('respondedAt', 'desc'), limit(200));
   }, [db]);
   const { data: responses, isLoading: responsesLoading } = useCollection<EmergencyDoc>(responsesQuery);
 
   // Kullanıcı tarafından gönderilmiş, super-admin onayı bekleyen talepler
   const pendingRequestsQuery = useMemoFirebase(() => {
-    return query(collection(db, 'emergencyRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+    return query(collection(db, COLLECTIONS.emergencyRequests), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
   }, [db]);
   const { data: pendingRequestsPrimary } = useCollection<EmergencyDoc>(pendingRequestsQuery);
 
   // Geriye dönük uyumluluk: bloodRequests / userRequests koleksiyonları varsa onlardan da oku
   const bloodRequestsQuery = useMemoFirebase(() => {
     try {
-      return query(collection(db, 'bloodRequests'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+      return query(collection(db, COLLECTIONS.bloodRequests), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
     } catch { return null; }
   }, [db]);
   const { data: bloodRequestsFallback } = useCollection<EmergencyDoc>(bloodRequestsQuery);
 
   const userRequestsQuery = useMemoFirebase(() => {
     try {
-      return query(collection(db, 'userRequests'), where('type', '==', 'blood'), orderBy('createdAt', 'desc'));
+      return query(collection(db, COLLECTIONS.userRequests), where('type', '==', 'blood'), orderBy('createdAt', 'desc'));
     } catch { return null; }
   }, [db]);
   const { data: userRequestsFallback } = useCollection<EmergencyDoc>(userRequestsQuery);
@@ -200,7 +201,7 @@ export default function EmergencyManagementPage() {
   const handleRejectRequest = async (reqId: string) => {
     if (!confirm('Bu talep reddedilsin mi?')) return;
     try {
-      await updateDoc(doc(db, 'emergencyRequests', reqId), {
+      await updateDoc(doc(db, COLLECTIONS.emergencyRequests, reqId), {
         status: 'rejected',
         rejectedAt: serverTimestamp(),
         rejectedBy: authUser?.uid || null,
@@ -233,7 +234,7 @@ export default function EmergencyManagementPage() {
     setIsSending(true);
     try {
       // 1. Talep dokümanı oluştur
-      const requestRef = await addDoc(collection(db, 'emergencyRequests'), {
+      const requestRef = await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
         type: 'blood',
         hospitalName: hospitalName.trim(),
         hospitalAddress: hospitalAddress.trim(),
@@ -258,7 +259,7 @@ export default function EmergencyManagementPage() {
         let current = writeBatch(db);
         let count = 0;
         for (const u of matchingUsers) {
-          const notifRef = doc(collection(db, 'notifications'));
+          const notifRef = doc(collection(db, COLLECTIONS.notifications));
           current.set(notifRef, {
             userId: u.id,
             type: 'emergency-blood',
@@ -289,7 +290,7 @@ export default function EmergencyManagementPage() {
       const pendingId = pendingApprovalIdRef.current;
       if (pendingId) {
         try {
-          await updateDoc(doc(db, 'emergencyRequests', pendingId), {
+          await updateDoc(doc(db, COLLECTIONS.emergencyRequests, pendingId), {
             status: 'sent',
             approvedAt: serverTimestamp(),
             approvedBy: authUser?.uid || null,

@@ -14,6 +14,7 @@ import { countryPhoneCodes } from '@/lib/data';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const roles = [
     { id: 'Genel Yönetici', label: 'Genel Yönetici', description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' },
@@ -54,7 +55,7 @@ export default function NewUserPage() {
     const ngoId = searchParams.get('id') || authUser?.uid || null;
 
     // Tüm üyeleri çek (telefon eşleştirmesi için)
-    const usersQuery = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+    const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
     const { data: allUsers, isLoading: usersLoading } = useCollection<UserInfo>(usersQuery);
 
     const normalizedSearch = normalizePhone(phone);
@@ -101,19 +102,19 @@ export default function NewUserPage() {
             let entityKindAccusative = 'kuruluşu'; // "...yönetmek üzere"
 
             try {
-                const ngoSnap = await getDoc(doc(db, 'ngos', ngoId));
+                const ngoSnap = await getDoc(doc(db, COLLECTIONS.ngos, ngoId));
                 if (ngoSnap.exists()) {
                     entityName = (ngoSnap.data() as { name?: string }).name || 'STK';
                     entityKind = 'STK';
                     entityKindAccusative = "STK'yı";
                 } else {
-                    const brandSnap = await getDoc(doc(db, 'brands', ngoId));
+                    const brandSnap = await getDoc(doc(db, COLLECTIONS.brands, ngoId));
                     if (brandSnap.exists()) {
                         entityName = (brandSnap.data() as { name?: string }).name || 'Marka';
                         entityKind = 'Marka';
                         entityKindAccusative = 'markayı';
                     } else {
-                        const clubSnap = await getDoc(doc(db, 'studentClubs', ngoId));
+                        const clubSnap = await getDoc(doc(db, COLLECTIONS.studentClubs, ngoId));
                         if (clubSnap.exists()) {
                             entityName = (clubSnap.data() as { name?: string }).name || 'Öğrenci Kulübü';
                             entityKind = 'Öğrenci Kulübü';
@@ -135,7 +136,7 @@ export default function NewUserPage() {
             const invitationMessage = `Sizi ${entityName} ${entityKindAccusative} ${rolePhrase} olarak yönetmek üzere davet edildiniz.`;
 
             // 1. Davet kaydı
-            const invitationRef = await addDoc(collection(db, 'userInvitations'), {
+            const invitationRef = await addDoc(collection(db, COLLECTIONS.userInvitations), {
                 ngoId,
                 entityKind,
                 entityName,
@@ -152,7 +153,7 @@ export default function NewUserPage() {
 
             // 2. Uygulama içi bildirim
             try {
-                await addDoc(collection(db, 'notifications'), {
+                await addDoc(collection(db, COLLECTIONS.notifications), {
                     userId: matchedUser.id,
                     type: 'invitation',
                     title: `🤝 ${entityName} Yetkili Daveti`,
@@ -176,7 +177,7 @@ export default function NewUserPage() {
             const inviteeEmail = matchedUser.personalInfo?.email;
             if (inviteeEmail) {
                 try {
-                    await addDoc(collection(db, 'mailQueue'), {
+                    await addDoc(collection(db, COLLECTIONS.mailQueue), {
                         to: inviteeEmail,
                         toName: matchedUser.name || '',
                         subject: `${entityName} - Yetkili Daveti`,

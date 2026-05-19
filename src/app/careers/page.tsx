@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { volunteeringOpportunities } from '@/lib/data';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const CareerSection = ({ 
     title, 
@@ -57,6 +58,7 @@ const CareerSection = ({
 export default function CareersPage() {
     const router = useRouter();
     const cms = useWebPage('careers');
+    const { t } = useTranslation();
 
     const hangelVolunteerOps = volunteeringOpportunities.filter(
         (op) => op.organization === 'hangel Derneği'
@@ -68,18 +70,18 @@ export default function CareersPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Kariyer</span>
+                    <span className="text-[12px] font-bold tracking-tight">{t('marketing.careers.navLabel')}</span>
                     <div className="w-24"></div>
                 </div>
             </header>
 
             {/* Hero */}
             <CareerSection
-                title={cms.title || 'Geleceği Bizimle İnşa Edin.'}
-                subtitle={cms.subtitle || 'Etki odaklı bir kariyer yolculuğuna başlayın.'}
-                description={cms.description || "Hangel'de sadece kod yazmıyor veya kampanya yönetmiyoruz; toplumsal bir dönüşümün mimarları oluyoruz. Yeteneklerinizi dünya için kullanmaya hazır mısınız?"}
+                title={cms.title || t('marketing.careers.heroTitle')}
+                subtitle={cms.subtitle || t('marketing.careers.heroSubtitle')}
+                description={cms.description || t('marketing.careers.heroDescription')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="young professionals working happy"
             />
@@ -106,8 +108,8 @@ export default function CareersPage() {
             <section className="py-24 bg-[#f5f5f7]">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Açık Pozisyonlar</h2>
-                    <p className="text-lg text-muted-foreground">İyilik hareketine katılın, yeteneklerinizle fark yaratın.</p>
+                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.careers.openPositionsTitle')}</h2>
+                    <p className="text-lg text-muted-foreground">{t('marketing.careers.openPositionsDescription')}</p>
                 </div>
                 <div className="space-y-4">
                   {[
@@ -123,7 +125,7 @@ export default function CareersPage() {
                         <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
                       </div>
                       <Button asChild className="shrink-0">
-                        <a href={`mailto:kariyer@hangel.org?subject=${encodeURIComponent('Başvuru: ' + job.title)}`}>İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></a>
+                        <a href={`mailto:kariyer@hangel.org?subject=${encodeURIComponent('Başvuru: ' + job.title)}`}>{t('marketing.careers.applyCta')} <ChevronRight className="h-4 w-4 ml-2"/></a>
                       </Button>
                     </div>
                   ))}
@@ -134,8 +136,8 @@ export default function CareersPage() {
             <section className="py-24 bg-white">
               <div className="container mx-auto px-6 max-w-4xl space-y-12">
                 <div className="text-center space-y-3">
-                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Gönüllülük Fırsatları</h2>
-                    <p className="text-lg text-muted-foreground">Zamanınızı ve yeteneklerinizi toplumsal faydaya dönüştürün.</p>
+                    <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.careers.volunteerTitle')}</h2>
+                    <p className="text-lg text-muted-foreground">{t('marketing.careers.volunteerDescription')}</p>
                 </div>
                 <div className="space-y-4">
                   {hangelVolunteerOps.map((job) => (
@@ -145,7 +147,7 @@ export default function CareersPage() {
                         <p className="text-sm text-muted-foreground">{job.organization} • {job.location.city} • {job.commitment}</p>
                       </div>
                       <Button asChild className="shrink-0">
-                        <Link href={`/volunteering/${job.id}`}>İncele ve Başvur <ChevronRight className="h-4 w-4 ml-2"/></Link>
+                        <Link href={`/volunteering/${job.id}`}>{t('marketing.careers.applyCta')} <ChevronRight className="h-4 w-4 ml-2"/></Link>
                       </Button>
                     </div>
                   ))}
@@ -153,7 +155,7 @@ export default function CareersPage() {
               </div>
             </section>
 
-            <PublicFooter currentPageLabel="Kariyer" />
+            <PublicFooter currentPageLabel={t('marketing.careers.footerLabel')} />
         </div>
     );
 }

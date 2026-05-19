@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, HeartHandshake, Award, Clock, Users, Sparkles, S
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const ImpactSection = ({ title, subtitle, description, theme = 'light', className, children, id }: { title: string; subtitle?: string; description?: string; theme?: 'light' | 'dark'; className?: string; children?: React.ReactNode; id?: string }) => (
   <section id={id} className={cn(
@@ -45,16 +46,17 @@ const StepCard = ({ step, title, description }: { step: number | string; title: 
 
 export default function ImecePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-background">
       <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between max-w-6xl">
-          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Geri">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label={t('marketing.imece.headerBack')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <p className="font-black text-primary">hangel</p>
           <Button asChild size="sm" className="rounded-full">
-            <Link href="/volunteering">İlanları Gör <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
+            <Link href="/volunteering">{t('marketing.imece.headerCta')} <ArrowRight className="ml-1.5 h-3.5 w-3.5" /></Link>
           </Button>
         </div>
       </header>
@@ -62,16 +64,16 @@ export default function ImecePage() {
       <main>
         <ImpactSection
           theme="dark"
-          subtitle="Zamanınız en değerli bağış."
-          title="hangel İmece"
-          description="İmece geleneğinden ilham alan, gönüllülüğü organize eden ve etki ölçen modern bir platform. Yetkinliklerinizi, zamanınızı ve sosyal hassasiyetinizi gerçekten ihtiyaç duyulan projelere yöneltir."
+          subtitle={t('marketing.imece.heroSubtitle')}
+          title={t('marketing.imece.heroTitle')}
+          description={t('marketing.imece.heroDescription')}
         />
 
         <section className="bg-[#f5f5f7] py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-6xl">
             <div className="text-center mb-12 space-y-3">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">İmece Nasıl Çalışır?</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">4 adımda gönüllüden somut sosyal etkiye.</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t('marketing.imece.howTitle')}</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('marketing.imece.howDescription')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StepCard step="1" title="Profil Oluştur" description="Yetkinliklerini, ilgi alanlarını ve müsaitliğini paylaş. hangel sana en uygun fırsatları getirsin." />
@@ -85,8 +87,8 @@ export default function ImecePage() {
         <section className="bg-white py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-6xl">
             <div className="text-center mb-12 space-y-3">
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">İmece'nin Farkı</h2>
-              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Geleneksel gönüllülükten farklı olarak hangel İmece, eşleşme ve etki ölçümünde fark yaratır.</p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight">{t('marketing.imece.differenceTitle')}</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('marketing.imece.differenceDescription')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <FeatureCard
@@ -126,23 +128,23 @@ export default function ImecePage() {
         <section className="bg-[#042654] text-white py-20 md:py-32">
           <div className="container mx-auto px-4 max-w-4xl text-center space-y-8">
             <HeartHandshake className="h-12 w-12 mx-auto text-[#00A8E8]" />
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">İmecenin Bir Parçası Ol</h2>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{t('marketing.imece.ctaTitle')}</h2>
             <p className="text-lg md:text-xl text-white/80 leading-relaxed max-w-2xl mx-auto">
-              Yalnız değilsin. Senin gibi düşünen ve harekete geçen binlerce insanla birlikte, gerçek değişim yarat.
+              {t('marketing.imece.ctaDescription')}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
               <Button asChild size="lg" className="rounded-full px-8 h-14 font-bold text-lg shadow-2xl shadow-primary/30">
-                <Link href="/login/selection?action=register">Hemen Gönüllü Ol</Link>
+                <Link href="/login/selection?action=register">{t('marketing.imece.ctaVolunteer')}</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="rounded-full px-8 h-14 font-bold text-lg bg-transparent border-white/30 text-white hover:bg-white hover:text-[#042654]">
-                <Link href="/volunteering">İlanları Keşfet</Link>
+                <Link href="/volunteering">{t('marketing.imece.ctaExplore')}</Link>
               </Button>
             </div>
           </div>
         </section>
       </main>
 
-      <PublicFooter currentPageLabel="hangel İmece" />
+      <PublicFooter currentPageLabel={t('marketing.imece.footerLabel')} />
     </div>
   );
 }

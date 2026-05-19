@@ -14,6 +14,7 @@ import { collection, query, where } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
@@ -25,7 +26,7 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
     const applicationsQuery = useMemoFirebase(() => {
         if (opportunityIds.length === 0) return null;
         // Firebase query 'in' limited to 10 items, but for now we query all and filter if needed or just query by type
-        return query(collection(db, 'applications'), where('type', '==', 'Gönüllülük'));
+        return query(collection(db, COLLECTIONS.applications), where('type', '==', 'Gönüllülük'));
     }, [db, opportunityIds]);
 
     const { data: allApps, isLoading } = useCollection<UserApplication>(applicationsQuery);
@@ -137,7 +138,7 @@ const VolunteerPage = () => {
   const oppsQuery = useMemoFirebase(() => {
     const finalId = entityId || (authUser?.uid);
     if (!db || !finalId) return null;
-    return query(collection(db, 'volunteering'), where('ngoId', '==', finalId));
+    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', finalId));
   }, [db, entityId, authUser?.uid]);
 
   const { data: opportunities, isLoading } = useCollection<Volunteering>(oppsQuery);

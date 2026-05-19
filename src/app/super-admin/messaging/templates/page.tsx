@@ -10,6 +10,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { Plus, FileText, MessageSquare, Mail, Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface TemplateRow {
   id: string;
@@ -32,7 +33,7 @@ const useCaseBadge: Record<string, string> = {
 export default function TemplatesListPage() {
   const db = useFirestore();
   const tplQuery = useMemoFirebase(
-    () => query(collection(db, 'messageTemplates'), orderBy('updatedAt', 'desc')),
+    () => query(collection(db, COLLECTIONS.messageTemplates), orderBy('updatedAt', 'desc')),
     [db]
   );
   const { data, isLoading } = useCollection<TemplateRow>(tplQuery);

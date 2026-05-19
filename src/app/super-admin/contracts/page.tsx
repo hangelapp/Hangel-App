@@ -24,6 +24,7 @@ import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { contractsData as seedContracts } from '@/lib/contracts';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Contract = {
   id: string;        // == slug
@@ -141,7 +142,7 @@ export default function ContractsAdminPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [seeding, setSeeding] = useState(false);
 
-  const contractsQuery = useMemoFirebase(() => collection(db, 'contracts'), [db]);
+  const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
   const { data: firestoreContracts, isLoading } = useCollection<Contract>(contractsQuery);
 
   // Firestore'dakiler ile birlikte tohum (seed) içeriği — Firestore'dakiler önceliklidir
@@ -175,7 +176,7 @@ export default function ContractsAdminPage() {
 
   const handleSave = async (c: Contract) => {
     try {
-      await setDoc(doc(db, 'contracts', c.slug), {
+      await setDoc(doc(db, COLLECTIONS.contracts, c.slug), {
         slug: c.slug,
         title: c.title,
         content: c.content,
@@ -197,7 +198,7 @@ export default function ContractsAdminPage() {
 
   const handleDelete = async (c: Contract) => {
     try {
-      await deleteDoc(doc(db, 'contracts', c.slug));
+      await deleteDoc(doc(db, COLLECTIONS.contracts, c.slug));
       toast({ variant: 'destructive', title: 'Silindi', description: `"${c.title}" kaldırıldı (varsayılan içerik gösterilebilir).` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
@@ -215,7 +216,7 @@ export default function ContractsAdminPage() {
     try {
       let count = 0;
       for (const s of seedContracts) {
-        await setDoc(doc(db, 'contracts', s.slug), {
+        await setDoc(doc(db, COLLECTIONS.contracts, s.slug), {
           slug: s.slug,
           title: s.title,
           content: s.content,

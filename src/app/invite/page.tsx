@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface PhoneContact {
     id: string;
@@ -171,7 +172,7 @@ export default function InvitePage() {
     const [emailProviderDialogOpen, setEmailProviderDialogOpen] = useState(false);
 
     // Platformdaki telefon eşleşmesi için (sadece "hangel'da" rozetini göstermek amacıyla)
-    const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
+    const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection(usersRef);
 
     useEffect(() => {
@@ -192,7 +193,7 @@ export default function InvitePage() {
     const recordInvite = async (recipientName: string, recipientPhone?: string | null, recipientEmail?: string | null) => {
         if (!authUser?.uid) return 0;
         try {
-            await addDoc(collection(db, 'invites'), {
+            await addDoc(collection(db, COLLECTIONS.invites), {
                 senderId: authUser.uid,
                 recipientName,
                 recipientPhone: recipientPhone || null,
@@ -201,7 +202,7 @@ export default function InvitePage() {
                 status: 'sent',
                 pointsAwarded: INVITE_POINTS,
             });
-            await updateDoc(doc(db, 'users', authUser.uid), {
+            await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
                 inviteCount: increment(1),
                 impactScore: increment(INVITE_POINTS),
             });

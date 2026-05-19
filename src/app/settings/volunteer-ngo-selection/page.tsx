@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { NGO } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type NgoType = NGO['type'] | 'Tümü';
 
@@ -25,12 +26,12 @@ export default function VolunteerNgoSelectionPage() {
     const db = useFirestore();
 
     // Firestore NGO listesi
-    const ngosQuery = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
+    const ngosQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
     const { data: ngosData, isLoading: isNgosLoading } = useCollection<NGO>(ngosQuery);
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
     const { data: userData, isLoading: isUserDataLoading } = useDoc<{ volunteerNgos?: string[] }>(userDocRef);

@@ -42,6 +42,7 @@ import {
 } from 'firebase/firestore';
 import type { LibrarySection } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type AssistantKind = 'library' | 'project';
 
@@ -100,7 +101,7 @@ function AssistantEditor({
     (async () => {
       setLoading(true);
       try {
-        const snap = await getDoc(doc(db, 'aiAssistantConfig', kind));
+        const snap = await getDoc(doc(db, COLLECTIONS.aiAssistantConfig, kind));
         if (!active) return;
         if (snap.exists()) {
           const data = snap.data() as Partial<AssistantConfig>;
@@ -149,7 +150,7 @@ function AssistantEditor({
     setSaving(true);
     try {
       await setDoc(
-        doc(db, 'aiAssistantConfig', kind),
+        doc(db, COLLECTIONS.aiAssistantConfig, kind),
         {
           ...config,
           kind,
@@ -322,7 +323,7 @@ function AssistantEditor({
 export default function AIManagementPage() {
   const db = useFirestore();
 
-  const libQuery = useMemoFirebase(() => collection(db, 'library'), [db]);
+  const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
   const sectionOptions = useMemo(() => {

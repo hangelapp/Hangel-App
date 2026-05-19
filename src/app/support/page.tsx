@@ -36,6 +36,8 @@ import { HangelLogo } from '@/components/icons';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const CategoryLink = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
     <Link href={href} className="group flex flex-col items-center gap-2 text-center">
@@ -62,6 +64,7 @@ export default function SupportPage() {
     const db = useFirestore();
     const { user: authUser } = useUser();
     const cms = useWebPage('support');
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
     // Yeni destek talebi formu
@@ -90,7 +93,7 @@ export default function SupportPage() {
         }
         setSubmittingTicket(true);
         try {
-            await addDoc(collection(db, 'supportTickets'), {
+            await addDoc(collection(db, COLLECTIONS.supportTickets), {
                 userId: authUser.uid,
                 userName: ticketName.trim() || authUser.displayName || 'Kullanıcı',
                 userEmail: ticketEmail.trim() || authUser.email || null,
@@ -135,7 +138,7 @@ export default function SupportPage() {
     const faqSection = (
         <section className="max-w-4xl mx-auto space-y-8">
             <div className="text-center">
-                <h2 className="text-3xl font-bold tracking-tight">Sıkça Sorulan Sorular</h2>
+                <h2 className="text-3xl font-bold tracking-tight">{t('marketing.support.faqTitle')}</h2>
             </div>
             <Accordion type="single" collapsible className="w-full bg-white p-4 rounded-3xl shadow-lg border border-black/5">
                 <AccordionItem value="item-1">
@@ -173,8 +176,8 @@ export default function SupportPage() {
         {/* Hero Section */}
         <section className="text-center space-y-6">
             <HangelLogo className="text-6xl mx-auto" />
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{cms.title || 'hangel Destek'}</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium">{cms.description || cms.subtitle || 'Yardıma mı ihtiyacınız var? Buradan başlayın.'}</p>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">{cms.title || t('marketing.support.heroTitleFallback')}</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium">{cms.description || cms.subtitle || t('marketing.support.heroDescriptionFallback')}</p>
         </section>
 
         {/* Categories Section */}
@@ -301,9 +304,9 @@ export default function SupportPage() {
         <section className="max-w-3xl mx-auto">
             <Card className="rounded-[2.5rem] overflow-hidden shadow-xl">
                 <CardHeader className="bg-primary/5">
-                    <CardTitle className="text-2xl">Bize Ulaşın</CardTitle>
+                    <CardTitle className="text-2xl">{t('marketing.support.contactTitle')}</CardTitle>
                     <CardDescription>
-                        Sorununuzu yazın, destek ekibimiz size hızlıca dönüş yapsın.
+                        {t('marketing.support.contactDescription')}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -393,7 +396,7 @@ export default function SupportPage() {
         </section>
 
       </main>
-      <PublicFooter currentPageLabel="Destek Merkezi" />
+      <PublicFooter currentPageLabel={t('marketing.support.footerLabel')} />
     </div>
   );
 }

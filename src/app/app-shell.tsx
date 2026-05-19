@@ -61,6 +61,7 @@ import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import { signOut } from 'firebase/auth';
 import { isNativeApp } from '@/lib/capacitor';
 import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
@@ -158,7 +159,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
     const { data: userData } = useDoc<User>(userDocRef);

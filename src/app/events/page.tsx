@@ -19,6 +19,7 @@ import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
+import { COLLECTIONS } from '@/firebase/collections';
 
 function EventsPageContent() {
   const searchParams = useSearchParams();
@@ -36,7 +37,7 @@ function EventsPageContent() {
   const [dateTo, setDateTo] = useState('');
 
   // Fetch events from Firestore
-  const eventsRef = useMemoFirebase(() => collection(db, 'events'), [db]);
+  const eventsRef = useMemoFirebase(() => collection(db, COLLECTIONS.events), [db]);
   const { data: firestoreEvents } = useCollection(eventsRef);
   const events = useMemo<Event[]>(() => (firestoreEvents ?? []) as Event[], [firestoreEvents]);
 

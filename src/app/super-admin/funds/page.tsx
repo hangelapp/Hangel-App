@@ -29,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Fund = {
     id: string;
@@ -182,7 +183,7 @@ export default function FundsAdminPage() {
     const [statusFilter, setStatusFilter] = useState<'all' | 'Açık' | 'Kapandı'>('all');
 
     const fundsQuery = useMemoFirebase(
-        () => (db ? query(collection(db, 'funds'), orderBy('deadline', 'asc')) : null),
+        () => (db ? query(collection(db, COLLECTIONS.funds), orderBy('deadline', 'asc')) : null),
         [db],
     );
     const { data: funds, isLoading } = useCollection<Fund>(fundsQuery);
@@ -210,10 +211,10 @@ export default function FundsAdminPage() {
     const handleSave = async (data: FundFormData, id?: string) => {
         try {
             if (id) {
-                await updateDoc(doc(db, 'funds', id), { ...data, updatedAt: serverTimestamp() });
+                await updateDoc(doc(db, COLLECTIONS.funds, id), { ...data, updatedAt: serverTimestamp() });
                 toast({ title: 'Kaydedildi', description: `"${data.name}" güncellendi.` });
             } else {
-                await addDoc(collection(db, 'funds'), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+                await addDoc(collection(db, COLLECTIONS.funds), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
                 toast({ title: 'Oluşturuldu', description: `"${data.name}" yayına alındı.` });
             }
         } catch (e) {
@@ -230,7 +231,7 @@ export default function FundsAdminPage() {
 
     const handleDelete = async (fund: Fund) => {
         try {
-            await deleteDoc(doc(db, 'funds', fund.id));
+            await deleteDoc(doc(db, COLLECTIONS.funds, fund.id));
             toast({ variant: 'destructive', title: 'Silindi', description: `"${fund.name}" kaldırıldı.` });
         } catch (e) {
             const message = e instanceof Error ? e.message : 'Silinemedi.';

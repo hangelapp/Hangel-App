@@ -19,6 +19,7 @@ import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -103,7 +104,7 @@ export default function NgoProfilePage() {
 
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !id) return null;
-    return doc(db, 'ngos', id);
+    return doc(db, COLLECTIONS.ngos, id);
   }, [db, id]);
 
   const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
@@ -111,7 +112,7 @@ export default function NgoProfilePage() {
   const { user: authUser } = useUser();
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
   const { data: userData } = useDoc<{ supportedNgos?: string[]; volunteerNgos?: string[] }>(userDocRef);
 
@@ -184,7 +185,7 @@ export default function NgoProfilePage() {
 
   useEffect(() => {
     if (db && id) {
-      updateDoc(doc(db, 'ngos', id), { viewCount: increment(1) }).catch(() => {});
+      updateDoc(doc(db, COLLECTIONS.ngos, id), { viewCount: increment(1) }).catch(() => {});
     }
   }, [db, id]);
   

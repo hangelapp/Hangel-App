@@ -9,6 +9,7 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function ContractDetailPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function ContractDetailPage() {
   // Önce Firestore'dan dene (super-admin tarafından düzenlenmiş içerik)
   const contractDocRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    return doc(db, 'contracts', slug);
+    return doc(db, COLLECTIONS.contracts, slug);
   }, [db, slug]);
   const { data: firestoreContract, isLoading } = useDoc<{ slug: string; title: string; content: string }>(contractDocRef);
 

@@ -10,6 +10,7 @@ import { collection, orderBy, query, where, getDoc, doc } from 'firebase/firesto
 import { ArrowLeft, Plus, Send, Mail, MessageSquare, MessageCircle, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CampaignRow {
   id: string;
@@ -36,7 +37,7 @@ export default function NgoCampaignsListPage() {
   useEffect(() => {
     if (isUserLoading || !user) return;
     (async () => {
-      const snap = await getDoc(doc(db, 'users', user.uid));
+      const snap = await getDoc(doc(db, COLLECTIONS.users, user.uid));
       if (snap.exists()) {
         const data = snap.data() as { managedNgoId?: string };
         if (data.managedNgoId) setNgoId(data.managedNgoId);
@@ -47,7 +48,7 @@ export default function NgoCampaignsListPage() {
   const q = useMemoFirebase(
     () =>
       ngoId
-        ? query(collection(db, 'campaigns'), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'))
+        ? query(collection(db, COLLECTIONS.campaigns), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'))
         : null,
     [db, ngoId]
   );

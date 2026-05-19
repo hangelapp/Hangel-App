@@ -39,6 +39,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 // Demo veriler kaldırıldı — gerçek çağrılar Firestore'dan beslenecek (henüz bağlanmadıysa boş gösterilir).
@@ -235,7 +236,7 @@ export default function EmergencyPage() {
             return;
         }
         try {
-            await addDoc(collection(db, 'emergencyRequests'), {
+            await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
                 type: 'blood',
                 hospitalName: data.hospital || '',
                 bloodType: data.bloodType || '',

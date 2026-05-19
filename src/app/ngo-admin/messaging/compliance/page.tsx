@@ -8,6 +8,7 @@ import { useFirestore, useDoc, useUser, useMemoFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { ArrowLeft, Shield, AlertTriangle, CheckCircle, TrendingDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface TrustDoc {
   sent7d?: number;
@@ -37,7 +38,7 @@ export default function CompliancePage() {
   useEffect(() => {
     if (isUserLoading || !user) return;
     (async () => {
-      const snap = await getDoc(doc(db, 'users', user.uid));
+      const snap = await getDoc(doc(db, COLLECTIONS.users, user.uid));
       if (snap.exists()) {
         const data = snap.data() as { managedNgoId?: string };
         if (data.managedNgoId) setNgoId(data.managedNgoId);
@@ -46,7 +47,7 @@ export default function CompliancePage() {
   }, [user, isUserLoading, db]);
 
   const trustRef = useMemoFirebase(
-    () => (ngoId ? doc(db, 'ngoTrustScores', ngoId) : null),
+    () => (ngoId ? doc(db, COLLECTIONS.ngoTrustScores, ngoId) : null),
     [db, ngoId]
   );
   const { data, isLoading } = useDoc<TrustDoc>(trustRef);

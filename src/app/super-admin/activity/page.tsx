@@ -8,6 +8,7 @@ import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox } from 'lucide-rea
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import Link from 'next/link';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface ActivityEntry {
   id: string;
@@ -52,10 +53,10 @@ const KIND_META: Record<ActivityEntry['kind'], { label: string; icon: typeof Han
 export default function SuperAdminActivityPage() {
   const db = useFirestore();
 
-  const donationsQuery = useMemoFirebase(() => (db ? query(collection(db, 'donations'), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
-  const appsQuery = useMemoFirebase(() => (db ? query(collection(db, 'applications'), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
-  const invitationsQuery = useMemoFirebase(() => (db ? query(collection(db, 'userInvitations'), orderBy('invitedAt', 'desc'), limit(50)) : null), [db]);
-  const notificationsQuery = useMemoFirebase(() => (db ? query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
+  const donationsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.donations), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
+  const appsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.applications), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
+  const invitationsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.userInvitations), orderBy('invitedAt', 'desc'), limit(50)) : null), [db]);
+  const notificationsQuery = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.notifications), orderBy('createdAt', 'desc'), limit(50)) : null), [db]);
 
   const { data: donations } = useCollection<DonationRow>(donationsQuery);
   const { data: applications } = useCollection<ApplicationRow>(appsQuery);

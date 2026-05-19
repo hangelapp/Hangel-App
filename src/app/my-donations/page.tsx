@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import type { DonationTransaction } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type SortKey = 'date' | 'purchaseAmount' | 'donationAmount';
 type SortDirection = 'desc' | 'asc';
@@ -95,7 +96,7 @@ export default function MyDonationsPage() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
   const donationsQuery = useMemoFirebase(
-    () => authUser ? query(collection(db, 'donations'), where('userId', '==', authUser.uid)) : null,
+    () => authUser ? query(collection(db, COLLECTIONS.donations), where('userId', '==', authUser.uid)) : null,
     [db, authUser?.uid]
   );
   const { data: donationTransactions, isLoading } = useCollection<DonationTransaction>(donationsQuery);

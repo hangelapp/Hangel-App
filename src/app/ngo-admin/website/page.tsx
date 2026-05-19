@@ -46,6 +46,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const analyticsProviders = [
     { id: 'google-analytics', name: 'Google Analytics', logo: 'GA', color: 'bg-[#f9ab00]', status: 'Bağlı' },
@@ -128,17 +129,17 @@ export default function WebsiteBuilderPage() {
 
     // Yönetici olduğu varlığı tespit et (NGO öncelikli)
     const adminNgosQ = useMemoFirebase(
-        () => (db && authUser?.uid ? query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
         [db, authUser?.uid],
     );
     const { data: adminNgos } = useCollection<NgoDoc>(adminNgosQ);
     const userDocRef = useMemoFirebase(
-        () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
         [db, authUser?.uid],
     );
     const { data: userData } = useDoc<{ managedNgoId?: string }>(userDocRef);
     const fallbackNgoRef = useMemoFirebase(
-        () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+        () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
         [db, userData?.managedNgoId],
     );
     const { data: fallbackNgo } = useDoc<NgoDoc>(fallbackNgoRef);
@@ -252,7 +253,7 @@ export default function WebsiteBuilderPage() {
         }
         setIsSaving(true);
         try {
-            await updateDoc(doc(db, 'ngos', ngoId), buildPayload() as Record<string, unknown>);
+            await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), buildPayload() as Record<string, unknown>);
             setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
             if (!silent) {
                 toast({ title: 'Tüm Değişiklikler Kaydedildi', description: 'Web siteniz güncel bilgilerle yayına hazır.' });

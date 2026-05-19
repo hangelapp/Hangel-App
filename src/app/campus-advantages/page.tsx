@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AdvantageCard = ({ 
     title, 
@@ -75,13 +76,14 @@ const AdvantageCard = ({
 export default function CampusAdvantagesPage() {
     const router = useRouter();
     const cms = useWebPage('campus-advantages');
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30 pb-24">
             {/* Navigation */}
             <div className="container mx-auto px-4 pt-8">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full hover:bg-white text-[#1d1d1f]">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Geri Dön
+                    <ArrowLeft className="mr-2 h-4 w-4" /> {t('marketing.common.back')}
                 </Button>
             </div>
 
@@ -89,20 +91,20 @@ export default function CampusAdvantagesPage() {
             <section className="container mx-auto px-4 pt-16 pb-20 text-center space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-widest">hangel Kampüs Programı</span>
+                    <span className="text-xs font-bold uppercase tracking-widest">{t('marketing.campus.badge')}</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-bold tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto">
-                    {cms.title || (<>Kulübünüzle <br className="hidden md:block" /> Geleceğin Etkisini Şekillendirin.</>)}
+                    {cms.title || t('marketing.campus.heroTitleFallback')}
                 </h1>
                 <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    {cms.description || 'Üniversite kulübünüzü dijital dünyaya taşıyın. Hangel Kampüs, sosyal etki odaklı kulüplerin büyümesi, yönetilmesi ve değer oluşturması için tasarlandı.'}
+                    {cms.description || t('marketing.campus.heroDescriptionFallback')}
                 </p>
                 <div className="pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
-                        <Link href="/login/selection?action=register&type=corporate">Kulübünü Kaydet</Link>
+                        <Link href="/login/selection?action=register&type=corporate">{t('marketing.campus.registerCta')}</Link>
                     </Button>
                     <Button asChild variant="outline" size="lg" className="rounded-full px-10 h-14 text-lg font-bold">
-                        <Link href="/support">Bilgi Al</Link>
+                        <Link href="/support">{t('marketing.campus.infoCta')}</Link>
                     </Button>
                 </div>
             </section>
@@ -184,22 +186,22 @@ export default function CampusAdvantagesPage() {
             <section className="container mx-auto px-4 pt-24 pb-12">
                 <div className="bg-[#1d1d1f] rounded-[3rem] p-12 text-center text-white space-y-8 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10">Kampüsün Değişim <br /> Lideri Olun.</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10">{t('marketing.campus.ctaTitle')}</h2>
                     <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto relative z-10">
-                        Hangel Kampüs Programı'na hemen başvurun, kulübünüzün etkisini teknolojiyle katlayın.
+                        {t('marketing.campus.ctaDescription')}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
                         <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
-                            <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
+                            <Link href="/login/selection?action=register&type=corporate">{t('marketing.common.applyNow')}</Link>
                         </Button>
                         <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
-                            <Link href="/support">Destek Al</Link>
+                            <Link href="/support">{t('marketing.common.getSupport')}</Link>
                         </Button>
                     </div>
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="Kampüs Avantajları" />
+            <PublicFooter currentPageLabel={t('marketing.campus.footerLabel')} />
         </div>
     );
 }

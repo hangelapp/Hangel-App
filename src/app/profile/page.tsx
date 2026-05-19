@@ -126,7 +126,7 @@ export default function ProfilePage() {
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
     const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
@@ -162,19 +162,19 @@ export default function ProfilePage() {
 
     const supportedNgosQuery = useMemoFirebase(() => {
         if (!db || supportedNgoIds.length === 0) return null;
-        return query(collection(db, 'ngos'), where(documentId(), 'in', supportedNgoIds.slice(0, 10)));
+        return query(collection(db, COLLECTIONS.ngos), where(documentId(), 'in', supportedNgoIds.slice(0, 10)));
     }, [db, supportedNgoIds.join(',')]);
     const volunteerNgosQuery = useMemoFirebase(() => {
         if (!db || volunteerNgoIds.length === 0) return null;
-        return query(collection(db, 'ngos'), where(documentId(), 'in', volunteerNgoIds.slice(0, 10)));
+        return query(collection(db, COLLECTIONS.ngos), where(documentId(), 'in', volunteerNgoIds.slice(0, 10)));
     }, [db, volunteerNgoIds.join(',')]);
     const followedBrandsQuery = useMemoFirebase(() => {
         if (!db || followedBrandIds.length === 0) return null;
-        return query(collection(db, 'brands'), where(documentId(), 'in', followedBrandIds.slice(0, 10)));
+        return query(collection(db, COLLECTIONS.brands), where(documentId(), 'in', followedBrandIds.slice(0, 10)));
     }, [db, followedBrandIds.join(',')]);
     const joinedClubsQuery = useMemoFirebase(() => {
         if (!db || joinedClubIds.length === 0) return null;
-        return query(collection(db, 'clubs'), where(documentId(), 'in', joinedClubIds.slice(0, 10)));
+        return query(collection(db, COLLECTIONS.clubs), where(documentId(), 'in', joinedClubIds.slice(0, 10)));
     }, [db, joinedClubIds.join(',')]);
 
     const { data: supportedNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(supportedNgosQuery);

@@ -61,6 +61,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 import { useFirestore } from '@/firebase';
 import { collection, getCountFromServer, query, where } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const iconColorMap: { [key: string]: string } = {
   'FileText': 'bg-sky-500',
@@ -145,11 +146,11 @@ export default function SuperAdminDashboard() {
     (async () => {
       try {
         const [usersSnap, ngosSnap, brandsSnap, pendingAppsSnap] = await Promise.all([
-          getCountFromServer(collection(db, 'users')),
-          getCountFromServer(collection(db, 'ngos')),
-          getCountFromServer(collection(db, 'brands')),
+          getCountFromServer(collection(db, COLLECTIONS.users)),
+          getCountFromServer(collection(db, COLLECTIONS.ngos)),
+          getCountFromServer(collection(db, COLLECTIONS.brands)),
           getCountFromServer(
-            query(collection(db, 'applications'), where('status', '==', 'Beklemede'))
+            query(collection(db, COLLECTIONS.applications), where('status', '==', 'Beklemede'))
           ),
         ]);
         if (cancelled) return;

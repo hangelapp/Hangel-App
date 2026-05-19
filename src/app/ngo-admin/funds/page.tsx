@@ -28,6 +28,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { addDoc, collection, doc, query, serverTimestamp } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface NgoAdminUserData {
   managedNgoId?: string;
@@ -108,7 +109,7 @@ export default function FundsPage() {
     const [applyingId, setApplyingId] = useState<string | null>(null);
 
     const userDocRef = useMemoFirebase(
-        () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
         [db, authUser?.uid],
     );
     const { data: userData } = useDoc<NgoAdminUserData>(userDocRef);
@@ -129,7 +130,7 @@ export default function FundsPage() {
         }
         setApplyingId(fund.id);
         try {
-            await addDoc(collection(db, 'fundApplications'), {
+            await addDoc(collection(db, COLLECTIONS.fundApplications), {
                 fundId: fund.id,
                 fundName: fund.name,
                 applicantId: authUser.uid,
@@ -160,7 +161,7 @@ export default function FundsPage() {
     // orderBy uygulamıyoruz; deadline alanı eksik olan dokümanlar listede yer alsın.
     // Sıralama tamamen client-side yapılıyor.
     const fundsQuery = useMemoFirebase(
-        () => (db ? query(collection(db, 'funds')) : null),
+        () => (db ? query(collection(db, COLLECTIONS.funds)) : null),
         [db],
     );
     const { data: cmsFunds } = useCollection<Fund>(fundsQuery);

@@ -29,6 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Ticket = {
   id: string;
@@ -197,7 +198,7 @@ export default function SupportPage() {
 
   const ticketsQuery = useMemoFirebase(() => {
     if (!db) return null;
-    return query(collection(db, 'supportTickets'), orderBy('createdAt', 'desc'));
+    return query(collection(db, COLLECTIONS.supportTickets), orderBy('createdAt', 'desc'));
   }, [db]);
   const { data: tickets, isLoading } = useCollection<Ticket>(ticketsQuery);
 
@@ -221,7 +222,7 @@ export default function SupportPage() {
     if (!activeTicket || !replyText) return;
     setSending(true);
     try {
-      await updateDoc(doc(db, 'supportTickets', activeTicket.id), {
+      await updateDoc(doc(db, COLLECTIONS.supportTickets, activeTicket.id), {
         reply: replyText,
         status: 'answered',
         repliedAt: serverTimestamp(),
@@ -230,7 +231,7 @@ export default function SupportPage() {
       // Kullanıcıya bildirim gönder (varsa userId'si)
       if (activeTicket.userId) {
         try {
-          await addDoc(collection(db, 'notifications'), {
+          await addDoc(collection(db, COLLECTIONS.notifications), {
             userId: activeTicket.userId,
             type: 'support-reply',
             title: 'Destek talebinize yanıt geldi',
@@ -266,7 +267,7 @@ export default function SupportPage() {
     if (!activeTicket) return;
     setSending(true);
     try {
-      await updateDoc(doc(db, 'supportTickets', activeTicket.id), {
+      await updateDoc(doc(db, COLLECTIONS.supportTickets, activeTicket.id), {
         status: 'closed',
         closedAt: serverTimestamp(),
       });

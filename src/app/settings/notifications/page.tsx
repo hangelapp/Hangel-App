@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const notificationGroups = [
     {
@@ -62,7 +63,7 @@ export default function NotificationSettingsPage() {
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
     const { data: userData } = useDoc<{ notificationSettings?: NotificationSettings }>(userDocRef);

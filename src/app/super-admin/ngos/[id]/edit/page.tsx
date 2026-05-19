@@ -18,6 +18,7 @@ import { ArrowLeft, Loader2, Save, Upload, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import type { NGO } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const MEMBERSHIP_OPTIONS = [
     'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
@@ -106,7 +107,7 @@ export default function NgoEditPage() {
     const db = useFirestore();
     const id = params.id as string;
 
-    const ngoDocRef = useMemoFirebase(() => (db && id ? doc(db, 'ngos', id) : null), [db, id]);
+    const ngoDocRef = useMemoFirebase(() => (db && id ? doc(db, COLLECTIONS.ngos, id) : null), [db, id]);
     const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
 
     const [saving, setSaving] = useState(false);

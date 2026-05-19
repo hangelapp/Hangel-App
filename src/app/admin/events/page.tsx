@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { events as allEvents, studentClubs } from '@/lib/data';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type ProcessedEvent = {
     id: string;
@@ -178,7 +179,7 @@ export default function StudentClubEventsPage() {
     const db = useFirestore();
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser?.uid) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser?.uid]);
     const { data: userData } = useDoc<UserData>(userDocRef);
 

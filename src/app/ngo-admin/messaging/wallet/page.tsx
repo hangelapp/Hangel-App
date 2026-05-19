@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Wallet, Loader2, Plus } from 'lucide-react';
 import { messagingFetch } from '@/lib/messaging/client';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface Tx {
   id: string;
@@ -56,7 +57,7 @@ export default function NgoWalletPage() {
   const txQuery = useMemoFirebase(
     () =>
       ngoId
-        ? query(collection(db, 'messagingTransactions'), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'), limit(100))
+        ? query(collection(db, COLLECTIONS.messagingTransactions), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'), limit(100))
         : null,
     [db, ngoId]
   );

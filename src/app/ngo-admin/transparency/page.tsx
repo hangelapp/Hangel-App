@@ -17,6 +17,7 @@ import { useState, useCallback } from 'react';
 import { useFirestore, useUser, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CriteriaItem {
   id: number;
@@ -84,7 +85,7 @@ export default function TransparencyPage() {
 
   const transparencyDocRef = useMemoFirebase(() => {
     if (!authUser?.uid) return null;
-    return doc(firestore, 'transparency', authUser.uid);
+    return doc(firestore, COLLECTIONS.transparency, authUser.uid);
   }, [firestore, authUser?.uid]);
 
   const { data: transparencyData, isLoading } = useDoc<{ criteria: CriteriaItem[] }>(transparencyDocRef);
@@ -99,7 +100,7 @@ export default function TransparencyPage() {
   const persistCriteria = useCallback((next: CriteriaItem[]) => {
     if (!authUser?.uid) return;
     setDocumentNonBlocking(
-      doc(firestore, 'transparency', authUser.uid),
+      doc(firestore, COLLECTIONS.transparency, authUser.uid),
       { criteria: next, ngoId: authUser.uid, updatedAt: new Date().toISOString() },
       { merge: true },
     );

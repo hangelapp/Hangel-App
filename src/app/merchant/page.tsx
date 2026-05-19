@@ -15,6 +15,7 @@ import Image from 'next/image';
 
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const ProductSection = ({ 
     title, 
@@ -74,6 +75,7 @@ const ProductSection = ({
 export default function MerchantAdvantagesPage() {
     const router = useRouter();
     const cms = useWebPage('merchant');
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -81,12 +83,12 @@ export default function MerchantAdvantagesPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
                     <div className="flex items-center gap-6 text-[12px] font-medium text-[#1d1d1f]/80">
-                        <span className="hidden sm:inline">Üye İşyeri Programı</span>
+                        <span className="hidden sm:inline">{t('marketing.merchant.navLabel')}</span>
                         <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-                            <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
+                            <Link href="/login/selection?action=register&type=corporate">{t('marketing.merchant.applyCta')}</Link>
                         </Button>
                     </div>
                 </div>
@@ -94,9 +96,9 @@ export default function MerchantAdvantagesPage() {
 
             {/* Hero Section */}
             <ProductSection
-                title={cms.title || 'İşletmenizi İyiliğe Açın.'}
-                subtitle={cms.subtitle || 'hangel Üye İşyeri ile ticaretin yeni nesil hali.'}
-                description={cms.description || 'Müşterilerinize modern bir ödeme deneyimi sunarken, her işlemi toplumsal bir faydaya dönüştürün. Ek masraf yok, sadece etki var.'}
+                title={cms.title || t('marketing.merchant.heroTitle')}
+                subtitle={cms.subtitle || t('marketing.merchant.heroSubtitle')}
+                description={cms.description || t('marketing.merchant.heroDescription')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="modern minimalist retail store interior"
             />
@@ -130,7 +132,7 @@ export default function MerchantAdvantagesPage() {
                 imageHint="sleek minimalist dashboard on tablet screen"
             />
 
-            <PublicFooter currentPageLabel="Üye İşyeri" />
+            <PublicFooter currentPageLabel={t('marketing.merchant.footerLabel')} />
         </div>
     );
 }

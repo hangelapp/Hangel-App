@@ -12,23 +12,25 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useAssociationContent } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
     const router = useRouter();
+    const { t } = useTranslation();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                 <Button onClick={() => router.push('/login')} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium text-[#1d1d1f]/80">
-                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Platforma Dön
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.association.platformBack')}
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
-                    <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
-                    <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
-                    <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
-                    <Link href="/hangelassociation/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</Link>
+                    <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('marketing.association.navAbout')}</Link>
+                    <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('marketing.association.navEvents')}</Link>
+                    <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('marketing.association.navWorkshop')}</Link>
+                    <Link href="/hangelassociation/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>{t('marketing.association.navLegislation')}</Link>
                 </nav>
                 <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
-                    <Link href="/login/selection?action=register">Gönüllü Ol</Link>
+                    <Link href="/login/selection?action=register">{t('marketing.association.volunteerCta')}</Link>
                 </Button>
             </div>
         </header>
@@ -131,10 +133,12 @@ const GridCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint, theme = 
     </div>
 );
 
-const PressSection = () => (
+const PressSection = () => {
+    const { t } = useTranslation();
+    return (
     <section className="py-20 md:py-32 bg-white border-y border-black/5 overflow-hidden">
         <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight">Basında Biz</h2>
+            <h2 className="text-3xl font-bold tracking-tight">{t('marketing.association.pressTitle')}</h2>
         </div>
         <div className="relative h-20">
             <div className="absolute inset-0 flex items-center animate-scroll">
@@ -156,11 +160,13 @@ const PressSection = () => (
             </div>
         </div>
     </section>
-);
+    );
+};
 
 
 export default function AssociationHomePage() {
     const { get } = useAssociationContent();
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans text-center text-[#1d1d1f]">
@@ -177,11 +183,11 @@ export default function AssociationHomePage() {
 
             <main>
                 <section className="h-[90vh] flex flex-col justify-center items-center text-center p-6 bg-[#f5f5f7] border-b border-black/5">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">yok öyle yalnız başına mücadele etmek.</h1>
-                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">Gelin, gücü birleştirelim. Gerçek etki üretelim.</h2>
+                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{t('marketing.association.heroTitle')}</h1>
+                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{t('marketing.association.heroSubtitle')}</h2>
                     <div className="mt-12">
                         <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
-                            <Link href="/login/selection?action=register">Hemen Katıl</Link>
+                            <Link href="/login/selection?action=register">{t('marketing.association.joinCta')}</Link>
                         </Button>
                     </div>
                 </section>
@@ -250,7 +256,7 @@ export default function AssociationHomePage() {
 
             </main>
 
-            <PublicFooter currentPageLabel="hangel derneği" />
+            <PublicFooter currentPageLabel={t('marketing.association.footerLabel')} />
         </div>
     );
 }

@@ -14,6 +14,7 @@ import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Volunteering, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
@@ -23,14 +24,14 @@ export default function VolunteeringDetailPage() {
 
   const oppDocRef = useMemoFirebase(() => {
     if (!db || !id) return null;
-    return doc(db, 'volunteering', id);
+    return doc(db, COLLECTIONS.volunteering, id);
   }, [db, id]);
 
   const { data: opportunity, isLoading: isOppLoading } = useDoc<Volunteering>(oppDocRef);
 
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !opportunity?.ngoId) return null;
-    return doc(db, 'ngos', opportunity.ngoId);
+    return doc(db, COLLECTIONS.ngos, opportunity.ngoId);
   }, [db, opportunity?.ngoId]);
 
   const { data: ngo } = useDoc<NGO>(ngoDocRef);
@@ -98,7 +99,7 @@ export default function VolunteeringDetailPage() {
     }
     
     setIsApplying(true);
-    const appRef = collection(db, 'applications');
+    const appRef = collection(db, COLLECTIONS.applications);
     
     // Perform non-blocking write to Firestore
     addDocumentNonBlocking(appRef, {

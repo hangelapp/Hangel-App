@@ -10,6 +10,7 @@ import {
     collection, getDocs, doc, updateDoc, setDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
 import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function MaintenancePage() {
     const db = useFirestore();
@@ -29,7 +30,7 @@ export default function MaintenancePage() {
         setLogs([]);
         log('info', 'Kullanıcı koleksiyonu taranıyor...');
         try {
-            const snap = await getDocs(collection(db, 'users'));
+            const snap = await getDocs(collection(db, COLLECTIONS.users));
             log('info', `${snap.size} kullanıcı bulundu.`);
 
             let updated = 0;
@@ -49,7 +50,7 @@ export default function MaintenancePage() {
                     }
                 }
                 try {
-                    await updateDoc(doc(db, 'users', d.id), { createdAt });
+                    await updateDoc(doc(db, COLLECTIONS.users, d.id), { createdAt });
                     updated++;
                 } catch (e) {
                     failed++;
@@ -179,7 +180,7 @@ export default function MaintenancePage() {
             ];
 
             await setDoc(
-                doc(db, 'library', 'filmler'),
+                doc(db, COLLECTIONS.library, 'filmler'),
                 {
                     slug: 'filmler',
                     title: 'Filmler',

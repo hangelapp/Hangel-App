@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const statusVariantMap = {
     'approved': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
@@ -69,15 +70,15 @@ export default function AdminPage() {
   // Kullanıcının yönettiği varlıkları Firestore'dan bul
   const ngosQ = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
-    return query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid));
+    return query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid));
   }, [db, authUser?.uid]);
   const brandsQ = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
-    return query(collection(db, 'brands'), where('adminUserId', '==', authUser.uid));
+    return query(collection(db, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid));
   }, [db, authUser?.uid]);
   const clubsQ = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
-    return query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid));
+    return query(collection(db, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid));
   }, [db, authUser?.uid]);
 
   const { data: managedNgos, isLoading: ngosLoading } = useCollection<ManagedNgoDoc>(ngosQ);
@@ -88,21 +89,21 @@ export default function AdminPage() {
   // de yazılıyor. adminUserId query'si herhangi bir nedenle eşleşmezse,
   // bu field'lardan direkt fetch ederek varlığı yine de gösteriyoruz.
   const userDocRef = useMemoFirebase(
-    () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+    () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
     [db, authUser?.uid],
   );
   const { data: userData } = useDoc<UserDoc>(userDocRef);
 
   const fallbackNgoRef = useMemoFirebase(
-    () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+    () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
     [db, userData?.managedNgoId],
   );
   const fallbackBrandRef = useMemoFirebase(
-    () => (db && userData?.managedBrandId ? doc(db, 'brands', userData.managedBrandId) : null),
+    () => (db && userData?.managedBrandId ? doc(db, COLLECTIONS.brands, userData.managedBrandId) : null),
     [db, userData?.managedBrandId],
   );
   const fallbackClubRef = useMemoFirebase(
-    () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
+    () => (db && userData?.managedClubId ? doc(db, COLLECTIONS.clubs, userData.managedClubId) : null),
     [db, userData?.managedClubId],
   );
   const { data: fallbackNgo } = useDoc<ManagedNgoDoc>(fallbackNgoRef);

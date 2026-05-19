@@ -17,6 +17,7 @@ import { getApp } from 'firebase/app';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export type ImpactSlide = {
   id: string;
@@ -85,15 +86,15 @@ function StoryViewer() {
 
     // Yönetici olduğu varlığı tespit et
     const adminNgosQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
     const adminBrandsQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
     const adminClubsQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
     const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
@@ -101,21 +102,21 @@ function StoryViewer() {
     const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
 
     const userDocRef = useMemoFirebase(
-      () => (db && authUser?.uid ? doc(db, 'users', authUser.uid) : null),
+      () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
       [db, authUser?.uid],
     );
     const { data: userData } = useDoc<UserDocData>(userDocRef);
 
     const fallbackNgoRef = useMemoFirebase(
-      () => (db && userData?.managedNgoId ? doc(db, 'ngos', userData.managedNgoId) : null),
+      () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
       [db, userData?.managedNgoId],
     );
     const fallbackBrandRef = useMemoFirebase(
-      () => (db && userData?.managedBrandId ? doc(db, 'brands', userData.managedBrandId) : null),
+      () => (db && userData?.managedBrandId ? doc(db, COLLECTIONS.brands, userData.managedBrandId) : null),
       [db, userData?.managedBrandId],
     );
     const fallbackClubRef = useMemoFirebase(
-      () => (db && userData?.managedClubId ? doc(db, 'clubs', userData.managedClubId) : null),
+      () => (db && userData?.managedClubId ? doc(db, COLLECTIONS.clubs, userData.managedClubId) : null),
       [db, userData?.managedClubId],
     );
     const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
@@ -133,26 +134,26 @@ function StoryViewer() {
     }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
 
     // İlgili koleksiyonları topla
-    const allUsersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
+    const allUsersQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
     const { data: allUsers } = useCollection<UserDocData>(allUsersQ);
 
-    const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
+    const donationsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.donations) : null), [db]);
     const { data: allDonations } = useCollection<DonationDoc>(donationsQ);
 
     const volunteeringQ = useMemoFirebase(
-      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'volunteering'), where('ngoId', '==', activeEntity.id)) : null),
+      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', activeEntity.id)) : null),
       [db, activeEntity?.kind, activeEntity?.id],
     );
     const { data: opportunities } = useCollection<OpportunityDoc>(volunteeringQ);
 
     const postsQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, 'posts'), where('authorId', '==', authUser.uid)) : null),
+      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.posts), where('authorId', '==', authUser.uid)) : null),
       [db, authUser?.uid],
     );
     const { data: posts } = useCollection<PostDoc>(postsQ);
 
     const transparencyQ = useMemoFirebase(
-      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, 'transparency'), where('ngoId', '==', activeEntity.id)) : null),
+      () => (db && activeEntity?.kind === 'ngo' ? query(collection(db, COLLECTIONS.transparency), where('ngoId', '==', activeEntity.id)) : null),
       [db, activeEntity?.kind, activeEntity?.id],
     );
     const { data: transparencyItems } = useCollection<TransparencyDoc>(transparencyQ);

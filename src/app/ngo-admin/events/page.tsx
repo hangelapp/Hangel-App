@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { addDoc, collection, doc, query, where } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -136,15 +137,15 @@ export default function EventManagementPage() {
 
     // ---- Resolve activeEntity (same pattern from manage-profile) ----
     const adminNgosQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'ngos'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const adminBrandsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'brands'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const adminClubsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, 'clubs'), where('adminUserId', '==', authUser.uid)) : null),
+        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
         [firestore, authUser?.uid],
     );
     const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
@@ -152,21 +153,21 @@ export default function EventManagementPage() {
     const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
 
     const userDocRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, 'users', authUser.uid) : null),
+        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
         [firestore, authUser?.uid],
     );
     const { data: userData } = useDoc<UserDocData>(userDocRef);
 
     const fallbackNgoRef = useMemoFirebase(
-        () => (firestore && userData?.managedNgoId ? doc(firestore, 'ngos', userData.managedNgoId) : null),
+        () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
         [firestore, userData?.managedNgoId],
     );
     const fallbackBrandRef = useMemoFirebase(
-        () => (firestore && userData?.managedBrandId ? doc(firestore, 'brands', userData.managedBrandId) : null),
+        () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
         [firestore, userData?.managedBrandId],
     );
     const fallbackClubRef = useMemoFirebase(
-        () => (firestore && userData?.managedClubId ? doc(firestore, 'clubs', userData.managedClubId) : null),
+        () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
         [firestore, userData?.managedClubId],
     );
     const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
@@ -190,7 +191,7 @@ export default function EventManagementPage() {
     const myEventsQ = useMemoFirebase(
         () =>
             firestore && isClub && activeEntity?.data.id
-                ? query(collection(firestore, 'events'), where('organizerId', '==', activeEntity.data.id))
+                ? query(collection(firestore, COLLECTIONS.events), where('organizerId', '==', activeEntity.data.id))
                 : null,
         [firestore, isClub, activeEntity?.data.id],
     );
@@ -234,7 +235,7 @@ export default function EventManagementPage() {
                 .replace(/(^-|-$)/g, '');
 
             // Force status='Beklemede' regardless of any other inputs
-            await addDoc(collection(firestore, 'events'), {
+            await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
                 slug: `${slug}-${Date.now().toString(36)}`,
                 organizer: activeEntity.data.name || 'Öğrenci Kulübü',

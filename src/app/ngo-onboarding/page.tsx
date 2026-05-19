@@ -42,6 +42,7 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 import {
   Carousel,
   CarouselContent,
@@ -133,6 +134,7 @@ const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: Luc
 export default function NgoOnboardingPage() {
     const router = useRouter();
     const cms = useWebPage('ngo-onboarding');
+    const { t } = useTranslation();
     const plugin = React.useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
@@ -234,11 +236,11 @@ export default function NgoOnboardingPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">hangel STK</span>
+                    <span className="text-[12px] font-bold tracking-tight uppercase">{t('marketing.ngoOnboarding.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <Link href="/login/selection?action=register&type=corporate">Şimdi Başvur</Link>
+                        <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.applyCta')}</Link>
                     </Button>
                 </div>
             </header>
@@ -247,17 +249,17 @@ export default function NgoOnboardingPage() {
             <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-[10px] font-bold tracking-widest uppercase">hangel STK</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase">{t('marketing.ngoOnboarding.heroBadge')}</span>
                 </div>
                 <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                    {cms.title || 'STK yöneticisi, müjde!'}
+                    {cms.title || t('marketing.ngoOnboarding.heroTitleFallback')}
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    {cms.description || 'Profesyonel yetkinlik, Sosyal hassasiyet ve lokasyon bazlı gönüllülük ilanları verebileceğiniz; markalarla yapılan iş birlikleri sayesinde düzenli gelir elde edebileceğiniz; uluslararası sosyal etki veri kütüphanesine erişebileceğiniz ve web sitenizi tek panelden yönetebileceğiniz ücretsiz platform.'}
+                    {cms.description || t('marketing.ngoOnboarding.heroDescriptionFallback')}
                 </p>
                 <div className="pt-8 flex flex-col items-center gap-4">
                     <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
-                        <Link href="/login/selection?action=register&type=corporate">Ücretsiz Başvur</Link>
+                        <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.freeApplyCta')}</Link>
                     </Button>
                 </div>
             </section>
@@ -265,8 +267,8 @@ export default function NgoOnboardingPage() {
             <section className="py-20 bg-[#f5f5f7] border-y">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-12 space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight">Neden hangel'e Katılmalısınız?</h2>
-                        <p className="text-muted-foreground">Dijital dönüşümden sürdürülebilir kaynak yaratmaya kadar, STK'nızın etkisini en üst düzeye çıkaracak araçları keşfedin.</p>
+                        <h2 className="text-3xl font-bold tracking-tight">{t('marketing.ngoOnboarding.whyTitle')}</h2>
+                        <p className="text-muted-foreground">{t('marketing.ngoOnboarding.whyDescription')}</p>
                     </div>
                     <Carousel
                         plugins={[plugin.current]}
@@ -344,7 +346,7 @@ export default function NgoOnboardingPage() {
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="STK'lar İçin" />
+            <PublicFooter currentPageLabel={t('marketing.ngoOnboarding.footerLabel')} />
         </div>
     );
 }

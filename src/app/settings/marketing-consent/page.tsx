@@ -10,6 +10,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, MessageSquare, Mail, Shield } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface ConsentDoc {
   email?: { enabled: boolean; updatedAt?: unknown; source?: string };
@@ -30,7 +31,7 @@ export default function MarketingConsentPage() {
   useEffect(() => {
     if (isUserLoading || !user) return;
     (async () => {
-      const snap = await getDoc(doc(db, 'userMarketingConsent', user.uid));
+      const snap = await getDoc(doc(db, COLLECTIONS.userMarketingConsent, user.uid));
       if (snap.exists()) {
         const d = snap.data() as ConsentDoc;
         setEmailEnabled(d.email?.enabled ?? false);
@@ -45,7 +46,7 @@ export default function MarketingConsentPage() {
     if (!user) return;
     setSaving(true);
     try {
-      const ref = doc(db, 'userMarketingConsent', user.uid);
+      const ref = doc(db, COLLECTIONS.userMarketingConsent, user.uid);
       const payload: Record<string, unknown> = {
         email: { enabled: emailEnabled, source: 'user', updatedAt: serverTimestamp() },
         sms: { enabled: smsEnabled, source: 'user', updatedAt: serverTimestamp() },

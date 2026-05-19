@@ -21,6 +21,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface CampaignRow {
   id: string;
@@ -59,7 +60,7 @@ function StatusBadge({ status }: { status?: string }) {
 export default function MessagingHub() {
   const db = useFirestore();
   const recentQuery = useMemoFirebase(
-    () => query(collection(db, 'campaigns'), orderBy('createdAt', 'desc'), limit(5)),
+    () => query(collection(db, COLLECTIONS.campaigns), orderBy('createdAt', 'desc'), limit(5)),
     [db]
   );
   const { data: recent, isLoading } = useCollection<CampaignRow>(recentQuery);

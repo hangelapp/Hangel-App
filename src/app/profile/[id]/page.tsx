@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type PublicUserData = {
   name?: string;
@@ -46,7 +47,7 @@ export default function PublicProfilePage() {
   const db = useFirestore();
 
   const userRef = useMemoFirebase(
-    () => (db && id ? doc(db, 'users', id) : null),
+    () => (db && id ? doc(db, COLLECTIONS.users, id) : null),
     [db, id]
   );
   const { data: userData, isLoading } = useDoc<PublicUserData>(userRef);

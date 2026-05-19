@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const ImpactSection = ({ 
     title, 
@@ -59,6 +60,7 @@ const ImpactSection = ({
 export default function SocialImpactPage() {
     const router = useRouter();
     const cms = useWebPage('social-impact');
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -66,21 +68,21 @@ export default function SocialImpactPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Sürdürülebilirlik</span>
+                    <span className="text-[12px] font-bold tracking-tight">{t('marketing.socialImpact.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-[#0071e3] hover:bg-[#0077ed]">
-                        <Link href="/impact-story">Etkiyi Gör</Link>
+                        <Link href="/impact-story">{t('marketing.socialImpact.impactCta')}</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Total Reach */}
             <ImpactSection
-                title={cms.title || 'Milyonlara Ulaştık.'}
+                title={cms.title || t('marketing.socialImpact.heroTitleFallback')}
                 stat="1.2M+"
-                subtitle={cms.subtitle || 'Hayata doğrudan dokunuş.'}
-                description={cms.description || 'Türkiye genelinde yürüttüğümüz projeler ve desteklediğimiz sivil toplum kuruluşları ile toplumsal kalkınmanın lokomotifi oluyoruz.'}
+                subtitle={cms.subtitle || t('marketing.socialImpact.heroSubtitleFallback')}
+                description={cms.description || t('marketing.socialImpact.heroDescriptionFallback')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop'}
                 imageHint="happy group people support"
             />
@@ -119,8 +121,8 @@ export default function SocialImpactPage() {
             <section className="py-24 bg-[#f5f5f7]">
                 <div className="container mx-auto px-6 max-w-4xl space-y-12">
                     <div className="text-center space-y-3">
-                        <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Raporlarımız</h2>
-                        <p className="text-lg text-muted-foreground">Şeffaflık ilkemiz gereği, etkimizi düzenli olarak raporluyoruz.</p>
+                        <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('marketing.socialImpact.reportsTitle')}</h2>
+                        <p className="text-lg text-muted-foreground">{t('marketing.socialImpact.reportsDescription')}</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         {[
@@ -143,7 +145,7 @@ export default function SocialImpactPage() {
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="Sürdürülebilirlik" />
+            <PublicFooter currentPageLabel={t('marketing.socialImpact.footerLabel')} />
         </div>
     );
 }

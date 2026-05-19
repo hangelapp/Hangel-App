@@ -77,6 +77,45 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — P2-5b: i18n marketing pages migration (14 marketing pages)
+- **ID**: P2-5b
+- **Lead**: frontend-lead
+- **Değişiklik**: 14 marketing sayfasında en görünür ~6-15 hardcoded TR string'i (header nav, hero title/desc, top section başlıkları, ana CTA'lar, `PublicFooter currentPageLabel`) `useTranslation()` + yeni `marketing.*` namespace'ine taşındı. CMS-driven (`useWebPage`/`useWebContent`) hero alanlarındaki **fallback** string'leri migrate edildi; CMS body intact.
+- **Yeni namespace**: `marketing.{common,about,press,careers,logo,support,merchant,campus,ngoOnboarding,association,accessibility,socialImpact,imece,info}.*`. Toplam **~115 yeni anahtar** (TR+EN dolu, ru/ar/fa/es/ha skeleton yok — provider P2-5d fallback'i TR'ye düşürüyor).
+- **Per-page migrate count** (~):
+  - about: 7 (navLabel, join cta, hero title/subtitle/desc, association cta, values badge+title, footer)
+  - press: 8 (back, navLabel, contactCta, hero title+desc fallback, releases title+desc, contact title+desc, footer)
+  - careers: 9 (back, navLabel, hero title/subtitle/desc, openPositions title+desc, volunteer title+desc, applyCta×2, footer)
+  - logo: 7 (back, navLabel, heroTitle, heroDescription, architecture/mediaKit/usage titles, footer)
+  - logo-usage: 7 (aynı set)
+  - support: 6 (heroTitle, heroDesc fallback, faqTitle, contactTitle+desc, footer)
+  - merchant: 7 (back, navLabel, applyCta, hero title/subtitle/desc, footer)
+  - campus: 8 (back, badge, hero title/desc fallback, register+info CTA, ctaTitle+desc, applyNow+getSupport, footer)
+  - ngo-onboarding: 8 (back, navLabel, applyCta, heroBadge, hero title+desc fallback, freeApply, why title+desc, footer)
+  - hangelassociation: 10 (platformBack, 4 nav links, volunteerCta, hero title+subtitle, joinCta, pressTitle, footer)
+  - accessibility: 5 (backShort, navLabel, configureCta, hero title+desc fallback)
+  - social-impact: 8 (back, navLabel, impactCta, hero title/subtitle/desc fallback, reports title+desc, footer)
+  - imece: 11 (headerBack aria, headerCta, hero subtitle/title/desc, how title+desc, difference title+desc, ctaTitle+desc, ctaVolunteer+Explore, footer)
+  - bilgi-toplumu-hizmetleri: 8 (back, navLabel, hero title+desc fallback, commercial/board/legal titles, legalDesc, viewAllContracts, footer)
+  - **Toplam migrate edilen string: ~110**
+- **Plan**:
+  1. `translations.ts`'e tek edit: `marketing` namespace TR+EN dolu olarak eklendi.
+  2. 14 sayfaya `useTranslation` import + `t = useTranslation()` + hardcoded string'leri `t('marketing.<page>.<key>')` ile değiştir.
+  3. `useWebPage`/`useWebContent` fallback parametrelerindeki TR string'leri t() ile sardı (CMS body korundu).
+- **Dosyalar**:
+  - `src/lib/translations.ts` — marketing namespace (TR+EN)
+  - `src/app/about/page.tsx`, `press/page.tsx`, `careers/page.tsx`, `logo/page.tsx`, `logo-usage/page.tsx`, `support/page.tsx`, `merchant/page.tsx`, `campus-advantages/page.tsx`, `ngo-onboarding/page.tsx`, `hangelassociation/page.tsx`, `accessibility/page.tsx`, `social-impact/page.tsx`, `imece/page.tsx`, `bilgi-toplumu-hizmetleri/page.tsx`
+- **Kapsam dışı (`P2-5e` tail)**:
+  - Her sayfada long-tail copy (orta/alt section başlıkları, feature kartları, FAQ accordion içerikleri, logo `rules` array, accessibility ayar item label/description'ları, careers job list TR, association sub-page'ler, imece feature card descriptions vs.) — sayfa başına 20-50 string daha. P2-5e'ye bırakıldı.
+- **Risk**: L — yeni anahtar yoksa provider TR'ye düşer (P2-5d), davranış değişmez.
+- **Rollback**: git revert (15 dosya).
+- **Test sonucu**:
+  - `npm run typecheck`: PASS
+  - `npm run lint`: 0 errors, 11 pre-existing warnings (hiçbiri P2-5b'den kaynaklı değil).
+- **Notlar**: `hangelassociation` `PressSection` ve `AssociationHeader` ayrı bileşendiler — her birine `useTranslation()` hook'u eklendi. `about` `useWebContent.get()` fallback'leri t() ile sarıldı (CMS override path korundu).
+
+---
+
 ## 2026-05-18 — P2-5a: i18n migration (header + settings + landing scope)
 - **ID**: P2-5 (scope a)
 - **Lead**: frontend-lead
@@ -820,3 +859,24 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   - P1-8b — env-tunable cap (hâlâ hardcoded 30).
   - 4 caller-less flow için UI gerektiğinde caller'lar `idToken` plumbing yapacak (zaten hazır).
 - **Notlar**: Tasks.md'ye `P1-8c` ✅ row eklendi (P1-8 satırının hemen altına).
+
+---
+
+## 2026-05-18 — P2-7c-2: `src/app/**/*.tsx` + `src/components/**/*.tsx` collection literal migration
+- **ID**: P2-7c-2
+- **Lead**: backend-lead
+- **Plan**: Discovery grep, `src/app/api/**` hariç tüm `src/app/**/*.tsx` ve `src/components/**/*.tsx` dosyaları için collection/doc/collectionGroup literal'larını `COLLECTIONS.<key>` ile değiştir. Surgical edit — sadece literal değişimi + gerekirse import ekleme. 351 literal / 105 dosya tespit edildi; tüm literal'lar mevcut `COLLECTIONS` entry'lerine eşleşiyor — yeni entry beklenmiyor.
+- **Top literals**: users (70), ngos (33), brands (21), clubs (14), notifications (13), volunteering (12), applications (12), userInvitations (10), posts (10), donations (9), events (8), emergencyRequests (7), campaigns (7), supportTickets (6), funds (6).
+- **Dosya gruplandırması**: ~30 super-admin sayfası, ~20 ngo-admin sayfası, ~25 settings/profile/dashboard sayfası, ~20 marketing/public sayfası, 4 component.
+- **Yürütme**: `scripts/migrate_collections.mjs` (one-shot helper, sonra silindi) ile regex-tabanlı 4 pattern: `collection(<var>, 'lit')`, `doc(<var>, 'lit'`, `collectionGroup('lit')`, `.collection('lit')` → `COLLECTIONS.<key>`; literal `COLLECTIONS_KEY` whitelist'inde olmayanlar dokunulmadı (0 vaka). Import eksikse son top-level `^import...;$` satırının altına `import { COLLECTIONS } from '@/firebase/collections';` enjekte edildi.
+- **Edge case fix**: `src/components/layout/user-nav.tsx`'te import satırları noktalı virgül olmadan yazılmıştı; regex en son `;` ile biten import'u bulamayıp import'u fonksiyon gövdesine ekledi. Manuel düzeltildi (Edit tool) — import doğru konuma taşındı. Bu dosyada literal yerleştirme doğruydu, sadece import konumu hatalıydı.
+- **Migrate edilen dosya sayısı**: 105 dosya (önceden P2-7c-1'de migrate edilmiş `app-shell.tsx` + 4 örnek dosya dahil). Toplam 350 literal değiştirildi (`app-shell.tsx`'in 1 manual `doc(db, 'users')` Edit'i + script ile 349). Discovery grep post-migration = 0.
+- **Yeni `COLLECTIONS` entry**: Yok. Tüm 38 unique literal mevcut `COLLECTIONS` map'inde bulundu (`users`, `ngos`, `brands`, `clubs`, `notifications`, `volunteering`, `applications`, `userInvitations`, `posts`, `donations`, `events`, `emergencyRequests`, `campaigns`, `supportTickets`, `funds`, `recipientSegments`, `messageTemplates`, `library`, `contracts`, `transparencyCriteria`, `sitePages`, `emergencyResponses`, `userMarketingConsent`, `surveys`, `ratings`, `messages`, `aiAssistantConfig`, `whatsappTemplates`, `userRequests`, `transparency`, `studentClubs`, `ngoTrustScores`, `messagingTransactions`, `messagingPackages`, `messagingAuditLogs`, `mailQueue`, `invites`, `fundApplications`, `bloodRequests`).
+- **Skip**: 0 dinamik değişken (tüm collection/doc çağrıları sabit literal kullanıyordu).
+- **Test sonucu**:
+  - `npm run typecheck` → PASS (no output).
+  - `npm run lint` → 0 errors, 11 pre-existing warnings (`settings/ngo-selection/page.tsx` Date.now impure, `settings/volunteer/page.tsx` 6 unused vars, `super-admin/surveys/page.tsx` useMemo dep, `page.tsx` Math.random impure, +3 useMemo dep warning). Migrate'imden gelen yeni warning yok.
+  - `npm test -- --run` → 13 file PASS / 5 skipped, 57 test PASS / 54 skipped — P2-7c baseline ile identical.
+- **Risk**: L — yalnızca string literal değişimi + import ekleme; runtime davranış aynı (`COLLECTIONS.users === 'users'`). Rollback `git revert` ile tek commit, 105 dosya etkilenir.
+- **Follow-up**: P2-7c kapatıldı. P2-7e+ (varsa) `firestore.rules` literal'larını da `COLLECTIONS`'a referans etmeyi düşünebilir (rules'da JS literal kullanılamadığı için ayrı tasarım).
+- **Notlar**: Tasks.md'ye P2-7c ✅ + P2-7c-2 ✅ row'ları yazıldı. `scripts/migrate_collections.mjs` ve `package.json#scripts.migrate:collections` (geçici helper) temizlendi.

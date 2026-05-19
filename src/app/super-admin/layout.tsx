@@ -11,6 +11,7 @@ import { HangelLogo } from '@/components/icons';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function SuperAdminLayout({
   children,
@@ -25,7 +26,7 @@ export default function SuperAdminLayout({
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
 
   const { data: userData, isLoading: isUserDocLoading } = useDoc<User>(userDocRef);

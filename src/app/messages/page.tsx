@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { addDoc, collection, query, serverTimestamp, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const senderTypeIcons: Record<string, React.ReactNode> = {
     ngo: <Building className="h-3 w-3" />,
@@ -49,7 +50,7 @@ export default function MessagesPage() {
     const db = useFirestore();
 
     const messagesQuery = useMemoFirebase(
-        () => authUser ? query(collection(db, 'messages'), where('recipientId', '==', authUser.uid)) : null,
+        () => authUser ? query(collection(db, COLLECTIONS.messages), where('recipientId', '==', authUser.uid)) : null,
         [db, authUser?.uid]
     );
     const { data: messages, isLoading } = useCollection(messagesQuery);
@@ -68,7 +69,7 @@ export default function MessagesPage() {
 
     // Tüm kullanıcılar — client-side filtre (mevcut surveys/users pattern)
     const usersRef = useMemoFirebase(
-        () => composeOpen ? collection(db, 'users') : null,
+        () => composeOpen ? collection(db, COLLECTIONS.users) : null,
         [db, composeOpen]
     );
     const { data: allUsers } = useCollection<UserRecord>(usersRef);
@@ -110,7 +111,7 @@ export default function MessagesPage() {
         setSending(true);
         try {
             const recipientName = selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || 'Kullanıcı';
-            await addDoc(collection(db, 'messages'), {
+            await addDoc(collection(db, COLLECTIONS.messages), {
                 sender: { id: authUser.uid, name: authUser.displayName || 'Kullanıcı', avatarUrl: authUser.photoURL || null },
                 senderId: authUser.uid,
                 recipient: { id: selectedRecipient.id, name: recipientName, avatarUrl: selectedRecipient.photoURL || selectedRecipient.avatarUrl || null },

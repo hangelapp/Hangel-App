@@ -46,6 +46,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 // P2-4: closed enum for ShowcaseCard icon lookup — replaces `Icons[item.icon]`.
 type LogoIconName =
@@ -209,6 +210,7 @@ export default function LogoUsagePage() {
     const router = useRouter();
     const { toast } = useToast();
     const cms = useWebPage('logo-usage');
+    const { t } = useTranslation();
 
     const handleDownload = (file: string) => {
         toast({
@@ -313,9 +315,9 @@ export default function LogoUsagePage() {
              <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">Basın Kiti & Marka Yönergesi</span>
+                    <span className="text-[12px] font-bold tracking-tight uppercase">{t('marketing.logo.navLabel')}</span>
                     <div className="w-20" />
                 </div>
             </header>
@@ -326,10 +328,10 @@ export default function LogoUsagePage() {
                         <p className="text-sm font-bold uppercase tracking-widest text-primary mb-4">{cms.subtitle}</p>
                     )}
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-none">
-                        {cms.title || 'Dayanışmayı Görünür Kılalım.'}
+                        {cms.title || t('marketing.logo.heroTitle')}
                     </h1>
                     <p className="text-base text-muted-foreground max-w-2xl mx-auto mt-4">
-                        {cms.description || 'Bu logo; eşit mesafede duran, tarafsız, şeffaf ve kolektif iyiliği önceleyen bir yapının sembolüdür. Logonun doğru, tutarlı ve mevzuata uygun biçimde kullanımı; marka bütünlüğünün korunmasını, kamusal algının netliğini ve hukuki güvenliğin sürdürülmesini sağlar. Logomuzu her doğru kullanımınız, dayanışma zincirine eklenen yeni bir halkadır.'}
+                        {cms.description || t('marketing.logo.heroDescription')}
                     </p>
                     {cms.body && (
                         <div className="prose prose-lg max-w-3xl mx-auto mt-8 text-left" dangerouslySetInnerHTML={{ __html: sanitizeHtml(cms.body) }} />
@@ -337,7 +339,7 @@ export default function LogoUsagePage() {
                 </Section>
                 
                 <Section id="mimari" className="bg-white">
-                    <SectionTitle>Marka Mimarisi</SectionTitle>
+                    <SectionTitle>{t('marketing.logo.architectureTitle')}</SectionTitle>
                      <p className="text-center text-muted-foreground mt-4 max-w-3xl mx-auto">
                         hangel, farklı kitlelere ve amaçlara hizmet eden çeşitli alt markalardan oluşan bir ekosistemdir. Her bir alt marka, ana markamızın değerlerini taşırken kendi özel misyonuna odaklanır.
                     </p>
@@ -379,7 +381,7 @@ export default function LogoUsagePage() {
                 
                  <Section id="medya-kiti">
                     <div className="space-y-20">
-                        <SectionTitle>Medya Kiti</SectionTitle>
+                        <SectionTitle>{t('marketing.logo.mediaKitTitle')}</SectionTitle>
                         
                         <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">Logolar</h3>
@@ -459,7 +461,7 @@ export default function LogoUsagePage() {
                 </Section>
                 
                  <Section id="kullanim-kurallari" className="bg-white">
-                    <SectionTitle>Logo Kullanım İlkeleri</SectionTitle>
+                    <SectionTitle>{t('marketing.logo.usageTitle')}</SectionTitle>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
                         {rules.map((rule) => (
                             <RuleCard key={rule.id} icon={rule.icon} title={rule.title}>
@@ -495,7 +497,7 @@ export default function LogoUsagePage() {
                 </Section>
             </main>
 
-            <PublicFooter currentPageLabel="Basın Kiti & Marka Yönergesi" />
+            <PublicFooter currentPageLabel={t('marketing.logo.footerLabel')} />
         </div>
     );
 }

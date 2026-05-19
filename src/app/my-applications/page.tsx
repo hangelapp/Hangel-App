@@ -29,6 +29,7 @@ import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FileSearch, Inbox } from 'lucide-react';
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 export default function MyApplicationsPage() {
@@ -42,7 +43,7 @@ export default function MyApplicationsPage() {
   const { toast } = useToast();
 
   const applicationsQuery = useMemoFirebase(
-    () => authUser ? query(collection(db, 'applications'), where('userId', '==', authUser.uid)) : null,
+    () => authUser ? query(collection(db, COLLECTIONS.applications), where('userId', '==', authUser.uid)) : null,
     [db, authUser?.uid]
   );
   const { data: firestoreApps, isLoading } = useCollection<Application>(applicationsQuery);

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Star } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const DISCOVERY_OPTIONS = ['Sosyal Medya', 'Reklamlar', 'Sivil Toplum Kuruluşu', 'Arkadaşım'];
 const DETAIL_REQUIRED = ['Sivil Toplum Kuruluşu', 'Arkadaşım'];
@@ -81,7 +82,7 @@ export function RatingPopup() {
                 let isProfileComplete = false;
                 let loginCount = 0;
                 try {
-                    const snap = await getDoc(doc(db, 'users', user.uid));
+                    const snap = await getDoc(doc(db, COLLECTIONS.users, user.uid));
                     if (snap.exists()) {
                         const data = snap.data() as {
                             personalInfo?: { email?: string; phone?: string };
@@ -140,7 +141,7 @@ export function RatingPopup() {
         try {
             if (!discoveryDone && discoverySource && db) {
                 try {
-                    await addDoc(collection(db, 'surveys'), {
+                    await addDoc(collection(db, COLLECTIONS.surveys), {
                         type: 'discovery',
                         source: discoverySource,
                         detail: discoveryDetail || '',
@@ -155,7 +156,7 @@ export function RatingPopup() {
 
             if (!ratingDone && rating > 0 && db) {
                 try {
-                    await addDoc(collection(db, 'ratings'), {
+                    await addDoc(collection(db, COLLECTIONS.ratings), {
                         rating,
                         comment: comment || '',
                         userId: user.uid,

@@ -31,6 +31,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
+import { COLLECTIONS } from '@/firebase/collections';
 
 // Kütüphane bölüm icon allow-list'i. Bölüm icon'ları Firestore'dan runtime string
 // olarak gelir; lucide wildcard import yerine kapalı küme map kullanıyoruz.
@@ -646,7 +647,7 @@ export default function LibraryPage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const libQuery = useMemoFirebase(() => collection(db, 'library'), [db]);
+  const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
 
   const sections = useMemo(() => {

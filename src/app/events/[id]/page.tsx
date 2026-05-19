@@ -30,6 +30,7 @@ import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
     
@@ -107,13 +108,13 @@ export default function EventDetailPage() {
   // Fetch event by slug (falls back to doc id lookup if no slug match)
   const eventsQuery = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    return query(collection(db, 'events'), where('slug', '==', slug), limit(1));
+    return query(collection(db, COLLECTIONS.events), where('slug', '==', slug), limit(1));
   }, [db, slug]);
   const { data: eventsBySlug, isLoading: isEventsBySlugLoading } = useCollection<EventType>(eventsQuery);
 
   const eventByIdRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
-    return doc(db, 'events', slug);
+    return doc(db, COLLECTIONS.events, slug);
   }, [db, slug]);
   const { data: eventById, isLoading: isEventByIdLoading } = useDoc<EventType>(eventByIdRef);
 
@@ -123,20 +124,20 @@ export default function EventDetailPage() {
   // Fetch organizer (NGO or student club) by name
   const ngoQuery = useMemoFirebase(() => {
     if (!db || !event?.organizer) return null;
-    return query(collection(db, 'ngos'), where('name', '==', event.organizer), limit(1));
+    return query(collection(db, COLLECTIONS.ngos), where('name', '==', event.organizer), limit(1));
   }, [db, event?.organizer]);
   const { data: orgNgo } = useCollection<NGO>(ngoQuery);
 
   const clubQuery = useMemoFirebase(() => {
     if (!db || !event?.organizer) return null;
-    return query(collection(db, 'clubs'), where('name', '==', event.organizer), limit(1));
+    return query(collection(db, COLLECTIONS.clubs), where('name', '==', event.organizer), limit(1));
   }, [db, event?.organizer]);
   const { data: orgClub } = useCollection<StudentClub>(clubQuery);
 
   // Fetch current authenticated user profile for QR / contact info
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser?.uid]);
   const { data: userData } = useDoc<UserType>(userDocRef);
 

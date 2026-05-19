@@ -1,7 +1,15 @@
 name: Lighthouse CI
 
-# P2-2: Performance budget gate. Soft (non-blocking) until baseline is stable.
-# TODO(P2-2b): make blocking once baseline is stable.
+# P2-2b: Performance budget gate is now BLOCKING.
+# Thresholds (see .lighthouserc.json):
+#   - performance:    warn  >= 0.70  (non-blocking warning)
+#   - accessibility:  error >= 0.85  (BLOCKING — must pass)
+#   - seo:            warn  >= 0.80  (non-blocking warning)
+# Rationale: a11y is the only hard gate; perf/seo emit warnings only. After
+# LCP fixes (removed `unoptimized: true`, added `priority` to hero images),
+# the perf budget of 0.70 is comfortably achievable. If LHCI starts failing
+# unexpectedly, re-soften by adding `continue-on-error: true` to the LHCI step
+# while the issue is investigated — do NOT lower the a11y threshold.
 
 on:
   push:
@@ -57,6 +65,6 @@ jobs:
         run: npx --yes wait-on http://127.0.0.1:3000 --timeout 120000
 
       - name: Run Lighthouse CI
-        # TODO(P2-2b): make blocking once baseline is stable.
-        continue-on-error: true
+        # P2-2b: blocking gate. Only a11y (error >= 0.85) can fail the job;
+        # perf/seo are warnings per .lighthouserc.json.
         run: npx --yes @lhci/cli@0.13.x autorun

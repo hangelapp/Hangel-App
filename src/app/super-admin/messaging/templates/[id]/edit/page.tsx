@@ -21,6 +21,7 @@ import { segmentInfo } from '@/lib/messaging/sms-segments';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import Link from 'next/link';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function TemplateEditPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function TemplateEditPage() {
   useEffect(() => {
     if (isNew) return;
     (async () => {
-      const snap = await getDoc(doc(db, 'messageTemplates', params.id));
+      const snap = await getDoc(doc(db, COLLECTIONS.messageTemplates, params.id));
       if (!snap.exists()) {
         toast({ variant: 'destructive', title: 'Bulunamadı', description: 'Şablon yok.' });
         router.push('/super-admin/messaging/templates');
@@ -100,7 +101,7 @@ export default function TemplateEditPage() {
       const id = isNew
         ? `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
         : params.id;
-      const ref = doc(db, 'messageTemplates', id);
+      const ref = doc(db, COLLECTIONS.messageTemplates, id);
       await setDoc(
         ref,
         {
@@ -134,7 +135,7 @@ export default function TemplateEditPage() {
     if (!confirm('Şablon silinsin mi? Bu işlem geri alınamaz.')) return;
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, 'messageTemplates', params.id));
+      await deleteDoc(doc(db, COLLECTIONS.messageTemplates, params.id));
       toast({ title: 'Silindi' });
       router.push('/super-admin/messaging/templates');
     } catch (err) {

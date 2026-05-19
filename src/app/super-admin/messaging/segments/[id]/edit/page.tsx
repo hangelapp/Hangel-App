@@ -21,6 +21,7 @@ import {
 import { allProvinces, allInterests, allSkills } from '@/lib/data';
 import { messagingFetch } from '@/lib/messaging/client';
 import type { SegmentFilters, ResolvedRecipient } from '@/lib/messaging/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface DryRunResult {
   summary: {
@@ -108,7 +109,7 @@ export default function SegmentEditPage() {
   useEffect(() => {
     if (isNew) return;
     (async () => {
-      const snap = await getDoc(doc(db, 'recipientSegments', params.id));
+      const snap = await getDoc(doc(db, COLLECTIONS.recipientSegments, params.id));
       if (!snap.exists()) {
         toast({ variant: 'destructive', title: 'Bulunamadı' });
         router.push('/super-admin/messaging/segments');
@@ -175,7 +176,7 @@ export default function SegmentEditPage() {
         ? `seg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
         : params.id;
       await setDoc(
-        doc(db, 'recipientSegments', id),
+        doc(db, COLLECTIONS.recipientSegments, id),
         {
           name: name.trim(),
           description: description.trim(),
@@ -203,7 +204,7 @@ export default function SegmentEditPage() {
     if (isNew) return;
     if (!confirm('Segment silinsin mi?')) return;
     try {
-      await deleteDoc(doc(db, 'recipientSegments', params.id));
+      await deleteDoc(doc(db, COLLECTIONS.recipientSegments, params.id));
       router.push('/super-admin/messaging/segments');
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

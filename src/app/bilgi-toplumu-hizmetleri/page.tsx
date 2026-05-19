@@ -9,10 +9,12 @@ import { Button } from '@/components/ui/button';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function InformationSocietyServicesPage() {
   const router = useRouter();
   const cms = useWebPage('bilgi-toplumu-hizmetleri');
+  const { t } = useTranslation();
 
   const boardMembers = [
     { name: 'İsmail Hilmi Adıgüzel', role: 'Yönetim Kurulu Başkanı' },
@@ -31,9 +33,9 @@ export default function InformationSocietyServicesPage() {
       <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
           <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
               <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
               </Button>
-              <span className="text-[12px] font-bold tracking-tight">Bilgi Toplumu Hizmetleri</span>
+              <span className="text-[12px] font-bold tracking-tight">{t('marketing.info.navLabel')}</span>
               <div className="w-20" />
           </div>
       </header>
@@ -43,9 +45,9 @@ export default function InformationSocietyServicesPage() {
           {cms.subtitle && (
             <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
           )}
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{cms.title || 'Şeffaf Ticaret.'}</h1>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{cms.title || t('marketing.info.heroTitleFallback')}</h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl">
-            {cms.description || '5651 sayılı kanun kapsamında ve ilgili mevzuat uyarınca yasal yükümlülüklerimize istinaden hazırlanan bilgilendirme sayfasıdır.'}
+            {cms.description || t('marketing.info.heroDescriptionFallback')}
           </p>
           {cms.body && (
             <div className="prose prose-lg max-w-3xl mt-4" dangerouslySetInnerHTML={{ __html: sanitizeHtml(cms.body) }} />
@@ -56,7 +58,7 @@ export default function InformationSocietyServicesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-bold">
               <Building2 className="h-5 w-5 text-primary" />
-              Ticari Bilgiler
+              {t('marketing.info.commercialTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -73,7 +75,7 @@ export default function InformationSocietyServicesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-bold">
               <Users className="h-5 w-5 text-primary" />
-              Yönetim Kurulu
+              {t('marketing.info.boardTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -93,10 +95,10 @@ export default function InformationSocietyServicesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl font-bold">
               <FileText className="h-5 w-5 text-primary" />
-              Yasal Belgeler ve Politikalar
+              {t('marketing.info.legalTitle')}
             </CardTitle>
             <CardDescription>
-              Kurumsal şeffaflığımız kapsamında ilgili belgelere aşağıdan ulaşabilirsiniz.
+              {t('marketing.info.legalDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 p-0">
@@ -108,7 +110,7 @@ export default function InformationSocietyServicesPage() {
                 </a>
               ))}
               <Link href="/settings/contracts" className="flex items-center justify-between p-6 hover:bg-primary/5 transition-colors text-primary font-black uppercase text-xs tracking-widest">
-                <span>Tüm Sözleşme ve Politikaları Görüntüle</span>
+                <span>{t('marketing.info.viewAllContracts')}</span>
                 <ChevronRight className="h-5 w-5" />
               </Link>
             </div>
@@ -116,7 +118,7 @@ export default function InformationSocietyServicesPage() {
         </Card>
       </main>
 
-      <PublicFooter currentPageLabel="Bilgi Toplumu Hizmetleri" />
+      <PublicFooter currentPageLabel={t('marketing.info.footerLabel')} />
     </div>
   );
 }

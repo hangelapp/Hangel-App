@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type Topic = {
   id: string;
@@ -155,7 +156,7 @@ export default function NgoSupportPage() {
 
     setSubmitting(true);
     try {
-      await addDoc(collection(db, 'supportTickets'), {
+      await addDoc(collection(db, COLLECTIONS.supportTickets), {
         subject,
         message: message.trim(),
         userId: authUser?.uid || null,

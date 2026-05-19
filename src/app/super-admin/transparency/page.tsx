@@ -14,6 +14,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox } from 'lucide-react';
 import type { NGO } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface NGORow extends NGO {
   id: string;
@@ -126,10 +127,10 @@ export default function TransparencyPage() {
   const [search, setSearch] = useState('');
   const [editingNgo, setEditingNgo] = useState<NGORow | null>(null);
 
-  const ngosQuery = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
+  const ngosQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
   const { data: ngos, isLoading: ngosLoading } = useCollection<NGORow>(ngosQuery);
 
-  const criteriaQuery = useMemoFirebase(() => (db ? collection(db, 'transparencyCriteria') : null), [db]);
+  const criteriaQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.transparencyCriteria) : null), [db]);
   const { data: criteria, isLoading: critLoading } = useCollection<TransparencyCriterion>(criteriaQuery);
 
   const filteredNgos = useMemo(() => {
@@ -141,7 +142,7 @@ export default function TransparencyPage() {
 
   const handleSaveNgo = async (id: string, payload: { transparencyScore: number; transparencyChecklist: { criterionId: string; passed: boolean }[] }) => {
     try {
-      await updateDoc(doc(db, 'ngos', id), payload);
+      await updateDoc(doc(db, COLLECTIONS.ngos, id), payload);
       toast({ title: 'Şeffaflık Profili Güncellendi', description: `Yeni puan: ${payload.transparencyScore}` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
@@ -163,7 +164,7 @@ export default function TransparencyPage() {
   const handleAddCriterion = async () => {
     if (!newName.trim()) return;
     try {
-      await addDoc(collection(db, 'transparencyCriteria'), {
+      await addDoc(collection(db, COLLECTIONS.transparencyCriteria), {
         name: newName.trim(),
         description: newDesc.trim(),
         points: newPoints,
@@ -180,7 +181,7 @@ export default function TransparencyPage() {
   const handleUpdateCriterion = async () => {
     if (!editingCriterion) return;
     try {
-      await updateDoc(doc(db, 'transparencyCriteria', editingCriterion.id), {
+      await updateDoc(doc(db, COLLECTIONS.transparencyCriteria, editingCriterion.id), {
         name: editingCriterion.name,
         description: editingCriterion.description || '',
         points: editingCriterion.points,
@@ -195,7 +196,7 @@ export default function TransparencyPage() {
 
   const handleDeleteCriterion = async (id: string) => {
     try {
-      await deleteDoc(doc(db, 'transparencyCriteria', id));
+      await deleteDoc(doc(db, COLLECTIONS.transparencyCriteria, id));
       toast({ variant: 'destructive', title: 'Kriter Silindi' });
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';

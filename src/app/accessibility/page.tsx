@@ -46,6 +46,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useWebPage } from '@/hooks/use-site-content';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useTranslation } from '@/components/providers/language-provider';
 
 
 import { Switch } from '@/components/ui/switch';
@@ -111,6 +112,7 @@ export default function AccessibilityPublicPage() {
     const { toast } = useToast();
     const heroImage = PlaceHolderImages.find(img => img.id === 'accessibility-hero');
     const cms = useWebPage('accessibility');
+    const { t } = useTranslation();
 
     const [_isSaving, setIsSaving] = useState(false);
 
@@ -250,11 +252,11 @@ export default function AccessibilityPublicPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.accessibility.backShort')}
                     </Button>
-                    <span className="text-[10px] font-bold tracking-tight uppercase hidden sm:inline">Erişilebilirlik Beyanı</span>
+                    <span className="text-[10px] font-bold tracking-tight uppercase hidden sm:inline">{t('marketing.accessibility.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
-                        <Link href="/settings/accessibility">Ayarları Yapılandır</Link>
+                        <Link href="/settings/accessibility">{t('marketing.accessibility.configureCta')}</Link>
                     </Button>
                 </div>
             </header>
@@ -267,10 +269,10 @@ export default function AccessibilityPublicPage() {
                             <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
                         )}
                         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95]">
-                            {cms.title || (<>Herkes İçin <br /> Erişilebilir.</>)}
+                            {cms.title || t('marketing.accessibility.heroTitleFallback')}
                         </h1>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
-                            {cms.description || 'İyilikte engel tanımaz. hangel, teknolojinin birleştirici gücünü herkes için erişilebilir kılma vizyonuyla, WCAG 2.2 AAA standartlarını hedefleyerek geliştirilmiştir.'}
+                            {cms.description || t('marketing.accessibility.heroDescriptionFallback')}
                         </p>
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">

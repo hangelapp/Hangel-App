@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { language, changeLanguage, t } = useTranslation();
@@ -24,7 +25,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   const notifQuery = useMemoFirebase(() => {
     if (!db || !user?.uid) return null;
     return query(
-      collection(db, 'notifications'),
+      collection(db, COLLECTIONS.notifications),
       where('userId', '==', user.uid),
       where('read', '==', false),
     );

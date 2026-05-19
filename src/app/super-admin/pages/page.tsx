@@ -25,6 +25,7 @@ import { collection, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type SitePage = {
   id: string;
@@ -188,7 +189,7 @@ export default function SitePagesAdmin() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const pagesQuery = useMemoFirebase(() => collection(db, 'sitePages'), [db]);
+  const pagesQuery = useMemoFirebase(() => collection(db, COLLECTIONS.sitePages), [db]);
   const { data: pages, isLoading } = useCollection<SitePage>(pagesQuery);
 
   const filtered = useMemo(() => {
@@ -204,7 +205,7 @@ export default function SitePagesAdmin() {
 
   const handleSave = async (p: SitePage) => {
     try {
-      await setDoc(doc(db, 'sitePages', p.slug), p, { merge: true });
+      await setDoc(doc(db, COLLECTIONS.sitePages, p.slug), p, { merge: true });
       toast({ title: 'Sayfa Kaydedildi', description: `"${p.title}" güncellendi.` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
@@ -220,7 +221,7 @@ export default function SitePagesAdmin() {
 
   const handleDelete = async (p: SitePage) => {
     try {
-      await deleteDoc(doc(db, 'sitePages', p.slug));
+      await deleteDoc(doc(db, COLLECTIONS.sitePages, p.slug));
       toast({ variant: 'destructive', title: 'Sayfa Silindi', description: `"${p.title}" kaldırıldı.` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;

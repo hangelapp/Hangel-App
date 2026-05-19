@@ -63,6 +63,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -76,7 +77,7 @@ export default function ProfileSettingsPage() {
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
-    return doc(db, 'users', authUser.uid);
+    return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
 
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);

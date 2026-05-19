@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }: {
     icon: React.ElementType;
@@ -194,12 +195,12 @@ export default function VolunteeringPage() {
     const [cityFilter, setCityFilter] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<'match' | 'points' | 'deadline'>('match');
 
-    const oppsQuery = useMemoFirebase(() => collection(db, 'volunteering'), [db]);
+    const oppsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.volunteering), [db]);
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
-        return doc(db, 'users', authUser.uid);
+        return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
     const { data: userData } = useDoc<{
         volunteerInfo?: {

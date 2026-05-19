@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React from 'react';
 import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type LeaderboardUser = {
   id?: string;
@@ -137,7 +138,7 @@ export default function LeaderboardPage() {
   const { user: authUser } = useUser();
   const db = useFirestore();
 
-  const usersRef = useMemoFirebase(() => collection(db, 'users'), [db]);
+  const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
   return (

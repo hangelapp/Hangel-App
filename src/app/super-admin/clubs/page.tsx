@@ -26,6 +26,7 @@ import {
     Search, Eye, GraduationCap,
 } from 'lucide-react';
 import type { StudentClub } from '@/lib/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 type ClubItem = (StudentClub & { id: string }) & {
     source: 'clubs' | 'applications';
@@ -165,17 +166,17 @@ export default function ClubsAdminPage() {
     const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
-    const clubsQuery = useMemoFirebase(() => collection(db, 'clubs'), [db]);
+    const clubsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
     const { data: clubs, isLoading: clubsLoading } = useCollection<StudentClub>(clubsQuery);
 
     const applicationsQuery = useMemoFirebase(
-        () => query(collection(db, 'applications'), where('entityType', '==', 'CLUB')),
+        () => query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'CLUB')),
         [db],
     );
     const { data: applications, isLoading: appsLoading } = useCollection<ClubApplication>(applicationsQuery);
 
     // Yetkili atama için tüm kullanıcılar
-    const usersQuery = useMemoFirebase(() => collection(db, 'users'), [db]);
+    const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection<SimpleClubUser>(usersQuery);
 
     const items = useMemo<ClubItem[]>(() => {
@@ -243,7 +244,7 @@ export default function ClubsAdminPage() {
     const handleToggleStatus = async (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
         try {
-            await updateDoc(doc(db, 'clubs', id), { status: isPassive ? 'Aktif' : 'Pasif' });
+            await updateDoc(doc(db, COLLECTIONS.clubs, id), { status: isPassive ? 'Aktif' : 'Pasif' });
             toast({
                 title: isPassive ? 'Kulüp Aktifleştirildi' : 'Kulüp Pasife Alındı',
                 description: isPassive
@@ -265,7 +266,7 @@ export default function ClubsAdminPage() {
 
     const handleRemove = async (id: string, name: string) => {
         try {
-            await deleteDoc(doc(db, 'clubs', id));
+            await deleteDoc(doc(db, COLLECTIONS.clubs, id));
             toast({
                 variant: 'destructive',
                 title: 'Kulüp Kaldırıldı',
@@ -286,18 +287,18 @@ export default function ClubsAdminPage() {
 
     const handleAssignAdmin = async (clubId: string, newUserId: string, newUserName: string) => {
         try {
-            await updateDoc(doc(db, 'clubs', clubId), { adminUserId: newUserId });
+            await updateDoc(doc(db, COLLECTIONS.clubs, clubId), { adminUserId: newUserId });
 
             // Super-admin'in rolünü düşürme; sadece henüz super-admin olmayanları yükselt.
-            const userSnap = await getDoc(doc(db, 'users', newUserId));
+            const userSnap = await getDoc(doc(db, COLLECTIONS.users, newUserId));
             const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
             const updatePayload: Record<string, unknown> = { managedClubId: clubId };
             if (currentRole !== 'super-admin') {
                 updatePayload.role = 'ngo-admin';
             }
-            await updateDoc(doc(db, 'users', newUserId), updatePayload);
+            await updateDoc(doc(db, COLLECTIONS.users, newUserId), updatePayload);
 
-            await addDoc(collection(db, 'userInvitations'), {
+            await addDoc(collection(db, COLLECTIONS.userInvitations), {
                 clubId,
                 inviteeUserId: newUserId,
                 inviteeName: newUserName,

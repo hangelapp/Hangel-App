@@ -86,6 +86,7 @@ import { useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const iconColorMap: { [key: string]: string } = {
   'user-cog': 'bg-gray-500',
@@ -245,9 +246,9 @@ function NgoDashboardPageContent() {
     // Determine the collection to query based on entity type
     const ngoDocRef = useMemoFirebase(() => {
         if (!entityId) return null;
-        if (entityType === 'STK') return doc(firestore, 'ngos', entityId);
-        if (entityType === 'Öğrenci Kulübü') return doc(firestore, 'studentClubs', entityId);
-        if (entityType === 'Marka') return doc(firestore, 'brands', entityId);
+        if (entityType === 'STK') return doc(firestore, COLLECTIONS.ngos, entityId);
+        if (entityType === 'Öğrenci Kulübü') return doc(firestore, COLLECTIONS.studentClubs, entityId);
+        if (entityType === 'Marka') return doc(firestore, COLLECTIONS.brands, entityId);
         return null;
     }, [firestore, entityId, entityType]);
 
@@ -256,7 +257,7 @@ function NgoDashboardPageContent() {
     // Fallback: try to load the user's own NGO profile if no entity specified
     const userNgoDocRef = useMemoFirebase(() => {
         if (entityId || !authUser?.uid) return null;
-        return doc(firestore, 'ngos', authUser.uid);
+        return doc(firestore, COLLECTIONS.ngos, authUser.uid);
     }, [firestore, entityId, authUser?.uid]);
 
     const { data: userNgoEntity, isLoading: isUserNgoLoading } = useDoc(userNgoDocRef);

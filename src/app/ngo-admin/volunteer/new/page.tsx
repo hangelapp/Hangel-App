@@ -28,6 +28,7 @@ import {
   LANGUAGES, SIGN_LANGUAGES, DRIVER_LICENSES,
   CERTIFICATES, PROGRAMS, VISAS,
 } from '@/lib/volunteer-data';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const allInterests = INTERESTS;
 const allSkills = SKILLS;
@@ -99,7 +100,7 @@ function NewOpportunityForm() {
 
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !entityId) return null;
-    return doc(db, 'ngos', entityId);
+    return doc(db, COLLECTIONS.ngos, entityId);
   }, [db, entityId]);
   const { data: ngoData } = useDoc<{ name?: string }>(ngoDocRef);
 
@@ -287,7 +288,7 @@ function NewOpportunityForm() {
         createdBy: authUser?.uid || null,
       };
 
-      await addDoc(collection(db, 'volunteering'), payload);
+      await addDoc(collection(db, COLLECTIONS.volunteering), payload);
 
       toast({
         title: 'İlan Onaya Gönderildi',

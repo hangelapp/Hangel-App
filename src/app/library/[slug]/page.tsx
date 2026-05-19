@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export default function LibraryItemPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function LibraryItemPage() {
   const db = useFirestore();
 
   // Statik + Firestore section'ları birleştir, slug'ı her iki kaynakta ara
-  const libQuery = useMemoFirebase(() => (db ? collection(db, 'library') : null), [db]);
+  const libQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.library) : null), [db]);
   const { data: fsSections, isLoading: fsLoading } = useCollection<LibrarySection>(libQuery);
 
   const itemWithSection = useMemo(() => {

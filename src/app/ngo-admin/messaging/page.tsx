@@ -11,6 +11,7 @@ import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { COLLECTIONS } from '@/firebase/collections';
 
 interface MeData {
   ngoId: string;
@@ -43,7 +44,7 @@ export default function NgoMessagingHub() {
   const db = useFirestore();
   const ngoId = me?.ngoId;
   const campsQuery = useMemoFirebase(
-    () => (ngoId ? query(collection(db, 'campaigns'), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'), limit(5)) : null),
+    () => (ngoId ? query(collection(db, COLLECTIONS.campaigns), where('ngoId', '==', ngoId), orderBy('createdAt', 'desc'), limit(5)) : null),
     [db, ngoId]
   );
   const { data: campaigns } = useCollection<CampaignRow>(campsQuery);

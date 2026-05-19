@@ -33,6 +33,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import DemographicsPage from '../demographics/page';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const COLORS = ['#f34723', '#042654', '#0ea5e9', '#10b981', '#a855f7', '#f59e0b'];
 
@@ -131,20 +132,20 @@ function AnalyticsPageInner() {
         } catch { /* ignore */ }
     };
 
-    const usersQ = useMemoFirebase(() => (db ? collection(db, 'users') : null), [db]);
-    const ngosQ = useMemoFirebase(() => (db ? collection(db, 'ngos') : null), [db]);
-    const brandsQ = useMemoFirebase(() => (db ? collection(db, 'brands') : null), [db]);
-    const clubsQ = useMemoFirebase(() => (db ? collection(db, 'clubs') : null), [db]);
-    const postsQ = useMemoFirebase(() => (db ? query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(2000)) : null), [db]);
-    const appsQ = useMemoFirebase(() => (db ? collection(db, 'applications') : null), [db]);
-    const volunteeringQ = useMemoFirebase(() => (db ? collection(db, 'volunteering') : null), [db]);
-    const emergencyQ = useMemoFirebase(() => (db ? collection(db, 'emergencyRequests') : null), [db]);
-    const responsesQ = useMemoFirebase(() => (db ? collection(db, 'emergencyResponses') : null), [db]);
-    const donationsQ = useMemoFirebase(() => (db ? collection(db, 'donations') : null), [db]);
-    const supportQ = useMemoFirebase(() => (db ? collection(db, 'supportTickets') : null), [db]);
-    const fundsQ = useMemoFirebase(() => (db ? collection(db, 'funds') : null), [db]);
-    const ratingsQ = useMemoFirebase(() => (db ? collection(db, 'ratings') : null), [db]);
-    const surveysQ = useMemoFirebase(() => (db ? collection(db, 'surveys') : null), [db]);
+    const usersQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
+    const ngosQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
+    const brandsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
+    const clubsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.clubs) : null), [db]);
+    const postsQ = useMemoFirebase(() => (db ? query(collection(db, COLLECTIONS.posts), orderBy('createdAt', 'desc'), limit(2000)) : null), [db]);
+    const appsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.applications) : null), [db]);
+    const volunteeringQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.volunteering) : null), [db]);
+    const emergencyQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.emergencyRequests) : null), [db]);
+    const responsesQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.emergencyResponses) : null), [db]);
+    const donationsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.donations) : null), [db]);
+    const supportQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.supportTickets) : null), [db]);
+    const fundsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.funds) : null), [db]);
+    const ratingsQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ratings) : null), [db]);
+    const surveysQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.surveys) : null), [db]);
 
     const { data: users, isLoading: usersLoading } = useCollection<AnalyticsDoc>(usersQ);
     const { data: ngos, isLoading: ngosLoading } = useCollection<AnalyticsDoc>(ngosQ);
