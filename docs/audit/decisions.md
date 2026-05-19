@@ -1375,3 +1375,16 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 **Rollback**: `git revert` of these 7 file mods. Translation keys are additive and unused-after-revert (harmless).
 
+
+---
+
+## 2026-05-19 — Ghost super-admin account deletion
+
+- **Action**: Deleted Auth UID `j0LK5Kzvr4bwLFdD2pJuRQI2IHR2` (placeholder email `5384009090@hangel.org`).
+- **Justification**: Ghost account from phone-OTP signup on 2026-03-19; never signed in since creation. No Firestore `/users/{uid}` doc, no application activity. Was duplicate of İsmail Hilmi (`v7woPv...`, email-auth) which is the active account.
+- **Steps**:
+  1. `setCustomUserClaims(uid, null)` — removed `role: 'super-admin'`
+  2. `deleteUser(uid)` — Auth record removed
+  3. Verified: `getUser(uid)` → `auth/user-not-found`
+- **Risk**: L — account never had any data attached; deletion does not affect İsmail's active access via `v7woPvqKAzSTSodVOJB702WJmJ93`.
+- **Result**: Super-admin surface reduced from 4 → 3 UIDs (no functional loss; just hygiene).
