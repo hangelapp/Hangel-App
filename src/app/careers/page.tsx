@@ -112,23 +112,26 @@ export default function CareersPage() {
                     <p className="text-lg text-muted-foreground">{t('marketing.careers.openPositionsDescription')}</p>
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { title: 'Frontend Geliştirici (React/Next.js)', location: 'İstanbul / Remote', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
-                    { title: 'Topluluk Yöneticisi', location: 'Ankara', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
-                    { title: 'Proje Koordinatörü (Gönüllülük Programları)', location: 'İzmir', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
-                    { title: 'İş Geliştirme Uzmanı (STK ve Marka Ortaklıkları)', location: 'İstanbul', type: 'Tam Zamanlı', org: 'hangel A.Ş.' },
-                    { title: 'UI/UX Tasarımcısı', location: 'Remote', type: 'Proje Bazlı', org: 'hangel A.Ş.' },
-                  ].map((job, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
-                      <div>
-                        <h3 className="font-bold text-lg">{job.title}</h3>
-                        <p className="text-sm text-muted-foreground">{job.org} • {job.location} • {job.type}</p>
+                  {([
+                    { tkey: 'frontend', locKey: 'locIstRemote', typeKey: 'typeFullTime' },
+                    { tkey: 'community', locKey: 'locAnkara', typeKey: 'typeFullTime' },
+                    { tkey: 'projectCoord', locKey: 'locIzmir', typeKey: 'typeFullTime' },
+                    { tkey: 'businessDev', locKey: 'locIstanbul', typeKey: 'typeFullTime' },
+                    { tkey: 'uiux', locKey: 'locRemote', typeKey: 'typeProject' },
+                  ] as const).map((job) => {
+                    const title = t(`marketing.careers.jobs.${job.tkey}`);
+                    return (
+                      <div key={job.tkey} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white rounded-2xl shadow-sm border hover:border-primary transition-all">
+                        <div>
+                          <h3 className="font-bold text-lg">{title}</h3>
+                          <p className="text-sm text-muted-foreground">{t('marketing.careers.jobOrg')} • {t(`marketing.careers.${job.locKey}`)} • {t(`marketing.careers.${job.typeKey}`)}</p>
+                        </div>
+                        <Button asChild className="shrink-0">
+                          <a href={`mailto:kariyer@hangel.org?subject=${encodeURIComponent(t('marketing.careers.applySubjectPrefix') + title)}`}>{t('marketing.careers.applyCta')} <ChevronRight className="h-4 w-4 ml-2"/></a>
+                        </Button>
                       </div>
-                      <Button asChild className="shrink-0">
-                        <a href={`mailto:kariyer@hangel.org?subject=${encodeURIComponent('Başvuru: ' + job.title)}`}>{t('marketing.careers.applyCta')} <ChevronRight className="h-4 w-4 ml-2"/></a>
-                      </Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </section>

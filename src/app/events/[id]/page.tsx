@@ -22,6 +22,7 @@ import {
 
 
 import { useState, useEffect, useRef } from 'react';
+import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
@@ -140,6 +141,53 @@ export default function EventDetailPage() {
     return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser?.uid]);
   const { data: userData } = useDoc<UserType>(userDocRef);
+
+  // FEAT-EVENT-RSVP — subscribe to user's own RSVP doc.
+  const resolvedEventId = (eventsBySlug && eventsBySlug[0]?.id) || eventById?.id || null;
+  const rsvpDocRef = useMemoFirebase(() => {
+    if (!db || !authUser?.uid || !resolvedEventId) return null;
+    return doc(db, COLLECTIONS.events, resolvedEventId, COLLECTIONS.eventRsvps, authUser.uid);
+  }, [db, authUser?.uid, resolvedEventId]);
+  const { data: rsvpData } = useDoc<{ status?: 'going' | 'cancelled' }>(rsvpDocRef);
+  const isGoing = rsvpData?.status === 'going';
+  const [isRsvpLoading, setIsRsvpLoading] = useState(false);
+
+  const submitRsvp = async (action: 'going' | 'cancel') => {
+    if (!authUser || !resolvedEventId) {
+      toast({ variant: 'destructive', title: 'Giriş yap', description: 'Etkinliğe katılmak için giriş yapmalısın.' });
+      return;
+    }
+    setIsRsvpLoading(true);
+    try {
+      const idToken = await authUser.getIdToken();
+      const res = await fetch(`/api/events/${resolvedEventId}/rsvp`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({ action }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { errorCode?: string; message?: string; status?: string };
+      if (!res.ok) {
+        if (data.errorCode === 'EVENT_FULL') {
+          toast({ variant: 'destructive', title: 'Etkinlik dolu', description: 'Kapasite dolduğu için kayıt alınamadı.' });
+        } else {
+          toast({ variant: 'destructive', title: 'Kayıt başarısız', description: data.message || 'Beklenmeyen hata.' });
+        }
+        return;
+      }
+      toast({
+        title: data.status === 'going' ? 'Kayıt alındı' : 'Kaydın iptal edildi',
+        description: data.status === 'going' ? 'Etkinliğe katılıyorsun.' : 'RSVP iptal edildi.',
+      });
+    } catch (err) {
+      const e = err as { message?: string };
+      toast({ variant: 'destructive', title: 'Kayıt başarısız', description: e?.message || 'Beklenmeyen hata.' });
+    } finally {
+      setIsRsvpLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && event) {
@@ -355,10 +403,40 @@ export default function EventDetailPage() {
             </div>
         </div>
 
+        {/* FEAT-EVENT-RSVP — capacity progress */}
+        {event.capacity?.max > 0 && (
+          <div className="px-4 pb-2">
+            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-1">
+              <span>Kapasite</span>
+              <span>{event.capacity.current} / {event.capacity.max}</span>
+            </div>
+            <Progress value={Math.min(100, (event.capacity.current / event.capacity.max) * 100)} className="h-2 rounded-full" />
+          </div>
+        )}
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-lg p-4 border-t z-20 flex gap-3">
+            {isGoing ? (
+              <Button
+                size="lg"
+                variant="outline"
+                disabled={isRsvpLoading}
+                onClick={() => submitRsvp('cancel')}
+                className="flex-1 h-14 rounded-2xl text-lg font-black"
+              >
+                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıldın ✓ — vazgeç'}
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                disabled={isRsvpLoading || !authUser}
+                onClick={() => submitRsvp('going')}
+                className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+              >
+                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıl'}
+              </Button>
+            )}
             <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button size="lg" className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20">Etkinliğe Kayıt Ol</Button>
+                <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-black">Yaka Kartı</Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="max-w-md max-h-[90vh] overflow-y-auto no-scrollbar rounded-[2.5rem]">
                 <AlertDialogHeader>

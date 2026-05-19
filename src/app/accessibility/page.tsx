@@ -300,16 +300,16 @@ export default function AccessibilityPublicPage() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
-                                    <SettingsItem label="Yüksek Kontrast" icon={Contrast} iconColor="bg-indigo-500" description="Metin ve arka plan belirginliğini artırır.">
+                                    <SettingsItem label={t('marketing.accessibility.items.highContrast.label')} icon={Contrast} iconColor="bg-indigo-500" description={t('marketing.accessibility.items.highContrast.desc')}>
                                         <Switch checked={highContrast} onCheckedChange={setHighContrast} />
                                     </SettingsItem>
-                                    <SettingsItem label="Metni Ekrana Sığdır (Reflow)" icon={Rows} iconColor="bg-indigo-500" description="Zoom yapıldığında yatay kaydırmayı engeller. (WCAG 1.4.10)">
+                                    <SettingsItem label={t('marketing.accessibility.items.reflow.label')} icon={Rows} iconColor="bg-indigo-500" description={t('marketing.accessibility.items.reflow.desc')}>
                                         <Switch checked={reflowMode} onCheckedChange={setReflowMode} />
                                     </SettingsItem>
-                                    <SettingsItem label="Kontrast Bilgisi Göster" icon={ShieldCheck} iconColor="bg-indigo-500" description="Tema için AA/AAA uyumluluk göstergesi sunar.">
+                                    <SettingsItem label={t('marketing.accessibility.items.contrastInfo.label')} icon={ShieldCheck} iconColor="bg-indigo-500" description={t('marketing.accessibility.items.contrastInfo.desc')}>
                                         <Switch checked={showContrastInfo} onCheckedChange={setShowContrastInfo} />
                                     </SettingsItem>
-                                    <SettingsItem label="Yazı Tipi Boyutu" icon={Type} iconColor="bg-indigo-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.fontSize.label')} icon={Type} iconColor="bg-indigo-500">
                                         <Select value={fontSize} onValueChange={setFontSize}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -320,7 +320,7 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Satır Aralığı" icon={AlignLeft} iconColor="bg-indigo-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.lineHeight.label')} icon={AlignLeft} iconColor="bg-indigo-500">
                                         <Select value={lineHeight} onValueChange={setLineHeight}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -330,7 +330,7 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Kelime Aralığı" icon={MoreHorizontal} iconColor="bg-indigo-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.wordSpacing.label')} icon={MoreHorizontal} iconColor="bg-indigo-500">
                                         <Select value={wordSpacing} onValueChange={setWordSpacing}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -340,7 +340,7 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Paragraf Aralığı" icon={Pilcrow} iconColor="bg-indigo-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.paragraphSpacing.label')} icon={Pilcrow} iconColor="bg-indigo-500">
                                         <Select value={paragraphSpacing} onValueChange={setParagraphSpacing}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -350,10 +350,10 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Metinleri Görselden Ayır" icon={Files} iconColor="bg-indigo-500" description="Bannerlardaki metinleri HTML olarak render eder.">
+                                    <SettingsItem label={t('marketing.accessibility.items.separateText.label')} icon={Files} iconColor="bg-indigo-500" description={t('marketing.accessibility.items.separateText.desc')}>
                                         <Switch checked={separateText} onCheckedChange={setSeparateText} />
                                     </SettingsItem>
-                                    <SettingsItem label="Disleksi Dostu Yazı Tipi" icon={Type} iconColor="bg-indigo-500" description="OpenDyslexic yazı tipini aktif eder.">
+                                    <SettingsItem label={t('marketing.accessibility.items.dyslexiaFont.label')} icon={Type} iconColor="bg-indigo-500" description={t('marketing.accessibility.items.dyslexiaFont.desc')}>
                                         <Switch checked={dyslexiaFont} onCheckedChange={setDyslexiaFont} />
                                     </SettingsItem>
                                 </div>
@@ -371,10 +371,10 @@ export default function AccessibilityPublicPage() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
-                                    <SettingsItem label="Hata Önleme Modu" icon={ShieldAlert} iconColor="bg-orange-500" description="Kritik işlemler öncesi hataları işlem öncesi engeller. (WCAG 3.3.4)">
+                                    <SettingsItem label={t('marketing.accessibility.items.errorPrevention.label')} icon={ShieldAlert} iconColor="bg-orange-500" description={t('marketing.accessibility.items.errorPrevention.desc')}>
                                         <Switch checked={errorPrevention} onCheckedChange={setErrorPrevention} />
                                     </SettingsItem>
-                                    <SettingsItem label="Okuma Seviyesi" icon={Languages} iconColor="bg-orange-500" description="Dili sadeleştirir ve cümle yapısını düzenler.">
+                                    <SettingsItem label={t('marketing.accessibility.items.readingLevel.label')} icon={Languages} iconColor="bg-orange-500" description={t('marketing.accessibility.items.readingLevel.desc')}>
                                         <Select value={readingLevel} onValueChange={setReadingLevel}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -384,13 +384,13 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Adım Adım Rehber Modu" icon={ListOrdered} iconColor="bg-orange-500" description="Karmaşık formları tek ekran-tek görev yapısına böler.">
+                                    <SettingsItem label={t('marketing.accessibility.items.stepByStep.label')} icon={ListOrdered} iconColor="bg-orange-500" description={t('marketing.accessibility.items.stepByStep.desc')}>
                                         <Switch checked={stepByStep} onCheckedChange={setStepByStep} />
                                     </SettingsItem>
-                                    <SettingsItem label="Terim Tutarlılığı Modu" icon={CheckCircle} iconColor="bg-orange-500" description="Eş anlamlıları kapatır, tekil terminoloji kullanır.">
+                                    <SettingsItem label={t('marketing.accessibility.items.termConsistency.label')} icon={CheckCircle} iconColor="bg-orange-500" description={t('marketing.accessibility.items.termConsistency.desc')}>
                                         <Switch checked={termConsistency} onCheckedChange={setTerminologyConsistency} />
                                     </SettingsItem>
-                                    <SettingsItem label="Sade Mod (Odak Modu)" icon={Layers} iconColor="bg-orange-500" description="Dikkat dağıtıcıları gizler.">
+                                    <SettingsItem label={t('marketing.accessibility.items.focusMode.label')} icon={Layers} iconColor="bg-orange-500" description={t('marketing.accessibility.items.focusMode.desc')}>
                                         <Switch checked={focusMode} onCheckedChange={setFocusMode} />
                                     </SettingsItem>
                                 </div>
@@ -408,13 +408,13 @@ export default function AccessibilityPublicPage() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
-                                    <SettingsItem label="Klavye Kısayollarını Sınırla" icon={Command} iconColor="bg-teal-500" description="Tek tuş kısayollarını kapatarak hataları önler. (WCAG 2.1.4)">
+                                    <SettingsItem label={t('marketing.accessibility.items.limitShortcuts.label')} icon={Command} iconColor="bg-teal-500" description={t('marketing.accessibility.items.limitShortcuts.desc')}>
                                         <Switch checked={limitShortcuts} onCheckedChange={setLimitShortcuts} />
                                     </SettingsItem>
-                                    <SettingsItem label="Klavye ile Tam Kullanım" icon={Keyboard} iconColor="bg-teal-500" description="Tüm öğeleri klavye (Tab/Enter) ile erişilebilir yapar.">
+                                    <SettingsItem label={t('marketing.accessibility.items.fullKeyboard.label')} icon={Keyboard} iconColor="bg-teal-500" description={t('marketing.accessibility.items.fullKeyboard.desc')}>
                                         <Switch checked={fullKeyboard} onCheckedChange={setFullKeyboard} />
                                     </SettingsItem>
-                                    <SettingsItem label="Odak Çerçevesini Güçlendir" icon={Maximize} iconColor="bg-teal-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.focusFrame.label')} icon={Maximize} iconColor="bg-teal-500">
                                         <Select value={focusStrength} onValueChange={setFocusFrame}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -424,10 +424,10 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Sürükle-Bırak Alternatifi" icon={MousePointerClick} iconColor="bg-teal-500" description="Sürükleme yerine butonla taşıma desteği sağlar.">
+                                    <SettingsItem label={t('marketing.accessibility.items.dragDropAlt.label')} icon={MousePointerClick} iconColor="bg-teal-500" description={t('marketing.accessibility.items.dragDropAlt.desc')}>
                                         <Switch checked={dragDropAlt} onCheckedChange={setDragDropAlt} />
                                     </SettingsItem>
-                                    <SettingsItem label="Büyük Dokunma Alanları" icon={Maximize} iconColor="bg-teal-500" description="Buton ve link tıklama alanlarını büyütür.">
+                                    <SettingsItem label={t('marketing.accessibility.items.largeTouchTargets.label')} icon={Maximize} iconColor="bg-teal-500" description={t('marketing.accessibility.items.largeTouchTargets.desc')}>
                                         <Switch checked={largeTouchTargets} onCheckedChange={setLargeTouchTargets} />
                                     </SettingsItem>
                                 </div>
@@ -445,22 +445,22 @@ export default function AccessibilityPublicPage() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
-                                    <SettingsItem label="Otomatik Sesleri Kapat" icon={VolumeX} iconColor="bg-blue-500" description="Otomatik başlayan sesleri ve müzikleri engeller. (WCAG 1.4.2)">
+                                    <SettingsItem label={t('marketing.accessibility.items.muteAutoAudio.label')} icon={VolumeX} iconColor="bg-blue-500" description={t('marketing.accessibility.items.muteAutoAudio.desc')}>
                                         <Switch checked={muteAutoAudio} onCheckedChange={setMuteAutoAudio} />
                                     </SettingsItem>
-                                    <SettingsItem label="Dekoratif Görselleri Yoksay" icon={ImageOff} iconColor="bg-blue-500" description="Sadece süs amaçlı görselleri ekran okuyucuya okumaz.">
+                                    <SettingsItem label={t('marketing.accessibility.items.ignoreDecorative.label')} icon={ImageOff} iconColor="bg-blue-500" description={t('marketing.accessibility.items.ignoreDecorative.desc')}>
                                         <Switch checked={ignoreDecorative} onCheckedChange={setIgnoreDecorative} />
                                     </SettingsItem>
-                                    <SettingsItem label="Dinamik İçerik Anonsları" icon={Rss} iconColor="bg-blue-500" description="Hata ve başarı bildirimlerini otomatik seslendirir.">
+                                    <SettingsItem label={t('marketing.accessibility.items.dynamicAnnouncements.label')} icon={Rss} iconColor="bg-blue-500" description={t('marketing.accessibility.items.dynamicAnnouncements.desc')}>
                                         <Switch checked={dynamicAnnouncements} onCheckedChange={setDynamicAnnouncements} />
                                     </SettingsItem>
-                                    <SettingsItem label="Medya Açıklamaları" icon={FileVideo} iconColor="bg-blue-500" description="Video transkriptleri ve animasyon betimlemelerini sunar.">
+                                    <SettingsItem label={t('marketing.accessibility.items.mediaDescriptions.label')} icon={FileVideo} iconColor="bg-blue-500" description={t('marketing.accessibility.items.mediaDescriptions.desc')}>
                                         <Switch checked={mediaDescriptions} onCheckedChange={setMediaDescriptions} />
                                     </SettingsItem>
-                                    <SettingsItem label="Mantıksal Okuma Sırası" icon={ListOrdered} iconColor="bg-blue-500" description="Görsel düzen ile ekran okuyucu sırasını eşitler.">
+                                    <SettingsItem label={t('marketing.accessibility.items.logicalOrder.label')} icon={ListOrdered} iconColor="bg-blue-500" description={t('marketing.accessibility.items.logicalOrder.desc')}>
                                         <Switch checked={logicalOrder} onCheckedChange={setLogicalReadingOrder} />
                                     </SettingsItem>
-                                    <SettingsItem label="ARIA ve Anonslar" icon={Ear} iconColor="bg-blue-500">
+                                    <SettingsItem label={t('marketing.accessibility.items.screenReader.label')} icon={Ear} iconColor="bg-blue-500">
                                         <Switch checked={screenReader} onCheckedChange={setScreenReader} />
                                     </SettingsItem>
                                 </div>
@@ -478,7 +478,7 @@ export default function AccessibilityPublicPage() {
                             </CardHeader>
                             <CardContent className="p-0">
                                 <div className="flex flex-col">
-                                    <SettingsItem label="Geri Alma Süresi" icon={Undo2} iconColor="bg-slate-600" description="Yapılan işlemi geri alabilmek için tanınan süre. (WCAG 2.2.3)">
+                                    <SettingsItem label={t('marketing.accessibility.items.undoTime.label')} icon={Undo2} iconColor="bg-slate-600" description={t('marketing.accessibility.items.undoTime.desc')}>
                                         <Select value={undoTime} onValueChange={setUndoTime}>
                                             <SelectTrigger className='w-[130px] border-none bg-accent focus:ring-0'><SelectValue /></SelectTrigger>
                                             <SelectContent>
@@ -489,16 +489,16 @@ export default function AccessibilityPublicPage() {
                                             </SelectContent>
                                         </Select>
                                     </SettingsItem>
-                                    <SettingsItem label="Zaman Aşımı Uyarıları" icon={MessageSquareWarning} iconColor="bg-slate-600" description="Oturum dolmadan önce 'Devam Et' seçeneği sunar.">
+                                    <SettingsItem label={t('marketing.accessibility.items.timeoutWarnings.label')} icon={MessageSquareWarning} iconColor="bg-slate-600" description={t('marketing.accessibility.items.timeoutWarnings.desc')}>
                                         <Switch checked={timeoutWarnings} onCheckedChange={setTimeoutWarnings} />
                                     </SettingsItem>
-                                    <SettingsItem label="Otomatik Taslak Kaydet" icon={History} iconColor="bg-slate-600" description="Form verilerini belirli aralıklarla yedekler.">
+                                    <SettingsItem label={t('marketing.accessibility.items.autoSave.label')} icon={History} iconColor="bg-slate-600" description={t('marketing.accessibility.items.autoSave.desc')}>
                                         <Switch checked={autoSave} onCheckedChange={setAutoSave} />
                                     </SettingsItem>
-                                    <SettingsItem label="Zaman Sınırlarını Kapat" icon={Clock} iconColor="bg-slate-600" description="Oturum sürelerini sınırsız hale getirir.">
+                                    <SettingsItem label={t('marketing.accessibility.items.disableTimeLimits.label')} icon={Clock} iconColor="bg-slate-600" description={t('marketing.accessibility.items.disableTimeLimits.desc')}>
                                         <Switch checked={disableTimeLimits} onCheckedChange={setDisableTimeLimits} />
                                     </SettingsItem>
-                                    <SettingsItem label="İşlem Onayları" icon={ShieldCheck} iconColor="bg-slate-600" description="Kritik işlemlerde ek onay penceresi gösterir.">
+                                    <SettingsItem label={t('marketing.accessibility.items.transactionConfirmation.label')} icon={ShieldCheck} iconColor="bg-slate-600" description={t('marketing.accessibility.items.transactionConfirmation.desc')}>
                                         <Switch checked={transactionConfirmation} onCheckedChange={setTransactionConfirmation} />
                                     </SettingsItem>
                                 </div>

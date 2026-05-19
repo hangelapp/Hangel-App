@@ -81,24 +81,26 @@ export default function PressPage() {
         });
     };
 
+    // P2-5f: press release titles via `marketing.press.releases.<key>`; date/lang are codes.
     const pressReleases = [
-        { date: '25.07.2024', title: 'Hangel, Sosyal Etki Raporu 2024\'ü Yayınladı', lang: 'TR' },
-        { date: '15.06.2024', title: 'Hangel Launches "Campus Ambassador" Program Across 21 Countries', lang: 'EN' },
-        { date: '01.05.2024', title: 'Yeni İşbirliği: Hangel ve Türkiye\'nin Önde Gelen 50 Markası Güçlerini Birleştirdi', lang: 'TR' }
-    ];
+        { date: '25.07.2024', titleKey: 'r1Title', lang: 'TR' },
+        { date: '15.06.2024', titleKey: 'r2Title', lang: 'EN' },
+        { date: '01.05.2024', titleKey: 'r3Title', lang: 'TR' },
+    ] as const;
 
+    // P2-5f: photo `alt` text via `marketing.press.photos.alt<n>`; src/hint stay in-code.
     const photos = [
-        { id: 1, src: 'https://storage.googleapis.com/project-123-bucket/image.jpg', alt: 'Kurucu Sosyal Girişimci', hint: 'founder portrait' },
-        { id: 2, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', alt: 'Ofiste çalışan ekip', hint: 'office team working' },
-        { id: 3, src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', alt: 'Toplantı odasında beyin fırtınası', hint: 'meeting brainstorming' },
-        { id: 4, src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop', alt: 'Gönüllüler bir araya geliyor', hint: 'volunteers meeting' },
-        { id: 5, src: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?q=80&w=2070&auto=format&fit=crop', alt: 'Uygulama Arayüzü', hint: 'app ui design' },
-        { id: 6, src: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop', alt: 'Mobil Uygulama Ekranı', hint: 'mobile app screen' },
-        { id: 7, src: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?q=80&w=2070&auto=format&fit=crop', alt: 'Telefon Ekranı', hint: 'phone screen' },
-        { id: 8, src: 'https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop', alt: 'Dayanışma içinde insanlar', hint: 'people solidarity' },
-        { id: 9, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', alt: 'Kurumsal sunum', hint: 'corporate presentation' },
-        { id: 10, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', alt: 'Mutlu ve çeşitli bir topluluk', hint: 'happy diverse community' },
-    ];
+        { id: 1, src: 'https://storage.googleapis.com/project-123-bucket/image.jpg', altKey: 'alt1', hint: 'founder portrait' },
+        { id: 2, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', altKey: 'alt2', hint: 'office team working' },
+        { id: 3, src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop', altKey: 'alt3', hint: 'meeting brainstorming' },
+        { id: 4, src: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop', altKey: 'alt4', hint: 'volunteers meeting' },
+        { id: 5, src: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?q=80&w=2070&auto=format&fit=crop', altKey: 'alt5', hint: 'app ui design' },
+        { id: 6, src: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1974&auto=format&fit=crop', altKey: 'alt6', hint: 'mobile app screen' },
+        { id: 7, src: 'https://images.unsplash.com/photo-1607252650355-f7fd0460ccdb?q=80&w=2070&auto=format&fit=crop', altKey: 'alt7', hint: 'phone screen' },
+        { id: 8, src: 'https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop', altKey: 'alt8', hint: 'people solidarity' },
+        { id: 9, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', altKey: 'alt9', hint: 'corporate presentation' },
+        { id: 10, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', altKey: 'alt10', hint: 'happy diverse community' },
+    ] as const;
     
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
@@ -162,17 +164,20 @@ export default function PressPage() {
                             <CardDescription>{t('marketing.press.releasesDescription')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {pressReleases.map((release, index) => (
-                                <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-2xl bg-muted/30 hover:bg-muted/70 transition-colors">
-                                    <div className="flex-1">
-                                        <p className="font-bold">{release.title}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{release.date} • <span className="font-semibold">{release.lang}</span></p>
+                            {pressReleases.map((release, index) => {
+                                const title = t(`marketing.press.releases.${release.titleKey}`);
+                                return (
+                                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-2xl bg-muted/30 hover:bg-muted/70 transition-colors">
+                                        <div className="flex-1">
+                                            <p className="font-bold">{title}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">{release.date} • <span className="font-semibold">{release.lang}</span></p>
+                                        </div>
+                                        <div className="flex gap-2 mt-3 sm:mt-0">
+                                            <Button size="sm" variant="ghost" onClick={() => handleDownload(`${title}.pdf`)}><Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadAction')}</Button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2 mt-3 sm:mt-0">
-                                        <Button size="sm" variant="ghost" onClick={() => handleDownload(`${release.title}.pdf`)}><Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadAction')}</Button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </CardContent>
                      </Card>
                 </section>
@@ -240,7 +245,7 @@ export default function PressPage() {
                                     <Card key={photo.id} className="rounded-2xl overflow-hidden group">
                                         <CardContent className="p-0">
                                             <div className="relative aspect-[4/3] w-full">
-                                                <Image src={photo.src} alt={photo.alt} fill className="object-cover" data-ai-hint={photo.hint} />
+                                                <Image src={photo.src} alt={t(`marketing.press.photos.${photo.altKey}`)} fill className="object-cover" data-ai-hint={photo.hint} />
                                             </div>
                                         </CardContent>
                                         <CardFooter className="p-3 bg-muted/50">

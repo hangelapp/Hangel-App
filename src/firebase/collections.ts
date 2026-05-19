@@ -27,6 +27,9 @@ export const COLLECTIONS = {
   badges: 'badges',
   certificates: 'certificates',
   pastVolunteering: 'pastVolunteering',
+  // FCM push tokens. Doc id = the token string itself; one doc per
+  // browser/device. Path: users/{uid}/fcmTokens/{token}. See FEAT-FCM-PUSH-NOTIF.
+  fcmTokens: 'fcmTokens',
 
   // Entities (NGO / Brand / Club)
   ngos: 'ngos',
@@ -38,6 +41,9 @@ export const COLLECTIONS = {
   // Content / engagement
   posts: 'posts',
   events: 'events',
+  // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
+  // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.
+  eventRsvps: 'rsvps',
   volunteering: 'volunteering',
   library: 'library',
   notifications: 'notifications',

@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { NgoAnalyticsScripts } from '@/components/shared/ngo-analytics-scripts';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
@@ -241,8 +242,15 @@ export default function NgoProfilePage() {
     { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
   ];
 
+  const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
+
   return (
     <div className="animate-in fade-in-0">
+        <NgoAnalyticsScripts
+            gaId={ngoAnalytics?.gaId}
+            gtmId={ngoAnalytics?.gtmId}
+            metaPixelId={ngoAnalytics?.metaPixelId}
+        />
         <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Geri">
                 <ArrowLeft className="h-5 w-5" />

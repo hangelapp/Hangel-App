@@ -1,35 +1,117 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Code, ShieldCheck, KeyRound, Loader2, MousePointer2 } from 'lucide-react';
+import { ArrowLeft, Code, ShieldCheck, KeyRound, Loader2, MousePointer2, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { collection, doc, query, updateDoc, where } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+
+type NgoAnalyticsDoc = {
+    id: string;
+    name?: string;
+    analytics?: {
+        gaId?: string;
+        gtmId?: string;
+        metaPixelId?: string;
+    };
+};
 
 const trackingTools = [
-    { id: 'ga4', name: 'Google Analytics 4', logo: 'GA', color: 'bg-[#F9AB00]', status: 'Bağlı', type: 'Analytics' },
-    { id: 'meta-pixel', name: 'Meta Pixel', logo: 'MP', color: 'bg-[#0668E1]', status: 'Bağlanabilir', type: 'Ads' },
-    { id: 'hotjar', name: 'Hotjar', logo: 'HJ', color: 'bg-[#FD3C00]', status: 'Bağlanabilir', type: 'UX' },
-    { id: 'gtm', name: 'Tag Manager', logo: 'TM', color: 'bg-[#246FDB]', status: 'Bağlı', type: 'Integration' },
+    { id: 'ga4', name: 'Google Analytics 4', logo: 'GA', color: 'bg-[#F9AB00]', type: 'Analytics' },
+    { id: 'meta-pixel', name: 'Meta Pixel', logo: 'MP', color: 'bg-[#0668E1]', type: 'Ads' },
+    { id: 'hotjar', name: 'Hotjar', logo: 'HJ', color: 'bg-[#FD3C00]', type: 'UX' },
+    { id: 'gtm', name: 'Tag Manager', logo: 'TM', color: 'bg-[#246FDB]', type: 'Integration' },
 ];
 
 export default function AnalyticsToolsPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const db = useFirestore();
+    const { user: authUser } = useUser();
+
+    // Yönettiği NGO'yu çöz: önce adminUserId == uid, sonra users/{uid}.managedNgoId
+    const adminNgosQ = useMemoFirebase(
+        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: adminNgos } = useCollection<NgoAnalyticsDoc>(adminNgosQ);
+
+    const userDocRef = useMemoFirebase(
+        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
+        [db, authUser?.uid],
+    );
+    const { data: userData } = useDoc<{ managedNgoId?: string }>(userDocRef);
+
+    const fallbackNgoRef = useMemoFirebase(
+        () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
+        [db, userData?.managedNgoId],
+    );
+    const { data: fallbackNgo } = useDoc<NgoAnalyticsDoc>(fallbackNgoRef);
+
+    const ngoData = useMemo(() => (adminNgos && adminNgos[0]) || fallbackNgo || null, [adminNgos, fallbackNgo]);
+    const ngoId: string | null = ngoData?.id || null;
+
+    const [gaId, setGaId] = useState('');
+    const [metaPixelId, setMetaPixelId] = useState('');
+    const [gtmId, setGtmId] = useState('');
+    const [hydrated, setHydrated] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
+    // NGO doc gelince ilk değerleri formdan tek seferlik hydrate et
+    useEffect(() => {
+        if (!ngoData || hydrated) return;
+        const a = ngoData.analytics || {};
+        setGaId(a.gaId || '');
+        setMetaPixelId(a.metaPixelId || '');
+        setGtmId(a.gtmId || '');
+        setHydrated(true);
+    }, [ngoData, hydrated]);
+
+    const isAdmin = !!ngoId;
+    const gaConnected = !!gaId.trim();
+    const pixelConnected = !!metaPixelId.trim();
+    const gtmConnected = !!gtmId.trim();
+    const statusFor = (toolId: string) => {
+        if (toolId === 'ga4') return gaConnected ? 'Bağlı' : 'Bağlanabilir';
+        if (toolId === 'meta-pixel') return pixelConnected ? 'Bağlı' : 'Bağlanabilir';
+        if (toolId === 'gtm') return gtmConnected ? 'Bağlı' : 'Bağlanabilir';
+        return 'Bağlanabilir';
+    };
+
+    const handleSave = async () => {
+        if (!db || !ngoId) {
+            toast({
+                variant: 'destructive',
+                title: 'Yönetici varlık bulunamadı',
+                description: 'Takip kodlarını kaydetmek için yönettiğiniz bir STK olmalı.',
+            });
+            return;
+        }
         setIsSaving(true);
-        setTimeout(() => {
-            toast({ title: "Takip Kodları Kaydedildi", description: "Değişiklikler tüm platformda aktif hale getirildi." });
+        try {
+            await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), {
+                analytics: {
+                    gaId: gaId.trim(),
+                    gtmId: gtmId.trim(),
+                    metaPixelId: metaPixelId.trim(),
+                },
+            });
+            toast({ title: 'Takip Kodları Kaydedildi', description: 'Değişiklikler NGO profil sayfanızda aktif hale getirildi.' });
+        } catch (err) {
+            const e = err as { message?: string };
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
+        } finally {
             setIsSaving(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -40,34 +122,45 @@ export default function AnalyticsToolsPage() {
                 </Button>
                 <div>
                     <h1 className="text-2xl font-bold font-headline">Web Analiz Araçları</h1>
-                    <p className="text-muted-foreground text-sm">Ziyaretçi trafiğinizi ve bağışçı dönüşümlerini profesyonelce ölçümleyin.</p>
+                    <p className="text-muted-foreground text-sm">
+                        {ngoData?.name ? (
+                            <><span className="font-semibold text-foreground">{ngoData.name}</span> için takip kodlarını yönetin.</>
+                        ) : (
+                            'Ziyaretçi trafiğinizi ve bağışçı dönüşümlerini profesyonelce ölçümleyin.'
+                        )}
+                    </p>
                 </div>
             </div>
 
+            {!isAdmin && (
+                <div className="p-4 border rounded-xl bg-amber-50 text-amber-900 text-sm flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                        <p className="font-bold">Bu sayfa yalnızca STK yöneticileri içindir</p>
+                        <p>Hesabınız henüz bir STK ile eşleşmedi. Yönetici davetiniz tamamlanınca takip kodlarını buradan girebilirsiniz.</p>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {trackingTools.map((tool) => (
-                    <Card key={tool.id} className="hover:border-primary transition-all cursor-pointer group">
-                        <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
-                            <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", tool.color)}>
-                                {tool.logo}
-                            </div>
-                            <div>
-                                <p className="font-bold text-sm">{tool.name}</p>
-                                <Badge variant={tool.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
-                                    {tool.status}
-                                </Badge>
-                            </div>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="w-full"
-                                onClick={() => toast({title: "Yapılandırma", description: `${tool.name} ayarları açılıyor.`})}
-                            >
-                                {tool.status === 'Bağlı' ? 'Yönet' : 'Kuruluma Başla'}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                ))}
+                {trackingTools.map((tool) => {
+                    const status = statusFor(tool.id);
+                    return (
+                        <Card key={tool.id} className="hover:border-primary transition-all group">
+                            <CardContent className="p-4 flex flex-col items-center text-center space-y-3">
+                                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg", tool.color)}>
+                                    {tool.logo}
+                                </div>
+                                <div>
+                                    <p className="font-bold text-sm">{tool.name}</p>
+                                    <Badge variant={status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                        {status}
+                                    </Badge>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
 
             <Tabs defaultValue="standard">
@@ -80,26 +173,44 @@ export default function AnalyticsToolsPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> Kimlikler (Tracking IDs)</CardTitle>
-                            <CardDescription>Kullandığınız araçların mülk veya hesap kimliklerini buraya girin.</CardDescription>
+                            <CardDescription>Kullandığınız araçların mülk veya hesap kimliklerini buraya girin. NGO profil sayfanızda otomatik enjekte edilir.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>GA4 Measurement ID</Label>
-                                    <Input placeholder="G-XXXXXXXXXX" />
+                                    <Label htmlFor="ga4-id">GA4 Measurement ID</Label>
+                                    <Input
+                                        id="ga4-id"
+                                        placeholder="G-XXXXXXXXXX"
+                                        value={gaId}
+                                        onChange={(e) => setGaId(e.target.value)}
+                                        disabled={!isAdmin}
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Meta Pixel ID</Label>
-                                    <Input placeholder="123456789012345" />
+                                    <Label htmlFor="meta-pixel-id">Meta Pixel ID</Label>
+                                    <Input
+                                        id="meta-pixel-id"
+                                        placeholder="123456789012345"
+                                        value={metaPixelId}
+                                        onChange={(e) => setMetaPixelId(e.target.value)}
+                                        disabled={!isAdmin}
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label>GTM Container ID</Label>
-                                <Input placeholder="GTM-XXXXXXX" />
+                                <Label htmlFor="gtm-id">GTM Container ID</Label>
+                                <Input
+                                    id="gtm-id"
+                                    placeholder="GTM-XXXXXXX"
+                                    value={gtmId}
+                                    onChange={(e) => setGtmId(e.target.value)}
+                                    disabled={!isAdmin}
+                                />
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                            <Button onClick={handleSave} disabled={isSaving}>
+                            <Button onClick={handleSave} disabled={isSaving || !isAdmin}>
                                 {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kaydediliyor</> : 'Değişiklikleri Kaydet'}
                             </Button>
                         </CardFooter>
@@ -135,7 +246,7 @@ export default function AnalyticsToolsPage() {
                 <ShieldCheck className="h-5 w-5 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                     <p className="font-bold">Veri Gizliliği ve Çerez Politikası</p>
-                    <p>Takip kodları eklendiğinde, web sitenizdeki çerez onay bannerı otomatik olarak "Analitik Çerezler" kategorisini aktif hale getirir. Tüm veri toplama işlemleri KVKK ve GDPR uyumlu olarak gerçekleştirilmektedir.</p>
+                    <p>Takip kodları eklendiğinde, web sitenizdeki çerez onay bannerı otomatik olarak &quot;Analitik Çerezler&quot; kategorisini aktif hale getirir. Tüm veri toplama işlemleri KVKK ve GDPR uyumlu olarak gerçekleştirilmektedir.</p>
                 </div>
             </div>
         </div>

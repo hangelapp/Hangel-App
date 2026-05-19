@@ -279,20 +279,22 @@ export default function LogoPage() {
         },
     ];
     
+    // P2-5f: rules content i18n via translation keys; titles + multi-paragraph content
+    // resolved per id (verbatim copy lives in `marketing.logo.rules.<id>.{title,content}`).
     const rules = [
-      { id: 'izin', icon: FileCheck, title: "MARKA KULLANIM İZNİ", content: ["hangel varlıklarını (Yayın, Radyo, Açık hava reklamı, TV, A4’ten büyük baskı materyali) içinde kullanmak isteyen kişi ve kurumlar yazılı izin almak zorundadır.", "Talep dosyasında kullanım taslağı sunulmalıdır.", "hangel marka ekibi, uygun bulmadığı kullanımları reddetme veya iptal etme hakkını saklı tutar."] },
-      { id: 'standart', icon: Type, title: "İSİM VE METİN KULLANIM STANDARTLARI", content: ["“hangel” kelimesinde “h” harfi büyük yazılamaz.", "Farklı yazı tipi veya ölçekte manipüle edilemez.", "Başka dile çevrilemez.", "Kısaltılamaz.", "Alan adı, şirket adı veya ürün adına entegre edilemez. <br/><br/> <strong>Yasaklı örnekler:</strong> hangelPro, hangelClubX, Bağışhangel <br/> <strong>İzin verilen kullanım:</strong> “hangel için geliştirilmiştir”, “hangel ile uyumludur”, “hangel platformunda yer alır”"] },
-      { id: 'bosluk', icon: Maximize, title: "BOŞLUK (CLEAR SPACE) KURALI", content: ["Logonun etrafındaki minimum güvenli alan, “h” harfinin yüksekliği kadar veya daha fazla olmalıdır. Bu alan içerisine metin, görsel, grafik öğe, çerçeve veya ikon yerleştirilemez."] },
-      { id: 'degisiklik', icon: XCircle, title: "Değişiklik Yasağı", content: ["Logo sabittir. Yeniden yorumlanamaz.", "Oranları bozulamaz, renkleri değiştirilemez, eğilemez, üzerine efekt, gölge veya desen eklenemez, başka grafik unsurlarla birleştirilemez."] },
-      { id: 'boyut', icon: Ruler, title: "LOGO MİNİMUM BOYUT KURALI", content: ["Marka görünürlüğünün ve okunabilirliğin korunması amacıyla aşağıdaki minimum ölçü standartları zorunludur:", "<strong>Dijital Ortam:</strong><br/>Minimum genişlik: 120 px<br/>App icon minimum: 32 px", "<strong>Basılı Materyal:</strong><br/>Minimum genişlik: 25 mm", "Belirtilen ölçülerin altında kullanım yapılamaz. Okunabilirliği bozacak küçültmeler marka ihlali sayılır."] },
-      { id: 'ikonlar', icon: Package, title: "ÜRÜN İKONLARI", content: ["Eğitim ve bilgilendirme amaçlı kullanılabilir ancak resmi ortaklık algısı oluşturamaz ve ana marka kimliğinin yerine geçemez.", "Ancak:", "Resmi ortaklık algısı oluşturamaz.", "Ana marka kimliğinin yerine geçemez.", "Tekil görsel kilit oluşturamaz."] },
-      { id: 'sosyal-medya', icon: Share2, title: "SOSYAL MEDYA VE DİJİTAL MECRALAR", content: ["Resmi hesap algısı yaratacak kullanım yasaktır (Yanlış: “hangel Haber”, Doğru: “hangel hakkında haberler”). Hashtag üzerinde hak iddia edilemez."] },
-      { id: 'tv', icon: Tv, title: "TV, FİLM VE YAYINCILIK", content: ["Yayın içeriklerinde doğru atıf esastır. Profil ekran görüntüleri kullanımı için ilgili kurumdan yazılı izin alınmalıdır."] },
-      { id: 'cobranding', icon: Handshake, title: "CO-BRANDING (ORTAK MARKALAMA) KURALLARI", content: ["Ortak kampanya, sponsorluk veya entegrasyon durumlarında aşağıdaki ilkeler uygulanır:", "• Logo eşit ölçekli kullanılmalıdır.", "• İki logo arasında minimum “h yüksekliği” kadar boşluk bırakılmalıdır.", "• Logolar yatay hizalı olmalıdır.", "• Birleşik tek bir görsel kilit (lock-up) oluşturulamaz.", "• Basılı büyük ölçekli mecralarda, açık hava reklamlarında, televizyon ve dijital yayınlarda yazılı izin zorunludur."] },
-      { id: 'dil-ton', icon: MessageSquare, title: "İLETİŞİM DİLİ VE TONU", content: ["Net, tarafsız ve öğretici bir dil kullanılmalıdır.", "Veri ve etki odaklı olunmalıdır.", "Kaçınılması gerekenler: Kahramanlaştırma, duygusal ajitasyon, yardım alanı edilgen gösteren söylem."] },
-      { id: 'slogan', icon: Megaphone, title: "SLOGAN VE KULLANIM HİYERARŞİSİ", content: ["“We Are Hangel / I’m Hangel” ifadeleri topluluk dili kapsamında yer alır, resmî slogan değildir."] },
-      { id: 'yasal', icon: Shield, title: "YASAL ÇERÇEVE", content: ["hangel, fikri mülkiyet haklarını korumak için gerekli yasal süreçleri yürütür.", "Ticari markalarımız tescil ettirilemez, benzer şekilde kullanılamaz veya zayıflatılamaz.", "Hizmet Şartları ve Topluluk Standartları ile çelişen kullanımlar yasaktır.", "hangel, marka kullanım iznini tek taraflı olarak iptal etme hakkını saklı tutar."] }
-    ];
+      { id: 'izin', tkey: 'izin', icon: FileCheck },
+      { id: 'standart', tkey: 'standart', icon: Type },
+      { id: 'bosluk', tkey: 'bosluk', icon: Maximize },
+      { id: 'degisiklik', tkey: 'degisiklik', icon: XCircle },
+      { id: 'boyut', tkey: 'boyut', icon: Ruler },
+      { id: 'ikonlar', tkey: 'ikonlar', icon: Package },
+      { id: 'sosyal-medya', tkey: 'sosyalMedya', icon: Share2 },
+      { id: 'tv', tkey: 'tv', icon: Tv },
+      { id: 'cobranding', tkey: 'cobranding', icon: Handshake },
+      { id: 'dil-ton', tkey: 'dilTon', icon: MessageSquare },
+      { id: 'slogan', tkey: 'slogan', icon: Megaphone },
+      { id: 'yasal', tkey: 'yasal', icon: Shield },
+    ] as const;
 
     const themeConfigs = [
         { bg: 'bg-[#f5f5f7]', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
@@ -455,13 +457,17 @@ export default function LogoPage() {
                  <Section id="kullanim-kurallari" className="bg-white">
                     <SectionTitle>{t('marketing.logo.usageTitle')}</SectionTitle>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
-                        {rules.map((rule) => (
-                            <RuleCard key={rule.id} icon={rule.icon} title={rule.title}>
-                                 <div className="space-y-3">
-                                    {rule.content.map((text, i) => <p key={i} dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.replace(/•/g, '<span class="mr-2">•</span>')) }} />)}
-                                </div>
-                            </RuleCard>
-                        ))}
+                        {rules.map((rule) => {
+                            const content = t(`marketing.logo.rules.${rule.tkey}.content`);
+                            const paragraphs = content.split('\n\n');
+                            return (
+                                <RuleCard key={rule.id} icon={rule.icon} title={t(`marketing.logo.rules.${rule.tkey}.title`)}>
+                                     <div className="space-y-3">
+                                        {paragraphs.map((text, i) => <p key={i} dangerouslySetInnerHTML={{ __html: sanitizeHtml(text.replace(/•/g, '<span class="mr-2">•</span>')) }} />)}
+                                    </div>
+                                </RuleCard>
+                            );
+                        })}
                     </div>
                 </Section>
                 

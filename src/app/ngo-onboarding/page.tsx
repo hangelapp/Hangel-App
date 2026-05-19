@@ -142,48 +142,40 @@ export default function NgoOnboardingPage() {
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
 
+    // P2-5f: text fields resolved via `marketing.ngoOnboarding.advantages.<key>.*` keys;
+    // image/href stay in-code (structural).
     const advantageItems = [
         {
-            category: "DİJİTAL DÖNÜŞÜM",
-            title: "Tek Panelden Yönetim",
-            description: "Kurumsal web sitenizden CRM'e, tüm dijital araçlarınızı tek yerden yönetin. Teknik bilgiye ihtiyaç duymadan profesyonel bir dijital varlığa sahip olun.",
+            tkey: 'dijital',
             imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
             imageHint: 'data analytics dashboard',
-            link: { label: "Araçları Keşfet", href: "/ngo-admin/dashboard" }
+            href: '/ngo-admin/dashboard',
         },
         {
-            category: "SÜRDÜRÜLEBİLİR KAYNAK",
-            title: "Alışverişle Bağış",
-            description: "Destekçilerinizin günlük alışverişlerini, kurumunuz için düzenli bir gelir modeline dönüştürün. Ek maliyet yok, sadece etki var.",
+            tkey: 'kaynak',
             imageUrl: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop',
             imageHint: 'contactless payment store',
-            link: { label: "Nasıl Çalışır?", href: "/market" }
+            href: '/market',
         },
         {
-            category: "NİTELİKLİ GÖNÜLLÜ AĞI",
-            title: "Yetenek Bazlı Gönüllülük",
-            description: "Proje yönetimi, tasarım, hukuk gibi alanlarda uzmanlaşmış binlerce yetenekli gönüllüye ulaşın, projelerinizi güçlendirin.",
+            tkey: 'gonullu',
             imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop',
             imageHint: 'volunteers working',
-            link: { label: "Gönüllü İlanı Oluştur", href: "/ngo-admin/volunteer" }
+            href: '/ngo-admin/volunteer',
         },
         {
-            category: "ARTAN GÜVEN VE ŞEFFAFLIK",
-            title: "Şeffaflık Endeksi",
-            description: "Yasal belgelerinizi ve raporlarınızı paylaşarak şeffaflık puanınızı yükseltin, bağışçıların ve gönüllülerin güvenini kazanın.",
+            tkey: 'seffaflik',
             imageUrl: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop',
             imageHint: 'person reviewing document',
-            link: { label: "Endeksi İncele", href: "/ngo-admin/transparency" }
+            href: '/ngo-admin/transparency',
         },
         {
-            category: "VERİYE DAYALI ETKİ",
-            title: "Demografi ve Analiz",
-            description: "Destekçi kitlenizin demografik yapısını, ilgi alanlarını ve davranışlarını analiz ederek iletişim stratejinizi veriye dayalı olarak şekillendirin.",
+            tkey: 'demografi',
             imageUrl: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?q=80&w=2076&auto=format&fit=crop',
             imageHint: 'world map data connection',
-            link: { label: "Analizleri Gör", href: "/ngo-admin/demographics" }
-        }
-    ];
+            href: '/ngo-admin/demographics',
+        },
+    ] as const;
 
     const mainFeatures = [
         {
@@ -208,29 +200,31 @@ export default function NgoOnboardingPage() {
         }
     ];
 
-    const toolsetFeatures = [
-        { href: '/ngo-admin/users', icon: Users, title: "Yetkili Yönetimi", description: "Ekibinize farklı roller tanımlayın, panel yetkilerini güvenle dağıtın." },
-        { href: '/ngo-admin/qr', icon: QrCode, title: "STK Profil QR Kodu", description: "Fiziksel alanlarda kurum profilinize anında erişim sağlayın." },
-        { href: '/ngo-admin/website', icon: Globe, title: "Web Sitesi Yönetimi", description: "Kurumsal kimliğinize özel web sitesi scriptlerini kolayca yönetin." },
-        { href: '/ngo-admin/sms', icon: MessageSquare, title: "SMS Gönderimi", description: "Önemli duyurularınızı gönüllülerinize SMS ile anında ulaştırın." },
-        { href: '/ngo-admin/mail', icon: Mail, title: "Mail Gönderimi", description: "E-bültenlerinizle bağışçılarınızı düzenli olarak bilgilendirin." },
-        { href: '/ngo-admin/ads', icon: Megaphone, title: "Reklam Yönetimi", description: "Platform içi görünürlüğünüzü artırın, hedef kitleye doğrudan ulaşın.", tag: "Yeni" },
-        { href: '/ngo-admin/events', icon: Calendar, title: "Etkinlik Yönetimi", description: "Saha veya online etkinliklerinizi planlayın, kayıtları takip edin." },
-        { href: '/ngo-admin/online-meeting', icon: Video, title: "Online Eğitim & Toplantı", description: "Gönüllülerinize uzaktan eğitimler verin, toplantılar düzenleyin." },
-        { href: '/ngo-admin/design-tools', icon: Palette, title: "Tasarım Programları", description: "Görsel materyalleriniz için profesyonel tasarım araçlarına erişin." },
-        { href: '/ngo-admin/payment-systems', icon: CreditCard, title: "Pos & Ödeme Sistemleri", description: "Kurumsal ödeme altyapınızı platform ile entegre edin." },
-        { href: '/ngo-admin/marketing', icon: Target, title: "Pazarlama İletişimi", description: "Topluluğunuzla kurduğunuz bağı profesyonel araçlarla büyütün." },
-        { href: '/ngo-admin/accounting', icon: Calculator, title: "Ön Muhasebe Yönetimi", description: "Finansal hareketlerinizi ve hak edişlerinizi şeffafça izleyin.", tag: "Beta" },
-        { href: '/ngo-admin/crm', icon: Database, title: "CRM Yönetimi", description: "Bağışçı ve gönüllü veri tabanınızı modern bir yapıda tutun." },
-        { href: '/ngo-admin/virtual-pbx', icon: PhoneCall, title: "Sanal Santral Yönetimi", description: "Kurumsal telefon ve çağrı merkezi altyapınızı yönetin." },
-        { href: '/ngo-admin/virtual-office', icon: Building2, title: "Sanal ve Fiziki Ofis", description: "İşbirliği ağımızdaki ofis ve toplantı alanlarından faydalanın." },
-        { href: '/ngo-admin/university-volunteering', icon: GraduationCap, title: "Üniversite Gönüllülük Dersi", description: "Akademik kredi kapsamında binlerce öğrenciye kapılarınızı açın." },
-        { href: '/ngo-admin/field-team', icon: MapPin, title: "Saha Ekip Yönetimi", description: "Saha operasyonlarınızı canlı harita ve araçlarla takip edin.", tag: "Yeni" },
-        { href: '/ngo-admin/dm', icon: MessageCircle, title: "DM Mesajlaşma Merkezi", description: "Destekçilerinizle anlık ve kurumsal bir dille mesajlaşın." },
-        { href: '/ngo-admin/ecommerce', icon: ShoppingCart, title: "İktisadi İşletme Yönetimi", description: "Kurumsal ürünlerinizin satış süreçlerini dijitalleştirin." },
-        { href: '/ngo-admin/hr-integration', icon: Briefcase, title: "İK Şirketleri Entegrasyonu", description: "Çalışan gönüllülüğü ve bağış eşleştirme programlarını otomatikleştirin." },
-        { href: '/ngo-admin/volunteer-portal', icon: Network, title: "Gönüllülük Portalı Entegrasyonu", description: "İlanlarınızı diğer ulusal ve global portallarla senkronize edin." },
-        { href: '/ngo-admin/analytics-tools', icon: LineChart, title: "Web Analiz Araçları", description: "Ziyaretçi trafiğinizi ve dönüşümlerinizi profesyonelce ölçümleyin." },
+    // P2-5f: tool list i18n via `marketing.ngoOnboarding.tools.<key>.{title,description}`.
+    // `tagKey` ∈ {'new','beta'} → resolved to `marketing.ngoOnboarding.tag{New,Beta}`.
+    const toolsetFeatures: ReadonlyArray<{ href: string; icon: LucideIcon; tkey: string; tagKey?: 'new' | 'beta' }> = [
+        { href: '/ngo-admin/users', icon: Users, tkey: 'users' },
+        { href: '/ngo-admin/qr', icon: QrCode, tkey: 'qr' },
+        { href: '/ngo-admin/website', icon: Globe, tkey: 'website' },
+        { href: '/ngo-admin/sms', icon: MessageSquare, tkey: 'sms' },
+        { href: '/ngo-admin/mail', icon: Mail, tkey: 'mail' },
+        { href: '/ngo-admin/ads', icon: Megaphone, tkey: 'ads', tagKey: 'new' },
+        { href: '/ngo-admin/events', icon: Calendar, tkey: 'events' },
+        { href: '/ngo-admin/online-meeting', icon: Video, tkey: 'onlineMeeting' },
+        { href: '/ngo-admin/design-tools', icon: Palette, tkey: 'designTools' },
+        { href: '/ngo-admin/payment-systems', icon: CreditCard, tkey: 'paymentSystems' },
+        { href: '/ngo-admin/marketing', icon: Target, tkey: 'marketing' },
+        { href: '/ngo-admin/accounting', icon: Calculator, tkey: 'accounting', tagKey: 'beta' },
+        { href: '/ngo-admin/crm', icon: Database, tkey: 'crm' },
+        { href: '/ngo-admin/virtual-pbx', icon: PhoneCall, tkey: 'virtualPbx' },
+        { href: '/ngo-admin/virtual-office', icon: Building2, tkey: 'virtualOffice' },
+        { href: '/ngo-admin/university-volunteering', icon: GraduationCap, tkey: 'universityVolunteering' },
+        { href: '/ngo-admin/field-team', icon: MapPin, tkey: 'fieldTeam', tagKey: 'new' },
+        { href: '/ngo-admin/dm', icon: MessageCircle, tkey: 'dm' },
+        { href: '/ngo-admin/ecommerce', icon: ShoppingCart, tkey: 'ecommerce' },
+        { href: '/ngo-admin/hr-integration', icon: Briefcase, tkey: 'hrIntegration' },
+        { href: '/ngo-admin/volunteer-portal', icon: Network, tkey: 'volunteerPortal' },
+        { href: '/ngo-admin/analytics-tools', icon: LineChart, tkey: 'analyticsTools' },
     ];
 
     return (
@@ -282,7 +276,14 @@ export default function NgoOnboardingPage() {
                             {advantageItems.map((item, index) => (
                                 <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
                                     <div className="h-full">
-                                        <AdvantageCard {...item} />
+                                        <AdvantageCard
+                                            category={t(`marketing.ngoOnboarding.advantages.${item.tkey}.category`)}
+                                            title={t(`marketing.ngoOnboarding.advantages.${item.tkey}.title`)}
+                                            description={t(`marketing.ngoOnboarding.advantages.${item.tkey}.description`)}
+                                            imageUrl={item.imageUrl}
+                                            imageHint={item.imageHint}
+                                            link={{ label: t(`marketing.ngoOnboarding.advantages.${item.tkey}.linkLabel`), href: item.href }}
+                                        />
                                     </div>
                                 </CarouselItem>
                             ))}
@@ -309,7 +310,16 @@ export default function NgoOnboardingPage() {
                      <p className="text-base text-muted-foreground max-w-2xl mx-auto">{t('marketing.ngoOnboarding.toolsetDescription')}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {toolsetFeatures.map(tool => <ToolGridItem key={tool.title} {...tool} />)}
+                    {toolsetFeatures.map(tool => (
+                        <ToolGridItem
+                            key={tool.tkey}
+                            href={tool.href}
+                            icon={tool.icon}
+                            title={t(`marketing.ngoOnboarding.tools.${tool.tkey}.title`)}
+                            description={t(`marketing.ngoOnboarding.tools.${tool.tkey}.description`)}
+                            tag={tool.tagKey ? t(`marketing.ngoOnboarding.tag${tool.tagKey === 'new' ? 'New' : 'Beta'}`) : undefined}
+                        />
+                    ))}
                 </div>
             </section>
 

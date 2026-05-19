@@ -1233,3 +1233,145 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - `src/app/messages/page.tsx`
 
 **Gates**: `npm run typecheck` PASS · `npm run lint` PASS.
+
+## FEAT-ANALYTICS-CONSUME (2026-05-18) — hangel-frontend-lead
+
+**Context**: `src/app/ngo-admin/analytics-tools/page.tsx` has 3 placeholder Inputs (GA4 / Meta Pixel / GTM) with no Firestore wiring. NGO public page (`src/app/ngos/[id]/page.tsx`) does not inject any tracking scripts.
+
+**Storage**: `ngos/{ngoId}.analytics = { gaId, gtmId, metaPixelId }`. Field added ad-hoc (Firestore schemaless); no type changes required for write side. Empty strings stored as empty (skipped on render).
+
+**Form wiring**: Resolve NGO id via the same pattern as `ngo-admin/website/page.tsx` — `adminNgos = where('adminUserId', '==', uid)` then fallback to `users/{uid}.managedNgoId`. Gate UI when no NGO admin: render an explanatory card and disable save. Hydrate state on first NGO doc load via `useEffect` + `hydrated` flag (mirrors website builder). Save via `updateDoc(ngos/{ngoId}, { analytics: {...} })`.
+
+**Script injection**: New `src/components/shared/ngo-analytics-scripts.tsx` — client component, props `{ gaId?, gtmId?, metaPixelId? }`, uses Next.js `<Script strategy="afterInteractive">`. GA4: gtag loader + inline `gtag('config', gaId)`. GTM: inline dataLayer push + `<noscript>` iframe fallback. Meta Pixel: standard `fbq` snippet. Each block skipped when its id is empty/falsy. No new dependency.
+
+**Mount point**: `src/app/ngos/[id]/page.tsx` — render `<NgoAnalyticsScripts ... />` once `ngo` is loaded, conditional on at least one id being present.
+
+**Files not touched**: `src/app/layout.tsx`, providers, API routes, rules, `.worktrees/**`. `AnalyticsSection` in website builder left alone (separate copy, separate save path — out of scope).
+
+**Risk**: L — purely additive. Empty ids => no scripts. Bad id => third-party silently fails. No PII added.
+
+**Gates**: typecheck/lint/test below.
+
+
+## FEAT-NGO-CAMPAIGN-UI (2026-05-18) — hangel-frontend-lead
+
+**Context**: Backend (`POST /api/ngo-admin/messaging/campaigns`, resolver, wallet, pricing) is complete. Existing `src/app/ngo-admin/messaging/campaigns/new/page.tsx` was a 3-step stub: no segment dropdown, no live cost estimate, no wallet pre-flight, no `scheduledAt`, no `spec.segmentIds`. List page lacked `EmptyState` + columns (sent count / sent at) + auth-gate redirect.
+
+**Composer rewrite** (`campaigns/new/page.tsx`):
+- Single-form composer (not multi-step) to match audit acceptance criteria.
+- Loads `/api/ngo-admin/messaging/me` once for `{ ngoId, wallet }`.
+- Auth gate: if `me` 401/403 or no `managedNgoId`, `router.replace('/market')`.
+- Channel radio (sms/email/whatsapp) + segment dropdown populated from `useCollection(query(collection(db, COLLECTIONS.ngoRecipientSegments), where('ngoId','==', ngoId)))`.
+- Subject input gated on `channel === 'email'`.
+- Body textarea + live SMS segment/encoding indicator (reuses `segmentInfo`).
+- `scheduledAt` `datetime-local` (optional).
+- Live dry-run via `/api/ngo-admin/messaging/resolve-recipients` on (channel, useCase, segmentIds) change, debounced 600ms.
+- Live cost estimate computed **client-side** (mirrors `computeCampaignCost` defaults: TRY tier prices, free quota, KDV) so the user sees TRY before submit. Server still re-computes authoritative cost.
+- Disable submit when: `cost.total > wallet.balance - wallet.reserved` (insufficient) OR no recipients OR no name/body.
+- Toast + `router.push('/ngo-admin/messaging/campaigns')` on success (per acceptance criteria — list, not detail).
+
+**List rewrite** (`campaigns/page.tsx`):
+- Use `EmptyState` from `@/components/shared/empty-state`.
+- Resolves ngoId via `users/{uid}.managedNgoId` (existing pattern). If absent, redirect `/market`.
+- Query: `where('ngoId','==', ngoId), orderBy('createdAt','desc'), limit(50)`. Note: campaign docs are written with field `ngoId` (not `scopedNgoId`) by `/api/ngo-admin/messaging/campaigns/route.ts`, so query field stays `ngoId`. The PRD line about `scopedNgoId` reflects the spec naming; storage uses `ngoId`.
+- Columns: name, channel (icon+text), status badge, sent count `stats.sent`, sent at (`completedAt ?? createdAt`), view link.
+
+**Hard rules**: only `@/components/ui/*`, `@/components/shared/empty-state`, `lucide-react`, `@/lib/messaging/{client,sms-segments}`. No super-admin imports. No new files outside the two listed.
+
+**Risk**: L — UI-only changes; backend unchanged; submit path identical.
+
+**Gates**: typecheck + lint + test below.
+
+## FEAT-FCM-PUSH-NOTIF (2026-05-18) — hangel-frontend-lead (scaffold)
+
+**Status**: 🔧 scaffold-only. Actual delivery (P-FCM-DELIVERY) + Capacitor iOS native push are explicitly out of scope here.
+
+**What landed**:
+- `public/firebase-messaging-sw.js` — minimal SW using Firebase compat CDN (compat is mandatory inside service workers; modular SDK has no SW bundle). Inlines the same config as `src/firebase/config.ts` (env interpolation is not available inside `public/`).
+- `src/lib/fcm.ts` — `requestPushPermission()` + `registerForPushToken(uid)`. SSR-safe (every entry point guards `typeof window`). VAPID key from `NEXT_PUBLIC_FIREBASE_VAPID_KEY`; missing → warn + return null. Token persisted at `users/{uid}/fcmTokens/{token}` via `setDoc(..., { createdAt, userAgent }, { merge: true })`. Firestore write failure is swallowed (warn-only) per the "graceful degradation on rule rejection" rule — token still returned to the caller.
+- `src/components/providers/push-notifications-provider.tsx` — client provider that registers the token once `useUser()` resolves to a signed-in user AND `Notification.permission === 'granted'`. Does NOT prompt on mount (hostile UX); a future settings CTA will call `requestPushPermission()` directly. Re-mount guard via `useRef(uid)` so we don't double-register in dev/StrictMode.
+- `src/firebase/collections.ts` → added `fcmTokens: 'fcmTokens'` under the users sub-collections block.
+- `.env.example` → added `NEXT_PUBLIC_FIREBASE_VAPID_KEY` with inline comment explaining where to find it (Project Settings → Cloud Messaging → Web push certificates).
+
+**Layout mount**: deliberately NOT modified per orchestrator contract. Snippet in report.
+
+**Why no `@capacitor/push-notifications`**: Hard rule said "do NOT install new dependency unless absolutely required". Web FCM scaffold needs only the existing `firebase` package + the new SW file. Native iOS / Android push is a separate follow-up (P-FCM-DELIVERY) that will install the Capacitor plugin and wire `PushNotifications.register()` → same Firestore token-save path.
+
+**Firestore rules**: NOT touched. Write to `users/{uid}/fcmTokens/{token}` will likely be rejected by current rules — the helper swallows that error so the scaffold remains a no-op until rules are updated under P-FCM-DELIVERY.
+
+**Risk**: L — net-new files only; the provider is unmounted until the orchestrator adds it to layout. No existing code path changes behaviour. Worst case: silent no-op for users without permission or missing VAPID key.
+
+**Gates**: typecheck/lint/test below.
+
+## FEAT-EVENT-RSVP (2026-05-18) — hangel-backend-lead
+
+**Status**: ✅ Done. API + UI + 4 vitest cases shipped surgically.
+
+**Data model**: Sub-collection `events/{eventId}/rsvps/{userId}` (doc id == userId for natural idempotency + cheap own-rsvp read). Shape: `{ userId, status: 'going' | 'cancelled', createdAt, updatedAt }`. Soft delete on cancel (we keep the doc with `status: 'cancelled'` rather than `tx.delete()`) so that re-going preserves the original `createdAt` and gives us a clean audit trail. New `COLLECTIONS.eventRsvps = 'rsvps'` registered under the events block.
+
+**API**: `POST /api/events/[id]/rsvp` — body `{ action: 'going' | 'cancel' }`. Auth via `Authorization: Bearer <idToken>` → `getAdminAuth().verifyIdToken()` (mirrors `requireSuperAdmin` pattern, but no role gate — any signed-in user). Single `runTransaction`:
+  1. `tx.get(eventRef)` — 404 if missing; read `capacity.max` (cap rule: `> 0` → finite cap, else unlimited).
+  2. `tx.get(rsvpRef)` — detect `wasGoing`.
+  3. `tx.get(rsvpsCol.where('status','==','going').count())` — server-side aggregate, cheap and consistent within the tx.
+  4. action='going' + not wasGoing + at cap → throw `RsvpError('EVENT_FULL', 409)`.
+  5. else `tx.set(rsvpRef, ...)` with merge.
+  Returns `{ status, count }`. Error shape `{ errorCode, message }` per acceptance.
+
+**Why aggregate count, not denormalize**: `event.capacity.current` already exists in the Event type but is treated as a display-only number set by event creators. Reading `count()` inside the tx keeps the cap deterministic without write-fanning every RSVP into the parent doc (Firestore aggregate `count()` is 1 read regardless of size).
+
+**UI**: `src/app/events/[id]/page.tsx` — added `useDoc<rsvp>` subscription on `events/{id}/rsvps/{uid}`, capacity `<Progress>` bar (only when `capacity.max > 0`), and a state-aware bottom-bar button:
+ - signed-out → `disabled`
+ - not going → "Katıl" primary button
+ - going → "Katıldın ✓ — vazgeç" outline button
+ The existing badge-PDF AlertDialog moved to a secondary "Yaka Kartı" button next to it (kept the full dialog content untouched). `EVENT_FULL` shows a destructive toast: "Etkinlik dolu — Kapasite dolduğu için kayıt alınamadı."
+
+**Tests** (`tests/api/events-rsvp.test.ts`): mocked `@/lib/firebase-admin` with an in-memory rsvp `Map` + a fake transaction (`get` discriminates by `__kind`/`__countOf`). 4 cases: missing auth → 401, valid going → 200 + count, going at cap → 409 EVENT_FULL, cancel → 200 + decrement. 4/4 PASS in 58ms.
+
+**Gates**:
+ - `npm run typecheck` → PASS
+ - `npm run lint` → 1 pre-existing error in `src/lib/fcm.ts` (untracked file from a different agent; not in scope)
+ - `npm test -- --run tests/api/events-rsvp.test.ts` → 4 passed (4)
+
+**Files**:
+ - NEW `src/app/api/events/[id]/rsvp/route.ts`
+ - NEW `tests/api/events-rsvp.test.ts`
+ - MOD `src/app/events/[id]/page.tsx` (RSVP state + button toggle + capacity bar; did not touch the badge-PDF dialog content)
+ - MOD `src/firebase/collections.ts` (+`eventRsvps`)
+
+**firestore.rules**: NOT touched. Suggested follow-up rule block documented inline at the top of the route file: `match /events/{eventId}/rsvps/{userId}` allow read iff `request.auth.uid == userId`, deny client writes (server-only via this endpoint enforces the capacity guard).
+
+**Risk**: L — net-new endpoint + a localized UI swap on the bottom CTA bar. No existing API behaviour changed; the badge-PDF dialog is preserved verbatim under a new secondary trigger.
+
+## P2-5f (2026-05-18) — hangel-frontend-lead — marketing deep-array i18n
+
+**Context**: P2-5e deferred six deeply-nested data arrays (~100 strings) under the "no structural restructure" rule. P2-5f completes them by extending the existing schema with id-keyed sub-namespaces and parameterizing the JSX maps.
+
+**Approach (per file)**:
+- `logo/page.tsx` + `logo-usage/page.tsx`: `rules` array (12×{title, content}) collapsed to `{id, tkey, icon}` triples. Multi-paragraph `content` (1–5 paragraphs per rule, with embedded HTML) joined with `\n\n` into a single translation string under `marketing.logo.rules.<tkey>.content`. Render-time `content.split('\n\n')` reproduces the original `<p>` mapping verbatim. Titles → `marketing.logo.rules.<tkey>.title`. Shared between both pages (single translation block). 12 rule titles + 12 contents = 24 keys.
+- `ngo-onboarding/page.tsx`: `advantageItems` (5) → `{tkey, imageUrl, imageHint, href}` with text via `marketing.ngoOnboarding.advantages.<tkey>.{category,title,description,linkLabel}` = 20 keys. `toolsetFeatures` (22) → `{href, icon, tkey, tagKey?}` with `marketing.ngoOnboarding.tools.<tkey>.{title,description}` = 44 keys. `tagKey` ∈ {`new`,`beta`} resolved to `marketing.ngoOnboarding.tag{New,Beta}` = 2 keys. Total 66.
+- `accessibility/page.tsx`: 29 `SettingsItem` (label + optional description) — wired to `marketing.accessibility.items.<id>.{label,desc}`. Select option items (Küçük/Normal/Büyük etc.) intentionally NOT migrated (out of scope per brief: "labels + descriptions"). ~50 keys.
+- `careers/page.tsx`: 5-job array → `{tkey, locKey, typeKey}` + reusable `marketing.careers.{jobOrg, loc*, type*, jobs.<tkey>, applySubjectPrefix}` = 14 keys (5 titles + 5 locations + 2 types + jobOrg + applySubjectPrefix). `mailto:` subject built via `t('marketing.careers.applySubjectPrefix') + title`.
+- `press/page.tsx`: `pressReleases[3]` titles → `marketing.press.releases.r{1,2,3}Title` = 3 keys (date and `lang` code stay in code). `photos[10]` `alt` → `marketing.press.photos.alt{1..10}` = 10 keys. `hint` stays in code (AI hint, not user-visible). 13 total.
+- `bilgi-toplumu-hizmetleri/page.tsx`: already uses `t('marketing.info.boardRole*')`; PII member names intentionally NOT migrated. 0 new work.
+
+**Total new keys added to `translations.ts`**: ~177 (TR + EN populated; other 5 locales rely on the P2-5d empty-string fallback to TR).
+
+**Key naming convention**: Kept dotted, namespaced under each page's existing `marketing.<page>` block (e.g., `marketing.logo.rules.izin.content`). Used `tkey` field on data arrays so id ↔ key are decoupled (e.g., `id: 'sosyal-medya'` but `tkey: 'sosyalMedya'` to keep JS-safe identifiers).
+
+**Files MOD**:
+- `src/app/logo/page.tsx`
+- `src/app/logo-usage/page.tsx`
+- `src/app/ngo-onboarding/page.tsx`
+- `src/app/accessibility/page.tsx`
+- `src/app/careers/page.tsx`
+- `src/app/press/page.tsx`
+- `src/lib/translations.ts` (+~177 TR + ~177 EN ≈ +~360 lines)
+
+**Files NOT touched**: `bilgi-toplumu-hizmetleri/page.tsx` (already migrated; PII out of scope), `src/app/layout.tsx`, other marketing pages, dashboards, settings, API routes, rules, `.worktrees/**`.
+
+**Risk**: L — semantically identical render output (verified spot-check on `rules.izin.content.split('\n\n')` → 3 paragraphs as before; same `<p dangerouslySetInnerHTML>` per paragraph, same sanitize+bullet replacement). No new files, no logic change, no callback rename. Worst-case mistranslation falls through to TR via P2-5d.
+
+**Gates**: `npm run typecheck` PASS · `npm run lint` PASS (0 errors) · `npm test -- --run` PASS (24 files / 105 tests, 5/54 skip — baseline identical).
+
+**Rollback**: `git revert` of these 7 file mods. Translation keys are additive and unused-after-revert (harmless).
+
