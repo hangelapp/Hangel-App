@@ -213,25 +213,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         });
     }, [isSuperAdmin, isNgoAdmin]);
 
+    // Track whether the user was signed in last frame so we can detect
+    // session expiration (auth → null transition without an explicit signOut).
+    const wasAuthedRef = useRef(false);
+
     // Auth Guard Logic
     useEffect(() => {
         if (!isUserLoading && !authUser && isMounted) {
             const protectedPaths = [
-                '/timeline', '/market', '/volunteering', '/clubs', '/events', 
-                '/qr-payment', '/emergency', '/leaderboard', '/stories', 
-                '/invite', '/profile', '/my-donations', 
-                '/my-applications', '/my-badges', '/messages', '/settings', 
+                '/timeline', '/market', '/volunteering', '/clubs', '/events',
+                '/qr-payment', '/emergency', '/leaderboard', '/stories',
+                '/invite', '/profile', '/my-donations',
+                '/my-applications', '/my-badges', '/messages', '/settings',
                 '/ngo-admin', '/super-admin', '/admin', '/library'
             ];
-            
+
             const isProtected = protectedPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
-            
+
             if (isProtected) {
+                // P0-4b follow-up: if the user just got dropped from authed to unauthed
+                // (typical after token revoke / claim refresh), give them a clear
+                // "session expired" toast instead of a silent redirect.
+                if (wasAuthedRef.current && typeof window !== 'undefined') {
+                    const lastShownAt = Number(sessionStorage.getItem('session-expired-toast-at') || '0');
+                    if (Date.now() - lastShownAt > 60_000) {
+                        toast({
+                            title: 'Oturumun sonlandı',
+                            description: 'Güvenlik nedeniyle yeniden giriş yapman gerekiyor.',
+                        });
+                        sessionStorage.setItem('session-expired-toast-at', String(Date.now()));
+                    }
+                }
                 const redirectUrl = `/login/selection?action=login&redirect=${encodeURIComponent(pathname)}`;
                 router.push(redirectUrl);
             }
         }
-    }, [authUser, isUserLoading, pathname, router, isMounted]);
+        if (authUser) wasAuthedRef.current = true;
+    }, [authUser, isUserLoading, pathname, router, isMounted, toast]);
 
     // Native app: giriş yapmamış kullanıcıyı direkt login formuna yönlendir
     useEffect(() => {

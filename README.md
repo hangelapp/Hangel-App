@@ -98,13 +98,28 @@ src/
 
 ## Notlar
 
-- **Güvenlik:** `.firebase-service-account.json` repo'ya gitmez. Eski commit'lerde sızdırılmış bir anahtar varsa Firebase Console'dan iptal edilmelidir.
+- **Güvenlik:** `.firebase-service-account.json` repo'ya gitmez. Local dev için gereklidir; production `firebase-admin` runtime servis hesabı (ADC) kullanır — bkz. `src/lib/firebase-admin.ts`. Sızdırılmış eski anahtar 2026-05-18 tarihinde **rotate + revoke** edildi; git history bu tarihte `git filter-repo` ile temizlendi.
+- **Auth model:** Süper-admin yetkisi **Firebase custom claim** (`request.auth.token.role == 'super-admin'`) ile kontrol edilir. Yeni admin atamak için: `npx tsx scripts/set-super-admin-claim.ts <uid>` (`GOOGLE_APPLICATION_CREDENTIALS` env var set olmalı).
 - **Mock providers:** `EMAIL_DRIVER=mock` / `SMS_DRIVER=mock` olduğunda gerçek mesaj gitmez, payload Firestore `_devOutbox` koleksiyonuna yazılır.
 - **Messaging worker:** `MESSAGING_WORKER_KEY` env değişkeniyle korunan `/api/messaging/worker/run` rotası Cloud Scheduler tarafından tetiklenir.
 - **iOS/Android:** `npm run cap:sync` build sonrası native projeyi günceller. iOS için `cd ios && pod install` ilk kurulumda.
 
+## Mimari & Audit Workspace
+
+`/CLAUDE.md` proje kökünde — Claude Code/AI ajan oturumları için orkestrasyon playbook'u. `.claude/agents/` altında 8 özelleşmiş ajan tanımı (5 lead + 3 worker).
+
+`docs/audit/` — denetim ve görev takip alanı:
+- `README.md` — workspace girişi
+- `findings.md` — baseline audit bulguları
+- `tasks.md` — P0–P4 canlı görev panosu
+- `decisions.md` — her değişikliğin plan + rollback kaydı
+- `listener-audit.md` — Firestore listener analizi
+- `runbooks/` — kullanıcı eylemi gereken yüksek riskli komutlar (service-account-rotate, git-history-purge, super-admin-claims, rules-deploy)
+
 ## Bilinen Teknik Borç
 
-- **A11y:** ~160 ikon-only `<Button>` `aria-label` taşımıyor (back/filter/sort/share). Erişilebilirlik audit'i ileri bir round'da yapılacak.
-- **Yakında özellikleri:** 23 buton/sekme `toast({ description: '... yakında' })` ile yer tutuyor (Wallet kart ekleme, Sertifika indirme/görüntüleme, etkinlik filtreleme, "Okulumda/Şehrimde" tab içerikleri, vs.). Her biri ayrı feature work gerektiriyor.
-- **npm vulnerabilities:** 27 transitive bağımlılık açığı (OpenTelemetry/Genkit ağacında). `npm audit fix --force` Next.js'i 16-canary'e zorlardı, riskli. Genkit upstream güncellemesi beklenebilir.
+- **A11y kalan:** `aria.back/filter/sort` shared namespace ile çoğu kapatıldı; spesifik feature label'ları için P-A11Y-AUDIT spawn'lı.
+- **Yakında özellikleri:** 23 buton/sekme `toast({ description: '... yakında' })` ile yer tutuyor (Wallet kart ekleme, etkinlik filtreleme detayları, vs.).
+- **npm vulnerabilities:** 27 transitive bağımlılık açığı (xlsx + OpenTelemetry/Genkit ağacında). `npm audit fix` safe minor/patch'leri uyguladı (34→27). Major bump'lar Next.js 16-canary'e zorlar — Genkit upstream güncellemesi bekleniyor. Dependabot weekly grouped PR'larla minor'ları izliyor.
+- **e-Arşiv invoice integration:** Stub (`src/lib/invoice/stub.ts`). Nilvera/Logo/Mikro API kredisi gerekir — PRD'de "Phase X" olarak işaretli.
+- **FCM iOS native push:** Web SDK scaffold mevcut (`src/lib/fcm.ts` + service worker), iOS için APNs cert + Capacitor plugin install gerekir (P-FCM-DELIVERY).

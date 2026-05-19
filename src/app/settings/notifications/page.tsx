@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Bell, Mail, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, Bell, Mail, MessageSquare, Loader2, BellRing, BellOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { requestPushPermission, registerForPushToken } from '@/lib/fcm';
 
 const notificationGroups = [
     {
@@ -107,6 +108,8 @@ export default function NotificationSettingsPage() {
                 <p className="text-muted-foreground text-sm">{t('dashboard.settingsNotifications.subheading')}</p>
             </div>
 
+            <PushPermissionCard authUid={authUser?.uid} />
+
             <div className="space-y-8">
                 {notificationGroups.map((group) => (
                     <Card key={group.title}>
@@ -143,5 +146,79 @@ export default function NotificationSettingsPage() {
                 </Button>
             </div>
         </div>
+    );
+}
+
+/**
+ * P-FCM permission CTA: lets the signed-in user grant browser push permission
+ * and registers an FCM token (saved under users/{uid}/fcmTokens/{token}). SSR-safe.
+ */
+function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
+    const { toast } = useToast();
+    const [permission, setPermission] = useState<NotificationPermission | 'unsupported' | 'loading'>('loading');
+    const [busy, setBusy] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof Notification === 'undefined') {
+            setPermission('unsupported');
+            return;
+        }
+        setPermission(Notification.permission);
+    }, []);
+
+    const handleEnable = async () => {
+        if (!authUid) {
+            toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Anlık bildirim için giriş yapmalısınız.' });
+            return;
+        }
+        setBusy(true);
+        try {
+            const next = await requestPushPermission();
+            setPermission(next);
+            if (next === 'granted') {
+                const tok = await registerForPushToken(authUid);
+                if (tok) {
+                    toast({ title: 'Anlık bildirim açıldı', description: 'Cihazın artık bildirim alabilir.' });
+                } else {
+                    toast({ variant: 'destructive', title: 'Token alınamadı', description: 'Bildirim izni verildi ama token kaydedilemedi. Tarayıcıyı yenileyip tekrar dene.' });
+                }
+            } else if (next === 'denied') {
+                toast({ variant: 'destructive', title: 'İzin reddedildi', description: 'Tarayıcı ayarlarından sonradan da açabilirsin.' });
+            }
+        } catch (e) {
+            console.error('[push] permission flow failed', e);
+            toast({ variant: 'destructive', title: 'Hata', description: 'Bildirim izni alınamadı.' });
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    if (permission === 'loading' || permission === 'unsupported') return null;
+
+    const granted = permission === 'granted';
+    const denied = permission === 'denied';
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                    {granted ? <BellRing className="h-5 w-5 text-primary" /> : <BellOff className="h-5 w-5 text-muted-foreground" />}
+                    Anlık (Push) Bildirim İzni
+                </CardTitle>
+                <CardDescription>
+                    {granted
+                        ? 'Cihazın aktif olarak anlık bildirim alabilir.'
+                        : denied
+                        ? 'Bildirim izni reddedildi. Tarayıcı ayarlarından da açabilirsin.'
+                        : 'Acil kan ihtiyacı, gönüllülük eşleşmesi ve mesaj bildirimlerini cihazınla anında almak için izin ver.'}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-end">
+                <Button onClick={handleEnable} disabled={busy || granted || denied}>
+                    {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {granted ? 'Aktif' : denied ? 'Reddedildi' : 'Bildirimleri Aç'}
+                </Button>
+            </CardContent>
+        </Card>
     );
 }
