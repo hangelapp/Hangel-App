@@ -41,13 +41,15 @@ const UserCell = ({ userId, userMap }: { userId: string; userMap: Map<string, Su
             }
         }
     }
+    // PDF #1: "bilinmeyen kullanıcı olmamalı" — eğer ad-soyad çözülemiyorsa
+    // (silinmiş hesap, eksik profil) "Anonim Kullanıcı" göster, hash/UID gösterme.
     const name = resolvedUser?.name
         || resolvedUser?.displayName
         || resolvedUser?.fullName
         || resolvedUser?.username
         || resolvedUser?.personalInfo?.email
         || resolvedUser?.email
-        || (userId ? `Kullanıcı ${userId.slice(0, 8)}` : 'Anonim');
+        || 'Anonim Kullanıcı';
     const avatar = resolvedUser?.avatarUrl || resolvedUser?.photoURL || resolvedUser?.profilePhoto;
     const initial = (name || 'U').charAt(0).toUpperCase();
     return (

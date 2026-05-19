@@ -182,9 +182,44 @@ function isBookSection(section: LibrarySection): boolean {
   return t.includes('kitap') || t.includes('book');
 }
 
+function isInventorySection(section: LibrarySection): boolean {
+  const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
+  return t.includes('envanter') || t.includes('inventory') || t.includes('sosyal etki envanteri');
+}
+
+// Envanter (Hangel Sosyal Etki Envanteri) için filtre seti.
+// Veri kaynağı: src/lib/hangel-impact-inventory.json — her item.content HTML içinde
+// "Sektör", "Merkez Ülke", "Kuruluş Yılı", "Skor" alanları geçer. `itemContainsValue`
+// haystack araması bu serbest-metin alanlarını yakalar.
+const INVENTORY_FILTERS: FilterDef[] = [
+  {
+    key: 'sector', label: 'Sektör', type: 'select',
+    options: [
+      'Agriculture', 'Education', 'Technology', 'Tourism', 'Hydraulic',
+      'Industry', 'Culture', 'Craft', 'Construction', 'Eco-tourism',
+      'Recycling', 'Environment', 'Health', 'Gender Parity',
+      'Business support', 'Garment Factory', 'Women Development',
+    ],
+  },
+  {
+    key: 'country', label: 'Merkez Ülke', type: 'select',
+    options: [
+      'Algeria', 'Austria', 'Bangladesh', 'Hong Kong', 'Morocco',
+      'Turkey', 'Türkiye', 'United States', 'United Kingdom', 'France',
+      'Germany', 'India', 'Brazil', 'South Africa', 'Kenya',
+    ],
+  },
+  { key: 'year', label: 'Kuruluş Yılı', type: 'year-range', min: 1970, max: 2025 },
+  {
+    key: 'score', label: 'Etki Skoru', type: 'select',
+    options: ['Skor: 9', 'Skor: 8', 'Skor: 7', 'Skor: 6', 'Skor: 5'],
+  },
+];
+
 function getFilterDefs(section: LibrarySection): FilterDef[] {
   if (isFilmSection(section)) return FILM_FILTERS;
   if (isBookSection(section)) return BOOK_FILTERS;
+  if (isInventorySection(section)) return INVENTORY_FILTERS;
   return [];
 }
 
@@ -522,7 +557,8 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
   );
 }
 
-// TODO: OpenAI/Gemini API key + library docs context'i ile entegre edilecek.
+// Asistan API endpoint'leri: backend-lead `src/app/api/library/{chat,project}/route.ts`
+// route'ları sağlar; route yoksa client toast'ı kullanıcıya bilgi verir (graceful degrade).
 type ChatMessage = { role: 'user' | 'assistant'; content: string; ts: number };
 type AssistantKind = 'library' | 'project';
 
@@ -530,6 +566,23 @@ const ASSISTANT_META: Record<AssistantKind, { title: string; description: string
   library: { title: 'Kütüphane Asistanı', description: 'Yalnızca kütüphanedeki dokümanları kullanarak sorularınızı yanıtlar.', placeholder: 'Kütüphane içeriği hakkında bir soru sorun...', endpoint: '/api/library/chat', storageKey: 'hangel.assistant.library.history', icon: Bot, accent: 'bg-primary text-primary-foreground' },
   project: { title: 'Proje Yazma Asistanı', description: 'Projenizi anlatın, kütüphane ve yönetim şablonlarıyla proje dokümanı oluştursun.', placeholder: 'Projenizi birkaç cümleyle anlatın...', endpoint: '/api/library/project', storageKey: 'hangel.assistant.project.history', icon: Sparkles, accent: 'bg-fuchsia-600 text-white' },
 };
+
+// PDF #3: kullanıcı projesini hangi kuruma sunacağını seçer, AI o kurumun esaslarına
+// uygun proje üretir. Liste süper-admin tarafında genişletilebilir; client tarafında
+// sabit tutuyoruz (Firestore'da `aiAssistantConfig/project.institutions` opsiyonel).
+const PROJECT_INSTITUTIONS = [
+  'Marka (Kurumsal Sponsor)',
+  'STK / Dernek',
+  'Vakıf',
+  'Üniversite',
+  'Belediye',
+  'Bakanlık',
+  'AB (Avrupa Birliği) Fonları',
+  'UNDP',
+  'TÜBİTAK',
+  'KOSGEB',
+  'Diğer',
+] as const;
 
 function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; open: boolean; onOpenChange: (o: boolean) => void }) {
   const meta = ASSISTANT_META[kind];
@@ -633,9 +686,26 @@ function LibraryAssistantsFab() {
   const [openProject, setOpenProject] = useState(false);
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
-        <Button type="button" onClick={() => setOpenProject(true)} className="rounded-full shadow-lg h-14 w-14 p-0 bg-fuchsia-600 hover:bg-fuchsia-700 text-white" aria-label="Proje Yazma Asistanı" title="Proje Yazma Asistanı"><Sparkles className="h-6 w-6" /></Button>
-        <Button type="button" onClick={() => setOpenLibrary(true)} className="rounded-full shadow-lg h-14 w-14 p-0" aria-label="Kütüphane Asistanı" title="Kütüphane Asistanı"><Bot className="h-6 w-6" /></Button>
+      {/* PDF #1: sağ kenarın ortasında 2 yapay zeka ikonu (sticky vertical-center). */}
+      <div className="fixed right-3 sm:right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-end gap-3">
+        <Button
+          type="button"
+          onClick={() => setOpenLibrary(true)}
+          className="rounded-full shadow-lg h-12 w-12 sm:h-14 sm:w-14 p-0"
+          aria-label="Kütüphane Asistanı"
+          title="Kütüphane Asistanı"
+        >
+          <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
+        </Button>
+        <Button
+          type="button"
+          onClick={() => setOpenProject(true)}
+          className="rounded-full shadow-lg h-12 w-12 sm:h-14 sm:w-14 p-0 bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
+          aria-label="Proje Yazma Asistanı"
+          title="Proje Yazma Asistanı"
+        >
+          <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
+        </Button>
       </div>
       <AssistantDialog kind="library" open={openLibrary} onOpenChange={setOpenLibrary} />
       <AssistantDialog kind="project" open={openProject} onOpenChange={setOpenProject} />

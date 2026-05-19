@@ -132,10 +132,14 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
   const activeAuthorizations: ActiveAuth[] = useMemo(() => {
     if (!user) return [];
     const out: ActiveAuth[] = [];
-    const fields: Array<[EntityKind, string | undefined, EntityRow[] | null]> = [
-      ['ngo', user.managedNgoId, ngos],
-      ['brand', user.managedBrandId, brands],
-      ['club', user.managedClubId, clubs],
+    // Bracket access — managed* alanları UserRow'da var ama Next prod build
+    // bazı durumlarda User base tipinden inheritance'ı resolve edemediği için
+    // record-style access kullanıyoruz.
+    const u = user as unknown as Record<string, string | null | undefined>;
+    const fields: Array<[EntityKind, string | null | undefined, EntityRow[] | null]> = [
+      ['ngo', u.managedNgoId, ngos],
+      ['brand', u.managedBrandId, brands],
+      ['club', u.managedClubId, clubs],
     ];
     for (const [kind, id, list] of fields) {
       if (!id) continue;
@@ -144,7 +148,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
         kind,
         entityId: id,
         entityName: ent?.name || id,
-        roleTitle: user.roleTitle || '—',
+        roleTitle: (u.roleTitle as string | undefined) || '—',
       });
     }
     return out;
@@ -299,6 +303,44 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {/* PDF-29 — Mevcut yetkiler listesi + revoke */}
+          {activeAuthorizations.length > 0 && (
+            <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-amber-800">Mevcut Yetkiler</p>
+              <ul className="space-y-2">
+                {activeAuthorizations.map(a => {
+                  const Icon = a.kind === 'ngo' ? Building2 : a.kind === 'brand' ? Briefcase : GraduationCap;
+                  const key = `${a.kind}:${a.entityId}`;
+                  const isRevoking = revoking === key;
+                  return (
+                    <li key={key} className="flex items-center gap-2 bg-white rounded-xl p-2 border border-amber-100">
+                      <Icon className="h-4 w-4 text-amber-700 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate">{a.entityName}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {entityKindLabels[a.kind]} · {a.roleTitle}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRevoke(a)}
+                        disabled={isRevoking}
+                        className="rounded-lg text-red-700 hover:bg-red-50 hover:text-red-800 h-7 px-2 text-[10px] font-bold"
+                      >
+                        {isRevoking ? <Loader2 className="h-3 w-3 animate-spin" /> : (<><ShieldX className="h-3 w-3 mr-1" />Kaldır</>)}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="text-[10px] text-amber-700 leading-relaxed">
+                Yetkiyi kaldırırsanız kullanıcı kuruluşa erişimini kaybeder ve otomatik bildirim alır.
+                Mevcut schema tek-değerli alanlar kullanır; çoklu yetki desteği ileride eklenir.
+              </p>
+            </div>
+          )}
+
           {/* Entity Türü */}
           <div className="space-y-2">
             <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Entity Türü</Label>

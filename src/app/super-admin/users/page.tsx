@@ -140,7 +140,9 @@ export default function UsersPage() {
     }
   };
 
-  const handleDisable = async (user: UserRow) => {
+  // PDF-28 — Soft-disable yardımcısı. UserRow menüsünde henüz expose edilmedi;
+  // tek-tık "Devre dışı bırak" eylemi geldiğinde bu fonksiyon çağrılır.
+  const _handleDisable = async (user: UserRow) => {
     try {
       await callAdminUserRoute(user.id, 'disable');
       toast({

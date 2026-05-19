@@ -55,6 +55,17 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   const [behance, setBehance] = useState('');
   // Volunteer özet
   const [profession, setProfession] = useState('');
+  // PDF-29 — Gönüllülük detayları (CSV string olarak edit, save'de array'e dönüştürülür)
+  const [skillsCsv, setSkillsCsv] = useState('');
+  const [interestsCsv, setInterestsCsv] = useState('');
+  const [languagesCsv, setLanguagesCsv] = useState('');
+  const [programsCsv, setProgramsCsv] = useState('');
+  const [licensesCsv, setLicensesCsv] = useState('');
+  const [sector, setSector] = useState('');
+  const [position, setPosition] = useState('');
+  // Adres (detay)
+  const [neighborhood, setNeighborhood] = useState('');
+  const [fullAddress, setFullAddress] = useState('');
 
   const [saving, setSaving] = useState(false);
 
@@ -73,7 +84,16 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       }>;
       const addr = (pi.address || {}) as Record<string, string | undefined>;
       const social = (pi.social || {}) as Record<string, string | undefined>;
-      const vi = (user.volunteerInfo || {}) as Partial<{ profession: string | null }>;
+      const vi = (user.volunteerInfo || {}) as Partial<{
+        profession: string | null;
+        skills: string[];
+        interests: string[];
+        languages: string[];
+        programs: string[];
+        licenses: string[];
+        sector: string | null;
+        position: string | null;
+      }>;
 
       setName(user.name || '');
       setUsername(user.username || '');
@@ -92,6 +112,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       setCountry(addr.country || '');
       setCity(addr.city || '');
       setDistrict(addr.district || '');
+      setNeighborhood(addr.neighborhood || '');
+      setFullAddress(addr.fullAddress || '');
 
       setInstagram(social.instagram || '');
       setTwitter(social.twitter || '');
@@ -100,8 +122,18 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       setBehance(social.behance || '');
 
       setProfession(vi.profession || '');
+      setSector(vi.sector || '');
+      setPosition(vi.position || '');
+      setSkillsCsv((vi.skills || []).join(', '));
+      setInterestsCsv((vi.interests || []).join(', '));
+      setLanguagesCsv((vi.languages || []).join(', '));
+      setProgramsCsv((vi.programs || []).join(', '));
+      setLicensesCsv((vi.licenses || []).join(', '));
     }
   }, [user]);
+
+  const csvToArray = (s: string): string[] =>
+    s.split(',').map(x => x.trim()).filter(Boolean);
 
   if (!user) return null;
 
@@ -132,6 +164,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
             country: country.trim(),
             city: city.trim(),
             district: district.trim(),
+            neighborhood: neighborhood.trim(),
+            fullAddress: fullAddress.trim(),
           },
           social: {
             ...prevSocial,
@@ -145,6 +179,13 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
         volunteerInfo: {
           ...prevVi,
           profession: profession.trim() || null,
+          sector: sector.trim() || null,
+          position: position.trim() || null,
+          skills: csvToArray(skillsCsv),
+          interests: csvToArray(interestsCsv),
+          languages: csvToArray(languagesCsv),
+          programs: csvToArray(programsCsv),
+          licenses: csvToArray(licensesCsv),
         },
       });
       onOpenChange(false);
@@ -278,6 +319,14 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 <Label>İlçe</Label>
                 <Input value={district} onChange={e => setDistrict(e.target.value)} className="rounded-xl" />
               </div>
+              <div className="space-y-2">
+                <Label>Mahalle</Label>
+                <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Açık Adres</Label>
+                <Input value={fullAddress} onChange={e => setFullAddress(e.target.value)} placeholder="Sokak, No, Daire" className="rounded-xl" />
+              </div>
             </div>
           </div>
 
@@ -308,14 +357,46 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
             </div>
           </div>
 
-          {/* Gönüllü Özeti */}
+          {/* Gönüllü Bilgileri (genişletilmiş) */}
           <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Gönüllü Bilgileri (Özet)</p>
-            <div className="space-y-2">
-              <Label>Meslek</Label>
-              <Input value={profession} onChange={e => setProfession(e.target.value)} placeholder="Yazılım Geliştirici" className="rounded-xl" />
-              <p className="text-[11px] text-muted-foreground">Diğer gönüllü alanları (yetenekler, eğitim, diller vb.) kullanıcı kendi profilinden düzenler.</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Gönüllülük Bilgileri</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Meslek</Label>
+                <Input value={profession} onChange={e => setProfession(e.target.value)} placeholder="Yazılım Geliştirici" className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Sektör</Label>
+                <Input value={sector} onChange={e => setSector(e.target.value)} placeholder="Teknoloji" className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Pozisyon</Label>
+                <Input value={position} onChange={e => setPosition(e.target.value)} placeholder="Senior Engineer" className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Yetenekler (virgülle ayırın)</Label>
+                <Input value={skillsCsv} onChange={e => setSkillsCsv(e.target.value)} placeholder="Liderlik, İletişim, Web Geliştirme" className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>İlgi Alanları (virgülle ayırın)</Label>
+                <Input value={interestsCsv} onChange={e => setInterestsCsv(e.target.value)} placeholder="Eğitim, Çevre, Hayvan Hakları" className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Diller (virgülle ayırın)</Label>
+                <Input value={languagesCsv} onChange={e => setLanguagesCsv(e.target.value)} placeholder="Türkçe, İngilizce" className="rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label>Programlar/Sertifikalar</Label>
+                <Input value={programsCsv} onChange={e => setProgramsCsv(e.target.value)} placeholder="İlk Yardım, AKUT" className="rounded-xl" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Ehliyetler (virgülle ayırın)</Label>
+                <Input value={licensesCsv} onChange={e => setLicensesCsv(e.target.value)} placeholder="B sınıfı" className="rounded-xl" />
+              </div>
             </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Daha derin gönüllü alanları (eğitim geçmişi, acil durum kişileri, sağlık durumu) kullanıcı kendi <code className="text-[10px] bg-muted px-1 py-0.5 rounded">/settings/volunteer</code> sayfasından düzenler.
+            </p>
           </div>
         </div>
         <DialogFooter>

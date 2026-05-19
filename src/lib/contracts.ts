@@ -1055,5 +1055,102 @@ export const contractsData: Contract[] = [
       <h4>5. Uygulama ve Yürürlük</h4>
       <p>Yönetim kurulu kararıyla yürürlüğe girmiştir.</p>
     `
+  },
+
+  // --- K. Kuruluş Tipine Özel Üyelik Sözleşmeleri ---
+  {
+    slug: 'stk-uyelik',
+    title: 'STK Üyelik Sözleşmesi',
+    content: `
+      <h3>STK Üyelik Sözleşmesi</h3>
+      <h4>1. Amaç</h4>
+      <p>Bu sözleşme, hangel platformunda Sivil Toplum Kuruluşu (STK) olarak yer alan taraflar arasında imzalanmış kabul edilen genel hükümleri kapsar. STK üyelerinin platformdaki temsil, faaliyet ve iletişim süreçlerini düzenler.</p>
+      <h4>2. Taraflar</h4>
+      <p>İşbu sözleşme, bir tarafta hangel platformunu işleten hangel AŞ ile diğer tarafta platforma üye olan dernek, vakıf veya benzeri sivil toplum kuruluşu arasında akdedilmiştir.</p>
+      <h4>3. Hizmet Kapsamı</h4>
+      <p>hangel, STK üyelerine kurumsal profil oluşturma, kampanya yayınlama, gönüllü ilanları açma, bağış toplama ve etki raporlama araçları sunar. STK, sağladığı kurumsal bilgilerin doğruluğundan sorumludur.</p>
+      <h4>4. STK Yükümlülükleri</h4>
+      <p>STK; ilgili mevzuata (Dernekler Kanunu, Vakıflar Kanunu, 2860 sayılı Yardım Toplama Kanunu) uyumlu faaliyet gösterdiğini, topladığı bağışları beyan ettiği amaç doğrultusunda kullandığını ve hangel'in talep ettiği şeffaflık raporlarını süresinde sunduğunu taahhüt eder.</p>
+      <h4>5. Fesih</h4>
+      <p>Taraflar, 30 gün önceden yazılı bildirimde bulunmak kaydıyla sözleşmeyi feshedebilir. hangel, kural ihlali tespit ettiği STK üyeliklerini derhal askıya alma hakkını saklı tutar.</p>
+      <h4>6. Yürürlük</h4>
+      <p>Sözleşme, STK başvurusunun hangel tarafından onaylandığı tarihte yürürlüğe girer ve fesih edilene kadar geçerlidir. Sözleşmenin yorumunda Türkçe metin esastır.</p>
+    `
+  },
+  {
+    slug: 'seffaflik',
+    title: 'Şeffaflık Endeksi Esasları',
+    content: `
+      <h3>Şeffaflık Endeksi Esasları</h3>
+      <h4>1. Amaç</h4>
+      <p>hangel platformunda yer alan STK, marka ve kulüplerin kamuoyuyla paylaşacağı şeffaflık verilerinin standartlarını belirlemek; bağışçı ve gönüllü güvenini ölçülebilir kriterlerle desteklemektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Bu esaslar, hangel ekosistemindeki tüm kuruluşların finansal şeffaflık, yönetişim, etki ölçümü ve veri paylaşımı süreçlerini kapsar.</p>
+      <h4>3. Endeks Bileşenleri</h4>
+      <p>Şeffaflık endeksi; (a) finansal raporlama düzeyi, (b) yönetim kurulu yapısı ve karar süreçleri, (c) bağış kullanımının izlenebilirliği, (d) etki ölçüm metodolojisi ve (e) bağımsız denetim uyumu kriterlerinden oluşur.</p>
+      <h4>4. Kuruluş Yükümlülükleri</h4>
+      <p>Endekse dahil olan kuruluşlar; yıllık faaliyet raporlarını, mali tablolarını ve etki verilerini hangel ile paylaşmayı ve bu verilerin anonimleştirilmiş hâlinin kamuoyuyla yayınlanmasına onay vermeyi kabul eder.</p>
+      <h4>5. Skorlama ve İtiraz</h4>
+      <p>hangel, sağlanan veriler ve bağımsız doğrulama sonuçlarına göre her kuruluşa periyodik skor verir. Kuruluşlar skorlarına 30 gün içinde itiraz edebilir; itirazlar bağımsız değerlendirme komitesince incelenir.</p>
+      <h4>6. Yürürlük</h4>
+      <p>Bu esaslar, kuruluşun platforma kabul edildiği tarihte yürürlüğe girer ve hangel'in resmi şeffaflık politikasının ayrılmaz parçasıdır.</p>
+    `
+  },
+  {
+    slug: 'marka-uyelik',
+    title: 'Marka Üyelik Sözleşmesi',
+    content: `
+      <h3>Marka Üyelik Sözleşmesi</h3>
+      <h4>1. Amaç</h4>
+      <p>Bu sözleşme, hangel platformunda marka, kooperatif, sosyal işletme veya iktisadi işletme olarak yer alan taraflar arasında imzalanmış kabul edilen genel hükümleri kapsar.</p>
+      <h4>2. Taraflar</h4>
+      <p>İşbu sözleşme, hangel platformunu işleten hangel AŞ ile platforma marka olarak başvuran tüzel kişi arasında akdedilmiştir.</p>
+      <h4>3. Hizmet Kapsamı</h4>
+      <p>hangel, marka üyelerine ürün/hizmet vitrini, bağış kategorileri yönetimi, affiliate takip altyapısı, kampanya yayınlama ve fiziksel/dijital satış üzerinden bağış aktarımı araçları sunar.</p>
+      <h4>4. Marka Yükümlülükleri</h4>
+      <p>Marka; sağladığı kurumsal bilgilerin (ticaret sicil, vergi numarası, IBAN) doğruluğundan, sunduğu ürün ve hizmetlerin yasal mevzuata uygunluğundan ve bağış oranı taahhütlerine sadık kalmaktan sorumludur.</p>
+      <h4>5. Komisyon ve Bağış Aktarımı</h4>
+      <p>Tahsil edilen bağış payları, hangel'in tanımladığı periyotlarda ve şeffaf raporlama eşliğinde ilgili STK/projeye aktarılır. Komisyon oranları ve operasyonel ücretler ek protokolde belirlenir.</p>
+      <h4>6. Fesih ve Yürürlük</h4>
+      <p>Taraflar, 30 gün önceden yazılı bildirimde bulunmak suretiyle sözleşmeyi feshedebilir. Sözleşme, marka başvurusunun onaylandığı tarihte yürürlüğe girer.</p>
+    `
+  },
+  {
+    slug: 'affiliate-politikasi',
+    title: 'Bağış ve Affiliate Politikası',
+    content: `
+      <h3>Bağış ve Affiliate Politikası</h3>
+      <h4>1. Amaç</h4>
+      <p>hangel platformunda yer alan markaların affiliate (iş ortaklığı) ve bağış aktarım süreçlerini şeffaf, denetlenebilir ve etik standartlara uygun biçimde yönetmektir.</p>
+      <h4>2. Kapsam</h4>
+      <p>Bu politika; affiliate ID tanımlama, tracking link/pixel kullanımı, bağış oranı taahhüdü, ödeme periyotları ve raporlama yükümlülüklerini kapsar.</p>
+      <h4>3. Affiliate Standartları</h4>
+      <p>Markaya tahsis edilen affiliate ID ve tracking link, yalnızca markanın kendi kanallarında veya hangel onaylı yayıncılarda kullanılabilir. Pixel/tracking script'lerinin KVKK ve GDPR çerez gerekliliklerine uyumu zorunludur.</p>
+      <h4>4. Bağış Aktarımı</h4>
+      <p>Marka, her satışta beyan ettiği oran üzerinden bağışı hangel'e aktarmayı taahhüt eder. Aktarımlar aylık periyotlarda mutabakat raporuyla birlikte gerçekleşir; bağışın hangi STK/projeye yönlendirileceği marka ve hangel arasında belirlenir.</p>
+      <h4>5. Denetim ve Şeffaflık</h4>
+      <p>hangel, affiliate verileri ve bağış akışını denetleme hakkına sahiptir. Tutarsızlık veya kötüye kullanım tespiti hâlinde marka hesabı askıya alınabilir; topladığı bağışlar bağış sahiplerine iade edilir.</p>
+      <h4>6. Yürürlük</h4>
+      <p>Bu politika, marka üyelik sözleşmesinin ayrılmaz ekidir ve markanın platforma kabul edildiği tarihte yürürlüğe girer.</p>
+    `
+  },
+  {
+    slug: 'ogrenci-kulup',
+    title: 'Öğrenci Kulüp Sözleşmesi',
+    content: `
+      <h3>Öğrenci Kulüp Sözleşmesi</h3>
+      <h4>1. Amaç</h4>
+      <p>Bu sözleşme, hangel platformunda öğrenci kulübü (üniversite veya lise) olarak yer alan taraflar arasında imzalanmış kabul edilen genel hükümleri kapsar.</p>
+      <h4>2. Taraflar</h4>
+      <p>İşbu sözleşme, hangel platformunu işleten hangel AŞ ile platforma başvuran ve bağlı bulunduğu üniversite/il millî eğitim müdürlüğü tarafından tanınan öğrenci kulübü arasında akdedilmiştir.</p>
+      <h4>3. Hizmet Kapsamı</h4>
+      <p>hangel, kulüp üyelerine etkinlik yayınlama, gönüllü çağrısı açma, kampüs içi/dışı bağış kampanyaları düzenleme, kulüp profili ve duyuru paneli araçları sunar.</p>
+      <h4>4. Kulüp Yükümlülükleri</h4>
+      <p>Kulüp; bağlı olduğu kurumun (üniversite veya İl Millî Eğitim Müdürlüğü) onayına sahip olduğunu, gerçekleştirdiği etkinliklerin kurum yönetmeliklerine uygunluğunu ve toplanan bağışların beyan edilen amaç doğrultusunda kullanılmasını taahhüt eder.</p>
+      <h4>5. Sorumluluk Sınırı</h4>
+      <p>hangel, kulüp etkinliklerinde meydana gelebilecek üçüncü taraf zararlarından doğrudan sorumlu tutulamaz. Kulüp, etkinlik organizasyonu sürecinde gerekli izinleri ve sigorta yükümlülüklerini bizzat yerine getirir.</p>
+      <h4>6. Fesih ve Yürürlük</h4>
+      <p>Sözleşme, kulüp başvurusunun onaylandığı tarihte yürürlüğe girer. Taraflar 30 gün önceden yazılı bildirimle sözleşmeyi feshedebilir; kulübün bağlı olduğu kurumla bağlantısının kesilmesi hâlinde üyelik kendiliğinden sona erer.</p>
+    `
   }
 ];

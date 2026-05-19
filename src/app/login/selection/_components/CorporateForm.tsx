@@ -368,7 +368,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, kvkk: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/kvkk" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
+                                <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -377,7 +377,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, privacy: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/gizlilik" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
+                                <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -386,7 +386,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, cookies: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/cerez" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
+                                <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -530,7 +530,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, kvkk: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/kvkk" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
+                                <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -539,7 +539,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, privacy: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/gizlilik" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
+                                <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -548,7 +548,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, cookies: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/cerez" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
+                                <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -674,7 +674,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, kvkk: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/kvkk" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
+                                <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -683,7 +683,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, privacy: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/gizlilik" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
+                                <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
@@ -692,7 +692,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, cookies: !!checked }))}
                             />
                             <span className="text-[10px] text-muted-foreground leading-snug">
-                                <a href="/settings/contracts/cerez" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
+                                <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">

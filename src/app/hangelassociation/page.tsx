@@ -25,6 +25,8 @@ const AssociationHeader = ({ currentPage }: { currentPage?: string }) => {
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
                     <Link href="/hangelassociation/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('marketing.association.navAbout')}</Link>
+                    <Link href="/hangelassociation/press" className={cn("hover:text-primary transition-colors", currentPage === 'press' && "text-primary")}>Basında Biz</Link>
+                    <Link href="/hangelassociation/conferences" className={cn("hover:text-primary transition-colors", currentPage === 'conferences' && "text-primary")}>Konferanslar</Link>
                     <Link href="/hangelassociation/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('marketing.association.navEvents')}</Link>
                     <Link href="/hangelassociation/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('marketing.association.navWorkshop')}</Link>
                     <Link href="/hangelassociation/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>{t('marketing.association.navLegislation')}</Link>

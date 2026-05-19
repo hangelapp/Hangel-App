@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
-import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FormLabel, FormInput } from './shared';
 
@@ -64,7 +64,54 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         e.preventDefault();
         setIsLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+            const userCredential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+            // QR/davet linki ile gelen mevcut kullanıcı için de auto-action uygula
+            // (PDF #6 — kayıtlı kullanıcı QR ile gelirse de seçili gelmeli).
+            const referrerId = searchParams.get('ref') || null;
+            if (referrerId && referrerId.includes(':')) {
+                const [kind, entityId] = referrerId.split(':');
+                if (entityId) {
+                    try {
+                        const userDocRef = doc(db, COLLECTIONS.users, userCredential.user.uid);
+                        let update: Record<string, unknown> | null = null;
+                        let roleLabel = '';
+                        let collectionName: 'ngos' | 'clubs' | 'brands' | null = null;
+                        if (kind === 'ngo') {
+                            update = {
+                                supportedNgos: arrayUnion(entityId),
+                                volunteerNgos: arrayUnion(entityId),
+                            };
+                            roleLabel = 'STK destekçisi ve gönüllüsü';
+                            collectionName = 'ngos';
+                        } else if (kind === 'club') {
+                            update = { joinedClubs: arrayUnion(entityId) };
+                            roleLabel = 'Kulüp üyesi';
+                            collectionName = 'clubs';
+                        } else if (kind === 'brand') {
+                            update = { followedBrands: arrayUnion(entityId) };
+                            roleLabel = 'Marka takipçisi';
+                            collectionName = 'brands';
+                        }
+                        if (update && collectionName) {
+                            await updateDoc(userDocRef, update);
+                            try {
+                                const entitySnap = await getDoc(doc(db, collectionName, entityId));
+                                const entityName = (entitySnap.exists() && (entitySnap.data() as { name?: string }).name) || '';
+                                toast({
+                                    title: 'Davet kabul edildi',
+                                    description: entityName
+                                        ? `${entityName} kuruluşundan davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`
+                                        : `Davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`,
+                                });
+                            } catch {
+                                // sessiz geç — toast opsiyonel
+                            }
+                        }
+                    } catch {
+                        // auto-action best-effort; login akışını kırma
+                    }
+                }
+            }
             onComplete(false);
         } catch {
             toast({ variant: 'destructive', title: 'Giriş Başarısız', description: 'E-posta veya şifre hatalı.' });
@@ -248,7 +295,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, kvkk: !!checked }))}
                         />
                         <span className="text-[10px] text-muted-foreground leading-snug">
-                            <a href="/settings/contracts/kvkk" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
+                            <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
                         </span>
                     </label>
                     <label className="flex items-start gap-2 cursor-pointer">
@@ -257,7 +304,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, privacy: !!checked }))}
                         />
                         <span className="text-[10px] text-muted-foreground leading-snug">
-                            <a href="/settings/contracts/gizlilik" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
+                            <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
                         </span>
                     </label>
                     <label className="flex items-start gap-2 cursor-pointer">
@@ -266,7 +313,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             onCheckedChange={(checked) => setAgreements(prev => ({ ...prev, cookies: !!checked }))}
                         />
                         <span className="text-[10px] text-muted-foreground leading-snug">
-                            <a href="/settings/contracts/cerez" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
+                            <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
                         </span>
                     </label>
                 </div>

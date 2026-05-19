@@ -1,6 +1,16 @@
 import type { User } from '@/lib/types';
 
-export type UserRow = User & { id: string; status?: string };
+// PDF-29 — Yetki alanları User base tipinde yok; super-admin paneli için
+// genişletiyoruz. `disabled` ise PDF-28 soft-disable flag'i.
+export type UserRow = User & {
+  id: string;
+  status?: string;
+  disabled?: boolean;
+  managedNgoId?: string | null;
+  managedBrandId?: string | null;
+  managedClubId?: string | null;
+  roleTitle?: string | null;
+};
 
 export type EntityKind = 'ngo' | 'brand' | 'club';
 
