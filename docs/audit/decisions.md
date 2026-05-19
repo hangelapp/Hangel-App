@@ -16,6 +16,42 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — P2-7c partial: `COLLECTIONS.*` migration — `src/hooks/**` + `src/app/api/**`
+- **ID**: P2-7c (scope: hooks + api; page.tsx → P2-7c-2 follow-up)
+- **Lead**: backend-lead
+- **Değişiklik**: Discovery grep `src/hooks/**` + `src/app/api/**` → 25 literal match, hepsi `src/app/api/**` altında (hooks/ temizdi). 16 route dosyasında collection string literal'lar `COLLECTIONS.*` constant'ına çevrildi. Her dosyaya tek `import { COLLECTIONS } from '@/firebase/collections'` eklendi (import sırası dosyanın mevcut konvansiyonuyla eşleşti); logic'e dokunulmadı.
+- **Plan**:
+  1. Grep ile candidate set çıkarıldı (`.collection('foo')` formu — admin SDK heavy bölge).
+  2. Unique literal seti (15 ad): `campaigns`, `csvUploads`, `deliveryEvents`, `messageJobs`, `messagingPackages`, `messagingPricing`, `ngoMessagingWallets`, `ngoSenders`, `ngos`, `paymentOrders`, `recipients`, `senders`, `userMarketingConsent`, `users`, `whatsappTemplates` — tümü `COLLECTIONS` map'inde mevcut; yeni entry eklemeye gerek olmadı.
+  3. Her dosya tek tek edit edildi (import + literal → constant).
+- **Dosyalar** (16):
+  - `src/app/api/admin/import-data/route.ts` (1 literal: ngos)
+  - `src/app/api/admin/messaging/ngo-senders/route.ts` (2: ngoSenders, senders)
+  - `src/app/api/admin/messaging/ngo-wallets/route.ts` (1: ngoMessagingWallets)
+  - `src/app/api/admin/messaging/pricing/route.ts` (2: messagingPricing ×2)
+  - `src/app/api/admin/messaging/whatsapp/templates/sync/route.ts` (1: whatsappTemplates)
+  - `src/app/api/ngo-admin/messaging/me/route.ts` (2: ngoSenders, senders)
+  - `src/app/api/ngo-admin/messaging/wallet/topup/route.ts` (2: messagingPackages, paymentOrders)
+  - `src/app/api/ngo-admin/messaging/campaigns/route.ts` (2: campaigns, recipients)
+  - `src/app/api/messaging/webhook/[driver]/route.ts` (3: messageJobs, deliveryEvents, campaigns)
+  - `src/app/api/messaging/iys/export/route.ts` (2: userMarketingConsent, users)
+  - `src/app/api/messaging/payment/nkolay/callback/route.ts` (1: paymentOrders)
+  - `src/app/api/messaging/unsubscribe/route.ts` (1: userMarketingConsent)
+  - `src/app/api/messaging/csv/save/route.ts` (1: csvUploads)
+  - `src/app/api/messaging/campaigns/route.ts` (3: campaigns ×2, recipients)
+  - `src/app/api/messaging/worker/trust-score/route.ts` (1: ngoMessagingWallets)
+  - `src/app/api/messaging/whatsapp/webhook/route.ts` (3: messageJobs, deliveryEvents, campaigns)
+- **Sayım**: 25 literal bulundu / 25 migrate / 0 skip / 0 yeni constant
+- **Risk**: L — pure rename; admin SDK call surface'ı değişmedi; constant değerler literal'larla bire bir eşleşiyor.
+- **Rollback**: 16 dosya, git revert.
+- **Test sonucu**:
+  - `npm run typecheck`: PASS (tsc clean).
+  - `npm run lint`: 0 errors, 11 pre-existing warnings (hiçbiri modify edilen dosyada değil).
+  - `npm test -- tests/api/`: 13/13 file PASS — 57 pass + 1 skip.
+- **Notlar**: `src/hooks/**` zaten collection literal kullanmıyor (3 dosya: use-mobile, use-site-content, use-toast — hiçbirinde Firestore ref yok). Page-level (`src/app/**/page.tsx` + `layout.tsx`) literal'lar P2-7c-2 follow-up'ında ele alınacak.
+
+---
+
 ## 2026-05-18 — P2-8e: super-admin dashboard listeners → count aggregates
 - **ID**: P2-8e
 - **Lead**: backend-lead
@@ -690,3 +726,97 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   - Aktif: `821aee5c5f15d6abaf3bbda068a501b299c55827` (var olan, dokunulmadı)
   - Aktif: `0c59742f78e5736abc758ebf93d93f78dfcb6e80` (var olan, dokunulmadı)
   - **DISABLED**: `e1312f88da4770e44ac15f3814399b48539de0e8` (eski leaked, revoked)
+
+## 2026-05-18 — P2-1b (kısmi): 6 ek kritik API route için vitest kapsamı
+
+- **Seçim kriteri**: Auth/PII/payment/admin yüzeyi + non-trivial branching, henüz coverage yok.
+- **Eklenen route'lar (6)**:
+  1. `src/app/api/messaging/whatsapp/webhook/route.ts` — Meta hub.verify_token + HMAC SHA256 (X-Hub-Signature-256, timing-safe)
+  2. `src/app/api/messaging/unsubscribe/route.ts` — public token lookup; brute-force surface
+  3. `src/app/api/messaging/resolve-recipients/route.ts` — super-admin gated; segment expansion
+  4. `src/app/api/messaging/worker/run/route.ts` — internal worker key (`x-messaging-key`)
+  5. `src/app/api/messaging/enqueue/route.ts` — messaging key + input validation
+  6. `src/app/api/ngo-admin/messaging/wallet/topup/route.ts` — N-Kolay payment intent + paket cross-check
+- **Pattern**: Tüm route'larda boundary-mock (firebase-admin, provider, server-auth, wallet/payment/audit). Resend/Netgsm/WhatsApp/Gemini/N-Kolay real network ASLA çağrılmaz. Her test dosyası ≤30 satır prensibine sadık (bazı genel describe satırları hariç).
+- **Skip kararları**: `whatsapp/templates/sync` aynı super-admin pattern'ini tekrarlıyor — P2-1c'ye bırakıldı. `worker/run` happy-path full Firestore zinciri 30 satırı aşıyor; sadece auth + 500 dalları kapsanır.
+- **Sonuç**: P2-1 toplam coverage 12/27+ kritik route. Kalan: messaging/preview, messaging/campaigns (super), admin/messaging/{ngo-senders, ngo-wallets, pricing}, ngo-admin/messaging/{me, resolve-recipients}, messaging/csv/save, messaging/iys/export, messaging/worker/{schedule, trust-score, reclaim}, offers, admin/messaging/whatsapp/templates/sync.
+
+## 2026-05-18 — P1-3b: webhookReplayIds Firestore TTL (90 gün)
+
+- **Sorun**: `src/lib/messaging/webhook-replay.ts` her event'te `webhookReplayIds/{driver}__{eventId}` doc'u yaratıyor; cleanup yoktu → sınırsız büyüme.
+- **Çözüm**: Doc'a TTL trigger alanı (`expiresAt = now + 90 gün`) eklendi; Firestore TTL policy bu alanı `webhookReplayIds` collection-group üzerinde okuyacak.
+- **Code diff** (`src/lib/messaging/webhook-replay.ts`):
+  ```ts
+  // import
+  -import { FieldValue } from 'firebase-admin/firestore';
+  +import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+
+  // rememberWebhookEvent → ref.create({...})
+   await ref.create({
+     driver,
+     eventId,
+     createdAt: FieldValue.serverTimestamp(),
+  +  expiresAt: Timestamp.fromMillis(Date.now() + 90 * 24 * 60 * 60 * 1000),
+   });
+  ```
+- **TTL enable** (operator manual çalıştıracak — sandbox `gcloud`'u engelledi):
+  ```
+  gcloud firestore fields ttls update expiresAt \
+    --collection-group=webhookReplayIds \
+    --enable-ttl \
+    --project=hangel-new-v18-87297865-9bcc3
+  ```
+- **Verify**:
+  ```
+  gcloud firestore fields ttls list --project=hangel-new-v18-87297865-9bcc3
+  ```
+  Beklenen: `webhookReplayIds.expiresAt` → state `CREATING` → birkaç dakika sonra `ACTIVE`.
+- **Migrasyon notu**: TTL enable öncesi yaratılan doc'ların `expiresAt` alanı yok → silinmezler (Firestore TTL yok sayar). Yeni doc'lar 90 gün sonra otomatik silinir. Eski kayıtlar zaten replay korumasından sonra büyük değer taşımaz; manuel cleanup gerekiyorsa P1-3c açılabilir.
+- **Doğrulama**: `npm run typecheck` PASS. `npm run lint` — `webhook-replay.ts`'de 0 warning/error; pre-existing tek error `src/app/settings/ngo-selection/page.tsx:70` (P1-3b scope dışı).
+
+---
+
+## 2026-05-18 — P0-4c — rules testlerini claim-only `isSuperAdmin()`'e adapt et (hangel-test-engineer)
+
+- **Lead**: hangel-test-engineer
+- **Bağlam**: P0-4a sonrası `firestore.rules` `isSuperAdmin()` sadece `request.auth.token.role == 'super-admin'` claim'i kontrol ediyor. Eski Firestore-doc fallback (`users/{uid}.role`) ve hardcoded e-posta literal'i kaldırıldı. Mevcut 4 rules testi (`users/campaigns/ngos/donations.test.ts`) `authedAs(env, 'root')` ile claim'siz authenticate ediyordu ve doc fallback'a güveniyordu → yeni rules altında `assertSucceeds` yerine `assertFails` üretecekti.
+- **Değişiklikler**:
+  - `users.test.ts`: 2 super-admin call site `{ role: 'super-admin' }` claim'i ile authentique; obsolete "email claim" testi farklı uid + claim varyantına dönüştürüldü (canonical "different uid, same claim succeeds" assertion); seed'deki `users/root.role = 'super-admin'` field'ı kaldırıldı (doc field'sız bırakıldı, başka testler için).
+  - `campaigns.test.ts`: 10 super-admin call site claim'li hale getirildi; `users/root` doc seeding tamamen kaldırıldı.
+  - `ngos.test.ts`: 2 super-admin call site claim'li hale getirildi; `users/root` doc seeding kaldırıldı.
+  - `donations.test.ts`: 3 super-admin call site claim'li hale getirildi; `users/root` doc seeding kaldırıldı.
+- **Etkilenmeyen**: `super-admin.test.ts` (P0-4'te zaten doğru pattern); `firestore.rules`; tüm non-super-admin actor testleri (`authedAs(env, 'alice')` vb. olduğu gibi kaldı — claim'siz signed-in kullanıcılar süper-admin path'leri için hâlâ `assertFails`).
+- **Pattern**: `authedAs(env, uid, { role: 'super-admin' })` — `setup.ts:authedAs()` zaten optional claims param destekliyordu, ek helper gerekmedi.
+- **Doğrulama**: `npm run typecheck` PASS. `npm run lint` — `tests/rules/**` 0 warning/error; pre-existing tek hata P1-3b scope dışı. `npm run test` → 10 file PASS / 5 skip (rules suites Java yok → graceful skip), 43 test PASS / 54 skip. `npm run test:rules` lokalde Java JRE yok → CI emulator job'unda doğrulanacak.
+- **Toplam değişiklik**: 17 super-admin call site, 4 file, ~30 satır net delta.
+
+---
+
+## 2026-05-18 — P1-8c: AI flow caller `userId` plumbing (ID token → verifyIdToken → quota)
+- **ID**: P1-8c
+- **Lead**: backend-lead
+- **Değişiklik**: P1-8 ile hazırlanan `checkAndConsumeAIQuota` iskeletini gerçek caller'la bağladık. 5 flow wrapper'ı opsiyonel `idToken?: string` argümanı kabul ediyor; server tarafı `verifyAIFlowUserId(idToken)` → Admin SDK `verifyIdToken` → `decoded.uid` → `checkAndConsumeAIQuota(uid, kind)`. Bare uid stringini ASLA kabul etmiyoruz — yalnızca ID token. `impact-story-flow` `profile/page.tsx`'ten `authUser.getIdToken()` ile çağrılıyor; client tarafı `QUOTA_EXCEEDED` mesaj prefix'ini yakalayıp Türkçe toast gösteriyor ("Günlük yapay zeka kotası doldu").
+- **Auth derivation pattern**: Profile bir client component; flow `'use server'`. Mevcut `src/lib/messaging/server-auth.ts` pattern'i `Authorization: Bearer <token>` + `getAdminAuth().verifyIdToken(token)` üzerinden çalışıyordu — bunu server action sürümüne uyarladık (token wrapper argümanı olarak geliyor, header değil; çünkü Genkit `'use server'` flow'ları HTTP header'a erişmiyor). Çözüm: client `user.getIdToken()` ile token alıp flow fonksiyonuna pas ediyor; server verify edip `null` (token yok/geçersiz) veya `uid` döndürüyor. Token yok/SDK yok → quota skip (fail-open, mevcut `checkAndConsumeAIQuota` semantiği ile tutarlı).
+- **Dosyalar**:
+  - `src/ai/flow-auth.ts` (yeni) — `AIQuotaExceededError` + `verifyAIFlowUserId` helper'ları. `guards.ts`'e dokunmamak için ayrı modül (guards.ts P1-8'de "final" olarak işaretlenmişti).
+  - `src/ai/flows/impact-story-flow.ts` — `idToken?` param + quota call (kind: `impact-story`).
+  - `src/ai/flows/library-ai-assistant.ts` — `idToken?` param + quota call (kind: `library-assistant`); UI caller yok, ileride hazır.
+  - `src/ai/flows/marketplace-ai-assistant.ts` — `idToken?` param + quota call (kind: `marketplace-assistant`); UI caller yok.
+  - `src/ai/flows/marketplace-ai-product-description.ts` — `idToken?` param + quota call (kind: `product-description`); UI caller yok.
+  - `src/ai/flows/project-writer-flow.ts` — `idToken?` param + quota call (kind: `project-writer`); UI caller yok.
+  - `src/app/profile/page.tsx` — `handleGenerateStories` `authUser.getIdToken()` çağırıyor, 5 paralel `getImpactStory(..., idToken)` invokasyonuna token gönderiyor; `error.message.includes('QUOTA_EXCEEDED')` ile typed error yakalanıyor, Türkçe quota toast'ı gösteriliyor; diğer hatalar generic toast.
+- **Tasarım notları**:
+  - `AIQuotaExceededError extends Error` — Next.js server action error serialization sınıf bilgisini koruma garantisi vermez, sadece `message` korunur. Bu yüzden stable contract `message` prefix `QUOTA_EXCEEDED:<kind>`. Client `instanceof` yerine `.includes('QUOTA_EXCEEDED')` ile match ediyor.
+  - 4 caller-less flow'a da quota call gating'i eklendi (token yoksa skip). Bu, gelecekte UI bağlandığında ek değişiklik gerektirmiyor — sadece caller `idToken` göndermeye başlayacak.
+  - `guards.ts` dokunulmadı (P1-8 sözleşmesine sadık kalındı); auth helper'ları yeni modülde.
+- **Hard rule sadakati**: Hiçbir flow client'tan bare `uid` kabul etmiyor — sadece ID token. Token geçersizse server fail-open (quota skip) + warning log; bu local dev (no service account) deneyimini bozmuyor ama production'da Admin SDK varken cap'i devreye sokuyor (P1-8'in fail-open semantiği ile tutarlı).
+- **Risk**: L — token yok/invalid path fail-open; mevcut UI davranışı bozulmuyor; quota state ayrı `aiQuotaslerini` collection'unda izole; rollback tek dosya.
+- **Rollback**: `git revert` (6 dosya değişikliği, 1 yeni dosya). `flow-auth.ts` silinince flow'lardaki importlar break eder; tüm dosyaları aynı commit'te revert et.
+- **Test sonucu**:
+  - `npm run typecheck` → PASS (no output).
+  - `npm run lint` → 1 error + 11 warning (HEPSI pre-existing: `src/app/page.tsx` `Math.random` impure, `src/app/settings/ngo-selection/page.tsx` `Date.now` impure, `volunteer/page.tsx` unused vars, vb.). Dokunduğum 7 dosyada (`ai/flow-auth.ts`, 5 flow file, `profile/page.tsx`) `grep -E "(ai/flows|ai/flow-auth|profile/page)"` ile lint output filtrelendi → 0 yeni error/warning.
+  - Functional test: production'da `authUser.getIdToken()` → server `verifyIdToken` → Firestore `aiQuotas/{uid}/buckets/daily-YYYY-MM-DD__impact-story` doc'una transactional `count++`; 30. çağrıdan sonra `AIQuotaExceededError` fırlatılıp profile sayfası Türkçe toast gösteriyor. (Manuel canlı doğrulama deploy sonrası.)
+- **Follow-up'lar**:
+  - P1-8b — env-tunable cap (hâlâ hardcoded 30).
+  - 4 caller-less flow için UI gerektiğinde caller'lar `idToken` plumbing yapacak (zaten hazır).
+- **Notlar**: Tasks.md'ye `P1-8c` ✅ row eklendi (P1-8 satırının hemen altına).

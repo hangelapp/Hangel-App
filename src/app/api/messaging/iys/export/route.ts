@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import { requireSuperAdmin, type SuperAdminContext } from '@/lib/messaging/server-auth';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
   const actor = (auth as { actor: SuperAdminContext }).actor;
 
   const db = getAdminFirestore();
-  const snap = await db.collection('userMarketingConsent').get();
+  const snap = await db.collection(COLLECTIONS.userMarketingConsent).get();
 
   const lines: string[] = ['Recipient,RecipientType,Type,Source,Status,ConsentDate'];
 
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
       channelAddresses?: { email?: string; phone?: string };
     };
 
-    const userSnap = await db.collection('users').doc(doc.id).get();
+    const userSnap = await db.collection(COLLECTIONS.users).doc(doc.id).get();
     const user = userSnap.exists ? (userSnap.data() as { personalInfo?: { email?: string; phone?: string } }) : null;
 
     const email = data.channelAddresses?.email ?? user?.personalInfo?.email;

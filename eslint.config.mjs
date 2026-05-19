@@ -138,13 +138,14 @@ export default tseslint.config(
       'prefer-const': 'warn',
       '@next/next/no-img-element': 'off',
       '@next/next/no-html-link-for-pages': 'off',
-      // P2-8: catch inline non-memoized Firestore refs passed to useDoc/useCollection.
+      // P2-8 + P2-8b: catch inline non-memoized Firestore refs passed to useDoc/useCollection.
       // Inline collection()/doc() creates a fresh ref every render → useEffect inside
       // the hook cleans up and re-subscribes the snapshot listener on every render
       // (memory leak + wasted reads). Pass a useMemoFirebase(...) result instead.
-      // TODO(P2-8b): upgrade severity to 'error' once no new offenders land.
+      // Upgraded from 'warn' to 'error' in P2-8b — current offender count is 0 and
+      // the runtime __memo guard (useCollection:111 + useDoc:P2-8g) already throws.
       'no-restricted-syntax': [
-        'warn',
+        'error',
         {
           selector:
             'CallExpression[callee.name=/^(useDoc|useCollection)$/] > CallExpression[callee.name=/^(collection|doc)$/]',

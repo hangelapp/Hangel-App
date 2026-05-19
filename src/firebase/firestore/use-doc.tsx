@@ -86,6 +86,15 @@ export function useDoc<T = any>(
     return () => unsubscribe();
   }, [memoizedDocRef]);
 
+  // P2-8g: runtime guard against inline `doc(...)` passed to `useDoc(...)` (mirrors
+  // the same check in use-collection.tsx:111-113). Without memoization the ref
+  // is a fresh object each render → useEffect tears down + re-subscribes every
+  // render → listener thrash + permission noise. Pass the ref through
+  // `useMemoFirebase(() => doc(db, ...), deps)` instead.
+  if (memoizedDocRef && !(memoizedDocRef as unknown as { __memo?: boolean }).__memo) {
+    throw new Error(memoizedDocRef.path + ' was not properly memoized using useMemoFirebase');
+  }
+
   const isLoading = !!memoizedDocRef && memoizedDocRef.path !== resolvedPath;
 
   return { data, isLoading, error };

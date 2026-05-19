@@ -30,6 +30,7 @@ import {
   isTimestampFresh,
   rememberWebhookEvent,
 } from '@/lib/messaging/webhook-replay';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -38,7 +39,7 @@ async function applyEvent(event: DeliveryEventInput, driver: string): Promise<vo
 
   // 1) job + recipient lookup via providerMessageId
   const jobSnap = await db
-    .collection('messageJobs')
+    .collection(COLLECTIONS.messageJobs)
     .where('providerMessageId', '==', event.providerMessageId)
     .limit(1)
     .get();
@@ -59,7 +60,7 @@ async function applyEvent(event: DeliveryEventInput, driver: string): Promise<vo
   }
 
   // 2) deliveryEvents'e yaz (lookup fail olsa da raw'ı sakla)
-  await db.collection('deliveryEvents').add({
+  await db.collection(COLLECTIONS.deliveryEvents).add({
     campaignId,
     recipientPath,
     channel,
@@ -77,7 +78,7 @@ async function applyEvent(event: DeliveryEventInput, driver: string): Promise<vo
 
   // 3) recipient.status + campaign.stats update
   const recipientRef = db.doc(recipientPath);
-  const campRef = db.collection('campaigns').doc(campaignId);
+  const campRef = db.collection(COLLECTIONS.campaigns).doc(campaignId);
 
   const updates: Record<string, unknown> = {};
   const statMap: Record<string, string> = {

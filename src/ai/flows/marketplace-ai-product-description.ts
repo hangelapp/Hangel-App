@@ -10,7 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
 const GetProductDescriptionInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
@@ -24,15 +25,26 @@ const GetProductDescriptionOutputSchema = z.object({
 });
 export type GetProductDescriptionOutput = z.infer<typeof GetProductDescriptionOutputSchema>;
 
-export async function getProductDescription(input: GetProductDescriptionInput): Promise<GetProductDescriptionOutput> {
+/**
+ * P1-8c: `idToken` (optional) is the caller's Firebase ID token. NEVER
+ * trust a bare uid. Token absent → quota skipped (fail-open). Cap hit →
+ * throws `AIQuotaExceededError`.
+ */
+export async function getProductDescription(input: GetProductDescriptionInput, idToken?: string): Promise<GetProductDescriptionOutput> {
   // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
-  // prompt interpolation. TODO(P1-8c): wire quota when caller userId is
-  // plumbed through.
+  // prompt interpolation.
   const safeInput: GetProductDescriptionInput = {
     productName: sanitizeUserInput(input.productName, 200),
     productDescription: sanitizeUserInput(input.productDescription, 4000),
     userQuestion: sanitizeUserInput(input.userQuestion, 2000),
   };
+  const userId = await verifyAIFlowUserId(idToken);
+  if (userId) {
+    const { allowed } = await checkAndConsumeAIQuota(userId, 'product-description');
+    if (!allowed) {
+      throw new AIQuotaExceededError('product-description');
+    }
+  }
   return getProductDescriptionFlow(safeInput);
 }
 

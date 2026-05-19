@@ -8,6 +8,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getPaymentProvider } from '@/lib/payment';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
   }
 
   const db = getAdminFirestore();
-  const packageSnap = await db.collection('messagingPackages').doc(body.packageId).get();
+  const packageSnap = await db.collection(COLLECTIONS.messagingPackages).doc(body.packageId).get();
   if (!packageSnap.exists) {
     return NextResponse.json({ error: 'Paket bulunamadı' }, { status: 404 });
   }
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     failureUrl: `${base}/ngo-admin/messaging/wallet?status=fail`,
   });
 
-  await db.collection('paymentOrders').doc(intent.orderId).set({
+  await db.collection(COLLECTIONS.paymentOrders).doc(intent.orderId).set({
     ngoId: actor.ngoId,
     amount: pkg.amount,
     packageId: body.packageId,

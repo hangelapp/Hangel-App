@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { checkMessagingKey } from '@/lib/messaging/server-auth';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { recomputeTrustScore } from '@/lib/messaging/trust-score';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
   if (unauthorized) return unauthorized;
 
   const db = getAdminFirestore();
-  const walletsSnap = await db.collection('ngoMessagingWallets').get();
+  const walletsSnap = await db.collection(COLLECTIONS.ngoMessagingWallets).get();
   const ngoIds = walletsSnap.docs.map((d) => d.id);
 
   const results: Array<{ ngoId: string; score?: number; error?: string }> = [];

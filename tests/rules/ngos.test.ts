@@ -49,17 +49,14 @@ describe.skipIf(!emulatorUp)('firestore.rules — /ngos/{ngoId}', () => {
   beforeEach(async () => {
     const env = await getTestEnv();
     await env.clearFirestore();
+    // Super-admin actor "root" is authenticated via the `role: 'super-admin'`
+    // custom claim — no user doc fixture required (P0-4).
     await adminSeed(env, async (ctx) => {
       const db = ctx.firestore();
       await db
         .collection('ngos')
         .doc('ngo1')
         .set({ name: 'NGO One', viewCount: 0, ownerUid: 'ngoadmin' });
-      // Seed super-admin role doc.
-      await db
-        .collection('users')
-        .doc('root')
-        .set({ role: 'super-admin' });
     });
   });
 
@@ -115,7 +112,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /ngos/{ngoId}', () => {
 
   it('super-admin CAN create new NGOs (via global write rule)', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(
       setDoc(doc(db, 'ngos', 'ngoNew'), { name: 'Admin NGO', viewCount: 0 }),
     );
@@ -123,7 +120,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /ngos/{ngoId}', () => {
 
   it('super-admin CAN delete NGOs', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(deleteDoc(doc(db, 'ngos', 'ngo1')));
   });
 });

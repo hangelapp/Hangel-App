@@ -13,6 +13,7 @@ import { topup } from '@/lib/messaging/wallet';
 import { createInvoiceStub } from '@/lib/invoice/stub';
 import { getPricing } from '@/lib/messaging/pricing';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,7 @@ async function handle(req: Request) {
   }
 
   const db = getAdminFirestore();
-  const orderRef = db.collection('paymentOrders').doc(verified.orderId);
+  const orderRef = db.collection(COLLECTIONS.paymentOrders).doc(verified.orderId);
   const orderSnap = await orderRef.get();
   if (!orderSnap.exists) {
     return NextResponse.json({ error: 'Order bulunamadı' }, { status: 404 });

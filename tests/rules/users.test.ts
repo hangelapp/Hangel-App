@@ -8,10 +8,10 @@
  *   allow delete: if isSuperAdmin();
  *
  * Notes:
- *   - The codebase's `isSuperAdmin()` checks for either the hard-coded super
- *     admin email `ismailhilmi@hangel.org` OR a `users/{uid}` doc with
- *     `role == 'super-admin'`. There is NO `super-admin: true` custom claim
- *     check in the rules. We test the actual mechanism (role doc).
+ *   - After P0-4, `isSuperAdmin()` checks ONLY the `request.auth.token.role ==
+ *     'super-admin'` custom claim. The hard-coded email literal and the
+ *     Firestore-doc fallback have both been removed. Super-admin actors are
+ *     authenticated via `authedAs(env, uid, { role: 'super-admin' })`.
  */
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { doc, getDoc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -40,7 +40,9 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
   beforeEach(async () => {
     const env = await getTestEnv();
     await env.clearFirestore();
-    // Seed: a regular user "alice" and a super-admin user "root".
+    // Seed: a regular user "alice". The super-admin actor "root" is
+    // authenticated solely via the `role: 'super-admin'` custom claim — no
+    // user doc fixture required.
     await adminSeed(env, async (ctx) => {
       const db = ctx.firestore();
       await db
@@ -50,7 +52,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
       await db
         .collection('users')
         .doc('root')
-        .set({ name: 'Root', role: 'super-admin' });
+        .set({ name: 'Root' });
     });
   });
 
@@ -104,9 +106,9 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
     );
   });
 
-  it('super-admin (role doc) CAN update any /users doc', async () => {
+  it('super-admin (role claim) CAN update any /users doc', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(
       updateDoc(doc(db, 'users', 'alice'), { name: 'Alice (admin edit)' }),
     );
@@ -120,17 +122,17 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
 
   it('super-admin CAN delete /users docs', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(deleteDoc(doc(db, 'users', 'alice')));
   });
 
-  it('super-admin via email claim CAN update /users docs', async () => {
-    // The rules also accept request.auth.token.email == 'ismailhilmi@hangel.org'
-    // as super-admin. RulesTestEnvironment exposes email via the auth token.
+  it('another super-admin (different uid, same claim) CAN update /users docs', async () => {
+    // Any uid bearing the `role: 'super-admin'` custom claim is authorized —
+    // no per-uid allowlist anymore.
     const env = await getTestEnv();
-    const db = authedAs(env, 'mailadmin', { email: 'ismailhilmi@hangel.org' });
+    const db = authedAs(env, 'otheradmin', { role: 'super-admin' });
     await assertSucceeds(
-      updateDoc(doc(db, 'users', 'alice'), { name: 'edited-by-email-admin' }),
+      updateDoc(doc(db, 'users', 'alice'), { name: 'edited-by-other-admin' }),
     );
   });
 });

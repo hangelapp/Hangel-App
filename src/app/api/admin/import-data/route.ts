@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     const db = getAdminFirestore();
-    const collectionRef = db.collection('ngos');
+    const collectionRef = db.collection(COLLECTIONS.ngos);
 
     let importedCount = 0;
     for (const record of records) {

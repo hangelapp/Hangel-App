@@ -7,6 +7,7 @@ import { requireSuperAdmin, type SuperAdminContext } from '@/lib/messaging/serve
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { adminAdjust, topup } from '@/lib/messaging/wallet';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   const auth = await requireSuperAdmin(req);
   if (auth.error) return auth.error;
   const db = getAdminFirestore();
-  const snap = await db.collection('ngoMessagingWallets').get();
+  const snap = await db.collection(COLLECTIONS.ngoMessagingWallets).get();
   const wallets = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   return NextResponse.json({ wallets });
 }

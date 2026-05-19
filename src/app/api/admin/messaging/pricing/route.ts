@@ -8,6 +8,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { invalidatePricingCache } from '@/lib/messaging/pricing';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
   const auth = await requireSuperAdmin(req);
   if (auth.error) return auth.error;
   const db = getAdminFirestore();
-  const snap = await db.collection('messagingPricing').doc('global').get();
+  const snap = await db.collection(COLLECTIONS.messagingPricing).doc('global').get();
   return NextResponse.json(snap.exists ? snap.data() : null);
 }
 
@@ -32,7 +33,7 @@ export async function PUT(req: Request) {
   }
 
   const db = getAdminFirestore();
-  await db.collection('messagingPricing').doc('global').set(
+  await db.collection(COLLECTIONS.messagingPricing).doc('global').set(
     {
       ...body,
       updatedAt: FieldValue.serverTimestamp(),

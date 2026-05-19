@@ -15,6 +15,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getWhatsAppProvider } from '@/lib/messaging/providers/whatsapp';
 import type { DeliveryEventInput } from '@/lib/messaging/types';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -47,7 +48,7 @@ async function applyEvent(event: DeliveryEventInput): Promise<void> {
   const db = getAdminFirestore();
 
   const jobSnap = await db
-    .collection('messageJobs')
+    .collection(COLLECTIONS.messageJobs)
     .where('providerMessageId', '==', event.providerMessageId)
     .limit(1)
     .get();
@@ -61,7 +62,7 @@ async function applyEvent(event: DeliveryEventInput): Promise<void> {
     recipientPath = job.recipientPath ?? null;
   }
 
-  await db.collection('deliveryEvents').add({
+  await db.collection(COLLECTIONS.deliveryEvents).add({
     campaignId,
     recipientPath,
     channel: 'whatsapp',
@@ -93,7 +94,7 @@ async function applyEvent(event: DeliveryEventInput): Promise<void> {
 
   await Promise.all([
     Object.keys(updates).length > 0
-      ? db.collection('campaigns').doc(campaignId).update(updates)
+      ? db.collection(COLLECTIONS.campaigns).doc(campaignId).update(updates)
       : Promise.resolve(),
     statusMap[event.type]
       ? db.doc(recipientPath).update({

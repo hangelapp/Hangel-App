@@ -10,7 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
 const ProjectWriterInputSchema = z.object({
   institution: z.string().describe('The target institution for the project (e.g., EU, UNDP, Ministry).'),
@@ -31,10 +32,14 @@ const ProjectWriterOutputSchema = z.object({
 });
 export type ProjectWriterOutput = z.infer<typeof ProjectWriterOutputSchema>;
 
-export async function writeProjectProposal(input: ProjectWriterInput): Promise<ProjectWriterOutput> {
+/**
+ * P1-8c: `idToken` (optional) is the caller's Firebase ID token. NEVER
+ * trust a bare uid. Token absent → quota skipped (fail-open). Cap hit →
+ * throws `AIQuotaExceededError`.
+ */
+export async function writeProjectProposal(input: ProjectWriterInput, idToken?: string): Promise<ProjectWriterOutput> {
   // P1-8: sanitize every user-supplied string (clamp + strip control chars)
-  // before prompt interpolation. TODO(P1-8c): wire quota when caller userId
-  // is plumbed through.
+  // before prompt interpolation.
   const safeInput: ProjectWriterInput = {
     institution: sanitizeUserInput(input.institution, 200),
     sections: {
@@ -47,6 +52,13 @@ export async function writeProjectProposal(input: ProjectWriterInput): Promise<P
     },
     libraryContext: sanitizeUserInput(input.libraryContext, 8000),
   };
+  const userId = await verifyAIFlowUserId(idToken);
+  if (userId) {
+    const { allowed } = await checkAndConsumeAIQuota(userId, 'project-writer');
+    if (!allowed) {
+      throw new AIQuotaExceededError('project-writer');
+    }
+  }
   return projectWriterFlow(safeInput);
 }
 

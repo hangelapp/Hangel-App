@@ -51,12 +51,10 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
   beforeEach(async () => {
     const env = await getTestEnv();
     await env.clearFirestore();
+    // Super-admin actor "root" is authenticated via the `role: 'super-admin'`
+    // custom claim — no user doc fixture required (P0-4).
     await adminSeed(env, async (ctx) => {
       const db = ctx.firestore();
-      await db
-        .collection('users')
-        .doc('root')
-        .set({ role: 'super-admin' });
       await db
         .collection('campaigns')
         .doc('camp1')
@@ -107,19 +105,19 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN read a campaign', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(getDoc(doc(db, 'campaigns', 'camp1')));
     });
 
     it('super-admin CAN list campaigns', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(getDocs(collection(db, 'campaigns')));
     });
 
     it('super-admin CAN create a campaign (via global write rule)', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(
         setDoc(doc(db, 'campaigns', 'camp2'), {
           name: 'Newsletter',
@@ -141,7 +139,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN update a campaign', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(
         updateDoc(doc(db, 'campaigns', 'camp1'), { status: 'sent' }),
       );
@@ -149,7 +147,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN delete a campaign', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(deleteDoc(doc(db, 'campaigns', 'camp1')));
     });
 
@@ -163,7 +161,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN read campaign recipients subcollection', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(
         getDoc(doc(db, 'campaigns', 'camp1', 'recipients', 'r1')),
       );
@@ -179,7 +177,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN read message templates', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(getDoc(doc(db, 'messageTemplates', 'tpl1')));
     });
 
@@ -193,13 +191,13 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
   describe('server-only collections', () => {
     it('super-admin CANNOT read /messageJobs (server-only)', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertFails(getDoc(doc(db, 'messageJobs', 'job1')));
     });
 
     it('super-admin CANNOT write /messageJobs (server-only)', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertFails(
         setDoc(doc(db, 'messageJobs', 'job2'), { status: 'queued' }),
       );
@@ -207,7 +205,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — messaging campaigns', () => {
 
     it('super-admin CAN read messagingAuditLogs but CANNOT write them', async () => {
       const env = await getTestEnv();
-      const db = authedAs(env, 'root');
+      const db = authedAs(env, 'root', { role: 'super-admin' });
       await assertSucceeds(getDoc(doc(db, 'messagingAuditLogs', 'log1')));
       await assertFails(
         setDoc(doc(db, 'messagingAuditLogs', 'logNew'), { event: 'send' }),

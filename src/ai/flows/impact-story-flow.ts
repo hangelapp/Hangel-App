@@ -10,7 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
 const ImpactStoryInputSchema = z.object({
   userName: z.string().describe("The user's first name."),
@@ -25,17 +26,32 @@ const ImpactStoryOutputSchema = z.object({
 });
 export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
 
-export async function getImpactStory(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
+/**
+ * P1-8c: `idToken` (optional) is the caller's Firebase ID token. NEVER
+ * trust a bare uid string — the server verifies the token via Admin SDK
+ * (`verifyAIFlowUserId`) and only the resulting uid is fed into the daily
+ * quota counter. Token absent / invalid → quota enforcement is skipped
+ * (fail-open, mirrors `checkAndConsumeAIQuota` semantics for local dev).
+ * Cap exceeded → throws `AIQuotaExceededError` (message
+ * `QUOTA_EXCEEDED:impact-story`) so the client can swap in a Turkish toast.
+ */
+export async function getImpactStory(input: ImpactStoryInput, idToken?: string): Promise<ImpactStoryOutput> {
   // P1-8: clamp + strip control chars on every user-influenced string before it
-  // hits the prompt template. TODO(P1-8c): wire quota when caller userId is
-  // plumbed through (this flow is invoked from `src/app/profile/page.tsx`
-  // without an explicit userId arg today).
+  // hits the prompt template.
   const safeInput: ImpactStoryInput = {
     userName: sanitizeUserInput(input.userName, 80),
     donations: sanitizeUserInput(input.donations, 1000),
     volunteering: sanitizeUserInput(input.volunteering, 1000),
     badges: sanitizeUserInput(input.badges, 1000),
   };
+  // P1-8c: per-user daily cap, gated on a verified ID token.
+  const userId = await verifyAIFlowUserId(idToken);
+  if (userId) {
+    const { allowed } = await checkAndConsumeAIQuota(userId, 'impact-story');
+    if (!allowed) {
+      throw new AIQuotaExceededError('impact-story');
+    }
+  }
   return generateImpactStoryFlow(safeInput);
 }
 

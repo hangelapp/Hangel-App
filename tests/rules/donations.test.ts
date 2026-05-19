@@ -69,11 +69,8 @@ describe.skipIf(!emulatorUp)('firestore.rules — /donations/{donationId}', () =
           ngoId: 'ngo1',
           status: 'completed',
         });
-      // super-admin role doc
-      await db
-        .collection('users')
-        .doc('root')
-        .set({ role: 'super-admin' });
+      // Super-admin actor "root" is authenticated via the `role: 'super-admin'`
+      // custom claim — no user doc fixture required (P0-4).
     });
   });
 
@@ -109,7 +106,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /donations/{donationId}', () =
 
   it('super-admin CAN read any donation', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(getDoc(doc(db, 'donations', 'don-bob-1')));
   });
 
@@ -158,7 +155,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /donations/{donationId}', () =
 
   it('super-admin CAN update donation status', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(
       updateDoc(doc(db, 'donations', 'don-alice-1'), { status: 'refunded' }),
     );
@@ -172,7 +169,7 @@ describe.skipIf(!emulatorUp)('firestore.rules — /donations/{donationId}', () =
 
   it('super-admin CAN delete donations', async () => {
     const env = await getTestEnv();
-    const db = authedAs(env, 'root');
+    const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(deleteDoc(doc(db, 'donations', 'don-alice-1')));
   });
 });

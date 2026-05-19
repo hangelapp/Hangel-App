@@ -8,13 +8,14 @@ import { NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
 async function findByToken(token: string) {
   const db = getAdminFirestore();
   const snap = await db
-    .collection('userMarketingConsent')
+    .collection(COLLECTIONS.userMarketingConsent)
     .where('unsubscribeToken', '==', token)
     .limit(1)
     .get();

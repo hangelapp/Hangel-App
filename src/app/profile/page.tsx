@@ -288,13 +288,18 @@ export default function ProfilePage() {
         setIsStoryLoading(true);
         setStories([]);
         try {
-            const storyPromises = Array(5).fill(0).map(() => 
+            // P1-8c: fetch a Firebase ID token once and pass it to every flow
+            // invocation. Server verifies via Admin SDK before consuming the
+            // per-user daily AI quota. We NEVER pass a bare uid — the server
+            // wouldn't trust it anyway.
+            const idToken = authUser ? await authUser.getIdToken() : undefined;
+            const storyPromises = Array(5).fill(0).map(() =>
                 getImpactStory({
                     userName: currentUser.name.split(' ')[0],
                     donations: `${currentUser.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${currentUser.stats.mostSupportedNgo}.`,
                     volunteering: `${currentUser.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${currentUser.stats.mostActiveVolunteerArea}.`,
                     badges: `Toplamda ${badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length} rozet kazanıldı.`
-                })
+                }, idToken)
             );
             const results = await Promise.all(storyPromises);
             const generatedStories = results.map(r => r.story).filter(Boolean);
@@ -305,11 +310,22 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error("Story generation failed:", error);
-            toast({
-                variant: "destructive",
-                title: "Hikaye oluşturulamadı",
-                description: "Yapay zeka ile hikaye oluşturulurken bir sorun oluştu."
-            });
+            // P1-8c: server-action error serialization preserves `.message` but
+            // not the class — detect the quota cap via message prefix.
+            const msg = error instanceof Error ? error.message : '';
+            if (msg.includes('QUOTA_EXCEEDED')) {
+                toast({
+                    variant: "destructive",
+                    title: "Günlük yapay zeka kotası doldu",
+                    description: "Bugün için hikaye oluşturma limitine ulaştın. Lütfen yarın tekrar dene."
+                });
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Hikaye oluşturulamadı",
+                    description: "Yapay zeka ile hikaye oluşturulurken bir sorun oluştu."
+                });
+            }
         } finally {
             setIsStoryLoading(false);
         }

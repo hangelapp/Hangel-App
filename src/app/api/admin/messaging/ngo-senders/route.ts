@@ -7,6 +7,7 @@ import { requireSuperAdmin, type SuperAdminContext } from '@/lib/messaging/serve
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
   }
 
   const db = getAdminFirestore();
-  const ref = db.collection('ngoSenders').doc(body.ngoId).collection('senders').doc(body.senderId);
+  const ref = db.collection(COLLECTIONS.ngoSenders).doc(body.ngoId).collection(COLLECTIONS.senders).doc(body.senderId);
   await ref.update({
     status: body.action === 'approve' ? 'approved' : 'rejected',
     approvedBy: actor.uid,

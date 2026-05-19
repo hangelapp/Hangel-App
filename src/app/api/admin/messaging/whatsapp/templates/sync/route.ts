@@ -9,6 +9,7 @@ import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getWhatsAppProvider } from '@/lib/messaging/providers/whatsapp';
 import { logAudit } from '@/lib/messaging/audit';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
     let upserted = 0;
     for (const t of templates) {
       const id = `${t.name}_${t.language}`;
-      await db.collection('whatsappTemplates').doc(id).set(
+      await db.collection(COLLECTIONS.whatsappTemplates).doc(id).set(
         {
           name: t.name,
           language: t.language,

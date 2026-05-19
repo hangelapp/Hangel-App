@@ -14,6 +14,7 @@ import { segmentInfo } from '@/lib/messaging/sms-segments';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
 import { computeCampaignCost } from '@/lib/messaging/pricing';
 import { reserve as walletReserve, InsufficientBalanceError } from '@/lib/messaging/wallet';
+import { COLLECTIONS } from '@/firebase/collections';
 import type {
   CampaignStats,
   CampaignStatus,
@@ -133,7 +134,7 @@ export async function POST(req: Request) {
   const initialStatus: CampaignStatus = isScheduled ? 'scheduled' : 'draft';
   const initialStats: CampaignStats = { queued: 0, sent: 0, delivered: 0, failed: 0, bounced: 0 };
 
-  const campRef = db.collection('campaigns').doc();
+  const campRef = db.collection(COLLECTIONS.campaigns).doc();
   await campRef.set({
     name: body.name.trim(),
     channel: body.channel,
@@ -165,7 +166,7 @@ export async function POST(req: Request) {
   });
 
   // Recipients materialize
-  const recipientsRef = campRef.collection('recipients');
+  const recipientsRef = campRef.collection(COLLECTIONS.recipients);
   for (let i = 0; i < resolved.recipients.length; i += BATCH) {
     const slice = resolved.recipients.slice(i, i + BATCH);
     const wb = db.batch();

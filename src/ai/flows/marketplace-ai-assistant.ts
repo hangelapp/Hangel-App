@@ -10,7 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
+import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
 const AskMarketAssistantInputSchema = z.object({
   userQuestion: z.string().describe("The user's question about the brands in the marketplace."),
@@ -23,14 +24,25 @@ const AskMarketAssistantOutputSchema = z.object({
 });
 export type AskMarketAssistantOutput = z.infer<typeof AskMarketAssistantOutputSchema>;
 
-export async function askMarketAssistant(input: AskMarketAssistantInput): Promise<AskMarketAssistantOutput> {
+/**
+ * P1-8c: `idToken` (optional) is the caller's Firebase ID token. NEVER
+ * trust a bare uid. Token absent → quota skipped (fail-open). Cap hit →
+ * throws `AIQuotaExceededError`.
+ */
+export async function askMarketAssistant(input: AskMarketAssistantInput, idToken?: string): Promise<AskMarketAssistantOutput> {
   // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
-  // prompt interpolation. TODO(P1-8c): wire quota when caller userId is
-  // plumbed through.
+  // prompt interpolation.
   const safeInput: AskMarketAssistantInput = {
     userQuestion: sanitizeUserInput(input.userQuestion, 2000),
     brandsContext: sanitizeUserInput(input.brandsContext, 8000),
   };
+  const userId = await verifyAIFlowUserId(idToken);
+  if (userId) {
+    const { allowed } = await checkAndConsumeAIQuota(userId, 'marketplace-assistant');
+    if (!allowed) {
+      throw new AIQuotaExceededError('marketplace-assistant');
+    }
+  }
   return getMarketplaceAnswerFlow(safeInput);
 }
 

@@ -14,6 +14,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { parseCsv } from '@/lib/messaging/csv';
 import { toE164TR } from '@/lib/messaging/phone';
 import { normalizeEmail, isValidEmail } from '@/lib/messaging/email';
+import { COLLECTIONS } from '@/firebase/collections';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
   }
 
   const db = getAdminFirestore();
-  const docRef = db.collection('csvUploads').doc();
+  const docRef = db.collection(COLLECTIONS.csvUploads).doc();
   await docRef.set({
     name: body.name.trim(),
     channel: body.channel,

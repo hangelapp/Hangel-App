@@ -8,6 +8,7 @@ import { segmentInfo } from '@/lib/messaging/sms-segments';
 import { logAudit, actorFromRequest } from '@/lib/messaging/audit';
 import { computeCampaignCost } from '@/lib/messaging/pricing';
 import { reserve as walletReserve, InsufficientBalanceError } from '@/lib/messaging/wallet';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { CampaignStats, CampaignStatus, RecipientSourceSpec, WhatsAppConversationCategory, WhatsAppTemplateComponent } from '@/lib/messaging/types';
 
 export const runtime = 'nodejs';
@@ -44,7 +45,7 @@ async function materializeRecipients(
   recipients: Array<{ userId: string | null; channelAddress: string; vars: Record<string, string> }>
 ): Promise<number> {
   const db = getAdminFirestore();
-  const recipientsRef = db.collection('campaigns').doc(campaignId).collection('recipients');
+  const recipientsRef = db.collection(COLLECTIONS.campaigns).doc(campaignId).collection(COLLECTIONS.recipients);
   let written = 0;
   for (let i = 0; i < recipients.length; i += BATCH_WRITE_SIZE) {
     const slice = recipients.slice(i, i + BATCH_WRITE_SIZE);
@@ -161,7 +162,7 @@ export async function POST(req: Request) {
   const initialStatus: CampaignStatus = isScheduled ? 'scheduled' : 'draft';
   const initialStats: CampaignStats = { queued: 0, sent: 0, delivered: 0, failed: 0, bounced: 0 };
 
-  const campRef = db.collection('campaigns').doc();
+  const campRef = db.collection(COLLECTIONS.campaigns).doc();
   await campRef.set({
     name: payload.name.trim(),
     channel: payload.channel,

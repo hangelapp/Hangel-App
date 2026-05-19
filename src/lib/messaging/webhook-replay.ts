@@ -6,12 +6,12 @@
  *  - isIpAllowed: Netgsm gibi HMAC sunmayan sağlayıcılar için fallback IP whitelist.
  *  - rememberWebhookEvent: replay reddetmek için atomik Firestore yazımı (set + exists:false).
  *
- * Yazılan koleksiyon: `webhookReplayIds`. TTL (Cloud Scheduler/Firestore TTL policy) ayrı task —
- * şimdilik sadece `createdAt` damgası koyuyoruz; bkz. tasks.md P1-3b.
+ * Yazılan koleksiyon: `webhookReplayIds`. Doc'a `expiresAt = now + 90 gün` damgası eklenir;
+ * Firestore TTL policy bu alanı izleyerek 90 gün sonra otomatik siler (bkz. tasks.md P1-3b).
  */
 
 import crypto from 'crypto';
-import { FieldValue } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -134,6 +134,7 @@ export async function rememberWebhookEvent(driver: string, eventId: string): Pro
       driver,
       eventId,
       createdAt: FieldValue.serverTimestamp(),
+      expiresAt: Timestamp.fromMillis(Date.now() + 90 * 24 * 60 * 60 * 1000),
     });
     return 'ok';
   } catch (err) {
