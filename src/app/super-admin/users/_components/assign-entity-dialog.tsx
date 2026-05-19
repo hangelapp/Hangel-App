@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, Loader2, UserPlus, Building2, Briefcase, GraduationCap } from 'lucide-react';
+import { Search, Loader2, UserPlus, Building2, Briefcase, GraduationCap, ShieldX } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -34,6 +34,30 @@ import {
   invitationIdFieldByKind,
   rolesByKind,
 } from './types';
+
+// PDF-30 — Bildirim helper'ı: yetkilendir/yetki kaldır işlemlerinde kullanıcıya
+// `notifications` koleksiyonu üzerinden bildirim üretir. Hata olursa sessizce
+// loglanır — bildirim eksikliği yetkilendirmenin geri alınması için yeterli sebep değil.
+async function emitAuthorizationNotification(
+  db: ReturnType<typeof useFirestore>,
+  args: { userId: string; title: string; body: string; entityKind: EntityKind; entityId: string; action: 'granted' | 'revoked' },
+) {
+  try {
+    await addDoc(collection(db, COLLECTIONS.notifications), {
+      userId: args.userId,
+      type: 'authorization',
+      action: args.action,
+      entityKind: args.entityKind,
+      entityId: args.entityId,
+      title: args.title,
+      body: args.body,
+      read: false,
+      createdAt: serverTimestamp(),
+    });
+  } catch (err) {
+    console.warn('[assign-entity] notification create failed', err);
+  }
+}
 
 // Yetkilendirme dialog'u — kullanıcıyı bir STK / Marka / Kulüp'e yönetici olarak atar
 export const AssignEntityDialog = ({ user, open, onOpenChange }: {
@@ -95,6 +119,91 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     [allEntities, selectedEntityId],
   );
 
+  // PDF-29 — Mevcut yetkiler özeti (single-value `managedXId` schema).
+  // Multi-entity için ayrı koleksiyon ihtiyacı var; şu an tek-değerli alanlardan
+  // okuyup gösteriyoruz. revoke = field'ı null'a set + role'ü 'user'a indir.
+  type ActiveAuth = {
+    kind: EntityKind;
+    entityId: string;
+    entityName: string;
+    roleTitle: string;
+  };
+
+  const activeAuthorizations: ActiveAuth[] = useMemo(() => {
+    if (!user) return [];
+    const out: ActiveAuth[] = [];
+    const fields: Array<[EntityKind, string | undefined, EntityRow[] | null]> = [
+      ['ngo', user.managedNgoId, ngos],
+      ['brand', user.managedBrandId, brands],
+      ['club', user.managedClubId, clubs],
+    ];
+    for (const [kind, id, list] of fields) {
+      if (!id) continue;
+      const ent = list?.find(e => e.id === id);
+      out.push({
+        kind,
+        entityId: id,
+        entityName: ent?.name || id,
+        roleTitle: user.roleTitle || '—',
+      });
+    }
+    return out;
+  }, [user, ngos, brands, clubs]);
+
+  const [revoking, setRevoking] = useState<string | null>(null);
+
+  const handleRevoke = async (auth: ActiveAuth) => {
+    if (!user) return;
+    setRevoking(`${auth.kind}:${auth.entityId}`);
+    try {
+      const idField = entityIdFieldByKind[auth.kind];
+      // Diğer kuruluşlarda hâlâ yetkisi var mı kontrolü için kullanıcıya kalan
+      // yetki var mı bak; yoksa role'ü 'user'a indir.
+      const remaining = activeAuthorizations.filter(a => !(a.kind === auth.kind && a.entityId === auth.entityId));
+      const userPatch: Record<string, unknown> = { [idField]: null };
+      if (remaining.length === 0 && user.role !== 'super-admin') {
+        userPatch.role = 'user';
+        userPatch.roleTitle = null;
+      }
+      await updateDoc(doc(db, COLLECTIONS.users, user.id), userPatch);
+
+      // Eğer kuruluşun adminUserId'si bu kullanıcıysa onu da temizle.
+      try {
+        const entityCollection = entityCollectionByKind[auth.kind];
+        await updateDoc(doc(db, entityCollection, auth.entityId), {
+          adminUserId: null,
+        });
+      } catch (entErr) {
+        // adminUserId zaten başka birine ait olabilir — sessizce geç.
+        console.warn('[assign-entity] adminUserId clear skipped', entErr);
+      }
+
+      await emitAuthorizationNotification(db, {
+        userId: user.id,
+        title: 'Yetkiniz kaldırıldı',
+        body: `${auth.entityName} (${entityKindLabels[auth.kind]}) kuruluşundaki ${auth.roleTitle} yetkiniz kaldırıldı.`,
+        entityKind: auth.kind,
+        entityId: auth.entityId,
+        action: 'revoked',
+      });
+
+      toast({
+        title: 'Yetki kaldırıldı',
+        description: `${auth.entityName} için yetki kaldırıldı ve kullanıcıya bildirim gönderildi.`,
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({
+        variant: 'destructive',
+        title: 'Yetki kaldırılamadı',
+        description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setRevoking(null);
+    }
+  };
+
   const handleAssign = async () => {
     if (!user || !selectedEntityId || !roleTitle) return;
     setSubmitting(true);
@@ -141,9 +250,19 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
         console.warn('userInvitations kaydı oluşturulamadı:', invErr);
       }
 
+      // 4) PDF-30 — Kullanıcıya bildirim gönder.
+      await emitAuthorizationNotification(db, {
+        userId: user.id,
+        title: 'Yeni yetki verildi',
+        body: `${selectedEntity?.name || 'Kuruluş'} (${entityKindLabels[entityKind]}) için ${roleTitle} yetkisi tanımlandı.`,
+        entityKind,
+        entityId: selectedEntityId,
+        action: 'granted',
+      });
+
       toast({
         title: 'Yetkilendirme Tamamlandı',
-        description: `${user.name || 'Kullanıcı'} → ${selectedEntity?.name || 'kuruluş'} (${roleTitle}).`,
+        description: `${user.name || 'Kullanıcı'} → ${selectedEntity?.name || 'kuruluş'} (${roleTitle}). Bildirim iletildi.`,
       });
       onOpenChange(false);
     } catch (e) {
