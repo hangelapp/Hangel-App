@@ -41,9 +41,9 @@ function errJson(errorCode: string, message: string, status: number) {
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const eventId = params?.id;
+  const { id: eventId } = await params;
   if (!eventId || typeof eventId !== 'string') {
     return errJson('invalid_event_id', 'Etkinlik kimliği gerekli', 400);
   }

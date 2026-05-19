@@ -335,8 +335,13 @@ export default function ManageProfilePage() {
         toast({ title: 'Değişiklikler Kaydedildi', description: 'Kuruluş profiliniz başarıyla güncellendi.' });
       } catch (err) {
         console.error('Profile save failed:', err);
-        const e2 = err as { message?: string };
-        toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e2?.message || 'Beklenmeyen bir hata oluştu.' });
+        const e2 = err as { code?: string; message?: string };
+        const description = e2?.code === 'permission-denied'
+          ? 'Bu kuruluşu güncelleme yetkiniz yok. Hesabınız bu kuruluşun yöneticisi olarak atanmamış olabilir; lütfen Hangel ekibi ile iletişime geçin.'
+          : e2?.code === 'not-found'
+            ? 'Kuruluş kaydı bulunamadı. Sayfayı yenileyip tekrar deneyin.'
+            : (e2?.message || 'Beklenmeyen bir hata oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
+        toast({ variant: 'destructive', title: 'Kaydedilemedi', description });
       } finally {
         setIsSaving(false);
       }

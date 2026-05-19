@@ -3,7 +3,7 @@
 
 import type { Brand } from "@/lib/types";
 
-export type BrandItem = Brand & { id: string; source?: 'brands' | 'applications'; status?: string };
+export type BrandItem = Brand & { id: string; source?: 'brands' | 'applications' | 'api'; status?: string };
 
 export type EditFormData = Partial<BrandItem> & {
     _email?: string;

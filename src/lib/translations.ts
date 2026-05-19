@@ -306,6 +306,7 @@ export const translations: Record<Language, any> = {
         sending: 'Gönderiliyor...',
         profileTitle: 'Profil',
         profileDesc: 'Göndericinin profil özeti.',
+        profileUnavailable: 'Bu mesaj için profil bilgisi bulunamadı.',
         close: 'Kapat',
         toastLoginRequiredTitle: 'Giriş gerekli',
         toastLoginRequiredDesc: 'Mesaj göndermek için giriş yapın.',
@@ -1112,6 +1113,31 @@ export const translations: Record<Language, any> = {
         legalDocVergi: 'Vergi Levhası',
         legalDocFaaliyet: 'Faaliyet Belgesi',
       },
+    },
+    emergencyAbout: {
+      heroTitle: 'Acil Anlarda Hangel Yanınızda',
+      heroLead: 'Afet bildirimi ve kan ihtiyacı çağrılarını anlık olarak konumunuza göre alın. Yardım etmek isteyen yüzlerce gönüllüyle aynı ağa katılın.',
+      heroSubLead: 'Hangel; bireysel kullanıcıları, STK\'ları ve sağlık kuruluşlarını tek bir acil yardım ağında buluşturur.',
+      disasterTitle: 'Afet Bildirimi',
+      disasterDesc: 'Yakın çevrenizdeki yangın, sel veya deprem gibi afet çağrılarını anında görün, müsait olduğunuzda yanıtlayın.',
+      bloodTitle: 'Kan İhtiyacı',
+      bloodDesc: 'Şehrinizde açılan kan bağışı çağrılarını alın. Grubunuz uyuştuğunda anlık bildirim alın ve hayat kurtarın.',
+      featuresTitle: 'Nasıl Çalışır?',
+      feature1: {
+        title: 'Konum Bazlı Çağrı',
+        desc: 'Sadece sizin bulunduğunuz şehir veya ilçedeki acil çağrıları alırsınız. Gereksiz bildirim yok.',
+      },
+      feature2: {
+        title: 'Aralık Seçimi',
+        desc: 'Hangi saat aralığında bildirim alacağınızı kendiniz belirlersiniz. Gece sessiz mod desteklenir.',
+      },
+      feature3: {
+        title: 'Topluluk Yanıtı',
+        desc: 'Aynı çağrıya yanıt veren diğer gönüllüleri görün; koordine olun ve birlikte hareket edin.',
+      },
+      ctaTitle: 'Sen de Katıl',
+      ctaLead: 'Hangel topluluğuna katıl, acil çağrılara yanıt veren binlerce gönüllüden biri ol.',
+      ctaButton: 'Sen de katıl',
     }
   },
   en: {
@@ -1408,6 +1434,7 @@ export const translations: Record<Language, any> = {
         sending: 'Sending...',
         profileTitle: 'Profile',
         profileDesc: "Sender's profile summary.",
+        profileUnavailable: 'No profile info available for this message.',
         close: 'Close',
         toastLoginRequiredTitle: 'Login required',
         toastLoginRequiredDesc: 'Log in to send messages.',
@@ -2214,6 +2241,31 @@ export const translations: Record<Language, any> = {
         legalDocVergi: 'Tax Certificate',
         legalDocFaaliyet: 'Activity Certificate',
       },
+    },
+    emergencyAbout: {
+      heroTitle: 'Hangel Stands With You In Emergencies',
+      heroLead: 'Receive disaster alerts and blood-need calls in real time based on your location. Join a network of hundreds of volunteers ready to help.',
+      heroSubLead: 'Hangel brings individuals, NGOs, and healthcare organizations together on a single emergency response network.',
+      disasterTitle: 'Disaster Alerts',
+      disasterDesc: 'See nearby fire, flood, or earthquake calls instantly and respond when you are available.',
+      bloodTitle: 'Blood Need',
+      bloodDesc: 'Get blood donation calls from your city. Receive instant notifications when your blood type matches.',
+      featuresTitle: 'How It Works',
+      feature1: {
+        title: 'Location-Based Calls',
+        desc: 'You only receive emergency calls from your city or district. No unnecessary notifications.',
+      },
+      feature2: {
+        title: 'Time Windows',
+        desc: 'You decide which hours to receive notifications. Quiet night mode is supported.',
+      },
+      feature3: {
+        title: 'Community Response',
+        desc: 'See other volunteers responding to the same call; coordinate and act together.',
+      },
+      ctaTitle: 'Join Us',
+      ctaLead: 'Join the Hangel community and become one of thousands of volunteers responding to emergency calls.',
+      ctaButton: 'Join now',
     }
   },
   ru: {

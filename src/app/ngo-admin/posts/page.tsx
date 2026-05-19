@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc, setDoc, getDoc, increment } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
@@ -210,6 +210,78 @@ export default function PostsPage() {
     const handleCancelEdit = () => {
         setEditingPostId(null);
         setEditContent('');
+    };
+
+    const [busyAction, setBusyAction] = React.useState<{ postId: string; kind: 'like' | 'share' } | null>(null);
+
+    const handleToggleLike = async (postId: string) => {
+        if (!authUser?.uid) {
+            toast({ variant: 'destructive', title: 'Oturum açmanız gerekiyor.' });
+            return;
+        }
+        setBusyAction({ postId, kind: 'like' });
+        try {
+            const likeRef = doc(firestore, COLLECTIONS.posts, postId, 'likes', authUser.uid);
+            const postRef = doc(firestore, COLLECTIONS.posts, postId);
+            const existing = await getDoc(likeRef);
+            if (existing.exists()) {
+                await deleteDoc(likeRef);
+                await updateDoc(postRef, { likes: increment(-1) }).catch(() => {});
+                toast({ title: 'Beğeni kaldırıldı.' });
+            } else {
+                await setDoc(likeRef, { createdAt: Timestamp.now(), userId: authUser.uid });
+                await updateDoc(postRef, { likes: increment(1) }).catch(() => {});
+                toast({ title: 'Beğenildi.' });
+            }
+        } catch (error) {
+            console.error('Like toggle failed:', error);
+            const err = error as { code?: string; message?: string };
+            toast({
+                variant: 'destructive',
+                title: 'Beğeni işlemi başarısız.',
+                description: err?.code === 'permission-denied'
+                    ? 'Sunucu izin vermedi. Lütfen oturumunuzu yenileyin.'
+                    : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+            });
+        } finally {
+            setBusyAction(null);
+        }
+    };
+
+    const handleSharePost = async (postId: string, content?: string) => {
+        if (typeof window === 'undefined') return;
+        setBusyAction({ postId, kind: 'share' });
+        try {
+            const url = `${window.location.origin}/timeline?post=${postId}`;
+            const shareData = {
+                title: 'Hangel - Gönderi',
+                text: (content || '').slice(0, 140),
+                url,
+            };
+            const navAny = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
+            if (typeof navAny.share === 'function') {
+                try {
+                    await navAny.share(shareData);
+                    toast({ title: 'Paylaşıldı.' });
+                    return;
+                } catch (shareErr) {
+                    const e = shareErr as { name?: string };
+                    if (e?.name === 'AbortError') return; // user cancelled
+                }
+            }
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(url);
+                toast({ title: 'Bağlantı kopyalandı.', description: 'Gönderi bağlantısı panoya kopyalandı.' });
+            } else {
+                toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Tarayıcınız paylaşımı desteklemiyor.' });
+            }
+        } catch (error) {
+            console.error('Share failed:', error);
+            const err = error as { message?: string };
+            toast({ variant: 'destructive', title: 'Paylaşım başarısız.', description: err?.message });
+        } finally {
+            setBusyAction(null);
+        }
     };
 
     const handleSaveEdit = async (id: string) => {
@@ -418,12 +490,30 @@ export default function PostsPage() {
               )}
             </CardContent>
              <CardFooter className="gap-2 border-t pt-4">
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                    <Heart className="mr-2 h-4 w-4" />
-                    {post.likes} Beğeni
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => handleToggleLike(post.id)}
+                    disabled={busyAction?.postId === post.id && busyAction.kind === 'like'}
+                    aria-label="Beğen"
+                >
+                    {busyAction?.postId === post.id && busyAction.kind === 'like'
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : <Heart className="mr-2 h-4 w-4" />}
+                    {post.likes ?? 0} Beğeni
                 </Button>
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
-                    <Share2 className="mr-2 h-4 w-4" />
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => handleSharePost(post.id, post.content)}
+                    disabled={busyAction?.postId === post.id && busyAction.kind === 'share'}
+                    aria-label="Paylaş"
+                >
+                    {busyAction?.postId === post.id && busyAction.kind === 'share'
+                      ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      : <Share2 className="mr-2 h-4 w-4" />}
                     Paylaş
                 </Button>
                 {editingPostId !== post.id && (

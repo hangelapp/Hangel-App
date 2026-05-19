@@ -72,6 +72,15 @@ service firebase.storage {
       allow write: if request.auth != null && request.auth.uid == userId || isSuperAdmin();
     }
 
+    // PDF-16: NGO impact-story görselleri — public NGO profil sayfasında görüntülenir.
+    // Yazma: super-admin, NGO doc owner (request.auth.uid == ngoId), veya managedNgoId fallback.
+    match /impact-stories/{ngoId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSuperAdmin() ||
+        (request.auth != null && request.auth.uid == ngoId) ||
+        isManagedEntity('Ngo', ngoId);
+    }
+
     // Varsayılan: kimliği doğrulanmış kullanıcı okuyabilir, sadece super-admin yazabilir
     match /{allPaths=**} {
       allow read: if request.auth != null;

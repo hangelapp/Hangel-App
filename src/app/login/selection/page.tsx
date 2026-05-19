@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from 'lucide-react';
@@ -8,17 +8,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { IndividualForm } from './_components/IndividualForm';
 import { CorporateForm } from './_components/CorporateForm';
+import { useUser } from '@/firebase';
 
 // P2-6c: God-page (1174 LoC) refactored into _components/.
 // page.tsx is now a thin router. Auth-critical flows (handleCheckEmail,
 // signInWithEmailAndPassword, createUserWithEmailAndPassword, initiateEmailVerification,
 // applications submit) live verbatim inside IndividualForm / CorporateForm.
 
+// Safe-redirect helper: only allow same-origin relative paths via ?next=…
+// Prevents open-redirect to arbitrary external URLs.
+const resolveNext = (raw: string | null): string => {
+    if (!raw) return '/market';
+    // Must start with single "/" and not be protocol-relative ("//host").
+    if (!raw.startsWith('/') || raw.startsWith('//')) return '/market';
+    return raw;
+};
+
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { user, isUserLoading } = useUser();
     const tab = searchParams.get('tab') || 'individual';
     const entity = searchParams.get('entity') || 'NGO';
+    const nextPath = resolveNext(searchParams.get('next'));
+
+    // PDF-3: Authenticated user re-visiting /login/selection should land
+    // directly on /market (or ?next=… if provided). Wait for auth resolution
+    // to avoid flicker on first paint.
+    useEffect(() => {
+        if (!isUserLoading && user) {
+            router.replace(nextPath);
+        }
+    }, [isUserLoading, user, nextPath, router]);
 
     return (
         <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">
@@ -35,7 +56,7 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => router.push('/market')} />
+                                <IndividualForm onComplete={() => router.push(nextPath)} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={entity} />

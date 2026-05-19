@@ -15,7 +15,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft, Loader2, Send, User as UserIcon } from 'lucide-react';
+import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield, ArrowLeft, Loader2, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
@@ -36,10 +36,6 @@ interface UserRecord {
     id: string; displayName?: string; fullName?: string; name?: string;
     email?: string; phoneNumber?: string; photoURL?: string; avatarUrl?: string;
     bio?: string; personalInfo?: { phone?: string; bio?: string };
-}
-interface ProfileViewData {
-    id?: string; name: string; avatarUrl?: string; email?: string;
-    phone?: string; bio?: string; senderType?: string;
 }
 
 export default function MessagesPage() {
@@ -65,10 +61,6 @@ export default function MessagesPage() {
     const [content, setContent] = useState('');
     const [sending, setSending] = useState(false);
 
-    // Profil İncele Dialog state
-    const [profileOpen, setProfileOpen] = useState(false);
-    const [profileData, setProfileData] = useState<ProfileViewData | null>(null);
-
     // Tüm kullanıcılar — client-side filtre (mevcut surveys/users pattern)
     const usersRef = useMemoFirebase(
         () => composeOpen ? collection(db, COLLECTIONS.users) : null,
@@ -78,7 +70,6 @@ export default function MessagesPage() {
 
     interface MessageItem {
         id?: string; sender?: string; senderId?: string; senderAvatarUrl?: string;
-        senderEmail?: string; senderPhone?: string; senderBio?: string;
         subject?: string; excerpt?: string; content?: string; time?: string;
         senderType?: string; unread?: boolean;
         readBy?: Record<string, unknown>;
@@ -146,9 +137,16 @@ export default function MessagesPage() {
     };
 
     const openProfileFromMessage = (msg: MessageItem) => {
-        setProfileData({ id: msg.senderId, name: msg.sender || 'Kullanıcı', avatarUrl: msg.senderAvatarUrl, email: msg.senderEmail, phone: msg.senderPhone, bio: msg.senderBio, senderType: msg.senderType });
-        setProfileOpen(true);
         void markAsRead(msg);
+        if (!msg.senderId) {
+            toast({
+                variant: 'destructive',
+                title: t('dashboard.messages.profileTitle'),
+                description: t('dashboard.messages.profileUnavailable'),
+            });
+            return;
+        }
+        router.push(`/profile/${msg.senderId}`);
     };
 
     const isUnread = (msg: MessageItem): boolean => {
@@ -309,37 +307,6 @@ export default function MessagesPage() {
                 </DialogContent>
             </Dialog>
 
-            {/* Profil İncele Dialog */}
-            <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-                <DialogContent className="sm:max-w-sm">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary" /> {t('dashboard.messages.profileTitle')}</DialogTitle>
-                        <DialogDescription>{t('dashboard.messages.profileDesc')}</DialogDescription>
-                    </DialogHeader>
-                    {profileData && (
-                        <Card>
-                            <CardContent className="p-4 flex flex-col items-center text-center gap-3">
-                                <Avatar className="h-20 w-20 border">
-                                    {profileData.avatarUrl ? <AvatarImage src={profileData.avatarUrl} /> : null}
-                                    <AvatarFallback className="text-2xl">{profileData.name[0]}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex items-center gap-2">
-                                    <p className="font-bold text-lg">{profileData.name}</p>
-                                    {profileData.senderType && (
-                                        <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[profileData.senderType] || null}</div>
-                                    )}
-                                </div>
-                                {profileData.email ? <p className="text-sm text-muted-foreground">{profileData.email}</p> : null}
-                                {profileData.phone ? <p className="text-sm text-muted-foreground">{profileData.phone}</p> : null}
-                                {profileData.bio ? <p className="text-xs leading-relaxed pt-2 border-t w-full">{profileData.bio}</p> : null}
-                            </CardContent>
-                        </Card>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" className="w-full" onClick={() => setProfileOpen(false)}>{t('dashboard.messages.close')}</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

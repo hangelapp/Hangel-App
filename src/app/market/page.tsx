@@ -103,6 +103,14 @@ export default function MarketPage() {
 
     let list = Array.from(uniqueMap.values());
 
+    // Hide brands whose donation rate is outside a meaningful range
+    // (PDF audit #3: bazı markalar %0 / %100 gösteriyor). Anything <1 or >100
+    // is treated as missing/bogus and excluded from the public list.
+    list = list.filter(b => {
+      const rate = Number(b.donationRate);
+      return Number.isFinite(rate) && rate >= 1 && rate <= 100;
+    });
+
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase();
       list = list.filter(b => b.name.toLowerCase().includes(lower));

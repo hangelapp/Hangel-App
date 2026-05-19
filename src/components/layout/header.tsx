@@ -64,7 +64,12 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                     </SelectContent>
                 </Select>
             </div>
-            <Button asChild variant="ghost" size="icon" aria-label={t('a11y.emergency')}><Link href="/emergency"><Siren className="h-5 w-5 text-destructive" /></Link></Button>
+            {/* PDF-5: Anon kullanıcı acil iconuna basınca tanıtım sayfasına; auth'lu kullanıcı /emergency'ye gider. */}
+            <Button asChild variant="ghost" size="icon" aria-label={t('a11y.emergency')}>
+              <Link href={user ? '/emergency' : '/emergency/about'}>
+                <Siren className="h-5 w-5 text-destructive" />
+              </Link>
+            </Button>
 
             {/* Bildirim ikonu — sadece giriş yapmış kullanıcılar görür */}
             {user && (

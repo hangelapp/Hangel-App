@@ -122,8 +122,8 @@ function verifySignature(rawBody: string, signatureHeader: string | null, secret
   return timingSafeStringEqual(incoming, expected);
 }
 
-export async function POST(req: Request, { params }: { params: { brandId: string } }) {
-  const { brandId } = params;
+export async function POST(req: Request, { params }: { params: Promise<{ brandId: string }> }) {
+  const { brandId } = await params;
   if (!brandId) {
     return errorResponse(400, 'INVALID_BODY', 'brandId path param is required');
   }
@@ -222,24 +222,108 @@ export async function POST(req: Request, { params }: { params: { brandId: string
     return errorResponse(500, 'INTERNAL_ERROR', 'failed to record confirmation');
   }
 
-  // Increment user impactScore inside a transaction so we can roll back the
-  // confirmation doc if the user write blows up. We don't fail the request if
-  // the userId is missing / unresolved — just skip the impact bump and let an
-  // operator reconcile via referralCode later.
+  // Resolve brand display data once, used by both the donation row (so the
+  // /my-donations UI can render brand name without a join) and the
+  // notification body.
+  let brandName: string | null = null;
+  let brandSlug: string | null = null;
+  let brandLogoUrl: string | null = null;
+  let brandDonationRate = 0;
+  try {
+    const brandSnap = await db.collection(COLLECTIONS.brands).doc(brandId).get();
+    const data = brandSnap.data() as
+      | { name?: string; slug?: string; logoUrl?: string; donationRate?: number }
+      | undefined;
+    if (data) {
+      brandName = typeof data.name === 'string' ? data.name : null;
+      brandSlug = typeof data.slug === 'string' ? data.slug : null;
+      brandLogoUrl = typeof data.logoUrl === 'string' ? data.logoUrl : null;
+      brandDonationRate = typeof data.donationRate === 'number' ? data.donationRate : 0;
+    }
+  } catch (err) {
+    // Brand denormalization is best-effort — don't fail the webhook.
+    console.error('[affiliate webhook] brand metadata lookup failed', err);
+  }
+
+  // Now create the user-visible donation row + push a notification, and bump
+  // the user's impactScore. Wrap in a transaction so a downstream failure
+  // doesn't leave a half-written state. We don't fail the whole webhook on
+  // partial errors here (the idempotency anchor is already persisted) — an
+  // operator can backfill via the orderId.
   if (payload.userId) {
     const userRef = db.collection(COLLECTIONS.users).doc(payload.userId);
+    const donationRef = db.collection(COLLECTIONS.donations).doc();
+    const notificationRef = db.collection(COLLECTIONS.notifications).doc();
+    const nowDate = new Date(payload.completedAt * 1000);
+    const datePart = nowDate.toISOString().split('T')[0];
+    const timePart = nowDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     try {
       await db.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
-        if (!userSnap.exists) return; // skip — keep confirmation, no impact bump
-        tx.update(userRef, {
-          impactScore: FieldValue.increment(payload.commission),
-          updatedAt: FieldValue.serverTimestamp(),
+        // Donation row (mirrored from confirmation; idempotent because we
+        // only get here if affiliateConfirmations.create() succeeded — the
+        // .create() above guarantees one execution per orderId).
+        tx.create(donationRef, {
+          userId: payload.userId,
+          userName: userSnap.exists
+            ? ((userSnap.data() as { displayName?: string; email?: string } | undefined)?.displayName
+              ?? (userSnap.data() as { displayName?: string; email?: string } | undefined)?.email
+              ?? 'Kullanıcı')
+            : 'Kullanıcı',
+          userEmail: userSnap.exists
+            ? ((userSnap.data() as { email?: string } | undefined)?.email ?? null)
+            : null,
+          brand: brandName ?? brandId,
+          brandId,
+          brandName: brandName ?? brandId,
+          brandSlug: brandSlug ?? '',
+          brandLogoUrl: brandLogoUrl ?? '',
+          orderId: payload.orderId,
+          purchaseAmount: payload.amount.toFixed(2),
+          donationAmount: payload.commission.toFixed(2),
+          donationRate: brandDonationRate,
+          currency: payload.currency ?? 'TRY',
+          date: datePart,
+          time: timePart,
+          type: 'expense',
+          // PDF madde #2: işleme alındı (turuncu). Süper admin 72 gün sonra
+          // "Yatırıldı" (yeşil) yapacak.
+          status: 'İşleme Alındı',
+          ngo: ['Atanmamış'],
+          ngoIds: [],
+          createdAt: FieldValue.serverTimestamp(),
+          confirmationId: confId,
         });
+
+        // User-facing notification — only fires once per orderId because the
+        // surrounding affiliateConfirmations.create() is the dedup gate.
+        tx.create(notificationRef, {
+          userId: payload.userId,
+          type: 'donation',
+          title: 'Bağışınız işleme alınmıştır',
+          body: `${brandName ?? 'Marka'} alışverişinizden ${payload.commission.toFixed(2)} ₺ bağış işleme alındı.`,
+          data: {
+            brandId,
+            brandName: brandName ?? brandId,
+            orderId: payload.orderId,
+            donationId: donationRef.id,
+          },
+          read: false,
+          createdAt: FieldValue.serverTimestamp(),
+          createdBy: 'affiliate-webhook',
+        });
+
+        // Impact bump — only if the user doc exists.
+        if (userSnap.exists) {
+          tx.update(userRef, {
+            impactScore: FieldValue.increment(payload.commission),
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+        }
       });
     } catch (err) {
       // Best-effort: keep the confirmation but report partial success.
-      console.error('[affiliate webhook] impactScore increment failed', err);
+      console.error('[affiliate webhook] donation/notification write failed', err);
     }
   }
 

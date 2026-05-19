@@ -13,19 +13,21 @@ const {
   confCreate,
   userGet,
   txUpdate,
+  txCreate,
   runTransaction,
 } = vi.hoisted(() => ({
   brandGet: vi.fn(),
   confCreate: vi.fn(),
   userGet: vi.fn(),
   txUpdate: vi.fn(),
+  txCreate: vi.fn(),
   runTransaction: vi.fn(),
 }));
 
 vi.mock('@/lib/firebase-admin', () => ({
   getAdminFirestore: () => ({
     collection: (name: string) => ({
-      doc: (_id: string) => {
+      doc: (id?: string) => {
         if (name === 'brands') {
           return { get: brandGet };
         }
@@ -35,6 +37,12 @@ vi.mock('@/lib/firebase-admin', () => ({
         if (name === 'users') {
           // user doc ref handed into the transaction
           return { __collection: 'users' };
+        }
+        if (name === 'donations') {
+          return { __collection: 'donations', id: id ?? 'donation-auto-id' };
+        }
+        if (name === 'notifications') {
+          return { __collection: 'notifications', id: id ?? 'notification-auto-id' };
         }
         return { get: vi.fn(), create: vi.fn(), update: vi.fn() };
       },
@@ -70,7 +78,7 @@ function makeRequest(body: string, headers: Record<string, string>): Request {
 
 async function callPost(req: Request) {
   const mod = await import('@/app/api/affiliate/webhook/[brandId]/route');
-  return mod.POST(req, { params: { brandId: BRAND_ID } });
+  return mod.POST(req, { params: Promise.resolve({ brandId: BRAND_ID }) });
 }
 
 describe('POST /api/affiliate/webhook/[brandId]', () => {
@@ -80,22 +88,33 @@ describe('POST /api/affiliate/webhook/[brandId]', () => {
     confCreate.mockReset();
     userGet.mockReset();
     txUpdate.mockReset();
+    txCreate.mockReset();
     runTransaction.mockReset();
     delete process.env.AFFILIATE_WEBHOOK_SECRET;
 
-    // Default: brand exists with its own affiliateSecret
+    // Default: brand exists with its own affiliateSecret + display metadata
     brandGet.mockResolvedValue({
       exists: true,
-      data: () => ({ affiliateSecret: SECRET }),
+      data: () => ({
+        affiliateSecret: SECRET,
+        name: 'Test Brand',
+        slug: 'test-brand',
+        logoUrl: 'https://example.com/logo.png',
+        donationRate: 5,
+      }),
     });
     // Default: idempotency create succeeds
     confCreate.mockResolvedValue(undefined);
     // Default: user found, transaction calls the callback with a tx that
-    // proxies get → userGet and update → txUpdate
+    // proxies get → userGet, update → txUpdate, create → txCreate
     runTransaction.mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
-        get: async () => ({ exists: true, data: () => ({}) }),
+        get: async () => ({
+          exists: true,
+          data: () => ({ displayName: 'Ali', email: 'ali@example.com' }),
+        }),
         update: txUpdate,
+        create: txCreate,
       };
       return fn(tx);
     });
@@ -190,5 +209,30 @@ describe('POST /api/affiliate/webhook/[brandId]', () => {
     expect(txUpdate).toHaveBeenCalledTimes(1);
     const updateArgs = txUpdate.mock.calls[0][1] as { impactScore: { __increment: number } };
     expect(updateArgs.impactScore).toEqual({ __increment: 25 });
+
+    // The same transaction also creates a donations row + notification
+    // (PDF #4-#6: only on confirmed sale, not on link-click).
+    expect(txCreate).toHaveBeenCalledTimes(2);
+    const donationCall = txCreate.mock.calls.find(c => (c[0] as { __collection?: string }).__collection === 'donations');
+    expect(donationCall).toBeDefined();
+    const donationPayload = donationCall![1] as {
+      status: string;
+      donationAmount: string;
+      brandId: string;
+      orderId: string;
+      type: string;
+    };
+    expect(donationPayload.status).toBe('İşleme Alındı');
+    expect(donationPayload.donationAmount).toBe('25.00');
+    expect(donationPayload.brandId).toBe(BRAND_ID);
+    expect(donationPayload.orderId).toBe('o4');
+    expect(donationPayload.type).toBe('expense');
+
+    const notifCall = txCreate.mock.calls.find(c => (c[0] as { __collection?: string }).__collection === 'notifications');
+    expect(notifCall).toBeDefined();
+    const notifPayload = notifCall![1] as { title: string; userId: string; type: string };
+    expect(notifPayload.title).toBe('Bağışınız işleme alınmıştır');
+    expect(notifPayload.userId).toBe('u4');
+    expect(notifPayload.type).toBe('donation');
   });
 });

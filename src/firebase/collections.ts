@@ -40,6 +40,8 @@ export const COLLECTIONS = {
 
   // Content / engagement
   posts: 'posts',
+  // Sub-collection under posts/{postId}/likes — doc id = uid. See Wave 2A rules.
+  postLikes: 'likes',
   events: 'events',
   // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
   // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.

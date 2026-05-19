@@ -41,25 +41,39 @@ service cloud.firestore {
     }
 
     // STK'lar, Markalar, Gönderiler, Gönüllülük, Etkinlikler ve Kütüphane - Giriş yapanlar okuyabilir ve listeleyebilir
+    // PDF-15: Bazı kayıtlarda adminUserId boş; kullanıcı users/{uid}.managedNgoId üzerinden
+    // eşleştiriliyor. managedNgoId fallback inline pattern (storage.rules ile uyumlu).
     match /ngos/{ngoId} {
       allow read, list: if true; // Public for marketplace
       // Herkes sadece viewCount alanını artırabilir (görüntülenme sayacı)
-      // VEYA: NGO admin (adminUserId match) kendi STK'sını tam günceller
+      // VEYA: NGO admin (adminUserId match VEYA managedNgoId fallback) kendi STK'sını tam günceller
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
-        || (isSignedIn() && resource.data.adminUserId == request.auth.uid);
+        || (isSignedIn() && (
+          resource.data.adminUserId == request.auth.uid
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+              && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == ngoId)
+        ));
     }
 
     match /brands/{brandId} {
       allow read, list: if true; // Public read access for marketplace
-      // Marka admin (adminUserId match) kendi markasını günceller
-      allow update: if isSignedIn() && resource.data.adminUserId == request.auth.uid;
+      // Marka admin (adminUserId match VEYA managedBrandId fallback) kendi markasını günceller
+      allow update: if isSignedIn() && (
+        resource.data.adminUserId == request.auth.uid
+        || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedBrandId == brandId)
+      );
     }
 
     // Öğrenci kulüpleri (public read, super-admin global write)
     match /clubs/{clubId} {
       allow read, list: if true;
-      // Owners (kulüp admin) kendi kulübünü güncelleyebilir
-      allow update: if isSignedIn() && resource.data.adminUserId == request.auth.uid;
+      // Owners (adminUserId match VEYA managedClubId fallback) kendi kulübünü güncelleyebilir
+      allow update: if isSignedIn() && (
+        resource.data.adminUserId == request.auth.uid
+        || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == clubId)
+      );
     }
 
     // Eski adlandırma — uyumluluk için (boşalsın diye)
@@ -73,6 +87,16 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
       // Only the author can edit or delete their own post (super-admin has global write)
       allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+
+      // PDF-7-likes-rule: per-user like subcollection (doc id = liker uid).
+      // Each like is one doc owned by the liker; counts are derived via aggregate.
+      // Public read so anon timeline scroll can see like counts; only the liker
+      // creates/deletes their own like; updates are forbidden (no mutable fields).
+      match /likes/{uid} {
+        allow read, list: if true;
+        allow create, delete: if isSignedIn() && request.auth.uid == uid;
+        allow update: if false;
+      }
     }
 
     match /volunteering/{oppId} {
@@ -97,10 +121,15 @@ service cloud.firestore {
         (request.resource.data.organizerId == request.auth.uid ||
          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == request.resource.data.organizerId));
-      // Sahibi kendi etkinliğini günceller (status DAHIL DEĞIL — super-admin onaylar)
-      allow update: if isSignedIn() && resource.data.organizerId == request.auth.uid &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']);
-      allow delete: if isSignedIn() && resource.data.organizerId == request.auth.uid;
+      // Sahibi kendi etkinliğini günceller (status DAHIL DEĞIL — super-admin onaylar).
+      // Super-admin tüm alanları (status dahil) günceller; spesifik match catch-all'ı override eder.
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && resource.data.organizerId == request.auth.uid &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status'])
+      );
+      allow delete: if isSuperAdmin() || (
+        isSignedIn() && resource.data.organizerId == request.auth.uid
+      );
 
       // FEAT-EVENT-RSVP — server-side write via /api/events/[id]/rsvp.
       // Client can read its own rsvp; super-admin reads all; writes go through Admin SDK.
@@ -155,6 +184,38 @@ service cloud.firestore {
     match /funds/{fundId} {
       allow read, list: if true;
       allow create, update, delete: if isSuperAdmin();
+    }
+
+    // PDF-17: Hibe başvuruları. NGO admin başvuru oluşturur, kendi başvurularını okur;
+    // super-admin tüm başvuruları görür ve karar verir (status alanını günceller).
+    // Veri şeması (src/app/ngo-admin/funds/page.tsx#handleApply):
+    //   { fundId, fundName, applicantId, applicantNgoId, status, createdAt, message }
+    match /fundApplications/{appId} {
+      allow read: if isSignedIn() && (
+        resource.data.applicantId == request.auth.uid
+        || isSuperAdmin()
+        || (resource.data.applicantNgoId is string
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.applicantNgoId)
+      );
+      // List sadece super-admin için açık (NGO scope per-applicant queries client tarafında applicantId == auth.uid ile filtrelenir).
+      allow list: if isSuperAdmin() || (
+        isSignedIn() && request.query.limit <= 100
+      );
+      // Create: kullanıcı kendi adına başvurur, applicantId kendi UID'i olmalı.
+      allow create: if isSignedIn()
+        && request.resource.data.applicantId == request.auth.uid
+        && request.resource.data.keys().hasAll(['applicantId', 'fundId', 'status', 'createdAt'])
+        && request.resource.data.status == 'Beklemede';
+      // Update: başvuru sahibi sadece kendi 'Beklemede'/'draft' başvurusunu düzenleyebilir;
+      // status değişimi super-admin yetkisidir.
+      allow update: if isSuperAdmin() || (
+        isSignedIn()
+        && resource.data.applicantId == request.auth.uid
+        && resource.data.status in ['Beklemede', 'draft']
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'applicantId', 'fundId', 'createdAt'])
+      );
+      allow delete: if isSuperAdmin();
     }
 
     // Site ayarları (anasayfa/about/dernek içerikleri — super-admin yönetir, herkes okur)

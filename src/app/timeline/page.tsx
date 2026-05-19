@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
 import { Heart, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import {
   Carousel,
@@ -22,7 +22,15 @@ import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Progress } from '@/components/ui/progress';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  getCountFromServer,
+  serverTimestamp,
+} from 'firebase/firestore';
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -76,6 +84,10 @@ export default function TimelinePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSanaOzelExpanded, setIsSanaOzelExpanded] = useState(false);
   const [pendingPostId, setPendingPostId] = useState<string | null>(null);
+  // Wave 2A: like state moved off the post doc into posts/{id}/likes/{uid}.
+  // We keep a per-post count + isLikedByMe cache, primed on mount via
+  // getCountFromServer + getDoc(likes/{uid}). Toggle is optimistic with rollback.
+  const [likeState, setLikeState] = useState<Record<string, { count: number; isLikedByMe: boolean }>>({});
 
   const handleLike = async (post: Post) => {
     if (!authUser?.uid) {
@@ -83,14 +95,27 @@ export default function TimelinePage() {
       return;
     }
     if (!db) return;
-    const likedBy = ((post as Post & { likedBy?: string[] }).likedBy) || [];
-    const isLiked = likedBy.includes(authUser.uid);
+    if (pendingPostId === post.id) return;
+    const current = likeState[post.id] ?? {
+      count: post.likedBy?.length ?? post.likes ?? 0,
+      isLikedByMe: !!(authUser.uid && post.likedBy?.includes(authUser.uid)),
+    };
+    const next = {
+      count: current.isLikedByMe ? Math.max(0, current.count - 1) : current.count + 1,
+      isLikedByMe: !current.isLikedByMe,
+    };
     setPendingPostId(post.id);
+    setLikeState(prev => ({ ...prev, [post.id]: next }));
     try {
-      await updateDoc(doc(db, COLLECTIONS.posts, post.id), {
-        likedBy: isLiked ? arrayRemove(authUser.uid) : arrayUnion(authUser.uid),
-      });
+      const likeRef = doc(db, COLLECTIONS.posts, post.id, COLLECTIONS.postLikes, authUser.uid);
+      if (current.isLikedByMe) {
+        await deleteDoc(likeRef);
+      } else {
+        await setDoc(likeRef, { createdAt: serverTimestamp() });
+      }
     } catch {
+      // rollback
+      setLikeState(prev => ({ ...prev, [post.id]: current }));
       toast({ title: 'Beğeni kaydedilemedi', variant: 'destructive' });
     } finally {
       setPendingPostId(null);
@@ -98,7 +123,10 @@ export default function TimelinePage() {
   };
 
   const handleShare = async (post: Post) => {
-    const url = `https://hangel.org.tr/posts/${post.id}`;
+    // TODO(permalink): replace once /posts/[id] permalink view ships.
+    // For now we deep-link back to the timeline anchor for this card.
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
+    const url = `${origin}/timeline#post-${post.id}`;
     const shareData = { title: post.author?.name || 'Hangel', text: post.content?.slice(0, 120) || '', url };
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
@@ -119,6 +147,40 @@ export default function TimelinePage() {
 
   const postsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.posts), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
+
+  // Prime likeState once per (postsData, authUser) using one-shot reads.
+  // Avoids N+1 listeners; counts refresh only on mount + optimistic toggle.
+  useEffect(() => {
+    if (!db || !postsData || postsData.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const uid = authUser?.uid;
+      const entries = await Promise.all(
+        postsData.map(async (post) => {
+          try {
+            const likesCol = collection(db, COLLECTIONS.posts, post.id, COLLECTIONS.postLikes);
+            const [countSnap, mineSnap] = await Promise.all([
+              getCountFromServer(likesCol),
+              uid ? getDoc(doc(db, COLLECTIONS.posts, post.id, COLLECTIONS.postLikes, uid)) : Promise.resolve(null),
+            ]);
+            const count = countSnap.data().count;
+            const isLikedByMe = !!(mineSnap && mineSnap.exists());
+            return [post.id, { count, isLikedByMe }] as const;
+          } catch {
+            // fall back to legacy fields without throwing
+            const fallbackCount = post.likedBy?.length ?? post.likes ?? 0;
+            const fallbackMine = !!(uid && post.likedBy?.includes(uid));
+            return [post.id, { count: fallbackCount, isLikedByMe: fallbackMine }] as const;
+          }
+        }),
+      );
+      if (cancelled) return;
+      setLikeState(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [db, postsData, authUser?.uid]);
 
   const sortedAndFilteredPosts = useMemo(() => {
     if (!postsData) return [];
@@ -274,12 +336,14 @@ export default function TimelinePage() {
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
                     ) : sortedAndFilteredPosts.map((post, index) => {
-                    const likedBy = ((post as Post & { likedBy?: string[] }).likedBy) || [];
-                    const isLiked = !!(authUser?.uid && likedBy.includes(authUser.uid));
-                    const likeCount = likedBy.length > 0 ? likedBy.length : (post.likes || 0);
+                    const cached = likeState[post.id];
+                    const fallbackCount = post.likedBy?.length ?? post.likes ?? 0;
+                    const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
+                    const isLiked = cached ? cached.isLikedByMe : fallbackMine;
+                    const likeCount = cached ? cached.count : fallbackCount;
                     return (
                     <React.Fragment key={post.id}>
-                        <Card className="overflow-hidden shadow-none rounded-xl">
+                        <Card id={`post-${post.id}`} className="overflow-hidden shadow-none rounded-xl scroll-mt-24">
                             <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">
                                 <Link href={getEntityLink(post.author.name)} className="flex items-center gap-3">
                                     <Avatar>

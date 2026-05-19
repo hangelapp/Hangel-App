@@ -145,8 +145,11 @@ export default function FundsPage() {
             });
         } catch (e) {
             console.error('Fund application failed:', e);
-            const message = e instanceof Error ? e.message : 'Başvuru gönderilemedi.';
-            toast({ variant: 'destructive', title: 'Hata', description: message });
+            const err = e as { code?: string; message?: string };
+            const description = err?.code === 'permission-denied'
+                ? 'Hibe başvuru kanalı şu anda kapalı. Hangel ekibi ile iletişime geçin veya resmi başvuru bağlantısını kullanın.'
+                : (err?.message || 'Başvuru gönderilemedi. Lütfen daha sonra tekrar deneyin.');
+            toast({ variant: 'destructive', title: 'Başvuru gönderilemedi', description });
         } finally {
             setApplyingId(null);
         }

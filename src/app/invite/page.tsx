@@ -58,11 +58,45 @@ interface WebContact {
     tel?: string[] | string;
 }
 
+type ContactsPermissionState = 'granted' | 'denied' | 'prompt' | 'prompt-with-rationale' | 'limited';
+
+class ContactsPermissionDeniedError extends Error {
+    constructor(message = 'Rehber izni reddedildi.') {
+        super(message);
+        this.name = 'ContactsPermissionDeniedError';
+    }
+}
+
 async function getCapacitorContacts(): Promise<PhoneContact[]> {
-    const mod = (await import('@capacitor-community/contacts')) as unknown as {
-        Contacts: { getContacts: (opts: unknown) => Promise<{ contacts: CapacitorContact[] }> };
+    let mod: {
+        Contacts: {
+            getContacts: (opts: unknown) => Promise<{ contacts: CapacitorContact[] }>;
+            checkPermissions?: () => Promise<{ contacts: ContactsPermissionState }>;
+            requestPermissions?: () => Promise<{ contacts: ContactsPermissionState }>;
+        };
     };
+    try {
+        mod = (await import('@capacitor-community/contacts')) as unknown as typeof mod;
+    } catch (err) {
+        console.error('Contacts plugin import failed:', err);
+        throw new Error('Rehber eklentisi yüklenemedi.', { cause: err });
+    }
+
     const { Contacts } = mod;
+
+    // İzni iste — kullanıcı reddederse net hata fırlat
+    if (typeof Contacts.requestPermissions === 'function') {
+        try {
+            const status = await Contacts.requestPermissions();
+            if (status.contacts !== 'granted' && status.contacts !== 'limited') {
+                throw new ContactsPermissionDeniedError();
+            }
+        } catch (err) {
+            if (err instanceof ContactsPermissionDeniedError) throw err;
+            console.error('Contacts permission request failed:', err);
+            throw new ContactsPermissionDeniedError('Rehber izni alınamadı.');
+        }
+    }
 
     const { contacts } = await Contacts.getContacts({
         projection: {
@@ -287,11 +321,14 @@ export default function InvitePage() {
                 try {
                     contacts = await getCapacitorContacts();
                 } catch (err) {
+                    const isPermDenied = err instanceof Error && err.name === 'ContactsPermissionDeniedError';
                     console.error('Capacitor contacts failed:', err);
                     toast({
                         variant: 'destructive',
-                        title: 'Rehbere erişilemedi',
-                        description: 'Uygulama ayarlarından rehber iznini etkinleştirin.',
+                        title: isPermDenied ? 'Rehber izni gerekli' : 'Rehbere erişilemedi',
+                        description: isPermDenied
+                            ? 'Uygulama ayarlarından hangel için rehber iznini açın ve tekrar deneyin.'
+                            : 'Beklenmeyen bir hata oluştu. Daha sonra tekrar deneyin.',
                     });
                     return;
                 }

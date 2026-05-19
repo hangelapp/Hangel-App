@@ -332,12 +332,15 @@ function StoryViewer() {
             toast({ title: 'Kapak güncellendi', description: 'Etki hikayeniz için yeni kapak yüklendi.' });
         } catch (err) {
             console.warn('Storage upload failed, falling back to Base64:', err);
+            const sErr = err as { code?: string };
             // 2) Base64 fallback (max 500KB)
             if (file.size > 500 * 1024) {
                 toast({
                     variant: 'destructive',
-                    title: 'Storage erişilemez ve dosya çok büyük',
-                    description: 'Storage yüklemesi başarısız. Base64 için maksimum 500KB önerilir, dosyayı küçültün.',
+                    title: 'Görsel yüklenemedi',
+                    description: sErr?.code === 'storage/unauthorized'
+                        ? 'Kapak yükleme izniniz yok ve dosya 500KB üzerinde. Lütfen dosyayı küçültün veya Hangel ekibi ile iletişime geçin.'
+                        : 'Storage yüklemesi başarısız. Maksimum 500KB önerilir, dosyayı küçültün.',
                 });
                 setUploading(false);
                 return;
@@ -507,15 +510,15 @@ function StoryViewer() {
                                         )}
                                         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white" />
                                     </div>
-                                    <div className="p-8 md:p-12 text-foreground bg-white border-t border-black/5 relative z-10">
+                                    <div className="p-6 md:p-10 text-foreground bg-white border-t border-black/5 relative z-10 overflow-y-auto">
                                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                                             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
                                                 <Icon className="h-7 w-7" />
                                             </div>
-                                            <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-[0.95] mb-4">
+                                            <h2 className="text-2xl md:text-4xl font-black tracking-tighter leading-[1.05] mb-4 break-words">
                                                 {slide.title}
                                             </h2>
-                                            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-sm">
+                                            <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium whitespace-pre-wrap break-words">
                                                 {slide.content}
                                             </p>
                                             {slide.stat && (

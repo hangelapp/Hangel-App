@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Search, ShieldAlert, Loader2 } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase, useAuth, initiatePasswordResetEmail } from '@/firebase';
-import { collection, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useAuth, useUser, initiatePasswordResetEmail } from '@/firebase';
+import { collection, doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { ProfileViewDialog } from './_components/profile-view-dialog';
 import { EditUserDialog } from './_components/edit-user-dialog';
@@ -22,6 +22,7 @@ import type { UserRow } from './_components/types';
 export default function UsersPage() {
   const db = useFirestore();
   const auth = useAuth();
+  const { user: currentUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
@@ -102,35 +103,53 @@ export default function UsersPage() {
     }
   };
 
+  // PDF-28 — Silme artık Admin SDK route'undan geçiyor: Firebase Auth hesabını
+  // siler/devre dışı bırakır, böylece kullanıcı tekrar giriş yapamaz. Eski
+  // `deleteDoc` akışı sadece Firestore dokümanını siliyordu; Auth aktif kalıyordu.
+  const callAdminUserRoute = async (uid: string, mode: 'disable' | 'delete') => {
+    if (!currentUser) {
+      throw new Error('Aktif oturum bulunamadı. Lütfen tekrar giriş yapın.');
+    }
+    const idToken = await currentUser.getIdToken();
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(uid)}/${mode}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) {
+      let payload: { errorCode?: string; message?: string } = {};
+      try { payload = await res.json(); } catch { /* ignore */ }
+      throw new Error(payload.message || `Sunucu hatası (${res.status}).`);
+    }
+    return res.json() as Promise<{ ok: boolean }>;
+  };
+
   const handleDelete = async (user: UserRow) => {
     try {
-      // Önce `disabled: true` flag'i yaz ki tekrar giriş engellensin,
-      // ardından Firestore dokümanını sil. (Auth hesabı manuel silinmelidir.)
-      try {
-        await updateDoc(doc(db, COLLECTIONS.users, user.id), {
-          disabled: true,
-          disabledAt: serverTimestamp(),
-        });
-      } catch (flagErr) {
-        console.warn('disabled flag yazılamadı:', flagErr);
-      }
-      await deleteDoc(doc(db, COLLECTIONS.users, user.id));
+      await callAdminUserRoute(user.id, 'delete');
       toast({
         variant: 'destructive',
         title: 'Kullanıcı Silindi',
-        description: `${user.name || 'Kullanıcı'} kaydı silindi ve disabled flag işlendi. Firebase Auth hesabı Console üzerinden ayrıca silinmelidir.`,
+        description: `${user.name || 'Kullanıcı'} hem Firebase Auth hem Firestore üzerinden silindi. Tekrar giriş yapamaz.`,
       });
     } catch (e) {
-      console.error('Delete failed:', e);
-      const code = (e as { code?: string } | null)?.code;
       const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({ variant: 'destructive', title: 'Silme başarısız', description: message });
+    }
+  };
+
+  const handleDisable = async (user: UserRow) => {
+    try {
+      await callAdminUserRoute(user.id, 'disable');
       toast({
-        variant: 'destructive',
-        title: 'Silme başarısız',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
+        title: 'Kullanıcı Devre Dışı',
+        description: `${user.name || 'Kullanıcı'} hesabı Firebase Auth üzerinden devre dışı bırakıldı (signin engellendi).`,
       });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({ variant: 'destructive', title: 'Devre dışı bırakma başarısız', description: message });
     }
   };
 
@@ -148,9 +167,11 @@ export default function UsersPage() {
     setBulkDeleting(true);
     let deleted = 0;
     let failed = 0;
+    // PDF-28 — bulk delete de Admin SDK route'undan geçer; aksi halde Auth hesabı
+    // ayakta kalıyordu ve kullanıcılar tekrar giriş yapabiliyordu.
     for (const u of matchingByEmail) {
       try {
-        await deleteDoc(doc(db, COLLECTIONS.users, u.id));
+        await callAdminUserRoute(u.id, 'delete');
         deleted++;
       } catch (e) {
         console.error(`Bulk delete failed for ${u.id}:`, e);
@@ -162,7 +183,7 @@ export default function UsersPage() {
     toast({
       variant: failed > 0 ? 'destructive' : 'default',
       title: 'Toplu silme tamamlandı',
-      description: `${deleted} kayıt silindi${failed > 0 ? `, ${failed} hata` : ''}. Firebase Auth hesapları ayrıca silinmelidir.`,
+      description: `${deleted} kayıt silindi${failed > 0 ? `, ${failed} hata` : ''}. Auth hesapları da kapatıldı.`,
     });
   };
 

@@ -13,13 +13,30 @@ const cleanBrandName = (name: string): string => {
     .trim();
 };
 
-const parseRate = (rate: unknown): number => {
-  if (!rate) return 5;
-  if (typeof rate === 'number') return Math.round(rate);
-  const cleaned = String(rate).replace('%', '').replace(',', '.').trim();
-  const parsed = parseFloat(cleaned);
-  return isNaN(parsed) ? 5 : Math.round(parsed);
+// Parses a percentage payout. Returns null when the input cannot be
+// interpreted as a meaningful percentage (so we can fall back to a sane
+// platform default instead of leaking 0% or 100% to the UI).
+const parseRate = (rate: unknown): number | null => {
+  if (rate === null || rate === undefined || rate === '') return null;
+  let parsed: number;
+  if (typeof rate === 'number') {
+    parsed = rate;
+  } else {
+    const cleaned = String(rate).replace('%', '').replace(',', '.').trim();
+    parsed = parseFloat(cleaned);
+  }
+  if (!Number.isFinite(parsed)) return null;
+  // Affiliate networks sometimes report fractional payouts (0.05) instead of
+  // percent (5). Normalize to a percent value.
+  if (parsed > 0 && parsed < 1) parsed = parsed * 100;
+  // Drop nonsensical values: 0% and >100% are both bogus for display.
+  if (parsed <= 0 || parsed > 100) return null;
+  return Math.round(parsed);
 };
+
+// Default donation rate when an offer reports CPA / flat-fee / missing
+// percentage. Hangel platform commitment is at least 2%.
+const DEFAULT_DONATION_RATE = 2;
 
 const getDomainFromUrl = (urlString: string, fallback: string): string => {
   try {
@@ -137,10 +154,13 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
         if (firstCat?.name) category = firstCat.name;
       }
 
+      // Only `percent_payout` is a real percentage. `default_payout` is a
+      // flat currency amount on CPA offers and must NOT be coerced into a %.
       const rawRate = offer.payout_type === 'cpa_percentage'
         ? offer.percent_payout
-        : (offer.default_payout && parseFloat(offer.default_payout) > 0 ? offer.default_payout : offer.percent_payout);
-      const rate = parseRate(rawRate);
+        : offer.percent_payout;
+      const parsedRate = parseRate(rawRate);
+      const rate = parsedRate ?? DEFAULT_DONATION_RATE;
       const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${config.idPrefix}-${offer.id}`;
 
       allBrands.push({

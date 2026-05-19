@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, Filter, type LucideIcon } from 'lucide-react';
+import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, Filter, School, BookOpen, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,7 +47,7 @@ export default function ClubsPage() {
   const db = useFirestore();
   const { user: authUser } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
-  const [locationFilter, setLocationFilter] = useState<'global' | 'country' | 'city'>('global');
+  const [locationFilter, setLocationFilter] = useState<'global' | 'country' | 'city' | 'school' | 'university' | 'highSchool'>('global');
   const [sortMode, setSortMode] = useState<'name' | 'members' | 'clubCount'>('clubCount');
   const [expandedUniversity, setExpandedUniversity] = useState<string | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -83,19 +83,38 @@ export default function ClubsPage() {
 
   // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
   const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null), [db, authUser?.uid]);
-  const { data: userData } = useDoc<{ personalInfo?: { address?: { country?: string; city?: string } } }>(userDocRef);
+  const { data: userData } = useDoc<{
+    personalInfo?: { address?: { country?: string; city?: string } };
+    volunteerInfo?: { education?: { level?: string; school?: string }[] };
+  }>(userDocRef);
   const userCountry = userData?.personalInfo?.address?.country || '';
   const userCity = userData?.personalInfo?.address?.city || '';
+  const userSchools = useMemo(
+    () => (userData?.volunteerInfo?.education || [])
+      .map(e => (e?.school || '').trim())
+      .filter((s): s is string => s.length > 0),
+    [userData?.volunteerInfo?.education],
+  );
 
   const filteredClubs = useMemo(() => {
     if (!clubs) return [];
     let result = [...clubs];
 
-    // Konum filtresi: club.location.country / club.location.city
+    // Konum / okul filtresi
     if (locationFilter === 'country' && userCountry) {
       result = result.filter(c => (c as ClubWithMeta).location?.country === userCountry);
     } else if (locationFilter === 'city' && userCity) {
       result = result.filter(c => (c as ClubWithMeta).location?.city === userCity);
+    } else if (locationFilter === 'school' && userSchools.length > 0) {
+      const lowered = userSchools.map(s => s.toLowerCase());
+      result = result.filter(c => {
+        const uni = (c.university || '').toLowerCase();
+        return lowered.some(s => s === uni || (s.length > 2 && uni.includes(s)));
+      });
+    } else if (locationFilter === 'university') {
+      result = result.filter(c => c.type === 'university');
+    } else if (locationFilter === 'highSchool') {
+      result = result.filter(c => c.type === 'high-school');
     }
 
     // Yetkinlik filtresi (multi-select, AND mantığı)
@@ -124,7 +143,7 @@ export default function ClubsPage() {
       );
     }
     return result;
-  }, [clubs, searchTerm, locationFilter, userCountry, userCity, selectedSkills, selectedInterests]);
+  }, [clubs, searchTerm, locationFilter, userCountry, userCity, userSchools, selectedSkills, selectedInterests]);
 
   // Üniversiteye göre grupla
   const universitiesGrouped = useMemo(() => {
@@ -150,10 +169,18 @@ export default function ClubsPage() {
     return list;
   }, [filteredClubs, sortMode]);
 
-  const locationTabs: { value: 'global' | 'country' | 'city'; label: string; icon: LucideIcon; sublabel?: string }[] = [
+  const userSchoolSublabel = userSchools[0]
+    ? userSchools.length > 1
+      ? `${userSchools[0].slice(0, 14)}…`
+      : userSchools[0]
+    : undefined;
+  const locationTabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[] = [
     { value: 'global', label: 'Global', icon: Globe },
     { value: 'country', label: 'Ülkemde', icon: MapPin, sublabel: userCountry || undefined },
     { value: 'city', label: 'Şehrimde', icon: MapPin, sublabel: userCity || undefined },
+    { value: 'school', label: 'Okulumda', icon: School, sublabel: userSchoolSublabel },
+    { value: 'university', label: 'Üniversite', icon: GraduationCap },
+    { value: 'highSchool', label: 'Lise', icon: BookOpen },
   ];
 
   return (
@@ -240,16 +267,16 @@ export default function ClubsPage() {
         </DropdownMenu>
       </div>
 
-      {/* Konum tabları: Global / Ülkemde / Şehrimde */}
-      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as 'global' | 'country' | 'city')}>
-        <TabsList className="grid w-full grid-cols-3 p-1 h-12 rounded-2xl bg-muted/50">
+      {/* Konum tabları: Global / Ülkemde / Şehrimde / Okulumda / Üniversite / Lise */}
+      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as typeof locationFilter)}>
+        <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-6 gap-1 p-1 h-12 rounded-2xl bg-muted/50">
           {locationTabs.map(t => {
             const Icon = t.icon;
             return (
               <TabsTrigger
                 key={t.value}
                 value={t.value}
-                className="rounded-[1rem] h-full text-sm font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
+                className="shrink-0 sm:shrink rounded-[1rem] h-full px-3 sm:px-1 text-xs sm:text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
               >
                 <span className="flex items-center gap-1.5">
                   <Icon className="h-3.5 w-3.5" /> {t.label}
@@ -276,9 +303,14 @@ export default function ClubsPage() {
           Şehir bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
         </div>
       )}
-      {!authUser && locationFilter !== 'global' && (
+      {locationFilter === 'school' && authUser && userSchools.length === 0 && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-          Konum bazlı filtre için giriş yapmanız gerekir.
+          Okul bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+        </div>
+      )}
+      {!authUser && (locationFilter === 'country' || locationFilter === 'city' || locationFilter === 'school') && (
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          Konum/okul bazlı filtre için giriş yapmanız gerekir.
         </div>
       )}
 

@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { mapFirestoreSnapshotError } from '@/firebase/firestore/error-mapping';
 
 /** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
@@ -85,24 +86,26 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      (_error: FirestoreError) => {
+      (rawError: FirestoreError) => {
         // This logic extracts the path from either a ref or a query
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'
             ? (memoizedTargetRefOrQuery as CollectionReference).path
             : (memoizedTargetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString()
 
-        const contextualError = new FirestorePermissionError({
-          operation: 'list',
-          path,
-        })
+        // PDF-6-error-mask: only rewrap `permission-denied` as the contextual
+        // FirestorePermissionError. Other codes (failed-precondition, unavailable,
+        // unauthenticated, ...) keep their original code + message so the UI can
+        // show the real cause instead of a misleading "permission" copy.
+        const mapped = mapFirestoreSnapshotError({ rawError, operation: 'list', path });
 
-        setError(contextualError)
+        setError(mapped.error)
         setData(null)
         setIsLoading(false)
 
-        // trigger global error propagation
-        errorEmitter.emit('permission-error', contextualError);
+        if (mapped.shouldEmitPermissionError && mapped.error instanceof FirestorePermissionError) {
+          errorEmitter.emit('permission-error', mapped.error);
+        }
       }
     );
 

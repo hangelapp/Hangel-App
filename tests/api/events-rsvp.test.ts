@@ -105,7 +105,7 @@ describe('POST /api/events/[id]/rsvp', () => {
       headers,
       body: JSON.stringify(opts.body),
     });
-    return mod.POST(req, { params: { id: opts.eventId ?? 'evt1' } });
+    return mod.POST(req, { params: Promise.resolve({ id: opts.eventId ?? 'evt1' }) });
   }
 
   it('returns 401 when authorization header is missing', async () => {

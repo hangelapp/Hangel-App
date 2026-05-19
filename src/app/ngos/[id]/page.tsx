@@ -17,7 +17,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { doc, updateDoc, increment, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -115,7 +115,11 @@ export default function NgoProfilePage() {
     if (!db || !authUser) return null;
     return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser]);
-  const { data: userData } = useDoc<{ supportedNgos?: string[]; volunteerNgos?: string[] }>(userDocRef);
+  const { data: userData } = useDoc<{
+    supportedNgos?: string[];
+    volunteerNgos?: string[];
+    lastNgoSelectionChange?: { toDate?: () => Date; seconds?: number; nanoseconds?: number } | null;
+  }>(userDocRef);
 
   const isSupporter = Array.isArray(userData?.supportedNgos) && userData!.supportedNgos!.includes(id);
   const isVolunteer = Array.isArray(userData?.volunteerNgos) && userData!.volunteerNgos!.includes(id);
@@ -131,6 +135,34 @@ export default function NgoProfilePage() {
       return;
     }
     if (donorBusy) return;
+
+    // 30-day lock check (only when adding)
+    const isAdding = !isSupporter;
+    if (isAdding && userData?.lastNgoSelectionChange) {
+      const raw = userData.lastNgoSelectionChange;
+      const lastDate = typeof raw?.toDate === 'function'
+        ? raw.toDate()
+        : typeof raw?.seconds === 'number'
+          ? new Date(raw.seconds * 1000)
+          : null;
+      if (lastDate) {
+        const daysElapsed = Math.floor((Date.now() - lastDate.getTime()) / (24 * 60 * 60 * 1000));
+        const remainingDays = Math.max(0, 30 - daysElapsed);
+        const currentCount = userData?.supportedNgos?.length ?? 0;
+        if (currentCount >= 2 && remainingDays > 0) {
+          toast({
+            title: `${remainingDays} gün sonra bağış yapacağınız STK'yı değiştirebilirsiniz`,
+            variant: 'destructive',
+          });
+          return;
+        }
+        if (currentCount >= 2 && remainingDays === 0) {
+          router.push('/settings/ngo-selection');
+          return;
+        }
+      }
+    }
+
     setDonorBusy(true);
     try {
       if (isSupporter) {
@@ -146,7 +178,10 @@ export default function NgoProfilePage() {
           });
           return;
         }
-        await updateDoc(userDocRef, { supportedNgos: arrayUnion(id) });
+        const willReachCap = current.length + 1 === 2;
+        const payload: Record<string, unknown> = { supportedNgos: arrayUnion(id) };
+        if (willReachCap) payload.lastNgoSelectionChange = serverTimestamp();
+        await updateDoc(userDocRef, payload);
         toast({ title: 'Bağışçı oldun', description: `Artık ${ngo?.name} bağışçılarındansın. Teşekkürler!` });
       }
     } catch (e) {

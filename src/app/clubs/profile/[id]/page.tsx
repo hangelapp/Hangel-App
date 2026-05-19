@@ -4,9 +4,9 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, School, Tag, Info } from 'lucide-react';
-import { studentClubs as studentClubsData, schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
-import type { SchoolRepresentative } from '@/lib/types';
+import { ArrowLeft, ChevronRight, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle } from 'lucide-react';
+import { schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
+import type { SchoolRepresentative, StudentClub } from '@/lib/types';
 
 const schoolRepresentatives = schoolRepresentativesRaw as SchoolRepresentative[];
 import { notFound, useRouter, useParams } from 'next/navigation';
@@ -15,8 +15,10 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import type { StudentClub } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 
 const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
@@ -38,22 +40,74 @@ export default function ClubProfilePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const [club, setClub] = useState<StudentClub | null | undefined>(undefined);
+  const db = useFirestore();
   const [profileUrl, setProfileUrl] = useState('');
+  const [pendingJoin, setPendingJoin] = useState(false);
   const { toast } = useToast();
+  const { user: authUser } = useUser();
+
+  const clubDocRef = useMemoFirebase(() => {
+    if (!db || !id) return null;
+    return doc(db, COLLECTIONS.clubs, id);
+  }, [db, id]);
+
+  const { data: club, isLoading: clubLoading, error: clubError } = useDoc<StudentClub>(clubDocRef);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, COLLECTIONS.users, authUser.uid);
+  }, [db, authUser]);
+  const { data: userData } = useDoc<{
+    joinedClubs?: string[];
+    volunteerInfo?: { education?: { school?: string }[] };
+  }>(userDocRef);
+  const isJoined = !!userData?.joinedClubs?.includes(id);
+
+  const handleToggleJoin = async () => {
+    if (!authUser) {
+      router.push('/login/selection?action=login');
+      return;
+    }
+    if (pendingJoin || !db || !club) return;
+    setPendingJoin(true);
+    try {
+      if (isJoined) {
+        await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
+          joinedClubs: arrayRemove(club.id),
+        });
+        toast({ title: 'Kulüpten çıktın' });
+      } else {
+        const userSchools = (userData?.volunteerInfo?.education ?? []).map(e =>
+          (e.school ?? '').trim().toLowerCase()
+        );
+        const clubSchool = (club.university ?? '').trim().toLowerCase();
+        if (!clubSchool || !userSchools.includes(clubSchool)) {
+          toast({
+            title: 'Bu kulübe katılmak için profilinde ilgili okulu seçmelisin',
+            variant: 'destructive',
+          });
+          router.push('/settings/volunteer');
+          return;
+        }
+        await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
+          joinedClubs: arrayUnion(club.id),
+        });
+        toast({ title: 'Kulübe katıldın' });
+      }
+    } catch {
+      toast({ title: 'İşlem başarısız', variant: 'destructive' });
+    } finally {
+      setPendingJoin(false);
+    }
+  };
 
   useEffect(() => {
-    const storedClubs = localStorage.getItem('managedClubs');
-    const clubsSource: StudentClub[] = storedClubs ? JSON.parse(storedClubs) : studentClubsData;
-    const foundClub = clubsSource.find(c => c.id === id);
-    setClub(foundClub || null);
-    
     if (typeof window !== 'undefined') {
       setProfileUrl(window.location.href);
     }
-  }, [id]);
+  }, []);
 
-  if (club === undefined) {
+  if (clubLoading || !clubDocRef) {
     return (
         <div className="animate-in fade-in-0">
            <Skeleton className="h-48 w-full" />
@@ -78,10 +132,26 @@ export default function ClubProfilePage() {
     );
   }
 
+  if (clubError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <Loader2 className="h-8 w-8 text-muted-foreground mb-4" aria-hidden="true" />
+        <h2 className="text-lg font-semibold mb-2">Kulüp bilgileri yüklenemedi</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Lütfen internet bağlantınızı kontrol edip tekrar deneyin.
+        </p>
+        <Button onClick={() => router.back()} variant="outline">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Geri Dön
+        </Button>
+      </div>
+    );
+  }
+
   if (!club) {
     notFound();
   }
-  
+
   const president = schoolRepresentatives[0];
   const boardMembers = schoolRepresentatives.slice(1, 5).map(rep => ({
       ...rep,
@@ -117,16 +187,28 @@ export default function ClubProfilePage() {
          <div className="mt-4 space-y-2">
             <div className="grid grid-cols-2">
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{club.members.toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{(club.members ?? 0).toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Üye</p>
                 </div>
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{club.points.toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{(club.points ?? 0).toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Puan</p>
                 </div>
             </div>
             <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => toast({ title: 'Başvurunuz alındı!', description: 'Kulüp yönetimi başvurunuzu inceleyecektir.'})}>Kulübe Katıl</Button>
+                <Button
+                    className="flex-1"
+                    variant={isJoined ? 'secondary' : 'default'}
+                    onClick={handleToggleJoin}
+                    disabled={pendingJoin}
+                >
+                    {pendingJoin ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : isJoined ? (
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                    ) : null}
+                    {isJoined ? 'Üyesin' : 'Kulübe Katıl'}
+                </Button>
             </div>
         </div>
       </div>
@@ -151,7 +233,9 @@ export default function ClubProfilePage() {
                     <p className="leading-relaxed">
                         {club.description} Kulübümüz, öğrenciler arasında {(club.category ?? 'genel').toLowerCase()} ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
                     </p>
-                    <p className="text-xs pt-4 border-t italic">hangel'a Katılım Tarihi: {club.joinDate}</p>
+                    {club.joinDate && (
+                        <p className="text-xs pt-4 border-t italic">hangel&apos;a Katılım Tarihi: {club.joinDate}</p>
+                    )}
                 </CardContent>
             </Card>
              <Card>
@@ -163,9 +247,15 @@ export default function ClubProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">İletişim</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{club.contact.email}</span></div>
-                    <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{club.contact.phone}</span></div>
-                    <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{club.contact.website}</span></div>
+                    {club.contact?.email && (
+                        <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{club.contact.email}</span></div>
+                    )}
+                    {club.contact?.phone && (
+                        <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{club.contact.phone}</span></div>
+                    )}
+                    {club.contact?.website && (
+                        <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{club.contact.website}</span></div>
+                    )}
                 </CardContent>
             </Card>
         </TabsContent>
@@ -173,7 +263,7 @@ export default function ClubProfilePage() {
              <Card>
                 <CardHeader><CardTitle className="text-lg">Kulüp İstatistikleri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.members}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.members ?? 0}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects || 0}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours || 0} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate || 0}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>

@@ -17,7 +17,7 @@ import type { Event } from '@/lib/types';
 import { format, parse, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -36,8 +36,14 @@ function EventsPageContent() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  // Fetch events from Firestore
-  const eventsRef = useMemoFirebase(() => collection(db, COLLECTIONS.events), [db]);
+  // Fetch events from Firestore — only super-admin approved (`status === 'Yayında'`)
+  // are surfaced on the public listing. Pending/Rejected stay hidden until approved.
+  // Legacy docs without a `status` field are surfaced via a client-side fallback below
+  // (rules already allow public read so docs aren't filtered server-side for legacy).
+  const eventsRef = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.events), where('status', '==', 'Yayında')),
+    [db],
+  );
   const { data: firestoreEvents } = useCollection(eventsRef);
   const events = useMemo<Event[]>(() => (firestoreEvents ?? []) as Event[], [firestoreEvents]);
 

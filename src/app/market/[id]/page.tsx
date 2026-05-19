@@ -14,8 +14,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { openExternalUrl } from '@/lib/capacitor';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -75,10 +75,38 @@ export default function BrandProfilePage() {
   const [brand, setBrand] = useState<Brand | null | undefined>(undefined);
   const [profileUrl, setProfileUrl] = useState('');
   const [isDonating, setIsDonating] = useState(false);
+  const [pendingFollow, setPendingFollow] = useState(false);
 
   // Firestore brands
   const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
   const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
+
+  // User followed brands
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, COLLECTIONS.users, authUser.uid);
+  }, [db, authUser]);
+  const { data: userDoc } = useDoc<{ followedBrands?: string[] }>(userDocRef);
+  const isFollowing = !!(brand && userDoc?.followedBrands?.includes(brand.id));
+
+  const handleToggleFollow = async () => {
+    if (!authUser) {
+      router.push('/login/selection?action=login');
+      return;
+    }
+    if (pendingFollow || !db || !brand) return;
+    setPendingFollow(true);
+    try {
+      await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
+        followedBrands: isFollowing ? arrayRemove(brand.id) : arrayUnion(brand.id),
+      });
+      toast({ title: isFollowing ? 'Takipten çıkıldı' : 'Takip edildi' });
+    } catch {
+      toast({ title: 'İşlem başarısız', variant: 'destructive' });
+    } finally {
+      setPendingFollow(false);
+    }
+  };
 
   // API brands
   const [apiBrands, setApiBrands] = useState<Brand[] | undefined>(undefined);
@@ -136,57 +164,17 @@ export default function BrandProfilePage() {
     }
 
     setIsDonating(true);
-    // 1) Bağış kaydı oluştur — sadece "Başlatıldı" olarak işaretle.
-    //    Asıl "İşleme Alındı" geçişi, affiliate webhook'u alışverişi
-    //    doğruladıktan sonra (henüz uygulanmadı) yapılmalı.
-    // TODO(affiliate-webhook): Marka tarafından alışveriş doğrulandığında
-    //    bu kaydın status'ünü 'İşleme Alındı' (turuncu) yapacak ve
-    //    "Bağışınız işleme alınmıştır" bildirimini gönderecek bir webhook
-    //    handler'ı ekle (örn. /api/webhooks/affiliate). 72 gün sonrası için
-    //    clearableAt mantığı orada güncellenecek.
-    addDocumentNonBlocking(collection(db, COLLECTIONS.donations), {
-        userId: authUser.uid,
-        userName: authUser.displayName || authUser.email || 'Kullanıcı',
-        userEmail: authUser.email || null,
-        brand: brand.name,
-        brandId: brand.id,
-        brandName: brand.name,
-        brandSlug: brand.slug || '',
-        brandLogoUrl: brand.logoUrl || '',
-        purchaseAmount: '0.00',
-        donationAmount: '0.00',
-        donationRate: brand.donationRate || 0,
-        date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-        type: 'expense',
-        // Henüz alışveriş tamamlanmadı — webhook gelene kadar "Başlatıldı".
-        status: 'Başlatıldı',
-        ngo: ["Varsayılan STK'nız"],
-        ngoIds: [],
-        createdAt: serverTimestamp(),
-        // clearableAt webhook geldiğinde hesaplanacak; şimdilik boş.
-    });
-
-    // 2) Kullanıcıya yönlendirme bildirimi — yanıltıcı "işleme alındı" YOK.
-    //    Asıl "Bağışınız işleme alınmıştır" bildirimi affiliate webhook
-    //    tetiklendikten sonra gönderilmeli.
-    addDocumentNonBlocking(collection(db, COLLECTIONS.notifications), {
-        userId: authUser.uid,
-        type: 'donation',
-        title: 'Marka sitesi açıldı',
-        body: `${brand.name} sitesi açıldı. Alışverişin tamamlandıktan sonra bağışın işleme alınacak.`,
-        data: { brandId: brand.id, brandName: brand.name },
-        read: false,
-        createdAt: serverTimestamp(),
-        createdBy: authUser.uid,
-    });
-
+    // Bağış kaydı VE bildirim, marka affiliate webhook'u alışverişi onayladıktan
+    // sonra `POST /api/affiliate/webhook/[brandId]` tarafından oluşturulur.
+    // Buradan donations/notifications koleksiyonuna yazmıyoruz — aksi takdirde
+    // kullanıcı sadece linke tıklayıp alışveriş yapmadan "bağış işleme alındı"
+    // bildirimi görür ki bu yanıltıcıdır (PDF madde #4, #6).
     // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
     openExternalUrl(brand.link);
 
     toast({
         title: 'Mağazaya Yönlendirildi',
-        description: `${brand.name} sitesi açıldı. Alışverişini tamamladıktan sonra bağışın işleme alınacak.`,
+        description: `${brand.name} sitesi açıldı. Alışverişini tamamladığında bağışın işleme alınacaktır.`,
     });
 
     setTimeout(() => setIsDonating(false), 1500);
@@ -249,15 +237,29 @@ export default function BrandProfilePage() {
             </div>
             
             <div className="mt-8 space-y-4">
-                <div className="text-sm text-center text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-black/5">
-                    <span className="font-black text-[#1d1d1f]">{brand.followers?.toLocaleString('tr-TR') || '1.240'}</span> kişi bu markayı takip ederek toplumsal faydayı destekliyor.
-                </div>
+                {typeof brand.followers === 'number' && brand.followers > 0 && (
+                    <div className="text-sm text-center text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-black/5">
+                        <span className="font-black text-[#1d1d1f]">{brand.followers.toLocaleString('tr-TR')}</span> kişi bu markayı takip ederek toplumsal faydayı destekliyor.
+                    </div>
+                )}
                 <div className="flex gap-2">
                     <Button className="flex-1 h-12 rounded-2xl font-bold shadow-xl shadow-primary/20" onClick={handleStartShopping} disabled={isDonating}>
                         {isDonating ? <Loader2 className="animate-spin h-5 w-5" /> : <>Alışverişe Başla <ExternalLink className="ml-2 h-4 w-4" /></>}
                     </Button>
-                    <Button variant="outline" className="flex-1 h-12 rounded-2xl font-bold border-black/10 hover:bg-muted/50" onClick={() => toast({ title: "Takip Edildi", description: `${brand.name} artık favorilerinde.` })}>
-                        <Heart className="mr-2 h-4 w-4" /> Takip Et
+                    <Button
+                        variant={isFollowing ? 'default' : 'outline'}
+                        className="flex-1 h-12 rounded-2xl font-bold border-black/10 hover:bg-muted/50"
+                        onClick={handleToggleFollow}
+                        disabled={pendingFollow}
+                    >
+                        {pendingFollow ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : isFollowing ? (
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                        ) : (
+                            <Heart className="mr-2 h-4 w-4" />
+                        )}
+                        {isFollowing ? 'Takipte' : 'Takip Et'}
                     </Button>
                 </div>
             </div>
@@ -361,33 +363,45 @@ export default function BrandProfilePage() {
         </TabsContent>
 
         <TabsContent value="stats" className="p-4 space-y-6">
-             <div className="grid grid-cols-2 gap-4">
-                <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
-                    <Users className="h-6 w-6 mx-auto text-primary" />
-                    <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">{brand.followers?.toLocaleString('tr-TR') || '1.240'}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktif Destekçi</p>
-                </Card>
-                <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
-                    <TrendingUp className="h-6 w-6 mx-auto text-primary" />
-                    <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">%{brand.stats?.monthlyFollowerGrowth || '12.4'}</p>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aylık Büyüme</p>
-                </Card>
-             </div>
+             {(typeof brand.followers === 'number' && brand.followers > 0) || (brand.stats?.monthlyFollowerGrowth ?? 0) > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                    {typeof brand.followers === 'number' && brand.followers > 0 && (
+                        <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
+                            <Users className="h-6 w-6 mx-auto text-primary" />
+                            <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">{brand.followers.toLocaleString('tr-TR')}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aktif Destekçi</p>
+                        </Card>
+                    )}
+                    {(brand.stats?.monthlyFollowerGrowth ?? 0) > 0 && (
+                        <Card className="rounded-[1.5rem] border-none bg-[#f5f5f7] p-6 text-center space-y-2">
+                            <TrendingUp className="h-6 w-6 mx-auto text-primary" />
+                            <p className="text-2xl font-black tracking-tighter text-[#1d1d1f]">%{brand.stats?.monthlyFollowerGrowth}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aylık Büyüme</p>
+                        </Card>
+                    )}
+                </div>
+             ) : null}
 
-             <Card className="rounded-[2rem] shadow-sm border-black/5">
-                <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2 font-bold">
-                        <BarChart3 className="h-5 w-5 text-primary" /> Detaylı Performans Verileri
-                    </CardTitle>
-                </CardHeader>
-                 <CardContent className="divide-y border-t border-black/5">
-                    <StatRow label="Destekçi Sayısı (Tüm Zamanlar)" value={brand.stats?.supporters.toLocaleString('tr-TR')} />
-                    <StatRow label="Toplam Bağış Hacmi" value={brand.stats?.totalDonation ? `${brand.stats.totalDonation.toLocaleString('tr-TR')} ₺` : '125.400 ₺'} />
-                    <StatRow label="Profil Görüntülenme (Son 30 Gün)" value={brand.stats?.profileViews.toLocaleString('tr-TR') || '4.520'} />
-                    <StatRow label="Profil Paylaşımı (Son 30 Gün)" value={brand.stats?.profileShares.toLocaleString('tr-TR') || '845'} />
-                    <StatRow label="Yıllık Sosyal Etki Skoru" value="94 / 100" />
-                </CardContent>
-             </Card>
+             {brand.stats ? (
+                <Card className="rounded-[2rem] shadow-sm border-black/5">
+                    <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2 font-bold">
+                            <BarChart3 className="h-5 w-5 text-primary" /> Detaylı Performans Verileri
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="divide-y border-t border-black/5">
+                        <StatRow label="Destekçi Sayısı (Tüm Zamanlar)" value={brand.stats.supporters > 0 ? brand.stats.supporters.toLocaleString('tr-TR') : undefined} />
+                        <StatRow label="Toplam Bağış Hacmi" value={brand.stats.totalDonation > 0 ? `${brand.stats.totalDonation.toLocaleString('tr-TR')} ₺` : undefined} />
+                        <StatRow label="Profil Görüntülenme (Son 30 Gün)" value={brand.stats.profileViews > 0 ? brand.stats.profileViews.toLocaleString('tr-TR') : undefined} />
+                        <StatRow label="Profil Paylaşımı (Son 30 Gün)" value={brand.stats.profileShares > 0 ? brand.stats.profileShares.toLocaleString('tr-TR') : undefined} />
+                    </CardContent>
+                </Card>
+             ) : (
+                <div className="text-center text-muted-foreground py-16 bg-muted/10 rounded-2xl border-2 border-dashed">
+                    <BarChart3 className="h-10 w-10 mx-auto mb-4 opacity-20" />
+                    <p className="italic font-medium text-sm">Henüz performans verisi yayınlanmadı.</p>
+                </div>
+             )}
         </TabsContent>
 
         <TabsContent value="sustainability" className="p-4 space-y-4">

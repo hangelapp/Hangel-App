@@ -123,4 +123,32 @@ describe.skipIf(!emulatorUp)('firestore.rules — /ngos/{ngoId}', () => {
     const db = authedAs(env, 'root', { role: 'super-admin' });
     await assertSucceeds(deleteDoc(doc(db, 'ngos', 'ngo1')));
   });
+
+  // PDF-15: managedNgoId fallback — NGO admin without adminUserId can still update
+  // its own NGO via users/{uid}.managedNgoId === ngoId.
+  it('NGO admin via managedNgoId fallback CAN update their NGO', async () => {
+    const env = await getTestEnv();
+    await adminSeed(env, async (ctx) => {
+      await ctx.firestore().collection('users').doc('ngoadmin').set({
+        managedNgoId: 'ngo1',
+      });
+    });
+    const db = authedAs(env, 'ngoadmin');
+    await assertSucceeds(
+      updateDoc(doc(db, 'ngos', 'ngo1'), { name: 'Renamed by managed admin' }),
+    );
+  });
+
+  it('user with managedNgoId pointing to DIFFERENT NGO CANNOT update', async () => {
+    const env = await getTestEnv();
+    await adminSeed(env, async (ctx) => {
+      await ctx.firestore().collection('users').doc('otheradmin').set({
+        managedNgoId: 'ngo-other',
+      });
+    });
+    const db = authedAs(env, 'otheradmin');
+    await assertFails(
+      updateDoc(doc(db, 'ngos', 'ngo1'), { name: 'Hijacked' }),
+    );
+  });
 });

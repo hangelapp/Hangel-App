@@ -46,6 +46,12 @@ export type Post = {
   likes: number;
   comments: number;
   sponsored?: boolean;
+  /**
+   * Legacy: early posts stored likes as an array of uids on the post doc.
+   * Read-only fallback for count display; new writes go to the
+   * `posts/{postId}/likes/{uid}` sub-collection (see firestore.rules).
+   */
+  likedBy?: string[];
 };
 
 export type Brand = {

@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { mapFirestoreSnapshotError } from '@/firebase/firestore/error-mapping';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
@@ -69,17 +70,22 @@ export function useDoc<T = any>(
         setError(null);
         setResolvedPath(memoizedDocRef.path);
       },
-      (_error: FirestoreError) => {
-        const contextualError = new FirestorePermissionError({
+      (rawError: FirestoreError) => {
+        // PDF-6-error-mask: only rewrap `permission-denied` as the contextual
+        // FirestorePermissionError. Other codes keep their original code + message.
+        const mapped = mapFirestoreSnapshotError({
+          rawError,
           operation: 'get',
           path: memoizedDocRef.path,
-        })
+        });
 
-        setError(contextualError)
+        setError(mapped.error)
         setData(null)
         setResolvedPath(memoizedDocRef.path)
 
-        errorEmitter.emit('permission-error', contextualError);
+        if (mapped.shouldEmitPermissionError && mapped.error instanceof FirestorePermissionError) {
+          errorEmitter.emit('permission-error', mapped.error);
+        }
       }
     );
 
