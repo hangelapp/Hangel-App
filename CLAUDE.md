@@ -62,6 +62,28 @@ Bu maddeler için `docs/audit/runbooks/` altında copy-paste komut listesi tutul
 Hızlı gate (her edit sonrası): `npm run typecheck`
 Tam gate (görev tamamlandığında): `npm run typecheck && npm run lint && npm run test`
 Rules için: `npm run test:rules` (Firestore emulator açık olmalı)
+
+### ⚠️ Production build zorunlu gate (sessiz deploy kilitlenmesinden kaçınmak için)
+
+`npm run typecheck` PASS olsa bile `npm run build` (Next.js prod) **ek kontroller** koşar ve farklı sonuç verebilir. App Hosting build FAIL ettiğinde **production sessizce eski commit'te kalır** — kimse uyarmaz. Bu nedenle aşağıdaki değişiklikler `npm run build` ile **mutlaka** doğrulanmalı:
+
+- **Yeni dynamic route handler eklerken** (`src/app/api/**/[slug]/route.ts`) — Next.js 15 imzası:
+  ```ts
+  export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;  // ← her zaman await
+  }
+  ```
+  Eski Next 14 sentaksı (`{ params: { slug } }` sync) prod build'de TS error verir, local `tsc --noEmit` geçer.
+- **Type narrowing içeren generic component'ler** — `Foo<T> & { extra: string }` extension'ları prod TS pipeline'ında bazen resolve edilemez. Bracket access (`(obj as Record<string, ...>).field`) defansif fix.
+- **Server action / API route prop signatures** — Next.js her major'da bunları sıkılaştırıyor; tip eklerken `npm run build`.
+- **Yeni `'use client'` direktifi olan dosyalarda** import path'leri (server-only modülleri client'a sızdırma riski).
+
+Lead ajan checklist:
+1. Worker code edit → typecheck
+2. Worker tests yazıldı → test
+3. Tam gate **+ `npm run build`** (özellikle yukarıdaki kategorilerde değişiklik varsa)
+4. App Hosting build state'i izleme: `gcloud builds list --project=hangel-new-v18-87297865-9bcc3 --limit=3` veya `firebase apphosting:rollouts:create studio --git-branch=main --force` (deploy yetkili kullanıcı)
+
 Performans için: kullanıcı `npm run build` çalıştırır ve sonucu paylaşır
 
 ## Deploy

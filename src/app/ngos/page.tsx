@@ -40,8 +40,22 @@ export default function NgosPage() {
 
     const filteredNgos = useMemo(() => {
         if (!ngosData) return [];
-        // Pasif kuruluşları public listeden gizle
-        let filtered = ngosData.filter(ngo => (ngo as NGO & { status?: string }).status !== 'Pasif');
+        // Demo / seed temizliği (PDF audit #1):
+        //  - 'Pasif' statüsündeki kuruluşları gizle
+        //  - isDemo=true ile işaretlenmiş kuruluşları gizle (backfill: runbook)
+        //  - Adı "Demo"/"Test"/"Örnek" ile başlayan seed kayıtlarını gizle
+        //  - joinDate yok ve tüm istatistikler 0 ise placeholder kabul et
+        let filtered = ngosData.filter((raw) => {
+            const ngo = raw as NGO & { status?: string; isDemo?: boolean };
+            if (ngo.status === 'Pasif') return false;
+            if (ngo.isDemo === true) return false;
+            const nm = (ngo.name ?? '').trim().toLowerCase();
+            if (nm.startsWith('demo ') || nm.startsWith('test ') || nm.startsWith('örnek ') || nm.startsWith('ornek ')) return false;
+            const s = ngo.stats;
+            const allZero = !s || ((s.donors ?? 0) === 0 && (s.volunteers ?? 0) === 0 && (s.followers ?? 0) === 0 && (s.totalDonation ?? 0) === 0);
+            if (!ngo.joinDate && allZero) return false;
+            return true;
+        });
 
         if (typeFilter !== 'Tümü') {
             filtered = filtered.filter(ngo => ngo.type === typeFilter);
@@ -175,13 +189,34 @@ export default function NgosPage() {
                                         <p className="text-xs text-muted-foreground">{ngo.category}</p>
                                     </div>
                                 </div>
-                                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                                    <span className="flex items-center gap-1" title="Şeffaflık Puanı"><ShieldCheck className="h-3 w-3 text-primary" /> {ngo.transparencyScore ?? 0} Şeffaflık</span>
-                                    <Separator orientation="vertical" className="h-3" />
-                                    <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-rose-500" /> {ngo.stats?.donors || 0} Bağışçı</span>
-                                    <Separator orientation="vertical" className="h-3" />
-                                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {ngo.stats?.volunteers || 0} Gönüllü</span>
-                                </div>
+                                {(() => {
+                                    // PDF audit #1: tüm değerler 0 ise (demo / yeni kayıt) chip'leri gizle
+                                    const transparency = ngo.transparencyScore ?? 0;
+                                    const donors = ngo.stats?.donors ?? 0;
+                                    const volunteers = ngo.stats?.volunteers ?? 0;
+                                    if (transparency === 0 && donors === 0 && volunteers === 0) return null;
+                                    return (
+                                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                                            {transparency > 0 && (
+                                                <>
+                                                    <span className="flex items-center gap-1" title="Şeffaflık Puanı"><ShieldCheck className="h-3 w-3 text-primary" /> {transparency} Şeffaflık</span>
+                                                </>
+                                            )}
+                                            {donors > 0 && (
+                                                <>
+                                                    {transparency > 0 && <Separator orientation="vertical" className="h-3" />}
+                                                    <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-rose-500" /> {donors} Bağışçı</span>
+                                                </>
+                                            )}
+                                            {volunteers > 0 && (
+                                                <>
+                                                    {(transparency > 0 || donors > 0) && <Separator orientation="vertical" className="h-3" />}
+                                                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {volunteers} Gönüllü</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                                 {ngo.memberOf && ngo.memberOf.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1">
                                         <span className="text-[10px] text-muted-foreground self-center">Platformlar:</span>

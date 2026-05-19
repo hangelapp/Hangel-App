@@ -1388,3 +1388,28 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   3. Verified: `getUser(uid)` → `auth/user-not-found`
 - **Risk**: L — account never had any data attached; deletion does not affect İsmail's active access via `v7woPvqKAzSTSodVOJB702WJmJ93`.
 - **Result**: Super-admin surface reduced from 4 → 3 UIDs (no functional loss; just hygiene).
+
+---
+
+## 2026-05-19 — Lesson learned: silent App Hosting build failure (Wave 7 batch 2 dynamic routes)
+
+- **What happened**: Wave 7 batch 2 added `src/app/api/affiliate/webhook/[brandId]/route.ts` and `src/app/api/events/[id]/rsvp/route.ts` with the Next.js 14 sync params signature `{ params: { foo } }`. Local `npm run typecheck` PASSED. Production App Hosting build FAILED with TypeScript "invalid POST export" error. Production silently stayed on the last successful commit from 5 days earlier — none of P0-4b auth fix, P1-1 rate limiter, P1-2 webhook HMAC, FCM scaffold, analytics, RSVP, NGO campaign UI, or `firebase-admin.ts` ADC fallback reached prod. Only Firebase server-side state (rules deploy, custom claims, token revoke, Firestore TTL) was actually live.
+
+- **Symptom**: User reported "ismailhilmi@hangel.org ile giriş yapmıyor, kayıt ekranına atıyor". Root cause: `/api/auth/check-email` returned `500 ENOENT` (old `firebase-admin.ts` looking for the gitignored service-account JSON in the build artifact) → frontend `data.exists=undefined` → `else setStep('register')`.
+
+- **Second hidden issue surfaced**: After fixing Promise<params>, build failed again on `Property 'managedNgoId' does not exist on type 'UserRow'` in `super-admin/users/_components/assign-entity-dialog.tsx`. Local tsc resolved `User & { managedNgoId? }` correctly; prod TS pipeline did not. Worked around with `Record<string, ...>` bracket access.
+
+- **Permanent guardrails added**:
+  - `CLAUDE.md` "Test ve doğrulama" section now mandates `npm run build` when touching: dynamic route handlers, generic intersection types, new `'use client'` files with server-only imports, server-action/API-route prop signatures.
+  - `.claude/agents/hangel-surgical-coder.md` workflow step 5 added: run `npm run build` in the listed scenarios and report.
+  - `.claude/agents/hangel-code-auditor.md` check #9 added: flag CRITICAL if any high-build-risk change lacks an attached `npm run build` result.
+
+- **Operational pattern**: When in doubt about deploy state, run:
+  ```
+  curl -sS -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+    "https://firebaseapphosting.googleapis.com/v1beta/projects/hangel-new-v18-87297865-9bcc3/locations/us-central1/backends/studio/builds?pageSize=5" \
+    | python3 -c "import sys,json; d=json.load(sys.stdin); [print(b['name'].split('/')[-1],'|',b['state'],'|',b.get('source',{}).get('codebase',{}).get('commit','')[:8]) for b in sorted(d.get('builds',[]), key=lambda x: x.get('createTime',''), reverse=True)[:5]]"
+  ```
+  A `FAILED` state on the latest entry means production is frozen on the previous `READY` one.
+
+- **Recovery commits**: `cac4f071` (Promise<params> + ShieldX cleanup), `b2aba824` (UserRow bracket access). Final READY build: `build-2026-05-19-003` at 18:56 GMT.

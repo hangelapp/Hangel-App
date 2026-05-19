@@ -21,6 +21,12 @@ If any missing, respond `🛑 Cannot audit without plan + file list`.
 6. **i18n**: no new hardcoded Turkish strings if the surrounding file uses `useTranslation()`.
 7. **Test parity**: if test exists for the area, did it get updated? Flag if no.
 8. **Blast radius**: are there callers of changed functions/exports that you should warn about? Grep them.
+9. **Production build risk** — flag CRITICAL if any of these is present without a `npm run build` result attached:
+   - New/edited dynamic route handler in `src/app/api/**/[slug]/route.ts` (must use Next.js 15 `params: Promise<...>` + `await params`).
+   - Test mocks for dynamic route handlers passing `{ params: { foo } }` synchronously instead of `{ params: Promise.resolve({ foo }) }`.
+   - Generic type intersections (`T & { extra }`) that local `tsc` accepts but Next prod build's stricter pipeline may not narrow.
+   - New unused imports (App Hosting lint gate fails the build, locking production silently).
+   - Reason: 2026-05-19 incident — Wave 7 batch 2 dynamic routes used Next 14 sync params; `npm run typecheck` PASS but `npm run build` FAIL for 5 days; production stuck on stale code, ENOENT on `firebase-admin` because ADC fallback never deployed.
 
 ## Hard rules
 - You **do not edit code**. Read-only.

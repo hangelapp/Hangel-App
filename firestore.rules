@@ -149,6 +149,17 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin();
     }
 
+    // Wave 6A / PDF-72: AI Asistanı promptları/ayarları.
+    // /super-admin/ai-management/page.tsx setDoc(doc(db, 'aiAssistantConfig', kind), ...)
+    // ile yazıyor. Secret içermez (model adı + persona prompt'u), ancak yine de
+    // auth-gated tutuyoruz: yazma yalnız super-admin, okuma giriş yapan kullanıcı.
+    // Global allPaths write super-admin'i zaten kapsar; explicit blok defense-in-depth.
+    match /aiAssistantConfig/{kind} {
+      allow read: if isSignedIn();
+      allow list: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
     // Şeffaflık endeksi kriterleri (super-admin yönetir, herkes okur)
     match /transparencyCriteria/{criterionId} {
       allow read, list: if true;

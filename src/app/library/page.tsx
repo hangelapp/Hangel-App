@@ -681,6 +681,255 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
   );
 }
 
+// PDF #3: çok-adımlı proje yazma formu. Kullanıcı kurum + konu + hedef-kitle/bütçe/süre
+// girer; backend `/api/library/project` route'u `writeProjectProposal` flow'unu çağırır
+// (ProjectWriterInput.sections schema'sıyla birebir uyumlu: summary/goals/audience/...).
+function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const meta = ASSISTANT_META.project;
+  const { toast } = useToast();
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [institution, setInstitution] = useState<string>('');
+  const [summary, setSummary] = useState('');
+  const [goals, setGoals] = useState('');
+  const [audience, setAudience] = useState('');
+  const [budget, setBudget] = useState('');
+  const [activities, setActivities] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [proposal, setProposal] = useState<string | null>(null);
+
+  const reset = () => {
+    setStep(1);
+    setInstitution('');
+    setSummary('');
+    setGoals('');
+    setAudience('');
+    setBudget('');
+    setActivities('');
+    setProposal(null);
+  };
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(meta.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          institution,
+          sections: { summary, goals, audience, activities, budget },
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { fullProposal?: string; reply?: string };
+      const text = (data?.fullProposal ?? data?.reply ?? '').toString().trim();
+      if (!text) throw new Error('Empty proposal');
+      setProposal(text);
+      setStep(4);
+    } catch {
+      toast({
+        title: 'Proje Yazma servisi henüz hazır değil',
+        description: 'AI servisi yakında aktif olacak. Süper admin yapay zeka yönetiminden eğitildikten sonra cevap verecek.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const canAdvance =
+    (step === 1 && institution.length > 0) ||
+    (step === 2 && summary.trim().length >= 10) ||
+    (step === 3 && (goals.trim().length > 0 || audience.trim().length > 0 || budget.trim().length > 0));
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={o => {
+        onOpenChange(o);
+        if (!o) reset();
+      }}
+    >
+      <DialogContent className="rounded-3xl max-w-xl p-0 overflow-hidden">
+        <DialogHeader className="p-5 border-b">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${meta.accent}`}>
+              <Sparkles className="h-4 w-4" />
+            </span>
+            {meta.title}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            {step < 4
+              ? `Adım ${step} / 3 — ${
+                  step === 1
+                    ? 'Projeyi hangi kuruma sunacaksınız?'
+                    : step === 2
+                      ? 'Projenizi birkaç cümleyle anlatın.'
+                      : 'Hedef kitle, faaliyetler ve bütçe.'
+                }`
+              : 'Proje taslağınız hazır.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto bg-muted/20">
+          {step === 1 && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Hedef Kurum
+              </label>
+              <Select value={institution} onValueChange={setInstitution}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kurum seçin..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROJECT_INSTITUTIONS.map(inst => (
+                    <SelectItem key={inst} value={inst}>{inst}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[11px] text-muted-foreground">
+                Proje, seçtiğiniz kurumun talep ve esaslarına uygun şekilde yazılacaktır.
+              </p>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Proje Konusu / Özet
+              </label>
+              <textarea
+                value={summary}
+                onChange={e => setSummary(e.target.value)}
+                rows={6}
+                maxLength={2000}
+                className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Örnek: İstanbul'da liseli gençlere kodlama eğitimi vermek için 6 aylık atölye programı..."
+              />
+              <p className="text-[11px] text-muted-foreground text-right">{summary.length}/2000</p>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Hedefler (SMART)
+                </label>
+                <textarea
+                  value={goals}
+                  onChange={e => setGoals(e.target.value)}
+                  rows={3}
+                  maxLength={1500}
+                  className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Örnek: 100 lise öğrencisine Python eğitimi vermek, %70 mezuniyet oranına ulaşmak..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Hedef Kitle
+                </label>
+                <textarea
+                  value={audience}
+                  onChange={e => setAudience(e.target.value)}
+                  rows={2}
+                  maxLength={1000}
+                  className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Yaş, sosyo-ekonomik durum, bölge..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Faaliyet Planı
+                </label>
+                <textarea
+                  value={activities}
+                  onChange={e => setActivities(e.target.value)}
+                  rows={2}
+                  maxLength={1500}
+                  className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Atölyeler, mentorluk, etkinlikler, süre..."
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Bütçe Yaklaşımı
+                </label>
+                <textarea
+                  value={budget}
+                  onChange={e => setBudget(e.target.value)}
+                  rows={2}
+                  maxLength={1000}
+                  className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="Tahmini bütçe, ana kalemler (eğitmen, materyal, mekan)..."
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 4 && proposal && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">
+                Proje taslağı — kopyalayıp düzenleyebilirsiniz. Hedef kurum: <strong>{institution}</strong>
+              </p>
+              <textarea
+                readOnly
+                value={proposal}
+                rows={16}
+                className="w-full rounded-lg border bg-background p-3 text-sm font-mono"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="p-3 border-t bg-background flex items-center justify-between gap-2">
+          {step > 1 && step < 4 ? (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setStep(s => (s - 1) as 1 | 2 | 3)}>
+              Geri
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-2">
+            {step < 3 && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={!canAdvance}
+                onClick={() => setStep(s => (s + 1) as 2 | 3)}
+              >
+                İleri
+              </Button>
+            )}
+            {step === 3 && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={submitting || !canAdvance}
+                onClick={() => void handleSubmit()}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Hazırlanıyor...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" /> Projeyi Oluştur
+                  </>
+                )}
+              </Button>
+            )}
+            {step === 4 && (
+              <Button type="button" size="sm" variant="outline" onClick={reset}>
+                <Trash2 className="h-4 w-4 mr-2" /> Yeni Proje
+              </Button>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function LibraryAssistantsFab() {
   const [openLibrary, setOpenLibrary] = useState(false);
   const [openProject, setOpenProject] = useState(false);
@@ -708,7 +957,7 @@ function LibraryAssistantsFab() {
         </Button>
       </div>
       <AssistantDialog kind="library" open={openLibrary} onOpenChange={setOpenLibrary} />
-      <AssistantDialog kind="project" open={openProject} onOpenChange={setOpenProject} />
+      <ProjectWriterDialog open={openProject} onOpenChange={setOpenProject} />
     </>
   );
 }

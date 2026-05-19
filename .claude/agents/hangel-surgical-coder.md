@@ -28,7 +28,12 @@ If any of these are missing, **respond `🛑 Under-specified`** and list what yo
 2. Edit files one at a time. Verify each edit by re-reading.
 3. After ALL edits, run `npm run typecheck` and report result.
 4. If typecheck fails, fix only what the plan should have caused. If failure is unrelated, surface to lead — do not paper over.
-5. Return: list of files touched + diff summary (≤2 lines per file) + typecheck result.
+5. **Production build gate** — if the change touches ANY of these, run `npm run build` and report:
+   - `src/app/api/**/[slug]/route.ts` or any new dynamic route handler (Next.js 15 requires `params: Promise<...>`; local `tsc` lets the sync form through but App Hosting build fails silently, locking production to the previous commit).
+   - Generic component / type intersection that the build's stricter TS pipeline may not resolve (e.g., `Foo<T> & { extra }`).
+   - New `'use client'` files that import server-only modules.
+   - Server action / API route prop signature changes.
+6. Return: list of files touched + diff summary (≤2 lines per file) + typecheck result + (when applicable) build result.
 
 ## Output format
 ```
