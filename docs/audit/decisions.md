@@ -1048,3 +1048,19 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
   - `npm test` → 13 file PASS / 5 skip, 57 test PASS / 54 skip (baseline ile aynı).
 - **Risk**: L — pure structural extraction; no logic, hooks, validation, save, or callback contract changes. Rollback = single revert; no migration/data work.
 - **Notlar**: Pre-existing lint warnings on this file (out-of-scope per task brief) tracked under P2-5c follow-up. Hard rule "no logic changes" honored — diff is JSX motion + prop wiring only.
+
+---
+
+## 2026-05-18 — P2-5e: i18n marketing pages tail strings migration (long-tail)
+- **ID**: P2-5e
+- **Lead**: frontend-lead
+- **Plan**:
+  - 14 marketing sayfasında P2-5b'nin migrate etmediği tail string'leri tara: section başlıkları/alt başlıkları, in-section paragraflar, in-line CTA defaults (`Daha Fazla Bilgi`/`Hemen Başvur`), feature/grid kartları içindeki sabit title/description, FAQ accordion içerikleri, küçük data array'lerindeki label/description (örn. campus advantage cards, ngo onboarding `mainFeatures`, association `GridCards`, social-impact `ImpactSection` çağrı parametreleri, imece step/feature cards, info commercial label'lar, careers 2 section sub-blok, about feature cards + impact stats, accessibility section header + final CTA, support category links + featured sections + FAQ).
+  - HEAVY DATA SKIP: Logo/logo-usage `rules[]` (12 madde × 3-7 HTML içerik string'i, `<br/>` ve `<strong>` ile zengin formatlama), ngo-onboarding `toolsetFeatures[]` (22 araç × title+description), accessibility `SettingsItem` etiketleri (~30 toggle/select label/description ekseni). Bu üç array tek başına ~200+ string ekleyecek ve `marketing.*` namespace'i şişirecek; brief gereği "no layout/component restructure" kuralına saygıyla, ayrı bir P2-5f follow-up'a bırakıldı.
+  - Yeni key naming: `marketing.<page>.{tail-kategori}.{slug}` (örn. `marketing.about.values.sosyalFayda.title`, `marketing.imece.steps.profileCreate.title`, `marketing.campus.advantages.largeDijital.title`).
+  - TR/EN dolu; ru/fa/ar/zh/es 5 dil için ekleme yapılmadı — provider P2-5d boş-string-tolerant lookup zaten TR fallback'e düşürüyor.
+  - Sayfalar tek tek surgical Edit ile dokunulacak; CMS `useWebPage()`/`useAssociationContent()` ile beslenen alanlar (cms.title/subtitle/description/body/heroImageUrl) brief gereği değiştirilmedi — sadece fallback `t()` veya hardcoded literal'lar migrate edildi.
+- **Dosyalar**: 14 sayfa (about, press, careers, logo, logo-usage, support, merchant, campus-advantages, ngo-onboarding, hangelassociation, accessibility, social-impact, imece, bilgi-toplumu-hizmetleri) + `src/lib/translations.ts`.
+- **Risk**: L — TR+EN dolu, fallback TR. Yapısal değişiklik yok, sadece literal → `t('marketing.<page>.tail.<slug>')`.
+- **Test sonucu**: orchestrator gates pending.
+- **Rollback**: `git revert` veya `marketing.*` namespace tail key'lerin diff'i + 14 sayfa Edit'leri geri al.

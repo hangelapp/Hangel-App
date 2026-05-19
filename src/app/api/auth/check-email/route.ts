@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth } from '@/lib/firebase-admin';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 function isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// P1-1: Naive in-memory per-IP rate limiter.
-// NOT: Tek-instance process bellek bazlı. App Hosting çok-instance'a ölçeklenirse
-// Redis / Firestore tabanlı limiter'a göç edilmeli (bkz. follow-up P1-1b).
-// Single-instance Cloud Run / dev için yeterli; instance restart'ta sıfırlanır.
+// P1-1b: Distributed (Firestore-backed) per-IP rate limiter.
+// 5 istek/dk/IP, App Hosting `maxInstances` arasında paylaşımlı; cold-start
+// senaryosunda fail-open (bkz. `src/lib/rate-limit.ts`).
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 dk
 const RATE_LIMIT_MAX = 5; // dakikada 5 istek
-const ipBuckets: Map<string, { count: number; resetAt: number }> = new Map();
 
 function getClientIp(request: NextRequest): string {
     const xff = request.headers.get('x-forwarded-for');
@@ -25,20 +24,6 @@ function getClientIp(request: NextRequest): string {
     return 'unknown';
 }
 
-function rateLimit(ip: string): { allowed: boolean; retryAfterMs: number } {
-    const now = Date.now();
-    const bucket = ipBuckets.get(ip);
-    if (!bucket || bucket.resetAt <= now) {
-        ipBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-        return { allowed: true, retryAfterMs: 0 };
-    }
-    bucket.count += 1;
-    if (bucket.count > RATE_LIMIT_MAX) {
-        return { allowed: false, retryAfterMs: Math.max(0, bucket.resetAt - now) };
-    }
-    return { allowed: true, retryAfterMs: 0 };
-}
-
 // Sabit gecikme — timing-attack ile var/yok ayırt edilmesini zorlaştırır.
 const CONSTANT_DELAY_MS = 250;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -48,8 +33,14 @@ export async function POST(request: NextRequest) {
     const startedAt = Date.now();
 
     try {
-        const { allowed, retryAfterMs } = rateLimit(ip);
+        const { allowed, resetAt } = await checkRateLimit({
+            bucket: 'check-email',
+            key: ip,
+            limit: RATE_LIMIT_MAX,
+            windowMs: RATE_LIMIT_WINDOW_MS,
+        });
         if (!allowed) {
+            const retryAfterMs = Math.max(0, resetAt - Date.now());
             console.warn('check-email rate-limited', { ip, retryAfterMs });
             return NextResponse.json(
                 { errorCode: 'rate_limited', message: 'Çok fazla istek. Lütfen biraz bekleyin.' },

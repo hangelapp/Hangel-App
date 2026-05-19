@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network } from 'lucide-react';
@@ -61,7 +61,9 @@ export default function NgoSelectionPage() {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [isOnboarding, setIsOnboarding] = useState(false);
 
-    // 30 günlük değişim sayacı
+    // 30 günlük değişim sayacı — staleness aralığı saatler mertebesinde olduğu için
+    // Date.now()'u mount başında sabitleyip useMemo deps'i pure tutuyoruz.
+    const [nowMs] = useState(() => Date.now());
     const remainingDays = useMemo(() => {
         const raw = userData?.lastNgoSelectionChange;
         if (!raw) return 0;
@@ -70,10 +72,10 @@ export default function NgoSelectionPage() {
         else if (typeof (raw as { toDate?: () => Date }).toDate === 'function') last = (raw as { toDate: () => Date }).toDate();
         else if (typeof (raw as { seconds?: number }).seconds === 'number') last = new Date((raw as { seconds: number }).seconds * 1000);
         if (!last) return 0;
-        const diffMs = Date.now() - last.getTime();
+        const diffMs = nowMs - last.getTime();
         const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
         return Math.max(0, 30 - days);
-    }, [userData]);
+    }, [userData, nowMs]);
 
     const canChangeSelection = remainingDays === 0;
 
@@ -101,14 +103,14 @@ export default function NgoSelectionPage() {
         headquarters?: { city?: string; district?: string };
     };
 
-    const getNgoCity = (n: NGO): string | undefined => {
+    const getNgoCity = useCallback((n: NGO): string | undefined => {
         const ext = n as NgoWithLocation;
         return n.contact?.address?.city || ext.address?.city || ext.headquarters?.city;
-    };
+    }, []);
 
     const allCities = useMemo(
         () => Array.from(new Set(activeNgos.map(n => getNgoCity(n)).filter((c): c is string => !!c))).sort((a, b) => a.localeCompare(b, 'tr')),
-        [activeNgos]
+        [activeNgos, getNgoCity]
     );
 
     const allPlatforms = useMemo(
@@ -171,7 +173,7 @@ export default function NgoSelectionPage() {
         });
 
         return filtered;
-    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, cityFilter, platformFilter, beneficiaryFilter, selectedNgos]);
+    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, cityFilter, platformFilter, beneficiaryFilter, selectedNgos, getNgoCity]);
 
     const clearAllFilters = () => {
         setCategoryFilter([]);

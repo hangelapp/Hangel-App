@@ -406,9 +406,10 @@ export default function LoginPage() {
             const normalized = String(status).toLowerCase();
             return normalized === 'yayında' || normalized === 'yayinda' || normalized === 'aktif' || normalized === 'active';
         });
-        // Fisher-Yates karıştırma (her sayfa yüklemesinde farklı sıralama)
+        // Fisher-Yates karıştırma (her sayfa yüklemesinde farklı sıralama — kullanıcıya çeşitlilik göstermek için kasıtlı).
         const arr = [...active];
         for (let i = arr.length - 1; i > 0; i--) {
+            // eslint-disable-next-line react-hooks/purity -- intentional shuffle on mount/data-change
             const j = Math.floor(Math.random() * (i + 1));
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }

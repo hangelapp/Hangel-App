@@ -93,16 +93,17 @@ export default function VolunteerSettingsPage() {
     privacy: false,
   });
 
-  // Gönüllülük tarih aralığı & bildirimler
-  const [volunteerStartDate, setVolunteerStartDate] = useState('');
-  const [volunteerEndDate, setVolunteerEndDate] = useState('');
-  const [scheduleNotifications, setScheduleNotifications] = useState(false);
+  // Gönüllülük tarih aralığı & bildirimler — P2-6e refactor sonrası getter'lar UI'dan kaldı,
+  // hydration + handleSubmit yine yazıyor. Underscore prefix unused-var rule'unu susturuyor.
+  const [_volunteerStartDate, setVolunteerStartDate] = useState('');
+  const [_volunteerEndDate, setVolunteerEndDate] = useState('');
+  const [_scheduleNotifications, setScheduleNotifications] = useState(false);
 
   // Detaylı adres — Ülke / İl / İlçe / Mahalle (çoktan seçmeli)
   const [addrCountry, setAddrCountry] = useState('Türkiye');
   const [addrProvince, setAddrProvince] = useState('');
   const [addrDistrict, setAddrDistrict] = useState('');
-  const [addrNeighborhood, setAddrNeighborhood] = useState('');
+  const [_addrNeighborhood, setAddrNeighborhood] = useState('');
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;

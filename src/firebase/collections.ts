@@ -95,6 +95,9 @@ export const COLLECTIONS = {
   // Messaging — webhooks
   webhookReplayIds: 'webhookReplayIds',
 
+  // Infra — distributed rate limiter buckets (Admin SDK only; client rules deny)
+  rateLimits: 'rateLimits',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;

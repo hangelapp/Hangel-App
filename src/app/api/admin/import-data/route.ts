@@ -2,15 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
-// Basic in-memory rate limiter. NOTE: Per-instance only; does not survive cold
-// starts / scale-out. Acceptable placeholder for P0-3; tighter hardening tracked
-// under the P1-1 family.
+// P1-1b: Distributed (Firestore-backed) per-IP rate limiter — survives cold
+// starts and works across `maxInstances`. See `src/lib/rate-limit.ts`.
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(req: NextRequest): string {
   const fwd = req.headers.get('x-forwarded-for');
@@ -18,20 +17,6 @@ function getClientIp(req: NextRequest): string {
   const real = req.headers.get('x-real-ip');
   if (real) return real.trim();
   return 'unknown';
-}
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const bucket = rateBuckets.get(ip);
-  if (!bucket || bucket.resetAt <= now) {
-    rateBuckets.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-  if (bucket.count >= RATE_LIMIT_MAX) {
-    return true;
-  }
-  bucket.count += 1;
-  return false;
 }
 
 // Check admin authorization
@@ -48,7 +33,13 @@ function checkAuth(req: NextRequest): boolean {
 export async function POST(req: NextRequest) {
   try {
     const ip = getClientIp(req);
-    if (isRateLimited(ip)) {
+    const { allowed } = await checkRateLimit({
+      bucket: 'admin-import-data',
+      key: ip,
+      limit: RATE_LIMIT_MAX,
+      windowMs: RATE_LIMIT_WINDOW_MS,
+    });
+    if (!allowed) {
       return NextResponse.json(
         { errorCode: 'rate_limited', message: 'Çok fazla istek. Lütfen sonra tekrar deneyin.' },
         { status: 429 }

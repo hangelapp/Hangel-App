@@ -6,10 +6,31 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { getUserByEmail } = vi.hoisted(() => ({ getUserByEmail: vi.fn() }));
+const { getUserByEmail, rateBuckets } = vi.hoisted(() => ({
+  getUserByEmail: vi.fn(),
+  // In-test surrogate for the Firestore-backed limiter: per-`bucket__key` count.
+  rateBuckets: new Map<string, { count: number; resetAt: number }>(),
+}));
 
 vi.mock('@/lib/firebase-admin', () => ({
   getAdminAuth: () => ({ getUserByEmail }),
+}));
+
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: async (opts: { bucket: string; key: string; limit: number; windowMs: number }) => {
+    const id = `${opts.bucket}__${opts.key}`;
+    const now = Date.now();
+    const cur = rateBuckets.get(id);
+    if (!cur || cur.resetAt <= now) {
+      rateBuckets.set(id, { count: 1, resetAt: now + opts.windowMs });
+      return { allowed: true, remaining: opts.limit - 1, resetAt: now + opts.windowMs };
+    }
+    if (cur.count >= opts.limit) {
+      return { allowed: false, remaining: 0, resetAt: cur.resetAt };
+    }
+    cur.count += 1;
+    return { allowed: true, remaining: opts.limit - cur.count, resetAt: cur.resetAt };
+  },
 }));
 
 import { makeNextRequest } from './_setup';
@@ -18,6 +39,7 @@ describe('POST /api/auth/check-email', () => {
   beforeEach(() => {
     vi.resetModules();
     getUserByEmail.mockReset();
+    rateBuckets.clear();
   });
   afterEach(() => vi.useRealTimers());
 

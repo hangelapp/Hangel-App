@@ -20,6 +20,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // P1-1b: Dağıtık rate-limit kovaları — yalnızca Admin SDK yazar/okur
+    // (server-side route'lardan `checkRateLimit()` çağrısı). Client tarafı
+    // hiçbir erişim izni almaz; Admin SDK rules'ı bypass eder.
+    match /rateLimits/{bucketId} {
+      allow read, write: if false;
+    }
+
     // Kullanıcı koleksiyonu
     match /users/{userId} {
       allow read: if isSignedIn();

@@ -167,7 +167,7 @@ export default function SurveysPage() {
         });
 
         return list;
-    }, [ratingsData, ratingSearch, ratingSort]);
+    }, [ratingsData, ratingSearch, ratingSort, userMap]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const avgRating = useMemo(() => {
         if (!ratingsData || ratingsData.length === 0) return 0;
