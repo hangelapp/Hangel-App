@@ -16,11 +16,13 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type NgoType = NGO['type'] | 'Tümü';
 
 export default function VolunteerNgoSelectionPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -110,14 +112,14 @@ export default function VolunteerNgoSelectionPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Gönüllüsü Olduğun STK'ları Değiştir</h1>
-                <p className="text-muted-foreground text-sm">Gönüllülük fırsatlarını takip etmek istediğiniz kuruluşları seçin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsVolunteerNgo.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsVolunteerNgo.subheading')}</p>
             </div>
 
             <div className="flex gap-2 items-center">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="STK ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <Input placeholder={t('dashboard.settingsVolunteerNgo.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -203,7 +205,7 @@ export default function VolunteerNgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>{isOnboarding ? 'Devam Et' : 'Değişiklikleri Kaydet'}</Button>
+                <Button onClick={handleSave}>{isOnboarding ? 'Devam Et' : t('dashboard.settingsVolunteerNgo.saveBtn')}</Button>
             </div>
         </div>
     );

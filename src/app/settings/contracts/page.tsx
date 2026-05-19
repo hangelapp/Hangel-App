@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const contractGroups = [
     {
@@ -120,6 +121,7 @@ const contractGroups = [
 
 export default function ContractsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-white">
       <main className="p-4 space-y-6 animate-in fade-in-0">
@@ -127,8 +129,8 @@ export default function ContractsPage() {
               <ArrowLeft className="h-6 w-6" />
           </Button>
         <div>
-          <h1 className="text-2xl font-bold font-headline">Sözleşmeler, Politikalar ve Beyanlar</h1>
-          <p className="text-muted-foreground text-sm">hangel platformu kullanımına ilişkin kurumsal, yasal ve etik belgeler.</p>
+          <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsContracts.heading')}</h1>
+          <p className="text-muted-foreground text-sm">{t('dashboard.settingsContracts.subheading')}</p>
         </div>
 
         {contractGroups.map(group => (

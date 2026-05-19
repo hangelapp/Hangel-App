@@ -19,12 +19,13 @@ import type { DonationTransaction } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type SortKey = 'date' | 'purchaseAmount' | 'donationAmount';
 type SortDirection = 'desc' | 'asc';
 type FilterType = 'all' | 'income' | 'expense';
 
-const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: DonationTransaction | null, open: boolean, onOpenChange: (open: boolean) => void }) => {
+const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: DonationTransaction | null, open: boolean, onOpenChange: (open: boolean) => void, t: (key: string) => string }) => {
     const { toast } = useToast();
 
     if (!transaction) return null;
@@ -40,7 +41,7 @@ const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: Donat
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>İşlem Dekontu</DialogTitle>
+                    <DialogTitle>{t('dashboard.donations.receiptTitle')}</DialogTitle>
                     <DialogDescription>İşlem ID: {transaction.id}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -85,6 +86,7 @@ const ReceiptDialog = ({ transaction, open, onOpenChange }: { transaction: Donat
 
 
 export default function MyDonationsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: authUser } = useUser();
   const db = useFirestore();
@@ -134,12 +136,12 @@ export default function MyDonationsPage() {
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <h1 className="text-2xl font-bold font-headline">Bağışlarım</h1>
+      <h1 className="text-2xl font-bold font-headline">{t('dashboard.donations.heading')}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Toplam Bağış</CardTitle>
-          <CardDescription>Ek bir ödeme yapmadan, alışverişlerinle iyiliğe dönüşen bağış.</CardDescription>
+          <CardTitle>{t('dashboard.donations.totalTitle')}</CardTitle>
+          <CardDescription>{t('dashboard.donations.totalDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-3xl font-bold">{totalDonations.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
@@ -149,12 +151,12 @@ export default function MyDonationsPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4">
-            <CardTitle>İşlem Geçmişi</CardTitle>
+            <CardTitle>{t('dashboard.donations.historyTitle')}</CardTitle>
             <div className="flex justify-between items-center gap-2">
               <div className="relative w-full">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Ara..."
+                  placeholder={t('dashboard.donations.searchPlaceholder')}
                   className="pl-8 text-sm h-9 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -166,9 +168,9 @@ export default function MyDonationsPage() {
                     <Button variant="ghost" size="icon" aria-label="Filtrele"><Filter className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setFilterType('all')}>Tümü</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterType('income')}>Gelir</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setFilterType('expense')}>Gider</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFilterType('all')}>{t('dashboard.donations.filterAll')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFilterType('income')}>{t('dashboard.donations.filterIncome')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setFilterType('expense')}>{t('dashboard.donations.filterExpense')}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
@@ -176,8 +178,8 @@ export default function MyDonationsPage() {
                     <Button variant="ghost" size="icon" aria-label="Sırala"><ArrowDownUp className="h-4 w-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>Tarihe Göre (En Yeni)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('asc'); }}>Tarihe Göre (En Eski)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>{t('dashboard.applications.sortNewest')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('asc'); }}>{t('dashboard.applications.sortOldest')}</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('desc'); }}>Alışveriş Tutarı (Azalan)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('asc'); }}>Alışveriş Tutarı (Artan)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('desc'); }}>Bağış Tutarı (Azalan)</DropdownMenuItem>
@@ -192,13 +194,13 @@ export default function MyDonationsPage() {
           {isLoading ? (
             <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
           ) : !authUser ? (
-            <p className="text-center text-muted-foreground p-8">İşlem geçmişini görmek için giriş yapın.</p>
+            <p className="text-center text-muted-foreground p-8">{t('dashboard.donations.loginPrompt')}</p>
           ) : sortedAndFilteredDonations.length === 0 ? (
             <EmptyState
               icon={HandHeart}
-              title="Henüz bağışın yok"
-              description="Etkilenmek istediğin bir kampanyaya bağış yaparak başla."
-              action={{ label: 'Bağış kampanyaları', href: '/funds' }}
+              title={t('dashboard.donations.emptyTitle')}
+              description={t('dashboard.donations.emptyDesc')}
+              action={{ label: t('dashboard.donations.emptyAction'), href: '/funds' }}
             />
           ) : (
             <Accordion type="single" collapsible className="w-full">
@@ -294,7 +296,7 @@ export default function MyDonationsPage() {
           )}
         </CardContent>
       </Card>
-      <ReceiptDialog transaction={selectedTransaction} open={isReceiptOpen} onOpenChange={setIsReceiptOpen} />
+      <ReceiptDialog transaction={selectedTransaction} open={isReceiptOpen} onOpenChange={setIsReceiptOpen} t={t} />
     </div>
   );
 }

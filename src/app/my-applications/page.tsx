@@ -30,9 +30,11 @@ import { collection, query, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
 import { FileSearch, Inbox } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 
 export default function MyApplicationsPage() {
+  const { t } = useTranslation();
   const { user: authUser } = useUser();
   const db = useFirestore();
   const [activeTab, setActiveTab] = useState('Gönüllülük');
@@ -57,7 +59,7 @@ export default function MyApplicationsPage() {
   const handleWithdrawApplication = (appId: string, appTitle: string) => {
     setWithdrawnIds(prev => [...prev, appId]);
     toast({
-      title: 'Başvuru Geri Çekildi',
+      title: t('dashboard.applications.toastWithdrawnTitle'),
       description: `"${appTitle}" başvurunuz başarıyla iptal edildi.`,
     });
   };
@@ -118,34 +120,34 @@ export default function MyApplicationsPage() {
         <CardContent className="px-4 pb-4 text-sm space-y-4">
           {app.status === 'Reddedildi' && app.rejectionReason && (
             <Alert variant="destructive">
-              <AlertTitle>Reddedilme Nedeni</AlertTitle>
+              <AlertTitle>{t('dashboard.applications.rejectionTitle')}</AlertTitle>
               <AlertDescription>{app.rejectionReason}</AlertDescription>
             </Alert>
           )}
           <div className="flex gap-2">
             <Button asChild variant="secondary" className="flex-1">
               <Link href={getEntityLink()}>
-                <Eye className="mr-2 h-4 w-4" /> İlanı Görüntüle
+                <Eye className="mr-2 h-4 w-4" /> {t('dashboard.applications.viewListing')}
               </Link>
             </Button>
             {app.status === 'Beklemede' && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="flex-1">
-                    <Trash2 className="mr-2 h-4 w-4" /> Başvuruyu Geri Çek
+                    <Trash2 className="mr-2 h-4 w-4" /> {t('dashboard.applications.withdrawCta')}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Başvuruyu Geri Çekmek İstediğinizden Emin misiniz?</AlertDialogTitle>
+                    <AlertDialogTitle>{t('dashboard.applications.withdrawTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
                       Bu işlem geri alınamaz. "{app.title}" başvurunuz kalıcı olarak iptal edilecektir.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                    <AlertDialogCancel>{t('dashboard.applications.withdrawCancel')}</AlertDialogCancel>
                     <AlertDialogAction onClick={() => onWithdraw(app.id, app.title)} className={cn(buttonVariants({ variant: "destructive" }))}>
-                      Evet, Geri Çek
+                      {t('dashboard.applications.withdrawConfirm')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -160,8 +162,8 @@ export default function MyApplicationsPage() {
   const NoMatchState = () => (
     <EmptyState
       icon={FileSearch}
-      title="Eşleşen başvuru yok"
-      description="Bu kriterlere uygun başvuru bulunmuyor."
+      title={t('dashboard.applications.noMatchTitle')}
+      description={t('dashboard.applications.noMatchDesc')}
     />
   );
 
@@ -169,13 +171,13 @@ export default function MyApplicationsPage() {
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold font-headline">Başvurularım</h1>
-          <p className="text-muted-foreground text-sm">Başvurularınızın durumunu buradan takip edin.</p>
+          <h1 className="text-2xl font-bold font-headline">{t('dashboard.applications.heading')}</h1>
+          <p className="text-muted-foreground text-sm">{t('dashboard.applications.subheading')}</p>
         </div>
         <Button asChild size="sm">
           <Link href="/my-applications/new">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Yeni Başvuru
+            {t('dashboard.applications.newApplication')}
           </Link>
         </Button>
       </div>
@@ -184,7 +186,7 @@ export default function MyApplicationsPage() {
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Başvurularda ara..."
+            placeholder={t('dashboard.applications.searchPlaceholder')}
             className="pl-10 h-11"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -195,7 +197,7 @@ export default function MyApplicationsPage() {
             <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Duruma Göre Filtrele</DropdownMenuLabel>
+            <DropdownMenuLabel>{t('dashboard.applications.filterByStatus')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {allStatuses.map(status => (
               <DropdownMenuCheckboxItem
@@ -213,8 +215,8 @@ export default function MyApplicationsPage() {
             <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala"><ArrowDownUp className="h-5 w-5" /></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setSortOrder('desc')}>Tarihe Göre (En Yeni)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortOrder('asc')}>Tarihe Göre (En Eski)</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortOrder('desc')}>{t('dashboard.applications.sortNewest')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortOrder('asc')}>{t('dashboard.applications.sortOldest')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -222,21 +224,21 @@ export default function MyApplicationsPage() {
       {isLoading ? (
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : !authUser ? (
-        <div className="text-center text-muted-foreground p-16">Başvurularınızı görmek için giriş yapın.</div>
+        <div className="text-center text-muted-foreground p-16">{t('dashboard.applications.loginPrompt')}</div>
       ) : applications.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title="Henüz başvurun yok"
-          description="İlginç fırsatlara başvurmak için etkinliklere göz at."
-          action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+          title={t('dashboard.applications.emptyTitle')}
+          description={t('dashboard.applications.emptyDesc')}
+          action={{ label: t('dashboard.applications.emptyAction'), href: '/events' }}
         />
       ) : (
         <Tabs defaultValue="Gönüllülük" className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
-            <TabsTrigger value="Kulüpler">Kulüpler</TabsTrigger>
-            <TabsTrigger value="STK">STK</TabsTrigger>
-            <TabsTrigger value="Marka">Marka</TabsTrigger>
+            <TabsTrigger value="Gönüllülük">{t('dashboard.applications.tabVolunteer')}</TabsTrigger>
+            <TabsTrigger value="Kulüpler">{t('dashboard.applications.tabClubs')}</TabsTrigger>
+            <TabsTrigger value="STK">{t('dashboard.applications.tabNgo')}</TabsTrigger>
+            <TabsTrigger value="Marka">{t('dashboard.applications.tabBrand')}</TabsTrigger>
           </TabsList>
           {['Gönüllülük', 'Kulüpler', 'STK', 'Marka'].map(tab => (
             <TabsContent key={tab} value={tab} className='mt-4'>

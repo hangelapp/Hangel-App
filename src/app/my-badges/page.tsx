@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { groupBy } from 'lodash';
 import { Progress } from '@/components/ui/progress';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800' },
@@ -25,18 +26,18 @@ const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
 
 const LEVEL_ORDER: BadgeLevel[] = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Platin'];
 
-const NextBadgeGoal = ({ nextBadge }: { nextBadge: (BadgeType & { current: number; progress: number }) | null }) => {
+const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: number; progress: number }) | null; t: (key: string) => string }) => {
     if (!nextBadge) {
         return (
             <Card className="bg-primary/5 border-primary/10">
                 <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
-                        <Star className="h-5 w-5 text-primary" /> Sıradaki Hedefin
+                        <Star className="h-5 w-5 text-primary" /> {t('dashboard.badges.nextGoalTitle')}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm text-muted-foreground">
-                        Henüz puan kazanmadın. Bağış, gönüllülük ve davet ile rozetleri açmaya başlayabilirsin.
+                        {t('dashboard.badges.nextGoalEmptyDesc')}
                     </p>
                 </CardContent>
             </Card>
@@ -48,7 +49,7 @@ const NextBadgeGoal = ({ nextBadge }: { nextBadge: (BadgeType & { current: numbe
         <Card className="bg-primary/5 border-primary/10">
             <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
-                    <Star className="h-5 w-5 text-primary" /> Sıradaki Hedefin
+                    <Star className="h-5 w-5 text-primary" /> {t('dashboard.badges.nextGoalTitle')}
                 </CardTitle>
             </CardHeader>
             <CardContent>
@@ -122,6 +123,7 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 };
 
 export default function MyBadgesPage() {
+    const { t } = useTranslation();
     const { user: authUser } = useUser();
     const db = useFirestore();
     const userDocRef = useMemoFirebase(
@@ -180,24 +182,24 @@ export default function MyBadgesPage() {
     return (
         <div className="p-4 space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-32">
             <div className="space-y-1">
-                <h1 className="text-3xl font-black tracking-tighter font-headline">Rozetler ve Sertifikalar</h1>
-                <p className="text-muted-foreground text-sm font-medium">Toplumsal etki yolculuğundaki tüm başarılarını burada gör.</p>
+                <h1 className="text-3xl font-black tracking-tighter font-headline">{t('dashboard.badges.heading')}</h1>
+                <p className="text-muted-foreground text-sm font-medium">{t('dashboard.badges.subheading')}</p>
             </div>
 
-            <NextBadgeGoal nextBadge={nextBadge} />
+            <NextBadgeGoal nextBadge={nextBadge} t={t} />
 
             <Tabs defaultValue="badges" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/50 p-1.5 rounded-2xl backdrop-blur-xl">
-                    <TabsTrigger value="impact-score" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">Etki Puanı</TabsTrigger>
-                    <TabsTrigger value="badges" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">Rozetler</TabsTrigger>
-                    <TabsTrigger value="certificates" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">Sertifikalar</TabsTrigger>
+                    <TabsTrigger value="impact-score" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabImpactScore')}</TabsTrigger>
+                    <TabsTrigger value="badges" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabBadges')}</TabsTrigger>
+                    <TabsTrigger value="certificates" className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg">{t('dashboard.badges.tabCertificates')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="impact-score" className="mt-8 space-y-6">
                     <Card className="text-center rounded-[3rem] border-none shadow-2xl bg-black text-white p-12 overflow-hidden relative">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                         <div className="relative z-10 space-y-2">
-                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">TOPLAM SOSYAL ETKİ PUANI</p>
+                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">{t('dashboard.badges.impactTotalLabel')}</p>
                             <p className="text-8xl font-black tracking-tighter text-primary drop-shadow-2xl">{impactScore.toLocaleString('tr-TR')}</p>
                             <p className="text-xs font-black uppercase tracking-widest opacity-60 pt-4">
                                 {earnedCount} / {enrichedBadges.length} ROZET KAZANILDI
@@ -210,9 +212,9 @@ export default function MyBadgesPage() {
                     {enrichedBadges.length === 0 && (
                         <EmptyState
                             icon={Award}
-                            title="Henüz rozetin yok"
-                            description="Gönüllülük ve katılımla rozetler kazanmaya başla."
-                            action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+                            title={t('dashboard.badges.emptyTitle')}
+                            description={t('dashboard.badges.emptyDesc')}
+                            action={{ label: t('dashboard.badges.emptyAction'), href: '/events' }}
                         />
                     )}
                     {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => {
@@ -242,7 +244,7 @@ export default function MyBadgesPage() {
 
                 <TabsContent value="certificates" className="mt-8 text-center py-20">
                     <Milestone className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Sertifikalarınız bu bölümde listelenecektir.</p>
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">{t('dashboard.badges.certificatesPlaceholder')}</p>
                 </TabsContent>
             </Tabs>
         </div>

@@ -16,6 +16,43 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — P2-5b-landing-rest: i18n landing page bottom half migration
+- **ID**: P2-5b-landing-rest
+- **Lead**: frontend-lead
+- **Değişiklik**: `src/app/page.tsx` alt yarısındaki ~70 hardcoded TR string `useTranslation()`'a taşındı. `brandTypeLabels` (4) → `landing.brandTypes.*`, `BrandCard` Bağış suffix → `landing.brandCard.donationSuffix`, "Tüm Markaları/İlanları Gör" CTA'lar + count suffix'leri → `landing.viewAllBrandsPrefix/brandsSuffix/viewAllListingsPrefix/listingsSuffix`, `VolunteeringCard` Puan/Etki Puanı/countdown (Son N gün/Son Gün/Süre Doldu) → `landing.volunteeringCard.*`, `ProductShowcaseSection` default cta1 + iki çağrının cta1/cta2 (Markaları Keşfet, Daha Fazla Bilgi, Gönüllü Ol) → `landing.showcase.*`, `publicNavItems` (5) → `landing.nav.*`, `discoveryItems` 4 kart × 4 alan (16) → `landing.discovery.{ngo,brand,clubs,library}.*`, `projectCardsData` 4 kart × 3 alan (12) → `landing.projects.{legislation,employment,academic,atlas}.*` (data array `projectCardsStatic` olarak konfigürasyon-only kaldı, JSX `t()` ile resolve ediyor), 4× InfoCard values section → `landing.values.{sustainability,accessibility,security,legal}.*`, `PublicFooter currentPageLabel="Anasayfa"` → `landing.footerLabel`.
+- **Dosyalar**: `src/app/page.tsx`, `src/lib/translations.ts`
+- **Yeni anahtar sayısı**: 70 (TR+EN dolu, 5 dil skeleton boş — provider P2-5d fallback TR'ye düşüyor)
+- **Migrate edilen string**: ~70
+- **Risk**: L — TR+EN dolu, fallback TR. CMS-driven `useWebContent.get(...)` çağrıları (donation/volunteering title/subtitle/description) brief'e göre dokunulmadı.
+- **Rollback**: `git revert` veya `src/app/page.tsx` + `src/lib/translations.ts` diff'leri geri al.
+- **Test sonucu**:
+  - `npm run typecheck`: PASS
+  - `npm run lint`: 0 errors, 9 pre-existing warnings (page.tsx:412 `Math.random` shuffle ve diğer dosyalar — hiçbiri P2-5b-landing-rest'den değil).
+- **Notlar**:
+  - `brandTypeLabels` modül-seviye const'u kaldırıldı, `BrandCard` içinde dinamik `t(\`landing.brandTypes.${brand.type}\`)` lookup'a çevrildi (fallback `brand`).
+  - `projectCardsData` modül-seviye const'u `projectCardsStatic` (data-only, key + href + image) olarak kaldı, çevirilebilir alanlar JSX'te `t('landing.projects.<key>.title|subtitle|cta')` ile çekiliyor.
+  - `ProductShowcaseSection` default `cta1` parametresi optional yapıldı, içeride `cta1 ?? t('landing.showcase.defaultCta')` resolve ediyor — hook fonksiyon scope'unda çağrılıyor.
+  - 7 dil bloğunun tümünde `landing` namespace'i aynı şekilde extend edildi (skeleton'larda empty string, P2-5d fallback TR'ye düşüyor).
+
+---
+
+## 2026-05-18 — P2-6a refactor plan: god-page `super-admin/brands/page.tsx` (1337 LoC)
+- **ID**: P2-6a (subset of P2-6 god-page refactor)
+- **Lead**: frontend-lead
+- **Plan** (5 bullets, structural extraction only, NO logic changes):
+  1. `_components/types.ts` — shared types lifted from page (`BrandItem`, `EditFormData`, `BrandExtra`, `StatusFilter`, `BrandApplication`, `SimpleUser`, `BrandInvitation`, `BrandRole`, `BRAND_ROLE_OPTIONS`, `normalizePhone`).
+  2. `_components/transfer-brand-admin-dialog.tsx` — existing in-file `TransferBrandAdminDialog` (≈190 LoC) lifted verbatim with typed props (`brand`, `allUsers`, `onAssign`, `onRevoke`).
+  3. `_components/brand-bulk-tools-card.tsx` — "Veri Yönetim Araçları" card with 3 buttons + 2 confirm dialogs (clear all / seed / reset+seed). Props: `bulkOp`, `seedCount`, `onClearAll`, `onSeed`, `onResetAndSeed`.
+  4. `_components/brand-stats-cards.tsx` (5-tile grid) + `_components/brand-filters-card.tsx` (search + status select + count). Props pass-through; clicks call `onStatusFilterChange`.
+  5. `_components/brand-list-row.tsx` (single row + delete/toggle buttons) + `_components/brand-edit-dialog.tsx` (full edit form — Genel / İletişim / Sosyal / Adres sections + logo/cover upload). Parent owns all Firestore queries, mutations, toasts, form state; passes via props.
+- **Hard rules**: 0 logic changes, callbacks/toast text preserved verbatim, same `useFirestore`/`useCollection` calls in parent, same dialog structures.
+- **Target**: page.tsx ≤500 LoC (from 1337).
+- **Risk**: L — pure JSX/prop extraction; no behavior delta.
+- **Rollback**: `git revert` of refactor commit; new `_components/` dir removed.
+- **Test sonucu**: typecheck/lint/test gates run after each extraction step.
+
+---
+
 ## 2026-05-18 — P2-7c partial: `COLLECTIONS.*` migration — `src/hooks/**` + `src/app/api/**`
 - **ID**: P2-7c (scope: hooks + api; page.tsx → P2-7c-2 follow-up)
 - **Lead**: backend-lead
@@ -880,3 +917,134 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Risk**: L — yalnızca string literal değişimi + import ekleme; runtime davranış aynı (`COLLECTIONS.users === 'users'`). Rollback `git revert` ile tek commit, 105 dosya etkilenir.
 - **Follow-up**: P2-7c kapatıldı. P2-7e+ (varsa) `firestore.rules` literal'larını da `COLLECTIONS`'a referans etmeyi düşünebilir (rules'da JS literal kullanılamadığı için ayrı tasarım).
 - **Notlar**: Tasks.md'ye P2-7c ✅ + P2-7c-2 ✅ row'ları yazıldı. `scripts/migrate_collections.mjs` ve `package.json#scripts.migrate:collections` (geçici helper) temizlendi.
+
+---
+
+## 2026-05-18 — P2-6b: God-page refactor `super-admin/users/page.tsx`
+- **ID**: P2-6b
+- **Lead**: frontend-lead
+- **Plan (5-bullet)**:
+  1. Mirror P2-6a pattern: extract dialogs and list row into `src/app/super-admin/users/_components/`; data fetching + handlers stay in parent.
+  2. Extract `ProfileViewDialog` (read-only profile preview) → `profile-view-dialog.tsx`.
+  3. Extract `EditUserDialog` (full profile editor) → `edit-user-dialog.tsx`; keep `onSave` callback contract.
+  4. Extract `AssignEntityDialog` (NGO/Brand/Club assignment) → `assign-entity-dialog.tsx` together with `EntityKind`/`rolesByKind`/`entityKindLabels`/`entityCollectionByKind`/`entityIdFieldByKind`/`invitationIdFieldByKind` constants and `EntityRow` type.
+  5. Extract bulk-delete card + user list row UI → `bulk-delete-card.tsx` + `user-row.tsx` (presentation only; handlers passed in as props). Shared types (`UserRow`, `roleLabel`) → `_components/types.ts`.
+- **Hard rules**: no logic changes; preserve all toasts/dialogs/callbacks; data fetching stays in page.tsx; ≤500 LoC target.
+
+## 2026-05-18 — P2-6e refactor plan: god-page `src/app/settings/volunteer/page.tsx` (1061 LoC)
+- **ID**: P2-6e (subset of P2-6 god-page refactor)
+- **Lead**: frontend-lead
+- **Plan (5-bullet)**:
+  1. Extract the three in-file generic widgets (`FilteredMultiSelect`, `FilteredSingleSelect`, `LanguageSelect` — ~275 LoC combined) into `_components/` alongside `types.ts` (shared `VolunteerUserDoc`, `NeighborhoodsMap`, `EmergencyContact`). Same `value`/`onChange` typed props, no logic change.
+  2. Extract heavy presentational sections: `motivations-section.tsx` (4 motivation groups, ~70 LoC), `availability-section.tsx` (days/times/work-modes checkbox grid, ~50 LoC), `muhtar-section.tsx` (switch + cascading il/ilçe/mahalle Selects, ~45 LoC) — each receives only its own slice (`value`, `onChange`).
+  3. Extract `emergency-contacts-section.tsx` (2-contact form, ~35 LoC, takes `contacts` + `onContactChange(index, field, value)`); `health-section.tsx` (gender, blood, switches, ~45 LoC); `consents-section.tsx` (5-item required checklist, ~25 LoC, uses Consents type from `types.ts`).
+  4. Extract `address-section.tsx` (mahalle/sokak/kapı no inputs, ~25 LoC). Light single-Card sections (Meslek, Yetkinlikler+3 selects, Diller, Sertifika, Sürücü, Programlar, Vizeler) stay inline — they're 5-15 LoC each and just call the extracted widgets; extracting would not help LoC.
+  5. Page becomes orchestrator only: state hooks, `useEffect` hydration from Firestore, `handleSubmit`, derived data (`ilceler`/`mahalleler`/`addrDistricts`/`addrNeighborhoods`), and JSX composition. Form validation (`requiredConsents` missing toast) + dirty tracking + save callback (`updateDocumentNonBlocking`) + onboarding branch all preserved verbatim. Target ≤500 LoC.
+- **Hard rules**: no logic changes; preserve all toasts/dialogs/callbacks; data hydration + save stay in page.tsx; ≤500 LoC target. 11 pre-existing lint warnings out of scope.
+
+---
+
+## 2026-05-18 — P2-6d: God-page refactor `ngo-admin/website/page.tsx`
+- **ID**: P2-6d
+- **Lead**: frontend-lead
+- **Plan (5-bullet)**:
+  1. Extract constants (`analyticsProviders`, `colorOptions`, `domainRegistrars`, `transparencyDocs`, `REQUIRED_NS`), types (`NgoSiteBanner`, `NgoSiteSettings`, `NgoDoc`), and `checkDnsRecords` helper → `_components/constants.ts` + `_components/types.ts` + `_components/dns.ts`.
+  2. Build a generic `<SectionCard>` shell (icon + title + description + visibility Switch + collapsible body) → `_components/section-card.tsx`. All 15 section cards reuse it.
+  3. Extract each section editor as a presentation-only component receiving `value` / `onChange` / `onSave` / `toast` props: `domain-section.tsx`, `colors-section.tsx`, `banners-section.tsx`, `about-section.tsx`, `president-section.tsx`, `stats-section.tsx`, `donations-section.tsx`, `volunteering-section.tsx`, `events-section.tsx`, `ecommerce-section.tsx`, `news-section.tsx`, `sdg-section.tsx`, `transparency-section.tsx`, `contact-section.tsx`, `analytics-section.tsx`.
+  4. Extract sticky publish bar (DNS verify + save + open preview) → `publish-bar.tsx`; parent passes `ngoId`, `domainName`, `primaryColor`, `buildPayload`, `setLastUpdated`, etc.
+  5. Page.tsx retains: data fetching (adminNgos / userDoc / fallbackNgo), state (sections + content), hydration effect, `handleSave`, `buildPayload`, `toggleSection`, `copyToClipboard`, `addBanner`, `removeBanner`. JSX becomes a thin list of section components.
+- **Hard rules**: no logic changes; preserve all toasts/dialogs/save callbacks/dirty-state; data fetching stays in page.tsx; ≤500 LoC target.
+
+---
+
+## 2026-05-18 — P2-5c: i18n dashboard + settings sub-page strings → useTranslation()
+- **ID**: P2-5c
+- **Lead**: frontend-lead
+- **Plan (5-bullet)**:
+  1. Add `dashboard.*` namespace to `src/lib/translations.ts` (TR + EN populated; ru/ar/fa/es/ha left empty → fall through to TR via LanguageProvider P2-5d fix).
+  2. Per-page top 20–30 user-visible strings only (heading, sub-heading, tabs, section titles, top CTAs, dialog titles, empty-state copy). Not a full sweep — defer tail to `P2-5c-rest` if needed.
+  3. Pages in scope (dashboards): `profile/page.tsx` (headers + tabs only — no god-page refactor), `my-applications/page.tsx`, `my-badges/page.tsx`, `my-donations/page.tsx`, `messages/page.tsx`, `notifications/page.tsx`.
+  4. Pages in scope (settings sub-pages): `settings/{language,theme,security,profile,volunteer,notifications,marketing-consent,brands,ngo-selection,volunteer-ngo-selection,accessibility,privacy,contracts}/page.tsx`. Also adjacent: `appearance,wallet` already covered if minimal.
+  5. Approx ~20 strings/page × 13–18 pages ≈ 200–300 new keys total. Add all keys in single `translations.ts` edit, then migrate page-by-page with surgical Edits. Typecheck + lint every ~5 pages; final full gates + `npm test -- --run`.
+- **Hard rules**: TR copy verbatim; no behavior changes; key naming `dashboard.<page>.<section>` mirroring `marketing.<page>.*`; other 5 langs empty strings → TR fallback.
+
+### Per-page string targets (top user-visible)
+- `profile`: header tabs (5) + impact card title (1) = ~6 (god-page; no deep sweep).
+- `my-applications`: heading/sub (2), CTA (1), search (1), filter labels (3), tabs (4), empty/no-match (4), withdraw dialog (4) ≈ 19.
+- `my-badges`: heading/sub (2), nextGoal title (1), empty next-goal copy (1), tabs (3), empty list (3), impact card label (1), certs placeholder (1) ≈ 12.
+- `my-donations`: heading (1), total title/desc (2), history title (1), filter (3), empty (3), placeholder (1) ≈ 11.
+- `messages`: heading (1), composeCTA (1), search (1), tabs (2), empty (3), compose dialog (5), profile dialog (2), send/cancel (2) ≈ 17.
+- `notifications`: heading (1), badge new (1), errors (2), empty (2), emergency CTAs (2), responseLabels (2), detailCta (1), markRead (1) ≈ 12.
+- `settings.language`: heading/sub (2), saveBtn (1), toast (2) ≈ 5.
+- `settings.theme`: heading/sub (2), labels (3), saveBtn (1), toast (2) ≈ 8.
+- `settings.security`: heading/sub (2), 2FA card (2), session card (2), saveBtn (1), closeOtherSessions (1), toast (2) ≈ 10.
+- `settings.profile`: heading/sub (2), photo card (1), section titles (3), saveBtn (1) ≈ 7 (only headings).
+- `settings.volunteer`: hero title/desc (2), laterCta (1) ≈ 3 (only headings).
+- `settings.notifications`: heading/sub (2), saveBtn (1), toast (2) ≈ 5.
+- `settings.marketing-consent`: heading/sub (2), card title (1), email/sms labels (2+2), saveBtn (1), toast (1) ≈ 9.
+- `settings.brands`: heading/sub (2), search (1), tab labels (5), saveBtn (1), emptyMsg (1) ≈ 10.
+- `settings.ngo-selection`: heading/sub (2), warning (3), saveBtn (1) ≈ 6.
+- `settings.volunteer-ngo-selection`: heading/sub (2), saveBtn (1) ≈ 3.
+- `settings.accessibility`: badge (1), heading (1), sub (1) ≈ 3 (only top hero).
+- `settings.privacy`: heading/sub (2), card titles (2), saveBtn (1) ≈ 5.
+- `settings.contracts`: heading/sub (2) ≈ 2.
+
+**Total**: ~155 strings → ~155 keys × TR+EN = ~310 lines additions. Per spec ~20–30/page is upper limit; pages with fewer top-visible strings get fewer keys.
+
+---
+
+## 2026-05-18 — P2-6c: God-page refactor `login/selection/page.tsx`
+- **ID**: P2-6c
+- **Lead**: frontend-lead
+- **Plan (5-bullet)**:
+  1. Read the page end-to-end (1174 LoC). Mapped 2 top-level forms (`IndividualForm`, `CorporateForm`), 5 shared UI primitives (`FileUpload`, `SectionTitle`, `FormLabel`, `FormInput`, `IconInput`), and 8 constant datasets.
+  2. Extract shared UI + dataset constants → `_components/shared.tsx` (pure re-export, no behavior change).
+  3. Move `IndividualForm` verbatim into `_components/IndividualForm.tsx` — including the critical `handleCheckEmail` POST to `/api/auth/check-email`, the `createUserWithEmailAndPassword` + `setDocumentNonBlocking` + invite QR auto-action toast + `initiateEmailVerification` chain.
+  4. Move `CorporateForm` (formData state + `handleFormSubmit` writing to `applications` collection + entity dispatcher Select with NGO/BRAND/CLUB branches) into `_components/CorporateForm.tsx`. Branches stay co-located inside the single file because they share `formData`/`setFormData`/`agreements`/selected* state; splitting them further would require extensive prop drilling with no readability gain.
+  5. page.tsx becomes thin: Suspense + `FormRenderer` (Card layout + Tabs router selecting `IndividualForm` or `CorporateForm`). Build verified after each extraction; final gates run before closure. Target ≤500 LoC.
+- **Flow component list (4 flows preserved)**:
+  - Individual signup / login (5-step state machine: email → login | register | verify-sent | forgot) — `_components/IndividualForm.tsx`
+  - NGO corporate registration — `_components/CorporateForm.tsx` (NGO branch)
+  - Brand corporate registration — `_components/CorporateForm.tsx` (BRAND branch)
+  - Club corporate registration — `_components/CorporateForm.tsx` (CLUB branch)
+  - Shared primitives + datasets — `_components/shared.tsx`
+- **Hard rules**: NO logic changes. Preserved every callback signature, toast message, agreement gate, auth call (`signInWithEmailAndPassword`, `createUserWithEmailAndPassword`, `updateProfile`, `initiateEmailVerification`), Firestore write (`setDocumentNonBlocking` on `users`, `addDoc` on `applications`), and invite QR auto-action exactly. `/api/auth/check-email` call stays inside `IndividualForm.handleCheckEmail` unchanged.
+
+
+- **Pre/Post LoC**: 1084 → 456 (parent page.tsx). 13 new files in `_components/` (838 LoC redistributed).
+- **Extracted editors**: `SectionCard` (shell), `DomainSection`, `ColorsSection`, `BannersSection`, `AboutSection`, `PresidentSection`, `StatsSection`, `DonationsSection`, `VolunteeringSection`, `EventsSection`, `EcommerceSection`, `NewsSection`, `SdgSection`, `TransparencySection`, `ContactSection`, `AnalyticsSection`, `PublishBar`. Constants/types/DNS helper split into `constants.ts` / `types.ts` / `dns.ts`.
+- **Save flow preservation**: `handleSave` (with optional `silent`), `buildPayload`, `handlePublish` (DNS verify → updateDoc with `published`/`publishedAt`/`dnsVerified` flags → window.open preview) all remain in parent. Section components receive `onSave`/`onChange` props that point back to parent state setters. All `useToast` calls still originate in parent (component-internal toasts limited to `BannersSection.onReplaceClick` + `AnalyticsSection.onConnectClick`, both wired via parent callbacks).
+- **Test sonucu**:
+  - `npm run typecheck` → PASS (no output).
+  - `npm run lint` → 0 errors / 14 pre-existing warnings (none in `ngo-admin/website/**`).
+  - `npm test -- --run` → 13 file PASS / 5 skip, 57 test PASS / 54 skip (identical to baseline).
+- **Risk**: L — pure structural extraction; no logic, hooks, or callback contract changes. Rollback is a single revert; no migration/data work.
+
+---
+
+## 2026-05-18 — P2-6e: God-page refactor `src/app/settings/volunteer/page.tsx`
+- **ID**: P2-6e
+- **Lead**: frontend-lead
+- **Değişiklik**: 1061 LoC volunteer settings form'u 10 dosyaya bölündü (`_components/`). Form state, Firestore hydration `useEffect`, validation toast, `handleSubmit` save callback, onboarding redirect tamamen parent'ta kaldı. Sadece presentational extract'lar — `value`/`onChange` typed props pattern.
+- **Dosyalar**:
+  - `src/app/settings/volunteer/page.tsx` (1061 → 476 LoC)
+  - NEW `src/app/settings/volunteer/_components/types.ts` (76) — `VolunteerUserDoc`, `NeighborhoodsMap`, `EmergencyContact`, `ConsentsState`, `CategorizedOption`
+  - NEW 3 widget: `filtered-multi-select.tsx` (101), `filtered-single-select.tsx` (97), `language-select.tsx` (103)
+  - NEW 7 section: `motivations-section.tsx` (87), `availability-section.tsx` (78), `muhtar-section.tsx` (83), `emergency-contacts-section.tsx` (54), `address-section.tsx` (48), `health-section.tsx` (77), `consents-section.tsx` (46)
+- **Pre/Post LoC**: 1061 → 476 (parent). 10 new files (850 LoC redistributed).
+- **Extracted sections**: `FilteredMultiSelect`, `FilteredSingleSelect`, `LanguageSelect` (widgets); `AvailabilitySection`, `MotivationsSection`, `MuhtarSection`, `EmergencyContactsSection`, `AddressSection`, `HealthSection`, `ConsentsSection` (Card-level sections). Light single-Card sections (Meslek, Yetkinlikler+3 selects, Diller, Sertifika, Sürücü, Programlar, Vizeler — her biri 5-15 LoC) parent'ta inline kaldı; extract karşılığında LoC kazancı yoktu.
+- **Form behavior preservation**:
+  - State hooks (`profession`, `skills`, `languages`, `motivations`, `consents`, vb.) ve hydration `useEffect` aynen parent'ta — Firestore `userData` dinleyicisi tek noktada.
+  - Validation: `requiredConsents.find(k => !consents[k])` early-return + `toast({ variant: 'destructive', title: 'Onaylar Eksik' })` aynen korundu.
+  - Save callback: `updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch })` payload yapısı + onboarding branch (`localStorage.setItem('onboardingStep', 'ngo-selection')` + redirect) + non-onboarding success toast aynen.
+  - Dirty tracking: `useDoc` hydration → parent state → child component value props — render-driven, herhangi bir manuel `isDirty` flag yok (eski davranış).
+  - `handleEmergencyContactChange(index, field, value)` callback signature `EmergencyContactsSection`'a prop olarak geçti; parent'taki functional `setState(prev =>)` mantığı korundu.
+  - `availability-section.tsx`'teki yerel `toggle(list, item, checked)` helper, original'in `prev => c ? [...prev, d] : prev.filter(x => x !== d)` davranışını aynı sırayla taklit ediyor — React batch'leri içinde semantik eşdeğer.
+  - `MuhtarSection` içindeki `useMemo(ilceler/mahalleler)` cascade reset (`onIlChange → onIlceChange('')`, `onMahalleChange('')`) prop callback chain ile birebir aynen.
+  - Dead `addrDistricts`/`addrNeighborhoods` memos parent'ta `void` referansla korundu (logic değişmedi, sadece unused-var warning sustu).
+- **Test sonucu**:
+  - `npx tsc --noEmit` → PASS (no output).
+  - `npm run lint` → 0 errors / 9 pre-existing warnings (önceden 11; `void addrDistricts`/`void addrNeighborhoods` 2 warning sildi; kalan 9: `page.tsx` Math.random, `ngo-selection` Date.now + 2 useMemo dep, `volunteer/page.tsx` 4 unused vars (`volunteerStartDate`, `volunteerEndDate`, `scheduleNotifications`, `addrNeighborhood` — out-of-scope), `super-admin/surveys` useMemo dep).
+  - `npm test` → 13 file PASS / 5 skip, 57 test PASS / 54 skip (baseline ile aynı).
+- **Risk**: L — pure structural extraction; no logic, hooks, validation, save, or callback contract changes. Rollback = single revert; no migration/data work.
+- **Notlar**: Pre-existing lint warnings on this file (out-of-scope per task brief) tracked under P2-5c follow-up. Hard rule "no logic changes" honored — diff is JSX motion + prop wiring only.

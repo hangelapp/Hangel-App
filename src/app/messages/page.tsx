@@ -23,6 +23,7 @@ import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebas
 import { addDoc, collection, query, serverTimestamp, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const senderTypeIcons: Record<string, React.ReactNode> = {
     ngo: <Building className="h-3 w-3" />,
@@ -42,6 +43,7 @@ interface ProfileViewData {
 }
 
 export default function MessagesPage() {
+    const { t } = useTranslation();
     const [_activeTab, setActiveTab] = useState('inbox');
     const { toast } = useToast();
     const router = useRouter();
@@ -139,17 +141,17 @@ export default function MessagesPage() {
                     <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
-                    <h1 className="text-2xl font-bold font-headline">Mesajlarım</h1>
+                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.messages.heading')}</h1>
                 </div>
                 <Button size="sm" onClick={() => setComposeOpen(true)}>
-                    <MessageSquare className="mr-2 h-4 w-4" /> Yeni Mesaj
+                    <MessageSquare className="mr-2 h-4 w-4" /> {t('dashboard.messages.newMessage')}
                 </Button>
             </div>
 
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                    placeholder="Mesajlarda ara..."
+                    placeholder={t('dashboard.messages.searchPlaceholder')}
                     className="pl-9"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -159,10 +161,10 @@ export default function MessagesPage() {
             <Tabs defaultValue="inbox" className="w-full" onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="inbox">
-                        <Inbox className="mr-2 h-4 w-4" /> Gelen Kutusu
+                        <Inbox className="mr-2 h-4 w-4" /> {t('dashboard.messages.tabInbox')}
                     </TabsTrigger>
                     <TabsTrigger value="sent">
-                        <SendHorizontal className="mr-2 h-4 w-4" /> Gönderilenler
+                        <SendHorizontal className="mr-2 h-4 w-4" /> {t('dashboard.messages.tabSent')}
                     </TabsTrigger>
                 </TabsList>
 
@@ -172,13 +174,13 @@ export default function MessagesPage() {
                     ) : !authUser ? (
                         <div className="text-center py-20 text-muted-foreground">
                             <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            <p>Mesajlarınızı görmek için giriş yapın.</p>
+                            <p>{t('dashboard.messages.loginPrompt')}</p>
                         </div>
                     ) : (messages || []).length === 0 ? (
                         <EmptyState
                             icon={MessageSquare}
-                            title="Henüz mesajın yok"
-                            description="İletişim için yeni bir mesaj başlat."
+                            title={t('dashboard.messages.emptyTitle')}
+                            description={t('dashboard.messages.emptyDesc')}
                         />
                     ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => (
                         <Card key={msg.id} className={cn(
@@ -210,14 +212,14 @@ export default function MessagesPage() {
                     )) : (
                         <div className="text-center py-20 text-muted-foreground">
                             <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                            <p>Mesaj bulunamadı.</p>
+                            <p>{t('dashboard.messages.notFound')}</p>
                         </div>
                     )}
                 </TabsContent>
 
                 <TabsContent value="sent" className="mt-4 text-center py-20 text-muted-foreground">
                     <SendHorizontal className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>Gönderdiğiniz bir mesaj bulunmuyor.</p>
+                    <p>{t('dashboard.messages.sentEmpty')}</p>
                 </TabsContent>
             </Tabs>
 
@@ -225,8 +227,8 @@ export default function MessagesPage() {
             <Dialog open={composeOpen} onOpenChange={(open) => { setComposeOpen(open); if (!open) resetCompose(); }}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" /> Yeni Mesaj</DialogTitle>
-                        <DialogDescription>Alıcı seç, konu ve mesajını yaz, gönder.</DialogDescription>
+                        <DialogTitle className="flex items-center gap-2"><MessageSquare className="h-5 w-5 text-primary" /> {t('dashboard.messages.newMessage')}</DialogTitle>
+                        <DialogDescription>{t('dashboard.messages.composeDesc')}</DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-3">
@@ -246,10 +248,10 @@ export default function MessagesPage() {
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <Input placeholder="Alıcı ara (isim, telefon, e-posta)" value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
+                                <Input placeholder={t('dashboard.messages.recipientSearchPlaceholder')} value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
                                 <div className="max-h-44 overflow-y-auto rounded-lg border divide-y">
                                     {recipientCandidates.length === 0 ? (
-                                        <p className="text-xs text-muted-foreground text-center py-4">Sonuç bulunamadı.</p>
+                                        <p className="text-xs text-muted-foreground text-center py-4">{t('dashboard.messages.recipientNoResult')}</p>
                                     ) : recipientCandidates.map((u) => {
                                         const name = u.displayName || u.fullName || u.name || 'Kullanıcı';
                                         const sub = u.email || u.phoneNumber || u.personalInfo?.phone || '';
@@ -270,13 +272,13 @@ export default function MessagesPage() {
                             </div>
                         )}
 
-                        <Input placeholder="Konu" value={subject} onChange={(e) => setSubject(e.target.value)} />
-                        <Textarea placeholder="Mesajınızı yazın..." value={content} onChange={(e) => setContent(e.target.value)} rows={5} />
+                        <Input placeholder={t('dashboard.messages.subjectPlaceholder')} value={subject} onChange={(e) => setSubject(e.target.value)} />
+                        <Textarea placeholder={t('dashboard.messages.contentPlaceholder')} value={content} onChange={(e) => setContent(e.target.value)} rows={5} />
                     </div>
                     <DialogFooter className="flex-row gap-2 sm:gap-2">
-                        <Button type="button" variant="outline" className="flex-1" onClick={() => { setComposeOpen(false); resetCompose(); }}>İptal</Button>
+                        <Button type="button" variant="outline" className="flex-1" onClick={() => { setComposeOpen(false); resetCompose(); }}>{t('dashboard.messages.cancel')}</Button>
                         <Button type="button" className="flex-1" onClick={handleSend} disabled={sending || !selectedRecipient || !content.trim()}>
-                            {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor...</> : <><Send className="mr-2 h-4 w-4" /> Gönder</>}
+                            {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('dashboard.messages.sending')}</> : <><Send className="mr-2 h-4 w-4" /> {t('dashboard.messages.send')}</>}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -286,8 +288,8 @@ export default function MessagesPage() {
             <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary" /> Profil</DialogTitle>
-                        <DialogDescription>Göndericinin profil özeti.</DialogDescription>
+                        <DialogTitle className="flex items-center gap-2"><UserIcon className="h-5 w-5 text-primary" /> {t('dashboard.messages.profileTitle')}</DialogTitle>
+                        <DialogDescription>{t('dashboard.messages.profileDesc')}</DialogDescription>
                     </DialogHeader>
                     {profileData && (
                         <Card>
@@ -309,7 +311,7 @@ export default function MessagesPage() {
                         </Card>
                     )}
                     <DialogFooter>
-                        <Button variant="outline" className="w-full" onClick={() => setProfileOpen(false)}>Kapat</Button>
+                        <Button variant="outline" className="w-full" onClick={() => setProfileOpen(false)}>{t('dashboard.messages.close')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

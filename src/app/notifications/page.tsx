@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -33,6 +34,7 @@ const typeColor: Record<string, string> = {
 export default function NotificationsPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const db = useFirestore();
   const { user: authUser } = useUser();
 
@@ -131,9 +133,9 @@ export default function NotificationsPage() {
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <h1 className="text-2xl font-bold font-headline flex items-center gap-2">
-          Bildirimler
+          {t('dashboard.notifications.heading')}
           {unreadCount > 0 && (
-            <Badge className="bg-primary">{unreadCount} yeni</Badge>
+            <Badge className="bg-primary">{unreadCount} {t('dashboard.notifications.newBadge')}</Badge>
           )}
         </h1>
       </div>
@@ -146,15 +148,15 @@ export default function NotificationsPage() {
         <Card className="rounded-2xl border-destructive/30 bg-destructive/5">
           <CardContent className="py-16 text-center">
             <AlertCircle className="h-12 w-12 mx-auto text-destructive/60 mb-3" />
-            <p className="text-destructive font-bold">Bildirimler yüklenemedi</p>
-            <p className="text-xs text-muted-foreground mt-1">{notifError.message || 'Lütfen daha sonra tekrar deneyin.'}</p>
+            <p className="text-destructive font-bold">{t('dashboard.notifications.loadErrorTitle')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{notifError.message || t('dashboard.notifications.loadErrorDesc')}</p>
           </CardContent>
         </Card>
       ) : !notifications || notifications.length === 0 ? (
         <EmptyState
           icon={Bell}
-          title="Henüz bildirimin yok"
-          description="Aktivitelerinden ve sistemden bildirimler burada görünür."
+          title={t('dashboard.notifications.emptyTitle')}
+          description={t('dashboard.notifications.emptyDesc')}
         />
       ) : (
         <div className="space-y-3">
@@ -192,7 +194,7 @@ export default function NotificationsPage() {
                               className="h-7 text-xs bg-red-600 hover:bg-red-700"
                               onClick={(e) => { e.stopPropagation(); handleEmergencyResponse(n, 'positive'); }}
                             >
-                              🩸 Yardım Edebilirim
+                              {t('dashboard.notifications.emergencyHelpYes')}
                             </Button>
                             <Button
                               variant="outline"
@@ -200,23 +202,23 @@ export default function NotificationsPage() {
                               className="h-7 text-xs"
                               onClick={(e) => { e.stopPropagation(); handleEmergencyResponse(n, 'negative'); }}
                             >
-                              Maalesef Edemiyorum
+                              {t('dashboard.notifications.emergencyHelpNo')}
                             </Button>
                           </>
                         )}
                         {n.type === 'emergency-blood' && n.responseStatus === 'positive' && (
                           <Badge className="bg-green-600 text-[10px]">
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> Yardım Edebilirim
+                            <CheckCircle2 className="h-3 w-3 mr-1" /> {t('dashboard.notifications.emergencyHelpYes')}
                           </Badge>
                         )}
                         {n.type === 'emergency-blood' && n.responseStatus === 'negative' && (
                           <Badge variant="secondary" className="text-[10px]">
-                            Maalesef Edemiyorum
+                            {t('dashboard.notifications.emergencyHelpNo')}
                           </Badge>
                         )}
                         {invitationLink && (
                           <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-                            <Link href={invitationLink}>Detay</Link>
+                            <Link href={invitationLink}>{t('dashboard.notifications.detailCta')}</Link>
                           </Button>
                         )}
                         {!n.read && (
@@ -226,7 +228,7 @@ export default function NotificationsPage() {
                             className="h-7 text-xs"
                             onClick={(e) => { e.stopPropagation(); handleMarkRead(n.id); }}
                           >
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> Okundu
+                            <CheckCircle2 className="h-3 w-3 mr-1" /> {t('dashboard.notifications.markRead')}
                           </Button>
                         )}
                       </div>

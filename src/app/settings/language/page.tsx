@@ -13,7 +13,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 
 export default function LanguageSettingsPage() {
     const router = useRouter();
-    const { language, changeLanguage } = useTranslation();
+    const { language, changeLanguage, t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser } = useUser();
     const db = useFirestore();
@@ -40,8 +40,8 @@ export default function LanguageSettingsPage() {
             <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>
-            <h1 className="text-2xl font-bold font-headline">Dil Ayarları</h1>
-            <p className="text-muted-foreground text-sm">Uygulama dilini değiştirin.</p>
+            <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsLanguage.heading')}</h1>
+            <p className="text-muted-foreground text-sm">{t('dashboard.settingsLanguage.subheading')}</p>
         </div>
 
         <Card>
@@ -65,7 +65,7 @@ export default function LanguageSettingsPage() {
         </Card>
 
         <div className="flex justify-end">
-            <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
+            <Button onClick={handleSave}>{t('dashboard.settingsLanguage.saveBtn')}</Button>
         </div>
     </div>
   );

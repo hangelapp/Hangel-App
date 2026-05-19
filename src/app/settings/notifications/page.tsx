@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const notificationGroups = [
     {
@@ -57,6 +58,7 @@ const defaultSettings: NotificationSettings = {
 
 export default function NotificationSettingsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -101,8 +103,8 @@ export default function NotificationSettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Bildirim Ayarları</h1>
-                <p className="text-muted-foreground text-sm">Hangi konularda ve hangi kanallardan bildirim almak istediğinizi seçin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNotifications.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsNotifications.subheading')}</p>
             </div>
 
             <div className="space-y-8">
@@ -137,7 +139,7 @@ export default function NotificationSettingsPage() {
             <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Değişiklikleri Kaydet
+                    {t('dashboard.settingsNotifications.saveBtn')}
                 </Button>
             </div>
         </div>

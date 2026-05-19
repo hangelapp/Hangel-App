@@ -28,6 +28,7 @@ import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -102,6 +103,7 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
 };
 
 export default function ProfilePage() {
+    const { t } = useTranslation();
     const [_profileUrl, setProfileUrl] = useState('');
     const router = useRouter();
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
@@ -449,18 +451,18 @@ export default function ProfilePage() {
                 <Tabs defaultValue="impact" className="w-full">
                     <div className="flex justify-center">
                         <TabsList className="h-auto p-1 flex-wrap">
-                            <TabsTrigger value="impact">Etki</TabsTrigger>
-                            <TabsTrigger value="about">Hakkında</TabsTrigger>
-                            <TabsTrigger value="volunteering">Gönüllülük</TabsTrigger>
-                            <TabsTrigger value="badges-certificates">Rozetler & Sertifikalar</TabsTrigger>
-                            <TabsTrigger value="story">Hikaye</TabsTrigger>
+                            <TabsTrigger value="impact">{t('dashboard.profile.tabImpact')}</TabsTrigger>
+                            <TabsTrigger value="about">{t('dashboard.profile.tabAbout')}</TabsTrigger>
+                            <TabsTrigger value="volunteering">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
+                            <TabsTrigger value="badges-certificates">{t('dashboard.profile.tabBadges')}</TabsTrigger>
+                            <TabsTrigger value="story">{t('dashboard.profile.tabStory')}</TabsTrigger>
                         </TabsList>
                     </div>
                     
                     <TabsContent value="impact" className="p-4 space-y-4">
                         <Card className="text-center">
                             <CardHeader>
-                                <CardTitle>Toplam Sosyal Etki Puanın</CardTitle>
+                                <CardTitle>{t('dashboard.profile.impactCardTitle')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-6xl font-bold text-primary">{currentUser.impactScore.toLocaleString('tr-TR')}</p>

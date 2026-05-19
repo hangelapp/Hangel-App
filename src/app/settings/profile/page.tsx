@@ -64,9 +64,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: authUser, isUserLoading } = useUser();
   const db = useFirestore();
@@ -272,14 +274,14 @@ export default function ProfileSettingsPage() {
             <ArrowLeft className="h-6 w-6" />
         </Button>
       <div>
-        <h1 className="text-3xl font-bold font-headline">Profil Bilgileri</h1>
-        <p className="text-muted-foreground text-sm">İyilik yolculuğundaki kimliğini oluştur.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('dashboard.settingsProfile.heading')}</h1>
+        <p className="text-muted-foreground text-sm">{t('dashboard.settingsProfile.subheading')}</p>
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <Card className="overflow-hidden border-none shadow-lg">
             <CardHeader className="bg-primary/5 border-b border-primary/10">
-                <CardTitle className="text-lg">Profil Fotoğrafı</CardTitle>
+                <CardTitle className="text-lg">{t('dashboard.settingsProfile.photoCardTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="pt-8 flex flex-col items-center gap-6">
                 <div className="relative group">
@@ -302,7 +304,7 @@ export default function ProfileSettingsPage() {
         </Card>
 
         <Card>
-            <CardHeader><CardTitle>Kişisel Bilgiler</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('dashboard.settingsProfile.personalCardTitle')}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label>Ad Soyad</Label>
@@ -433,7 +435,7 @@ export default function ProfileSettingsPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary" /> Demografik Bilgiler</CardTitle>
+                <CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary" /> {t('dashboard.settingsProfile.demographicsTitle')}</CardTitle>
                 <CardDescription>Doğum tarihin, uyruğun, cinsiyetin ve kan grubun. Sadece sen ve süper admin görür.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -510,7 +512,7 @@ export default function ProfileSettingsPage() {
 
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" /> Web Sitesi ve Sosyal Medya</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-primary" /> {t('dashboard.settingsProfile.socialCardTitle')}</CardTitle>
                 <CardDescription>Profilinizde görünecek bağlantıları ekleyin. Boş bırakabilirsiniz.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -591,7 +593,7 @@ export default function ProfileSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">Kaydet ve Devam Et</Button>
+          <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">{t('dashboard.settingsProfile.saveCta')}</Button>
         </div>
       </form>
     </div>

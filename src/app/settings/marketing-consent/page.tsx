@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, MessageSquare, Mail, Shield } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface ConsentDoc {
   email?: { enabled: boolean; updatedAt?: unknown; source?: string };
@@ -21,6 +22,7 @@ export default function MarketingConsentPage() {
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,19 +90,19 @@ export default function MarketingConsentPage() {
         href="/settings"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4 mr-1" /> Ayarlar
+        <ArrowLeft className="h-4 w-4 mr-1" /> {t('dashboard.settingsMarketing.backToSettings')}
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold font-headline">Pazarlama İzinleri</h1>
+        <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsMarketing.heading')}</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Hangel'den kampanya, duyuru ve tanıtım amaçlı SMS / e-posta almak isteyip istemediğini buradan yönetebilirsin.
+          {t('dashboard.settingsMarketing.subheading')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Tercihler</CardTitle>
+          <CardTitle className="text-base">{t('dashboard.settingsMarketing.prefsTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4 p-3 border rounded">
@@ -109,8 +111,8 @@ export default function MarketingConsentPage() {
                 <Mail className="h-4 w-4 text-blue-700" />
               </div>
               <div>
-                <Label className="text-sm font-medium">E-Posta</Label>
-                <p className="text-xs text-muted-foreground">Kampanya ve duyurular için e-posta al</p>
+                <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.emailLabel')}</Label>
+                <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.emailDesc')}</p>
               </div>
             </div>
             <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
@@ -122,8 +124,8 @@ export default function MarketingConsentPage() {
                 <MessageSquare className="h-4 w-4 text-emerald-700" />
               </div>
               <div>
-                <Label className="text-sm font-medium">SMS</Label>
-                <p className="text-xs text-muted-foreground">Kampanya ve duyurular için SMS al</p>
+                <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.smsLabel')}</Label>
+                <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.smsDesc')}</p>
               </div>
             </div>
             <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
@@ -131,7 +133,7 @@ export default function MarketingConsentPage() {
 
           <Button onClick={handleSave} disabled={saving} className="w-full">
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Kaydet
+            {t('dashboard.settingsMarketing.saveBtn')}
           </Button>
         </CardContent>
       </Card>

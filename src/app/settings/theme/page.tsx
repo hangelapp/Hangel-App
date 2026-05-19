@@ -7,6 +7,7 @@ import { ArrowLeft, Monitor, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -27,6 +28,7 @@ function applyTheme(theme: Theme) {
 
 export default function ThemeSettingsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const [theme, setTheme] = useState<Theme>('system');
     const { toast } = useToast();
 
@@ -58,8 +60,8 @@ export default function ThemeSettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Tema Ayarları</h1>
-                <p className="text-muted-foreground text-sm">Uygulamanın genel görünümünü kişiselleştirin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsTheme.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsTheme.subheading')}</p>
             </div>
 
             <Card>
@@ -70,28 +72,28 @@ export default function ThemeSettingsPage() {
                             onClick={() => handleSelect('light')}
                         >
                             <Sun className="mx-auto h-6 w-6" />
-                            <p className="text-sm font-medium">Açık</p>
+                            <p className="text-sm font-medium">{t('dashboard.settingsTheme.light')}</p>
                         </div>
                         <div
                             className={cn("p-4 border-2 rounded-lg cursor-pointer text-center space-y-2", theme === 'dark' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}
                             onClick={() => handleSelect('dark')}
                         >
                             <Moon className="mx-auto h-6 w-6" />
-                            <p className="text-sm font-medium">Koyu</p>
+                            <p className="text-sm font-medium">{t('dashboard.settingsTheme.dark')}</p>
                         </div>
                         <div
                             className={cn("p-4 border-2 rounded-lg cursor-pointer text-center space-y-2", theme === 'system' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50')}
                             onClick={() => handleSelect('system')}
                         >
                             <Monitor className="mx-auto h-6 w-6" />
-                            <p className="text-sm font-medium">Sistem</p>
+                            <p className="text-sm font-medium">{t('dashboard.settingsTheme.system')}</p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
+                <Button onClick={handleSave}>{t('dashboard.settingsTheme.saveBtn')}</Button>
             </div>
         </div>
     );

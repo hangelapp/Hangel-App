@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Laptop, Smartphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const activeSessions = [
     { device: 'Chrome, macOS', location: 'İstanbul, TR', time: 'Şu an aktif', icon: Laptop },
@@ -16,6 +17,7 @@ const activeSessions = [
 
 export default function SecuritySettingsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
@@ -33,15 +35,15 @@ export default function SecuritySettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Güvenlik</h1>
-                <p className="text-muted-foreground text-sm">Hesap güvenliğinizi ve aktif oturumlarınızı yönetin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsSecurity.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsSecurity.subheading')}</p>
             </div>
             
             <form className="space-y-6" onSubmit={handleSubmit}>
                 <Card>
                     <CardHeader>
-                        <CardTitle>İki Adımlı Doğrulama (2FA)</CardTitle>
-                        <CardDescription>Hesabınıza giriş yaparken ek bir güvenlik katmanı ekleyin.</CardDescription>
+                        <CardTitle>{t('dashboard.settingsSecurity.twoFactorTitle')}</CardTitle>
+                        <CardDescription>{t('dashboard.settingsSecurity.twoFactorDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -59,8 +61,8 @@ export default function SecuritySettingsPage() {
                 
                  <Card>
                     <CardHeader>
-                        <CardTitle>Oturum Geçmişi</CardTitle>
-                        <CardDescription>Hesabınızda açık olan oturumları görüntüleyin ve yönetin.</CardDescription>
+                        <CardTitle>{t('dashboard.settingsSecurity.sessionsTitle')}</CardTitle>
+                        <CardDescription>{t('dashboard.settingsSecurity.sessionsDesc')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {activeSessions.map((session, index) => {
@@ -77,12 +79,12 @@ export default function SecuritySettingsPage() {
                                 </div>
                             )
                         })}
-                         <Button type="button" variant="outline" className="w-full" onClick={() => toast({ title: 'Oturumlar Kapatıldı', description: 'Mevcut oturum dışındaki tüm oturumlarınız sonlandırıldı.'})}>Diğer tüm oturumları kapat</Button>
+                         <Button type="button" variant="outline" className="w-full" onClick={() => toast({ title: 'Oturumlar Kapatıldı', description: 'Mevcut oturum dışındaki tüm oturumlarınız sonlandırıldı.'})}>{t('dashboard.settingsSecurity.closeOtherSessions')}</Button>
                     </CardContent>
                 </Card>
                 
                  <div className="flex justify-end">
-                    <Button type="submit">Değişiklikleri Kaydet</Button>
+                    <Button type="submit">{t('dashboard.settingsSecurity.saveBtn')}</Button>
                 </div>
             </form>
         </div>

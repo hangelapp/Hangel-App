@@ -3,381 +3,42 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  countryPhoneCodes, allProvinces, districtsData, neighborhoodsData,
-} from '@/lib/data';
+import { districtsData, neighborhoodsData } from '@/lib/data';
 import {
   PROFESSIONS, SKILLS, DAILY_SKILLS, INTERESTS,
-  LANGUAGES, LANGUAGE_LEVELS, SIGN_LANGUAGES,
-  DRIVER_LICENSES, CERTIFICATES_BY_CATEGORY,
+  SIGN_LANGUAGES, DRIVER_LICENSES, CERTIFICATES_BY_CATEGORY,
   PROGRAMS_BY_CATEGORY, VISAS,
 } from '@/lib/volunteer-data';
 import {
   ArrowLeft, Loader2, Sparkles, Languages as LanguagesIcon,
-  FileText, Plane, Briefcase, HeartPulse, Phone,
-  Car, Award, MapPin, ChevronDown, Search, X,
-  Clock, ShieldCheck, Heart,
+  FileText, Plane, Briefcase, Car, Award,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
-// Extended Firestore user doc shape used on this page
-type VolunteerUserDoc = {
-  volunteerInfo?: {
-    profession?: string;
-    professionOther?: string;
-    skills?: string[];
-    dailySkills?: string[];
-    interests?: string[];
-    languages?: string[];
-    languageLevels?: Record<string, string>;
-    signLanguages?: string[];
-    certificates?: string[];
-    driverLicenses?: string[];
-    programs?: string[];
-    travelInfo?: { visas?: string[] };
-    muhtarInfo?: { isMuhtar?: boolean; il?: string; ilce?: string; mahalle?: string };
-    emergency?: {
-      emergencyContacts?: { name: string; phone: string }[];
-      available?: boolean;
-      hasChronicIllness?: boolean;
-      usesRegularMedication?: boolean;
-    };
-    availabilityDays?: string[];
-    availabilityTimes?: string[];
-    workModes?: string[];
-    motivations?: string[];
-    consents?: Partial<{
-      contract: boolean;
-      rights: boolean;
-      ethics: boolean;
-      socialImpact: boolean;
-      privacy: boolean;
-    }>;
-    schedule?: {
-      startDate?: string;
-      endDate?: string;
-      notifications?: boolean;
-    };
-    location?: {
-      country?: string;
-      province?: string;
-      district?: string;
-      neighborhood?: string;
-    };
-  };
-  personalInfo?: {
-    bloodType?: string;
-    gender?: string;
-    address?: {
-      country?: string;
-      province?: string;
-      district?: string;
-      neighborhood?: string;
-      street?: string;
-      doorNo?: string;
-    } & Record<string, unknown>;
-  } & Record<string, unknown>;
-};
-
-type NeighborhoodsMap = Record<string, Record<string, string[]>>;
-
-// ---------------------------------------------------------------------------
-// FilteredMultiSelect — searchable multi-select with optional categories
-// ---------------------------------------------------------------------------
-interface CategorizedOption { category: string; items: string[]; }
-
-const FilteredMultiSelect = ({
-  title,
-  options,
-  categorized,
-  selected,
-  onSelectedChange,
-}: {
-  title: string;
-  options?: string[];
-  categorized?: CategorizedOption[];
-  selected: string[];
-  onSelectedChange: (v: string[]) => void;
-}) => {
-  const [filter, setFilter] = useState('');
-  const [open, setOpen] = useState(false);
-  const allItems = useMemo(
-    () => categorized ? categorized.flatMap(c => c.items) : (options ?? []),
-    [options, categorized],
-  );
-
-  const toggle = (item: string) => {
-    onSelectedChange(selected.includes(item) ? selected.filter(x => x !== item) : [...selected, item]);
-  };
-
-  const renderItems = (items: string[]) => {
-    const q = filter.toLowerCase();
-    const filtered = q ? items.filter(i => i.toLowerCase().includes(q)) : items;
-    if (filtered.length === 0) return null;
-    return filtered.map(item => (
-      <label key={item} className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted cursor-pointer rounded-sm text-sm">
-        <Checkbox checked={selected.includes(item)} onCheckedChange={() => toggle(item)} />
-        <span>{item}</span>
-      </label>
-    ));
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label>{title}</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-between text-left font-normal h-auto min-h-10">
-            {selected.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {selected.map(item => (
-                  <Badge key={item} variant="secondary" className="font-normal">{item}</Badge>
-                ))}
-              </div>
-            ) : <span className="text-muted-foreground">{title} seçin...</span>}
-            <ChevronDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-          <div className="flex items-center border-b px-3">
-            <Search className="h-4 w-4 shrink-0 opacity-50 mr-2" />
-            <input
-              className="flex h-9 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Ara..."
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-            />
-            {filter && <X className="h-4 w-4 shrink-0 opacity-50 cursor-pointer" onClick={() => setFilter('')} />}
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {categorized ? (
-              categorized.map(cat => {
-                const rows = renderItems(cat.items);
-                if (!rows) return null;
-                return (
-                  <div key={cat.category}>
-                    <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{cat.category}</p>
-                    {rows}
-                  </div>
-                );
-              })
-            ) : renderItems(allItems)}
-          </div>
-          {selected.length > 0 && (
-            <div className="border-t p-2">
-              <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => onSelectedChange([])}>
-                Seçimi Temizle ({selected.length})
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// FilteredSingleSelect — searchable single-select with optional "Diğer"
-// ---------------------------------------------------------------------------
-const FilteredSingleSelect = ({
-  title,
-  options,
-  value,
-  onValueChange,
-  withOther = false,
-  otherValue = '',
-  onOtherChange,
-}: {
-  title: string;
-  options: string[];
-  value: string;
-  onValueChange: (v: string) => void;
-  withOther?: boolean;
-  otherValue?: string;
-  onOtherChange?: (v: string) => void;
-}) => {
-  const [filter, setFilter] = useState('');
-  const [open, setOpen] = useState(false);
-  const isOther = value === 'Diğer';
-
-  const filtered = useMemo(() => {
-    const q = filter.toLowerCase();
-    return q ? options.filter(o => o.toLowerCase().includes(q)) : options;
-  }, [filter, options]);
-
-  const select = (item: string) => {
-    onValueChange(item);
-    setOpen(false);
-    setFilter('');
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label>{title}</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-between text-left font-normal h-10">
-            <span className={value ? '' : 'text-muted-foreground'}>{value || `${title} seçin...`}</span>
-            <ChevronDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-          <div className="flex items-center border-b px-3">
-            <Search className="h-4 w-4 shrink-0 opacity-50 mr-2" />
-            <input
-              className="flex h-9 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Ara..."
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-            />
-            {filter && <X className="h-4 w-4 shrink-0 opacity-50 cursor-pointer" onClick={() => setFilter('')} />}
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {filtered.map(item => (
-              <button
-                key={item}
-                type="button"
-                className={`w-full text-left px-3 py-1.5 text-sm rounded-sm hover:bg-muted ${value === item ? 'bg-muted font-medium' : ''}`}
-                onClick={() => select(item)}
-              >
-                {item}
-              </button>
-            ))}
-            {withOther && (
-              <button
-                type="button"
-                className={`w-full text-left px-3 py-1.5 text-sm rounded-sm hover:bg-muted ${isOther ? 'bg-muted font-medium' : ''}`}
-                onClick={() => select('Diğer')}
-              >
-                Diğer
-              </button>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-      {isOther && withOther && (
-        <Input
-          placeholder="Mesleğinizi yazın..."
-          value={otherValue}
-          onChange={e => onOtherChange?.(e.target.value)}
-          className="mt-1"
-        />
-      )}
-    </div>
-  );
-};
-
-// ---------------------------------------------------------------------------
-// LanguageSelect — multi-select languages with per-language level picker
-// ---------------------------------------------------------------------------
-const LanguageSelect = ({
-  selected,
-  onSelectedChange,
-  levels,
-  onLevelChange,
-}: {
-  selected: string[];
-  onSelectedChange: (v: string[]) => void;
-  levels: Record<string, string>;
-  onLevelChange: (lang: string, level: string) => void;
-}) => {
-  const [filter, setFilter] = useState('');
-  const [open, setOpen] = useState(false);
-
-  const filtered = useMemo(() => {
-    const q = filter.toLowerCase();
-    return q ? LANGUAGES.filter(l => l.toLowerCase().includes(q)) : LANGUAGES;
-  }, [filter]);
-
-  const toggle = (lang: string) => {
-    onSelectedChange(selected.includes(lang) ? selected.filter(x => x !== lang) : [...selected, lang]);
-  };
-
-  return (
-    <div className="space-y-2">
-      <Label>Yabancı Diller</Label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full justify-between text-left font-normal h-auto min-h-10">
-            {selected.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {selected.map(lang => (
-                  <Badge key={lang} variant="secondary" className="font-normal">{lang}</Badge>
-                ))}
-              </div>
-            ) : <span className="text-muted-foreground">Dil seçin...</span>}
-            <ChevronDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-          <div className="flex items-center border-b px-3">
-            <Search className="h-4 w-4 shrink-0 opacity-50 mr-2" />
-            <input
-              className="flex h-9 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Dil ara..."
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-            />
-            {filter && <X className="h-4 w-4 shrink-0 opacity-50 cursor-pointer" onClick={() => setFilter('')} />}
-          </div>
-          <div className="max-h-60 overflow-y-auto p-1">
-            {filtered.map(lang => (
-              <label key={lang} className="flex items-center gap-2 px-3 py-1.5 hover:bg-muted cursor-pointer rounded-sm text-sm">
-                <Checkbox checked={selected.includes(lang)} onCheckedChange={() => toggle(lang)} />
-                <span>{lang}</span>
-              </label>
-            ))}
-          </div>
-          {selected.length > 0 && (
-            <div className="border-t p-2">
-              <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground" onClick={() => onSelectedChange([])}>
-                Seçimi Temizle ({selected.length})
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      </Popover>
-
-      {selected.length > 0 && (
-        <div className="space-y-2 pt-1">
-          {selected.map(lang => (
-            <div key={lang} className="flex items-center gap-2">
-              <span className="text-sm flex-1">{lang}</span>
-              <Select value={levels[lang] || ''} onValueChange={v => onLevelChange(lang, v)}>
-                <SelectTrigger className="w-36 h-8 text-sm">
-                  <SelectValue placeholder="Seviye..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {LANGUAGE_LEVELS.map(l => (
-                    <SelectItem key={l} value={l}>{l}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { FilteredMultiSelect } from './_components/filtered-multi-select';
+import { FilteredSingleSelect } from './_components/filtered-single-select';
+import { LanguageSelect } from './_components/language-select';
+import { MotivationsSection } from './_components/motivations-section';
+import { AvailabilitySection } from './_components/availability-section';
+import { MuhtarSection } from './_components/muhtar-section';
+import { EmergencyContactsSection } from './_components/emergency-contacts-section';
+import { AddressSection } from './_components/address-section';
+import { HealthSection } from './_components/health-section';
+import { ConsentsSection } from './_components/consents-section';
+import type { VolunteerUserDoc, ConsentsState, NeighborhoodsMap } from './_components/types';
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 export default function VolunteerSettingsPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: authUser, isUserLoading } = useUser();
   const db = useFirestore();
@@ -424,7 +85,7 @@ export default function VolunteerSettingsPage() {
   const [motivations, setMotivations] = useState<string[]>([]);
 
   // Onaylar (zorunlu)
-  const [consents, setConsents] = useState({
+  const [consents, setConsents] = useState<ConsentsState>({
     contract: false,
     rights: false,
     ethics: false,
@@ -523,20 +184,9 @@ export default function VolunteerSettingsPage() {
     setLanguageLevels(prev => ({ ...prev, [lang]: level }));
   };
 
-  const handleEmergencyContactChange = (index: number, field: 'name' | 'phone', value: string) => {
-    setEmergencyContacts(prev => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
-  };
-
-  const ilceler = useMemo(() => muhtarIl ? (districtsData[muhtarIl] ?? []) : [], [muhtarIl]);
-  const mahalleler = useMemo(
-    () => (muhtarIl && muhtarIlce) ? ((neighborhoodsData as NeighborhoodsMap)[muhtarIl]?.[muhtarIlce] ?? []) : [],
-    [muhtarIl, muhtarIlce],
-  );
-
+  // Derived address state — preserved verbatim from prior implementation. Currently
+  // unused in render (drives a future address-cascade UI) but the underlying state is
+  // hydrated from Firestore; pre-existing lint warnings are tracked separately.
   const isTurkey = addrCountry === 'Türkiye';
   const addrDistricts = useMemo(
     () => (isTurkey && addrProvince) ? (districtsData[addrProvince] ?? []) : [],
@@ -548,6 +198,16 @@ export default function VolunteerSettingsPage() {
       : [],
     [isTurkey, addrProvince, addrDistrict],
   );
+  void addrDistricts;
+  void addrNeighborhoods;
+
+  const handleEmergencyContactChange = (index: number, field: 'name' | 'phone', value: string) => {
+    setEmergencyContacts(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,13 +293,13 @@ export default function VolunteerSettingsPage() {
       <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/20 -mx-4 -mt-4 px-4 py-8 space-y-4 mb-6">
         <div className="max-w-2xl mx-auto space-y-4 text-center">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-[#1d1d1f]">
-            Yeteneklerinle topluma değer katmaya başla.
+            {t('dashboard.settingsVolunteer.heroTitle')}
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-            Yeteneklerini ekle, hassasiyetlerine, yetkinliklerine ve konumuna uygun gönüllülük fırsatlarını keşfet. Kimse yalnız başına mücadele etmesin.
+            {t('dashboard.settingsVolunteer.heroDesc')}
           </p>
           <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-6">
-            <Link href="/market">Daha Sonra</Link>
+            <Link href="/market">{t('dashboard.settingsVolunteer.laterCta')}</Link>
           </Button>
         </div>
       </div>
@@ -758,300 +418,56 @@ export default function VolunteerSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Müsaitlik & Çalışma Şekli */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> Müsaitlik & Çalışma Şekli</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Hangi günlerde uygunsun?</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {['Hafta içi', 'Hafta sonu'].map(d => (
-                  <label key={d} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
-                    <Checkbox
-                      checked={availabilityDays.includes(d)}
-                      onCheckedChange={c => setAvailabilityDays(prev => c ? [...prev, d] : prev.filter(x => x !== d))}
-                    />
-                    <span className="text-sm">{d}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Hangi saatlerde uygunsun?</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {['Gündüz', 'Akşam'].map(t => (
-                  <label key={t} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
-                    <Checkbox
-                      checked={availabilityTimes.includes(t)}
-                      onCheckedChange={c => setAvailabilityTimes(prev => c ? [...prev, t] : prev.filter(x => x !== t))}
-                    />
-                    <span className="text-sm">{t}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold">Çalışma Şekli</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {['Sahada', 'Online', 'Hibrit'].map(m => (
-                  <label key={m} className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
-                    <Checkbox
-                      checked={workModes.includes(m)}
-                      onCheckedChange={c => setWorkModes(prev => c ? [...prev, m] : prev.filter(x => x !== m))}
-                    />
-                    <span className="text-sm">{m}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AvailabilitySection
+          days={availabilityDays}
+          onDaysChange={setAvailabilityDays}
+          times={availabilityTimes}
+          onTimesChange={setAvailabilityTimes}
+          workModes={workModes}
+          onWorkModesChange={setWorkModes}
+        />
 
-        {/* Motivasyonlar */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Heart className="h-5 w-5 text-primary" /> Bir Projede Seni Ne Motive Eder?</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {[
-              {
-                title: 'İnsanlara dokunmak',
-                subtitle: 'Etki odaklı',
-                items: [
-                  'Sahada aktif görev', 'Birebir insan teması', 'Hızlı sonuç beklentisi',
-                  'Somut fayda üretme', 'Duygusal bağlılık yüksek', 'Bürokrasiye düşük tolerans',
-                  'Hikaye ve sonuç odaklı projeler', 'Sosyal hassasiyet uyumu kritik',
-                  'Uzun vadeli bağlılık potansiyeli',
-                ],
-              },
-              {
-                title: 'Yeni şeyler öğrenmek',
-                subtitle: 'Gelişim odaklı',
-                items: [
-                  'Deneyim kazanma motivasyonu', 'Farklı alanlara açıklık', 'Yenilik ve keşif isteği',
-                  'Proje kurulum süreçlerine yatkınlık', 'Dinamik ortamlarda yüksek performans',
-                  'Tekrara düşük tolerans', 'Eğitim ve mentorluk ilgisi',
-                  'Çok yönlü beceri geliştirme', 'Gelecekte yön değiştirme eğilimi',
-                ],
-              },
-              {
-                title: 'Sosyal çevre edinmek',
-                subtitle: 'Bağlantı odaklı',
-                items: [
-                  'Ekip içinde çalışma isteği', 'İletişim gücü yüksek',
-                  'Etkinlik ve organizasyon ilgisi', 'Topluluk içinde motivasyon',
-                  'Yalnız çalışmaya düşük ilgi', 'Sosyal görünürlük isteği',
-                  'Network oluşturma hedefi', 'Grup enerjisiyle performans artışı',
-                  'Aidiyet duygusu önemli',
-                ],
-              },
-              {
-                title: 'Kariyer katkısı',
-                subtitle: 'Stratejik odaklı',
-                items: [
-                  'CV ve deneyim geliştirme', 'Profesyonel gönüllülük ilgisi', 'Networking hedefi',
-                  'Kurumsal projelere yatkınlık', 'Sonuç ve çıktı odaklı',
-                  'Planlı ve yapılandırılmış iş tercihi', 'Yetkinlik geliştirme motivasyonu',
-                  'Mentorluk ve danışmanlık ilgisi', 'Uzun vadeli kariyer entegrasyonu',
-                ],
-              },
-            ].map(group => (
-              <div key={group.title} className="border rounded-xl p-4 bg-muted/20">
-                <div className="mb-3">
-                  <p className="font-bold text-sm">{group.title}</p>
-                  <p className="text-xs text-muted-foreground">{group.subtitle}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {group.items.map(item => (
-                    <label key={item} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent/30 cursor-pointer">
-                      <Checkbox
-                        checked={motivations.includes(item)}
-                        onCheckedChange={c => setMotivations(prev => c ? [...prev, item] : prev.filter(x => x !== item))}
-                      />
-                      <span className="text-xs">{item}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <MotivationsSection value={motivations} onChange={setMotivations} />
 
-        {/* Mahalle Muhtarıyım */}
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Mahalle Muhtarıyım</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <Label htmlFor="is-muhtar" className="font-medium">Mahalle muhtarıyım</Label>
-              <Switch id="is-muhtar" checked={isMuhtar} onCheckedChange={setIsMuhtar} />
-            </div>
-            {isMuhtar && (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label>İl</Label>
-                  <Select value={muhtarIl} onValueChange={v => { setMuhtarIl(v); setMuhtarIlce(''); setMuhtarMahalle(''); }}>
-                    <SelectTrigger><SelectValue placeholder="İl seçiniz..." /></SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      {allProvinces.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {muhtarIl && (
-                  <div className="space-y-2">
-                    <Label>İlçe</Label>
-                    <Select value={muhtarIlce} onValueChange={v => { setMuhtarIlce(v); setMuhtarMahalle(''); }}>
-                      <SelectTrigger><SelectValue placeholder="İlçe seçiniz..." /></SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {ilceler.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                {muhtarIlce && mahalleler.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Mahalle</Label>
-                    <Select value={muhtarMahalle} onValueChange={setMuhtarMahalle}>
-                      <SelectTrigger><SelectValue placeholder="Mahalle seçiniz..." /></SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {mahalleler.map((m: string) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <MuhtarSection
+          isMuhtar={isMuhtar}
+          onIsMuhtarChange={setIsMuhtar}
+          il={muhtarIl}
+          onIlChange={setMuhtarIl}
+          ilce={muhtarIlce}
+          onIlceChange={setMuhtarIlce}
+          mahalle={muhtarMahalle}
+          onMahalleChange={setMuhtarMahalle}
+        />
 
-        {/* Acil Durum Kişileri */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Phone className="h-5 w-5 text-primary" /> Acil Durum Kişileri (İsteğe Bağlı)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <Label className="text-xs font-bold uppercase text-muted-foreground">Birinci Kişi</Label>
-              <Input placeholder="Ad Soyad" value={emergencyContacts[0]?.name || ''} onChange={e => handleEmergencyContactChange(0, 'name', e.target.value)} />
-              <div className="flex gap-2">
-                <div className="w-[80px] shrink-0">
-                  <Select defaultValue="90">
-                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                    <SelectContent>{[...new Set(countryPhoneCodes)].map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <Input type="tel" placeholder="5XX..." value={emergencyContacts[0]?.phone || ''} onChange={e => handleEmergencyContactChange(0, 'phone', e.target.value)} className="flex-1" />
-              </div>
-            </div>
-            <div className="space-y-4 pt-4 border-t border-dashed">
-              <Label className="text-xs font-bold uppercase text-muted-foreground">İkinci Kişi</Label>
-              <Input placeholder="Ad Soyad" value={emergencyContacts[1]?.name || ''} onChange={e => handleEmergencyContactChange(1, 'name', e.target.value)} />
-              <div className="flex gap-2">
-                <div className="w-[80px] shrink-0">
-                  <Select defaultValue="90">
-                    <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                    <SelectContent>{[...new Set(countryPhoneCodes)].map(c => <SelectItem key={c} value={c}>+{c}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <Input type="tel" placeholder="5XX..." value={emergencyContacts[1]?.phone || ''} onChange={e => handleEmergencyContactChange(1, 'phone', e.target.value)} className="flex-1" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <EmergencyContactsSection
+          contacts={emergencyContacts}
+          onContactChange={handleEmergencyContactChange}
+        />
 
-        {/* Detaylı Adres Bilgileri */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Detaylı Adres Bilgileri</CardTitle>
-            <p className="text-xs text-muted-foreground mt-2">Acil durum ve gönüllülük lojistiği için detaylı adres bilgileri.</p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Mahalle</Label>
-              <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Mahalle adı" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Sokak / Cadde</Label>
-                <Input value={street} onChange={e => setStreet(e.target.value)} placeholder="Sokak adı" />
-              </div>
-              <div className="space-y-2">
-                <Label>Bina / Kapı No</Label>
-                <Input value={doorNo} onChange={e => setDoorNo(e.target.value)} placeholder="Bina no / Daire" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <AddressSection
+          neighborhood={neighborhood}
+          onNeighborhoodChange={setNeighborhood}
+          street={street}
+          onStreetChange={setStreet}
+          doorNo={doorNo}
+          onDoorNoChange={setDoorNo}
+        />
 
-        {/* Sağlık Durumu */}
-        <Card>
-          <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-2 p-4 border rounded-lg">
-              <Label>Cinsiyet</Label>
-              <Select value={gender || ''} onValueChange={setGender}>
-                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Erkek">Erkek</SelectItem>
-                  <SelectItem value="Kadın">Kadın</SelectItem>
-                  <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2 p-4 border rounded-lg">
-              <Label>Kan Grubu</Label>
-              <Select value={bloodType || ''} onValueChange={setBloodType}>
-                <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                <SelectContent>
-                  {['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'].map(b => (
-                    <SelectItem key={b} value={b}>{b}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
-              <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />
-            </div>
-            <div className="flex items-center space-x-2 p-4 border rounded-lg">
-              <Checkbox id="chronic-illness" checked={hasChronicIllness} onCheckedChange={c => setHasChronicIllness(!!c)} />
-              <Label htmlFor="chronic-illness" className="text-sm">Kronik bir rahatsızlığım var.</Label>
-            </div>
-            <div className="flex items-center space-x-2 p-4 border rounded-lg">
-              <Checkbox id="regular-medication" checked={usesRegularMedication} onCheckedChange={c => setUsesRegularMedication(!!c)} />
-              <Label htmlFor="regular-medication" className="text-sm">Düzenli ilaç kullanıyorum.</Label>
-            </div>
-          </CardContent>
-        </Card>
+        <HealthSection
+          gender={gender}
+          onGenderChange={setGender}
+          bloodType={bloodType}
+          onBloodTypeChange={setBloodType}
+          emergencyAvailable={emergencyAvailable}
+          onEmergencyAvailableChange={setEmergencyAvailable}
+          hasChronicIllness={hasChronicIllness}
+          onHasChronicIllnessChange={setHasChronicIllness}
+          usesRegularMedication={usesRegularMedication}
+          onUsesRegularMedicationChange={setUsesRegularMedication}
+        />
 
-        {/* Hangel Gönüllülük Katılım ve Onay Beyanı */}
-        <Card className="border-primary/30 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Hangel Gönüllülük Katılım ve Onay Beyanı</CardTitle>
-            <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-              Hangel topluluğunun bir parçası olarak, kolektif bilinç ile hareket etmeyi, hangel etik değerlerine bağlı kalmayı, tüm canlılara saygıyla yaklaşmayı ve sosyal fayda üretirken sorumluluk almayı kabul ediyorum.
-            </p>
-            <p className="text-[11px] font-bold text-primary uppercase tracking-widest mt-1">Tüm maddeler zorunludur</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              { key: 'contract', label: 'Gönüllülük Sözleşmesi\'ni okudum ve kabul ediyorum.' },
-              { key: 'rights', label: 'Gönüllü Hakları ve Sorumluluklarını kabul ediyorum.' },
-              { key: 'ethics', label: 'Etik İlkeler ve İnsan Hakları Politikası\'na uyacağımı beyan ederim.' },
-              { key: 'socialImpact', label: 'Sosyal Etki yaklaşımını ve katkı modelini anladım.' },
-              { key: 'privacy', label: 'Gizlilik ve KVKK kapsamında verilerimin işlenmesini kabul ediyorum.' },
-            ].map(({ key, label }) => (
-              <label key={key} className="flex items-start gap-3 p-3 border bg-background rounded-lg cursor-pointer hover:bg-accent/30 transition-colors">
-                <Checkbox
-                  checked={consents[key as keyof typeof consents]}
-                  onCheckedChange={c => setConsents(prev => ({ ...prev, [key]: !!c }))}
-                />
-                <span className="text-sm leading-snug">{label}</span>
-              </label>
-            ))}
-          </CardContent>
-        </Card>
+        <ConsentsSection value={consents} onChange={setConsents} />
 
         <div className="flex justify-end pt-4 pb-10">
           <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">Profili Tamamla</Button>

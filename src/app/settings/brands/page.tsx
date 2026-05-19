@@ -18,6 +18,7 @@ import {
 import type { Brand } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type BrandTypeFilter = Brand['type'] | 'Tümü';
 
@@ -30,6 +31,7 @@ const typeLabels: Record<Brand['type'], string> = {
 
 export default function FollowedBrandsPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user: authUser, isUserLoading } = useUser();
   const db = useFirestore();
@@ -141,14 +143,14 @@ export default function FollowedBrandsPage() {
         <ArrowLeft className="h-6 w-6" />
       </Button>
       <div>
-        <h1 className="text-2xl font-bold font-headline">Takip Ettiğim Markalar</h1>
-        <p className="text-muted-foreground text-sm">Takip etmek istediğiniz markaları seçin. Mevcut seçimleriniz işaretli gelir.</p>
+        <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsBrands.heading')}</h1>
+        <p className="text-muted-foreground text-sm">{t('dashboard.settingsBrands.subheading')}</p>
       </div>
 
       <div className="flex gap-2 items-center">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Marka ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <Input placeholder={t('dashboard.settingsBrands.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -181,11 +183,11 @@ export default function FollowedBrandsPage() {
 
       <Tabs defaultValue="Tümü" className="w-full" onValueChange={v => setTypeFilter(v as BrandTypeFilter)}>
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-          <TabsTrigger value="brand">Ticari</TabsTrigger>
-          <TabsTrigger value="cooperative">Kooperatif</TabsTrigger>
-          <TabsTrigger value="social">Sosyal</TabsTrigger>
-          <TabsTrigger value="economic">İktisadi</TabsTrigger>
+          <TabsTrigger value="Tümü">{t('dashboard.settingsBrands.tabAll')}</TabsTrigger>
+          <TabsTrigger value="brand">{t('dashboard.settingsBrands.tabCommercial')}</TabsTrigger>
+          <TabsTrigger value="cooperative">{t('dashboard.settingsBrands.tabCooperative')}</TabsTrigger>
+          <TabsTrigger value="social">{t('dashboard.settingsBrands.tabSocial')}</TabsTrigger>
+          <TabsTrigger value="economic">{t('dashboard.settingsBrands.tabEconomic')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -239,14 +241,14 @@ export default function FollowedBrandsPage() {
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <Store className="h-10 w-10 mx-auto mb-3 opacity-50" />
-              <p>Bu filtrelerle eşleşen marka bulunamadı.</p>
+              <p>{t('dashboard.settingsBrands.emptyMsg')}</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>Değişiklikleri Kaydet</Button>
+        <Button onClick={handleSave}>{t('dashboard.settingsBrands.saveBtn')}</Button>
       </div>
     </div>
   );

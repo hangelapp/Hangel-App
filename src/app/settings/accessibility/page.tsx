@@ -47,6 +47,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -65,6 +66,7 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 
 export default function AccessibilitySettingsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser } = useUser();
     const db = useFirestore();
@@ -227,12 +229,11 @@ export default function AccessibilitySettingsPage() {
                 <div className="space-y-4">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary">
                         <Sparkles className="h-4 w-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Kapsayıcı Deneyim Modülü</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{t('dashboard.settingsAccessibility.badge')}</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">Herkes İçin Erişilebilir.</h1>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter font-headline leading-[0.95]">{t('dashboard.settingsAccessibility.heading')}</h1>
                     <p className="text-muted-foreground text-lg font-medium leading-relaxed">
-                        hangel olarak teknolojinin sadece bir grup için değil, herkes için eşit derecede kullanılabilir olması gerektiğine inanıyoruz. 
-                        Aşağıdaki ayarlar, WCAG 2.2 AAA ve EN 301 549 standartlarını temel alarak, nöroçeşitlilikten motor engellere kadar her türlü ihtiyaca çözüm sunmak için tasarlanmıştır.
+                        {t('dashboard.settingsAccessibility.subheading')}
                     </p>
                 </div>
             </div>

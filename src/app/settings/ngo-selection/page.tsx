@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import type { NGO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type NgoType = NGO['type'] | 'Tümü';
 
@@ -31,6 +32,7 @@ type UserNgoSelectionData = {
 
 export default function NgoSelectionPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -230,15 +232,15 @@ export default function NgoSelectionPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Bağışçı Olduğun STK'ları Değiştir</h1>
-                <p className="text-muted-foreground text-sm">Alışverişlerinizden doğan bağışların aktarılacağı varsayılan STK'ları seçin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNgoSelection.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsNgoSelection.subheading')}</p>
             </div>
 
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Önemli Bilgi</AlertTitle>
+                <AlertTitle>{t('dashboard.settingsNgoSelection.warningTitle')}</AlertTitle>
                 <AlertDescription className="space-y-1">
-                    <p>Varsayılan STK seçiminizi 30 gün boyunca yalnızca bir kez değiştirebilirsiniz.</p>
+                    <p>{t('dashboard.settingsNgoSelection.warningDesc')}</p>
                     {remainingDays > 0 && (
                         <p className="flex items-center gap-1.5 mt-1 font-semibold">
                             <Calendar className="h-3.5 w-3.5" />
@@ -251,7 +253,7 @@ export default function NgoSelectionPage() {
             <div className="flex gap-2 items-center">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input placeholder="STK ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <Input placeholder={t('dashboard.settingsNgoSelection.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
                     <SheetTrigger asChild>
@@ -474,7 +476,7 @@ export default function NgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>{isOnboarding ? 'Devam Et' : 'Değişiklikleri Kaydet'}</Button>
+                <Button onClick={handleSave}>{isOnboarding ? 'Devam Et' : t('dashboard.settingsNgoSelection.saveBtn')}</Button>
             </div>
 
             <Dialog open={!!previewNgo} onOpenChange={(open) => !open && setPreviewNgo(null)}>

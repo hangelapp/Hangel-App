@@ -53,18 +53,14 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
   );
 };
 
-const brandTypeLabels: Record<string, string> = {
-  brand: 'Ticari',
-  cooperative: 'Kooperatif',
-  social: 'Sosyal Şirket',
-  economic: 'İktisadi İşletme',
-};
-
-const BrandCard = ({ brand }: { brand: Brand }) => (
+const BrandCard = ({ brand }: { brand: Brand }) => {
+    const { t } = useTranslation();
+    const typeLabel = t(`landing.brandTypes.${brand.type}`) || t('landing.brandTypes.brand');
+    return (
     <Link href={`/market/${brand.slug}`} className="group block h-full">
       <Card className="rounded-[1.75rem] hover:shadow-xl transition-shadow bg-white border border-gray-100 h-full flex flex-col p-6 items-center text-center">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
-            {brandTypeLabels[brand.type] || 'Ticari'}
+            {typeLabel}
         </p>
         <div className="w-24 h-24 rounded-2xl bg-muted overflow-hidden mb-4 border">
           <BrandLogo brand={brand} />
@@ -73,17 +69,18 @@ const BrandCard = ({ brand }: { brand: Brand }) => (
             <h4 className="font-bold text-lg leading-tight">{brand.name}</h4>
         </div>
         <Badge variant="secondary" className="mt-2 bg-primary/10 text-primary border-none text-base font-bold">
-          %{brand.donationRate} Bağış
+          %{brand.donationRate} {t('landing.brandCard.donationSuffix')}
         </Badge>
       </Card>
     </Link>
-);
+    );
+};
 
 const ProductShowcaseSection = ({
     title,
     subtitle,
     description,
-    cta1 = "Daha Fazla Bilgi",
+    cta1,
     cta1Href = "#",
     cta2,
     cta2Href,
@@ -107,7 +104,10 @@ const ProductShowcaseSection = ({
     id?: string;
     className?: string;
     children?: React.ReactNode;
-}) => (
+}) => {
+    const { t } = useTranslation();
+    const cta1Text = cta1 ?? t('landing.showcase.defaultCta');
+    return (
     <section id={id} className={cn(
         "relative min-h-screen flex flex-col items-center justify-center pt-24 pb-12 text-center overflow-hidden border-b border-black/5",
         theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]",
@@ -120,7 +120,7 @@ const ProductShowcaseSection = ({
             
              <div className="flex items-center justify-center gap-6 pt-4">
                 <Link href={cta1Href!} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? "text-[#2997ff]" : "text-primary")}>
-                    {cta1} <ChevronRight className="h-5 w-5 ml-0.5" />
+                    {cta1Text} <ChevronRight className="h-5 w-5 ml-0.5" />
                 </Link>
                 {cta2 && cta2Href && (
                     <Link href={cta2Href} className={cn("hover:underline flex items-center text-lg font-medium", theme === 'dark' ? "text-[#2997ff]" : "text-primary")}>
@@ -142,7 +142,8 @@ const ProductShowcaseSection = ({
             )
         )}
     </section>
-);
+    );
+};
 
 const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: { title: string; subtitle?: string; cta?: string; ctaHref: string; imageUrl: string; imageHint?: string }) => (
     <Link href={ctaHref} className="group block h-full">
@@ -168,40 +169,32 @@ const ProjectCard = ({ title, subtitle, cta, ctaHref, imageUrl, imageHint }: { t
     </Link>
 );
 
-const projectCardsData = [
-    { 
-      title: "Sosyal Şirket Mevzuatı (taslağı)",
-      subtitle: "Sosyal faydayı yasal statüye kavuşturan kanun teklifi.",
-      cta: "Taslağı İncele",
+const projectCardsStatic = [
+    {
+      key: 'legislation',
       ctaHref: "/hangelassociation/legislation",
       imageUrl: "https://picsum.photos/seed/legislation/600/800",
       imageHint: "legal document gavel",
     },
-    { 
-      title: "Etki Odaklı İstihdam",
-      subtitle: "Gönüllülüğü kariyere dönüştüren ilk model.",
-      cta: "Protokolü İncele",
+    {
+      key: 'employment',
       ctaHref: "/hangelassociation/projects/istihdam-protokolu",
       imageUrl: "https://picsum.photos/seed/protocol/600/800",
       imageHint: "handshake meeting",
     },
-    { 
-      title: "Akademik Programlar",
-      subtitle: "Üniversitelerde sosyal inovasyon müfredatı.",
-      cta: "Programları Gör",
+    {
+      key: 'academic',
       ctaHref: "/hangelassociation/workshop",
       imageUrl: "https://picsum.photos/seed/academy/600/800",
       imageHint: "university graduation",
     },
-    { 
-      title: "Sosyal Etki Atlası",
-      subtitle: "Türkiye'nin iyilik haritasını çiziyoruz.",
-      cta: "Atlası Keşfet",
+    {
+      key: 'atlas',
       ctaHref: "/hangelassociation/projects/etki-atlasi",
       imageUrl: "https://picsum.photos/seed/atlas/600/800",
       imageHint: "digital map",
-    }
-];
+    },
+] as const;
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
     const { language, changeLanguage, t } = useTranslation();
@@ -256,8 +249,11 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
 }
 
 const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
+    const { t } = useTranslation();
     const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
-    const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+    const countdownText = daysRemaining > 0
+        ? `${t('landing.volunteeringCard.daysLeftPrefix')} ${daysRemaining} ${t('landing.volunteeringCard.daysLeftSuffix')}`
+        : (daysRemaining === 0 ? t('landing.volunteeringCard.lastDay') : t('landing.volunteeringCard.expired'));
 
     return (
         <Link href={`/volunteering/${opportunity.id}`} className="block h-full">
@@ -267,8 +263,8 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                          <HeartHandshake className="h-6 w-6" />
                     </div>
                     <div className="text-right">
-                         <p className="font-bold text-sm leading-tight">{opportunity.points} Puan</p>
-                         <p className="text-[9px] text-white/50 uppercase tracking-widest">Etki Puanı</p>
+                         <p className="font-bold text-sm leading-tight">{opportunity.points} {t('landing.volunteeringCard.points')}</p>
+                         <p className="text-[9px] text-white/50 uppercase tracking-widest">{t('landing.volunteeringCard.impactPoints')}</p>
                     </div>
                 </div>
                 <div className="flex-1 flex flex-col justify-between">
@@ -420,54 +416,54 @@ export default function LoginPage() {
     }, [fsVolunteering]);
 
     const publicNavItems = [
-      { href: '#bagis', label: 'Bağış Yap' },
-      { href: '#gonulluluk', label: 'Gönüllü Ol' },
-      { href: '/hangelassociation', label: 'hangel derneği' },
-      { href: '/about', label: 'Hakkımızda' },
-      { href: '/support', label: 'Destek' },
+      { href: '#bagis', label: t('landing.nav.donate') },
+      { href: '#gonulluluk', label: t('landing.nav.volunteer') },
+      { href: '/hangelassociation', label: t('landing.nav.association') },
+      { href: '/about', label: t('landing.nav.about') },
+      { href: '/support', label: t('landing.nav.support') },
     ];
 
     const campusImg = PlaceHolderImages.find(img => img.id === 'campus-poster-1');
 
     const discoveryItems = [
-        { 
-            title: "hangel STK", 
-            description: "Dijitalleşin, kaynaklarınızı verimli kullanın ve daha fazla destekçiye ulaşın.", 
+        {
+            title: t('landing.discovery.ngo.title'),
+            description: t('landing.discovery.ngo.description'),
             href: "/login/selection?action=register&type=corporate&entity=NGO",
             imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
             imageHint: "volunteers working",
-            linkText: "STK'nı Ekle",
-            linkText2: "Daha Fazla Bilgi",
+            linkText: t('landing.discovery.ngo.linkText'),
+            linkText2: t('landing.discovery.ngo.linkText2'),
             href2: "/ngo-onboarding"
         },
-        { 
-            title: "hangel Marka", 
-            description: "Ticareti sosyal faydayla birleştirin, müşteri sadakatini ve marka değerinizi artırın.", 
+        {
+            title: t('landing.discovery.brand.title'),
+            description: t('landing.discovery.brand.description'),
             href: "/login/selection?action=register&type=corporate&entity=BRAND",
             imageUrl: "https://picsum.photos/seed/merc-char/1080/1080",
             imageHint: "charcoal merchant store drawing",
-            linkText: "Markanı Ekle",
-            linkText2: "Daha Fazla Bilgi",
+            linkText: t('landing.discovery.brand.linkText'),
+            linkText2: t('landing.discovery.brand.linkText2'),
             href2: "/merchant"
         },
-        { 
-            title: "hangel Clubs", 
-            description: "Kampüsteki sosyal etkiyi büyütün, kariyer fırsatları yakalayın ve ağınızı genişletin.", 
+        {
+            title: t('landing.discovery.clubs.title'),
+            description: t('landing.discovery.clubs.description'),
             href: "/login/selection?action=register&type=corporate&entity=CLUB",
             imageUrl: campusImg?.imageUrl || "https://images.unsplash.com/photo-1693700685983-08ae3fb430c7?q=80&w=1080",
             imageHint: campusImg?.imageHint || "minimalist university poster",
-            linkText: "Kulübünü Kaydet",
-            linkText2: "Daha Fazla Bilgi",
+            linkText: t('landing.discovery.clubs.linkText'),
+            linkText2: t('landing.discovery.clubs.linkText2'),
             href2: "/campus-advantages"
         },
         {
-            title: "Kütüphane",
-            description: "Sosyal etki, gönüllülük, sürdürülebilirlik ve daha fazlası — kapsamlı içerik koleksiyonunu keşfet.",
+            title: t('landing.discovery.library.title'),
+            description: t('landing.discovery.library.description'),
             href: "/library",
             imageUrl: "https://picsum.photos/seed/library/1080/1080",
             imageHint: "books library shelf",
-            linkText: "Kütüphaneyi Keşfet",
-            linkText2: "Daha Fazla Bilgi",
+            linkText: t('landing.discovery.library.linkText'),
+            linkText2: t('landing.discovery.library.linkText2'),
             href2: "/library"
         }
     ];
@@ -522,9 +518,9 @@ export default function LoginPage() {
                     title={get('home.donationTitle', 'hangel Bağış')}
                     subtitle={get('home.donationSubtitle', 'Alışverişi iyiliğe dönüştürün.')}
                     description={get('home.donationDescription', "Yüzlerce markadan yaptığınız alışverişlerle, hiçbir ek ücret ödemeden seçtiğiniz STK'ya destek olun. Bilinçli tüketiciliğin en kolay yolu.")}
-                    cta1="Markaları Keşfet"
+                    cta1={t('landing.showcase.donationCta1')}
                     cta1Href="/market"
-                    cta2="Daha Fazla Bilgi"
+                    cta2={t('landing.showcase.donationCta2')}
                     cta2Href="/social-impact"
                 >
                     <div className="w-full max-w-7xl mx-auto">
@@ -553,7 +549,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-primary/20 text-primary hover:bg-primary/5">
                                 <Link href="/market">
-                                    Tüm Markaları Gör ({totalBrandCount > 0 ? totalBrandCount : allEntityLists.length} Marka)
+                                    {t('landing.viewAllBrandsPrefix')} ({totalBrandCount > 0 ? totalBrandCount : allEntityLists.length} {t('landing.brandsSuffix')})
                                 </Link>
                             </Button>
                         </div>
@@ -566,9 +562,9 @@ export default function LoginPage() {
                     title={get('home.volunteeringTitle', 'hangel İmece')}
                     subtitle={get('home.volunteeringSubtitle', 'Zamanınız en değerli bağış.')}
                     description={get('home.volunteeringDescription', 'Yetkinliklerinizi ve zamanınızı toplumsal faydaya dönüştürün. Çevreden eğitime, hayvan haklarından sanata, size en uygun gönüllülük fırsatını bulun.')}
-                    cta1="Daha Fazla Bilgi"
+                    cta1={t('landing.showcase.volunteeringCta1')}
                     cta1Href="/imece"
-                    cta2="Gönüllü Ol"
+                    cta2={t('landing.showcase.volunteeringCta2')}
                     cta2Href="/login/selection?action=register"
                 >
                     <div className="w-full max-w-7xl mx-auto">
@@ -595,7 +591,7 @@ export default function LoginPage() {
                         <div className="text-center mt-8">
                             <Button asChild variant="outline" className="rounded-full px-8 h-12 font-bold border-white/20 text-white bg-transparent hover:bg-white hover:text-black">
                                 <Link href="/volunteering">
-                                    Tüm İlanları Gör ({(fsVolunteering && fsVolunteering.length > 0 ? fsVolunteering.length : volunteeringOpportunities.length)} İlan)
+                                    {t('landing.viewAllListingsPrefix')} ({(fsVolunteering && fsVolunteering.length > 0 ? fsVolunteering.length : volunteeringOpportunities.length)} {t('landing.listingsSuffix')})
                                 </Link>
                             </Button>
                         </div>
@@ -634,9 +630,16 @@ export default function LoginPage() {
                             className="w-full"
                         >
                             <CarouselContent className="-ml-4">
-                                {projectCardsData.map((card, index) => (
+                                {projectCardsStatic.map((card, index) => (
                                     <CarouselItem key={index} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-[22%]">
-                                        <ProjectCard {...card} />
+                                        <ProjectCard
+                                            title={t(`landing.projects.${card.key}.title`)}
+                                            subtitle={t(`landing.projects.${card.key}.subtitle`)}
+                                            cta={t(`landing.projects.${card.key}.cta`)}
+                                            ctaHref={card.ctaHref}
+                                            imageUrl={card.imageUrl}
+                                            imageHint={card.imageHint}
+                                        />
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
@@ -655,39 +658,39 @@ export default function LoginPage() {
                             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">{get('home.valuesDescription', 'Şeffaflık, güvenlik ve erişilebilirlik üzerine kurulu bir sosyal etki ekosistemi tasarlıyoruz.')}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <InfoCard 
+                            <InfoCard
                                 icon={TrendingUp}
-                                title="Sürdürülebilirlik"
-                                description="Toplumsal ve çevresel etkimizi nasıl yönettiğimizi ve pozitif değişime nasıl liderlik ettiğimizi keşfedin."
+                                title={t('landing.values.sustainability.title')}
+                                description={t('landing.values.sustainability.description')}
                                 link="/social-impact"
-                                linkText="Etkimizi Görün"
+                                linkText={t('landing.values.sustainability.linkText')}
                             />
-                            <InfoCard 
+                            <InfoCard
                                 icon={Users}
-                                title="Erişilebilirlik"
-                                description="Teknolojiye herkes için kullanılabilir kılma taahhüdümüzü ve standartlarımızı inceleyin."
+                                title={t('landing.values.accessibility.title')}
+                                description={t('landing.values.accessibility.description')}
                                 link="/accessibility"
-                                linkText="Standartları İnceleyin"
+                                linkText={t('landing.values.accessibility.linkText')}
                             />
-                             <InfoCard 
+                             <InfoCard
                                 icon={ShieldCheck}
-                                title="Güvenlik"
-                                description="Verilerinizi nasıl koruduğumuzu ve platformumuzun güvenliğini nasıl sağladığımızı öğrenin."
+                                title={t('landing.values.security.title')}
+                                description={t('landing.values.security.description')}
                                 link="/settings/contracts/gizlilik-politikasi"
-                                linkText="Daha Fazla Bilgi"
+                                linkText={t('landing.values.security.linkText')}
                             />
-                            <InfoCard 
+                            <InfoCard
                                 icon={FileText}
-                                title="Yasal Bilgiler"
-                                description="Yasal bilgilendirmelerimize ve kurumsal şeffaflık belgelerimize ulaşın."
+                                title={t('landing.values.legal.title')}
+                                description={t('landing.values.legal.description')}
                                 link="/bilgi-toplumu-hizmetleri"
-                                linkText="Belgeleri Görüntüleyin"
+                                linkText={t('landing.values.legal.linkText')}
                             />
                         </div>
                     </div>
                 </section>
             </main>
-            <PublicFooter currentPageLabel="Anasayfa" />
+            <PublicFooter currentPageLabel={t('landing.footerLabel')} />
         </div>
     );
 }

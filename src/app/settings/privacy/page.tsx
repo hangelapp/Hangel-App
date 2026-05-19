@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -27,6 +28,7 @@ const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: {
 
 export default function PrivacySettingsPage() {
     const router = useRouter();
+    const { t } = useTranslation();
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
@@ -97,12 +99,12 @@ export default function PrivacySettingsPage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Gizlilik ve Etkileşim</h1>
-                <p className="text-muted-foreground text-sm">Profilinizin görünürlüğünü ve kimlerin sizinle etkileşime girebileceğini yönetin.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsPrivacy.heading')}</h1>
+                <p className="text-muted-foreground text-sm">{t('dashboard.settingsPrivacy.subheading')}</p>
             </div>
 
             <Card>
-                <CardHeader><CardTitle>Profil Gizliliği</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('dashboard.settingsPrivacy.profileVisibilityTitle')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label="Özel Profil" description="Etkinleştirilirse, profilinizi sadece onayladığınız takipçiler görebilir." icon={Lock} iconColor="bg-red-500">
                         <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
@@ -112,8 +114,8 @@ export default function PrivacySettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Veri Gizliliği</CardTitle>
-                    <CardDescription>Profilinizde hangi bilgilerin görüneceğini seçin.</CardDescription>
+                    <CardTitle>{t('dashboard.settingsPrivacy.dataVisibilityTitle')}</CardTitle>
+                    <CardDescription>{t('dashboard.settingsPrivacy.dataVisibilityDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <SettingsItem label="Etki Puanımı Gizle" description="Sosyal etki puanınız ve istatistikleriniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
@@ -143,7 +145,7 @@ export default function PrivacySettingsPage() {
             <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Değişiklikleri Kaydet
+                    {t('dashboard.settingsPrivacy.saveBtn')}
                 </Button>
             </div>
         </div>
