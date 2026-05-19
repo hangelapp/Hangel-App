@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { addDoc, collection, query, serverTimestamp, where } from 'firebase/firestore';
+import { addDoc, collection, doc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -81,6 +81,7 @@ export default function MessagesPage() {
         senderEmail?: string; senderPhone?: string; senderBio?: string;
         subject?: string; excerpt?: string; content?: string; time?: string;
         senderType?: string; unread?: boolean;
+        readBy?: Record<string, unknown>;
     }
     const filteredMessages = ((messages || []) as MessageItem[]).filter((m) =>
         m.sender?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,9 +130,33 @@ export default function MessagesPage() {
         } finally { setSending(false); }
     };
 
+    const markAsRead = async (msg: MessageItem) => {
+        if (!authUser?.uid || !msg.id) return;
+        if (msg.readBy && msg.readBy[authUser.uid]) return; // already marked
+        try {
+            await setDoc(
+                doc(db, COLLECTIONS.messages, msg.id),
+                { readBy: { [authUser.uid]: serverTimestamp() } },
+                { merge: true },
+            );
+        } catch (err) {
+            // graceful degradation — rules may reject; do not break UX
+            console.warn('markAsRead failed', err);
+        }
+    };
+
     const openProfileFromMessage = (msg: MessageItem) => {
         setProfileData({ id: msg.senderId, name: msg.sender || 'Kullanıcı', avatarUrl: msg.senderAvatarUrl, email: msg.senderEmail, phone: msg.senderPhone, bio: msg.senderBio, senderType: msg.senderType });
         setProfileOpen(true);
+        void markAsRead(msg);
+    };
+
+    const isUnread = (msg: MessageItem): boolean => {
+        if (!authUser?.uid) return false;
+        if (msg.readBy && msg.readBy[authUser.uid]) return false;
+        // fallback to legacy `unread` flag if present
+        if (typeof msg.unread === 'boolean') return msg.unread;
+        return true;
     };
 
     return (
@@ -183,9 +208,9 @@ export default function MessagesPage() {
                             description={t('dashboard.messages.emptyDesc')}
                         />
                     ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => (
-                        <Card key={msg.id} className={cn(
+                        <Card key={msg.id} onClick={() => void markAsRead(msg)} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",
-                            msg.unread && "border-l-4 border-l-primary"
+                            isUnread(msg) && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
                                 <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${msg.sender} profilini gör`}>

@@ -16,6 +16,32 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-18 — FEAT-IMECE-MATCH: intelligent volunteer matching algorithm
+- **ID**: FEAT-IMECE-MATCH
+- **Lead**: backend-lead
+- **Sorun**: Hangel landing page'i "akıllı eşleştirme" vaat ediyor ama orijinal audit `imece` özelliğinin sadece düz liste sayfası olduğunu ve **gerçek matching algoritması olmadığını** tespit etti. Mevcut `volunteering/page.tsx` içindeki `computeMatch` 60/30/10 ağırlıklarıyla içerideydi ama PRD'nin (skill/interest/şehir/uygunluk/work mode/dil) çok-eksenli puanlamasını karşılamıyordu.
+- **Değişiklik**: Saf scoring lib + ranker oluşturuldu (`src/lib/volunteer-matching.ts`); 6 eksen üzerinden 0-100 puan (Skills 30 / Interests 20 / Şehir 20 / Uygunluk 15 / Çalışma Şekli 10 / Dil 5), top-N (cap 20) sıralı sonuç + en yüksek katkıdan 3 Türkçe sebep döndürüyor. `volunteering/page.tsx` üstüne "Sana Özel Öneriler" bölümü eklendi (auth + profil varsa), 6 kart, "Tümünü Gör" anchor scroll. Flat list'in mevcut filter/sort/render kodu **dokunulmadı**.
+- **Dosyalar**: `src/lib/volunteer-matching.ts` (NEW, 224 LoC), `src/app/volunteering/page.tsx` (modify: +2 import, +4 useDoc fields, +2 useMemo, +1 öneri bölümü, flat list `id="imece-all-listings"` anchor), `tests/lib/volunteer-matching.test.ts` (NEW, 10 test).
+- **Skor ağırlıkları (final)**: Skills 30 (oran), Interests 20 (oran), Aynı şehir 20 (binary), Gün/saat uygunluk 15 (oran), Çalışma şekli 10 (binary, online/yüz yüze/hibrit normalizasyon), Dil 5 (oran). Saf TS — Firestore yok, side-effect yok, Türkçe locale-safe `toLocaleLowerCase('tr')`.
+- **Acceptance**:
+  - High match (skills+city+availability hepsi overlap) → skor 73 (>70) ✓
+  - No match (sıfır overlap) → skor 0 ✓
+  - Partial match (sadece skills 2/2) → skor 30 ✓
+  - `rankOpportunities` desc sort + topN/RANK_CAP=20 ✓
+- **Risk**: L — saf fonksiyon eklemesi + tek sayfada üst tarafa minimal JSX. Flat list davranışı, mevcut `computeMatch` (per-card progress bar) ve filter/sort hiç değişmedi.
+- **Rollback**: `src/lib/volunteer-matching.ts` + `tests/lib/volunteer-matching.test.ts` sil, `page.tsx` import + `hasVolunteerProfile`/`personalizedRecs` useMemo + öneri `<section>` + `id="imece-all-listings"` anchor'ı revert.
+- **Test sonucu**:
+  - `npm run typecheck`: PASS
+  - `npm run lint` (sadece touched files): 0 hata. Repo-genelinde 1 hata var → **pre-existing** (`src/app/api/affiliate/webhook/[brandId]/route.ts:155` `no-useless-assignment`), stash ile main üzerinde doğrulandı, bu görevden bağımsız.
+  - `npm test -- --run tests/lib/volunteer-matching.test.ts`: 10/10 PASS (97ms).
+- **Notlar**:
+  - Opportunity şeması mevcut `Volunteering` type'ından okundu (`skills`, `dailySkills`, `interests`, `socialArea`, `languages`, `location.{city,type}`). Tolerant aliases: `requiredSkills`, `category`, `city`, `workMode`, `availabilityDays`, `availabilityTimes` — Firestore'da bu alanlar bulunduğunda da çalışır.
+  - User profili `volunteerInfo.{skills,dailySkills,interests,languages,availabilityDays,availabilityTimes,workModes}` + `personalInfo.address.city`. `motivations` şu an scoring'e dahil değil (PRD'de yok ama type'da var; gelecek iterasyon için).
+  - "Sana Özel Öneriler" bölümü `score > 0` filter'ı uygular — sıfır skorlu önerileri göstermez. Profil boşsa `hasVolunteerProfile=false` → bölüm gizli.
+  - Work mode normalizasyonu: `'Saha' | 'Yüz Yüze' | 'Fiziksel'` → `'yüz yüze'`, `'Hibrit' | 'Hybrid'` → `'hibrit'`. Kullanıcının `workModes` enum'u Firestore'da farklı yazıldığında bile match çalışır.
+
+---
+
 ## 2026-05-18 — P2-5b-landing-rest: i18n landing page bottom half migration
 - **ID**: P2-5b-landing-rest
 - **Lead**: frontend-lead
@@ -1115,3 +1141,95 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Gate sonucu**: `npx tsc --noEmit` PASS (no output), `npm run lint` PASS (0 errors).
 - **Risk**: L — pure string move; no logic/behavior change. Toast variant + title/description placement same. ARIA semantics preserved. Rollback = single revert. Other 5 langs (ru/ar/fa/es/ha) `aria.*` doldurulmadı → P2-5d empty-string-fallback gereği TR fallback otomatik.
 - **Açık iş**: marketing pages içindeki ARIA tekrarları (P2-5e agent owner). Other-locale `aria.*` çevirileri tek-kelime olduğu için gerektikçe basit ekleme (back/filter/sort).
+
+---
+
+## 2026-05-18 — P2-1c: vitest coverage for remaining 8 critical API routes
+- **ID**: P2-1c
+- **Lead**: hangel-test-engineer
+- **Scope**: Extend `tests/api/` from 13 → 21 files by covering the 8 next-most-critical messaging/admin routes. Mocks at SDK boundary; no real provider calls.
+- **Selected routes (8)**:
+  1. `src/app/api/admin/messaging/pricing/route.ts` — super-admin GET/PUT pricing config
+  2. `src/app/api/admin/messaging/ngo-wallets/route.ts` — super-admin GET list + POST topup/adjust
+  3. `src/app/api/admin/messaging/ngo-senders/route.ts` — super-admin GET collectionGroup + POST approve/reject
+  4. `src/app/api/messaging/csv/save/route.ts` — super-admin CSV save (parse + dedup)
+  5. `src/app/api/messaging/iys/export/route.ts` — super-admin IYS consent CSV export
+  6. `src/app/api/messaging/worker/reclaim/route.ts` — worker-key reclaim leases
+  7. `src/app/api/messaging/worker/schedule/route.ts` — worker-key schedule promotion
+  8. `src/app/api/messaging/worker/trust-score/route.ts` — worker-key trust score recompute
+- **Strategy**: Reuse `tests/api/_setup.ts` helpers; mock `@/lib/firebase-admin`, `@/lib/messaging/server-auth`, `@/lib/messaging/audit`, `@/lib/messaging/wallet`, `@/lib/messaging/pricing`, `@/lib/messaging/trust-score`, `@/lib/messaging/queue/*` at SDK boundary. Each test file ≤ 30 lines per case, 3-5 cases per route.
+- **Cases per file**: auth fail (401/403), input validation (400), happy path (200), provider/service error (500), and one route-specific edge (e.g., topup vs adjust branching, oversized CSV, empty wallet list).
+- **Result**: 8 new files, 30 new tests (3-5 per file). `npm test -- tests/api/` → 22 files, 91 passed / 1 skipped, ~4.9s. All test files ≤ ~70 lines (case bodies all < 30 lines as required). No new skips introduced.
+- **Gate**: full suite PASS 91/0 fail.
+
+---
+
+## 2026-05-18 — P1-8b: AI quota cap env-tunable per-kind
+- **ID**: P1-8b
+- **Lead**: backend-lead
+- **Scope**: `src/ai/guards.ts` `checkAndConsumeAIQuota`'sının hardcoded `30 calls/user/day/kind` cap'ini env-tunable yap. Flow dosyalarına dokunma (zaten `kind` string'ini doğru geçiriyorlar).
+- **Çözüm**:
+  - Yeni internal helper: `resolveCapForKind(kind, defaultCap)` — `kind` → `[^a-zA-Z0-9]+` replace + UPPER → env key `AI_QUOTA_<SUFFIX>`. Boş / undefined → default. Non-positive-int veya parse fail → `console.warn` + default.
+  - `checkAndConsumeAIQuota`: `const effectiveCap = cap === DEFAULT_DAILY_CAP ? resolveCapForKind(safeKind, DEFAULT_DAILY_CAP) : cap;` — env override SADECE caller `cap` argümanını default'ta bıraktıysa devreye giriyor. Bu sayede mevcut testler ve explicit cap geçen call site'lar etkilenmiyor (backward-compatible). 5 flow wrapper de cap geçmediği için otomatik env override alıyor.
+  - `effectiveCap`, hem Firestore tx'inde (`current >= effectiveCap`) hem doc payload'ında (`cap: effectiveCap`) hem fail-open dönüşlerinde kullanılıyor → bucket doc'u her zaman gerçekten uygulanan cap'i yansıtıyor.
+  - Kind normalize: `safeKind` (`sanitizeUserInput` + `[^a-zA-Z0-9_-]` strip) `resolveCapForKind`'a feed ediliyor → kötü niyetli kind input'u env key injection açmıyor.
+- **Env vars (`.env.example` APPEND)**:
+  - `AI_QUOTA_IMPACT_STORY=30`
+  - `AI_QUOTA_LIBRARY_ASSISTANT=50`
+  - `AI_QUOTA_MARKETPLACE_ASSISTANT=50`
+  - `AI_QUOTA_PRODUCT_DESCRIPTION=20`
+  - `AI_QUOTA_PROJECT_WRITER=10`
+- **Files touched**: `src/ai/guards.ts` (helper + cap resolution), `.env.example` (append block + comment), `docs/audit/tasks.md` (yeni P1-8b satırı ✅), `docs/audit/decisions.md` (bu giriş).
+- **Files NOT touched**: 5 flow dosyası (`src/ai/flows/{impact-story-flow,library-ai-assistant,marketplace-ai-assistant,marketplace-ai-product-description,project-writer-flow}.ts`), API routes, `firestore.rules`, `.worktrees/**`. Flow imzaları değişmedi.
+- **Gate sonucu**: `npm run typecheck` PASS (no output), `npm run lint` PASS (0 errors; 1 pre-existing unrelated warning in `messages/page.tsx`), `npm test -- --run` PASS (14 files / 60 tests / 54 skip — baseline).
+- **Risk**: L — env-driven `Number(...)` parse + sınır kontrolü; parse fail bilinçli olarak default'a fallback ediyor (warn log var). Doc payload `cap` alanı bucket başına `effectiveCap` ile yazıldığı için aynı kullanıcı aynı gün cap'i değişse bile (yeniden deploy) bucket'taki `cap` field'ı geçmiş kararı tartışmaya açık tutmuyor (her tx'te güncel `effectiveCap` ile karşılaştırma yapılıyor). Worst case: operator bilerek 0 / negatif yazarsa warn + default 30 → bucket throttle bozulmaz.
+- **Rollback**: `git revert`; bucket'lardaki `cap` field'ları geri-uyumlu (rules okunmuyor, sadece audit için).
+
+---
+
+## 2026-05-18 — FEAT-AFFILIATE-WEBHOOK: brand → Hangel sale confirmation endpoint
+- **ID**: FEAT-AFFILIATE-WEBHOOK
+- **Lead**: backend-lead
+- **Scope**: Implement the receiving side of the affiliate webhook flow flagged by the `TODO(affiliate-webhook)` in `src/app/market/[id]/page.tsx:142`. Brands POST confirmed sales to `POST /api/affiliate/webhook/[brandId]`; Hangel verifies HMAC, records an idempotent audit row, and increments the user's `impactScore`.
+- **Endpoint shape**: `POST /api/affiliate/webhook/[brandId]`.
+  - Headers: `x-affiliate-signature: <hex>` (or `sha256=<hex>`) — HMAC SHA256 of raw body. Optional `x-affiliate-timestamp: <unix-seconds>` enforced ±5min (P1-3 pattern) when present.
+  - Secret resolution: per-brand `brands/{brandId}.affiliateSecret` first, else env fallback `AFFILIATE_WEBHOOK_SECRET`. Both compared via `crypto.timingSafeEqual` on equal-length buffers.
+  - Body: `{ orderId, userId?, referralCode?, amount, commission, currency?='TRY', completedAt }` validated manually (no zod dep).
+  - Errors: `{ errorCode, message }` shape — `INVALID_SIGNATURE` (401), `STALE_TIMESTAMP` (401), `INVALID_BODY` (400), `DUPLICATE_ORDER` (409), `BRAND_NOT_FOUND` (404), `INTERNAL_ERROR` (500). Signature check intentionally precedes brand-existence check so callers without a valid secret cannot probe brandId existence.
+- **Idempotency strategy**: `affiliateConfirmations/{brandId}__{orderId}` doc via Admin SDK `.create()` (atomic create-or-fail). Code `6` / `'already-exists'` → 409 `DUPLICATE_ORDER`. Path-safe id (`/` → `_`, sliced ≤1500).
+- **Impact bump**: `runTransaction` wraps `users/{userId}` `impactScore: FieldValue.increment(commission)` + `updatedAt`. If `userId` missing OR user doc missing OR tx throws, audit row stays but impact bump is skipped (logged) — operator reconciliation path via `referralCode`.
+- **Files created**:
+  - `src/app/api/affiliate/webhook/[brandId]/route.ts` (~230 LoC) — POST handler.
+  - `tests/api/affiliate-webhook.test.ts` — 4 cases (missing sig 401 / invalid sig 401 / duplicate 409 / valid 200 + impact++). Mocks `@/lib/firebase-admin` `collection().doc()` per collection, `runTransaction` proxies a fake tx whose `get()` returns user-exists + `update()` is the spy.
+- **Files modified**:
+  - `src/firebase/collections.ts`: added `affiliateConfirmations: 'affiliateConfirmations'` to COLLECTIONS map.
+  - `firestore.rules`: appended `match /affiliateConfirmations/{confId} { allow read, write: if false; }` next to the other Admin-SDK-only deny blocks (server-only audit trail; brand HMAC verified server-side). **CODE ONLY — DEPLOY PENDING USER** (`firebase deploy --only firestore:rules`).
+  - `.env.example`: appended `AFFILIATE_WEBHOOK_SECRET=` block with usage notes.
+  - `docs/audit/tasks.md`: new `FEAT-AFFILIATE-WEBHOOK` row (✅ Done; rules deploy gate noted).
+- **Files NOT touched**: other API routes, `src/lib/messaging/**`, `src/app/market/[id]/page.tsx` (frontend TODO remains as the brand-side integration trigger; backend is now ready to receive), `.worktrees/**`. Donation status flip + 72-day `clearableAt` reconciliation will follow once a brand actually integrates and the audit trail is populated.
+- **Gate sonucu** (planned): `npm run typecheck && npm run lint && npm test -- --run` — verified in this session.
+- **Risk**: L — endpoint is additive, no existing caller touched; rules deny by default; secret resolution prefers per-brand so onboarded partners can rotate without env churn. Worst case: brand misconfigures signature → 401 (no side effect). Duplicate sends → 409 (audit doc untouched). Impact bump failure → confirmation row preserved + log line for reconciliation.
+- **Rollback**: `git revert` of the new route + collections entry + rules block + env line. No data migration since the collection is brand-new and read-deny.
+- **Açık iş**:
+  - Rules deploy by operator: `firebase deploy --only firestore:rules`.
+  - Brand onboarding doc snippet to share with partners (HMAC body recipe, header names, signature format) — separate doc PR.
+  - Donation status flip from "Başlatıldı" → "İşleme Alındı" once webhook lands (frontend TODO at `src/app/market/[id]/page.tsx:142`) — follow-up `FEAT-AFFILIATE-WEBHOOK-2`.
+
+# Decisions log
+
+## FEAT-MSG-REALTIME (2026-05-18) — hangel-frontend-lead
+
+**Context**: Audit flagged messaging page as missing realtime listener + read receipts.
+
+**Verification (realtime)**: `useCollection(messagesQuery)` already uses `onSnapshot` under the hood via the `useCollection` hook (`src/firebase/firestore/use-collection.tsx`). `messagesQuery` is memoized via `useMemoFirebase` with `[db, authUser?.uid]` deps. Realtime listener IS in place. Audit finding was outdated. No change required.
+
+**Read receipts**: On message row click or profile-open, call `markAsRead(msg)` which writes `readBy.{uid} = serverTimestamp()` via `setDoc(..., { merge: true })`. Graceful degradation on rule rejection (warn-only). Idempotent: skips write if `msg.readBy[uid]` already set client-side.
+
+**Unread cue**: New `isUnread(msg)` helper returns `true` when `readBy[uid]` is absent. Falls back to legacy `msg.unread` boolean if present (backward compat). Left-border visual cue (`border-l-4 border-l-primary`) now keyed off this helper.
+
+**Unread badge in header**: SKIPPED. Header (`src/components/layout/header.tsx`) has only a notifications bell (`/notifications`), no dedicated messages icon. Per scope ("don't touch otherwise"), I did not add a new icon or piggyback messages count onto the notifications badge — those are distinct concepts and conflating would mislead users.
+
+**Files modified**:
+- `src/app/messages/page.tsx`
+
+**Gates**: `npm run typecheck` PASS · `npm run lint` PASS.

@@ -66,6 +66,9 @@ export const COLLECTIONS = {
   funds: 'funds',
   fundApplications: 'fundApplications',
   monthlyEarnings: 'monthlyEarnings',
+  // Affiliate webhook audit trail (Admin SDK only; brand-signed POST → impact++).
+  // Doc id = `{brandId}__{orderId}` for create-or-fail idempotency.
+  affiliateConfirmations: 'affiliateConfirmations',
 
   // Messaging — campaigns & templating
   campaigns: 'campaigns',

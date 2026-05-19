@@ -16,6 +16,8 @@ import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@
 import { collection, doc } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import { rankOpportunities, type MatchingUserProfile } from '@/lib/volunteer-matching';
+import { Sparkles } from 'lucide-react';
 
 const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }: {
     icon: React.ElementType;
@@ -213,6 +215,10 @@ export default function VolunteeringPage() {
             documents?: string[];
             certificates?: string[];
             interests?: string[];
+            availabilityDays?: string[];
+            availabilityTimes?: string[];
+            workModes?: string[];
+            motivations?: string[];
         };
         personalInfo?: { address?: { city?: string } };
     }>(userDocRef);
@@ -238,6 +244,32 @@ export default function VolunteeringPage() {
     const userCity = useMemo(() => {
         return userData?.personalInfo?.address?.city as string | undefined;
     }, [userData]);
+
+    // FEAT-IMECE-MATCH: intelligent personalized recommendations
+    const hasVolunteerProfile = useMemo(() => {
+        const vi = userData?.volunteerInfo;
+        if (!vi) return false;
+        return Boolean(
+            (vi.skills && vi.skills.length > 0) ||
+            (vi.interests && vi.interests.length > 0) ||
+            (vi.availabilityDays && vi.availabilityDays.length > 0) ||
+            (vi.workModes && vi.workModes.length > 0) ||
+            (vi.languages && vi.languages.length > 0)
+        );
+    }, [userData]);
+
+    const personalizedRecs = useMemo(() => {
+        if (!authUser || !hasVolunteerProfile || !oppsData || oppsData.length === 0) return [];
+        const activeOpps = oppsData.filter(opp => {
+            const status = (opp as Volunteering & { status?: string }).status;
+            return !status || status === 'Aktif';
+        });
+        const profile: MatchingUserProfile = {
+            volunteerInfo: userData?.volunteerInfo || null,
+            personalInfo: userData?.personalInfo || null,
+        };
+        return rankOpportunities(activeOpps, profile, 6).filter(r => r.score > 0);
+    }, [authUser, hasVolunteerProfile, oppsData, userData]);
 
     const { interestOptions, skillOptions, cityOptions } = useMemo(() => {
         const interests = new Set<string>();
@@ -345,7 +377,54 @@ export default function VolunteeringPage() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        {personalizedRecs.length > 0 && (
+          <section aria-labelledby="imece-recs-heading" className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h2 id="imece-recs-heading" className="text-base font-bold">Sana Özel Öneriler</h2>
+              </div>
+              <a
+                href="#imece-all-listings"
+                className="text-xs font-bold text-primary hover:underline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('imece-all-listings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              >
+                Tümünü Gör
+              </a>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {personalizedRecs.map(({ opportunity, score, reasons }) => (
+                <Link key={opportunity.id} href={`/volunteering/${opportunity.id}`} className="block group">
+                  <Card className="h-full overflow-hidden border-primary/20 shadow-sm hover:shadow-md hover:border-primary/40 transition-all">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">{opportunity.organization}</p>
+                          <h3 className="font-semibold text-sm leading-tight mt-0.5 group-hover:text-primary transition-colors line-clamp-2">{opportunity.title}</h3>
+                        </div>
+                        <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-black">
+                          %{score}
+                        </span>
+                      </div>
+                      {reasons[0] && (
+                        <p className="text-xs text-muted-foreground line-clamp-1">{reasons[0]}</p>
+                      )}
+                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><MapPin size={12} /> {opportunity.location.city}</span>
+                        <span className="font-bold text-primary">{opportunity.points} Puan</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div id="imece-all-listings" className="space-y-3 scroll-mt-32">
           {isLoading ? (
               [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
           ) : filteredOpps.length > 0 ? (

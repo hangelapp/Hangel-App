@@ -21,9 +21,42 @@ import 'server-only';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 
 // Default per-user / per-kind / per-day call cap.
-// TODO(P1-8b): make env-tunable (`AI_QUOTA_DAILY_CAP_<KIND>` or single
-// `AI_QUOTA_DAILY_CAP`).
+// P1-8b (2026-05-18): env-tunable per-kind via `AI_QUOTA_<UPPER_SNAKE_CASE_KIND>`
+// (e.g., `AI_QUOTA_IMPACT_STORY=30`). Falls back to `DEFAULT_DAILY_CAP` when the
+// env var is unset OR fails positive-integer parse. See `resolveCapForKind`.
 const DEFAULT_DAILY_CAP = 30;
+
+/**
+ * Resolve the per-day cap for a given quota `kind` by consulting the
+ * `AI_QUOTA_<UPPER_SNAKE_CASE_OF_KIND>` env var. The mapping converts the
+ * raw kind string (typically kebab-case, e.g. `impact-story`) to
+ * `IMPACT_STORY` and looks up `process.env.AI_QUOTA_IMPACT_STORY`.
+ *
+ * Rules:
+ *  - Empty / missing env var → return default (`DEFAULT_DAILY_CAP`).
+ *  - Parse failure or non-positive integer → log warn, return default.
+ *  - Valid positive integer → use that.
+ *
+ * Pure (no I/O); cheap to call per-request.
+ */
+function resolveCapForKind(kind: string, defaultCap: number): number {
+  if (!kind) return defaultCap;
+  // Normalize: non-alphanumerics → `_`, then upper-case.
+  // `impact-story` → `IMPACT_STORY`; `productDescription` → `PRODUCTDESCRIPTION`.
+  // Callers pass dash/snake; mixed-case is best-effort.
+  const suffix = kind.replace(/[^a-zA-Z0-9]+/g, '_').toUpperCase();
+  const envKey = `AI_QUOTA_${suffix}`;
+  const raw = process.env[envKey];
+  if (raw === undefined || raw === '') return defaultCap;
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    console.warn(
+      `[ai/guards] ${envKey}="${raw}" is not a positive integer; falling back to default cap ${defaultCap}.`,
+    );
+    return defaultCap;
+  }
+  return parsed;
+}
 
 /**
  * Maximum number of characters accepted from any single user-supplied prompt
@@ -107,16 +140,20 @@ export async function checkAndConsumeAIQuota(
   kind: string,
   cap: number = DEFAULT_DAILY_CAP,
 ): Promise<AIQuotaResult> {
-  if (!userId || typeof userId !== 'string') {
-    return { allowed: true, remaining: cap };
-  }
   const safeKind = sanitizeUserInput(kind, 64).replace(/[^a-zA-Z0-9_-]/g, '') || 'unknown';
+  // P1-8b: env override applies ONLY when the caller left `cap` at the
+  // default. Explicit `cap` args from callers still win — preserves
+  // backward-compatibility and lets tests pin a cap deterministically.
+  const effectiveCap = cap === DEFAULT_DAILY_CAP ? resolveCapForKind(safeKind, DEFAULT_DAILY_CAP) : cap;
+  if (!userId || typeof userId !== 'string') {
+    return { allowed: true, remaining: effectiveCap };
+  }
   let db: ReturnType<typeof getAdminFirestore>;
   try {
     db = getAdminFirestore();
   } catch (err) {
     console.warn('[ai/guards] Admin SDK unavailable; allowing AI call without quota enforcement.', err);
-    return { allowed: true, remaining: cap };
+    return { allowed: true, remaining: effectiveCap };
   }
 
   const bucketRef = db
@@ -129,7 +166,7 @@ export async function checkAndConsumeAIQuota(
     return await db.runTransaction(async (tx) => {
       const snap = await tx.get(bucketRef);
       const current = (snap.exists ? (snap.data()?.count as number | undefined) : 0) ?? 0;
-      if (current >= cap) {
+      if (current >= effectiveCap) {
         return { allowed: false, remaining: 0 };
       }
       const next = current + 1;
@@ -137,16 +174,16 @@ export async function checkAndConsumeAIQuota(
         bucketRef,
         {
           count: next,
-          cap,
+          cap: effectiveCap,
           kind: safeKind,
           updatedAt: new Date(),
         },
         { merge: true },
       );
-      return { allowed: true, remaining: Math.max(0, cap - next) };
+      return { allowed: true, remaining: Math.max(0, effectiveCap - next) };
     });
   } catch (err) {
     console.warn('[ai/guards] Quota transaction failed; allowing AI call.', err);
-    return { allowed: true, remaining: cap };
+    return { allowed: true, remaining: effectiveCap };
   }
 }

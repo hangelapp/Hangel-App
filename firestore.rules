@@ -420,6 +420,14 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // FEAT-AFFILIATE-WEBHOOK: brand-signed affiliate sale confirmations
+    // (Admin SDK only — written by /api/affiliate/webhook/[brandId] after
+    //  HMAC SHA256 verification). Doc id is `{brandId}__{orderId}` for
+    //  create-or-fail idempotency. No client read/write.
+    match /affiliateConfirmations/{confId} {
+      allow read, write: if false;
+    }
+
     // KVKK pazarlama izni: sahibi sadece kendi toggle'larını günceller; unsubscribeToken server-only
     match /userMarketingConsent/{userId} {
       allow read: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
