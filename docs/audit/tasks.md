@@ -216,6 +216,32 @@ Kullanıcının `hangel.org.tr HATA.pdf` dosyasından 90+ madde 7 wave'de parale
 | PDF-71-rl | Library API rate-limit | backend-lead | 📋 Deferred — `checkRateLimit` 30/dk/IP pattern hazır. |
 | PDF-71-sysprompt | aiAssistantConfig.systemPrompt → flow prompt template | backend-lead | 📋 Deferred — flow signature change gerek. |
 | PDF-90 | /posts/[id] SSR + Open Graph meta | frontend-lead | 📋 Deferred — sosyal medya paylaşımı SEO için. |
-| PDF-13b | Gmail/Outlook OAuth backend + IMAP proxy | backend-lead + security-lead | 📋 Deferred — büyük scope (OAuth client setup + Firestore credential storage rules). |
-| PDF-50+ | Kütük lookup (Vakıf/Dernek auto-fill from registry) | backend-lead | 📋 Deferred — Google Sheets import + lookup API + form auto-fill. Data dosyaları PDF'te belirtildi; runbook üretilecek. |
+| PDF-13b | Gmail/Outlook OAuth backend + IMAP proxy | backend-lead + security-lead | ✅ Done (2026-05-21, security-lead) — REAL server-side OAuth contact-import: `src/app/api/contacts/[provider]/{start,callback}/route.ts` (Next 15 async params) + `src/lib/contacts/oauth.ts` (HMAC signed state + timingSafeEqual + double-submit cookie; People API + Graph fetch; normalize+cap 2000; token persist YOK). Client `invite/page.tsx` + `ngo-admin/qr/page.tsx` (Gmail→google, Outlook→microsoft, IMAP→honest vCard/CSV note). Env + runbook `contacts-oauth-setup.md`. typecheck + lint PASS. Operatör: OAuth client setup + env; redirect URI `https://hangel.org.tr/api/contacts/{google,microsoft}/callback`. Detay decisions.md 2026-05-21. |
+| PDF-50+ | Kütük lookup (Vakıf/Dernek auto-fill from registry) | backend-lead | ✅ Done (kod, 2026-05-21) — `scripts/import-registry.mjs` (CSV → `registryDernekler`/`registryVakiflar`), `firestore.rules` public-read blokları, `CorporateForm` auto-fill (Dernek kütük no `getDoc`; Vakıf isim prefix-search). Veri import + rules deploy operatör işi: `runbooks/registry-import.md`. ⚠️ Vakıflar sheet'inde kütük no YOK → isimle arama. |
 | PDF-FCM | FCM push delivery (P-FCM-DELIVERY) | devops-lead + frontend-lead | 🔧 — Web scaffold mevcut; iOS/Android Capacitor plugin install + APNs/FCM key config + payload handler + click-through nav kaldı. |
+
+## PDF Audit — 2026-05-21 (kullanıcı "kırmızı maddeleri düzelt" turu)
+
+Kullanıcı tekrar PDF gönderip "kırmızı ile yazılı hataları düzelt" dedi. İnceleme: kırmızı maddelerin ~%70'i kodda ZATEN doğruydu — prod'da bozuk görünmelerinin sebebi App Hosting build'inin kırık olması (sessiz deploy kilidi) + bekleyen rules/indexes deploy + eksik `GEMINI_API_KEY` env. Build artık yeşil. Aşağıdaki maddeler kodda GERÇEKTEN kırıktı ve düzeltildi.
+
+| ID | Görev (kırmızı PDF maddesi) | Sahip | Durum |
+|---|---|---|---|
+| PDF-R1 | /ngos kartlarından bağışçı/şeffaflık/gönüllü istatistik çiplerini kaldır | frontend-lead | ✅ Done — `ngos/page.tsx` chip IIFE silindi + kullanılmayan import temizlendi |
+| PDF-R2 | /profile "Bağlantılarım" ayrı üst-sekme | frontend-lead | ✅ Done — Gönüllülük sekmesinden çıkarılıp `connections` sekmesine taşındı (4 liste aynen) |
+| PDF-R3 | /my-badges sertifikalar: görüntüle/indir(PDF)/paylaş (WhatsApp/Instagram/LinkedIn/Mail) | frontend-lead | ✅ Done — placeholder yerine gerçek liste; profile cert PDF mantığı çoğaltıldı; 4 kanal paylaş menüsü |
+| PDF-R4 | super-admin/brands yetkili rolünü değiştirme (revoke zaten vardı) | frontend-lead | ✅ Done — `transfer-brand-admin-dialog` satırlarına rol Select + Güncelle; `handleUpdateBrandAdminRole` (userInvitations.role + users.brandRoleTitle) |
+| PDF-R5 | /library proje yazarı: tamamlanan öneriyi Word (.doc) indir | frontend-lead | ✅ Done — `library/page.tsx` "Word olarak indir" (HTML .doc blob, yeni dep yok) |
+| PDF-R6 | Demografik bilgiler → gönüllülük sayfasına taşı | frontend-lead | ✅ Done — Demografi kartı `settings/profile`'dan `settings/volunteer`'a (yeni `demographics-section.tsx`); kan-bildirim toggle geri eklendi |
+| PDF-R7 | Rozet kazanım otomasyonu (areaPoints hiç yazılmıyordu) | backend-lead | ✅ Done — `src/lib/badge-points.ts` (saf: kategori→alan eşleme + bağış/gönüllülük/davet puanlama, 18 test) + `my-badges` hesapla/merge/write-if-changed |
+| PDF-R8 | super-admin/communications okundu/iletildi analitiği + drilldown | frontend-lead | ✅ Done — `broadcasts` parent doc + her bildirime `broadcastId`; Trafik İzleme'de gönderildi/okundu özeti + alıcı detay diyaloğu. ⚠️ Needs deploy: rules + `notifications(broadcastId,read)` index |
+| PDF-50+ | Kütük lookup (yukarıda güncellendi) | backend-lead | ✅ Done (kod) — registry import script + rules + CorporateForm auto-fill |
+| PDF-13b | Gmail/Outlook/IMAP OAuth | backend-lead + security-lead | ✅ Done (2026-05-21, security-lead) — kod tamam; bkz. satır 219 / decisions.md. Operatör OAuth client + env sağlayınca canlı. IMAP'ta kişi API'si yok → dürüst vCard/CSV yönlendirmesi. |
+
+### Gates (2026-05-21)
+- `npm run typecheck` PASS · `npm run lint` PASS (0/0) · `npm run test` 145 passed / 116 skipped · `npm run build` PASS (exit 0)
+
+### Deploy/config gereksinimi (operatör — manuel)
+1. App Hosting redeploy (prod stale koddan kurtar — build yeşil)
+2. `firebase deploy --only firestore:rules,firestore:indexes,storage` (broadcasts rule + registry rules + notifications(broadcastId,read) index + bekleyen PDF rules)
+3. App Hosting'de `GEMINI_API_KEY` env (kütüphane AI "henüz eğitilmedi" sebebi)
+4. Veri ops: demo marka/STK temizliği + logo backfill (`runbooks/brand-data-cleanup.md`); registry import (`runbooks/registry-import.md`)

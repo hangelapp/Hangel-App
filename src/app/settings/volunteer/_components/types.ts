@@ -45,7 +45,10 @@ export type VolunteerUserDoc = {
     };
   };
   personalInfo?: {
+    birthDate?: string;
+    nationality?: string;
     bloodType?: string;
+    bloodNotifications?: boolean;
     gender?: string;
     address?: {
       country?: string;

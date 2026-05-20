@@ -30,6 +30,7 @@ interface BrandListRowProps {
     onRemove: (id: string, name: string) => void;
     onAssignBrandAdmin: (brandId: string, userId: string, userName: string, role: BrandRole) => Promise<void>;
     onRevokeBrandAdmin: (invitationId: string, inviteeName: string) => Promise<void>;
+    onUpdateBrandAdminRole: (invitationId: string, inviteeUserId: string, newRole: BrandRole) => Promise<void>;
 }
 
 export const BrandListRow = ({
@@ -47,6 +48,7 @@ export const BrandListRow = ({
     onRemove,
     onAssignBrandAdmin,
     onRevokeBrandAdmin,
+    onUpdateBrandAdminRole,
 }: BrandListRowProps) => {
     const isPassive = brand.status === 'Pasif';
     const isPending = brand.status === 'Beklemede';
@@ -105,7 +107,7 @@ export const BrandListRow = ({
                 </Dialog>
                 {brand.source === 'brands' && (
                     <>
-                        <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onRevoke={onRevokeBrandAdmin} />
+                        <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onRevoke={onRevokeBrandAdmin} onUpdateRole={onUpdateBrandAdminRole} />
                         <Button
                             variant="outline"
                             size="sm"

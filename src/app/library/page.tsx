@@ -22,7 +22,7 @@ import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2,
+  Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2, Download,
   // LIBRARY_ICONS allow-list — bu map'e yeni icon eklerken hem import hem `LIBRARY_ICONS` entry'si gerekir.
   Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle,
 } from 'lucide-react';
@@ -736,6 +736,37 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     }
   };
 
+  const handleDownloadWord = () => {
+    if (!proposal) return;
+    const escapeHtml = (s: string) =>
+      s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    const bodyHtml = proposal
+      .split(/\n{2,}/)
+      .map(para => `<p>${escapeHtml(para).replace(/\n/g, '<br/>')}</p>`)
+      .join('');
+    const htmlString =
+      `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Proje</title></head><body style="font-family:Calibri,Arial,sans-serif;line-height:1.5;">` +
+      bodyHtml +
+      `</body></html>`;
+    const slug =
+      (institution || 'proje-onerisi')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'proje-onerisi';
+    const blob = new Blob([htmlString], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const canAdvance =
     (step === 1 && institution.length > 0) ||
     (step === 2 && summary.trim().length >= 10) ||
@@ -877,6 +908,9 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 rows={16}
                 className="w-full rounded-lg border bg-background p-3 text-sm font-mono"
               />
+              <Button type="button" size="sm" variant="outline" onClick={handleDownloadWord}>
+                <Download className="h-4 w-4 mr-2" /> Word olarak indir
+              </Button>
             </div>
           )}
         </div>

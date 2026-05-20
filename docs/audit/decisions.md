@@ -16,6 +16,55 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
+## 2026-05-21 — PDF-13b: REAL email contact-import via server-side OAuth (Gmail People API + Microsoft Graph)
+- **ID**: PDF-13 / PDF-13b
+- **Lead**: hangel-security-lead
+- **Sorun**: `/invite` ve `/ngo-admin/qr` sayfalarındaki Gmail/Outlook/IMAP butonları "OAuth backend gerekli" stub toast'u gösteriyordu. Kullanıcı gerçek OAuth contact-import'unu şimdi build etmeyi onayladı. PDF-13b kırmızı madde.
+- **Mimari (popup + postMessage, token persist YOK)**: One-shot read — `start` route signed-state + authorize URL üretir, popup açılır, provider `callback`'e döner, callback code→access token exchange + contacts fetch yapar, sonucu `window.opener.postMessage` ile geri verir, token discard edilir. Hiçbir provider token Firestore'a/loga yazılmaz.
+
+### Threat model (STRIDE-lite) + alınan önlemler
+- **CSRF / state forgery** → `state = base64url(JSON{uid,nonce,exp}) + '.' + HMAC-SHA256(payload, OAUTH_STATE_SECRET)`. Callback: HMAC `crypto.timingSafeEqual` ile sabit-zaman karşılaştırma + `exp` (10 dk) kontrolü + **double-submit cookie** (`oauth_state` httpOnly/Secure/SameSite=Lax) eşleşmesi. Üç koşul da sağlanmazsa hata HTML'i postMessage eder, cookie temizlenir.
+- **Token leakage** → access token yalnız callback request scope'unda yaşar; loglanmaz, Firestore'a yazılmaz, response body'sine konmaz. `OAUTH_STATE_SECRET`/`*_CLIENT_SECRET` env-only (NEXT_PUBLIC değil), client'a hiç gönderilmez.
+- **Open redirect** → `redirect_uri` her zaman `req.nextUrl.origin + '/api/contacts/{provider}/callback'` (server-derived). Authorize URL'deki provider whitelisted (`google`/`microsoft` literal switch; başka değer → 400).
+- **XSS via contacts payload** → callback HTML'inde JSON `<script>` içine güvenli escape (`<`/`>`/`&`/`U+2028`/`U+2029` + `</script` kırma). postMessage `targetOrigin = window.location.origin` (wildcard değil). Client-side listener `event.origin !== window.location.origin` ise mesajı yok sayar.
+- **Reflected error leakage** → tüm hata yolları sabit Türkçe mesaj döner; provider/stack/secret asla HTML'e veya JSON'a konmaz (`{ errorCode, message }` shape start route'ta; callback HTML'de generic mesaj).
+- **Auth bypass** → `start` route `Authorization: Bearer <firebaseIdToken>` zorunlu; `getAdminAuth().verifyIdToken()` (server-auth.ts pattern). Eksik/geçersiz → 401 `UNAUTHENTICATED`. uid `state` payload'ına gömülür (callback'te kim olduğu doğrulanır).
+- **Provider not configured** → client id/secret env yoksa 503 `OAUTH_NOT_CONFIGURED` + friendly TR mesaj; crash yok, frontend toast'lar.
+- **Contact flooding / DoS** → People API max ~3 sayfa (nextPageToken), Graph `$top=999`; normalize sonrası **2000 cap**. Email+phone ikisi de boş olan kayıtlar drop edilir.
+
+### Plan (5 madde)
+1. **Yeni route'lar** (security-lead owns `src/app/api/contacts/**` — `src/ai/flows`/proxy/webhook ile aynı sahiplik sınıfı): `src/app/api/contacts/[provider]/start/route.ts` (POST, Next 15 **async params** `{ params }: { params: Promise<{ provider: string }> }` + `await params`, `runtime='nodejs'`) ve `src/app/api/contacts/[provider]/callback/route.ts` (GET, async params, `text/html` response). Ortak helper `src/lib/contacts/oauth.ts` (state imza/verify + Node `crypto`, provider config map, contact normalize + cap).
+2. **State + double-submit cookie** start'ta üret; callback'te `timingSafeEqual` + exp + cookie eşleşme doğrula. Token exchange + People/Graph fetch server-side (`fetch`, x-www-form-urlencoded), normalize `{name, email|null, phone|null}` 2000 cap.
+3. **Client wiring** — `src/app/invite/page.tsx`: `handleEmailOAuth('google'|'microsoft')` (idToken al, `/api/contacts/{provider}/start` POST, `window.open(authorizeUrl,...)`, 503 → toast); `useEffect` `message` listener (origin guard) → phone-bearing → `setPhoneContacts`/`setPhoneSynced`, email-bearing → `setEmailList`. Gmail→google, Outlook→microsoft. IMAP butonu honest toast'a çevrilir (vCard/CSV'ye yönlendirir, OAuth taklidi yok). `src/app/ngo-admin/qr/page.tsx`: aynı pattern, contacts → `setImported(ImportedContact[])` + `setImportDialogOpen(true)` (phones[]+emails[] ikisini de taşır).
+4. **Env + runbook** — `.env.example`: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `MICROSOFT_OAUTH_CLIENT_ID`, `MICROSOFT_OAUTH_CLIENT_SECRET`, `MICROSOFT_TENANT` (default common), `OAUTH_STATE_SECRET`. Yeni `docs/audit/runbooks/contacts-oauth-setup.md` (GCP People API + Azure App Registration adım adım + redirect URI'lar).
+5. **Gate'ler** — `npm run typecheck` + `npm run lint` (security-lead). Final `npm run build` orchestrator'da (Next 15 async params prod-build doğrulaması kritik).
+
+### Acceptance kriteri
+- İki dynamic route Next 15 async params imzasıyla derlenir (sync params prod build'i kırardı). Env set ⇒ Gmail/Outlook tıkla → consent açılır → dönüşte contacts invite listesini doldurur. Env yok ⇒ friendly 503 toast (crash yok). State CSRF korumalı; provider secret'ler server-side; token persist edilmez. typecheck + lint PASS.
+- **Redirect URI'lar (kullanıcı register edecek)**: `https://hangel.org.tr/api/contacts/google/callback` ve `https://hangel.org.tr/api/contacts/microsoft/callback`.
+
+### Risk: M
+- Yeni public-facing OAuth callback yüzeyi (CSRF/XSS/token leak vektörleri) — yukarıdaki threat-model önlemleriyle kapatıldı. Mevcut rules/auth modeline dokunulmuyor; loosening yok. Yeni npm dependency yok (`fetch` + Node `crypto`).
+### Rollback
+- `rm -rf src/app/api/contacts src/lib/contacts docs/audit/runbooks/contacts-oauth-setup.md`; `invite/page.tsx` + `ngo-admin/qr/page.tsx` `handleEmailProviderStub`/dialog buttons revert (git checkout); `.env.example` yeni blok sil. Provider tarafı: GCP/Azure OAuth client'larını silmek/disable etmek yeterli (kod kaldırılınca callback 404).
+- **Test sonucu**:
+  - `npm run typecheck`: PASS (tsc --noEmit, çıktı yok / exit 0).
+  - `npm run lint`: PASS (eslint ., 0 error / 0 warning).
+  - **Final `npm run build`** (Next 15 prod, async-params doğrulaması): orchestrator koşacak — iki dynamic route async params imzasıyla yazıldı (`params: Promise<{ provider: string }>` + `await params`, `runtime='nodejs'`), prod build geçmesi beklenir.
+- **Self-audit (code-auditor rolü; bu ortamda subagent dispatch yok → lead doğruladı)**:
+  - Async params ✓ (start + callback); `runtime='nodejs'` ✓.
+  - OAuth secret'leri `NEXT_PUBLIC` değil ✓ (grep boş); client'a sızmıyor.
+  - Token persist/log yok ✓ (callback/start/oauth.ts'de `console.*`/`setDoc`/`addDoc`/`.set(` token yazımı yok — yalnız `searchParams.set` + `res.cookies.set(state)`).
+  - HMAC `timingSafeEqual` (uzunluk guard'lı) ✓; `exp` 10 dk ✓; double-submit cookie eşleşmesi ✓.
+  - postMessage targetOrigin = `window.location.origin` (wildcard değil) ✓; client listener `event.origin` guard ✓ (her iki sayfada).
+  - `as any`/`@ts-ignore`/`console.log` yok ✓; error shape `{errorCode,message}` ✓.
+- **Notlar**:
+  - Bu ortamda Task/subagent dispatch tool'u yok; surgical-coder + code-auditor adımları lead tarafından doğrudan yürütüldü ve plana karşı self-audit edildi (CLAUDE.md fallback).
+  - rules tests (`/tests/rules`) kapsamına girmiyor — yeni Firestore rule yok (route'lar Admin SDK auth + state imzası kullanır; loosening yok). `npm run test:rules` gerekmiyor.
+  - invite/page.tsx: telefonlu kişiler `setPhoneContacts`+`setPhoneSynced` (onPlatform enrich), e-postalı kişiler `setEmailList`'e besleniyor (mevcut import akışıyla aynı). qr/page.tsx: kişiler `setImported`+`setImportDialogOpen` (phones[]+emails[] taşır). IMAP butonu dürüst toast'a çevrildi (OAuth taklidi yok).
+
+---
+
 ## 2026-05-18 — FEAT-IMECE-MATCH: intelligent volunteer matching algorithm
 - **ID**: FEAT-IMECE-MATCH
 - **Lead**: backend-lead
@@ -1496,3 +1545,30 @@ firebase deploy --only firestore:rules,firestore:indexes,storage --project hange
 ```
 
 Detay + sıralama: `runbooks/pdf-audit-2026-05-19-deploy.md`.
+
+---
+
+## 2026-05-21 — "Kırmızı maddeleri düzelt" turu (orchestrator)
+
+**Bağlam**: Kullanıcı PDF'i tekrar gönderip yalnızca KIRMIZI maddelerin düzeltilmesini istedi. 5 paralel Explore ajanıyla kırmızı maddeler gerçek koda karşı doğrulandı.
+
+### Kök neden bulgusu (önemli)
+Kırmızı maddelerin ~%70'i kodda ZATEN doğruydu (nav linkleri, filtreler, sekmeler, donationRate doğrulama, logo fallback, demo filtreleme, timeline like/share, /admin, web/association CMS, EditUserDialog, leaderboard, login→market). Prod'da bozuk görünmelerinin sebebi: **App Hosting build'i kırıktı → prod sessizce eski commit'te kalmıştı** (CLAUDE.md'nin "sessiz deploy kilidi" uyarısı). `npm run build` artık PASS (exit 0). Sonuç: bu maddeler **deploy ile** düzelir; kod değişikliği gereksiz (surgical prensip — zaten doğru koda dokunulmadı).
+
+### Kodda gerçekten kırık olup düzeltilen 9 madde
+PDF-R1..PDF-R8 + PDF-50+ (tasks.md 2026-05-21 bölümü). Hepsi disjoint dosyalarda paralel surgical-coder ile; tek konsolide gate.
+
+### Önemli kararlar
+- **Rozet puanlama (PDF-R7)**: `areaPoints` hiç yazılmıyordu. Saf `computeAreaPoints` — onaylı bağış (status `Yatırıldı`/`Tamamlandı`) NGO `category`→rozet `socialArea` keyword eşleme ile +25/alan; gönüllülük `socialArea`/`area`/`ngoId` ile (points yoksa default 50); davet `inviteCount * 10` → "hangel Gönüllüsü". NGO category vokabülü rozet vokabülünden farklı → keyword/alias eşleme (heuristic, v1). my-badges hesaplayıp `max(stored,computed)` merge edip değişiklikte user doc'a yazar.
+- **Communications analitiği (PDF-R8)**: notifications'ta grouping id yoktu. `broadcasts` parent doc + her bildirime `broadcastId`. Okundu sayısı `getCountFromServer(broadcastId==,read==true)` → `notifications(broadcastId,read)` composite index gerekir (deploy'a kadar "—" gösterir, çökmez). DM'ler de stamp'lendi.
+- **Kütük lookup (PDF-50+)**: Vakıflar sheet'inde KÜTÜK NO YOK → Dernek kütük no ile, Vakıf isim prefix-search ile. Import operatör işi (CSV → Firestore, ADC script).
+- **Demografik taşıma (PDF-R6)**: gender/bloodType volunteer page'de (HealthSection) zaten vardı → sadece birthDate+nationality eklendi (çift kontrol regresyonu önlendi); kan-bildirim toggle git'ten kurtarılıp geri eklendi.
+
+### Defer (harici bağımlılık)
+- **PDF-13b (e-posta OAuth)**: Gmail/Outlook/IMAP OAuth client (Google Cloud + Azure app registration + secret) kullanıcı tarafından oluşturulmadan kodlanamaz — kör scaffold = ölü/güvenlik-riskli kod. Checklist verildi; creds gelince implement edilecek. vCard/CSV + telefon rehberi fallback aktif.
+
+### Gates
+`npm run typecheck` PASS · `npm run lint` PASS (0/0) · `npm run test` 145 passed / 116 skipped (badge-points 18 dahil) · `npm run build` PASS (exit 0).
+
+### Operatör deploy/config checklist
+1. App Hosting redeploy · 2. `firebase deploy --only firestore:rules,firestore:indexes,storage` · 3. `GEMINI_API_KEY` env · 4. Veri ops (brand-data-cleanup.md + registry-import.md).

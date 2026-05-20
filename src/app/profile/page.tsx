@@ -454,6 +454,7 @@ export default function ProfilePage() {
                             <TabsTrigger value="impact">{t('dashboard.profile.tabImpact')}</TabsTrigger>
                             <TabsTrigger value="about">{t('dashboard.profile.tabAbout')}</TabsTrigger>
                             <TabsTrigger value="volunteering">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
+                            <TabsTrigger value="connections">Bağlantılarım</TabsTrigger>
                             <TabsTrigger value="badges-certificates">{t('dashboard.profile.tabBadges')}</TabsTrigger>
                             <TabsTrigger value="story">{t('dashboard.profile.tabStory')}</TabsTrigger>
                         </TabsList>
@@ -633,6 +634,25 @@ export default function ProfilePage() {
                                 <InfoRow icon={Phone} label="Acil Durum Tel 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
                             </CardContent>
                         </Card>
+                        <Card>
+                             <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
+                             <CardContent className='space-y-4'>
+                                 {pastVolunteering.length > 0 ? (
+                                     pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)
+                                 ) : (
+                                     <EmptyState
+                                         icon={Handshake}
+                                         title="Henüz tamamlanmış gönüllülük yok"
+                                         description="Etkinliklere katılınca burada görünecek."
+                                         action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+                                     />
+                                 )}
+                                 <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
+                             </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="connections" className="p-4 space-y-4">
                         <Card className="rounded-2xl">
                             <CardHeader><CardTitle className='text-lg'>Bağlantılarım</CardTitle></CardHeader>
                             <CardContent>
@@ -732,24 +752,8 @@ export default function ProfilePage() {
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card>
-                             <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
-                             <CardContent className='space-y-4'>
-                                 {pastVolunteering.length > 0 ? (
-                                     pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)
-                                 ) : (
-                                     <EmptyState
-                                         icon={Handshake}
-                                         title="Henüz tamamlanmış gönüllülük yok"
-                                         description="Etkinliklere katılınca burada görünecek."
-                                         action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
-                                     />
-                                 )}
-                                 <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
-                             </CardContent>
-                        </Card>
                     </TabsContent>
-                    
+
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
                         <Card>
                             <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>

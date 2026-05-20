@@ -30,6 +30,7 @@ import { MuhtarSection } from './_components/muhtar-section';
 import { EmergencyContactsSection } from './_components/emergency-contacts-section';
 import { AddressSection } from './_components/address-section';
 import { HealthSection } from './_components/health-section';
+import { DemographicsSection } from './_components/demographics-section';
 import { ConsentsSection } from './_components/consents-section';
 import type { VolunteerUserDoc, ConsentsState, NeighborhoodsMap } from './_components/types';
 
@@ -69,6 +70,11 @@ export default function VolunteerSettingsPage() {
   const [hasChronicIllness, setHasChronicIllness] = useState(false);
   const [usesRegularMedication, setUsesRegularMedication] = useState(false);
   const [bloodType, setBloodType] = useState('');
+  const [bloodNotifications, setBloodNotifications] = useState(false);
+
+  // Demografik bilgiler (kişisel profil sayfasından taşındı)
+  const [birthDate, setBirthDate] = useState('');
+  const [nationality, setNationality] = useState('');
 
   // Cinsiyet & detaylı adres (kişisel profil sayfasından taşındı)
   const [gender, setGender] = useState('');
@@ -157,7 +163,10 @@ export default function VolunteerSettingsPage() {
     if (typeof vi.emergency?.hasChronicIllness === 'boolean') setHasChronicIllness(vi.emergency.hasChronicIllness);
     if (typeof vi.emergency?.usesRegularMedication === 'boolean') setUsesRegularMedication(vi.emergency.usesRegularMedication);
     if (userData.personalInfo?.bloodType) setBloodType(userData.personalInfo.bloodType);
+    if (typeof userData.personalInfo?.bloodNotifications === 'boolean') setBloodNotifications(userData.personalInfo.bloodNotifications);
     const pi = userData.personalInfo || {};
+    if (pi.birthDate) setBirthDate(pi.birthDate);
+    if (pi.nationality) setNationality(pi.nationality);
     if (pi.gender) setGender(pi.gender);
     if (pi.address?.neighborhood) setNeighborhood(pi.address.neighborhood);
     if (pi.address?.street) setStreet(pi.address.street);
@@ -259,7 +268,10 @@ export default function VolunteerSettingsPage() {
     const personalInfoPatch = {
       personalInfo: {
         ...existingPersonal,
+        ...(birthDate ? { birthDate } : {}),
+        ...(nationality ? { nationality } : {}),
         ...(bloodType ? { bloodType } : {}),
+        bloodNotifications,
         ...(gender ? { gender } : {}),
         address: {
           ...(existingPersonal.address ?? {}),
@@ -455,11 +467,21 @@ export default function VolunteerSettingsPage() {
           onDoorNoChange={setDoorNo}
         />
 
+        <DemographicsSection
+          title={t('dashboard.settingsProfile.demographicsTitle')}
+          birthDate={birthDate}
+          onBirthDateChange={setBirthDate}
+          nationality={nationality}
+          onNationalityChange={setNationality}
+        />
+
         <HealthSection
           gender={gender}
           onGenderChange={setGender}
           bloodType={bloodType}
           onBloodTypeChange={setBloodType}
+          bloodNotifications={bloodNotifications}
+          onBloodNotificationsChange={setBloodNotifications}
           emergencyAvailable={emergencyAvailable}
           onEmergencyAvailableChange={setEmergencyAvailable}
           hasChronicIllness={hasChronicIllness}

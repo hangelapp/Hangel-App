@@ -243,6 +243,28 @@ export default function BrandsPage() {
         }
     };
 
+    const handleUpdateBrandAdminRole = async (invitationId: string, inviteeUserId: string, newRole: BrandRole) => {
+        try {
+            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), { role: newRole });
+            await updateDoc(doc(db, COLLECTIONS.users, inviteeUserId), { brandRoleTitle: newRole });
+            toast({
+                title: 'Yetki Güncellendi',
+                description: `Yetkili rolü "${newRole}" olarak güncellendi.`,
+            });
+        } catch (e) {
+            console.error('Update brand admin role failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+            toast({
+                variant: 'destructive',
+                title: 'Rol güncellenemedi',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : message,
+            });
+        }
+    };
+
     const handleClearAll = async () => {
         setBulkOp('clearing');
         try {
@@ -519,6 +541,7 @@ export default function BrandsPage() {
                                     onRemove={handleRemove}
                                     onAssignBrandAdmin={handleAssignBrandAdmin}
                                     onRevokeBrandAdmin={handleRevokeBrandAdmin}
+                                    onUpdateBrandAdminRole={handleUpdateBrandAdminRole}
                                 />
                             ))
                         ) : (

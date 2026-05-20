@@ -149,6 +149,12 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin();
     }
 
+    // Vakıf/Dernek kütük referans verisi — public-read reference data; yalnızca
+    // Admin SDK yazar (scripts/import-registry.mjs, rules'ı bypass eder).
+    // Kurumsal kayıt formu auth öncesi sorgulayabildiği için okuma herkese açık.
+    match /registryDernekler/{id} { allow read, list: if true; allow write: if false; }
+    match /registryVakiflar/{id} { allow read, list: if true; allow write: if false; }
+
     // Wave 6A / PDF-72: AI Asistanı promptları/ayarları.
     // /super-admin/ai-management/page.tsx setDoc(doc(db, 'aiAssistantConfig', kind), ...)
     // ile yazıyor. Secret içermez (model adı + persona prompt'u), ancak yine de
@@ -340,6 +346,12 @@ service cloud.firestore {
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
       allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Toplu duyuru parent docs — per-message analytics (gönderildi/okundu özeti).
+    // Yalnızca süper admin: oluşturur, okur ve siler.
+    match /broadcasts/{broadcastId} {
+      allow read, list, create, update, delete: if isSuperAdmin();
     }
 
     // ----- Toplu SMS & E-Posta sistemi -----

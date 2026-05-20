@@ -247,6 +247,65 @@ export default function QrPage() {
     toast({ title: 'Davet açıldı', description: `${v} için mail uygulamanız açıldı.` });
   };
 
+  // E-posta sağlayıcı OAuth (Gmail → google People API, Outlook → Microsoft Graph).
+  const handleEmailOAuth = async (provider: 'google' | 'microsoft') => {
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Bu özelliği kullanmak için giriş yapın.' });
+      return;
+    }
+    try {
+      const idToken = await authUser.getIdToken();
+      const res = await fetch(`/api/contacts/${provider}/start`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
+      if (res.ok && data?.authorizeUrl) {
+        window.open(data.authorizeUrl, 'hangel-oauth', 'width=500,height=660');
+        setEmailDialogOpen(false);
+        return;
+      }
+      if (res.status === 503 && data?.errorCode === 'OAUTH_NOT_CONFIGURED') {
+        toast({ title: 'Yakında', description: data.message ?? 'E-posta sağlayıcı bağlantısı henüz yapılandırılmadı.' });
+        return;
+      }
+      toast({ variant: 'destructive', title: 'Bağlanılamadı', description: data?.message ?? 'E-posta kişileri içe aktarılamadı. Lütfen tekrar deneyin.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Bağlanılamadı', description: 'E-posta kişileri içe aktarılamadı. Lütfen tekrar deneyin.' });
+    }
+  };
+
+  // OAuth popup'tan dönen kişileri içe aktarılan kişiler listesine besle.
+  useEffect(() => {
+    const handler = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return;
+      const data = event.data as { type?: string; contacts?: Array<{ name?: string; email?: string | null; phone?: string | null }>; message?: string } | null;
+      if (!data || typeof data.type !== 'string') return;
+      if (data.type === 'hangel-contacts-error') {
+        toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: data.message ?? 'Kişiler alınamadı.' });
+        return;
+      }
+      if (data.type !== 'hangel-contacts' || !Array.isArray(data.contacts)) return;
+
+      const mapped: ImportedContact[] = data.contacts.map((c, i) => ({
+        id: `oauth-${i}`,
+        name: (c.name || '').trim() || 'İsimsiz',
+        phones: c.phone ? [c.phone] : [],
+        emails: c.email ? [c.email] : [],
+      }));
+      if (mapped.length === 0) {
+        toast({ title: 'Kişi bulunamadı', description: 'İçe aktarılacak kişi bulunamadı.' });
+        return;
+      }
+      setImported(mapped);
+      setEmailDialogOpen(false);
+      setImportDialogOpen(true);
+      toast({ title: 'Kişiler içe aktarıldı', description: `${mapped.length} kişi alındı.` });
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [toast]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -509,6 +568,20 @@ export default function QrPage() {
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">veya</span>
               <div className="h-px flex-1 bg-border" />
             </div>
+            <Button type="button" variant="outline" className="w-full justify-start h-12" onClick={() => handleEmailOAuth('google')}>
+              <Mail className="mr-3 h-5 w-5 text-red-500" />
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold">Gmail</span>
+                <span className="text-[10px] text-muted-foreground">Google hesabıyla bağlan</span>
+              </div>
+            </Button>
+            <Button type="button" variant="outline" className="w-full justify-start h-12" onClick={() => handleEmailOAuth('microsoft')}>
+              <Mail className="mr-3 h-5 w-5 text-blue-500" />
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-semibold">Outlook / Hotmail</span>
+                <span className="text-[10px] text-muted-foreground">Microsoft hesabıyla bağlan</span>
+              </div>
+            </Button>
             <input type="file" accept=".vcf,.csv,text/vcard,text/csv" id="qr-email-vcard-csv-upload" className="hidden" onChange={handleFileImport} />
             <Button asChild variant="outline" className="w-full justify-start h-12" disabled={importLoading}>
               <label htmlFor="qr-email-vcard-csv-upload" className="cursor-pointer flex items-center w-full">
@@ -517,7 +590,7 @@ export default function QrPage() {
               </label>
             </Button>
             <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
-              OAuth bağlantısı için backend gerekli. Şimdilik vCard/CSV ya da manuel davet linkiyle paylaşabilirsin.
+              Gmail veya Outlook ile bağlanıp kişilerini içe aktar. Kişiler yalnızca davet için kullanılır; sunucularımızda saklanmaz.
             </p>
           </div>
         </DialogContent>

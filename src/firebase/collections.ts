@@ -49,6 +49,7 @@ export const COLLECTIONS = {
   volunteering: 'volunteering',
   library: 'library',
   notifications: 'notifications',
+  broadcasts: 'broadcasts',
   messages: 'messages',
   surveys: 'surveys',
   ratings: 'ratings',
@@ -111,6 +112,12 @@ export const COLLECTIONS = {
 
   // QR card activation requests (öğrenci / ticari)
   qrCardActivations: 'qrCardActivations',
+
+  // Government registry (kütük) reference data — imported via
+  // scripts/import-registry.mjs. Public-read, Admin-SDK-only write.
+  // Used by the corporate registration form to auto-fill org info.
+  registryDernekler: 'registryDernekler',
+  registryVakiflar: 'registryVakiflar',
 
   // Internal / dev only
   _devOutbox: '_devOutbox',

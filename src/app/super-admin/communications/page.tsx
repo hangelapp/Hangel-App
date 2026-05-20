@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter,
 } from '@/components/ui/card';
@@ -12,12 +12,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
 import { Search, Send, Bell, History, MessageSquare, User, Building, School, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import {
     collection, doc, writeBatch, addDoc, serverTimestamp, query, orderBy, limit,
+    where, getCountFromServer, getDocs,
 } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -43,8 +47,23 @@ interface NotifDoc {
     body?: string;
     type?: string;
     read?: boolean;
+    readAt?: unknown;
+    broadcastId?: string;
     targetCount?: number;
     target?: string;
+    createdAt?: unknown;
+    createdBy?: string;
+    [key: string]: unknown;
+}
+
+interface BroadcastDoc {
+    id: string;
+    type?: string;
+    title?: string;
+    body?: string;
+    target?: string;
+    targetCount?: number;
+    status?: string;
     createdAt?: unknown;
     createdBy?: string;
     [key: string]: unknown;
@@ -57,6 +76,183 @@ const TARGET_LABELS: Record<TargetGroup, string> = {
     'all-brands': 'Tüm Marka Adminleri',
     'all-ngo-admins': 'Tüm Kuruluş Adminleri (STK + Marka + Kulüp)',
 };
+
+const DM_TARGET_LABELS: Record<string, string> = {
+    user: 'Kullanıcı (DM)',
+    ngo: 'STK Yöneticisi (DM)',
+    club: 'Kulüp Yöneticisi (DM)',
+};
+
+function targetLabel(target?: string): string {
+    if (!target) return 'Bilinmeyen';
+    return (TARGET_LABELS as Record<string, string>)[target]
+        || DM_TARGET_LABELS[target]
+        || target;
+}
+
+function toDateMaybe(value: unknown): Date | null {
+    const v = value as { toDate?: () => Date } | null;
+    return v?.toDate ? v.toDate() : null;
+}
+
+// Tek bir duyuru satırı — okundu sayısını kendi içinde lazy olarak çeker.
+// Composite index henüz deploy edilmemişse '—' gösterir (crash etmez).
+function BroadcastRow({
+    broadcast,
+    onClick,
+}: {
+    broadcast: BroadcastDoc;
+    onClick: () => void;
+}) {
+    const db = useFirestore();
+    const [readCount, setReadCount] = useState<number | null>(null);
+    const sent = broadcast.targetCount ?? 0;
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const snap = await getCountFromServer(query(
+                    collection(db, COLLECTIONS.notifications),
+                    where('broadcastId', '==', broadcast.id),
+                    where('read', '==', true),
+                ));
+                if (!cancelled) setReadCount(snap.data().count);
+            } catch {
+                // Composite index eksikse veya yetki yoksa sessizce '—' bırak.
+                if (!cancelled) setReadCount(null);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [db, broadcast.id]);
+
+    const rate = readCount !== null && sent > 0
+        ? Math.round((readCount / sent) * 100)
+        : null;
+    const created = toDateMaybe(broadcast.createdAt);
+
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className="w-full p-3 flex items-start justify-between gap-3 hover:bg-muted/30 text-left transition-colors"
+        >
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-sm truncate">{broadcast.title}</p>
+                    <Badge variant="outline" className="text-[9px] uppercase">{broadcast.type || 'broadcast'}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-1">{broadcast.body}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                    {targetLabel(broadcast.target)} · {created ? created.toLocaleString('tr-TR') : '—'}
+                </p>
+            </div>
+            <div className="shrink-0 flex items-center gap-2">
+                <Badge variant="secondary" className="text-[10px]">Gönderildi: {sent}</Badge>
+                <Badge variant="secondary" className="text-[10px]">
+                    Okundu: {readCount !== null ? readCount : '—'}
+                    {rate !== null ? ` (%${rate})` : ''}
+                </Badge>
+            </div>
+        </button>
+    );
+}
+
+// Drilldown — seçili duyurunun tüm alıcılarını okundu durumuyla listeler.
+// Tek alanlı filtre (broadcastId) olduğu için composite index gerekmez.
+function BroadcastDrilldownDialog({
+    broadcast,
+    allUsers,
+    onClose,
+}: {
+    broadcast: BroadcastDoc | null;
+    allUsers: CommsUser[] | null;
+    onClose: () => void;
+}) {
+    const db = useFirestore();
+    const [recipients, setRecipients] = useState<NotifDoc[] | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!broadcast) {
+            setRecipients(null);
+            return;
+        }
+        let cancelled = false;
+        setLoading(true);
+        (async () => {
+            try {
+                const snap = await getDocs(query(
+                    collection(db, COLLECTIONS.notifications),
+                    where('broadcastId', '==', broadcast.id),
+                ));
+                const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<NotifDoc, 'id'>) }));
+                if (!cancelled) setRecipients(rows);
+            } catch {
+                if (!cancelled) setRecipients([]);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [db, broadcast]);
+
+    const nameById = useMemo(() => {
+        const map = new Map<string, string>();
+        (allUsers || []).forEach(u => {
+            map.set(u.id, u.name || u.username || u.id.slice(0, 8) + '…');
+        });
+        return map;
+    }, [allUsers]);
+
+    const readCount = (recipients || []).filter(r => r.read).length;
+
+    return (
+        <Dialog open={!!broadcast} onOpenChange={(open) => { if (!open) onClose(); }}>
+            <DialogContent className="max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>{broadcast?.title}</DialogTitle>
+                    <DialogDescription>
+                        Gönderildi: {broadcast?.targetCount ?? (recipients?.length ?? 0)} · Okundu: {readCount}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="max-h-[60vh] overflow-y-auto border rounded-xl divide-y">
+                    {loading ? (
+                        <div className="py-10 text-center text-muted-foreground">
+                            <Loader2 className="h-6 w-6 mx-auto animate-spin opacity-50" />
+                        </div>
+                    ) : (recipients && recipients.length > 0) ? recipients.map((r) => {
+                        const readAt = toDateMaybe(r.readAt);
+                        return (
+                            <div key={r.id} className="p-2.5 flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <span className="text-sm truncate">
+                                        {r.userId ? (nameById.get(r.userId) || r.userId.slice(0, 8) + '…') : '—'}
+                                    </span>
+                                </div>
+                                <div className="shrink-0 flex items-center gap-2">
+                                    {readAt && (
+                                        <span className="text-[10px] text-muted-foreground">
+                                            {readAt.toLocaleString('tr-TR')}
+                                        </span>
+                                    )}
+                                    <Badge variant={r.read ? 'secondary' : 'outline'} className="text-[10px]">
+                                        {r.read ? 'Okundu' : 'Okunmadı'}
+                                    </Badge>
+                                </div>
+                            </div>
+                        );
+                    }) : (
+                        <div className="py-10 text-center text-muted-foreground text-sm">
+                            Alıcı kaydı bulunamadı.
+                        </div>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 export default function CommunicationsPage() {
     const { toast } = useToast();
@@ -72,6 +268,12 @@ export default function CommunicationsPage() {
         query(collection(db, COLLECTIONS.notifications), orderBy('createdAt', 'desc'), limit(100)),
         [db]);
     const { data: sentNotifs } = useCollection<NotifDoc>(sentNotifsQuery);
+
+    // Toplu duyuru parent docs — gruplu Trafik İzleme özeti
+    const broadcastsQuery = useMemoFirebase(() =>
+        query(collection(db, COLLECTIONS.broadcasts), orderBy('createdAt', 'desc'), limit(50)),
+        [db]);
+    const { data: broadcasts } = useCollection<BroadcastDoc>(broadcastsQuery);
 
     // Broadcast state
     const [target, setTarget] = useState<TargetGroup | ''>('');
@@ -89,6 +291,9 @@ export default function CommunicationsPage() {
 
     // İzleme arama
     const [logSearchTerm, setLogSearchTerm] = useState('');
+
+    // Drilldown — seçili duyurunun alıcı listesi
+    const [selectedBroadcast, setSelectedBroadcast] = useState<BroadcastDoc | null>(null);
 
     // Hedef gruba göre kullanıcıları filtrele (broadcast)
     const targetUsers = useMemo(() => {
@@ -173,6 +378,19 @@ export default function CommunicationsPage() {
 
         setBcSending(true);
         try {
+            // Toplu duyuru için tek bir parent doc — başına broadcastId üretir,
+            // her bildirime damgalanır (per-message analytics için).
+            const broadcastRef = await addDoc(collection(db, COLLECTIONS.broadcasts), {
+                type: 'broadcast',
+                title: bcTitle.trim(),
+                body: bcBody.trim(),
+                target,
+                targetCount: targetUsers.length,
+                status: 'sent',
+                createdAt: serverTimestamp(),
+                createdBy: authUser?.uid || 'super-admin',
+            });
+
             // Batched write — Firestore 500/batch limiti, biz 450 kullanıyoruz
             const batches: ReturnType<typeof writeBatch>[] = [];
             let current = writeBatch(db);
@@ -185,6 +403,7 @@ export default function CommunicationsPage() {
                     title: bcTitle.trim(),
                     body: bcBody.trim(),
                     data: { target },
+                    broadcastId: broadcastRef.id,
                     read: false,
                     createdAt: serverTimestamp(),
                     createdBy: authUser?.uid || 'super-admin',
@@ -234,12 +453,26 @@ export default function CommunicationsPage() {
 
         setDmSending(true);
         try {
+            // DM = tek alıcılı bir broadcast — parent doc + broadcastId damgası ile
+            // Trafik İzleme'de aynı şekilde özetlenir.
+            const broadcastRef = await addDoc(collection(db, COLLECTIONS.broadcasts), {
+                type: 'dm',
+                title: dmSubject.trim(),
+                body: dmBody.trim(),
+                target: recipientType,
+                targetCount: 1,
+                status: 'sent',
+                createdAt: serverTimestamp(),
+                createdBy: authUser?.uid || 'super-admin',
+            });
+
             await addDoc(collection(db, COLLECTIONS.notifications), {
                 userId: selectedEntityId,
                 type: 'dm',
                 title: dmSubject.trim(),
                 body: dmBody.trim(),
                 data: { recipientType },
+                broadcastId: broadcastRef.id,
                 read: false,
                 createdAt: serverTimestamp(),
                 createdBy: authUser?.uid || 'super-admin',
@@ -500,10 +733,38 @@ export default function CommunicationsPage() {
                 </TabsContent>
 
                 {/* TRAFİK İZLEME */}
-                <TabsContent value="monitor" className="mt-6">
+                <TabsContent value="monitor" className="mt-6 space-y-6">
+                    {/* Gönderilen duyuru özeti — gönderildi / okundu, tıklayınca drilldown */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Bildirim Trafiği</CardTitle>
+                            <CardTitle>Gönderilen Duyurular</CardTitle>
+                            <CardDescription>
+                                Her duyuru için kaç kişiye gönderildiği ve kaç kişinin okuduğu. Detaylı kim
+                                aldı / kim okudu için bir satıra tıklayın.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="border rounded-xl overflow-hidden divide-y">
+                                {(broadcasts || []).length === 0 ? (
+                                    <div className="py-12 text-center text-muted-foreground">
+                                        <Bell className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                                        <p>Henüz gönderilmiş duyuru yok.</p>
+                                    </div>
+                                ) : (broadcasts || []).map((b) => (
+                                    <BroadcastRow
+                                        key={b.id}
+                                        broadcast={b}
+                                        onClick={() => setSelectedBroadcast(b)}
+                                    />
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Ham bildirim kayıtları (eski düz liste) */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tüm Bildirim Kayıtları</CardTitle>
                             <CardDescription>Son 100 bildirim — tip, başlık, alıcı, tarih.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -542,6 +803,12 @@ export default function CommunicationsPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    <BroadcastDrilldownDialog
+                        broadcast={selectedBroadcast}
+                        allUsers={allUsers}
+                        onClose={() => setSelectedBroadcast(null)}
+                    />
                 </TabsContent>
             </Tabs>
         </div>

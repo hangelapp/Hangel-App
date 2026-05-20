@@ -460,19 +460,108 @@ export default function InvitePage() {
         await handlePhoneSync();
     };
 
-    // E-posta sağlayıcı OAuth stub (Gmail / Outlook / IMAP)
-    const handleEmailProviderStub = (provider: 'gmail' | 'outlook' | 'imap') => {
-        const labels: Record<typeof provider, string> = {
-            gmail: 'Gmail',
-            outlook: 'Outlook',
-            imap: 'Kurumsal / Özel IMAP',
-        };
-        toast({
-            title: `${labels[provider]} bağlantısı`,
-            description: 'OAuth bağlantısı için backend gerekli. Şu an manuel davet linki kullanabilirsiniz.',
-        });
-        setEmailProviderDialogOpen(false);
+    // E-posta sağlayıcı OAuth (Gmail → google People API, Outlook → Microsoft Graph).
+    // Sunucu tarafı one-shot okuma: popup açar, dönüşte postMessage ile kişiler gelir.
+    const handleEmailOAuth = async (provider: 'google' | 'microsoft') => {
+        if (!authUser) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Bu özelliği kullanmak için giriş yapın.' });
+            return;
+        }
+        try {
+            const idToken = await authUser.getIdToken();
+            const res = await fetch(`/api/contacts/${provider}/start`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
+            if (res.ok && data?.authorizeUrl) {
+                window.open(data.authorizeUrl, 'hangel-oauth', 'width=500,height=660');
+                setEmailProviderDialogOpen(false);
+                return;
+            }
+            if (res.status === 503 && data?.errorCode === 'OAUTH_NOT_CONFIGURED') {
+                toast({
+                    title: 'Yakında',
+                    description: data.message ?? 'E-posta sağlayıcı bağlantısı henüz yapılandırılmadı.',
+                });
+                return;
+            }
+            toast({
+                variant: 'destructive',
+                title: 'Bağlanılamadı',
+                description: data?.message ?? 'E-posta kişileri içe aktarılamadı. Lütfen tekrar deneyin.',
+            });
+        } catch {
+            toast({
+                variant: 'destructive',
+                title: 'Bağlanılamadı',
+                description: 'E-posta kişileri içe aktarılamadı. Lütfen tekrar deneyin.',
+            });
+        }
     };
+
+    // IMAP üzerinden kişi çekmek için bir API yok — dürüst yönlendirme (vCard/CSV).
+    const handleImapNote = () => {
+        toast({
+            title: 'IMAP ile kişi içe aktarma yok',
+            description: 'Kurumsal/özel maillerde kişileri vCard (.vcf) veya CSV olarak dışa aktarıp aşağıdan yükleyin.',
+        });
+    };
+
+    // OAuth popup'tan dönen kişileri mevcut davet listelerine besle.
+    useEffect(() => {
+        const handler = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            const data = event.data as { type?: string; contacts?: Array<{ name?: string; email?: string | null; phone?: string | null }>; message?: string } | null;
+            if (!data || typeof data.type !== 'string') return;
+
+            if (data.type === 'hangel-contacts-error') {
+                toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: data.message ?? 'Kişiler alınamadı.' });
+                return;
+            }
+            if (data.type !== 'hangel-contacts' || !Array.isArray(data.contacts)) return;
+
+            const firestorePhones = new Set(
+                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
+            );
+            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
+
+            const phoneEntries: PhoneContact[] = [];
+            const emailEntries: string[] = [];
+            data.contacts.forEach((c, i) => {
+                const name = (c.name || '').trim() || 'İsimsiz';
+                if (c.phone) {
+                    phoneEntries.push({
+                        id: `oauth-${i}-${name}`,
+                        name,
+                        phones: [c.phone],
+                        onPlatform: firestorePhones.has(normalize(c.phone)),
+                    });
+                }
+                const email = (c.email || '').trim();
+                if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    emailEntries.push(email);
+                }
+            });
+
+            if (phoneEntries.length > 0) {
+                setPhoneContacts(phoneEntries);
+                setPhoneSynced(true);
+            }
+            if (emailEntries.length > 0) {
+                setEmailList(prev => Array.from(new Set([...prev, ...emailEntries])));
+            }
+
+            const total = phoneEntries.length + emailEntries.length;
+            if (total > 0) {
+                toast({ title: 'Kişiler içe aktarıldı', description: `${total} kişi davet listene eklendi.` });
+            } else {
+                toast({ title: 'Kişi bulunamadı', description: 'İçe aktarılacak telefon veya e-posta bulunamadı.' });
+            }
+        };
+        window.addEventListener('message', handler);
+        return () => window.removeEventListener('message', handler);
+    }, [allUsers, toast]);
 
     // WhatsApp davet metnini kopyala
     const handleCopyWhatsappMessage = async () => {
@@ -663,7 +752,7 @@ export default function InvitePage() {
                             type="button"
                             variant="outline"
                             className="w-full justify-start h-12"
-                            onClick={() => handleEmailProviderStub('gmail')}
+                            onClick={() => handleEmailOAuth('google')}
                         >
                             <Mail className="mr-3 h-5 w-5 text-red-500" />
                             <div className="flex flex-col items-start">
@@ -675,7 +764,7 @@ export default function InvitePage() {
                             type="button"
                             variant="outline"
                             className="w-full justify-start h-12"
-                            onClick={() => handleEmailProviderStub('outlook')}
+                            onClick={() => handleEmailOAuth('microsoft')}
                         >
                             <Mail className="mr-3 h-5 w-5 text-blue-500" />
                             <div className="flex flex-col items-start">
@@ -687,7 +776,7 @@ export default function InvitePage() {
                             type="button"
                             variant="outline"
                             className="w-full justify-start h-12"
-                            onClick={() => handleEmailProviderStub('imap')}
+                            onClick={handleImapNote}
                         >
                             <AtSign className="mr-3 h-5 w-5 text-muted-foreground" />
                             <div className="flex flex-col items-start">
@@ -743,7 +832,7 @@ export default function InvitePage() {
                         )}
                     </div>
                     <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
-                        OAuth bağlantısı için backend gerekli. Şimdilik vCard/CSV yükleyerek veya manuel davet linkiyle paylaşabilirsin.
+                        Gmail veya Outlook ile bağlanıp kişilerini içe aktar. Kişiler yalnızca davet için kullanılır; sunucularımızda saklanmaz. Kurumsal/özel mail için vCard/CSV yükle.
                     </p>
                 </DialogContent>
             </Dialog>

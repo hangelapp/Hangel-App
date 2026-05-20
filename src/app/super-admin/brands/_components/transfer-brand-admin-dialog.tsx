@@ -5,7 +5,6 @@ import { collection, query, where } from 'firebase/firestore';
 import { Loader2, Search, UserCog, CheckCircle, XCircle, X } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -28,14 +27,26 @@ interface TransferBrandAdminDialogProps {
     allUsers: SimpleUser[] | null;
     onAssign: (brandId: string, userId: string, userName: string, role: BrandRole) => Promise<void>;
     onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
+    onUpdateRole: (invitationId: string, inviteeUserId: string, newRole: BrandRole) => Promise<void>;
 }
 
-export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke }: TransferBrandAdminDialogProps) => {
+export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke, onUpdateRole }: TransferBrandAdminDialogProps) => {
     const db = useFirestore();
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState<BrandRole>('Genel Yönetici');
     const [submitting, setSubmitting] = useState(false);
+    const [roleEdits, setRoleEdits] = useState<Record<string, BrandRole>>({});
+    const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+    const handleUpdateRole = async (invitationId: string, inviteeUserId: string, newRole: BrandRole) => {
+        setUpdatingId(invitationId);
+        try {
+            await onUpdateRole(invitationId, inviteeUserId, newRole);
+        } finally {
+            setUpdatingId(null);
+        }
+    };
 
     const isEmailSearch = searchTerm.includes('@');
     const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
@@ -115,16 +126,37 @@ export const TransferBrandAdminDialog = ({ brand, allUsers, onAssign, onRevoke }
                                 {activeInvitations.map(inv => {
                                     const userInfo = (allUsers || []).find(u => u.id === inv.inviteeUserId);
                                     const displayName = inv.inviteeName || userInfo?.name || userInfo?.displayName || 'Üye';
+                                    const currentRole: BrandRole = (BRAND_ROLE_OPTIONS as readonly string[]).includes(inv.role || '')
+                                        ? (inv.role as BrandRole)
+                                        : 'Genel Yönetici';
+                                    const editedRole = roleEdits[inv.id] ?? currentRole;
+                                    const isRowUpdating = updatingId === inv.id;
                                     return (
                                         <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-white">
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={userInfo?.avatarUrl} />
                                                 <AvatarFallback className="text-xs font-bold">{displayName.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <div className="flex-1 min-w-0">
+                                            <div className="flex-1 min-w-0 space-y-1">
                                                 <p className="font-bold text-sm truncate">{displayName}</p>
                                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <Badge variant="secondary" className="text-[9px] font-bold">{inv.role || 'Yönetici'}</Badge>
+                                                    <Select
+                                                        value={editedRole}
+                                                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [inv.id]: v as BrandRole }))}>
+                                                        <SelectTrigger className="h-7 w-auto rounded-lg text-[11px] font-bold"><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {BRAND_ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-7 px-2.5 rounded-lg font-bold text-[11px]"
+                                                        disabled={isRowUpdating || editedRole === currentRole}
+                                                        onClick={() => { void handleUpdateRole(inv.id, inv.inviteeUserId || '', editedRole); }}>
+                                                        {isRowUpdating && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                                        Güncelle
+                                                    </Button>
                                                     {inv.invitedAt && (
                                                         <span className="text-[10px] text-muted-foreground">{formatDate(inv.invitedAt)}</span>
                                                     )}

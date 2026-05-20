@@ -17,6 +17,8 @@ import {
     UserCircle,
     MapPin,
     School,
+    Search,
+    CheckCircle2,
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,7 +26,7 @@ import { allCountries, allSdgs } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
     FileUpload,
@@ -152,6 +154,117 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
     const selectedCorporatePhone = COUNTRY_PHONE_CODES.find(c => c.code === formData.phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
 
+    // --- Registry (kütük) auto-fill: Dernek lookup by kütük no, Vakıf search by name ---
+    type RegistryMatch = {
+        name?: string;
+        faaliyetAlani?: string;
+        adres?: string;
+        webSite?: string;
+        il?: string;
+        ilce?: string;
+    };
+    type VakifResult = {
+        id: string;
+        name: string;
+        adres?: string;
+        il?: string;
+        ilce?: string;
+        ePosta?: string;
+        telefon1?: string;
+    };
+    // 'idle' | 'loading' | 'found' | 'notFound' | 'error'
+    const [registryLookupStatus, setRegistryLookupStatus] = useState<'idle' | 'loading' | 'found' | 'notFound' | 'error'>('idle');
+    const [registryMatch, setRegistryMatch] = useState<RegistryMatch | null>(null);
+    const [vakifSearchText, setVakifSearchText] = useState('');
+    const [vakifSearchStatus, setVakifSearchStatus] = useState<'idle' | 'loading' | 'empty' | 'error'>('idle');
+    const [vakifResults, setVakifResults] = useState<VakifResult[]>([]);
+
+    const handleDernekLookup = async () => {
+        const key = formData.registryNo.trim();
+        if (!key) return;
+        setRegistryLookupStatus('loading');
+        setRegistryMatch(null);
+        try {
+            const snap = await getDoc(doc(db, COLLECTIONS.registryDernekler, key));
+            if (!snap.exists()) {
+                setRegistryLookupStatus('notFound');
+                return;
+            }
+            const r = snap.data() as Record<string, unknown>;
+            const name = typeof r.name === 'string' ? r.name : '';
+            const foundedYear = typeof r.foundedYear === 'number' ? String(r.foundedYear) : '';
+            setFormData(prev => ({
+                ...prev,
+                // name is the identity being looked up → always fill from record.
+                name: name || prev.name,
+                // foundedYear only if record has it and user hasn't set one.
+                foundedYear: foundedYear && !prev.foundedYear ? foundedYear : prev.foundedYear,
+            }));
+            setRegistryMatch({
+                name,
+                faaliyetAlani: typeof r.faaliyetAlani === 'string' ? r.faaliyetAlani : undefined,
+                adres: typeof r.adres === 'string' ? r.adres : undefined,
+                webSite: typeof r.webSite === 'string' ? r.webSite : undefined,
+            });
+            setRegistryLookupStatus('found');
+        } catch {
+            // Registry may not be imported yet, or rules deny → never crash the form.
+            setRegistryLookupStatus('error');
+        }
+    };
+
+    const handleVakifSearch = async () => {
+        const q = vakifSearchText.trim().toLocaleLowerCase('tr');
+        if (q.length < 3) return;
+        setVakifSearchStatus('loading');
+        setVakifResults([]);
+        try {
+            const snap = await getDocs(query(
+                collection(db, COLLECTIONS.registryVakiflar),
+                where('nameLower', '>=', q),
+                where('nameLower', '<=', q + ''),
+                orderBy('nameLower'),
+                limit(8),
+            ));
+            const results: VakifResult[] = snap.docs.map(d => {
+                const r = d.data() as Record<string, unknown>;
+                return {
+                    id: d.id,
+                    name: typeof r.name === 'string' ? r.name : '',
+                    adres: typeof r.adres === 'string' ? r.adres : undefined,
+                    il: typeof r.il === 'string' ? r.il : undefined,
+                    ilce: typeof r.ilce === 'string' ? r.ilce : undefined,
+                    ePosta: typeof r.ePosta === 'string' ? r.ePosta : undefined,
+                    telefon1: typeof r.telefon1 === 'string' ? r.telefon1 : undefined,
+                };
+            });
+            setVakifResults(results);
+            setVakifSearchStatus(results.length === 0 ? 'empty' : 'idle');
+        } catch {
+            // nameLower index may not be deployed → graceful manual entry.
+            setVakifSearchStatus('error');
+        }
+    };
+
+    const handleSelectVakif = (v: VakifResult) => {
+        const cleanEmail = v.ePosta && v.ePosta !== '-' ? v.ePosta : '';
+        const localPhone = v.telefon1 ? v.telefon1.replace(/\D/g, '').replace(/^90/, '').replace(/^0/, '') : '';
+        setFormData(prev => ({
+            ...prev,
+            name: v.name || prev.name,
+            city: v.il || prev.city,
+            district: v.ilce || prev.district,
+            // adres → about/notes only if empty (do not overwrite user text).
+            about: prev.about ? prev.about : (v.adres || prev.about),
+            email: !prev.email && cleanEmail ? cleanEmail : prev.email,
+            phone: !prev.phone && localPhone ? localPhone : prev.phone,
+        }));
+        setRegistryMatch({ name: v.name, adres: v.adres, il: v.il, ilce: v.ilce });
+        setRegistryLookupStatus('found');
+        setVakifResults([]);
+        setVakifSearchStatus('idle');
+    };
+
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
             <div className="space-y-6">
@@ -206,6 +319,53 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 </Select>
                             </div>
                         </div>
+                        {formData.orgSubType === 'Vakıf' && (
+                            <div className="space-y-2">
+                                <FormLabel>Vakıf adıyla ara</FormLabel>
+                                <div className="grid grid-cols-[1fr_auto] gap-2">
+                                    <FormInput
+                                        placeholder="En az 3 harf girin"
+                                        value={vakifSearchText}
+                                        onChange={e => setVakifSearchText(e.target.value)}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleVakifSearch(); } }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-12 rounded-xl px-4 font-bold border-primary/30"
+                                        disabled={vakifSearchStatus === 'loading' || vakifSearchText.trim().length < 3}
+                                        onClick={() => void handleVakifSearch()}
+                                    >
+                                        {vakifSearchStatus === 'loading'
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : <><Search className="mr-2 h-4 w-4" />Vakfı Bul</>}
+                                    </Button>
+                                </div>
+                                {vakifResults.length > 0 && (
+                                    <div className="rounded-2xl border bg-card divide-y overflow-hidden">
+                                        {vakifResults.map(v => (
+                                            <button
+                                                key={v.id}
+                                                type="button"
+                                                onClick={() => handleSelectVakif(v)}
+                                                className="w-full text-left px-4 py-3 hover:bg-primary/5 transition-colors"
+                                            >
+                                                <p className="text-[13px] font-bold leading-tight">{v.name}</p>
+                                                {(v.il || v.ilce) && (
+                                                    <p className="text-[11px] text-muted-foreground">{[v.ilce, v.il].filter(Boolean).join(' / ')}</p>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {vakifSearchStatus === 'empty' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Bu adla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
+                                )}
+                                {vakifSearchStatus === 'error' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Arama şu anda kullanılamıyor, bilgileri elle girin.</p>
+                                )}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <FormLabel>Hakkınızda</FormLabel>
                             <Textarea
@@ -321,13 +481,55 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <FormLabel>Kütük Numarası</FormLabel>
-                                <FormInput placeholder="Kütük No" value={formData.registryNo} onChange={e => setFormData({...formData, registryNo: e.target.value})} />
+                                <div className="grid grid-cols-[1fr_auto] gap-2">
+                                    <FormInput
+                                        placeholder="Kütük No"
+                                        value={formData.registryNo}
+                                        onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleDernekLookup(); } }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-12 rounded-xl px-4 font-bold border-primary/30"
+                                        disabled={registryLookupStatus === 'loading' || !formData.registryNo.trim()}
+                                        onClick={() => void handleDernekLookup()}
+                                    >
+                                        {registryLookupStatus === 'loading'
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : "Bilgileri Getir"}
+                                    </Button>
+                                </div>
+                                {registryLookupStatus === 'notFound' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Bu kütük numarasıyla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
+                                )}
+                                {registryLookupStatus === 'error' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Kayıt sorgulanamadı. Bilgileri elle girebilirsiniz.</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>IBAN</FormLabel>
                                 <FormInput placeholder="TR..." value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} />
                             </div>
                         </div>
+                        {registryLookupStatus === 'found' && registryMatch && (
+                            <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="space-y-1 text-left">
+                                    <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{registryMatch.name}</p>
+                                    {registryMatch.faaliyetAlani && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.faaliyetAlani}</p>
+                                    )}
+                                    {registryMatch.adres && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.adres}</p>
+                                    )}
+                                    {registryMatch.webSite && (
+                                        <p className="text-[11px] text-primary break-all">{registryMatch.webSite}</p>
+                                    )}
+                                    <p className="text-[10px] text-muted-foreground pt-1">Bilgiler forma aktarıldı; gerekirse düzenleyebilirsiniz.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Belgeler */}

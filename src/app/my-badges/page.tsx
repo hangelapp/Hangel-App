@@ -1,13 +1,16 @@
 'use client'
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, Milestone, CheckCircle, Lock, Award } from 'lucide-react';
+import { Star, Milestone, CheckCircle, Lock, Award, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { badges } from '@/lib/data';
-import { useUser, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { computeAreaPoints } from '@/lib/badge-points';
+import { useUser, useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
+import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import { Badge as BadgeType, BadgeLevel } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -15,6 +18,7 @@ import { groupBy } from 'lodash';
 import { Progress } from '@/components/ui/progress';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useToast } from '@/hooks/use-toast';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800' },
@@ -124,6 +128,7 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
 
 export default function MyBadgesPage() {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const { user: authUser } = useUser();
     const db = useFirestore();
     const userDocRef = useMemoFirebase(
@@ -132,27 +137,192 @@ export default function MyBadgesPage() {
     );
     const { data: userData } = useDoc(userDocRef);
 
+    // Sertifikalar: users/{uid}/certificates alt koleksiyonu (profile/page.tsx ile birebir).
+    type CertificateDoc = { id?: string; title: string; organization: string; date: string };
+    const certificatesRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.certificates) : null),
+        [db, authUser?.uid],
+    );
+    const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
+    const certificates = useMemo(() => certificatesData ?? [], [certificatesData]);
+
+    // Aktivite kaynakları: areaPoints'i kullanıcının gerçek bağış / gönüllülük / davetinden hesapla.
+    type DonationDoc = { id?: string; status?: string; ngoIds?: string[]; ngo?: string[] };
+    type NgoDoc = { id?: string; category?: string };
+    type PastVolunteeringDoc = { id?: string; points?: number; socialArea?: string; area?: string; ngoId?: string; organization?: string };
+
+    const donationsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.donations), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: donationsData } = useCollection<DonationDoc>(donationsQuery);
+    const donations = useMemo(() => donationsData ?? [], [donationsData]);
+
+    const ngosRef = useMemoFirebase(
+        () => (db ? collection(db, COLLECTIONS.ngos) : null),
+        [db],
+    );
+    const { data: ngosData } = useCollection<NgoDoc>(ngosRef);
+    const ngoCategoryById = useMemo<Record<string, string>>(() => {
+        const map: Record<string, string> = {};
+        (ngosData ?? []).forEach(n => {
+            if (n.id && typeof n.category === 'string') map[n.id] = n.category;
+        });
+        return map;
+    }, [ngosData]);
+
+    const pastVolunteeringRef = useMemoFirebase(
+        () => (db && authUser ? collection(db, COLLECTIONS.users, authUser.uid, COLLECTIONS.pastVolunteering) : null),
+        [db, authUser?.uid],
+    );
+    const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
+    const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
+
+    // PDF alıcı adı: profile/page.tsx currentUser.name kullanıyor; burada userData.name / authUser.displayName.
+    const recipientName = (userData as { name?: string } | undefined)?.name || authUser?.displayName || 'Gönüllü';
+
+    const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
+        try {
+            const { default: jsPDF } = await import('jspdf');
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+
+            // Border
+            pdf.setDrawColor(234, 88, 12);
+            pdf.setLineWidth(2);
+            pdf.rect(10, 10, pageW - 20, pageH - 20);
+            pdf.setLineWidth(0.5);
+            pdf.rect(14, 14, pageW - 28, pageH - 28);
+
+            // Title
+            pdf.setFontSize(32);
+            pdf.setTextColor(234, 88, 12);
+            pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
+
+            pdf.setFontSize(12);
+            pdf.setTextColor(80, 80, 80);
+            pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
+
+            // Recipient
+            pdf.setFontSize(14);
+            pdf.setTextColor(60, 60, 60);
+            pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
+
+            pdf.setFontSize(22);
+            pdf.setTextColor(20, 20, 20);
+            pdf.text(recipientName, pageW / 2, 92, { align: 'center' });
+
+            // Body
+            pdf.setFontSize(13);
+            pdf.setTextColor(60, 60, 60);
+            const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
+            pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
+
+            // Title of cert
+            pdf.setFontSize(20);
+            pdf.setTextColor(20, 20, 20);
+            pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
+
+            // Date / org footer
+            pdf.setFontSize(11);
+            pdf.setTextColor(80, 80, 80);
+            pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
+            pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
+
+            pdf.setFontSize(9);
+            pdf.setTextColor(120, 120, 120);
+            pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
+
+            const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+            pdf.save(filename);
+
+            toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
+        } catch (error) {
+            console.error('Certificate PDF generation failed:', error);
+            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+        }
+    };
+
+    const buildShareText = (certTitle: string) => `${certTitle} sertifikamı Hangel'de kazandım! `;
+    const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
+
+    const shareWhatsApp = (certTitle: string) => {
+        const text = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+    };
+    const shareLinkedIn = () => {
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
+    };
+    const shareEmail = (certTitle: string) => {
+        const subject = encodeURIComponent(`${certTitle} sertifikam`);
+        const bodyText = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
+        window.open(`mailto:?subject=${subject}&body=${bodyText}`, '_blank', 'noopener,noreferrer');
+    };
+    const shareInstagram = async (certTitle: string) => {
+        try {
+            if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                await navigator.clipboard.writeText(`${buildShareText(certTitle)}${shareUrl}`);
+            }
+            toast({ title: 'Metin kopyalandı', description: "Metin kopyalandı, Instagram'da paylaşabilirsin" });
+        } catch {
+            toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Metin kopyalanırken bir hata oluştu.' });
+        }
+        window.open('https://www.instagram.com', '_blank', 'noopener,noreferrer');
+    };
+
     // Top-level veya stats.* — invite akışı top-level yazıyor, signup stats altına yazıyor.
-    type UserDataLike = { impactScore?: number; stats?: { impactScore?: number }; areaPoints?: Record<string, number> };
+    type UserDataLike = { impactScore?: number; stats?: { impactScore?: number }; areaPoints?: Record<string, number>; inviteCount?: number };
     const impactScore: number = Math.max(
         Number((userData as UserDataLike | undefined)?.impactScore) || 0,
         Number((userData as UserDataLike | undefined)?.stats?.impactScore) || 0,
     );
 
-    // Sosyal alan bazında puan haritası: userData.areaPoints[socialArea] = number
-    // Henüz tanımlı değilse: 0 (rozetler kilitli görünür)
-    const areaPoints = useMemo<Record<string, number>>(
+    // Sosyal alan bazında saklı puan haritası: userData.areaPoints[socialArea] = number
+    const storedAreaPoints = useMemo<Record<string, number>>(
         () => (userData as UserDataLike | undefined)?.areaPoints || {},
         [userData]
     );
+    const inviteCount = Number((userData as UserDataLike | undefined)?.inviteCount) || 0;
 
-    // Rozetlere areaPoints'ten currentPoints aktar
+    // Gerçek aktiviteden hesaplanan alan puanları (bağış + gönüllülük + davet).
+    const computed = useMemo(
+        () => computeAreaPoints({ donations, ngoCategoryById, pastVolunteering, inviteCount }),
+        [donations, ngoCategoryById, pastVolunteering, inviteCount]
+    );
+
+    // Saklı + hesaplanan birleştir: her alan için max(saklı, hesaplanan).
+    const effectiveAreaPoints = useMemo<Record<string, number>>(() => {
+        const merged: Record<string, number> = { ...storedAreaPoints };
+        for (const area of Object.keys(computed)) {
+            merged[area] = Math.max(Number(merged[area]) || 0, Number(computed[area]) || 0);
+        }
+        return merged;
+    }, [storedAreaPoints, computed]);
+
+    // Saklı puan ile etkin puan farklıysa kullanıcı dokümanına yaz (write-if-changed,
+    // hata durumunda non-fatal). Giriş yapılmamışsa yazma; sonsuz döngüye karşı JSON karşılaştır.
+    useEffect(() => {
+        if (!db || !authUser) return;
+        const serialize = (m: Record<string, number>) =>
+            JSON.stringify(Object.entries(m).sort(([a], [b]) => a.localeCompare(b)));
+        if (serialize(storedAreaPoints) === serialize(effectiveAreaPoints)) return;
+        (async () => {
+            try {
+                await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), { areaPoints: effectiveAreaPoints });
+            } catch {
+                // non-fatal: puan kalıcılaştırması başarısızsa UI yine hesaplanan değerlerle çalışır.
+            }
+        })();
+    }, [db, authUser, storedAreaPoints, effectiveAreaPoints]);
+
+    // Rozetlere effectiveAreaPoints'ten currentPoints aktar
     const enrichedBadges: BadgeType[] = useMemo(() => {
         return badges.map(b => ({
             ...b,
-            currentPoints: Number(areaPoints[b.socialArea]) || 0,
+            currentPoints: Number(effectiveAreaPoints[b.socialArea]) || 0,
         }));
-    }, [areaPoints]);
+    }, [effectiveAreaPoints]);
 
     // Sıradaki hedef: en yakın kazanılmamış rozet (kalan puan en az olan)
     const nextBadge = useMemo(() => {
@@ -218,7 +388,7 @@ export default function MyBadgesPage() {
                         />
                     )}
                     {Object.entries(groupedBadges).map(([socialArea, areaBadges]) => {
-                        const areaCurrent = Number(areaPoints[socialArea]) || 0;
+                        const areaCurrent = Number(effectiveAreaPoints[socialArea]) || 0;
                         return (
                             <div key={socialArea} className="space-y-6">
                                 <div className="px-1 flex items-center justify-between">
@@ -242,9 +412,68 @@ export default function MyBadgesPage() {
                     })}
                 </TabsContent>
 
-                <TabsContent value="certificates" className="mt-8 text-center py-20">
-                    <Milestone className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">{t('dashboard.badges.certificatesPlaceholder')}</p>
+                <TabsContent value="certificates" className="mt-8 space-y-4">
+                    {!authUser ? (
+                        <EmptyState
+                            icon={LogIn}
+                            title="Sertifikalarını görmek için giriş yap"
+                            description="Onaylanan gönüllülük ve etkinlik katılımlarının sertifikaları hesabına bağlıdır."
+                            action={{ label: 'Giriş yap', href: '/login' }}
+                        />
+                    ) : certificates.length === 0 ? (
+                        <div className="text-center py-20">
+                            <Milestone className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
+                            <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">{t('dashboard.badges.certificatesPlaceholder')}</p>
+                        </div>
+                    ) : (
+                        certificates.map(cert => (
+                            <Card key={cert.id} className="rounded-2xl">
+                                <CardContent className="flex items-center justify-between gap-4 p-5">
+                                    <div className="flex items-start gap-4 min-w-0">
+                                        <div className="p-3 rounded-2xl bg-primary/10 shrink-0">
+                                            <FileText className="h-6 w-6 text-primary" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="font-bold text-sm leading-tight truncate">{cert.title}</p>
+                                            {(cert.organization || cert.date) && (
+                                                <p className="text-xs text-muted-foreground mt-1 truncate">
+                                                    {[cert.organization, cert.date].filter(Boolean).join(' · ')}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
+                                            <Download className="h-4 w-4 sm:mr-2" />
+                                            <span className="hidden sm:inline">İndir</span>
+                                        </Button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size="sm" variant="outline" className="rounded-xl">
+                                                    <Share2 className="h-4 w-4 sm:mr-2" />
+                                                    <span className="hidden sm:inline">Paylaş</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => shareWhatsApp(cert.title)}>
+                                                    <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => shareInstagram(cert.title)}>
+                                                    <Instagram className="mr-2 h-4 w-4" /> Instagram
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={shareLinkedIn}>
+                                                    <Linkedin className="mr-2 h-4 w-4" /> LinkedIn
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => shareEmail(cert.title)}>
+                                                    <Mail className="mr-2 h-4 w-4" /> E-posta
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))
+                    )}
                 </TabsContent>
             </Tabs>
         </div>

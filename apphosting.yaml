@@ -5,3 +5,18 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 3
+
+# Server-side secrets injected from Secret Manager at runtime.
+# GEMINI_API_KEY: Genkit/Gemini (library AI, project writer, impact stories).
+# OAUTH_STATE_SECRET: HMAC signing for the email-contacts OAuth state (CSRF).
+# (Gmail/Outlook OAuth client creds are added by the operator once the OAuth
+#  apps are created — until then those routes return OAUTH_NOT_CONFIGURED.)
+env:
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    availability:
+      - RUNTIME
+  - variable: OAUTH_STATE_SECRET
+    secret: OAUTH_STATE_SECRET
+    availability:
+      - RUNTIME

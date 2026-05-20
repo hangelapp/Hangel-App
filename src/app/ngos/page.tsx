@@ -5,11 +5,10 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Heart, Users, ShieldCheck, ArrowDownUp } from 'lucide-react';
+import { Search, Filter, ArrowDownUp } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -189,34 +188,6 @@ export default function NgosPage() {
                                         <p className="text-xs text-muted-foreground">{ngo.category}</p>
                                     </div>
                                 </div>
-                                {(() => {
-                                    // PDF audit #1: tüm değerler 0 ise (demo / yeni kayıt) chip'leri gizle
-                                    const transparency = ngo.transparencyScore ?? 0;
-                                    const donors = ngo.stats?.donors ?? 0;
-                                    const volunteers = ngo.stats?.volunteers ?? 0;
-                                    if (transparency === 0 && donors === 0 && volunteers === 0) return null;
-                                    return (
-                                        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                                            {transparency > 0 && (
-                                                <>
-                                                    <span className="flex items-center gap-1" title="Şeffaflık Puanı"><ShieldCheck className="h-3 w-3 text-primary" /> {transparency} Şeffaflık</span>
-                                                </>
-                                            )}
-                                            {donors > 0 && (
-                                                <>
-                                                    {transparency > 0 && <Separator orientation="vertical" className="h-3" />}
-                                                    <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-rose-500" /> {donors} Bağışçı</span>
-                                                </>
-                                            )}
-                                            {volunteers > 0 && (
-                                                <>
-                                                    {(transparency > 0 || donors > 0) && <Separator orientation="vertical" className="h-3" />}
-                                                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {volunteers} Gönüllü</span>
-                                                </>
-                                            )}
-                                        </div>
-                                    );
-                                })()}
                                 {ngo.memberOf && ngo.memberOf.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1">
                                         <span className="text-[10px] text-muted-foreground self-center">Platformlar:</span>
