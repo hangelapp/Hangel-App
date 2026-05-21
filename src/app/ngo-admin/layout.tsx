@@ -14,8 +14,6 @@ import {
   BarChart3,
   Banknote,
   Newspaper,
-  Store,
-  School,
   Calendar,
   QrCode,
   Clock,
@@ -23,6 +21,22 @@ import {
   Database,
   Briefcase,
   Network,
+  Inbox,
+  Globe,
+  MessageSquareText,
+  Mail,
+  Megaphone,
+  Video,
+  Palette,
+  CreditCard,
+  Calculator,
+  Phone,
+  Building2,
+  GraduationCap,
+  MapPin,
+  LineChart,
+  LifeBuoy,
+  Leaf,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -61,54 +75,144 @@ interface EntityRef {
 
 const NGO_MENU: MenuGroup[] = [
   {
+    title: 'Görünürlük & Kurumsal Kimlik',
     items: [
       { href: '/ngo-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/ngo-admin/manage-profile', label: 'Profil Yönetimi', icon: UserCog },
-      { href: '/ngo-admin/volunteer', label: 'Gönüllülük İlanları', icon: HeartHandshake },
-      { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: HandCoins },
-      { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
-      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
-      { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
-      { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
-      { href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: Banknote },
+      { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
+      { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
+    ],
+  },
+  {
+    title: 'İletişim & Topluluk',
+    items: [
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
+      { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
+      { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
+    ],
+  },
+  {
+    title: 'Gönüllü ve Gönüllülük Yönetimi',
+    items: [
+      { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: HeartHandshake },
+      { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Finans & Sosyal Etki',
+    items: [
+      { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: HandCoins },
+      { href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: Banknote },
     ],
   },
   {
     title: 'Entegrasyon ve Yönetim',
     items: [
-      { href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: Briefcase, comingSoon: true },
+      { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: Globe },
+      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquareText, comingSoon: true },
+      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, comingSoon: true },
+      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, comingSoon: true },
+      { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar, comingSoon: true },
+      { href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: Video, comingSoon: true },
+      { href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: Palette, comingSoon: true },
+      { href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: CreditCard, comingSoon: true },
+      { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Megaphone, comingSoon: true },
+      { href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: Calculator, comingSoon: true },
+      { href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: Database, comingSoon: true },
+      { href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: Phone, comingSoon: true },
+      { href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: Building2, comingSoon: true },
+      { href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: GraduationCap, comingSoon: true },
+      { href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: MapPin, comingSoon: true },
+      { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageSquareText, comingSoon: true },
+      { href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: Briefcase, comingSoon: true },
+      { href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: Users, comingSoon: true },
       { href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: Network, comingSoon: true },
-      { href: '/ngo-admin/crm', label: 'CRM', icon: Database, comingSoon: true },
-      { href: '/ngo-admin/settings', label: 'Sistem Ayarları', icon: Settings, comingSoon: true },
+      { href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: LineChart, comingSoon: true },
+    ],
+  },
+  {
+    title: 'Sistem & Destek',
+    items: [
+      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
+      { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: Settings },
+      { href: '/ngo-admin/support', label: 'Destek', icon: LifeBuoy },
     ],
   },
 ];
 
 const BRAND_MENU: MenuGroup[] = [
   {
+    title: 'Görünürlük & Kurumsal Kimlik',
     items: [
       { href: '/ngo-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/ngo-admin/manage-profile', label: 'Marka Profili', icon: Store },
-      { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: HandCoins },
-      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
-      { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
-      { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
+      { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
+      { href: '/ngo-admin/qr', label: 'Marka Profil QR Kodu', icon: QrCode },
+    ],
+  },
+  {
+    title: 'İletişim & Topluluk',
+    items: [
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
+      { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
+      { href: '/ngo-admin/reports', label: 'Sürdürülebilirlik ve KSS Raporları', icon: Leaf, comingSoon: true },
+    ],
+  },
+  {
+    title: 'Finans & Sosyal Etki',
+    items: [
+      { href: '/ngo-admin/donations', label: 'Yapılan Bağış Takibi', icon: HandCoins },
+      { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
+    ],
+  },
+  {
+    title: 'Sistem & Destek',
+    items: [
+      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
+      { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: Settings },
+      { href: '/ngo-admin/support', label: 'Destek', icon: LifeBuoy },
     ],
   },
 ];
 
 const CLUB_MENU: MenuGroup[] = [
   {
+    title: 'Görünürlük & Kurumsal Kimlik',
     items: [
       { href: '/ngo-admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/ngo-admin/manage-profile', label: 'Kulüp Profili', icon: School },
-      { href: '/ngo-admin/events', label: 'Etkinlikler', icon: Calendar },
-      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
+      { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
+      { href: '/ngo-admin/qr', label: 'Kulüp Profil QR Kodu', icon: QrCode },
+    ],
+  },
+  {
+    title: 'İletişim & Topluluk',
+    items: [
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
+      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
+      { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar },
+    ],
+  },
+  {
+    title: 'Entegrasyon ve Yönetim',
+    items: [
+      { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: Globe },
+      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquareText, comingSoon: true },
+      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, comingSoon: true },
+    ],
+  },
+  {
+    title: 'Gönüllü & Analiz',
+    items: [
       { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
-      { href: '/ngo-admin/qr', label: 'Profil QR Kodu', icon: QrCode },
+    ],
+  },
+  {
+    title: 'Sistem & Destek',
+    items: [
+      { href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: Users },
+      { href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: Settings },
+      { href: '/ngo-admin/support', label: 'Destek', icon: LifeBuoy },
     ],
   },
 ];
@@ -197,8 +301,8 @@ function SideMenu({ entityKind }: { entityKind: EntityKind | null }) {
             )}
             <ul className="space-y-1">
               {group.items.map((item) => {
-                // Restrict events to clubs only
-                if (item.href === '/ngo-admin/events' && entityKind !== 'club') {
+                // Restrict the active events link to clubs only (disabled "Yakında" items still render)
+                if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
                   return null;
                 }
                 const Icon = item.icon;

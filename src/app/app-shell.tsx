@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AppHeader from '@/components/layout/header';
 import { SideNav } from '@/components/layout/SideNav';
+import { AutoBreadcrumb } from '@/components/layout/auto-breadcrumb';
 import type { SideNavItem, User } from '@/lib/types';
 import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import Link from 'next/link';
@@ -440,7 +441,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <VerifyEmailBanner />
-            <main className="flex-1 pt-12 pb-24 lg:pb-24">{children}</main>
+            <main className="flex-1 pt-12 pb-24 lg:pb-24">
+              <AutoBreadcrumb />
+              {children}
+            </main>
           </div>
         </div>
     );

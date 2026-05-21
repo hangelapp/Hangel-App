@@ -92,35 +92,70 @@ const iconColorMap: { [key: string]: string } = {
   'Brain': 'bg-fuchsia-500',
 };
 
-const superAdminNavItems = [
-    { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
-    { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
-    { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
-    { href: '/super-admin/contracts', label: 'Sözleşmeler ve Politikalar', icon: 'FileText', description: 'Kullanıcı sözleşmesi, KVKK, gizlilik ve diğer hukuki metinleri düzenle veya yeni sözleşme ekle.' },
-    { href: '/super-admin/pages', label: 'İçerik Sayfaları (Basın/Etkinlik vb.)', icon: 'Newspaper', description: 'Basın, etkinlik, kariyer gibi sayfaları oluştur ve düzenle.' },
-    { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
-    { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
-    { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
-    { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
-    { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
-    { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla ve yönet.' },
-    { href: '/super-admin/events', label: 'Etkinlik Yönetimi', icon: 'Calendar', description: 'Öğrenci kulüplerinin oluşturduğu etkinlikleri onayla veya reddet.' },
-    { href: '/super-admin/donations', label: 'Bağış Yönetimi', icon: 'HandCoins', description: 'Tüm bağış işlemlerini ve STK hak edişlerini yönetin.' },
-    { href: '/super-admin/funds', label: 'Fon & Hibe Programları', icon: 'HandCoins', description: 'STK\'ların başvurabileceği hibe programlarını ve fon kaynaklarını yönetin.' },
-    { href: '/super-admin/emergency', label: 'Acil Durum Yönetimi', icon: 'Siren', description: 'Acil kan talebi ve afet bildirimlerini yönet, hedef bildirimler gönder.' },
-    { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
-    { href: '/super-admin/surveys', label: 'Anket & Değerlendirmeler', icon: 'Star', description: 'Kullanıcı keşif anketleri ve uygulama değerlendirmelerini görüntüle.' },
-    { href: '/super-admin/analytics', label: 'İstatistik, Analizler & Demografi', icon: 'BarChart3', description: 'Platformun genel metrikleri ve STK bazında destekçi demografi profili (yaş, cinsiyet, konum, meslek, ilgi alanları) birleşik panelde.' },
-    { href: '/super-admin/ai-management', label: 'Yapay Zeka Yönetimi', icon: 'Brain', description: 'Kütüphane Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
-    { href: '/super-admin/activity', label: 'Aktiviteler & İşlem Logu', icon: 'Activity', description: 'Platform genelinde tüm aktivite ve sistem işlemlerinin merkezi listesi.' },
-    { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
-    { href: '/super-admin/communications', label: 'DM & Uygulama-İçi Bildirim', icon: 'MessageSquare', description: 'Kullanıcılara uygulama-içi direkt mesaj ve anlık bildirim gönder.' },
-    { href: '/super-admin/messaging', label: 'Toplu SMS & E-Posta', icon: 'Send', description: 'Kampanya, şablon, segment ve gönderim analitikleri.' },
-    { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
-    { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
-    { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
-    { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle', description: 'Kullanıcılardan gelen destek taleplerini yönet.' },
-    { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy', description: 'Admin paneli kullanımı hakkında bilgi al.' },
+const superAdminNavSections = [
+    {
+        title: 'İçerik & Web',
+        items: [
+            { href: '/super-admin/web-content', label: 'WEB İçerik Yönetimi', icon: 'FileEdit', description: 'Genel bilgilendirme ve kurumsal portal sayfalarını yönet.' },
+            { href: '/super-admin/association-content', label: 'Dernek Web Sitesi Yönetimi', icon: 'Globe', description: 'Dernek sayfalarının içeriklerini yönet.' },
+            { href: '/super-admin/contracts', label: 'Sözleşmeler ve Politikalar', icon: 'FileText', description: 'Kullanıcı sözleşmesi, KVKK, gizlilik ve diğer hukuki metinleri düzenle veya yeni sözleşme ekle.' },
+            { href: '/super-admin/pages', label: 'İçerik Sayfaları (Basın/Etkinlik vb.)', icon: 'Newspaper', description: 'Basın, etkinlik, kariyer gibi sayfaları oluştur ve düzenle.' },
+        ],
+    },
+    {
+        title: 'Üyeler & Kurumlar',
+        items: [
+            { href: '/super-admin/applications', label: 'Başvuru Yönetimi', icon: 'FileText', description: 'STK, marka ve kulüp başvurularını yönet.' },
+            { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
+            { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
+            { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
+            { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
+        ],
+    },
+    {
+        title: 'Faaliyet & İçerik Akışı',
+        items: [
+            { href: '/super-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'HeartHandshake', description: 'Gönüllülük ilanlarını onayla ve yönet.' },
+            { href: '/super-admin/events', label: 'Etkinlik Yönetimi', icon: 'Calendar', description: 'Öğrenci kulüplerinin oluşturduğu etkinlikleri onayla veya reddet.' },
+            { href: '/super-admin/posts', label: 'Gönderi Yönetimi', icon: 'Newspaper', description: 'Tüm gönderileri denetle ve yönet.' },
+            { href: '/super-admin/surveys', label: 'Anket & Değerlendirmeler', icon: 'Star', description: 'Kullanıcı keşif anketleri ve uygulama değerlendirmelerini görüntüle.' },
+        ],
+    },
+    {
+        title: 'Finans & Sosyal Etki',
+        items: [
+            { href: '/super-admin/donations', label: 'Bağış Yönetimi', icon: 'HandCoins', description: 'Tüm bağış işlemlerini ve STK hak edişlerini yönetin.' },
+            { href: '/super-admin/funds', label: 'Fon & Hibe Programları', icon: 'HandCoins', description: 'STK\'ların başvurabileceği hibe programlarını ve fon kaynaklarını yönetin.' },
+            { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
+        ],
+    },
+    {
+        title: 'İletişim & Bildirim',
+        items: [
+            { href: '/super-admin/communications', label: 'DM & Uygulama-İçi Bildirim', icon: 'MessageSquare', description: 'Kullanıcılara uygulama-içi direkt mesaj ve anlık bildirim gönder.' },
+            { href: '/super-admin/messaging', label: 'Toplu SMS & E-Posta', icon: 'Send', description: 'Kampanya, şablon, segment ve gönderim analitikleri.' },
+            { href: '/super-admin/emergency', label: 'Acil Durum Yönetimi', icon: 'Siren', description: 'Acil kan talebi ve afet bildirimlerini yönet, hedef bildirimler gönder.' },
+            { href: '/super-admin/ads', label: 'Reklam Yönetimi', icon: 'Megaphone', description: 'Platform içi reklamları yönet.' },
+            { href: '/super-admin/public-relations', label: 'Kamu İlişkileri', icon: 'Users', description: 'Kurumsal işbirliği taleplerini yönet.' },
+        ],
+    },
+    {
+        title: 'Zeka & Analiz',
+        items: [
+            { href: '/super-admin/ai-management', label: 'Yapay Zeka Yönetimi', icon: 'Brain', description: 'Kütüphane Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
+            { href: '/super-admin/analytics', label: 'İstatistik, Analizler & Demografi', icon: 'BarChart3', description: 'Platformun genel metrikleri ve STK bazında destekçi demografi profili (yaş, cinsiyet, konum, meslek, ilgi alanları) birleşik panelde.' },
+            { href: '/super-admin/activity', label: 'Aktiviteler & İşlem Logu', icon: 'Activity', description: 'Platform genelinde tüm aktivite ve sistem işlemlerinin merkezi listesi.' },
+        ],
+    },
+    {
+        title: 'Sistem & Destek',
+        items: [
+            { href: '/super-admin/set-superadmin', label: 'SUPERADMIN Ayarı', icon: 'Shield', description: '5384009090 numaralı kullanıcıyı SUPERADMIN olarak ayarla.' },
+            { href: '/super-admin/settings', label: 'Panel Ayarları', icon: 'Settings', description: 'Platformun genel ayarlarını yönet.' },
+            { href: '/super-admin/support', label: 'Destek Talepleri', icon: 'HelpCircle', description: 'Kullanıcılardan gelen destek taleplerini yönet.' },
+            { href: '/super-admin/help', label: 'Yardım Merkezi', icon: 'LifeBuoy', description: 'Admin paneli kullanımı hakkında bilgi al.' },
+        ],
+    },
 ];
 
 export default function SuperAdminDashboard() {
@@ -246,26 +281,33 @@ export default function SuperAdminDashboard() {
                 <CardDescription>Platformun teknik ve içerik operasyonlarını buradan yönetin.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="divide-y border-black/5">
-                    {superAdminNavItems.map(item => {
-                        const Icon = iconMap[item.icon] || HelpCircle;
-                        const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
-                        return (
-                            <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">
-                                <div className="flex items-center p-6">
-                                    <div className={cn("h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110", color)}>
-                                        <Icon className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="flex-1 space-y-0.5">
-                                        <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.label}</p>
-                                        <p className="text-sm text-muted-foreground font-medium leading-tight">{item.description}</p>
-                                    </div>
-                                    <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
-                                </div>
-                            </Link>
-                        )
-                    })}
-                </div>
+                {superAdminNavSections.map(section => (
+                    <div key={section.title}>
+                        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-black/5">
+                            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{section.title}</p>
+                        </div>
+                        <div className="divide-y border-black/5">
+                            {section.items.map(item => {
+                                const Icon = iconMap[item.icon] || HelpCircle;
+                                const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
+                                return (
+                                    <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">
+                                        <div className="flex items-center p-6">
+                                            <div className={cn("h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110", color)}>
+                                                <Icon className="h-6 w-6 text-white" />
+                                            </div>
+                                            <div className="flex-1 space-y-0.5">
+                                                <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.label}</p>
+                                                <p className="text-sm text-muted-foreground font-medium leading-tight">{item.description}</p>
+                                            </div>
+                                            <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
+                                        </div>
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    </div>
+                ))}
             </CardContent>
         </Card>
     </div>

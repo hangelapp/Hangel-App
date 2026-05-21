@@ -8,6 +8,7 @@ import { UserAvatar } from '@/components/shared/user-avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
+import { AutoBreadcrumb } from '@/components/layout/auto-breadcrumb';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
@@ -112,6 +113,7 @@ export default function SuperAdminLayout({
             </Link>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/30">
+          <AutoBreadcrumb />
           {children}
         </main>
       </div>
