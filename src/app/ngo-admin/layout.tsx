@@ -85,7 +85,7 @@ const NGO_MENU: MenuGroup[] = [
   {
     title: 'İletişim & Topluluk',
     items: [
-      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
       { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
@@ -152,10 +152,10 @@ const BRAND_MENU: MenuGroup[] = [
   {
     title: 'İletişim & Topluluk',
     items: [
-      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
-      { href: '/ngo-admin/reports', label: 'Sürdürülebilirlik ve KSS Raporları', icon: Leaf, comingSoon: true },
+      { href: '/ngo-admin/reports', label: 'Sürdürülebilirlik ve KSS Raporları', icon: Leaf },
     ],
   },
   {
@@ -187,7 +187,7 @@ const CLUB_MENU: MenuGroup[] = [
   {
     title: 'İletişim & Topluluk',
     items: [
-      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox, comingSoon: true },
+      { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: Sparkles },
       { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar },

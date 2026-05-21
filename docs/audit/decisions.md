@@ -1572,3 +1572,32 @@ PDF-R1..PDF-R8 + PDF-50+ (tasks.md 2026-05-21 bölümü). Hepsi disjoint dosyala
 
 ### Operatör deploy/config checklist
 1. App Hosting redeploy · 2. `firebase deploy --only firestore:rules,firestore:indexes,storage` · 3. `GEMINI_API_KEY` env · 4. Veri ops (brand-data-cleanup.md + registry-import.md).
+
+## 2026-05-21 — FEAT-ENTITY-INBOX — Entity Admin Gelen Kutusu (STK/Marka/Kulüp) + `messages` rules
+
+- **ID**: FEAT-ENTITY-INBOX (yeni)
+- **Lead**: security-lead
+- **Charter**: Yeni özellik — entity admin'lerin kendi kurumlarına gelen mesajları OKUMA + YANITLAMA. Security-lead `firestore.rules`'ı sahiplendiği için end-to-end owner.
+
+### 5-bullet plan
+1. **Ne değişiyor**: (a) YENİ `src/app/ngo-admin/inbox/page.tsx` — entity'ye gelen mesajları realtime listele/aç/okundu işaretle/yanıtla. (b) `src/app/messages/page.tsx` compose — alıcı aramasına ngos/brands/clubs eklenir (additive). (c) `firestore.rules` — `messages` koleksiyonu için **ilk kez** explicit `match` bloğu yazılır (read/list/create/update). Layout'taki `inbox` menü item'larından `comingSoon: true` kaldırılır.
+2. **Neden**: PRD'de vaat edilen "kullanıcı ↔ STK/marka/kulüp/yönetici" çift yönlü mesajlaşma eksik. Entity admin gelen mesajı göremiyor/yanıtlayamıyor.
+3. **Testler**: `tests/rules/messages.test.ts` (yeni) — owner-read, sender-read, entity-admin-read (managed*Id 3 varyant), yabancı-read-DENY, create senderId==uid guard, create spoof-DENY, update readBy-only guard, update başka-alan-DENY, super-admin-read.
+4. **Rollback**: 3 dosya pür-additive. Geri alma: `git revert <commit>` veya `messages` match bloğunu rules'tan sil + 2 yeni dosyayı sil + layout `comingSoon: true` geri koy. Rules deploy edilmeden ESKİ davranışa dönülür (deploy ayrı, operatör adımı).
+5. **Blast radius**: **YÜKSEK** — rules deploy gerektirir. Ancak `messages` için **mevcut bir rule YOK** (git history: `match /messages` hiç var olmamış). Bu yüzden bu bir "gevşetme" DEĞİL, daha önce global `allPaths` (yalnız super-admin write, read=deny) altına düşen koleksiyon için **ilk kez sıkı, scope'lu rule** yazımı. Mevcut user→user mesajlaşma prod'da çalışıyorsa, deploy edilmiş rules repo ile senkron değil demektir (ayrı bir operatör doğrulaması).
+
+### Risk raporu
+- **Gizlilik**: Entity-admin read genişlemesi YALNIZCA `resource.data.recipientId == users/{uid}.managed{Ngo,Brand,Club}Id` olduğunda izin verir. Kullanıcı-kullanıcı mesajlarına erişim genişlemez. `get()` çağrısı her read'de 1 ek doc okuması (maliyet kabul edilebilir; fundApplications/ngoSenders ile aynı pattern).
+- **Reply rule-safety**: Yanıt `addDoc(messages, { senderId: <admin uid>, sender:{ id: entityId, name: entityName, ... } })` — yani `create` rule'u `senderId == request.auth.uid` ile SAĞLANIR; görüntüde gönderen entity görünür (`sender.name`). Kural ihlali yok.
+- **Loosening kontrolü**: Hiçbir mevcut rule gevşetilmiyor. `messages` için ilk explicit rule additive (deny→scoped allow, ama yalnız sahibi/sender/entity-admin/super-admin için).
+- **List query**: Entity inbox `useCollection(where('recipientId','==', entityId), orderBy('timestamp','desc'), limit(100))`. Mevcut kullanıcı inbox'u ise `where('recipientId','==', authUser.uid)` — **limit YOK**. Bu yüzden `allow list: if isSignedIn()` (notifications pattern); `request.query.limit`'e bağlamak limit'siz mevcut sorguyu kıracaktı. Per-doc gizlilik `read` ile garanti edilir.
+
+### Rollback planı (deploy sonrası)
+- Kod: `git revert`.
+- Rules canlıysa geri alma: önceki `firestore.rules` (messages bloğu YOK) ile `firebase deploy --only firestore:rules`. Bu, messages koleksiyonunu eski deny-read durumuna döndürür (user messaging'i de durdurur — bu yüzden operatör mevcut prod rules'ı doğrulamalı; aşağıdaki "DİKKAT" notu).
+
+### DİKKAT (operatör doğrulaması gerekli)
+`firestore.rules` dosyasında `messages` için hiç rule yoktu. Eğer prod'da user→user mesajlaşma BUGÜN çalışıyorsa, canlı rules bu repo ile uyumsuz demektir. Deploy etmeden önce mevcut canlı rules'ı `firebase firestore:rules:get` ile (veya Console'dan) yedekleyin; aksi halde repo deploy'u olası out-of-band messages rule'unu ezebilir. Bu repo'daki yeni blok user messaging'i de KAPSAR (owner/sender read + create), yani senkronizasyon güvenlidir.
+
+### Durum
+🟡 Needs user approval — rules deploy operatör işi: `firebase deploy --only firestore:rules`. Kod editleri tamamlandı; konsolide gate orchestrator'da.

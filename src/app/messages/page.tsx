@@ -36,6 +36,13 @@ interface UserRecord {
     id: string; displayName?: string; fullName?: string; name?: string;
     email?: string; phoneNumber?: string; photoURL?: string; avatarUrl?: string;
     bio?: string; personalInfo?: { phone?: string; bio?: string };
+    // FEAT-ENTITY-INBOX: recipient may also be an entity (STK/marka/kulüp)
+    recipientKind?: 'user' | 'ngo' | 'brand' | 'club';
+}
+
+interface EntityRecord {
+    id: string; name?: string; shortName?: string;
+    files?: { logo?: string }; logoUrl?: string;
 }
 
 export default function MessagesPage() {
@@ -68,6 +75,14 @@ export default function MessagesPage() {
     );
     const { data: allUsers } = useCollection<UserRecord>(usersRef);
 
+    // FEAT-ENTITY-INBOX: kurumlar da alıcı olabilir (STK / marka / kulüp)
+    const ngosRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.ngos) : null, [db, composeOpen]);
+    const brandsRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.brands) : null, [db, composeOpen]);
+    const clubsRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.clubs) : null, [db, composeOpen]);
+    const { data: allNgos } = useCollection<EntityRecord>(ngosRef);
+    const { data: allBrands } = useCollection<EntityRecord>(brandsRef);
+    const { data: allClubs } = useCollection<EntityRecord>(clubsRef);
+
     interface MessageItem {
         id?: string; sender?: string; senderId?: string; senderAvatarUrl?: string;
         subject?: string; excerpt?: string; content?: string; time?: string;
@@ -79,17 +94,38 @@ export default function MessagesPage() {
         m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // FEAT-ENTITY-INBOX: kurumları UserRecord şekline map et (recipientKind ile)
+    const entityCandidates = useMemo<UserRecord[]>(() => {
+        const mapEntity = (e: EntityRecord, kind: 'ngo' | 'brand' | 'club'): UserRecord => ({
+            id: e.id,
+            name: e.name || e.shortName,
+            avatarUrl: e.files?.logo || e.logoUrl,
+            recipientKind: kind,
+        });
+        return [
+            ...(allNgos || []).map((e) => mapEntity(e, 'ngo')),
+            ...(allBrands || []).map((e) => mapEntity(e, 'brand')),
+            ...(allClubs || []).map((e) => mapEntity(e, 'club')),
+        ].filter((e) => e.name);
+    }, [allNgos, allBrands, allClubs]);
+
     const recipientCandidates = useMemo<UserRecord[]>(() => {
         const term = recipientSearch.trim().toLowerCase();
-        if (!term) return (allUsers || []).slice(0, 20);
-        return (allUsers || []).filter((u) => {
+        const userPool = (allUsers || []).map((u) => ({ ...u, recipientKind: 'user' as const }));
+        if (!term) return [...userPool.slice(0, 15), ...entityCandidates.slice(0, 5)];
+        const matchUser = (u: UserRecord) => {
             if (u.id === authUser?.uid) return false;
             const name = (u.displayName || u.fullName || u.name || '').toLowerCase();
             const phone = (u.phoneNumber || u.personalInfo?.phone || '').toLowerCase();
             const email = (u.email || '').toLowerCase();
             return name.includes(term) || phone.includes(term) || email.includes(term);
-        }).slice(0, 30);
-    }, [allUsers, recipientSearch, authUser?.uid]);
+        };
+        const matchEntity = (e: UserRecord) => (e.name || '').toLowerCase().includes(term);
+        return [
+            ...userPool.filter(matchUser).slice(0, 20),
+            ...entityCandidates.filter(matchEntity).slice(0, 10),
+        ];
+    }, [allUsers, entityCandidates, recipientSearch, authUser?.uid]);
 
     const resetCompose = () => {
         setRecipientSearch('');
@@ -264,7 +300,7 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div>
                                         <p className="text-sm font-semibold">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
-                                        <p className="text-xs text-muted-foreground">{selectedRecipient.email || selectedRecipient.phoneNumber || selectedRecipient.personalInfo?.phone || ''}</p>
+                                        <p className="text-xs text-muted-foreground">{(selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : '') || selectedRecipient.email || selectedRecipient.phoneNumber || selectedRecipient.personalInfo?.phone || ''}</p>
                                     </div>
                                 </div>
                                 <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>Değiştir</Button>
@@ -277,9 +313,10 @@ export default function MessagesPage() {
                                         <p className="text-xs text-muted-foreground text-center py-4">{t('dashboard.messages.recipientNoResult')}</p>
                                     ) : recipientCandidates.map((u) => {
                                         const name = u.displayName || u.fullName || u.name || 'Kullanıcı';
-                                        const sub = u.email || u.phoneNumber || u.personalInfo?.phone || '';
+                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : '';
+                                        const sub = kindLabel || u.email || u.phoneNumber || u.personalInfo?.phone || '';
                                         return (
-                                            <button key={u.id} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
+                                            <button key={`${u.recipientKind || 'user'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
                                                 <Avatar className="h-8 w-8">
                                                     {(u.photoURL || u.avatarUrl) ? <AvatarImage src={u.photoURL || u.avatarUrl} /> : null}
                                                     <AvatarFallback>{name[0]}</AvatarFallback>

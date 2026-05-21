@@ -24,7 +24,7 @@ import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { UserRow, EntityKind, EntityRow } from './types';
 import {
@@ -34,6 +34,15 @@ import {
   invitationIdFieldByKind,
   rolesByKind,
 } from './types';
+
+// Bir kullanıcının revoke edilmemiş davet kayıtlarını çözmek için minimal tip.
+interface InvitationRow {
+  id: string;
+  ngoId?: string;
+  brandId?: string;
+  clubId?: string;
+  status?: string;
+}
 
 // PDF-30 — Bildirim helper'ı: yetkilendir/yetki kaldır işlemlerinde kullanıcıya
 // `notifications` koleksiyonu üzerinden bildirim üretir. Hata olursa sessizce
@@ -98,6 +107,14 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
   const { data: ngos, isLoading: ngosLoading } = useCollection<EntityRow>(ngosQuery);
   const { data: brands, isLoading: brandsLoading } = useCollection<EntityRow>(brandsQuery);
   const { data: clubs, isLoading: clubsLoading } = useCollection<EntityRow>(clubsQuery);
+
+  // PDF-29 — revoke esnasında ilgili userInvitations kaydını da `revoked` işaretle
+  // ki ngo-admin yetkili listesi (status != 'revoked' filtreli) tutarlı kalsın.
+  const userInvitationsQuery = useMemoFirebase(
+    () => (user?.id ? query(collection(db, COLLECTIONS.userInvitations), where('inviteeUserId', '==', user.id)) : null),
+    [db, user?.id],
+  );
+  const { data: userInvitations } = useCollection<InvitationRow>(userInvitationsQuery);
 
   const allEntities: EntityRow[] = useMemo(() => {
     if (entityKind === 'ngo') return ngos || [];
@@ -180,6 +197,19 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
       } catch (entErr) {
         // adminUserId zaten başka birine ait olabilir — sessizce geç.
         console.warn('[assign-entity] adminUserId clear skipped', entErr);
+      }
+
+      // Bu kuruluşa ait revoke edilmemiş davet kayıtlarını da `revoked` işaretle.
+      try {
+        const invIdField = invitationIdFieldByKind[auth.kind];
+        const matches = (userInvitations || []).filter(
+          inv => inv[invIdField] === auth.entityId && inv.status !== 'revoked',
+        );
+        await Promise.all(
+          matches.map(inv => updateDoc(doc(db, COLLECTIONS.userInvitations, inv.id), { status: 'revoked' })),
+        );
+      } catch (invErr) {
+        console.warn('[assign-entity] invitation revoke skipped', invErr);
       }
 
       await emitAuthorizationNotification(db, {

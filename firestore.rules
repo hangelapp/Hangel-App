@@ -582,6 +582,58 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin();
     }
 
+    // FEAT-ENTITY-INBOX: Birebir mesajlar (kullanıcı ↔ kullanıcı / STK / marka / kulüp / yönetici)
+    // Veri şeması (src/app/messages/page.tsx):
+    //   { sender:{id,name,avatarUrl}, senderId, recipient:{id,name,avatarUrl},
+    //     recipientId, subject, content, timestamp, status, readBy:{[uid]:ts} }
+    // recipientId bir KULLANICI uid'i ya da bir ENTITY doc id'si (ngo/brand/club) olabilir.
+    // Entity'ye gelen mesajları o entity'yi yöneten admin okur (managed*Id fallback pattern —
+    // ngoSenders / fundApplications ile uyumlu). Yanıt yazarken senderId == auth.uid kalır
+    // (entity yalnızca sender.name/sender.id ile GÖRSEL olarak temsil edilir) → create rule
+    // gevşetilmeden entity adına yanıt mümkün.
+    match /messages/{messageId} {
+      // recipientId, istek sahibinin yönettiği bir entity'ye mi işaret ediyor?
+      function recipientIsMyManagedEntity() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.recipientId
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedBrandId == resource.data.recipientId
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == resource.data.recipientId
+        );
+      }
+
+      // Tekil okuma: alıcı, gönderen, entity-admin veya super-admin.
+      allow read: if isSignedIn() && (
+        resource == null ||
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.senderId == request.auth.uid ||
+        isSuperAdmin() ||
+        recipientIsMyManagedEntity()
+      );
+
+      // Liste: imzalı kullanıcı (per-doc gizlilik `read` ile garanti edilir; istemci
+      // sorguları `recipientId == auth.uid` veya `recipientId == <yönetilen entity>` ile
+      // filtrelenir). notifications pattern — query.limit'e bağımlı değil, çünkü mevcut
+      // kullanıcı gelen kutusu sorgusu limit'siz çalışır.
+      allow list: if isSignedIn();
+
+      // Oluşturma: senderId mutlaka istek sahibinin uid'i olmalı (spoof engeli).
+      // Entity adına yanıt: senderId = admin uid, sender.name = entity adı.
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+
+      // Güncelleme: yalnızca okundu bilgisi (`readBy`) eklenebilir; alıcı, entity-admin
+      // veya super-admin yapabilir. Başka alanlar değiştirilemez.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        && (
+          resource.data.recipientId == request.auth.uid ||
+          isSuperAdmin() ||
+          recipientIsMyManagedEntity()
+        );
+
+      // Silme: super-admin (global allPaths kapsar) — explicit deny diğer herkese.
+      allow delete: if isSuperAdmin();
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +20,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
     const { toast } = useToast();
     const db = useFirestore();
+    const { user: authUser } = useUser();
 
     const opportunityIds = useMemo(() => opportunities.map(o => o.id), [opportunities]);
 
@@ -36,11 +37,42 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
         return allApps.filter(app => opportunityIds.includes(app.entityId || ''));
     }, [allApps, opportunityIds]);
 
-    const handleApplication = (appId: string, decision: 'approved' | 'rejected') => {
-        toast({
-            title: `Başvuru ${decision === 'approved' ? 'Onaylandı' : 'Reddedildi'}`,
-            description: `Başvuru işlemi simüle edildi (Firestore kaydı yapılmadı).`,
-        });
+    const handleApplication = async (application: UserApplication, decision: 'approved' | 'rejected') => {
+        const status = decision === 'approved' ? 'Onaylandı' : 'Reddedildi';
+        try {
+            await updateDoc(doc(db, COLLECTIONS.applications, application.id), {
+                status,
+                reviewedAt: serverTimestamp(),
+                reviewedBy: authUser?.uid ?? null,
+            });
+
+            if (application.userId) {
+                await addDoc(collection(db, COLLECTIONS.notifications), {
+                    userId: application.userId,
+                    type: 'volunteer-application',
+                    title: decision === 'approved' ? 'Başvurun Onaylandı' : 'Başvurun Reddedildi',
+                    body: decision === 'approved'
+                        ? `"${application.title}" gönüllülük başvurunuz onaylandı.`
+                        : `"${application.title}" gönüllülük başvurunuz reddedildi.`,
+                    read: false,
+                    createdAt: serverTimestamp(),
+                });
+            }
+
+            toast({
+                title: `Başvuru ${status}`,
+                description: decision === 'approved'
+                    ? 'Gönüllü bilgilendirildi.'
+                    : 'Başvuru reddedildi ve gönüllü bilgilendirildi.',
+            });
+        } catch (err) {
+            console.error('[ngo-admin/volunteer] handleApplication failed', err);
+            toast({
+                variant: 'destructive',
+                title: 'İşlem başarısız',
+                description: 'Başvuru güncellenirken bir hata oluştu. Lütfen tekrar deneyin.',
+            });
+        }
     };
 
     const groupedApplications = useMemo(() => {
@@ -78,8 +110,8 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
                                   <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
                                     <Link href={`/profile/${app.userId}`}>Profil</Link>
                                   </Button>
-                                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app.id, 'approved')}>Onayla</Button>
-                                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app.id, 'rejected')}>Reddet</Button>
+                                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
+                                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
                                 </div>
                             </div>
                         ))}
