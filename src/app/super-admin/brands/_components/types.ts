@@ -39,6 +39,8 @@ export type BrandExtra = Brand & {
 
 export type StatusFilter = 'all' | 'approved' | 'pending' | 'passive' | 'rejected';
 
+export type SortOption = 'default' | 'nameAsc' | 'nameDesc' | 'donationDesc' | 'donationAsc' | 'status';
+
 export interface BrandApplication {
     id: string;
     name?: string;

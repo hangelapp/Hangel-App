@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
@@ -24,7 +25,7 @@ import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTime
 import { useRouter } from 'next/navigation';
 import {
   Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
-  XCircle, Search, Database, Upload, RefreshCw, X,
+  XCircle, Search, Database, Upload, RefreshCw, X, ArrowDownUp,
 } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { normalizePhone } from '@/lib/messaging/phone';
@@ -271,6 +272,9 @@ export default function NgosPage() {
   const db = useFirestore();
   const _router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'all' | 'approved' | 'pending' | 'passive' | 'rejected'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'nameAsc'>('newest');
 
   const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
   const { data: ngos, isLoading: ngosLoading } = useCollection<NGO>(ngosQuery);
@@ -319,13 +323,36 @@ export default function NgosPage() {
   }, [ngos, applications]);
 
   const filteredItems = useMemo(() => {
-    if (statusFilter === 'all') return items;
-    if (statusFilter === 'approved') return items.filter(i => i.source === 'ngos' && i.status === 'Aktif');
-    if (statusFilter === 'pending') return items.filter(i => i.status === 'Beklemede');
-    if (statusFilter === 'passive') return items.filter(i => i.source === 'ngos' && i.status === 'Pasif');
-    if (statusFilter === 'rejected') return items.filter(i => i.status === 'Reddedildi');
-    return items;
-  }, [items, statusFilter]);
+    let list = items;
+
+    if (statusFilter === 'approved') list = list.filter(i => i.source === 'ngos' && i.status === 'Aktif');
+    else if (statusFilter === 'pending') list = list.filter(i => i.status === 'Beklemede');
+    else if (statusFilter === 'passive') list = list.filter(i => i.source === 'ngos' && i.status === 'Pasif');
+    else if (statusFilter === 'rejected') list = list.filter(i => i.status === 'Reddedildi');
+
+    if (typeFilter !== 'all') list = list.filter(i => i.type === typeFilter);
+
+    const lower = searchTerm.trim().toLowerCase();
+    if (lower) {
+      list = list.filter(i =>
+        (i.name || '').toLowerCase().includes(lower) ||
+        (i.category || '').toLowerCase().includes(lower),
+      );
+    }
+
+    const joinTs = (i: NgoItem): number => {
+      const t = Date.parse((i as NgoItem & { joinDate?: string }).joinDate || '');
+      return Number.isNaN(t) ? 0 : t;
+    };
+
+    const sorted = [...list];
+    if (sortBy === 'nameAsc') {
+      sorted.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'));
+    } else {
+      sorted.sort((a, b) => joinTs(b) - joinTs(a));
+    }
+    return sorted;
+  }, [items, statusFilter, typeFilter, searchTerm, sortBy]);
 
   const stats = useMemo(() => {
     const approved = (ngos || []).filter((n) => ((n as NGO & { status?: string }).status || 'Aktif') === 'Aktif').length;
@@ -655,6 +682,37 @@ export default function NgosPage() {
               <SelectItem value="rejected">Reddedildi</SelectItem>
             </SelectContent>
           </Select>
+          <Label className="text-sm font-semibold">Tür:</Label>
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as 'all' | 'Dernek' | 'Vakıf' | 'Spor Kulübü' | 'Özel İzinli')}>
+            <SelectTrigger className="h-9 w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tümü</SelectItem>
+              <SelectItem value="Dernek">Dernek</SelectItem>
+              <SelectItem value="Vakıf">Vakıf</SelectItem>
+              <SelectItem value="Spor Kulübü">Spor Kulübü</SelectItem>
+              <SelectItem value="Özel İzinli">Özel İzinli</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Kuruluş adı veya kategori..."
+              className="pl-9 h-9 rounded-xl"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0 rounded-xl" aria-label="Sırala">
+                <ArrowDownUp className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>Ada göre (A-Z)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('newest')} className={sortBy === 'newest' ? 'font-bold text-primary' : ''}>En yeni</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <p className="text-xs text-muted-foreground ml-auto"><strong>{filteredItems.length}</strong> kuruluş gösteriliyor</p>
         </CardContent>
       </Card>

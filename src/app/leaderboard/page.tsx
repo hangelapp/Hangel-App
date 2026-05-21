@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Crown, Star, Heart, Handshake, Globe, Loader2 } from 'lucide-react';
+import { Crown, Star, Heart, Handshake, Globe, Loader2, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React from 'react';
@@ -21,6 +21,7 @@ type LeaderboardUser = {
   totalDonation?: number;
   personalInfo?: { address?: { school?: string; city?: string } };
   volunteerInfo?: { education?: Array<{ school?: string }> };
+  privacySettings?: { isPrivate?: boolean };
   _value?: number;
 };
 
@@ -92,7 +93,9 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedData.length > 0 ? sortedData.map((userItem: LeaderboardUser, index: number) => (
+          {sortedData.length > 0 ? sortedData.map((userItem: LeaderboardUser, index: number) => {
+            const isAnonymous = userItem.privacySettings?.isPrivate === true;
+            return (
             <TableRow key={userItem.id} className={cn(index < 3 && 'bg-accent')}>
               <TableCell className="font-bold text-lg text-center">
                 {index === 0 ? <Crown className="text-yellow-500 w-6 h-6 mx-auto" /> : index + 1}
@@ -100,12 +103,14 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={userItem.avatarUrl} alt={userItem.name} />
-                    <AvatarFallback>{(userItem.name || '?').charAt(0)}</AvatarFallback>
+                    {!isAnonymous && <AvatarImage src={userItem.avatarUrl} alt={userItem.name} />}
+                    <AvatarFallback>
+                      {isAnonymous ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : (userItem.name || '?').charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{userItem.name}</p>
-                    <p className="text-sm text-muted-foreground">{userItem.username}</p>
+                    <p className="font-medium">{isAnonymous ? 'Profilini Gizleyen Kullanıcı' : userItem.name}</p>
+                    {!isAnonymous && <p className="text-sm text-muted-foreground">{userItem.username}</p>}
                     {valueKey !== 'impactScore' && getValue(userItem, 'impactScore') > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Star className="h-3 w-3 text-amber-500" />
@@ -119,7 +124,8 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
                 {(userItem._value ?? getValue(userItem, valueKey)).toLocaleString('tr-TR')} {unit}
               </TableCell>
             </TableRow>
-          )) : (
+          );
+          }) : (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
                 Bu kategoride gösterilecek kimse yok.

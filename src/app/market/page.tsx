@@ -90,6 +90,39 @@ export default function MarketPage() {
 
   const isLoading = firestoreLoading || apiLoading;
 
+  // Per-session random seed: Math.random() lives in an effect (pure-in-render
+  // compliant); the shuffle below is deterministic given this seed.
+  const [shuffleSeed, setShuffleSeed] = useState(0);
+  useEffect(() => { setShuffleSeed(Math.floor(Math.random() * 2_147_483_646) + 1); }, []);
+
+  // Lint-clean simple-expression key over the unique brand-id set.
+  const brandIdKey = useMemo(
+    () => Array.from(new Set([...(firestoreBrands || []), ...apiBrands].map(b => b?.id).filter(Boolean))).sort().join(','),
+    [firestoreBrands, apiBrands],
+  );
+
+  // Stable randomized rank for the 'default' (Önerilen) sort. Reshuffles only
+  // when the brand-id set or the session seed changes — never on search/filter
+  // or ordinary re-renders. Seeded PRNG (mulberry32) keeps this useMemo pure.
+  const randomRank = useMemo(() => {
+    const uniqueIds = brandIdKey ? brandIdKey.split(',') : [];
+    let s = shuffleSeed || 1;
+    const rand = () => {
+      s = (s + 0x6d2b79f5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const shuffled = [...uniqueIds];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const rank = new Map<string, number>();
+    shuffled.forEach((id, index) => rank.set(id, index));
+    return rank;
+  }, [brandIdKey, shuffleSeed]);
+
   const brandsToShow = useMemo(() => {
     // Merge: Firestore brands take priority over API brands
     const combined = [...(firestoreBrands || []), ...apiBrands];
@@ -129,10 +162,10 @@ export default function MarketPage() {
       case 'donationAsc':  list.sort((a, b) => a.donationRate - b.donationRate); break;
       case 'nameAsc':      list.sort((a, b) => a.name.localeCompare(b.name, 'tr')); break;
       case 'nameDesc':     list.sort((a, b) => b.name.localeCompare(a.name, 'tr')); break;
-      default:             list.sort((a, b) => b.donationRate - a.donationRate); break;
+      default:             list.sort((a, b) => (randomRank.get(a.id) ?? 0) - (randomRank.get(b.id) ?? 0)); break;
     }
     return list;
-  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType, sortBy]);
+  }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType, sortBy, randomRank]);
 
   // Derive categories dynamically from all loaded brands
   const allCategories = useMemo(() => {
@@ -174,7 +207,7 @@ export default function MarketPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>Varsayılan</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>Önerilen</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('donationDesc')} className={sortBy === 'donationDesc' ? 'font-bold text-primary' : ''}>En çok bağış yapan</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('donationAsc')} className={sortBy === 'donationAsc' ? 'font-bold text-primary' : ''}>En az bağış yapan</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>Alfabetik (A → Z)</DropdownMenuItem>

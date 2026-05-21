@@ -43,11 +43,9 @@ export default function VolunteerNgoSelectionPage() {
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
-    const [isOnboarding, setIsOnboarding] = useState(false);
-
-    useEffect(() => {
-        if (localStorage.getItem('onboardingStep') === 'volunteer-ngo-selection') setIsOnboarding(true);
-    }, []);
+    // Bu sayfa zorunlu onboarding zincirinin parçası DEĞİL (zincir: ngo-selection → profile → volunteer → market).
+    // Yalnızca standalone "gönüllü STK'larını değiştir" ekranı olarak kullanılır; isOnboarding daima false.
+    const [isOnboarding] = useState(false);
 
     useEffect(() => {
         if (userData?.volunteerNgos) setSelectedNgos(userData.volunteerNgos);

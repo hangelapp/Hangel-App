@@ -209,6 +209,11 @@ export default function NgoSelectionPage() {
 
     const handleSave = () => {
         if (!userDocRef) return;
+        // Onboarding zorunluluğu: devam etmeden önce en az 2 STK seçilmeli.
+        if (isOnboarding && selectedNgos.length < 2) {
+            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: 'Devam etmek için en az 2 STK seçmelisin.' });
+            return;
+        }
         // Sadece gerçek değişiklik varsa timestamp güncelle (sayaç sıfırlanmasın)
         const sorted = (arr: string[]) => [...arr].sort().join(',');
         const changed = sorted(selectedNgos) !== sorted(initialSelected);
@@ -217,8 +222,8 @@ export default function NgoSelectionPage() {
         updateDocumentNonBlocking(userDocRef, payload);
         toast({ title: t('dashboard.settingsNgoSelection.toastSavedTitle'), description: t('dashboard.settingsNgoSelection.toastSavedDesc') });
         if (isOnboarding) {
-            localStorage.setItem('onboardingStep', 'volunteer-ngo-selection');
-            router.push('/settings/volunteer-ngo-selection');
+            localStorage.setItem('onboardingStep', 'profile');
+            router.push('/settings/profile');
         } else {
             router.push('/settings/profile');
         }

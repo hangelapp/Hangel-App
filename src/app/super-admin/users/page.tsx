@@ -6,7 +6,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, ShieldAlert, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Search, ShieldAlert, Loader2, ArrowDownUp } from 'lucide-react';
 import React, { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useAuth, useUser, initiatePasswordResetEmail } from '@/firebase';
@@ -25,6 +27,7 @@ export default function UsersPage() {
   const { user: currentUser } = useUser();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'nameAsc' | 'impactDesc' | 'role'>('newest');
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [viewingUser, setViewingUser] = useState<UserRow | null>(null);
   const [assigningUser, setAssigningUser] = useState<UserRow | null>(null);
@@ -78,8 +81,30 @@ export default function UsersPage() {
       }
       return 0;
     };
-    return matched.sort((a, b) => ts(b) - ts(a));
-  }, [searchTerm, users]);
+
+    const roleRank = (u: UserRow): number => {
+      switch (u.role) {
+        case 'super-admin': return 0;
+        case 'ngo-admin': return 1;
+        case 'user': return 2;
+        default: return 3;
+      }
+    };
+
+    switch (sortBy) {
+      case 'oldest':
+        return matched.sort((a, b) => ts(a) - ts(b));
+      case 'nameAsc':
+        return matched.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr'));
+      case 'impactDesc':
+        return matched.sort((a, b) => (b.impactScore || 0) - (a.impactScore || 0));
+      case 'role':
+        return matched.sort((a, b) => roleRank(a) - roleRank(b));
+      case 'newest':
+      default:
+        return matched.sort((a, b) => ts(b) - ts(a));
+    }
+  }, [searchTerm, users, sortBy]);
 
   const handleToggleStatus = async (userId: string, name: string, currentStatus: string) => {
     const newStatus = currentStatus === 'Aktif' ? 'Askıda' : 'Aktif';
@@ -338,14 +363,30 @@ export default function UsersPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle>Platform Üyeleri ({users?.length || 0})</CardTitle>
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="İsim, @kullanıcı, e-posta, telefon..."
-                className="pl-9 h-10 rounded-xl"
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="İsim, @kullanıcı, e-posta, telefon..."
+                  className="pl-9 h-10 rounded-xl"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl" aria-label="Sırala">
+                    <ArrowDownUp className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>Ada göre (A-Z)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('newest')} className={sortBy === 'newest' ? 'font-bold text-primary' : ''}>Katılma tarihi (yeni → eski)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('oldest')} className={sortBy === 'oldest' ? 'font-bold text-primary' : ''}>Katılma tarihi (eski → yeni)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('impactDesc')} className={sortBy === 'impactDesc' ? 'font-bold text-primary' : ''}>Etki puanı (yüksek → düşük)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('role')} className={sortBy === 'role' ? 'font-bold text-primary' : ''}>Rol</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </CardHeader>

@@ -8,21 +8,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-import type { StatusFilter } from './types';
+import type { SortOption, StatusFilter } from './types';
 
 interface BrandFiltersCardProps {
     searchTerm: string;
     onSearchTermChange: (v: string) => void;
     statusFilter: StatusFilter;
     onStatusFilterChange: (v: StatusFilter) => void;
+    sortBy: SortOption;
+    onSortByChange: (v: SortOption) => void;
     resultCount: number;
 }
 
-export const BrandFiltersCard = ({ searchTerm, onSearchTermChange, statusFilter, onStatusFilterChange, resultCount }: BrandFiltersCardProps) => {
+export const BrandFiltersCard = ({ searchTerm, onSearchTermChange, statusFilter, onStatusFilterChange, sortBy, onSortByChange, resultCount }: BrandFiltersCardProps) => {
     return (
         <Card className="rounded-2xl border-black/5">
             <CardContent className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="search" className="text-sm font-semibold">Ara</Label>
                         <div className="relative">
@@ -48,6 +50,22 @@ export const BrandFiltersCard = ({ searchTerm, onSearchTermChange, statusFilter,
                                 <SelectItem value="pending">Onay Bekleyen</SelectItem>
                                 <SelectItem value="passive">Pasif</SelectItem>
                                 <SelectItem value="rejected">Reddedildi</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="sort" className="text-sm font-semibold">Sırala</Label>
+                        <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortOption)}>
+                            <SelectTrigger id="sort" className="h-10 rounded-xl">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="default">Varsayılan</SelectItem>
+                                <SelectItem value="nameAsc">İsim (A → Z)</SelectItem>
+                                <SelectItem value="nameDesc">İsim (Z → A)</SelectItem>
+                                <SelectItem value="donationDesc">Bağış oranı (Yüksek → Düşük)</SelectItem>
+                                <SelectItem value="donationAsc">Bağış oranı (Düşük → Yüksek)</SelectItem>
+                                <SelectItem value="status">Durum</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

@@ -286,8 +286,8 @@ export default function VolunteerSettingsPage() {
 
     if (isOnboarding) {
       toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });
-      localStorage.setItem('onboardingStep', 'ngo-selection');
-      router.push('/settings/ngo-selection');
+      localStorage.removeItem('onboardingStep');
+      router.push('/market');
     } else {
       toast({ title: t('dashboard.settingsVolunteer.toastUpdatedTitle'), description: t('dashboard.settingsVolunteer.toastUpdatedDesc') });
       router.push('/settings');

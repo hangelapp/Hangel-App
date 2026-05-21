@@ -24,6 +24,7 @@ import {
     type BrandRole,
     type EditFormData,
     type SimpleUser,
+    type SortOption,
     type StatusFilter,
 } from './_components/types';
 
@@ -32,6 +33,7 @@ export default function BrandsPage() {
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [sortBy, setSortBy] = useState<SortOption>('default');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<EditFormData>({});
     const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding'>('idle');
@@ -147,8 +149,20 @@ export default function BrandsPage() {
             );
         }
 
-        return filtered;
-    }, [brands, applications, apiBrands, statusFilter, searchTerm]);
+        // Sort
+        const statusOrder: Record<string, number> = { Aktif: 0, Beklemede: 1, Pasif: 2, Reddedildi: 3 };
+        const sorted = [...filtered];
+        switch (sortBy) {
+            case 'nameAsc':      sorted.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'tr')); break;
+            case 'nameDesc':     sorted.sort((a, b) => (b.name || '').localeCompare(a.name || '', 'tr')); break;
+            case 'donationDesc': sorted.sort((a, b) => (b.donationRate || 0) - (a.donationRate || 0)); break;
+            case 'donationAsc':  sorted.sort((a, b) => (a.donationRate || 0) - (b.donationRate || 0)); break;
+            case 'status':       sorted.sort((a, b) => (statusOrder[a.status || ''] ?? 99) - (statusOrder[b.status || ''] ?? 99)); break;
+            default: break;
+        }
+
+        return sorted;
+    }, [brands, applications, apiBrands, statusFilter, searchTerm, sortBy]);
 
     const handleToggleStatus = (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
@@ -423,7 +437,7 @@ export default function BrandsPage() {
         try {
             const fd = editFormData;
             const brandRef = doc(db, COLLECTIONS.brands, editingBrand.id);
-            updateDocumentNonBlocking(brandRef, {
+            await updateDoc(brandRef, {
                 name: fd.name,
                 slug: fd.slug,
                 category: fd.category,
@@ -459,11 +473,15 @@ export default function BrandsPage() {
                 description: "Değişiklikler başarıyla kaydedildi."
             });
             setEditingBrand(null);
-        } catch {
+        } catch (e) {
+            console.error('Brand update failed:', e);
+            const code = (e as { code?: string } | null)?.code;
             toast({
                 variant: 'destructive',
-                title: "Hata",
-                description: "Güncellenirken bir hata oluştu."
+                title: "Marka güncellenemedi",
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : 'Marka güncellenemedi. Lütfen tekrar deneyin.',
             });
         }
     };
@@ -512,6 +530,8 @@ export default function BrandsPage() {
                 onSearchTermChange={setSearchTerm}
                 statusFilter={statusFilter}
                 onStatusFilterChange={setStatusFilter}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
                 resultCount={filteredBrands.length}
             />
 

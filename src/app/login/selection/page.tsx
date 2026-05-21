@@ -56,7 +56,7 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                <IndividualForm onComplete={() => router.push(nextPath)} />
+                                <IndividualForm onComplete={(isNewUser) => router.push(isNewUser ? '/settings/ngo-selection' : nextPath)} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={entity} />

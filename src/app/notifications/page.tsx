@@ -56,7 +56,7 @@ export default function NotificationsPage() {
     createdAt?: { toDate?: () => Date } | string | null;
     read?: boolean;
     responseStatus?: 'positive' | 'negative';
-    data?: { requestId?: string; bloodType?: string; hospitalName?: string };
+    data?: { requestId?: string; bloodType?: string; hospitalName?: string; link?: string; href?: string };
   }
   const { data: notifications, isLoading, error: notifError } = useCollection<NotifItem>(notifQuery);
 
@@ -124,6 +124,29 @@ export default function NotificationsPage() {
     }
   };
 
+  const resolveNotificationHref = (n: NotifItem): string | null => {
+    switch (n.type) {
+      case 'invitation':
+        return '/my-applications';
+      case 'authorization':
+        return '/admin';
+      case 'donation':
+        return '/my-donations';
+      case 'broadcast':
+      case 'dm':
+        return n.data?.link || null;
+      case 'emergency-blood':
+        return null;
+      default:
+        return n.data?.link || n.data?.href || null;
+    }
+  };
+
+  const handleNotificationClick = (n: NotifItem, href: string | null) => {
+    if (!n.read) handleMarkRead(n.id);
+    if (href) router.push(href);
+  };
+
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   return (
@@ -163,7 +186,7 @@ export default function NotificationsPage() {
           {notifications.map(n => {
             const Icon = (n.type ? typeIcon[n.type] : undefined) || Bell;
             const colorClass = (n.type ? typeColor[n.type] : undefined) || 'text-gray-600 bg-gray-100';
-            const invitationLink = n.type === 'invitation' ? '/my-applications' : null;
+            const href = resolveNotificationHref(n);
             return (
               <Card
                 key={n.id}
@@ -171,7 +194,7 @@ export default function NotificationsPage() {
                   'transition-all cursor-pointer hover:shadow-md',
                   !n.read && 'border-primary/30 bg-primary/5',
                 )}
-                onClick={() => !n.read && handleMarkRead(n.id)}
+                onClick={() => handleNotificationClick(n, href)}
               >
                 <CardContent className="p-4 flex items-start gap-3">
                   <div className={cn('p-2.5 rounded-full shrink-0', colorClass)}>
@@ -216,9 +239,9 @@ export default function NotificationsPage() {
                             {t('dashboard.notifications.emergencyHelpNo')}
                           </Badge>
                         )}
-                        {invitationLink && (
-                          <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-                            <Link href={invitationLink}>{t('dashboard.notifications.detailCta')}</Link>
+                        {href && (
+                          <Button asChild variant="outline" size="sm" className="h-7 text-xs" onClick={(e) => e.stopPropagation()}>
+                            <Link href={href}>{t('dashboard.notifications.detailCta')}</Link>
                           </Button>
                         )}
                         {!n.read && (

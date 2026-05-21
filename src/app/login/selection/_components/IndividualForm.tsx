@@ -332,7 +332,11 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     <h3 className="text-xl font-bold">E-postanızı Doğrulayın</h3>
                     <p className="text-sm text-muted-foreground">{email} adresine bir doğrulama linki gönderdik.</p>
                 </div>
-                <Button className="w-full h-12 rounded-xl font-bold" onClick={() => onComplete(true)}>Devam Et</Button>
+                <Button className="w-full h-12 rounded-xl font-bold" onClick={() => {
+                    // Yeni kullanıcı onboarding zinciri: ngo-selection → profile → volunteer → market
+                    if (typeof window !== 'undefined') localStorage.setItem('onboardingStep', 'ngo-selection');
+                    onComplete(true);
+                }}>Devam Et</Button>
             </div>
         );
     }
