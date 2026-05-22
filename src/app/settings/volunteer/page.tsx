@@ -282,7 +282,11 @@ export default function VolunteerSettingsPage() {
       },
     };
 
-    updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch });
+    // Onboarding'in son adımı: gönüllülük formu başarıyla kaydedildiğinde
+    // sunucu tarafı tamamlanma bayrağını yaz. Yalnızca onboarding zincirinde
+    // ilerleyen kullanıcılar için set edilir; normal düzenlemede dokunulmaz.
+    const onboardingFlagPatch = isOnboarding ? { onboardingComplete: true } : {};
+    updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch, ...onboardingFlagPatch });
 
     if (isOnboarding) {
       toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });

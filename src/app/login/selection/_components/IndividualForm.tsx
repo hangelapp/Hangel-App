@@ -334,7 +334,19 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 </div>
                 <Button className="w-full h-12 rounded-xl font-bold" onClick={() => {
                     // Yeni kullanıcı onboarding zinciri: ngo-selection → profile → volunteer → market
-                    if (typeof window !== 'undefined') localStorage.setItem('onboardingStep', 'ngo-selection');
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('onboardingStep', 'ngo-selection');
+                        // QR ile gelen STK (ref=ngo:<id>) onboarding'in STK seçimi adımında
+                        // ÖN SEÇİLİ gelsin diye id'yi sakla. Kulüp/marka auto-join davranışı
+                        // değişmez; yalnızca STK ön seçimi için kullanılır.
+                        const ref = searchParams.get('ref') || '';
+                        if (ref.includes(':')) {
+                            const [kind, entityId] = ref.split(':');
+                            if (kind === 'ngo' && entityId) {
+                                localStorage.setItem('onboardingPreselectNgo', entityId);
+                            }
+                        }
+                    }
                     onComplete(true);
                 }}>Devam Et</Button>
             </div>

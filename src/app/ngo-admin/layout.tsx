@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Check,
+  ChevronsUpDown,
+  Heart,
+  ShoppingBag,
   LayoutDashboard,
   UserCog,
   HeartHandshake,
@@ -41,13 +45,22 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { collection, doc, query, where } from 'firebase/firestore';
-import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { COLLECTIONS } from '@/firebase/collections';
-
-type EntityKind = 'ngo' | 'brand' | 'club';
+import {
+  ActiveEntityProvider,
+  useActiveEntity,
+  type EntityKind,
+  type ManagedOrg,
+} from './active-entity-context';
 
 type MenuItem = {
   href: string;
@@ -60,18 +73,6 @@ type MenuGroup = {
   title?: string;
   items: MenuItem[];
 };
-
-interface UserDocData {
-  id: string;
-  managedNgoId?: string;
-  managedBrandId?: string;
-  managedClubId?: string;
-}
-
-interface EntityRef {
-  id: string;
-  adminUserId?: string;
-}
 
 const NGO_MENU: MenuGroup[] = [
   {
@@ -217,81 +218,95 @@ const CLUB_MENU: MenuGroup[] = [
   },
 ];
 
-function useResolvedEntityKind(): { kind: EntityKind | null; isLoading: boolean } {
-  const firestore = useFirestore();
-  const { user: authUser, isUserLoading } = useUser();
+const KIND_ICON: Record<EntityKind, LucideIcon> = {
+  ngo: Heart,
+  brand: ShoppingBag,
+  club: GraduationCap,
+};
 
-  // 1) Fast path: users/{uid}.managed*
-  const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-    [firestore, authUser?.uid],
+const KIND_LABEL: Record<EntityKind, string> = {
+  ngo: 'STK',
+  brand: 'Marka',
+  club: 'Kulüp',
+};
+
+// Org switcher: only rendered when the user manages 2+ orgs. Selecting an org
+// updates the active context (localStorage + state) and navigates to its dashboard.
+function OrgSwitcher() {
+  const router = useRouter();
+  const { id: activeId, kind: activeKind, managedList, setActive } = useActiveEntity();
+
+  if (managedList.length < 2) return null;
+
+  const current: ManagedOrg | undefined =
+    managedList.find((o) => o.id === activeId && o.kind === activeKind) || managedList[0];
+  const CurrentIcon = current ? KIND_ICON[current.kind] : Building2;
+
+  const handleSelect = (org: ManagedOrg) => {
+    setActive({ id: org.id, type: org.type });
+    router.push(`/ngo-admin/dashboard?id=${encodeURIComponent(org.id)}&type=${encodeURIComponent(org.type)}`);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          className="mb-4 h-auto w-full justify-between gap-2 rounded-2xl px-3 py-2.5 text-left"
+          aria-label="Yönetilen varlığı değiştir"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <CurrentIcon className="h-4 w-4 shrink-0 text-primary" />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-bold">{current?.name ?? 'Varlık Seç'}</span>
+              {current && (
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  {KIND_LABEL[current.kind]}
+                </span>
+              )}
+            </span>
+          </span>
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuLabel>Yönetilen Varlıklar</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {managedList.map((org) => {
+          const Icon = KIND_ICON[org.kind];
+          const isActive = current?.id === org.id && current?.kind === org.kind;
+          return (
+            <DropdownMenuItem
+              key={`${org.kind}:${org.id}`}
+              onSelect={() => handleSelect(org)}
+              className="gap-2"
+            >
+              <Icon className="h-4 w-4 shrink-0 text-primary" />
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-sm font-bold">{org.name}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  {KIND_LABEL[org.kind]}
+                </span>
+              </span>
+              {isActive && <Check className="ml-auto h-4 w-4 shrink-0 text-primary" />}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-  const { data: userData, isLoading: userDocLoading } = useDoc<UserDocData>(userDocRef);
-
-  // Fast-path resolution from users/{uid}.managed*
-  const fastPathKind = useMemo<EntityKind | null>(() => {
-    if (userData?.managedNgoId) return 'ngo';
-    if (userData?.managedBrandId) return 'brand';
-    if (userData?.managedClubId) return 'club';
-    return null;
-  }, [userData?.managedNgoId, userData?.managedBrandId, userData?.managedClubId]);
-
-  // Only run fallback queries when:
-  //   - auth + firestore are ready
-  //   - the user doc has loaded
-  //   - the fast path did NOT resolve a kind
-  // This keeps the listener count at 1 (userDoc) for the common case,
-  // and only spins up the 3 adminUserId scans for users without a managed* link.
-  const needsFallback = !userDocLoading && !fastPathKind && Boolean(authUser?.uid);
-
-  // 2) Fallback: query each collection by adminUserId (gated)
-  const adminNgosQ = useMemoFirebase(
-    () =>
-      firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid))
-        : null,
-    [firestore, authUser?.uid, needsFallback],
-  );
-  const adminBrandsQ = useMemoFirebase(
-    () =>
-      firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid))
-        : null,
-    [firestore, authUser?.uid, needsFallback],
-  );
-  const adminClubsQ = useMemoFirebase(
-    () =>
-      firestore && authUser?.uid && needsFallback
-        ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid))
-        : null,
-    [firestore, authUser?.uid, needsFallback],
-  );
-
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityRef>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityRef>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityRef>(adminClubsQ);
-
-  const isLoading = isUserLoading || userDocLoading || ngosLoading || brandsLoading || clubsLoading;
-
-  const kind = useMemo<EntityKind | null>(() => {
-    if (fastPathKind) return fastPathKind;
-    if (adminNgos && adminNgos.length > 0) return 'ngo';
-    if (adminBrands && adminBrands.length > 0) return 'brand';
-    if (adminClubs && adminClubs.length > 0) return 'club';
-    return null;
-  }, [fastPathKind, adminNgos, adminBrands, adminClubs]);
-
-  return { kind, isLoading };
 }
 
-function SideMenu({ entityKind }: { entityKind: EntityKind | null }) {
+function SideMenu() {
   const pathname = usePathname();
+  const { kind: entityKind, withEntityParams } = useActiveEntity();
   // Default to NGO menu while resolving or if undetermined
   const groups = entityKind === 'brand' ? BRAND_MENU : entityKind === 'club' ? CLUB_MENU : NGO_MENU;
 
   return (
     <aside className="hidden lg:block w-64 shrink-0">
       <nav className="sticky top-6 space-y-6">
+        <OrgSwitcher />
         {groups.map((group, gi) => (
           <div key={gi} className="space-y-2">
             {group.title && (
@@ -345,7 +360,7 @@ function SideMenu({ entityKind }: { entityKind: EntityKind | null }) {
 
                 return (
                   <li key={item.href}>
-                    <Link href={item.href} className={baseClasses}>
+                    <Link href={withEntityParams(item.href)} className={baseClasses}>
                       {content}
                     </Link>
                   </li>
@@ -359,13 +374,8 @@ function SideMenu({ entityKind }: { entityKind: EntityKind | null }) {
   );
 }
 
-export default function NgoAdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { kind } = useResolvedEntityKind();
 
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;
@@ -385,10 +395,22 @@ export default function NgoAdminLayout({
           </Button>
         )}
         <div className="flex gap-6">
-          <SideMenu entityKind={kind} />
+          <SideMenu />
           <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NgoAdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ActiveEntityProvider>
+      <NgoAdminLayoutInner>{children}</NgoAdminLayoutInner>
+    </ActiveEntityProvider>
   );
 }

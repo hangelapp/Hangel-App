@@ -324,6 +324,11 @@ export type User = {
     },
     supportedNgos: string[];
     volunteerNgos: string[];
+    // Onboarding tamamlanma bayrağı — yalnızca yeni bireysel kullanıcılar için
+    // gönüllülük adımının sonunda `true` yazılır. Eski kullanıcılarda alan
+    // tanımsız (undefined) kalır; app-shell gate'i tanımsız + boş veri
+    // kombinasyonunu "tamamlanmış" sayar (mevcut kullanıcılar kilitlenmez).
+    onboardingComplete?: boolean;
 };
 
 export type BadgeLevel = 'Bakır' | 'Bronz' | 'Gümüş' | 'Altın' | 'Platin';

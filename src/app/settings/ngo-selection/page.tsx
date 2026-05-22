@@ -79,16 +79,35 @@ export default function NgoSelectionPage() {
 
     const canChangeSelection = remainingDays === 0;
 
+    const [preselectNgo, setPreselectNgo] = useState<string | null>(null);
+
     useEffect(() => {
         if (localStorage.getItem('onboardingStep') === 'ngo-selection') setIsOnboarding(true);
+        // QR ile gelen STK (ref=ngo:<id>) onboarding'de ÖN SEÇİLİ gösterilir.
+        // IndividualForm bu id'yi localStorage'a yazar; burada bir kez okunup
+        // selectedNgos'a eklenir ve temizlenir.
+        try {
+            const pre = localStorage.getItem('onboardingPreselectNgo');
+            if (pre) {
+                setPreselectNgo(pre);
+                setSelectedNgos(prev => (prev.includes(pre) ? prev : [...prev, pre]));
+                localStorage.removeItem('onboardingPreselectNgo');
+            }
+        } catch {
+            // localStorage erişilemedi (Safari private, vb.) — ön seçim atlanır
+        }
     }, []);
 
     useEffect(() => {
         if (userData?.supportedNgos) {
-            setSelectedNgos(userData.supportedNgos);
+            // QR ön seçimini koru: kayıttaki STK'lara ek olarak ref'li STK seçili kalsın.
+            const merged = preselectNgo && !userData.supportedNgos.includes(preselectNgo)
+                ? [...userData.supportedNgos, preselectNgo]
+                : userData.supportedNgos;
+            setSelectedNgos(merged);
             setInitialSelected(userData.supportedNgos);
         }
-    }, [userData]);
+    }, [userData, preselectNgo]);
 
     // Sadece aktif STK'lar
     const activeNgos = useMemo(

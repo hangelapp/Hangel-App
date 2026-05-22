@@ -63,6 +63,9 @@ type ManagedEntity = {
   status: 'approved' | 'pending';
 };
 
+// Persisted active org for the ngo-admin panel (read by active-entity-context).
+const ACTIVE_ENTITY_STORAGE_KEY = 'activeAdminEntity';
+
 export default function AdminPage() {
   const db = useFirestore();
   const { user: authUser } = useUser();
@@ -123,7 +126,7 @@ export default function AdminPage() {
         name: n.name || 'STK',
         type: 'STK',
         icon: 'heart',
-        href: '/ngo-admin/dashboard',
+        href: `/ngo-admin/dashboard?id=${encodeURIComponent(n.id)}&type=${encodeURIComponent('STK')}`,
         logoUrl: n.avatarUrl || n.logoUrl,
         status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
       });
@@ -136,7 +139,7 @@ export default function AdminPage() {
         name: b.name || 'Marka',
         type: 'Marka',
         icon: 'shopping-bag',
-        href: '/ngo-admin/dashboard',
+        href: `/ngo-admin/dashboard?id=${encodeURIComponent(b.id)}&type=${encodeURIComponent('Marka')}`,
         logoUrl: b.logoUrl,
         status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
       });
@@ -149,7 +152,7 @@ export default function AdminPage() {
         name: c.name || 'Kulüp',
         type: 'Kulüp',
         icon: 'school',
-        href: '/ngo-admin/dashboard',
+        href: `/ngo-admin/dashboard?id=${encodeURIComponent(c.id)}&type=${encodeURIComponent('Kulüp')}`,
         logoUrl: c.avatarUrl || c.logoUrl,
         status: (c.status === 'Pasif' || c.status === 'Beklemede') ? 'pending' : 'approved',
       });
@@ -193,7 +196,21 @@ export default function AdminPage() {
             {managedItems.map((item) => {
                 const Icon = iconMap[item.icon] || Building2;
                 return (
-                <Link href={item.href} key={item.id} className="block hover:bg-muted/30 transition-all group">
+                <Link
+                    href={item.href}
+                    key={item.id}
+                    className="block hover:bg-muted/30 transition-all group"
+                    onClick={() => {
+                        try {
+                            window.localStorage.setItem(
+                                ACTIVE_ENTITY_STORAGE_KEY,
+                                JSON.stringify({ id: item.id, type: item.type }),
+                            );
+                        } catch {
+                            // localStorage unavailable (private mode / quota) — URL params still carry the org
+                        }
+                    }}
+                >
                     <div className="flex items-center p-6">
                         <div className="relative mr-6">
                             <Avatar className="h-16 w-16 border-2 border-white shadow-lg bg-white">

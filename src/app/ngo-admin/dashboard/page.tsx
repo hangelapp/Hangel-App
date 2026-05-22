@@ -247,8 +247,11 @@ function NgoDashboardPageContent() {
     const ngoDocRef = useMemoFirebase(() => {
         if (!entityId) return null;
         if (entityType === 'STK') return doc(firestore, COLLECTIONS.ngos, entityId);
-        if (entityType === 'Öğrenci Kulübü') return doc(firestore, COLLECTIONS.studentClubs, entityId);
         if (entityType === 'Marka') return doc(firestore, COLLECTIONS.brands, entityId);
+        // Clubs live in COLLECTIONS.clubs (matches /admin, super-admin, settings).
+        if (entityType === 'Kulüp') return doc(firestore, COLLECTIONS.clubs, entityId);
+        // Legacy deep links may still pass 'Öğrenci Kulübü' → studentClubs.
+        if (entityType === 'Öğrenci Kulübü') return doc(firestore, COLLECTIONS.studentClubs, entityId);
         return null;
     }, [firestore, entityId, entityType]);
 

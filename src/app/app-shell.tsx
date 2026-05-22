@@ -345,6 +345,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }
     }, [authUser, isUserLoading, isMounted, userData, userDocRef, pathname, router, toast]);
 
+    // Bireysel kullanıcı onboarding gate'i (yeni kullanıcı yönlendirmesi).
+    // Yeni bir bireysel kullanıcı (role 'user', süper-admin/STK-admin DEĞİL)
+    // onboarding'i tamamlamadan uygulamaya geçemesin diye STK seçimi adımına
+    // yönlendirilir. ESKİ KULLANICILARI ASLA KİLİTLEME:
+    //   - onboardingComplete === true → tamamlanmış (açık bayrak)
+    //   - onboardingComplete === undefined → yalnızca supportedNgos boş VE
+    //     volunteerInfo yoksa eksik say; aksi halde tamamlanmış say.
+    // Mevcut kullanıcılar (bayraktan önce kayıt olmuş) en az supportedNgos veya
+    // volunteerInfo verisine sahip olduğu için tamamlanmış sayılır.
+    useEffect(() => {
+        if (isUserLoading || !authUser || !isMounted || !userData) return;
+        // Süper-admin / STK-admin asla gate'lenmez.
+        if (isSuperAdmin || isNgoAdmin) return;
+        // Yalnızca bireysel kullanıcı (role 'user' veya tanımsız) gate'lenir.
+        const role = (userData as { role?: string }).role;
+        if (role && role !== 'user') return;
+
+        const onboardingComplete = (userData as { onboardingComplete?: boolean }).onboardingComplete;
+        if (onboardingComplete === true) return; // açık tamamlanma bayrağı
+
+        // "Yeni gibi görünüyor" kontrolü — şüphede kalırsa GATE ETME.
+        const hasSupportedNgos = Array.isArray(userData.supportedNgos) && userData.supportedNgos.length > 0;
+        const hasVolunteerInfo = !!(userData as { volunteerInfo?: unknown }).volunteerInfo;
+        // Bayrak yok + STK yok + gönüllülük verisi yok → gerçekten yeni kullanıcı.
+        const looksGenuinelyNew = onboardingComplete === false || (!hasSupportedNgos && !hasVolunteerInfo);
+        if (!looksGenuinelyNew) return; // mevcut kullanıcı — dokunma
+
+        // Redirect-loop guard: onboarding/ayar/auth sayfalarındayken yönlendirme.
+        const gateTarget = '/settings/ngo-selection';
+        const exemptPrefixes = ['/settings', '/login', '/logout', '/auth', '/onboarding'];
+        const isExempt = exemptPrefixes.some(p => pathname === p || pathname.startsWith(p + '/'));
+        if (isExempt) return;
+
+        router.push(gateTarget);
+    }, [authUser, isUserLoading, isMounted, userData, isSuperAdmin, isNgoAdmin, pathname, router]);
+
     if (!isMounted) {
         return <div className="min-h-screen bg-background">{children}</div>;
     }
