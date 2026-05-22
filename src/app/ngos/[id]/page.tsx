@@ -399,7 +399,7 @@ export default function NgoProfilePage() {
                             <div className="flex justify-between items-center gap-2">
                                 <span className="font-medium text-foreground shrink-0">Kütük No:</span>
                                 <div className="flex items-center gap-1 min-w-0">
-                                    <Link href={`/${kutukNo}`} className="text-primary font-medium hover:underline truncate" title={kutukShortLink}>
+                                    <Link href={`/k/${kutukNo}`} className="text-primary font-medium hover:underline truncate" title={kutukShortLink}>
                                         {kutukShortLink}
                                     </Link>
                                     <Button

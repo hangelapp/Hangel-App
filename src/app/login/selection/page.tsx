@@ -31,15 +31,20 @@ const FormRenderer = () => {
     const tab = searchParams.get('tab') || 'individual';
     const entity = searchParams.get('entity') || 'NGO';
     const nextPath = resolveNext(searchParams.get('next'));
+    // Kayıt/başvuru akışı: giriş yapmış kullanıcı da yeni STK/Marka/Kulüp veya
+    // bireysel kayıt formunu açabilmeli. action=register iken /market'e
+    // yönlendirme yapılmaz (bireysel VE kurumsal başvuru formları erişilebilir).
+    const isRegisterFlow = searchParams.get('action') === 'register';
 
     // PDF-3: Authenticated user re-visiting /login/selection should land
     // directly on /market (or ?next=… if provided). Wait for auth resolution
-    // to avoid flicker on first paint.
+    // to avoid flicker on first paint. Register/apply flow is exempt so logged-in
+    // users can still submit a new corporate/individual application.
     useEffect(() => {
-        if (!isUserLoading && user) {
+        if (!isUserLoading && user && !isRegisterFlow) {
             router.replace(nextPath);
         }
-    }, [isUserLoading, user, nextPath, router]);
+    }, [isUserLoading, user, nextPath, router, isRegisterFlow]);
 
     return (
         <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">

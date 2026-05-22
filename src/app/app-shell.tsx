@@ -264,13 +264,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir.
     // E-postası doğrulanmamış kullanıcı /login/selection üzerinde verify-sent
     // adımını görebilmeli, bu yüzden redirect'i emailVerified'a koşullu tutuyoruz.
-    // Kurumsal kayıt (Marka/STK/Kulüp) akışı giriş yapmış kullanıcılar için de
-    // erişilebilir olmalı, bu yüzden register/corporate query paramlarında
-    // redirect uygulanmaz.
-    const isCorporateRegisterFlow = useMemo(() => {
+    // Kayıt/başvuru (bireysel VE kurumsal Marka/STK/Kulüp) akışı giriş yapmış
+    // kullanıcılar için de erişilebilir olmalı; action=register iken /market'e
+    // redirect uygulanmaz. Yeni bir kuruluş kaydı/başvurusu yapacak kullanıcı
+    // formdan çıkarılmaz.
+    const isRegisterFlow = useMemo(() => {
         if (pathname !== '/login/selection') return false;
         const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-        return params.get('action') === 'register' && (params.get('type') === 'corporate' || !!params.get('entity'));
+        return params.get('action') === 'register';
     }, [pathname]);
 
     useEffect(() => {
@@ -288,12 +289,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             }
             // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent
             // adımını görebilmeli — orada yalnızca emailVerified olanları yönlendiriyoruz.
-            if (authUser.emailVerified && pathname === '/login/selection' && !isCorporateRegisterFlow) {
+            if (authUser.emailVerified && pathname === '/login/selection' && !isRegisterFlow) {
                 router.push('/market');
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authUser, isUserLoading, pathname, router, isMounted, isCorporateRegisterFlow, userData]);
+    }, [authUser, isUserLoading, pathname, router, isMounted, isRegisterFlow, userData]);
 
     // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
     // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma

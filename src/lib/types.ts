@@ -145,6 +145,10 @@ export type NGO = {
     }
   };
   economicEnterpriseUrl?: string;
+  // Devlet sicil (kütük) numarası. Onay anında başvurudaki `registryNo`'dan
+  // yazılır ve hangel.org.tr/<kütükNo> kısa linki (/k/<kütükNo>) bu STK'nın
+  // profiline çözümlenir. Eski kayıtlarda tanımsız olabilir.
+  kutukNo?: string;
   viewCount?: number;
   posts: Post[];
   opportunities: Volunteering[];

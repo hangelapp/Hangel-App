@@ -363,6 +363,8 @@ export default function ApplicationsPage() {
           type: app.orgSubType || 'Dernek',
           category: app.sector || '',
           registryNo: app.registryNo || '',
+          // Kanonik kütük alanı: /k/<kutukNo> kısa linki bunu sorgular.
+          kutukNo: app.registryNo || '',
           legalTitle: app.legalTitle || '',
           slogan: app.slogan || '',
           transparencyScore: 0,
