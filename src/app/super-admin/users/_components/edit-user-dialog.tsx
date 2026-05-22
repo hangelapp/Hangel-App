@@ -18,9 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ShieldAlert, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { ShieldAlert, Loader2, Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import type { UserRow } from './types';
+
+type EducationRow = { level: string; school: string };
+type EmergencyContactRow = { name: string; phone: string };
 
 // Edit dialog — kullanıcı profilinin tamamını düzenler
 export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
@@ -63,6 +68,21 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   const [licensesCsv, setLicensesCsv] = useState('');
   const [sector, setSector] = useState('');
   const [position, setPosition] = useState('');
+  // Derin gönüllülük alanları (CSV string olarak edit, save'de array'e dönüştürülür)
+  const [dailySkillsCsv, setDailySkillsCsv] = useState('');
+  const [documentsCsv, setDocumentsCsv] = useState('');
+  const [visasCsv, setVisasCsv] = useState('');
+  // Eğitim geçmişi (satır satır)
+  const [education, setEducation] = useState<EducationRow[]>([]);
+  // Seyahat bilgileri
+  const [domesticObstacle, setDomesticObstacle] = useState(false);
+  const [internationalObstacle, setInternationalObstacle] = useState(false);
+  // Acil durum & sağlık
+  const [emergencyAvailable, setEmergencyAvailable] = useState(false);
+  const [hasChronicIllness, setHasChronicIllness] = useState(false);
+  const [usesRegularMedication, setUsesRegularMedication] = useState(false);
+  const [hasPhysicalLimitation, setHasPhysicalLimitation] = useState(false);
+  const [emergencyContacts, setEmergencyContacts] = useState<EmergencyContactRow[]>([]);
   // Adres (detay)
   const [neighborhood, setNeighborhood] = useState('');
   const [fullAddress, setFullAddress] = useState('');
@@ -93,6 +113,21 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
         licenses: string[];
         sector: string | null;
         position: string | null;
+        dailySkills: string[];
+        documents: string[];
+        education: EducationRow[];
+        travelInfo: {
+          domesticObstacle: boolean;
+          internationalObstacle: boolean;
+          visas: string[];
+        };
+        emergency: {
+          available: boolean;
+          hasChronicIllness: boolean;
+          usesRegularMedication: boolean;
+          hasPhysicalLimitation: boolean;
+          emergencyContacts: EmergencyContactRow[];
+        };
       }>;
 
       setName(user.name || '');
@@ -129,11 +164,35 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       setLanguagesCsv((vi.languages || []).join(', '));
       setProgramsCsv((vi.programs || []).join(', '));
       setLicensesCsv((vi.licenses || []).join(', '));
+
+      setDailySkillsCsv((vi.dailySkills || []).join(', '));
+      setDocumentsCsv((vi.documents || []).join(', '));
+      setVisasCsv((vi.travelInfo?.visas || []).join(', '));
+      setEducation((vi.education || []).map(e => ({ level: e?.level || '', school: e?.school || '' })));
+      setDomesticObstacle(vi.travelInfo?.domesticObstacle ?? false);
+      setInternationalObstacle(vi.travelInfo?.internationalObstacle ?? false);
+      setEmergencyAvailable(vi.emergency?.available ?? false);
+      setHasChronicIllness(vi.emergency?.hasChronicIllness ?? false);
+      setUsesRegularMedication(vi.emergency?.usesRegularMedication ?? false);
+      setHasPhysicalLimitation(vi.emergency?.hasPhysicalLimitation ?? false);
+      setEmergencyContacts((vi.emergency?.emergencyContacts || []).map(c => ({ name: c?.name || '', phone: c?.phone || '' })));
     }
   }, [user]);
 
   const csvToArray = (s: string): string[] =>
     s.split(',').map(x => x.trim()).filter(Boolean);
+
+  // Eğitim satırları
+  const addEducationRow = () => setEducation(prev => [...prev, { level: '', school: '' }]);
+  const removeEducationRow = (index: number) => setEducation(prev => prev.filter((_, i) => i !== index));
+  const updateEducationRow = (index: number, field: keyof EducationRow, value: string) =>
+    setEducation(prev => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+
+  // Acil durum kişileri
+  const addEmergencyContact = () => setEmergencyContacts(prev => [...prev, { name: '', phone: '' }]);
+  const removeEmergencyContact = (index: number) => setEmergencyContacts(prev => prev.filter((_, i) => i !== index));
+  const updateEmergencyContact = (index: number, field: keyof EmergencyContactRow, value: string) =>
+    setEmergencyContacts(prev => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
 
   if (!user) return null;
 
@@ -144,6 +203,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       const prevAddress = ((prevPi.address as Record<string, unknown>) || {});
       const prevSocial = ((prevPi.social as Record<string, unknown>) || {});
       const prevVi = (user.volunteerInfo || {}) as Record<string, unknown>;
+      const prevTravel = ((prevVi.travelInfo as Record<string, unknown>) || {});
+      const prevEmergency = ((prevVi.emergency as Record<string, unknown>) || {});
 
       await onSave(user.id, {
         name: name.trim(),
@@ -186,6 +247,27 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
           languages: csvToArray(languagesCsv),
           programs: csvToArray(programsCsv),
           licenses: csvToArray(licensesCsv),
+          dailySkills: csvToArray(dailySkillsCsv),
+          documents: csvToArray(documentsCsv),
+          education: education
+            .map(e => ({ level: e.level.trim(), school: e.school.trim() }))
+            .filter(e => e.level || e.school),
+          travelInfo: {
+            ...prevTravel,
+            domesticObstacle,
+            internationalObstacle,
+            visas: csvToArray(visasCsv),
+          },
+          emergency: {
+            ...prevEmergency,
+            available: emergencyAvailable,
+            hasChronicIllness,
+            usesRegularMedication,
+            hasPhysicalLimitation,
+            emergencyContacts: emergencyContacts
+              .map(c => ({ name: c.name.trim(), phone: c.phone.trim() }))
+              .filter(c => c.name || c.phone),
+          },
         },
       });
       onOpenChange(false);
@@ -381,6 +463,10 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 <Label>İlgi Alanları (virgülle ayırın)</Label>
                 <Input value={interestsCsv} onChange={e => setInterestsCsv(e.target.value)} placeholder="Eğitim, Çevre, Hayvan Hakları" className="rounded-xl" />
               </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Sosyal Yetkinlikler (virgülle ayırın)</Label>
+                <Input value={dailySkillsCsv} onChange={e => setDailySkillsCsv(e.target.value)} placeholder="Empati, Takım Çalışması" className="rounded-xl" />
+              </div>
               <div className="space-y-2">
                 <Label>Diller (virgülle ayırın)</Label>
                 <Input value={languagesCsv} onChange={e => setLanguagesCsv(e.target.value)} placeholder="Türkçe, İngilizce" className="rounded-xl" />
@@ -393,10 +479,107 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 <Label>Ehliyetler (virgülle ayırın)</Label>
                 <Input value={licensesCsv} onChange={e => setLicensesCsv(e.target.value)} placeholder="B sınıfı" className="rounded-xl" />
               </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Belgeler (virgülle ayırın)</Label>
+                <Input value={documentsCsv} onChange={e => setDocumentsCsv(e.target.value)} placeholder="Pasaport, Sağlık Raporu" className="rounded-xl" />
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Daha derin gönüllü alanları (eğitim geçmişi, acil durum kişileri, sağlık durumu) kullanıcı kendi <code className="text-[10px] bg-muted px-1 py-0.5 rounded">/settings/volunteer</code> sayfasından düzenler.
-            </p>
+          </div>
+
+          {/* Eğitim Geçmişi */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Eğitim Geçmişi</p>
+              <Button type="button" variant="outline" size="sm" onClick={addEducationRow} className="rounded-xl font-bold h-8 gap-1">
+                <Plus className="h-3.5 w-3.5" /> Ekle
+              </Button>
+            </div>
+            {education.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Henüz eğitim bilgisi yok. Eklemek için “Ekle” butonunu kullanın.</p>
+            ) : (
+              <div className="space-y-3">
+                {education.map((row, i) => (
+                  <div key={i} className="flex items-end gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Label className="text-xs">Seviye</Label>
+                      <Input value={row.level} onChange={e => updateEducationRow(i, 'level', e.target.value)} placeholder="Lisans" className="rounded-xl" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label className="text-xs">Okul</Label>
+                      <Input value={row.school} onChange={e => updateEducationRow(i, 'school', e.target.value)} placeholder="Üniversite / Bölüm" className="rounded-xl" />
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeEducationRow(i)} className="rounded-xl text-destructive shrink-0" aria-label="Eğitim satırını sil">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Seyahat Bilgileri */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Seyahat Bilgileri</p>
+            <div className="space-y-2">
+              <Label>Sahip Olunan Vizeler (virgülle ayırın)</Label>
+              <Input value={visasCsv} onChange={e => setVisasCsv(e.target.value)} placeholder="Schengen, ABD" className="rounded-xl" />
+            </div>
+            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+              <Checkbox id="domestic-obstacle" checked={domesticObstacle} onCheckedChange={c => setDomesticObstacle(!!c)} />
+              <Label htmlFor="domestic-obstacle" className="text-sm font-medium">Yurt içi seyahate engelim var.</Label>
+            </div>
+            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+              <Checkbox id="international-obstacle" checked={internationalObstacle} onCheckedChange={c => setInternationalObstacle(!!c)} />
+              <Label htmlFor="international-obstacle" className="text-sm font-medium">Yurt dışı seyahate engelim var.</Label>
+            </div>
+          </div>
+
+          {/* Acil Durum & Sağlık */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Acil Durum & Sağlık</p>
+            <div className="flex items-center justify-between p-3 border rounded-xl">
+              <Label htmlFor="emergency-available" className="font-medium">Acil durumlarda gönüllülüğe uygunum</Label>
+              <Switch id="emergency-available" checked={emergencyAvailable} onCheckedChange={setEmergencyAvailable} />
+            </div>
+            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+              <Checkbox id="chronic-illness" checked={hasChronicIllness} onCheckedChange={c => setHasChronicIllness(!!c)} />
+              <Label htmlFor="chronic-illness" className="text-sm">Kronik bir rahatsızlığım var.</Label>
+            </div>
+            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+              <Checkbox id="regular-medication" checked={usesRegularMedication} onCheckedChange={c => setUsesRegularMedication(!!c)} />
+              <Label htmlFor="regular-medication" className="text-sm">Düzenli ilaç kullanıyorum.</Label>
+            </div>
+            <div className="flex items-center space-x-2 p-3 border rounded-xl">
+              <Checkbox id="physical-limitation" checked={hasPhysicalLimitation} onCheckedChange={c => setHasPhysicalLimitation(!!c)} />
+              <Label htmlFor="physical-limitation" className="text-sm">Fiziksel bir kısıtlamam var.</Label>
+            </div>
+            <div className="flex items-center justify-between pt-1">
+              <Label className="text-xs font-bold uppercase text-muted-foreground">Acil Durum Kişileri</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addEmergencyContact} className="rounded-xl font-bold h-8 gap-1">
+                <Plus className="h-3.5 w-3.5" /> Ekle
+              </Button>
+            </div>
+            {emergencyContacts.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground">Henüz acil durum kişisi yok. Eklemek için “Ekle” butonunu kullanın.</p>
+            ) : (
+              <div className="space-y-3">
+                {emergencyContacts.map((row, i) => (
+                  <div key={i} className="flex items-end gap-2">
+                    <div className="flex-1 space-y-2">
+                      <Label className="text-xs">Ad Soyad</Label>
+                      <Input value={row.name} onChange={e => updateEmergencyContact(i, 'name', e.target.value)} placeholder="Ad Soyad" className="rounded-xl" />
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <Label className="text-xs">Telefon</Label>
+                      <Input type="tel" value={row.phone} onChange={e => updateEmergencyContact(i, 'phone', e.target.value)} placeholder="5XX..." className="rounded-xl" />
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeEmergencyContact(i)} className="rounded-xl text-destructive shrink-0" aria-label="Acil durum kişisini sil">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <DialogFooter>

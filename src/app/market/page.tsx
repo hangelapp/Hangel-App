@@ -25,7 +25,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
   })();
 
   const fallbacks = [
-    `https://logo.uplead.com/${domain}`,
+    `https://logo.clearbit.com/${domain}`,
     `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
   ].filter(url => url !== brand.logoUrl);
 

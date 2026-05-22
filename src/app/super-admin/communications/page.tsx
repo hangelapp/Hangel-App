@@ -40,6 +40,21 @@ interface CommsUser {
     [key: string]: unknown;
 }
 
+interface EntityRow {
+    id: string;
+    name?: string;
+    logoUrl?: string;
+    [key: string]: unknown;
+}
+
+// Bir alıcının çözülmüş kurum bilgisi — STK / Marka / Kulüp adı veya "Bireysel".
+interface ResolvedUser {
+    name: string;
+    avatarUrl?: string;
+    orgName: string;
+    orgKind: 'STK' | 'Marka' | 'Öğrenci Kulübü' | 'Bireysel';
+}
+
 interface NotifDoc {
     id: string;
     userId?: string;
@@ -163,10 +178,16 @@ function BroadcastRow({
 function BroadcastDrilldownDialog({
     broadcast,
     allUsers,
+    ngos,
+    brands,
+    clubs,
     onClose,
 }: {
     broadcast: BroadcastDoc | null;
     allUsers: CommsUser[] | null;
+    ngos: EntityRow[] | null;
+    brands: EntityRow[] | null;
+    clubs: EntityRow[] | null;
     onClose: () => void;
 }) {
     const db = useFirestore();
@@ -197,15 +218,60 @@ function BroadcastDrilldownDialog({
         return () => { cancelled = true; };
     }, [db, broadcast]);
 
-    const nameById = useMemo(() => {
-        const map = new Map<string, string>();
+    // userId → { isim, avatar, kurum adı, kurum türü } — tek seferde bellekte kurulur,
+    // alıcı başına ekstra Firestore okuması yapılmaz.
+    const userById = useMemo(() => {
+        const ngoName = new Map<string, string>();
+        (ngos || []).forEach(e => ngoName.set(e.id, e.name || e.id));
+        const brandName = new Map<string, string>();
+        (brands || []).forEach(e => brandName.set(e.id, e.name || e.id));
+        const clubName = new Map<string, string>();
+        (clubs || []).forEach(e => clubName.set(e.id, e.name || e.id));
+
+        const map = new Map<string, ResolvedUser>();
         (allUsers || []).forEach(u => {
-            map.set(u.id, u.name || u.username || u.id.slice(0, 8) + '…');
+            // Bracket access — managed* alanları CommsUser'da var ama Next prod build
+            // bazı durumlarda tipi resolve edemediği için record-style erişim.
+            const rec = u as unknown as Record<string, string | null | undefined>;
+            let orgName = 'Bireysel';
+            let orgKind: ResolvedUser['orgKind'] = 'Bireysel';
+            if (rec.managedNgoId) {
+                orgName = ngoName.get(rec.managedNgoId) || rec.managedNgoId;
+                orgKind = 'STK';
+            } else if (rec.managedBrandId) {
+                orgName = brandName.get(rec.managedBrandId) || rec.managedBrandId;
+                orgKind = 'Marka';
+            } else if (rec.managedClubId) {
+                orgName = clubName.get(rec.managedClubId) || rec.managedClubId;
+                orgKind = 'Öğrenci Kulübü';
+            }
+            map.set(u.id, {
+                name: u.name || u.username || u.id.slice(0, 8) + '…',
+                avatarUrl: u.avatarUrl,
+                orgName,
+                orgKind,
+            });
         });
         return map;
-    }, [allUsers]);
+    }, [allUsers, ngos, brands, clubs]);
 
     const readCount = (recipients || []).filter(r => r.read).length;
+
+    // Kurum/STK-bazlı okuma kırılımı — alıcıları kurum adına göre gruplar.
+    const orgBreakdown = useMemo(() => {
+        const groups = new Map<string, { orgName: string; orgKind: ResolvedUser['orgKind']; sent: number; read: number }>();
+        (recipients || []).forEach(r => {
+            const resolved = r.userId ? userById.get(r.userId) : undefined;
+            const orgName = resolved?.orgName || 'Bireysel';
+            const orgKind = resolved?.orgKind || 'Bireysel';
+            const existing = groups.get(orgName) || { orgName, orgKind, sent: 0, read: 0 };
+            existing.sent += 1;
+            if (r.read) existing.read += 1;
+            groups.set(orgName, existing);
+        });
+        // Çok alıcılı kurumlar önce, ardından okuma oranı yüksek olanlar.
+        return Array.from(groups.values()).sort((a, b) => b.sent - a.sent || b.read - a.read);
+    }, [recipients, userById]);
 
     return (
         <Dialog open={!!broadcast} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -216,20 +282,62 @@ function BroadcastDrilldownDialog({
                         Gönderildi: {broadcast?.targetCount ?? (recipients?.length ?? 0)} · Okundu: {readCount}
                     </DialogDescription>
                 </DialogHeader>
-                <div className="max-h-[60vh] overflow-y-auto border rounded-xl divide-y">
+
+                {/* Kurum / STK bazlı okuma kırılımı */}
+                {!loading && orgBreakdown.length > 0 && (
+                    <div className="space-y-1.5">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Kuruma Göre Okuma
+                        </p>
+                        <div className="max-h-40 overflow-y-auto border rounded-xl divide-y bg-muted/20">
+                            {orgBreakdown.map((g) => {
+                                const rate = g.sent > 0 ? Math.round((g.read / g.sent) * 100) : 0;
+                                return (
+                                    <div key={g.orgName} className="p-2 flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold truncate">{g.orgName}</p>
+                                                <p className="text-[10px] text-muted-foreground">{g.orgKind}</p>
+                                            </div>
+                                        </div>
+                                        <div className="shrink-0 flex items-center gap-1.5">
+                                            <Badge variant="secondary" className="text-[10px]">Gönderilen: {g.sent}</Badge>
+                                            <Badge variant="secondary" className="text-[10px]">
+                                                Okuyan: {g.read} (%{rate})
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                <div className="max-h-[50vh] overflow-y-auto border rounded-xl divide-y">
                     {loading ? (
                         <div className="py-10 text-center text-muted-foreground">
                             <Loader2 className="h-6 w-6 mx-auto animate-spin opacity-50" />
                         </div>
                     ) : (recipients && recipients.length > 0) ? recipients.map((r) => {
                         const readAt = toDateMaybe(r.readAt);
+                        const resolved = r.userId ? userById.get(r.userId) : undefined;
+                        const displayName = resolved?.name || (r.userId ? r.userId.slice(0, 8) + '…' : '—');
                         return (
                             <div key={r.id} className="p-2.5 flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-2 min-w-0">
-                                    <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                    <span className="text-sm truncate">
-                                        {r.userId ? (nameById.get(r.userId) || r.userId.slice(0, 8) + '…') : '—'}
-                                    </span>
+                                    <Avatar className="h-6 w-6 shrink-0">
+                                        <AvatarImage src={resolved?.avatarUrl} alt={displayName} />
+                                        <AvatarFallback className="text-[10px]">
+                                            {(displayName[0] || '?').toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0">
+                                        <span className="text-sm truncate block">{displayName}</span>
+                                        <span className="text-[10px] text-muted-foreground truncate block">
+                                            {resolved?.orgName || 'Bireysel'}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="shrink-0 flex items-center gap-2">
                                     {readAt && (
@@ -262,6 +370,15 @@ export default function CommunicationsPage() {
     // Tüm kullanıcılar (broadcast hedef + DM seçici için)
     const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers, isLoading: usersLoading } = useCollection<CommsUser>(usersQuery);
+
+    // Kuruluşlar — drilldown'da kurum/STK-bazlı okuma kırılımı için userId → kurum adı
+    // çözümünde kullanılır. Bir kez yüklenip bellekte map'lenir (alıcı başına okuma yok).
+    const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
+    const { data: ngos } = useCollection<EntityRow>(ngosQuery);
+    const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+    const { data: brands } = useCollection<EntityRow>(brandsQuery);
+    const clubsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
+    const { data: clubs } = useCollection<EntityRow>(clubsQuery);
 
     // Geçmiş bildirimler — Trafik İzleme
     const sentNotifsQuery = useMemoFirebase(() =>
@@ -807,6 +924,9 @@ export default function CommunicationsPage() {
                     <BroadcastDrilldownDialog
                         broadcast={selectedBroadcast}
                         allUsers={allUsers}
+                        ngos={ngos}
+                        brands={brands}
+                        clubs={clubs}
                         onClose={() => setSelectedBroadcast(null)}
                     />
                 </TabsContent>

@@ -139,7 +139,10 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
       const thumbnailUrl = entry?.Thumbnail?.thumbnail || entry?.Thumbnail?.display;
       const rawPreviewUrl = offer.preview_url || offer.offer_url || '';
       const domain = getDomainFromUrl(rawPreviewUrl, `${name.toLowerCase().replace(/\s+/g, '')}.com`);
-      const logoUrl = thumbnailUrl || `https://logo.uplead.com/${domain}`;
+      // Clearbit resolves real brand logos far more reliably than uplead (which
+      // 404s for most TR domains). Falls back to the market BrandLogo chain
+      // (clearbit → google favicon → initials) if this URL also fails to load.
+      const logoUrl = thumbnailUrl || `https://logo.clearbit.com/${domain}`;
 
       // Use preview_url if it has affiliate placeholders; otherwise fall back to HasOffers tracking URL
       const hasPlaceholder = /\{aff_id\}|\{affiliate_id\}/i.test(rawPreviewUrl);

@@ -1601,3 +1601,24 @@ PDF-R1..PDF-R8 + PDF-50+ (tasks.md 2026-05-21 bölümü). Hepsi disjoint dosyala
 
 ### Durum
 🟡 Needs user approval — rules deploy operatör işi: `firebase deploy --only firestore:rules`. Kod editleri tamamlandı; konsolide gate orchestrator'da.
+
+---
+
+## 2026-05-23 — WEB İçerik Yönetimi: özel sayfa oluşturma (custom pages) + public dinamik route
+
+- **Lead**: frontend-lead
+- **Charter**: Super-admin'in 19 sabit sayfa dışında YENİ tanıtım sayfaları oluşturabilmesi; bu sayfaların public bir dinamik route'ta render edilmesi. Proven pattern: `association-content` → `projectPages` → `/hangelassociation/projects/[slug]`.
+
+### 5-bullet plan
+1. **Ne değişiyor**: (a) `src/app/super-admin/web-content/page.tsx` — "Özel Sayfalar" sekmesi: yeni slug+title+subtitle+description+hero görsel+RichTextEditor body ile sayfa oluştur/listele/düzenle/sil. YENİ `customPages: { [slug]: {...} }` map'ine yazılır (sabit `pages` map'ine DOKUNULMAZ). (b) `src/hooks/use-site-content.ts` — `useWebCustomPage(slug)` eklenir (mirrors `useAssociationProject`). (c) YENİ `src/app/sayfa/[slug]/page.tsx` — public route, `customPages[slug]` render eder.
+2. **Neden public base path `/sayfa`**: `/p/[slug]` ZATEN VAR ve AYRI bir sistem (`COLLECTIONS.sitePages`, `/super-admin/pages` ile yönetilir). `/p` kullanmak o özelliği kırardı. `/sayfa` boş ve çakışmıyor (kontrol edildi: sayfa/s/page/custom/pages/w hepsi free).
+3. **Slug validasyonu**: lowercase kebab; 19 rezerve web-content slug'ı + association SECTION key'leri + üst-düzey route adlarıyla çakışma reddi; mevcut customPages ile unique. Save'de `[^a-z0-9-]` strip.
+4. **Sanitization**: `/press` ve projects route'unun kullandığı `sanitizeHtml` ile aynı; YENİ ham `dangerouslySetInnerHTML` yok. Bilinmeyen slug → graceful "bulunamadı" (loading guard'lı).
+5. **Rollback**: 2 yeni dosya sil + hook fonksiyonunu geri al + web-content sekmesini geri al (`git revert`). `customPages` map'i additive; mevcut 19 sayfa düzenleme ve diğer tab'lar değişmez.
+
+### Risk raporu
+- **Blast radius**: DÜŞÜK-ORTA. Pür-additive; mevcut `pages`/`branding`/`home`/`about` save akışları değişmez. Yeni dinamik route → CLAUDE.md gereği `npm run build` ZORUNLU gate (Next.js 15 `params: Promise<...>` imza riski; bu route client component olduğundan `useParams()` kullanıyor — projects route'u ile birebir aynı, build-safe pattern).
+- **Çakışma kontrolü**: Reserved slug seti = 19 web SITE_PAGES slug + association SectionKey + üst-düzey app route klasör adları. Kullanıcı bunlardan birini girerse kayıt reddedilir → mevcut route'lar gölgelenmez.
+
+### Durum
+🟡 `npm run build` gate operatör/orchestrator tarafından koşulmalı (yeni dinamik route). `npx tsc --noEmit` lead tarafından koşuldu.

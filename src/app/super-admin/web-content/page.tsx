@@ -11,10 +11,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink, Plus, Trash2, FilePlus2 } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 type SitePageMeta = { slug: string; label: string; href: string; group?: string };
@@ -60,6 +60,34 @@ type PageContent = {
 
 const SETTINGS_DOC = 'siteSettings';
 const CONTENT_ID = 'webContent';
+
+// Public base path for super-admin-created custom pages: /sayfa/[slug].
+// (`/p/[slug]` is a SEPARATE system backed by the `sitePages` collection — not used here.)
+const CUSTOM_PAGE_BASE = '/sayfa';
+
+type CustomPageContent = {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    heroImageUrl?: string;
+    body?: string;
+};
+
+// Slug çakışmasını önlemek için rezerve edilen değerler:
+// (a) 19 sabit web sayfası slug'ı, (b) üst düzey app route klasör adları.
+// Bunlar /sayfa/[slug] altında oluşturulamaz — mevcut route'ları gölgelemez/karıştırmaz.
+const RESERVED_SLUGS = new Set<string>([
+    ...SITE_PAGES.map(p => p.slug),
+    'about', 'accessibility', 'admin', 'association', 'auth', 'bilgi-toplumu-hizmetleri',
+    'brand-admin', 'campus-advantages', 'careers', 'club-admin', 'clubs', 'contact',
+    'corporate', 'emergency', 'events', 'feedback', 'hangelassociation', 'home', 'imece',
+    'impact-story', 'invite', 'leaderboard', 'library', 'login', 'logo-usage', 'logo',
+    'market', 'merchant', 'messages', 'my-applications', 'my-badges', 'my-donations',
+    'ngo-admin', 'ngo-onboarding', 'ngos', 'notifications', 'onboarding', 'p', 'payment',
+    'posts', 'press', 'profile', 'qr-payment', 'sayfa', 'settings', 'sitemap',
+    'social-entrepreneurship', 'social-impact', 'standards', 'stories', 'super-admin',
+    'support', 'timeline', 'u', 'volunteering', 'yatirimci-iliskileri',
+]);
 
 function ImageUploaderCompact({
     value,
@@ -154,6 +182,13 @@ export default function WebContentPage() {
     const [editPage, setEditPage] = useState<PageContent>({});
     const [savingPage, setSavingPage] = useState(false);
 
+    // Custom (super-admin-created) page state → /sayfa/[slug]
+    const [customPages, setCustomPages] = useState<Record<string, CustomPageContent>>({});
+    const [editingCustomSlug, setEditingCustomSlug] = useState<string | null>(null);
+    const [editingCustomIsNew, setEditingCustomIsNew] = useState(false);
+    const [editCustomPage, setEditCustomPage] = useState<CustomPageContent & { slug?: string }>({});
+    const [savingCustomPage, setSavingCustomPage] = useState(false);
+
     // Home page sections
     const [homeHeroTitle, setHomeHeroTitle] = useState('yok öyle yalnız başına mücadele etmek.');
     const [homeHeroSubtitle, setHomeHeroSubtitle] = useState('Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.');
@@ -195,6 +230,9 @@ export default function WebContentPage() {
                     }
                     if (d.pages) {
                         setPages(d.pages);
+                    }
+                    if (d.customPages && typeof d.customPages === 'object') {
+                        setCustomPages(d.customPages);
                     }
                     if (d.home) {
                         setHomeHeroTitle(d.home.heroTitle || homeHeroTitle);
@@ -315,6 +353,74 @@ export default function WebContentPage() {
         }
     };
 
+    // ------- Özel Sayfalar (/sayfa/[slug]) -------
+
+    const handleStartNewCustomPage = () => {
+        setEditingCustomSlug('__new__');
+        setEditingCustomIsNew(true);
+        setEditCustomPage({ slug: '', title: '', subtitle: '', description: '', heroImageUrl: '', body: '' });
+    };
+
+    const handleStartEditCustomPage = (slug: string) => {
+        setEditingCustomSlug(slug);
+        setEditingCustomIsNew(false);
+        setEditCustomPage({ slug, ...(customPages[slug] || {}) });
+    };
+
+    const handleSaveCustomPage = async () => {
+        if (!db) return;
+        const slug = (editCustomPage.slug || '').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        if (!slug) {
+            toast({ variant: 'destructive', title: 'Slug gerekli', description: 'URL için kısa bir slug girin (örn: etki-raporu-2026).' });
+            return;
+        }
+        if (editingCustomIsNew && RESERVED_SLUGS.has(slug)) {
+            toast({ variant: 'destructive', title: 'Slug rezerve', description: 'Bu slug mevcut bir sayfayla çakışıyor. Farklı bir slug seçin.' });
+            return;
+        }
+        if (editingCustomIsNew && customPages[slug]) {
+            toast({ variant: 'destructive', title: 'Slug zaten var', description: 'Bu slug ile bir özel sayfa zaten mevcut.' });
+            return;
+        }
+        setSavingCustomPage(true);
+        try {
+            const { slug: _s, ...payload } = editCustomPage;
+            await setDoc(
+                doc(db, SETTINGS_DOC, CONTENT_ID),
+                { customPages: { [slug]: payload } },
+                { merge: true },
+            );
+            setCustomPages(prev => ({ ...prev, [slug]: payload }));
+            toast({ title: 'Kaydedildi', description: `Özel sayfa "${slug}" kaydedildi.` });
+            setEditingCustomSlug(null);
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata oluştu.';
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setSavingCustomPage(false);
+        }
+    };
+
+    const handleDeleteCustomPage = async (slug: string) => {
+        if (!db) return;
+        if (!confirm(`"${slug}" özel sayfası silinecek. Emin misiniz?`)) return;
+        try {
+            await updateDoc(
+                doc(db, SETTINGS_DOC, CONTENT_ID),
+                { [`customPages.${slug}`]: deleteField() },
+            );
+            setCustomPages(prev => {
+                const next = { ...prev };
+                delete next[slug];
+                return next;
+            });
+            toast({ title: 'Silindi', description: `Özel sayfa "${slug}" silindi.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Silinemedi.';
+            toast({ variant: 'destructive', title: 'Silinemedi', description: message });
+        }
+    };
+
     if (isLoading) {
         return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin h-8 w-8 text-muted-foreground" /></div>;
     }
@@ -327,11 +433,12 @@ export default function WebContentPage() {
             </div>
 
             <Tabs defaultValue="branding" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto gap-1 p-1">
                     <TabsTrigger value="branding">Logo & Marka</TabsTrigger>
                     <TabsTrigger value="home">Anasayfa</TabsTrigger>
                     <TabsTrigger value="about">Hakkımızda</TabsTrigger>
                     <TabsTrigger value="pages">Sayfalar</TabsTrigger>
+                    <TabsTrigger value="custom">Özel Sayfalar</TabsTrigger>
                 </TabsList>
 
                 {/* Logo & Marka */}
@@ -552,7 +659,143 @@ export default function WebContentPage() {
                         </CardContent>
                     </Card>
                 </TabsContent>
+
+                {/* Özel Sayfalar — super-admin tarafından oluşturulan dinamik sayfalar (/sayfa/[slug]) */}
+                <TabsContent value="custom" className="mt-4">
+                    <Card>
+                        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <CardTitle className="flex items-center gap-2"><FilePlus2 className="h-5 w-5" /> Özel Sayfalar</CardTitle>
+                                <CardDescription>
+                                    Sabit sayfalar dışında kendi tanıtım/kurumsal sayfalarınızı oluşturun.
+                                    Her sayfa <code className="bg-muted px-1 rounded">{CUSTOM_PAGE_BASE}/[slug]</code> adresinde yayınlanır.
+                                </CardDescription>
+                            </div>
+                            <Button onClick={handleStartNewCustomPage} className="rounded-xl shrink-0">
+                                <Plus className="h-4 w-4 mr-1" /> Yeni Sayfa Oluştur
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {Object.keys(customPages).length === 0 ? (
+                                <div className="py-10 text-center text-sm text-muted-foreground">
+                                    Henüz özel sayfa oluşturulmadı. &quot;Yeni Sayfa Oluştur&quot; ile başlayın.
+                                </div>
+                            ) : (
+                                <div className="border rounded-2xl overflow-hidden divide-y">
+                                    {Object.entries(customPages).map(([slug, p]) => (
+                                        <div key={slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
+                                            <div className="flex-1 min-w-0 space-y-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <p className="font-bold text-sm">{p.title || slug}</p>
+                                                    <Badge variant="outline" className="text-[10px]">{CUSTOM_PAGE_BASE}/{slug}</Badge>
+                                                    <Link
+                                                        href={`${CUSTOM_PAGE_BASE}/${slug}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+                                                    >
+                                                        aç <ExternalLink className="h-3 w-3" />
+                                                    </Link>
+                                                </div>
+                                                {p.subtitle && <p className="text-xs text-muted-foreground truncate">{p.subtitle}</p>}
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Button variant="outline" size="sm" onClick={() => handleStartEditCustomPage(slug)} className="rounded-xl">
+                                                    <Pencil className="h-3.5 w-3.5 mr-1" /> Düzenle
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleDeleteCustomPage(slug)}
+                                                    className="text-destructive hover:bg-destructive/10 rounded-xl"
+                                                    aria-label="Sayfayı sil"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
             </Tabs>
+
+            {/* Custom page create/edit dialog */}
+            <Dialog open={!!editingCustomSlug} onOpenChange={(o) => !o && setEditingCustomSlug(null)}>
+                <DialogContent className="max-w-2xl rounded-[2rem] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>{editingCustomIsNew ? 'Yeni Özel Sayfa' : 'Özel Sayfayı Düzenle'}</DialogTitle>
+                        <DialogDescription>
+                            URL: <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded">{CUSTOM_PAGE_BASE}/{editCustomPage.slug || '...'}</code>
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>Slug (URL parçası)</Label>
+                            <Input
+                                value={editCustomPage.slug || ''}
+                                onChange={e => setEditCustomPage({ ...editCustomPage, slug: e.target.value })}
+                                placeholder="ornek: etki-raporu-2026"
+                                disabled={!editingCustomIsNew}
+                            />
+                            {editingCustomIsNew && (
+                                <p className="text-[10px] text-muted-foreground">Sadece küçük harf, rakam ve tire. Kayıttan sonra değişmez.</p>
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Ana Başlık</Label>
+                            <Input
+                                value={editCustomPage.title || ''}
+                                onChange={e => setEditCustomPage({ ...editCustomPage, title: e.target.value })}
+                                placeholder="Sayfa başlığı"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Alt Başlık / Etiket</Label>
+                            <Input
+                                value={editCustomPage.subtitle || ''}
+                                onChange={e => setEditCustomPage({ ...editCustomPage, subtitle: e.target.value })}
+                                placeholder="Hero üstündeki kısa etiket veya alt başlık"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Açıklama</Label>
+                            <Textarea
+                                value={editCustomPage.description || ''}
+                                onChange={e => setEditCustomPage({ ...editCustomPage, description: e.target.value })}
+                                rows={3}
+                                placeholder="Hero bölümünün altında yer alan kısa açıklama"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Kapak / Hero Görseli</Label>
+                            <ImageUploaderCompact
+                                value={editCustomPage.heroImageUrl || ''}
+                                onChange={(url) => setEditCustomPage({ ...editCustomPage, heroImageUrl: url })}
+                                pathPrefix={`siteContent/web/custom/${editCustomPage.slug || 'new'}`}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>İçerik</Label>
+                            <RichTextEditor
+                                value={editCustomPage.body || ''}
+                                onChange={(html) => setEditCustomPage({ ...editCustomPage, body: html })}
+                                placeholder="Sayfa içeriğini buraya yazın..."
+                                minHeight={280}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setEditingCustomSlug(null)}>İptal</Button>
+                        <Button onClick={handleSaveCustomPage} disabled={savingCustomPage} className="font-bold">
+                            {savingCustomPage && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Kaydet
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Page edit dialog */}
             <Dialog open={!!editingSlug} onOpenChange={(o) => !o && setEditingSlug(null)}>

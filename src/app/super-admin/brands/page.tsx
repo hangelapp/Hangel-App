@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
@@ -54,24 +54,11 @@ export default function BrandsPage() {
     const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection<SimpleUser>(usersQuery);
 
-    // PDF audit #1: super-admin/brands sayfası market sayfasında görünen TÜM
-    // markaları göstermeli. Market sayfası Firestore brands + /api/offers
-    // (affiliate ajans katalogları) birleşimini gösteriyor; burada da aynı
-    // kaynak çekiliyor ki super-admin operasyonu eksik veriyle çalışmasın.
-    const [apiBrands, setApiBrands] = useState<Brand[]>([]);
-    const [apiBrandsLoading, setApiBrandsLoading] = useState(true);
-    useEffect(() => {
-        let cancelled = false;
-        fetch('/api/offers')
-            .then(res => res.ok ? res.json() : [])
-            .then((data: Brand[]) => {
-                if (cancelled) return;
-                setApiBrands(Array.isArray(data) ? data : []);
-            })
-            .catch(() => { if (!cancelled) setApiBrands([]); })
-            .finally(() => { if (!cancelled) setApiBrandsLoading(false); });
-        return () => { cancelled = true; };
-    }, []);
+    // Super-admin Marka Yönetimi yalnızca YÖNETİLEBİLİR Firestore markalarını +
+    // başvuruları gösterir. /api/offers affiliate kataloğu (read-only, Firestore'da
+    // doc'u olmayan 195 teklif) bu yönetim ekranına dahil EDİLMEZ — düzenle/yetkili/
+    // pasife/sil butonları onlar için çalışmadığından "demo" kalabalık yaratıyordu.
+    // O katalog yalnızca public /market sayfasında yayınlanır (gelir korunur).
 
     // Combine and filter brands
     const filteredBrands = useMemo(() => {
@@ -109,28 +96,12 @@ export default function BrandsPage() {
             });
         }
 
-        // PDF audit #1: market sayfasında /api/offers üzerinden gelen affiliate
-        // markalarını da super-admin listesinde göster. Bu satırlar read-only
-        // (Firestore'da doc yok) — düzenleme/silme akışları doc id'siz
-        // brand'leri zaten no-op'a düşürür.
-        if (apiBrands.length > 0) {
-            const firestoreIds = new Set((brands || []).map(b => b.id));
-            apiBrands.forEach(b => {
-                if (!b?.id || firestoreIds.has(b.id)) return;
-                combinedList.push({
-                    ...b,
-                    source: 'api',
-                    status: 'Aktif',
-                } as BrandItem);
-            });
-        }
-
         // Apply filters
         let filtered = combinedList;
 
         // Status filter
         if (statusFilter === 'approved') {
-            filtered = filtered.filter(b => (b.source === 'brands' || b.source === 'api') && b.status === 'Aktif');
+            filtered = filtered.filter(b => b.source === 'brands' && b.status === 'Aktif');
         } else if (statusFilter === 'pending') {
             filtered = filtered.filter(b => b.status === 'Beklemede');
         } else if (statusFilter === 'passive') {
@@ -162,7 +133,7 @@ export default function BrandsPage() {
         }
 
         return sorted;
-    }, [brands, applications, apiBrands, statusFilter, searchTerm, sortBy]);
+    }, [brands, applications, statusFilter, searchTerm, sortBy]);
 
     const handleToggleStatus = (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
@@ -486,18 +457,16 @@ export default function BrandsPage() {
         }
     };
 
-    const isLoading = brandsLoading || appsLoading || apiBrandsLoading;
+    const isLoading = brandsLoading || appsLoading;
 
     // useMemo, conditional return'den ÖNCE çağrılmalı (Rules of Hooks)
     const stats = useMemo(() => {
-        const firestoreIds = new Set((brands || []).map(b => b.id));
-        const apiOnlyCount = apiBrands.filter(b => b?.id && !firestoreIds.has(b.id)).length;
-        const approved = (brands || []).filter((b) => ((b as Brand & { status?: string }).status || 'Aktif') === 'Aktif').length + apiOnlyCount;
+        const approved = (brands || []).filter((b) => ((b as Brand & { status?: string }).status || 'Aktif') === 'Aktif').length;
         const passive = (brands || []).filter((b) => (b as Brand & { status?: string }).status === 'Pasif').length;
         const pending = (applications || []).filter((a) => (a as { status?: string }).status === 'Beklemede').length;
         const rejected = (applications || []).filter((a) => (a as { status?: string }).status === 'Reddedildi').length;
         return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
-    }, [brands, applications, apiBrands]);
+    }, [brands, applications]);
 
     if (isLoading) {
         return (

@@ -36,6 +36,7 @@ function buildGetter(data: unknown) {
 type SiteContentDoc = Record<string, unknown> & {
     pages?: Record<string, Record<string, unknown>>;
     projectPages?: Record<string, Record<string, unknown>>;
+    customPages?: Record<string, Record<string, unknown>>;
 };
 
 export function useWebContent() {
@@ -57,6 +58,29 @@ export function useWebContent() {
 export function useWebPage(slug: string) {
     const { data, isLoading } = useWebContent();
     const page = (data?.pages?.[slug] || {}) as {
+        title?: string;
+        subtitle?: string;
+        description?: string;
+        heroImageUrl?: string;
+        body?: string;
+    };
+    return { ...page, isLoading };
+}
+
+/**
+ * Süper admin tarafından /super-admin/web-content "Özel Sayfalar" sekmesinde
+ * oluşturulan, slug'lı tanıtım/kurumsal sayfanın içeriğini döner.
+ * `siteSettings/webContent` doc'undaki `customPages` map'inden okur.
+ * Public route /sayfa/[slug] bu hook ile render edilir.
+ *
+ * Kullanım:
+ *   const page = useWebCustomPage('etki-raporu-2026');
+ *   <h1>{page.title || 'Sayfa'}</h1>
+ *   {page.body && <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.body) }} />}
+ */
+export function useWebCustomPage(slug: string) {
+    const { data, isLoading } = useWebContent();
+    const page = (data?.customPages?.[slug] || {}) as {
         title?: string;
         subtitle?: string;
         description?: string;
