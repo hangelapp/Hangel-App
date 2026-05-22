@@ -172,6 +172,31 @@ const BOOK_FILTERS: FilterDef[] = [
   },
 ];
 
+// Akademik Makaleler bölümü için filtre seti. Veri kaynağı: src/lib/library.ts
+// `akademik-makaleler` item'ları — her item.content HTML içinde "Konu" ve "Yayınevi"
+// alanları geçer. `itemContainsValue` haystack araması bu serbest-metin alanlarını yakalar.
+const ACADEMIC_FILTERS: FilterDef[] = [
+  {
+    key: 'topic', label: 'Konu', type: 'select',
+    options: [
+      'Etki Odaklı Yardım', 'Etki Ölçümü', 'Kalkınma İktisadı',
+      'Kalkınma ve Yoksulluk', 'Kalkınma ve Sosyal Politika', 'Sosyal Sermaye',
+      'Katılımcı Demokrasi', 'Davranışsal Politika', 'Bilişsel Bilim',
+      'Sosyal İnovasyon', 'Sosyal Etki', 'Sivil Toplum Araştırmaları',
+      'Siyaset Sosyolojisi', 'STK Yönetişimi',
+    ],
+  },
+  {
+    key: 'publisher', label: 'Yayınevi', type: 'select',
+    options: [
+      'Penguin', 'Wiley', 'Oxford University Press', 'PublicAffairs',
+      'Simon & Schuster', 'Princeton University Press',
+      'Farrar, Straus and Giroux', 'Routledge', 'Jossey-Bass',
+      'Nobel Akademik', 'Metis Yayınları', 'İletişim Yayınları',
+    ],
+  },
+];
+
 function isFilmSection(section: LibrarySection): boolean {
   const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
   return t.includes('film') || t.includes('sinema') || t.includes('movie');
@@ -185,6 +210,11 @@ function isBookSection(section: LibrarySection): boolean {
 function isInventorySection(section: LibrarySection): boolean {
   const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
   return t.includes('envanter') || t.includes('inventory') || t.includes('sosyal etki envanteri');
+}
+
+function isAcademicSection(section: LibrarySection): boolean {
+  const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
+  return t.includes('akademik') || t.includes('academic') || t.includes('makale');
 }
 
 // Envanter (Hangel Sosyal Etki Envanteri) için filtre seti.
@@ -220,6 +250,7 @@ function getFilterDefs(section: LibrarySection): FilterDef[] {
   if (isFilmSection(section)) return FILM_FILTERS;
   if (isBookSection(section)) return BOOK_FILTERS;
   if (isInventorySection(section)) return INVENTORY_FILTERS;
+  if (isAcademicSection(section)) return ACADEMIC_FILTERS;
   return [];
 }
 

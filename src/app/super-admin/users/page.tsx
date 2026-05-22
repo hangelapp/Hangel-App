@@ -106,24 +106,29 @@ export default function UsersPage() {
     }
   }, [searchTerm, users, sortBy]);
 
+  // SEC-DISABLE-ENFORCE — "Askıya Al / Aktif Et" artık Admin SDK route'undan
+  // geçer. Eskiden yalnız `updateDoc(status)` yazıyordu; Firebase Auth'a
+  // dokunmadığı için askıya alınan kullanıcı giriş yapmaya devam edebiliyordu.
+  // Şimdi: askıya al → Auth `disabled:true` + `revokeRefreshTokens` (canlı
+  // oturum ölür) + `users/{uid}.disabled:true` (client guard tetiklenir);
+  // aktif et → Auth `disabled:false` + `users/{uid}.disabled:false`.
   const handleToggleStatus = async (userId: string, name: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'Aktif' ? 'Askıda' : 'Aktif';
+    const willSuspend = currentStatus === 'Aktif';
+    const mode = willSuspend ? 'disable' : 'enable';
     try {
-      await updateDoc(doc(db, COLLECTIONS.users, userId), { status: newStatus });
+      await callAdminUserRoute(userId, mode);
       toast({
         title: 'Kullanıcı Durumu Güncellendi',
-        description: `${name} → ${newStatus.toLowerCase()}.`,
+        description: willSuspend
+          ? `${name} askıya alındı — giriş engellendi ve açık oturumu sonlandırıldı.`
+          : `${name} yeniden aktifleştirildi — tekrar giriş yapabilir.`,
       });
     } catch (e) {
-      console.error('Toggle status failed:', e);
-      const code = (e as { code?: string } | null)?.code;
       const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
       toast({
         variant: 'destructive',
         title: 'Güncelleme başarısız',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
+        description: message,
       });
     }
   };
@@ -131,17 +136,23 @@ export default function UsersPage() {
   // PDF-28 — Silme artık Admin SDK route'undan geçiyor: Firebase Auth hesabını
   // siler/devre dışı bırakır, böylece kullanıcı tekrar giriş yapamaz. Eski
   // `deleteDoc` akışı sadece Firestore dokümanını siliyordu; Auth aktif kalıyordu.
-  const callAdminUserRoute = async (uid: string, mode: 'disable' | 'delete') => {
+  // `disable` ve `enable` aynı route'a (`/disable`) gider; ayrım body'deki
+  // `action` ile yapılır. `delete` ayrı route. Hepsi Admin SDK üzerinden
+  // Firebase Auth'u günceller — böylece kullanıcı gerçekten giriş yapamaz /
+  // tekrar yapabilir; client-only `status` yazımı YETERSİZDİ (PDF-28 defekti).
+  const callAdminUserRoute = async (uid: string, mode: 'disable' | 'enable' | 'delete') => {
     if (!currentUser) {
       throw new Error('Aktif oturum bulunamadı. Lütfen tekrar giriş yapın.');
     }
     const idToken = await currentUser.getIdToken();
-    const res = await fetch(`/api/admin/users/${encodeURIComponent(uid)}/${mode}`, {
+    const routeSegment = mode === 'delete' ? 'delete' : 'disable';
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(uid)}/${routeSegment}`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${idToken}`,
         'Content-Type': 'application/json',
       },
+      body: mode === 'delete' ? undefined : JSON.stringify({ action: mode }),
     });
     if (!res.ok) {
       let payload: { errorCode?: string; message?: string } = {};
@@ -165,20 +176,9 @@ export default function UsersPage() {
     }
   };
 
-  // PDF-28 — Soft-disable yardımcısı. UserRow menüsünde henüz expose edilmedi;
-  // tek-tık "Devre dışı bırak" eylemi geldiğinde bu fonksiyon çağrılır.
-  const _handleDisable = async (user: UserRow) => {
-    try {
-      await callAdminUserRoute(user.id, 'disable');
-      toast({
-        title: 'Kullanıcı Devre Dışı',
-        description: `${user.name || 'Kullanıcı'} hesabı Firebase Auth üzerinden devre dışı bırakıldı (signin engellendi).`,
-      });
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
-      toast({ variant: 'destructive', title: 'Devre dışı bırakma başarısız', description: message });
-    }
-  };
+  // SEC-DISABLE-ENFORCE — Eski dead `_handleDisable` kaldırıldı; canlı
+  // "Askıya Al" butonu artık `handleToggleStatus` → `callAdminUserRoute('disable')`
+  // ile aynı Auth disable + revoke + Firestore mirror yolunu kullanıyor.
 
   const [bulkEmail, setBulkEmail] = useState('');
   const [bulkProgress, setBulkProgress] = useState<{ deleted: number; failed: number } | null>(null);

@@ -276,7 +276,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         if (!isUserLoading && authUser && isMounted) {
-            // Erişimi engellenmiş kullanıcı (super-admin tarafından disabled) — auth'tan çıkar
+            // SEC-DISABLE-ENFORCE — Erişimi engellenmiş kullanıcı (super-admin
+            // tarafından disabled). STRICT GÜVENLİK: yalnızca `disabled === true`
+            // iken çalışır. `userData` yüklenmemişse `null`/`undefined` → `?.disabled`
+            // `undefined` → `undefined === true` `false` → NORMAL KULLANICI ASLA
+            // çıkış yapmaz. `disabled:false` veya alan yoksa da `false`.
             const userIsDisabled = (userData as { disabled?: boolean } | null)?.disabled === true;
             if (userIsDisabled) {
                 toast({
@@ -284,7 +288,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     title: 'Erişiminiz Kısıtlandı',
                     description: 'Hesabınız yönetici tarafından devre dışı bırakıldı. Lütfen destek ile iletişime geçin.',
                 });
-                signOut(auth).catch(() => undefined);
+                // Aşağıdaki auth-guard effect'inin (auth→null geçişinde) ek bir
+                // "Oturumun sonlandı" toast'u göstermesini bastır — kullanıcı
+                // zaten net bir disabled mesajı aldı.
+                if (typeof window !== 'undefined') {
+                    try {
+                        sessionStorage.setItem('session-expired-toast-at', String(Date.now()));
+                    } catch {
+                        // sessionStorage erişilemedi (private mode) — yoksay.
+                    }
+                }
+                signOut(auth)
+                    .catch(() => undefined)
+                    .finally(() => {
+                        // Public sayfada (örn. '/') olsa bile login'e taşı; path
+                        // korumalı değilse aşağıdaki auth-guard redirect etmez.
+                        router.replace('/login/selection?action=login');
+                    });
                 return;
             }
             // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent

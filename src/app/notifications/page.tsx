@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -22,6 +22,7 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'emergency-blood': Droplet,
   'volunteer': Heart,
   'donation': Sparkles,
+  'authorization': ShieldCheck,
 };
 
 const typeColor: Record<string, string> = {
@@ -29,6 +30,7 @@ const typeColor: Record<string, string> = {
   'emergency-blood': 'text-red-600 bg-red-100',
   'volunteer': 'text-green-600 bg-green-100',
   'donation': 'text-amber-600 bg-amber-100',
+  'authorization': 'text-indigo-600 bg-indigo-100',
 };
 
 export default function NotificationsPage() {
