@@ -267,14 +267,15 @@ export default function NgoProfilePage() {
     }
   };
   
+  const transparencyScore = ngo.transparencyScore ?? 0;
   const transparencyCriteria = [
     { name: 'Faaliyet Belgesi', completed: true },
     { name: 'Tüzük / Vakıf Senedi', completed: true },
-    { name: 'Yönetim Kurulu Listesi', completed: ngo.transparencyScore > 80 },
+    { name: 'Yönetim Kurulu Listesi', completed: transparencyScore > 80 },
     { name: 'Yıllık Faaliyet Raporu', completed: true },
-    { name: 'Finansal Tablolar', completed: ngo.transparencyScore > 85 },
-    { name: 'Bağımsız Denetim Raporu', completed: ngo.transparencyScore > 90 },
-    { name: 'Etki Raporu', completed: ngo.transparencyScore > 75 },
+    { name: 'Finansal Tablolar', completed: transparencyScore > 85 },
+    { name: 'Bağımsız Denetim Raporu', completed: transparencyScore > 90 },
+    { name: 'Etki Raporu', completed: transparencyScore > 75 },
   ];
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
@@ -316,7 +317,7 @@ export default function NgoProfilePage() {
                     <h1 className="text-2xl font-bold font-headline">{ngo.name}</h1>
                     <Badge variant="outline" className="text-base font-bold border-primary/50 text-primary bg-primary/10">
                         <ShieldCheck className="h-4 w-4 mr-1.5"/>
-                        {ngo.transparencyScore}
+                        {transparencyScore}
                     </Badge>
                 </div>
                 <div className="flex items-center gap-2">
@@ -329,11 +330,11 @@ export default function NgoProfilePage() {
         <div className="mt-4 space-y-2">
             <div className="grid grid-cols-2">
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{(ngo.stats?.donors ?? 0).toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Bağışçı</p>
                 </div>
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{(ngo.stats?.volunteers ?? 0).toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Gönüllü</p>
                 </div>
             </div>
@@ -372,7 +373,7 @@ export default function NgoProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Kuruluş Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
-                    {ngo.about.split('\n\n').map((paragraph, index) => (
+                    {(ngo.about ?? '').split('\n\n').filter(Boolean).map((paragraph, index) => (
                         <p key={index}>{paragraph}</p>
                     ))}
                     <div className="pt-4 border-t text-xs text-muted-foreground space-y-1">
@@ -426,22 +427,29 @@ export default function NgoProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg">İletişim</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
-                    <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.email}</span></div>
-                    <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.phone}</span></div>
-                    <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.website}</span></div>
-                    {ngo.contact.address && (
+                    {ngo.contact?.email && <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.email}</span></div>}
+                    {ngo.contact?.phone && <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.phone}</span></div>}
+                    {ngo.contact?.website && <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{ngo.contact.website}</span></div>}
+                    {ngo.contact?.address && (
                         <div className="flex items-start gap-3 text-sm pt-3 border-t">
                             <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                             <span>{ngo.contact.address.fullAddress}<br/>{ngo.contact.address.district}, {ngo.contact.address.city}</span>
                         </div>
                      )}
-                    <Separator className="my-4" />
-                    <div className="flex gap-4">
-                        <a href={`https://x.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><XIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
-                        <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
-                        <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
-                        <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>
-                    </div>
+                    {ngo.contact?.social && (ngo.contact.social.twitter || ngo.contact.social.instagram || ngo.contact.social.facebook || ngo.contact.social.linkedin) && (
+                        <>
+                            <Separator className="my-4" />
+                            <div className="flex gap-4">
+                                {ngo.contact.social.twitter && <a href={`https://x.com/${ngo.contact.social.twitter}`} target="_blank" rel="noopener noreferrer"><XIcon className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
+                                {ngo.contact.social.instagram && <a href={`https://instagram.com/${ngo.contact.social.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
+                                {ngo.contact.social.facebook && <a href={`https://facebook.com/${ngo.contact.social.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
+                                {ngo.contact.social.linkedin && <a href={`https://linkedin.com/company/${ngo.contact.social.linkedin}`} target="_blank" rel="noopener noreferrer"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
+                            </div>
+                        </>
+                    )}
+                    {!ngo.contact?.email && !ngo.contact?.phone && !ngo.contact?.website && !ngo.contact?.address && (
+                        <p className="text-sm text-muted-foreground italic">İletişim bilgisi henüz eklenmedi.</p>
+                    )}
                 </CardContent>
             </Card>
         </TabsContent>
@@ -461,29 +469,29 @@ export default function NgoProfilePage() {
                     <CardTitle className="text-lg">Özet İstatistikler</CardTitle>
                 </CardHeader>
                  <CardContent className="grid grid-cols-3 gap-4 text-center">
-                    <div><p className="font-bold text-lg">{ngo.stats.totalDonation.toLocaleString('tr-TR')} ₺</p><p className="text-sm text-muted-foreground">Toplam Bağış</p></div>
-                    <div><p className="font-bold text-lg">{ngo.stats.donors.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Bağışçı</p></div>
-                    <div><p className="font-bold text-lg">{ngo.stats.volunteers.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Gönüllü</p></div>
+                    <div><p className="font-bold text-lg">{(ngo.stats?.totalDonation ?? 0).toLocaleString('tr-TR')} ₺</p><p className="text-sm text-muted-foreground">Toplam Bağış</p></div>
+                    <div><p className="font-bold text-lg">{(ngo.stats?.donors ?? 0).toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Bağışçı</p></div>
+                    <div><p className="font-bold text-lg">{(ngo.stats?.volunteers ?? 0).toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Gönüllü</p></div>
                  </CardContent>
              </Card>
              <Card>
                  <CardHeader><CardTitle className="text-lg">Gönüllülük İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                     <StatRow label="Toplam Gönüllülük Saati" value={`${ngo.stats.volunteerHours.toLocaleString('tr-TR')} saat`} />
-                     <StatRow label="Gönüllülük Mali Değeri" value={`${(ngo.stats.volunteerHours * 100).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`} />
-                     <StatRow label="Toplam Gönüllü Sayısı" value={ngo.stats.volunteers.toLocaleString('tr-TR')} />
-                     <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats.projects} />
+                     <StatRow label="Toplam Gönüllülük Saati" value={`${(ngo.stats?.volunteerHours ?? 0).toLocaleString('tr-TR')} saat`} />
+                     <StatRow label="Gönüllülük Mali Değeri" value={`${((ngo.stats?.volunteerHours ?? 0) * 100).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`} />
+                     <StatRow label="Toplam Gönüllü Sayısı" value={(ngo.stats?.volunteers ?? 0).toLocaleString('tr-TR')} />
+                     <StatRow label="Tamamlanan Proje Sayısı" value={ngo.stats?.projects ?? 0} />
                  </CardContent>
              </Card>
              <Card>
                  <CardHeader><CardTitle className="text-lg">Bağış İstatistikleri</CardTitle></CardHeader>
                  <CardContent className="divide-y">
-                    <StatRow label="Toplam Bağış Tutarı" value={ngo.stats.totalDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
-                    <StatRow label="Toplam Bağışçı Sayısı" value={ngo.stats.donors.toLocaleString('tr-TR')} />
-                    <StatRow label="Toplam İşlem Adedi" value={ngo.stats.donationCount.toLocaleString('tr-TR')} />
-                    <StatRow label="Ortalama Bağış Tutarı" value={ngo.stats.avgDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
-                    <StatRow label="Tek Seferde En Yüksek Bağış" value={ngo.stats.highestSingleDonation.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
-                    <StatRow label="Ulaşılan İnsan Sayısı" value={ngo.stats.peopleReached.toLocaleString('tr-TR')} />
+                    <StatRow label="Toplam Bağış Tutarı" value={(ngo.stats?.totalDonation ?? 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
+                    <StatRow label="Toplam Bağışçı Sayısı" value={(ngo.stats?.donors ?? 0).toLocaleString('tr-TR')} />
+                    <StatRow label="Toplam İşlem Adedi" value={(ngo.stats?.donationCount ?? 0).toLocaleString('tr-TR')} />
+                    <StatRow label="Ortalama Bağış Tutarı" value={(ngo.stats?.avgDonation ?? 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
+                    <StatRow label="Tek Seferde En Yüksek Bağış" value={(ngo.stats?.highestSingleDonation ?? 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })} />
+                    <StatRow label="Ulaşılan İnsan Sayısı" value={(ngo.stats?.peopleReached ?? 0).toLocaleString('tr-TR')} />
                  </CardContent>
              </Card>
         </TabsContent>
@@ -495,8 +503,8 @@ export default function NgoProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div>
-                        <p className="text-3xl font-bold text-primary">{ngo.transparencyScore} / 100</p>
-                        <Progress value={ngo.transparencyScore} className="mt-2 h-2" />
+                        <p className="text-3xl font-bold text-primary">{transparencyScore} / 100</p>
+                        <Progress value={transparencyScore} className="mt-2 h-2" />
                     </div>
                     <div className="pt-4 space-y-3">
                         <h4 className="font-semibold text-sm">Karşılanan Kriterler</h4>

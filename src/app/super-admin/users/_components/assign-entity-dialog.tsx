@@ -321,8 +321,8 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-[2rem] max-w-lg">
-        <DialogHeader>
+      <DialogContent className="rounded-[2rem] max-w-lg flex flex-col max-h-[85vh] p-0 gap-0 overflow-hidden">
+        <DialogHeader className="shrink-0 p-6 pb-4">
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-purple-600" />
             Yetkilendir
@@ -332,7 +332,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 px-6 py-2">
           {/* PDF-29 — Mevcut yetkiler listesi + revoke */}
           {activeAuthorizations.length > 0 && (
             <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-3">
@@ -475,7 +475,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="shrink-0 gap-2 border-t border-black/5 bg-background p-6 pt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl font-bold">
             İptal
           </Button>

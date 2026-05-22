@@ -52,6 +52,7 @@ export default function ClubsPage() {
   const [expandedUniversity, setExpandedUniversity] = useState<string | null>(null);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const clubsRef = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
@@ -63,23 +64,27 @@ export default function ClubsPage() {
     socialAreas?: string[];
   };
 
-  // Veriden unique yetkinlik ve hassasiyet değerleri
-  const { availableSkills, availableInterests } = useMemo(() => {
+  // Veriden unique kategori, yetkinlik ve hassasiyet değerleri
+  const { availableCategories, availableSkills, availableInterests } = useMemo(() => {
+    const categoriesSet = new Set<string>();
     const skillsSet = new Set<string>();
     const interestsSet = new Set<string>();
     for (const c of (clubs || []) as ClubWithMeta[]) {
+      if (c.category) categoriesSet.add(c.category);
       (c.skills || []).forEach(s => s && skillsSet.add(s));
       (c.interests || c.socialAreas || []).forEach(i => i && interestsSet.add(i));
     }
     return {
+      availableCategories: Array.from(categoriesSet).sort((a, b) => a.localeCompare(b, 'tr')),
       availableSkills: Array.from(skillsSet).sort((a, b) => a.localeCompare(b, 'tr')),
       availableInterests: Array.from(interestsSet).sort((a, b) => a.localeCompare(b, 'tr')),
     };
   }, [clubs]);
 
+  const toggleCategory = (s: string) => setSelectedCategories(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleSkill = (s: string) => setSelectedSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleInterest = (s: string) => setSelectedInterests(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
-  const filterCount = selectedSkills.length + selectedInterests.length;
+  const filterCount = selectedCategories.length + selectedSkills.length + selectedInterests.length;
 
   // Kullanıcının ülke/şehir bilgisi (Ülkemde/Şehrimde filtreleri için)
   const userDocRef = useMemoFirebase(() => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null), [db, authUser?.uid]);
@@ -117,6 +122,11 @@ export default function ClubsPage() {
       result = result.filter(c => c.type === 'high-school');
     }
 
+    // Kategori filtresi (multi-select, OR mantığı)
+    if (selectedCategories.length > 0) {
+      result = result.filter(c => !!c.category && selectedCategories.includes(c.category));
+    }
+
     // Yetkinlik filtresi (multi-select, AND mantığı)
     if (selectedSkills.length > 0) {
       result = result.filter(c => {
@@ -143,7 +153,7 @@ export default function ClubsPage() {
       );
     }
     return result;
-  }, [clubs, searchTerm, locationFilter, userCountry, userCity, userSchools, selectedSkills, selectedInterests]);
+  }, [clubs, searchTerm, locationFilter, userCountry, userCity, userSchools, selectedCategories, selectedSkills, selectedInterests]);
 
   // Üniversiteye göre grupla
   const universitiesGrouped = useMemo(() => {
@@ -153,11 +163,18 @@ export default function ClubsPage() {
       if (!map.has(uni)) map.set(uni, []);
       map.get(uni)!.push(c);
     }
-    const list = Array.from(map.entries()).map(([university, clubsArr]) => ({
-      university,
-      clubs: clubsArr,
-      memberTotal: clubsArr.reduce((s, c) => s + (c.members || 0), 0),
-    }));
+    const list = Array.from(map.entries()).map(([university, clubsArr]) => {
+      // Kulüpleri grup içinde de seçilen ölçüte göre sırala (sıralama görünür olsun)
+      const sortedClubs = [...clubsArr].sort((a, b) => {
+        if (sortMode === 'members') return (b.members || 0) - (a.members || 0);
+        return (a.name || '').localeCompare(b.name || '', 'tr');
+      });
+      return {
+        university,
+        clubs: sortedClubs,
+        memberTotal: sortedClubs.reduce((s, c) => s + (c.members || 0), 0),
+      };
+    });
 
     if (sortMode === 'name') {
       list.sort((a, b) => a.university.localeCompare(b.university, 'tr'));
@@ -187,6 +204,31 @@ export default function ClubsPage() {
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <h1 className="text-2xl font-bold font-headline">Öğrenci Kulüpleri</h1>
 
+      {/* Konum tabları (üst satır): Global / Ülkemde / Şehrimde / Okulumda / Üniversite / Lise */}
+      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as typeof locationFilter)}>
+        <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-6 gap-1 p-1 h-12 rounded-2xl bg-muted/50">
+          {locationTabs.map(t => {
+            const Icon = t.icon;
+            return (
+              <TabsTrigger
+                key={t.value}
+                value={t.value}
+                className="shrink-0 sm:shrink rounded-[1rem] h-full px-3 sm:px-1 text-xs sm:text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
+              >
+                <span className="flex items-center gap-1.5">
+                  <Icon className="h-3.5 w-3.5" /> {t.label}
+                </span>
+                {t.sublabel && (
+                  <span className="text-[9px] text-muted-foreground font-normal mt-0.5 truncate max-w-[80px]">
+                    {t.sublabel}
+                  </span>
+                )}
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </Tabs>
+
       <div className="p-0 flex gap-2 items-center sticky top-14 bg-background z-10 py-2">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -209,6 +251,22 @@ export default function ClubsPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="max-h-[60vh] overflow-y-auto w-56">
+            {availableCategories.length > 0 && (
+              <>
+                <DropdownMenuLabel>Kategoriler</DropdownMenuLabel>
+                {availableCategories.map(s => (
+                  <DropdownMenuCheckboxItem
+                    key={`cat-${s}`}
+                    checked={selectedCategories.includes(s)}
+                    onCheckedChange={() => toggleCategory(s)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    {s}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                <DropdownMenuSeparator />
+              </>
+            )}
             {availableSkills.length > 0 && (
               <>
                 <DropdownMenuLabel>Yetkinlikler</DropdownMenuLabel>
@@ -241,13 +299,13 @@ export default function ClubsPage() {
                 <DropdownMenuSeparator />
               </>
             )}
-            {availableSkills.length === 0 && availableInterests.length === 0 && (
+            {availableCategories.length === 0 && availableSkills.length === 0 && availableInterests.length === 0 && (
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 Henüz filtre verisi yok
               </DropdownMenuLabel>
             )}
             {filterCount > 0 && (
-              <DropdownMenuItem onSelect={() => { setSelectedSkills([]); setSelectedInterests([]); }}>
+              <DropdownMenuItem onSelect={() => { setSelectedCategories([]); setSelectedSkills([]); setSelectedInterests([]); }}>
                 Filtreleri Temizle
               </DropdownMenuItem>
             )}
@@ -266,31 +324,6 @@ export default function ClubsPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Konum tabları: Global / Ülkemde / Şehrimde / Okulumda / Üniversite / Lise */}
-      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as typeof locationFilter)}>
-        <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-6 gap-1 p-1 h-12 rounded-2xl bg-muted/50">
-          {locationTabs.map(t => {
-            const Icon = t.icon;
-            return (
-              <TabsTrigger
-                key={t.value}
-                value={t.value}
-                className="shrink-0 sm:shrink rounded-[1rem] h-full px-3 sm:px-1 text-xs sm:text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Icon className="h-3.5 w-3.5" /> {t.label}
-                </span>
-                {t.sublabel && (
-                  <span className="text-[9px] text-muted-foreground font-normal mt-0.5 truncate max-w-[80px]">
-                    {t.sublabel}
-                  </span>
-                )}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
 
       {/* Login bilgi mesajı */}
       {locationFilter === 'country' && !userCountry && authUser && (

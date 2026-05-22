@@ -354,6 +354,16 @@ export default function BrandsPage() {
 
     const handleLogoFile = async (file: File, kind: 'logo' | 'cover') => {
         if (!editingBrand?.id) return;
+        // Görsel yüklemesi yalnızca gerçek marka kayıtları için (başvuru satırlarının
+        // brands koleksiyonunda doc'u yok; yükleme orphan path'e gider, kaydedilemez).
+        if (editingBrand.source !== 'brands') {
+            toast({
+                variant: 'destructive',
+                title: 'Görsel yüklenemez',
+                description: 'Yalnızca onaylanmış markalara görsel yüklenebilir.',
+            });
+            return;
+        }
         // 5MB cap
         if (file.size > 5 * 1024 * 1024) {
             toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Maksimum 5MB yükleyebilirsiniz.' });
@@ -405,19 +415,35 @@ export default function BrandsPage() {
     const handleSaveEdit = async () => {
         if (!editingBrand || !editingBrand.id) return;
 
+        // Düzenleme yalnızca gerçek Firestore marka kayıtları için geçerli.
+        // Başvuru (applications) satırlarının `id`'si brands koleksiyonunda
+        // bulunmadığından updateDoc 'not-found' ile patlar — başvuruyu marka
+        // olarak düzenleme yerine onaylama akışına yönlendir.
+        if (editingBrand.source !== 'brands') {
+            toast({
+                variant: 'destructive',
+                title: "Bu kayıt düzenlenemez",
+                description: "Yalnızca onaylanmış markalar düzenlenebilir. Başvuruları önce onaylayın.",
+            });
+            return;
+        }
+
         try {
             const fd = editFormData;
+            // Firestore undefined/NaN değerleri reddeder (ignoreUndefinedProperties
+            // ayarlı değil). Boş metin alanlarını '' , geçersiz sayıyı 0 yap.
+            const donationRate = Number.isFinite(fd.donationRate as number) ? (fd.donationRate as number) : 0;
             const brandRef = doc(db, COLLECTIONS.brands, editingBrand.id);
             await updateDoc(brandRef, {
-                name: fd.name,
-                slug: fd.slug,
-                category: fd.category,
-                type: fd.type,
-                logoUrl: fd.logoUrl,
-                coverPhotoUrl: fd.coverPhotoUrl,
-                about: fd.about,
-                donationRate: fd.donationRate,
-                agency: fd.agency,
+                name: fd.name || '',
+                slug: fd.slug || '',
+                category: fd.category || '',
+                type: fd.type || 'brand',
+                logoUrl: fd.logoUrl || '',
+                coverPhotoUrl: fd.coverPhotoUrl || '',
+                about: fd.about || '',
+                donationRate,
+                agency: fd.agency || '',
                 link: fd.link || '',
                 phone: fd._phone || '',
                 contact: {
@@ -447,12 +473,13 @@ export default function BrandsPage() {
         } catch (e) {
             console.error('Brand update failed:', e);
             const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Marka güncellenemedi. Lütfen tekrar deneyin.';
             toast({
                 variant: 'destructive',
                 title: "Marka güncellenemedi",
                 description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : 'Marka güncellenemedi. Lütfen tekrar deneyin.',
+                    : message,
             });
         }
     };
