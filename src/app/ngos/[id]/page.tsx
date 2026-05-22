@@ -136,31 +136,36 @@ export default function NgoProfilePage() {
     }
     if (donorBusy) return;
 
-    // 30-day lock check (only when adding)
+    const current = Array.isArray(userData?.supportedNgos) ? userData!.supportedNgos! : [];
     const isAdding = !isSupporter;
-    if (isAdding && userData?.lastNgoSelectionChange) {
-      const raw = userData.lastNgoSelectionChange;
+
+    // Bağışçı limiti (max 2) + 30 günlük kilit, settings/ngo-selection ile aynı kurallar.
+    if (isAdding && current.length >= 2) {
+      const raw = userData?.lastNgoSelectionChange;
       const lastDate = typeof raw?.toDate === 'function'
         ? raw.toDate()
         : typeof raw?.seconds === 'number'
           ? new Date(raw.seconds * 1000)
           : null;
-      if (lastDate) {
-        const daysElapsed = Math.floor((Date.now() - lastDate.getTime()) / (24 * 60 * 60 * 1000));
-        const remainingDays = Math.max(0, 30 - daysElapsed);
-        const currentCount = userData?.supportedNgos?.length ?? 0;
-        if (currentCount >= 2 && remainingDays > 0) {
-          toast({
-            title: `${remainingDays} gün sonra bağış yapacağınız STK'yı değiştirebilirsiniz`,
-            variant: 'destructive',
-          });
-          return;
-        }
-        if (currentCount >= 2 && remainingDays === 0) {
-          router.push('/settings/ngo-selection');
-          return;
-        }
+      const daysElapsed = lastDate
+        ? Math.floor((Date.now() - lastDate.getTime()) / (24 * 60 * 60 * 1000))
+        : 30;
+      const remainingDays = Math.max(0, 30 - daysElapsed);
+      if (remainingDays > 0) {
+        // 30 gün dolmadan değişiklik yapılamaz.
+        toast({
+          title: `${remainingDays} gün sonra bağış yapacağınız STK'yı değiştirebilirsiniz`,
+          variant: 'destructive',
+        });
+      } else {
+        // 30 gün doldu: değişiklik için seçim sayfasına yönlendir.
+        toast({
+          title: 'Bağışçı limitiniz dolu',
+          description: 'Desteklediğiniz STK\'ları değiştirmek için STK seçim sayfasına yönlendiriliyorsunuz.',
+        });
+        router.push('/settings/ngo-selection');
       }
+      return;
     }
 
     setDonorBusy(true);
@@ -169,18 +174,10 @@ export default function NgoProfilePage() {
         await updateDoc(userDocRef, { supportedNgos: arrayRemove(id) });
         toast({ title: 'Bağışçılıktan çıkıldı', description: `${ngo?.name} artık desteklediğin STK'lar arasında değil.` });
       } else {
-        const current = Array.isArray(userData?.supportedNgos) ? userData!.supportedNgos! : [];
-        if (current.length >= 2) {
-          toast({
-            variant: 'destructive',
-            title: 'Limit doldu',
-            description: 'En fazla 2 STK seçebilirsiniz. Değiştirmek için /settings/ngo-selection sayfasına gidin.',
-          });
-          return;
-        }
-        const willReachCap = current.length + 1 === 2;
+        // İlk seçimde seçim tarihini kaydet (30 günlük kilidi başlatır).
+        const isFirstSelection = current.length === 0;
         const payload: Record<string, unknown> = { supportedNgos: arrayUnion(id) };
-        if (willReachCap) payload.lastNgoSelectionChange = serverTimestamp();
+        if (isFirstSelection) payload.lastNgoSelectionChange = serverTimestamp();
         await updateDoc(userDocRef, payload);
         toast({ title: 'Bağışçı oldun', description: `Artık ${ngo?.name} bağışçılarındansın. Teşekkürler!` });
       }

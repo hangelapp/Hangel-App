@@ -36,9 +36,14 @@ interface UserRecord {
     id: string; displayName?: string; fullName?: string; name?: string;
     email?: string; phoneNumber?: string; photoURL?: string; avatarUrl?: string;
     bio?: string; personalInfo?: { phone?: string; bio?: string };
-    // FEAT-ENTITY-INBOX: recipient may also be an entity (STK/marka/kulüp)
-    recipientKind?: 'user' | 'ngo' | 'brand' | 'club';
+    role?: 'super-admin' | 'ngo-admin' | 'brand-admin' | 'club-admin' | 'admin' | 'user';
+    // FEAT-ENTITY-INBOX: recipient may also be an entity (STK/marka/kulüp) or a Hangel yöneticisi
+    recipientKind?: 'admin' | 'ngo' | 'brand' | 'club';
 }
+
+// Bir normal kullanıcı yalnızca STK / kulüp / marka / Hangel yöneticisi ile mesajlaşabilir.
+// Kullanıcı-kullanıcı (DM) kapalı. Alıcı kullanıcılar bu rollere sahip olmalı.
+const ADMIN_RECIPIENT_ROLES = ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin'] as const;
 
 interface EntityRecord {
     id: string; name?: string; shortName?: string;
@@ -68,12 +73,14 @@ export default function MessagesPage() {
     const [content, setContent] = useState('');
     const [sending, setSending] = useState(false);
 
-    // Tüm kullanıcılar — client-side filtre (mevcut surveys/users pattern)
-    const usersRef = useMemoFirebase(
-        () => composeOpen ? collection(db, COLLECTIONS.users) : null,
+    // Yalnızca Hangel yöneticileri (super-admin + kurum yöneticileri) alıcı olabilir.
+    // Normal kullanıcılar (role: 'user') alıcı listesine asla dahil edilmez —
+    // kullanıcı-kullanıcı mesajlaşma kapalıdır.
+    const adminsRef = useMemoFirebase(
+        () => composeOpen ? query(collection(db, COLLECTIONS.users), where('role', 'in', [...ADMIN_RECIPIENT_ROLES])) : null,
         [db, composeOpen]
     );
-    const { data: allUsers } = useCollection<UserRecord>(usersRef);
+    const { data: adminUsers } = useCollection<UserRecord>(adminsRef);
 
     // FEAT-ENTITY-INBOX: kurumlar da alıcı olabilir (STK / marka / kulüp)
     const ngosRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.ngos) : null, [db, composeOpen]);
@@ -111,10 +118,12 @@ export default function MessagesPage() {
 
     const recipientCandidates = useMemo<UserRecord[]>(() => {
         const term = recipientSearch.trim().toLowerCase();
-        const userPool = (allUsers || []).map((u) => ({ ...u, recipientKind: 'user' as const }));
-        if (!term) return [...userPool.slice(0, 15), ...entityCandidates.slice(0, 5)];
-        const matchUser = (u: UserRecord) => {
-            if (u.id === authUser?.uid) return false;
+        // Yalnızca yöneticiler — normal kullanıcılar listeye girmez.
+        const adminPool = (adminUsers || [])
+            .filter((u) => u.id !== authUser?.uid)
+            .map((u) => ({ ...u, recipientKind: 'admin' as const }));
+        if (!term) return [...adminPool.slice(0, 15), ...entityCandidates.slice(0, 10)];
+        const matchAdmin = (u: UserRecord) => {
             const name = (u.displayName || u.fullName || u.name || '').toLowerCase();
             const phone = (u.phoneNumber || u.personalInfo?.phone || '').toLowerCase();
             const email = (u.email || '').toLowerCase();
@@ -122,10 +131,10 @@ export default function MessagesPage() {
         };
         const matchEntity = (e: UserRecord) => (e.name || '').toLowerCase().includes(term);
         return [
-            ...userPool.filter(matchUser).slice(0, 20),
+            ...adminPool.filter(matchAdmin).slice(0, 20),
             ...entityCandidates.filter(matchEntity).slice(0, 10),
         ];
-    }, [allUsers, entityCandidates, recipientSearch, authUser?.uid]);
+    }, [adminUsers, entityCandidates, recipientSearch, authUser?.uid]);
 
     const resetCompose = () => {
         setRecipientSearch('');
@@ -300,7 +309,7 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div>
                                         <p className="text-sm font-semibold">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
-                                        <p className="text-xs text-muted-foreground">{(selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : '') || selectedRecipient.email || selectedRecipient.phoneNumber || selectedRecipient.personalInfo?.phone || ''}</p>
+                                        <p className="text-xs text-muted-foreground">{(selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : selectedRecipient.recipientKind === 'admin' ? 'Hangel Yöneticisi' : '') || selectedRecipient.email || selectedRecipient.phoneNumber || selectedRecipient.personalInfo?.phone || ''}</p>
                                     </div>
                                 </div>
                                 <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>Değiştir</Button>
@@ -313,7 +322,7 @@ export default function MessagesPage() {
                                         <p className="text-xs text-muted-foreground text-center py-4">{t('dashboard.messages.recipientNoResult')}</p>
                                     ) : recipientCandidates.map((u) => {
                                         const name = u.displayName || u.fullName || u.name || 'Kullanıcı';
-                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : '';
+                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : u.recipientKind === 'admin' ? 'Hangel Yöneticisi' : '';
                                         const sub = kindLabel || u.email || u.phoneNumber || u.personalInfo?.phone || '';
                                         return (
                                             <button key={`${u.recipientKind || 'user'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">

@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, HandCoins, ExternalLink, Filter, Search, ArrowDownUp, Info, CheckCircle2, Calendar, Target, DollarSign, X, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, HandCoins, ExternalLink, Filter, Search, ArrowDownUp, Info, CheckCircle2, Calendar, Target, DollarSign, X, Send } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -26,13 +26,9 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
-import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, query, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-
-interface NgoAdminUserData {
-  managedNgoId?: string;
-}
 
 interface Fund {
   id: string;
@@ -102,58 +98,9 @@ export default function FundsPage() {
     const router = useRouter();
     const { toast } = useToast();
     const db = useFirestore();
-    const { user: authUser } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-    const [applyingId, setApplyingId] = useState<string | null>(null);
-
-    const userDocRef = useMemoFirebase(
-        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
-        [db, authUser?.uid],
-    );
-    const { data: userData } = useDoc<NgoAdminUserData>(userDocRef);
-    const managedNgoId = userData?.managedNgoId;
-
-    const handleApply = async (fund: Fund) => {
-        if (!db || !authUser?.uid) {
-            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Başvuru yapmak için giriş yapmalısınız.' });
-            return;
-        }
-        if (!managedNgoId) {
-            toast({
-                variant: 'destructive',
-                title: 'STK gerekli',
-                description: 'Başvuru için bir STK yönetiyor olmanız gerekiyor.',
-            });
-            return;
-        }
-        setApplyingId(fund.id);
-        try {
-            await addDoc(collection(db, COLLECTIONS.fundApplications), {
-                fundId: fund.id,
-                fundName: fund.name,
-                applicantId: authUser.uid,
-                applicantNgoId: managedNgoId,
-                status: 'Beklemede',
-                createdAt: serverTimestamp(),
-                message: '',
-            });
-            toast({
-                title: 'Başvurunuz alındı',
-                description: `${fund.name} hibesi için başvurunuz iletildi.`,
-            });
-        } catch (e) {
-            console.error('Fund application failed:', e);
-            const err = e as { code?: string; message?: string };
-            const description = err?.code === 'permission-denied'
-                ? 'Hibe başvuru kanalı şu anda kapalı. Hangel ekibi ile iletişime geçin veya resmi başvuru bağlantısını kullanın.'
-                : (err?.message || 'Başvuru gönderilemedi. Lütfen daha sonra tekrar deneyin.');
-            toast({ variant: 'destructive', title: 'Başvuru gönderilemedi', description });
-        } finally {
-            setApplyingId(null);
-        }
-    };
 
     // Filtering and Sorting States
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -390,20 +337,19 @@ export default function FundsPage() {
                                 <Button
                                     size="sm"
                                     variant="default"
-                                    disabled={fund.status === 'Kapandı' || applyingId === fund.id}
                                     className="flex-1 min-w-[120px] font-bold h-10 rounded-xl bg-green-600 hover:bg-green-700"
-                                    onClick={() => handleApply(fund)}
+                                    onClick={() => router.push('/library')}
                                 >
-                                    {applyingId === fund.id
-                                        ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                                        : <Send className="mr-2 h-3.5 w-3.5" />}
-                                    Hemen Başvur
+                                    <Send className="mr-2 h-3.5 w-3.5" />
+                                    Proje Hazırla
                                 </Button>
-                                <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
-                                    <a href={fund.url} target="_blank" rel="noopener noreferrer">
-                                        Resmi Sayfa <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                                    </a>
-                                </Button>
+                                {fund.url && (
+                                    <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
+                                        <a href={fund.url} target="_blank" rel="noopener noreferrer">
+                                            Resmi Sayfa <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                                        </a>
+                                    </Button>
+                                )}
                             </CardFooter>
                         </Card>
                     )) : (

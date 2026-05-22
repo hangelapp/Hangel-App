@@ -130,12 +130,27 @@ export default function ProfileSettingsPage() {
     });
   };
 
+  // Sosyal medya girişini @handle biçimine normalize eder.
+  // Kullanıcı tam URL yapıştırsa son segmenti, sade kullanıcı adı yazsa başına @ ekler.
+  // Boş/sadece @ ise null döner (alan temizlenir).
+  const normalizeHandle = (value: string): string | null => {
+    let handle = value.trim();
+    if (!handle) return null;
+    if (/^https?:\/\//i.test(handle) || handle.includes('/')) {
+      const segments = handle.replace(/\/+$/, '').split('/');
+      handle = segments[segments.length - 1] || '';
+    }
+    handle = handle.replace(/^@+/, '').replace(/\s+/g, '');
+    if (!handle) return null;
+    return `@${handle}`;
+  };
+
   const handleSocialChange = (field: string, value: string) => {
     setProfile(prev => {
         const newProfile = JSON.parse(JSON.stringify(prev));
         newProfile.personalInfo.social = {
             ...(newProfile.personalInfo.social || {}),
-            [field]: value || null,
+            [field]: normalizeHandle(value),
         };
         return newProfile;
     });
@@ -444,24 +459,25 @@ export default function ProfileSettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn</Label>
-                    <Input type="url" value={profile.personalInfo.social?.linkedin || ''} onChange={(e) => handleSocialChange('linkedin', e.target.value)} placeholder="https://linkedin.com/in/kullaniciadi" />
+                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.linkedin || ''} onChange={(e) => handleSocialChange('linkedin', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Github className="h-4 w-4" /> GitHub</Label>
-                    <Input type="url" value={profile.personalInfo.social?.github || ''} onChange={(e) => handleSocialChange('github', e.target.value)} placeholder="https://github.com/kullaniciadi" />
+                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.github || ''} onChange={(e) => handleSocialChange('github', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Palette className="h-4 w-4" /> Behance</Label>
-                    <Input type="url" value={profile.personalInfo.social?.behance || ''} onChange={(e) => handleSocialChange('behance', e.target.value)} placeholder="https://behance.net/kullaniciadi" />
+                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.behance || ''} onChange={(e) => handleSocialChange('behance', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram</Label>
-                    <Input type="url" value={profile.personalInfo.social?.instagram || ''} onChange={(e) => handleSocialChange('instagram', e.target.value)} placeholder="https://instagram.com/kullaniciadi" />
+                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.instagram || ''} onChange={(e) => handleSocialChange('instagram', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Twitter className="h-4 w-4" /> X (Twitter)</Label>
-                    <Input type="url" value={profile.personalInfo.social?.twitter || ''} onChange={(e) => handleSocialChange('twitter', e.target.value)} placeholder="https://x.com/kullaniciadi" />
+                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.twitter || ''} onChange={(e) => handleSocialChange('twitter', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
+                <p className="text-xs text-muted-foreground -mt-1">Sosyal medya hesaplarınızı kullanıcı adınızla girin (örn. @kullaniciadi).</p>
 
                 {customLinks.length > 0 && (
                     <div className="space-y-3 pt-2 border-t">
