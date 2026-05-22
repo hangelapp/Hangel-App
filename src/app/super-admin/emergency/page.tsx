@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, getCountFromServer, documentId, type Query, type QueryConstraint } from 'firebase/firestore';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -70,6 +70,38 @@ const scopeLabel: Record<ScopeLevel, string> = {
   neighborhood: 'Mahalle',
 };
 
+interface ScopeSelection {
+  scope: ScopeLevel;
+  city: string;
+  district: string;
+  neighborhood: string;
+  bloodType: string;
+}
+
+// Seçili kapsamı, kullanıcıların `personalInfo.address.*` alanlarına karşı
+// çalışan Firestore equality-filter listesine çevirir. Tüm kullanıcıları
+// client'a yüklemeden hem sayım (getCountFromServer) hem fan-out (getDocs)
+// aynı kısıtları kullanır.
+function buildScopeConstraints(sel: ScopeSelection): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+  if (sel.bloodType) {
+    constraints.push(where('personalInfo.bloodType', '==', sel.bloodType));
+  }
+  if (sel.scope === 'all') {
+    // "Tüm Türkiye" = ülke Türkiye olan kullanıcılar.
+    constraints.push(where('personalInfo.address.country', '==', 'Türkiye'));
+  } else {
+    if (sel.city) constraints.push(where('personalInfo.address.city', '==', sel.city));
+    if (sel.scope === 'district' || sel.scope === 'neighborhood') {
+      if (sel.district) constraints.push(where('personalInfo.address.district', '==', sel.district));
+    }
+    if (sel.scope === 'neighborhood' && sel.neighborhood) {
+      constraints.push(where('personalInfo.address.neighborhood', '==', sel.neighborhood));
+    }
+  }
+  return constraints;
+}
+
 export default function EmergencyManagementPage() {
   const { toast } = useToast();
   const db = useFirestore();
@@ -91,9 +123,12 @@ export default function EmergencyManagementPage() {
   const [isSending, setIsSending] = useState(false);
   const pendingApprovalIdRef = useRef<string | null>(null);
 
-  // Tüm kullanıcılar (filtre için)
-  const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
-  const { data: allUsers, isLoading: usersLoading } = useCollection<UserDoc>(usersQuery);
+  // Hedef kitle önizlemesi — TÜM kullanıcıları client'a yüklemek yerine
+  // seçili kapsama göre Firestore aggregation (getCountFromServer) ile sayılır.
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [countLoading, setCountLoading] = useState(false);
+  const [countError, setCountError] = useState<string | null>(null);
 
   // Geçmiş talepler
   const requestsQuery = useMemoFirebase(() => {
@@ -143,39 +178,106 @@ export default function EmergencyManagementPage() {
     });
   }, [pendingRequestsPrimary, bloodRequestsFallback, userRequestsFallback]);
 
-  // Kullanıcı id → user doc haritası (Yanıtlar sekmesinde ad + avatar için)
-  const usersById = useMemo(() => {
-    const map = new Map<string, UserDoc>();
-    for (const u of allUsers ?? []) {
-      if (u?.id) map.set(u.id, u);
+  // Yanıt veren kullanıcıların id listesi (Yanıtlar sekmesi avatar/ad araması için).
+  // Tüm kullanıcı koleksiyonu yerine yalnız yanıtlayanları çekeriz.
+  const responderIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const r of responses ?? []) {
+      const uid = (r as EmergencyDoc & { userId?: string }).userId;
+      if (uid) ids.add(uid);
     }
-    return map;
-  }, [allUsers]);
+    return Array.from(ids);
+  }, [responses]);
+
+  const [respondersById, setRespondersById] = useState<Map<string, UserDoc>>(new Map());
+
+  // Yanıt veren kullanıcıları documentId() in (10'luk parçalar) ile hedefli çek.
+  useEffect(() => {
+    if (!db || responderIds.length === 0) {
+      setRespondersById(new Map());
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const chunks: string[][] = [];
+        for (let i = 0; i < responderIds.length; i += 10) {
+          chunks.push(responderIds.slice(i, i + 10));
+        }
+        const map = new Map<string, UserDoc>();
+        await Promise.all(chunks.map(async (chunk) => {
+          const snap = await getDocs(query(collection(db, COLLECTIONS.users), where(documentId(), 'in', chunk)));
+          for (const d of snap.docs) {
+            map.set(d.id, { id: d.id, ...(d.data() as Omit<UserDoc, 'id'>) });
+          }
+        }));
+        if (!cancelled) setRespondersById(map);
+      } catch (e) {
+        // Avatar araması başarısız olursa yanıtlar yine de kayıtlı ad/email ile gösterilir.
+        if (!cancelled) {
+          setRespondersById(new Map());
+          const message = e instanceof Error ? e.message : 'Bilinmeyen bir hata oluştu.';
+          toast({ variant: 'destructive', title: 'Yanıt detayları yüklenemedi', description: message });
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [db, responderIds, toast]);
+
+  const usersById = respondersById;
 
   // City / district options
   const districtOptions = city ? (districtsData[city] ?? []) : [];
   const neighborhoodOptions = (city && district) ? ((neighborhoodsData as Record<string, Record<string, string[]>>)[city]?.[district] ?? []) : [];
 
-  // Eşleşen kullanıcı sayısı (anlık önizleme).
-  // Not: bloodType seçili değilse de kapsam (scope/şehir/ilçe/mahalle) bazlı sayım yapar —
-  // "Tüm Türkiye"de kan grubu seçilmese bile toplam kullanıcı sayısını göstermek için.
-  const matchingUsers = useMemo(() => {
-    if (!allUsers) return [];
-    return allUsers.filter(u => {
-      // Kan grubu filtresi (varsa)
-      if (bloodType) {
-        const ub = u.personalInfo?.bloodType;
-        if (ub !== bloodType) return false;
+  // Hedef kitle sayısı önizlemesi — seçili kapsama göre Firestore aggregation.
+  // Tüm kullanıcılar client'a yüklenmez; getCountFromServer tek bir sayım okur.
+  // Not: kan grubu seçili değilse kapsam (scope/şehir/ilçe/mahalle) bazlı sayım yapar.
+  useEffect(() => {
+    if (!db) return;
+    // Kapsam seçimi eksikse (örn. il seçilmedi) sayım yapma.
+    const scopeIncomplete =
+      (scope === 'city' && !city) ||
+      (scope === 'district' && (!city || !district)) ||
+      (scope === 'neighborhood' && (!city || !district || !neighborhood));
+    if (scopeIncomplete) {
+      setMatchCount(null);
+      setCountError(null);
+      return;
+    }
+    let cancelled = false;
+    setCountLoading(true);
+    setCountError(null);
+    const handle = setTimeout(async () => {
+      try {
+        const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType });
+        const scopedQuery: Query = constraints.length > 0
+          ? query(collection(db, COLLECTIONS.users), ...constraints)
+          : query(collection(db, COLLECTIONS.users));
+        const [matchSnap, totalSnap] = await Promise.all([
+          getCountFromServer(scopedQuery),
+          getCountFromServer(collection(db, COLLECTIONS.users)),
+        ]);
+        if (!cancelled) {
+          setMatchCount(matchSnap.data().count);
+          setTotalUsers(totalSnap.data().count);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setMatchCount(null);
+          const code = (e as { code?: string } | null)?.code;
+          setCountError(
+            code === 'failed-precondition'
+              ? 'Bu filtre için Firestore dizini gerekli. Konsol bağlantısından dizini oluşturun.'
+              : (e instanceof Error ? e.message : 'Hedef kitle sayılamadı.'),
+          );
+        }
+      } finally {
+        if (!cancelled) setCountLoading(false);
       }
-      // Kapsam filtresi
-      if (scope === 'all') return true;
-      const ua = u.personalInfo?.address || {};
-      if (scope === 'city') return !!city && ua.city === city;
-      if (scope === 'district') return !!city && !!district && ua.city === city && ua.district === district;
-      if (scope === 'neighborhood') return !!city && !!district && !!neighborhood && ua.city === city && ua.district === district && ua.neighborhood === neighborhood;
-      return false;
-    });
-  }, [allUsers, bloodType, scope, city, district, neighborhood]);
+    }, 350);
+    return () => { cancelled = true; clearTimeout(handle); };
+  }, [db, scope, city, district, neighborhood, bloodType]);
 
   // Kullanıcı talebini forma yükle (preview & onayla)
   const loadIntoForm = (req: EmergencyDoc) => {
@@ -233,8 +335,20 @@ export default function EmergencyManagementPage() {
 
     setIsSending(true);
     try {
-      // 1. Talep dokümanı oluştur
-      const requestRef = await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
+      // 1. Hedef kullanıcıları seçili kapsama göre Firestore'dan çek (tüm
+      //    koleksiyonu yüklemeden — yalnız eşleşenler).
+      const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType });
+      const scopedQuery: Query = constraints.length > 0
+        ? query(collection(db, COLLECTIONS.users), ...constraints)
+        : query(collection(db, COLLECTIONS.users));
+      const targetSnap = await getDocs(scopedQuery);
+      const targetUserIds = targetSnap.docs.map(d => d.id);
+
+      // 2. Tek mantıksal talep = tek doküman. Kullanıcı talebinden onaylanıyorsa
+      //    orijinal pending dokümanı güncellenir; değilse yeni doküman açılır.
+      //    requestId her zaman bu dokümanın id'sidir (bildirim → yanıt eşleşmesi).
+      const pendingId = pendingApprovalIdRef.current;
+      const requestData = {
         type: 'blood',
         hospitalName: hospitalName.trim(),
         hospitalAddress: hospitalAddress.trim(),
@@ -246,27 +360,42 @@ export default function EmergencyManagementPage() {
         message: message.trim(),
         contactPhone: contactPhone.trim(),
         unitsNeeded: Number(unitsNeeded) || null,
-        targetCount: matchingUsers.length,
-        sentBy: authUser?.uid || null,
-        status: 'sent',
-        createdAt: serverTimestamp(),
-      });
+        targetCount: targetUserIds.length,
+      };
 
-      // 2. Eşleşen kullanıcılara bildirim yaz (batched)
-      if (matchingUsers.length > 0) {
-        // 500 limit per batch (Firestore limit)
+      let requestId: string;
+      if (pendingId) {
+        await updateDoc(doc(db, COLLECTIONS.emergencyRequests, pendingId), {
+          ...requestData,
+          status: 'sent',
+          approvedAt: serverTimestamp(),
+          approvedBy: authUser?.uid || null,
+        });
+        requestId = pendingId;
+      } else {
+        const requestRef = await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
+          ...requestData,
+          sentBy: authUser?.uid || null,
+          status: 'sent',
+          createdAt: serverTimestamp(),
+        });
+        requestId = requestRef.id;
+      }
+
+      // 3. Eşleşen kullanıcılara bildirim yaz (batched — 500/batch Firestore limiti, 450 kullanıyoruz)
+      if (targetUserIds.length > 0) {
         const batches: ReturnType<typeof writeBatch>[] = [];
         let current = writeBatch(db);
         let count = 0;
-        for (const u of matchingUsers) {
+        for (const uid of targetUserIds) {
           const notifRef = doc(collection(db, COLLECTIONS.notifications));
           current.set(notifRef, {
-            userId: u.id,
+            userId: uid,
             type: 'emergency-blood',
             title: `🩸 Acil Kan Talebi — ${bloodType}`,
             body: `${hospitalName} hastanesi için ${bloodType} kan grubuna acil ihtiyaç var.${message ? ` ${message.slice(0, 100)}` : ''}`,
             data: {
-              requestId: requestRef.id,
+              requestId,
               hospitalName,
               hospitalAddress,
               bloodType,
@@ -286,29 +415,11 @@ export default function EmergencyManagementPage() {
         await Promise.all(batches.map(b => b.commit()));
       }
 
-      // Eğer kullanıcı talebinden geliyorsa, orijinal kaydı 'sent' olarak işaretle
-      const pendingId = pendingApprovalIdRef.current;
-      if (pendingId) {
-        try {
-          await updateDoc(doc(db, COLLECTIONS.emergencyRequests, pendingId), {
-            status: 'sent',
-            approvedAt: serverTimestamp(),
-            approvedBy: authUser?.uid || null,
-            broadcastRequestId: requestRef.id,
-            scope,
-            city: city || null,
-            district: district || null,
-            neighborhood: neighborhood || null,
-          });
-        } catch (e) {
-          console.warn('Pending request update failed:', e);
-        }
-        pendingApprovalIdRef.current = null;
-      }
+      pendingApprovalIdRef.current = null;
 
       toast({
         title: '✅ Acil Talep Gönderildi',
-        description: `${matchingUsers.length} kullanıcıya bildirim ulaştırıldı.`,
+        description: `${targetUserIds.length} kullanıcıya bildirim ulaştırıldı.`,
       });
 
       // Formu temizle
@@ -323,7 +434,6 @@ export default function EmergencyManagementPage() {
       setUnitsNeeded('');
       setScope('city');
     } catch (err) {
-      console.error('Emergency request failed:', err);
       const code = (err as { code?: string } | null)?.code;
       const errMessage = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
       toast({
@@ -331,7 +441,9 @@ export default function EmergencyManagementPage() {
         title: 'Gönderilemedi',
         description: code === 'permission-denied'
           ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : errMessage,
+          : code === 'failed-precondition'
+            ? 'Bu filtre için Firestore dizini gerekli. Hata bağlantısından dizini oluşturun.'
+            : errMessage,
       });
     } finally {
       setIsSending(false);
@@ -565,13 +677,17 @@ export default function EmergencyManagementPage() {
                 <Users className="h-4 w-4 text-amber-700" />
                 <AlertTitle className="text-amber-900">Hedef Kitle Önizlemesi</AlertTitle>
                 <AlertDescription className="text-amber-800">
-                  {usersLoading ? (
-                    <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Kullanıcılar yükleniyor ({(allUsers ?? []).length} okundu)...</span>
+                  {countLoading ? (
+                    <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Hedef kitle hesaplanıyor...</span>
+                  ) : countError ? (
+                    <span className="text-sm text-red-700">{countError}</span>
+                  ) : matchCount === null ? (
+                    <span className="text-sm">Kapsam (il/ilçe/mahalle) seçtikçe hedef kitle sayısı burada görünür.</span>
                   ) : (
                     <span>
-                      <strong className="text-2xl text-amber-900">{matchingUsers.length.toLocaleString('tr-TR')}</strong>
+                      <strong className="text-2xl text-amber-900">{matchCount.toLocaleString('tr-TR')}</strong>
                       {' '}/{' '}
-                      <span className="text-sm">{(allUsers ?? []).length.toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
+                      <span className="text-sm">{(totalUsers ?? 0).toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
                       <span className="text-xs block mt-1">
                         Filtre: {bloodType ? `${bloodType} kan grubu` : 'tüm kan grupları'} • {scopeLabel[scope]}
                         {city && ` • ${city}`}{district && ` / ${district}`}{neighborhood && ` / ${neighborhood}`}
@@ -593,7 +709,7 @@ export default function EmergencyManagementPage() {
                 disabled={isSending || !bloodType || !hospitalName.trim()}
               >
                 {isSending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                {isSending ? 'Gönderiliyor...' : `${matchingUsers.length > 0 ? `${matchingUsers.length} ` : ''}Kullanıcıya Acil Bildirim Gönder`}
+                {isSending ? 'Gönderiliyor...' : `${matchCount && matchCount > 0 ? `${matchCount} ` : ''}Kullanıcıya Acil Bildirim Gönder`}
               </Button>
             </CardContent>
           </Card>

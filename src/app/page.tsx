@@ -336,9 +336,20 @@ export default function LoginPage() {
     const [mounted, setMounted] = useState(false);
     const [apiBrands, setApiBrands] = useState<Brand[]>([]);
     const [totalBrandCount, setTotalBrandCount] = useState(0);
-    const _router = useRouter();
+    const router = useRouter();
+    const { user, isUserLoading } = useUser();
     const { get } = useWebContent();
     const { t } = useTranslation();
+
+    // Giriş yapmış kullanıcı uygulama köküne (/) gelince varsayılan olarak
+    // /market'e yönlendirilir. SideNav'daki "Website" bağlantısı (/?welcome=1)
+    // tanıtım sayfasını kasıtlı açtığı için welcome=1 varken yönlendirme yapılmaz.
+    useEffect(() => {
+        if (isUserLoading || !user || !mounted) return;
+        const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+        if (params.get('welcome') === '1') return;
+        router.replace('/market');
+    }, [user, isUserLoading, mounted, router]);
 
     const db = useFirestore();
     const volunteeringQuery = useMemoFirebase(

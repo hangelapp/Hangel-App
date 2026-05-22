@@ -44,6 +44,16 @@ interface PhoneContact {
     joinDate?: string;
 }
 
+// İçe aktarılan kişi (telefon + e-posta) — OAuth / Contact Picker / dosya sonrası
+// toplu davet dialog'unda gösterilir (ngo-admin/qr import dialog'unu yansıtır).
+interface ImportedContact {
+    id: string;
+    name: string;
+    phones: string[];
+    emails: string[];
+    onPlatform?: boolean;
+}
+
 const buildInviteText = (link: string) =>
     `Bugün hiçbir ekstra ödeme yapmadan bağış yaptım. Aynısını sen de yapabilirsin. Gel birlikte büyütelim: ${link}`;
 
@@ -201,9 +211,11 @@ export default function InvitePage() {
     const [emailList, setEmailList] = useState<string[]>([]);
     const [emailSending, setEmailSending] = useState(false);
 
-    // Dialog state — WhatsApp / E-posta sağlayıcı
+    // Dialog state — WhatsApp / E-posta sağlayıcı / İçe aktarılan kişiler
     const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
     const [emailProviderDialogOpen, setEmailProviderDialogOpen] = useState(false);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
+    const [importedContacts, setImportedContacts] = useState<ImportedContact[]>([]);
 
     // Platformdaki telefon eşleşmesi için (sadece "hangel'da" rozetini göstermek amacıyla)
     const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
@@ -259,6 +271,28 @@ export default function InvitePage() {
                 ? `${name} kişisine davet gönderildi. +${awarded} Etki Puanı kazandınız.`
                 : `${name} kişisine hangel davetiniz gönderildi.`,
         });
+    };
+
+    // İçe aktarılan kişiye davet gönder — e-posta varsa mailto, yoksa SMS (ngo-admin/qr ile aynı).
+    const sendInviteToImported = async (c: ImportedContact) => {
+        const email = c.emails[0];
+        const phone = c.phones[0];
+        if (email) {
+            window.open(`mailto:${email}?subject=${encodeURIComponent('hangel daveti')}&body=${encodeURIComponent(inviteMessage)}`, '_blank');
+            const awarded = await recordInvite(c.name, null, email);
+            toast({
+                title: 'Davet Gönderildi!',
+                description: awarded
+                    ? `${c.name} kişisine davet açıldı. +${awarded} Etki Puanı kazandınız.`
+                    : `${c.name} kişisine hangel davetiniz açıldı.`,
+            });
+            return;
+        }
+        if (phone) {
+            await handleInvitePhone(c.name, phone);
+            return;
+        }
+        toast({ variant: 'destructive', title: 'İletişim bilgisi yok', description: `${c.name} için e-posta veya telefon bulunamadı.` });
     };
 
     const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -378,6 +412,15 @@ export default function InvitePage() {
 
             setPhoneContacts(enriched);
             setPhoneSynced(true);
+            // Toplu davet dialog'unda da göster (ngo-admin/qr ile aynı davranış).
+            setImportedContacts(enriched.map(c => ({
+                id: c.id,
+                name: c.name,
+                phones: c.phones,
+                emails: [],
+                onPlatform: c.onPlatform,
+            })));
+            setImportDialogOpen(true);
             toast({
                 title: 'Rehber Senkronize Edildi',
                 description: `${enriched.length} kişi yüklendi.`,
@@ -415,6 +458,14 @@ export default function InvitePage() {
             }));
             setPhoneContacts(enriched);
             setPhoneSynced(true);
+            setImportedContacts(enriched.map(c => ({
+                id: c.id,
+                name: c.name,
+                phones: c.phones,
+                emails: [],
+                onPlatform: c.onPlatform,
+            })));
+            setImportDialogOpen(true);
             toast({ title: 'Dosyadan İçe Aktarıldı', description: `${enriched.length} kişi yüklendi.` });
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'Beklenmeyen bir hata.';
@@ -528,32 +579,48 @@ export default function InvitePage() {
 
             const phoneEntries: PhoneContact[] = [];
             const emailEntries: string[] = [];
+            const imported: ImportedContact[] = [];
             data.contacts.forEach((c, i) => {
                 const name = (c.name || '').trim() || 'İsimsiz';
-                if (c.phone) {
-                    phoneEntries.push({
+                const phone = (c.phone || '').trim();
+                const email = (c.email || '').trim();
+                const validEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
+                const onPlatform = phone ? firestorePhones.has(normalize(phone)) : false;
+                if (phone) {
+                    phoneEntries.push({ id: `oauth-${i}-${name}`, name, phones: [phone], onPlatform });
+                }
+                if (validEmail) {
+                    emailEntries.push(validEmail);
+                }
+                if (phone || validEmail) {
+                    imported.push({
                         id: `oauth-${i}-${name}`,
                         name,
-                        phones: [c.phone],
-                        onPlatform: firestorePhones.has(normalize(c.phone)),
+                        phones: phone ? [phone] : [],
+                        emails: validEmail ? [validEmail] : [],
+                        onPlatform,
                     });
-                }
-                const email = (c.email || '').trim();
-                if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    emailEntries.push(email);
                 }
             });
 
+            // Mevcut senkronize rehberi koru — üzerine yazma, birleştir.
             if (phoneEntries.length > 0) {
-                setPhoneContacts(phoneEntries);
+                setPhoneContacts(prev => {
+                    const seen = new Set(prev.map(p => p.id));
+                    return [...prev, ...phoneEntries.filter(p => !seen.has(p.id))];
+                });
                 setPhoneSynced(true);
             }
             if (emailEntries.length > 0) {
                 setEmailList(prev => Array.from(new Set([...prev, ...emailEntries])));
             }
 
-            const total = phoneEntries.length + emailEntries.length;
+            const total = imported.length;
             if (total > 0) {
+                // Kişiler hemen görünür ve davet edilebilir olsun diye toplu davet dialog'unu aç.
+                setImportedContacts(imported);
+                setEmailProviderDialogOpen(false);
+                setImportDialogOpen(true);
                 toast({ title: 'Kişiler içe aktarıldı', description: `${total} kişi davet listene eklendi.` });
             } else {
                 toast({ title: 'Kişi bulunamadı', description: 'İçe aktarılacak telefon veya e-posta bulunamadı.' });
@@ -834,6 +901,47 @@ export default function InvitePage() {
                     <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
                         Gmail veya Outlook ile bağlanıp kişilerini içe aktar. Kişiler yalnızca davet için kullanılır; sunucularımızda saklanmaz. Kurumsal/özel mail için vCard/CSV yükle.
                     </p>
+                </DialogContent>
+            </Dialog>
+
+            {/* İçe Aktarılan Kişiler Dialog — OAuth / Contact Picker / dosya sonrası toplu davet */}
+            <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Contact className="h-5 w-5 text-primary" /> İçe Aktarılan Kişiler
+                        </DialogTitle>
+                        <DialogDescription>
+                            İçe aktarılan kişilere davet linkini gönder. hangel kullanan arkadaşların işaretlenir.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-80 overflow-y-auto space-y-2">
+                        {importedContacts.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-6">Kişi bulunamadı.</p>
+                        ) : importedContacts.map((c) => (
+                            <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border bg-background">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <Avatar className="h-8 w-8"><AvatarFallback>{c.name.charAt(0)}</AvatarFallback></Avatar>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-medium truncate">{c.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
+                                    </div>
+                                </div>
+                                {c.onPlatform ? (
+                                    <Badge variant="secondary" className="font-normal flex-shrink-0">hangel&apos;da</Badge>
+                                ) : (
+                                    <Button
+                                        size="sm"
+                                        onClick={() => sendInviteToImported(c)}
+                                        disabled={!c.emails[0] && !c.phones[0]}
+                                        className="flex-shrink-0"
+                                    >
+                                        <Send className="mr-1 h-3 w-3" /> Davet Gönder
+                                    </Button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </DialogContent>
             </Dialog>
 

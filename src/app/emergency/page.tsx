@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 import { countryPhoneCodes } from '@/lib/data';
-import { useFirestore, useUser } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, addDoc, doc, serverTimestamp } from 'firebase/firestore';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -209,6 +209,17 @@ export default function EmergencyPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const { user: authUser } = useUser();
+
+    // Talep edenin profil konumu — pending talebe damgalanır, böylece süper admin
+    // formu il/ilçe/mahalle ile ön-doldurabilir.
+    const userDocRef = useMemoFirebase(() => {
+        if (!db || !authUser?.uid) return null;
+        return doc(db, COLLECTIONS.users, authUser.uid);
+    }, [db, authUser?.uid]);
+    const { data: userDoc } = useDoc<{
+        personalInfo?: { address?: { city?: string; district?: string; neighborhood?: string } };
+    }>(userDocRef);
+
     const [activeCalls, setActiveCalls] = useState(initialActiveCalls);
     const [pastApplications, setPastApplications] = useState(initialPastApplications);
     const [isReporting, setIsReporting] = useState<string | null>(null);
@@ -238,8 +249,7 @@ export default function EmergencyPage() {
                 title: 'İhbar İletildi',
                 description: `${details} durumu konumunuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
             });
-        } catch (e) {
-            console.error('Report submit failed:', e);
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Gönderilemedi',
@@ -260,6 +270,7 @@ export default function EmergencyPage() {
             return;
         }
         try {
+            const addr = userDoc?.personalInfo?.address;
             await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
                 type: 'blood',
                 hospitalName: data.hospital || '',
@@ -268,6 +279,11 @@ export default function EmergencyPage() {
                 contactPhone: data.contactPhone || '',
                 message: data.notes || '',
                 status: 'pending', // süper admin onayı bekleniyor
+                // Talep edenin profil konumu — süper admin formu ön-doldurma için.
+                scope: addr?.city ? 'city' : 'all',
+                city: addr?.city || null,
+                district: addr?.district || null,
+                neighborhood: addr?.neighborhood || null,
                 requestedBy: authUser.uid,
                 requestedByName: authUser.displayName || authUser.email || '',
                 requestedByEmail: authUser.email || '',
@@ -278,7 +294,6 @@ export default function EmergencyPage() {
                 description: 'Talebiniz süper admin onayından sonra yakındaki kullanıcılara bildirim olarak gönderilecek.',
             });
         } catch (e) {
-            console.error('Blood request submit failed:', e);
             const err = e as { code?: string; message?: string };
             toast({
                 variant: 'destructive',
@@ -318,8 +333,7 @@ export default function EmergencyPage() {
                 title: 'Yardım Talebi Alındı',
                 description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
             });
-        } catch (e) {
-            console.error('Help request failed:', e);
+        } catch {
             toast({
                 variant: 'destructive',
                 title: 'Gönderilemedi',

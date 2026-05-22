@@ -16,7 +16,7 @@ import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@
 import { collection, doc } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
-import { rankOpportunities, type MatchingUserProfile } from '@/lib/volunteer-matching';
+import { rankOpportunities, scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { Sparkles } from 'lucide-react';
 
 const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }: {
@@ -71,56 +71,102 @@ const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }
     );
 };
 
-function computeMatch(opp: Volunteering, userAbilities: string[], userInterests: string[], userCity?: string) {
-    const requiredAbilities = [
-        ...(opp.skills || []),
-        ...((opp as Volunteering & { dailySkills?: string[] }).dailySkills || []),
-        ...(opp.languages || []),
-        ...(opp.programs || []),
-        ...(opp.requirements || []),
+// Türkçe karşılaştırma için normalize (büyük/küçük harf + boşluk).
+const normTr = (s: unknown): string =>
+    typeof s === 'string' ? s.trim().toLocaleLowerCase('tr') : '';
+
+const overlapCount = (a: string[], b: string[]): number => {
+    if (a.length === 0 || b.length === 0) return 0;
+    const set = new Set(b.map(normTr));
+    return a.reduce((n, v) => (set.has(normTr(v)) ? n + 1 : n), 0);
+};
+
+// Kullanıcının gönüllü profilini doldurup doldurmadığını belirler.
+// Hiçbir gönüllü bilgisi (ve şehir) yoksa profil uygunluğu 0 olmalı.
+function hasAnyVolunteerData(profile: MatchingUserProfile): boolean {
+    const vi = profile.volunteerInfo;
+    if (!vi) return Boolean(normTr(profile.personalInfo?.address?.city));
+    const arrays = [
+        vi.skills, vi.dailySkills, vi.interests, vi.languages,
+        vi.availabilityDays, vi.availabilityTimes, vi.workModes, vi.motivations,
     ];
-    const oppInterests = [
-        ...(opp.socialArea ? [opp.socialArea] : []),
-        ...((opp.interests || []) as string[]),
-    ];
+    if (arrays.some(a => Array.isArray(a) && a.length > 0)) return true;
+    return Boolean(normTr(profile.personalInfo?.address?.city));
+}
 
-    // Yetkinlik eşleşmesi (max 60 puan)
-    const abilityMatched = requiredAbilities.filter(r => userAbilities.includes(r)).length;
-    const abilityScore = requiredAbilities.length > 0
-        ? (abilityMatched / requiredAbilities.length) * 60
-        : 60;
+/**
+ * Gerçek profil uygunluğu (0–100).
+ *
+ * Tek kaynak: `@/lib/volunteer-matching` içindeki `scoreMatch` (ilan
+ * yetkinlik/ilgi/dil/müsaitlik + şehir + çalışma şekli ağırlıklı örtüşmesi).
+ * Bu sayede kart rozeti ile "Sana Özel Öneriler" aynı algoritmayı kullanır.
+ *
+ * Kullanıcı gönüllü bilgisini doldurmadıysa skor 0 döner — uydurma/sabit
+ * değer yok. Breakdown tooltip'i de gerçek örtüşmeden hesaplanır.
+ */
+function computeMatch(opp: Volunteering, profile: MatchingUserProfile) {
+    if (!hasAnyVolunteerData(profile)) {
+        return {
+            percent: 0,
+            breakdown: {
+                ability: { matched: 0, total: 0 },
+                interest: { matched: 0, total: 0 },
+                location: 'Belirsiz' as const,
+            },
+        };
+    }
 
-    // İlgi alanı / hassasiyet eşleşmesi (max 30 puan)
-    const interestMatched = oppInterests.filter(i => userInterests.includes(i)).length;
-    const interestScore = oppInterests.length > 0
-        ? (interestMatched / oppInterests.length) * 30
-        : 30;
+    const oppWithExtras = opp as Volunteering & {
+        dailySkills?: string[];
+        availabilityDays?: string[];
+        availabilityTimes?: string[];
+    };
 
-    // Konum eşleşmesi (max 10 puan) — online her zaman %100 eşleşir
-    let locationScore = 0;
-    if (opp.location?.type === 'Online') locationScore = 10;
-    else if (userCity && opp.location?.city && userCity === opp.location.city) locationScore = 10;
-    else if (!userCity || !opp.location?.city) locationScore = 5;
+    const { score } = scoreMatch(
+        {
+            id: opp.id,
+            skills: opp.skills ?? null,
+            dailySkills: oppWithExtras.dailySkills ?? null,
+            socialArea: opp.socialArea ?? null,
+            interests: opp.interests ?? null,
+            languages: opp.languages ?? null,
+            location: { city: opp.location?.city ?? null, type: opp.location?.type ?? null },
+            availabilityDays: oppWithExtras.availabilityDays ?? null,
+            availabilityTimes: oppWithExtras.availabilityTimes ?? null,
+        },
+        profile,
+    );
 
-    const total = Math.round(abilityScore + interestScore + locationScore);
+    // Tooltip için gerçek örtüşme dökümü.
+    const vi = profile.volunteerInfo ?? {};
+    const userAbilities = [...(vi.skills ?? []), ...(vi.dailySkills ?? [])];
+    const userInterests = vi.interests ?? [];
+    const userCity = profile.personalInfo?.address?.city ?? '';
+
+    const requiredAbilities = [...(opp.skills ?? []), ...(oppWithExtras.dailySkills ?? [])];
+    const oppInterests = [...(opp.socialArea ? [opp.socialArea] : []), ...(opp.interests ?? [])];
+
+    const abilityMatched = overlapCount(requiredAbilities, userAbilities);
+    const interestMatched = overlapCount(oppInterests, userInterests);
+    const sameCity = Boolean(userCity && opp.location?.city && normTr(userCity) === normTr(opp.location.city));
+    const isOnline = opp.location?.type === 'Online';
+
     return {
-        percent: Math.max(0, Math.min(100, total)),
+        percent: Math.max(0, Math.min(100, Math.round(score))),
         breakdown: {
             ability: { matched: abilityMatched, total: requiredAbilities.length },
             interest: { matched: interestMatched, total: oppInterests.length },
-            location: locationScore === 10 ? 'Tam' : locationScore === 5 ? 'Belirsiz' : 'Farklı',
+            location: (sameCity ? 'Tam' : isOnline ? 'Online' : userCity && opp.location?.city ? 'Farklı' : 'Belirsiz') as 'Tam' | 'Online' | 'Farklı' | 'Belirsiz',
         },
     };
 }
 
-const OpportunityCard = ({ opp, userAbilities, userInterests, userCity }: {
+const OpportunityCard = ({ opp, profile }: {
     opp: Volunteering;
-    userAbilities: string[];
-    userInterests: string[];
-    userCity?: string;
+    profile: MatchingUserProfile;
 }) => {
     const ngo = ngos.find(n => n.id === opp.ngoId);
-    const match = computeMatch(opp, userAbilities, userInterests, userCity);
+    const match = computeMatch(opp, profile);
     const matchPercentage = match.percent;
 
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
@@ -223,27 +269,12 @@ export default function VolunteeringPage() {
         personalInfo?: { address?: { city?: string } };
     }>(userDocRef);
 
-    const userAbilities = useMemo(() => {
-        const vi = userData?.volunteerInfo;
-        if (!vi) return [];
-        return [
-            ...(vi.skills || []),
-            ...(vi.dailySkills || []),
-            ...(vi.languages || []),
-            ...(vi.programs || []),
-            ...(vi.licenses || vi.driverLicenses || []),
-            ...(vi.documents || vi.certificates || []),
-        ];
-    }, [userData]);
-
-    const userInterests = useMemo(() => {
-        const vi = userData?.volunteerInfo;
-        return (vi?.interests || []) as string[];
-    }, [userData]);
-
-    const userCity = useMemo(() => {
-        return userData?.personalInfo?.address?.city as string | undefined;
-    }, [userData]);
+    // Profil uygunluğu için tek kaynak — kart rozeti + sıralama + öneriler
+    // aynı gerçek profili kullanır.
+    const matchingProfile = useMemo<MatchingUserProfile>(() => ({
+        volunteerInfo: userData?.volunteerInfo || null,
+        personalInfo: userData?.personalInfo || null,
+    }), [userData]);
 
     // FEAT-IMECE-MATCH: intelligent personalized recommendations
     const hasVolunteerProfile = useMemo(() => {
@@ -264,12 +295,8 @@ export default function VolunteeringPage() {
             const status = (opp as Volunteering & { status?: string }).status;
             return !status || status === 'Aktif';
         });
-        const profile: MatchingUserProfile = {
-            volunteerInfo: userData?.volunteerInfo || null,
-            personalInfo: userData?.personalInfo || null,
-        };
-        return rankOpportunities(activeOpps, profile, 6).filter(r => r.score > 0);
-    }, [authUser, hasVolunteerProfile, oppsData, userData]);
+        return rankOpportunities(activeOpps, matchingProfile, 6).filter(r => r.score > 0);
+    }, [authUser, hasVolunteerProfile, oppsData, matchingProfile]);
 
     const { interestOptions, skillOptions, cityOptions } = useMemo(() => {
         const interests = new Set<string>();
@@ -318,7 +345,7 @@ export default function VolunteeringPage() {
 
         if (sortBy === 'match') {
             return filtered
-                .map(o => ({ o, m: computeMatch(o, userAbilities, userInterests, userCity).percent }))
+                .map(o => ({ o, m: computeMatch(o, matchingProfile).percent }))
                 .sort((a, b) => b.m - a.m)
                 .map(x => x.o);
         }
@@ -330,7 +357,7 @@ export default function VolunteeringPage() {
             });
         }
         return filtered.sort((a, b) => b.points - a.points);
-    }, [oppsData, interestFilter, skillFilter, cityFilter, searchTerm, sortBy, userAbilities, userInterests, userCity]);
+    }, [oppsData, interestFilter, skillFilter, cityFilter, searchTerm, sortBy, matchingProfile]);
 
   return (
     <div className="space-y-4 animate-in fade-in-0">
@@ -432,9 +459,7 @@ export default function VolunteeringPage() {
                   <OpportunityCard
                       key={opp.id}
                       opp={opp}
-                      userAbilities={userAbilities}
-                      userInterests={userInterests}
-                      userCity={userCity}
+                      profile={matchingProfile}
                   />
               ))
           ) : (

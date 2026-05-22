@@ -1760,3 +1760,41 @@ firebase deploy --only firestore:rules --project hangel-new-v18-87297865-9bcc3
 
 ### Durum
 🟡 Needs user approval — rules deploy operatör işidir (yüksek blast radius). Kod editleri + testler tamamlandı; `npm run test:rules` Java yokluğundan lokalde koşulamadı (CI doğrular).
+
+---
+
+## 2026-05-23 — Emergency blood-need flow end-to-end wiring (frontend-lead)
+
+### Kapsam (sadece bu dosyalar)
+- `src/app/emergency/page.tsx`
+- `src/app/super-admin/emergency/page.tsx`
+
+### Mevcut durum (audit)
+Akışın büyük kısmı zaten bağlıydı:
+- `/emergency` → `emergencyRequests` (status:`pending`) ✅
+- super-admin "Kullanıcı Talepleri" → `emergencyRequests where status==pending` ✅
+- onay → broadcast doc + notifications fan-out ✅
+- `/notifications` → kullanıcı yanıtı → `emergencyResponses` (requestId, status) ✅
+- super-admin "Yanıtlar" → `emergencyResponses` requestId bazında grup ✅
+
+### Tespit edilen sorunlar
+- A (load-bearing): fan-out ve önizleme TÜM `users` koleksiyonunu client'a yüklüyordu (`useCollection(collection(db,users))`). Görev kısıtı: konum hedefli fan-out tüm kullanıcıları yüklememeli → Firestore scoped query + index raporu.
+- B: onayda ikinci bir `emergencyRequests` dokümanı yaratılıyor → tek mantıksal talep iki doküman → "Geçmiş Kan Talepleri"nde mükerrer/`0 kişiye gönderildi` kaydı; requestId tutarsızlığı.
+
+### Karar (cerrahi)
+1. Önizleme sayısı: `getCountFromServer(scopedQuery)` — kullanıcı dokümanları yüklenmez, tek aggregation read.
+2. Fan-out: `getDocs(scopedQuery)` — `personalInfo.address.{city,district,neighborhood}` (+ `country` for Türkiye scope) (+ opsiyonel `personalInfo.bloodType`). 450'lik batch korunur.
+3. Yanıtlar avatarları: tüm users yerine yalnız yanıtlayan userId'leri `where(documentId(),'in',...)` (10'luk parça) ile çek.
+4. Onayda ikinci doküman yaratma; orijinal pending dokümanı `status:'sent'` + targetCount + scope/konum ile güncelle ve ONUN id'sini `requestId` olarak notification `data.requestId`'ye yaz. Admin-originli yeni talep tek doküman yaratmaya devam.
+5. Türkçe metin birebir korunur. Yeni `as any`/`@ts-ignore`/`console.log`/`dangerouslySetInnerHTML` yok. Hatalar toast.
+
+### Gerekli Firestore index (devops-lead — DEPLOY EDİLMEDİ)
+Scoped fan-out/count sorguları eşitlik (equality) filtreleri kullandığından çoğu durumda composite index GEREKMEZ (Firestore tek/çoklu eşitlik filtrelerini tek-alan indeksleriyle çözer). Ancak `personalInfo.bloodType` + adres alanı kombinasyonu (örn. `bloodType==X AND personalInfo.address.city==Y AND personalInfo.address.district==Z`) bazı durumlarda composite index isteyebilir. Hata mesajındaki linkten oluşturulmalı. Önerilen index (gerekirse):
+```
+collectionGroup: users, fields:
+  personalInfo.bloodType ASC, personalInfo.address.city ASC, personalInfo.address.district ASC, personalInfo.address.neighborhood ASC
+```
+Index gerektiğinde sorgu `failed-precondition` döner; UI toast ile bildirir, kullanıcı index linkini açar.
+
+### Rollback
+`git revert <commit>` (yalnız bu iki sayfa). Eski davranış: tüm users client-load + ikinci doküman.
