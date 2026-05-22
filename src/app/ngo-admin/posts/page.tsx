@@ -104,15 +104,18 @@ export default function PostsPage() {
         return null;
     }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub, selfNgo]);
 
-    // Load posts from Firestore (client-side sort to avoid composite index requirement
-    // and to include legacy posts that may be missing the createdAt field)
+    // Load the ACTIVE ORG's own posts from Firestore. We query by the org id
+    // (authorId == org id) so each org sees and manages only its own content.
+    // Client-side sort avoids a composite index requirement and tolerates legacy
+    // posts that may be missing the createdAt field.
+    const activeOrgId = activeEntity?.data?.id ?? null;
     const postsQuery = useMemoFirebase(() => {
-        if (!authUser?.uid) return null;
+        if (!activeOrgId) return null;
         return query(
             collection(firestore, COLLECTIONS.posts),
-            where('authorId', '==', authUser.uid),
+            where('authorId', '==', activeOrgId),
         );
-    }, [firestore, authUser?.uid]);
+    }, [firestore, activeOrgId]);
 
     const { data: firestorePosts, isLoading } = useCollection<Post & { authorId: string; createdAt: unknown }>(postsQuery);
 
@@ -140,26 +143,34 @@ export default function PostsPage() {
             return;
         }
 
+        if (!activeEntity?.data?.id) {
+            toast({ variant: 'destructive', title: 'Aktif kuruluş bulunamadı.', description: 'Gönderiyi yayınlamak için yönettiğiniz bir kuruluş gerekiyor.' });
+            return;
+        }
+
         setIsCreating(true);
 
-        // Resolve author identity: prefer managed entity (NGO/brand/club),
-        // fall back to user display name for individual accounts.
-        const entityName = activeEntity?.data?.name || activeEntity?.data?.shortName;
-        const entityLogo = activeEntity?.data?.files?.logo || activeEntity?.data?.logoUrl;
-        const authorName = entityName || authUser.displayName || 'Kuruluşunuz';
-        const authorAvatar = entityLogo || authUser.photoURL || '';
+        // Author the post AS the active org (NGO/brand/club). The top-level
+        // authorId is the ORG id (not the managing user) so the post can be
+        // queried back as the org's own content and appears in the public
+        // timeline under the org's identity.
+        const entityName = activeEntity.data.name || activeEntity.data.shortName;
+        const entityLogo = activeEntity.data.files?.logo || activeEntity.data.logoUrl;
+        const authorName = entityName || 'Kuruluşunuz';
+        const authorAvatar = entityLogo || '';
 
         const author: Record<string, unknown> = {
             name: authorName,
             avatarUrl: authorAvatar,
+            entityId: activeEntity.data.id,
+            entityKind: activeEntity.kind,
         };
-        if (activeEntity?.data?.id) {
-            author.entityId = activeEntity.data.id;
-            author.entityKind = activeEntity.kind;
-        }
 
         const newPost: Record<string, unknown> = {
-            authorId: authUser.uid,
+            authorId: activeEntity.data.id,
+            authorType: activeEntity.kind,
+            // Record the managing user that published on the org's behalf (audit trail).
+            managerUserId: authUser.uid,
             author,
             content: newPostContent,
             timestamp: new Date().toLocaleDateString('tr-TR'),

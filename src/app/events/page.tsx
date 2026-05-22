@@ -17,9 +17,14 @@ import type { Event } from '@/lib/types';
 import { format, parse, isAfter, isBefore, startOfDay, endOfDay } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
 import { COLLECTIONS } from '@/firebase/collections';
+
+// Statuses that explicitly hide an event from the public listing.
+// Everything else — including 'Yayında', 'Aktif', and legacy docs with no
+// `status` field — is treated as a publicly visible (active) event.
+const HIDDEN_EVENT_STATUSES = new Set(['Beklemede', 'Reddedildi', 'Pasif']);
 
 function EventsPageContent() {
   const searchParams = useSearchParams();
@@ -36,16 +41,20 @@ function EventsPageContent() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
-  // Fetch events from Firestore — only super-admin approved (`status === 'Yayında'`)
-  // are surfaced on the public listing. Pending/Rejected stay hidden until approved.
-  // Legacy docs without a `status` field are surfaced via a client-side fallback below
-  // (rules already allow public read so docs aren't filtered server-side for legacy).
+  // Fetch ALL events, then filter client-side to surface every active one.
+  // We deliberately avoid a server-side `where('status', '==', 'Yayında')` filter
+  // because it silently dropped (a) legacy docs without a `status` field and
+  // (b) docs created by club/org admins with `status === 'Aktif'`. Pending,
+  // rejected and deactivated (Pasif) events stay hidden via HIDDEN_EVENT_STATUSES.
   const eventsRef = useMemoFirebase(
-    () => query(collection(db, COLLECTIONS.events), where('status', '==', 'Yayında')),
+    () => query(collection(db, COLLECTIONS.events)),
     [db],
   );
   const { data: firestoreEvents } = useCollection(eventsRef);
-  const events = useMemo<Event[]>(() => (firestoreEvents ?? []) as Event[], [firestoreEvents]);
+  const events = useMemo<Event[]>(() => {
+    const all = (firestoreEvents ?? []) as (Event & { status?: string })[];
+    return all.filter((e) => !HIDDEN_EVENT_STATUSES.has(e.status ?? '')) as Event[];
+  }, [firestoreEvents]);
 
   // Filters from URL
   const categoryParam = searchParams.get('category');

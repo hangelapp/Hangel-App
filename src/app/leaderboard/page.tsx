@@ -109,7 +109,7 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{isAnonymous ? 'Profilini Gizleyen Kullanıcı' : userItem.name}</p>
+                    <p className="font-medium">{isAnonymous ? 'Profilini gizleyen kullanıcı' : userItem.name}</p>
                     {!isAnonymous && <p className="text-sm text-muted-foreground">{userItem.username}</p>}
                     {valueKey !== 'impactScore' && getValue(userItem, 'impactScore') > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">

@@ -5,6 +5,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   AlertDialog,
@@ -37,10 +55,13 @@ import {
   MapPin,
   Hourglass,
   Trash2,
+  Edit3,
+  Power,
+  PowerOff,
 } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 
-type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif';
+type EventStatus = 'Beklemede' | 'Yayında' | 'Reddedildi' | 'Aktif' | 'Pasif';
 
 interface EventDoc {
   id: string;
@@ -53,6 +74,7 @@ interface EventDoc {
   organizerAvatarUrl?: string;
   imageUrl?: string;
   coverImageUrl?: string;
+  type?: string;
   date?: string;
   startDate?: string;
   location?: { type?: string; address?: string; city?: string; district?: string };
@@ -64,6 +86,18 @@ interface EventDoc {
   approvedBy?: string | null;
   rejectedAt?: unknown;
   rejectionReason?: string;
+}
+
+interface EventEditForm {
+  name: string;
+  organizer: string;
+  type: string;
+  description: string;
+  startDate: string;
+  locationType: string;
+  city: string;
+  district: string;
+  address: string;
 }
 
 function StatusBadge({ status }: { status?: EventStatus }) {
@@ -85,6 +119,16 @@ function StatusBadge({ status }: { status?: EventStatus }) {
         className="bg-red-50 text-red-700 border-red-200 text-[10px] font-bold uppercase tracking-wider"
       >
         <XCircle className="mr-1 h-3 w-3" /> Reddedildi
+      </Badge>
+    );
+  }
+  if (s === 'Pasif') {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-slate-100 text-slate-600 border-slate-300 text-[10px] font-bold uppercase tracking-wider"
+      >
+        <PowerOff className="mr-1 h-3 w-3" /> Pasif
       </Badge>
     );
   }
@@ -164,11 +208,182 @@ function EventRow({
   );
 }
 
+function EditEventDialog({
+  event,
+  open,
+  onOpenChange,
+  onSave,
+  saving,
+}: {
+  event: EventDoc | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: (id: string, form: EventEditForm) => Promise<void>;
+  saving: boolean;
+}) {
+  const [form, setForm] = useState<EventEditForm>({
+    name: '',
+    organizer: '',
+    type: '',
+    description: '',
+    startDate: '',
+    locationType: 'Fiziksel',
+    city: '',
+    district: '',
+    address: '',
+  });
+
+  // Re-seed the form whenever a new event is opened for editing.
+  React.useEffect(() => {
+    if (event && open) {
+      setForm({
+        name: event.name ?? '',
+        organizer: event.organizer ?? '',
+        type: event.type ?? '',
+        description: event.description ?? '',
+        startDate: event.startDate ?? event.date ?? '',
+        locationType: event.location?.type ?? 'Fiziksel',
+        city: event.location?.city ?? '',
+        district: event.location?.district ?? '',
+        address: event.location?.address ?? '',
+      });
+    }
+  }, [event, open]);
+
+  if (!event) return null;
+
+  const set = (key: keyof EventEditForm, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-[2rem] max-h-[90vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">Etkinliği Düzenle</DialogTitle>
+          <DialogDescription className="font-medium">
+            Etkinlik bilgilerini güncelleyin. Değişiklikler kaydedildiğinde anında yayınlanır.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="event-name" className="font-semibold">Başlık</Label>
+            <Input
+              id="event-name"
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              placeholder="Etkinlik adı"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-organizer" className="font-semibold">Düzenleyen</Label>
+            <Input
+              id="event-organizer"
+              value={form.organizer}
+              onChange={(e) => set('organizer', e.target.value)}
+              placeholder="Kulüp / kurum adı"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-type" className="font-semibold">Kategori</Label>
+            <Input
+              id="event-type"
+              value={form.type}
+              onChange={(e) => set('type', e.target.value)}
+              placeholder="Örn. Seminer, Atölye"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-date" className="font-semibold">Tarih ve Saat</Label>
+            <Input
+              id="event-date"
+              value={form.startDate}
+              onChange={(e) => set('startDate', e.target.value)}
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-location-type" className="font-semibold">Konum Türü</Label>
+            <Select value={form.locationType} onValueChange={(v) => set('locationType', v)}>
+              <SelectTrigger id="event-location-type">
+                <SelectValue placeholder="Konum türü seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Fiziksel">Fiziksel</SelectItem>
+                <SelectItem value="Online">Online</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="event-city" className="font-semibold">Şehir</Label>
+              <Input
+                id="event-city"
+                value={form.city}
+                onChange={(e) => set('city', e.target.value)}
+                placeholder="İstanbul"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="event-district" className="font-semibold">İlçe</Label>
+              <Input
+                id="event-district"
+                value={form.district}
+                onChange={(e) => set('district', e.target.value)}
+                placeholder="Kadıköy"
+              />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-address" className="font-semibold">Adres</Label>
+            <Input
+              id="event-address"
+              value={form.address}
+              onChange={(e) => set('address', e.target.value)}
+              placeholder="Açık adres"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="event-description" className="font-semibold">Açıklama</Label>
+            <Textarea
+              id="event-description"
+              value={form.description}
+              onChange={(e) => set('description', e.target.value)}
+              placeholder="Etkinlik açıklaması"
+              rows={4}
+            />
+          </div>
+        </div>
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            className="rounded-xl font-bold"
+            onClick={() => onOpenChange(false)}
+            disabled={saving}
+          >
+            Vazgeç
+          </Button>
+          <Button
+            className="rounded-xl font-bold"
+            onClick={() => onSave(event.id, form)}
+            disabled={saving}
+          >
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Kaydet
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function SuperAdminEventsPage() {
   const db = useFirestore();
   const { user: authUser } = useUser();
   const { toast } = useToast();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventDoc | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const eventsQuery = useMemoFirebase(
     () => (db ? query(collection(db, COLLECTIONS.events), orderBy('createdAt', 'desc')) : null),
@@ -181,6 +396,7 @@ export default function SuperAdminEventsPage() {
     return {
       pending: list.filter((e) => (e.status || 'Beklemede') === 'Beklemede'),
       published: list.filter((e) => e.status === 'Yayında' || e.status === 'Aktif'),
+      passive: list.filter((e) => e.status === 'Pasif'),
       rejected: list.filter((e) => e.status === 'Reddedildi'),
     };
   }, [events]);
@@ -255,6 +471,149 @@ export default function SuperAdminEventsPage() {
     }
   };
 
+  const handleToggleActive = async (id: string, currentStatus?: EventStatus) => {
+    if (!db) return;
+    const isPassive = currentStatus === 'Pasif';
+    setBusyId(id);
+    try {
+      await updateDoc(doc(db, COLLECTIONS.events, id), {
+        status: isPassive ? 'Yayında' : 'Pasif',
+        ...(isPassive
+          ? { approvedAt: serverTimestamp(), approvedBy: authUser?.uid || null }
+          : {}),
+      });
+      toast({
+        title: isPassive ? 'Etkinlik Aktifleştirildi' : 'Etkinlik Pasife Alındı',
+        description: isPassive
+          ? 'Etkinlik tekrar yayında ve platformda görünür.'
+          : 'Etkinlik artık platformda görünmüyor.',
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'İşlem başarısız',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openEdit = (event: EventDoc) => {
+    setEditingEvent(event);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = async (id: string, form: EventEditForm) => {
+    if (!db) return;
+    if (!form.name.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'Başlık gerekli',
+        description: 'Etkinlik başlığı boş bırakılamaz.',
+      });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateDoc(doc(db, COLLECTIONS.events, id), {
+        name: form.name.trim(),
+        organizer: form.organizer.trim(),
+        type: form.type.trim(),
+        description: form.description.trim(),
+        startDate: form.startDate.trim(),
+        date: form.startDate.trim(),
+        'location.type': form.locationType,
+        'location.city': form.city.trim(),
+        'location.district': form.district.trim(),
+        'location.address': form.address.trim(),
+      });
+      toast({ title: 'Etkinlik Güncellendi', description: 'Değişiklikler kaydedildi.' });
+      setIsEditOpen(false);
+      setEditingEvent(null);
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'Kaydedilemedi',
+        description: code === 'permission-denied' ? 'Süper admin yetkisi gerekli.' : message,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const editButton = (event: EventDoc) => (
+    <Button
+      size="sm"
+      variant="outline"
+      className="flex-1 sm:flex-grow-0 rounded-xl font-bold"
+      disabled={busyId === event.id}
+      onClick={() => openEdit(event)}
+    >
+      <Edit3 className="mr-2 h-4 w-4" /> Düzenle
+    </Button>
+  );
+
+  const deactivateButton = (event: EventDoc) => {
+    const isPassive = event.status === 'Pasif';
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        className="flex-1 sm:flex-grow-0 rounded-xl font-bold"
+        disabled={busyId === event.id}
+        onClick={() => handleToggleActive(event.id, event.status)}
+      >
+        {busyId === event.id ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : isPassive ? (
+          <Power className="mr-2 h-4 w-4" />
+        ) : (
+          <PowerOff className="mr-2 h-4 w-4" />
+        )}
+        {isPassive ? 'Aktifleştir' : 'Pasife Al'}
+      </Button>
+    );
+  };
+
+  const deleteButton = (event: EventDoc) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+          disabled={busyId === event.id}
+        >
+          <Trash2 className="mr-2 h-4 w-4" /> Sil
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent className="rounded-[2rem]">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-xl font-bold">
+            Etkinliği kalıcı olarak sil?
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-base font-medium">
+            &quot;{event.name}&quot; etkinliği veritabanından silinecek. Bu işlem geri alınamaz.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
+          <AlertDialogAction
+            className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
+            onClick={() => handleDelete(event.id)}
+          >
+            Evet, Sil
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -286,8 +645,14 @@ export default function SuperAdminEventsPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl">
+      <Tabs defaultValue="published" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl gap-1.5 sm:gap-0">
+          <TabsTrigger
+            value="published"
+            className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
+          >
+            <CheckCircle2 className="mr-2 h-4 w-4" /> Yayında ({grouped.published.length})
+          </TabsTrigger>
           <TabsTrigger
             value="pending"
             className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
@@ -295,10 +660,10 @@ export default function SuperAdminEventsPage() {
             <Hourglass className="mr-2 h-4 w-4" /> Onay Bekleyenler ({grouped.pending.length})
           </TabsTrigger>
           <TabsTrigger
-            value="published"
+            value="passive"
             className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
           >
-            <CheckCircle2 className="mr-2 h-4 w-4" /> Yayında ({grouped.published.length})
+            <PowerOff className="mr-2 h-4 w-4" /> Pasif ({grouped.passive.length})
           </TabsTrigger>
           <TabsTrigger
             value="rejected"
@@ -332,6 +697,7 @@ export default function SuperAdminEventsPage() {
                   )}
                   Onayla
                 </Button>
+                {editButton(event)}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -364,6 +730,7 @@ export default function SuperAdminEventsPage() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                {deleteButton(event)}
               </EventRow>
             ))
           )}
@@ -380,37 +747,28 @@ export default function SuperAdminEventsPage() {
           ) : (
             grouped.published.map((event) => (
               <EventRow key={event.id} event={event}>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                      disabled={busyId === event.id}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Sil
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-[2rem]">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-bold">
-                        Etkinliği kalıcı olarak sil?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-base font-medium">
-                        &quot;{event.name}&quot; etkinliği veritabanından silinecek. Bu işlem geri alınamaz.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="gap-2">
-                      <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
-                        onClick={() => handleDelete(event.id)}
-                      >
-                        Evet, Sil
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {editButton(event)}
+                {deactivateButton(event)}
+                {deleteButton(event)}
+              </EventRow>
+            ))
+          )}
+        </TabsContent>
+
+        <TabsContent value="passive" className="mt-8 space-y-4">
+          {grouped.passive.length === 0 ? (
+            <div className="text-center py-24 bg-white/50 rounded-[3rem] border-2 border-dashed border-black/5">
+              <Inbox className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">
+                Pasif etkinlik bulunmuyor.
+              </p>
+            </div>
+          ) : (
+            grouped.passive.map((event) => (
+              <EventRow key={event.id} event={event}>
+                {editButton(event)}
+                {deactivateButton(event)}
+                {deleteButton(event)}
               </EventRow>
             ))
           )}
@@ -441,42 +799,24 @@ export default function SuperAdminEventsPage() {
                   )}
                   Yeniden Yayınla
                 </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 sm:flex-grow-0 rounded-xl font-bold text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                      disabled={busyId === event.id}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Sil
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-[2rem]">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-bold">
-                        Etkinliği kalıcı olarak sil?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-base font-medium">
-                        &quot;{event.name}&quot; etkinliği veritabanından silinecek. Bu işlem geri alınamaz.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="gap-2">
-                      <AlertDialogCancel className="rounded-xl font-bold">Vazgeç</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="rounded-xl font-bold bg-red-600 hover:bg-red-700"
-                        onClick={() => handleDelete(event.id)}
-                      >
-                        Evet, Sil
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                {editButton(event)}
+                {deleteButton(event)}
               </EventRow>
             ))
           )}
         </TabsContent>
       </Tabs>
+
+      <EditEventDialog
+        event={editingEvent}
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open);
+          if (!open) setEditingEvent(null);
+        }}
+        onSave={handleSaveEdit}
+        saving={isSaving}
+      />
     </div>
   );
 }

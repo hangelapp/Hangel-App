@@ -102,6 +102,39 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
     );
 };
 
+const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, children }: {
+    value: string;
+    title: string;
+    count: number;
+    editHref: string;
+    editLabel: string;
+    emptyText: string;
+    children: React.ReactNode;
+}) => (
+    <AccordionItem value={value} className="border-b-0">
+        <div className="flex items-center justify-between gap-2">
+            <AccordionTrigger className="flex-1 py-3 hover:no-underline">
+                <span className="flex items-center gap-2">
+                    <span className="font-bold text-sm">{title}</span>
+                    <span className="text-xs text-muted-foreground">{count}</span>
+                </span>
+            </AccordionTrigger>
+            <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label={editLabel}>
+                <Link href={editHref}>
+                    <Edit className="h-4 w-4" />
+                </Link>
+            </Button>
+        </div>
+        <AccordionContent>
+            {count === 0 ? (
+                <p className="text-sm text-muted-foreground">{emptyText}</p>
+            ) : (
+                children
+            )}
+        </AccordionContent>
+    </AccordionItem>
+);
+
 export default function ProfilePage() {
     const { t } = useTranslation();
     const [_profileUrl, setProfileUrl] = useState('');
@@ -656,100 +689,96 @@ export default function ProfilePage() {
                         <Card className="rounded-2xl">
                             <CardHeader><CardTitle className='text-lg'>Bağlantılarım</CardTitle></CardHeader>
                             <CardContent>
-                                <div className="divide-y">
-                                    <div className="py-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="font-bold text-sm">Bağışçı Olduğun STK'lar</p>
-                                            <span className="text-xs text-muted-foreground">{supportedNgoIds.length}</span>
+                                <Accordion type="single" collapsible className="w-full divide-y">
+                                    <ConnectionSection
+                                        value="donor-ngos"
+                                        title="Bağışçı Olduğun STK'lar"
+                                        count={supportedNgoIds.length}
+                                        editHref="/settings/ngo-selection"
+                                        editLabel="Bağışçı olduğun STK'ları düzenle"
+                                        emptyText="Henüz bağış yaptığın STK yok."
+                                    >
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {(supportedNgosData || []).slice(0, 5).map((ngo) => (
+                                                <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
+                                                        <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
+                                            ))}
+                                            {supportedNgoIds.length > 5 && (
+                                                <span className="text-xs text-muted-foreground">+{supportedNgoIds.length - 5} daha</span>
+                                            )}
                                         </div>
-                                        {supportedNgoIds.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">Henüz bağış yaptığın STK yok.</p>
-                                        ) : (
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {(supportedNgosData || []).slice(0, 5).map((ngo) => (
-                                                    <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
-                                                            <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                    </Link>
-                                                ))}
-                                                {supportedNgoIds.length > 5 && (
-                                                    <span className="text-xs text-muted-foreground">+{supportedNgoIds.length - 5} daha</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="py-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="font-bold text-sm">Gönüllü Olduğun STK'lar</p>
-                                            <span className="text-xs text-muted-foreground">{volunteerNgoIds.length}</span>
+                                    </ConnectionSection>
+                                    <ConnectionSection
+                                        value="volunteer-ngos"
+                                        title="Gönüllü Olduğun STK'lar"
+                                        count={volunteerNgoIds.length}
+                                        editHref="/settings/volunteer-ngo-selection"
+                                        editLabel="Gönüllü olduğun STK'ları düzenle"
+                                        emptyText="Henüz gönüllü olduğun STK yok."
+                                    >
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {(volunteerNgosData || []).slice(0, 5).map((ngo) => (
+                                                <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
+                                                        <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
+                                            ))}
+                                            {volunteerNgoIds.length > 5 && (
+                                                <span className="text-xs text-muted-foreground">+{volunteerNgoIds.length - 5} daha</span>
+                                            )}
                                         </div>
-                                        {volunteerNgoIds.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">Henüz gönüllü olduğun STK yok.</p>
-                                        ) : (
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {(volunteerNgosData || []).slice(0, 5).map((ngo) => (
-                                                    <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
-                                                            <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                    </Link>
-                                                ))}
-                                                {volunteerNgoIds.length > 5 && (
-                                                    <span className="text-xs text-muted-foreground">+{volunteerNgoIds.length - 5} daha</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="py-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="font-bold text-sm">Takip Ettiğin Markalar</p>
-                                            <span className="text-xs text-muted-foreground">{followedBrandIds.length}</span>
+                                    </ConnectionSection>
+                                    <ConnectionSection
+                                        value="brands"
+                                        title="Takip Ettiğin Markalar"
+                                        count={followedBrandIds.length}
+                                        editHref="/settings/brands"
+                                        editLabel="Takip ettiğin markaları düzenle"
+                                        emptyText="Henüz takip ettiğin marka yok."
+                                    >
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {(followedBrandsData || []).slice(0, 5).map((brand) => (
+                                                <Link key={brand.id} href={`/market/${brand.slug || brand.id}`} aria-label={brand.name || 'Marka'}>
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={brand.logoUrl} alt={brand.name || ''} />
+                                                        <AvatarFallback>{(brand.name || '?').charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
+                                            ))}
+                                            {followedBrandIds.length > 5 && (
+                                                <span className="text-xs text-muted-foreground">+{followedBrandIds.length - 5} daha</span>
+                                            )}
                                         </div>
-                                        {followedBrandIds.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">Henüz takip ettiğin marka yok.</p>
-                                        ) : (
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {(followedBrandsData || []).slice(0, 5).map((brand) => (
-                                                    <Link key={brand.id} href={`/market/${brand.slug || brand.id}`} aria-label={brand.name || 'Marka'}>
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage src={brand.logoUrl} alt={brand.name || ''} />
-                                                            <AvatarFallback>{(brand.name || '?').charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                    </Link>
-                                                ))}
-                                                {followedBrandIds.length > 5 && (
-                                                    <span className="text-xs text-muted-foreground">+{followedBrandIds.length - 5} daha</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="py-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <p className="font-bold text-sm">Üye Olduğun Kulüpler</p>
-                                            <span className="text-xs text-muted-foreground">{joinedClubIds.length}</span>
+                                    </ConnectionSection>
+                                    <ConnectionSection
+                                        value="clubs"
+                                        title="Üye Olduğun Kulüpler"
+                                        count={joinedClubIds.length}
+                                        editHref="/clubs"
+                                        editLabel="Üye olduğun kulüpleri düzenle"
+                                        emptyText="Henüz üye olduğun kulüp yok."
+                                    >
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            {(joinedClubsData || []).slice(0, 5).map((club) => (
+                                                <Link key={club.id} href={`/clubs/profile/${club.id}`} aria-label={club.name || 'Kulüp'}>
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={club.avatarUrl} alt={club.name || ''} />
+                                                        <AvatarFallback>{(club.name || '?').charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
+                                            ))}
+                                            {joinedClubIds.length > 5 && (
+                                                <span className="text-xs text-muted-foreground">+{joinedClubIds.length - 5} daha</span>
+                                            )}
                                         </div>
-                                        {joinedClubIds.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">Henüz üye olduğun kulüp yok.</p>
-                                        ) : (
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                {(joinedClubsData || []).slice(0, 5).map((club) => (
-                                                    <Link key={club.id} href={`/clubs/profile/${club.id}`} aria-label={club.name || 'Kulüp'}>
-                                                        <Avatar className="h-8 w-8">
-                                                            <AvatarImage src={club.avatarUrl} alt={club.name || ''} />
-                                                            <AvatarFallback>{(club.name || '?').charAt(0)}</AvatarFallback>
-                                                        </Avatar>
-                                                    </Link>
-                                                ))}
-                                                {joinedClubIds.length > 5 && (
-                                                    <span className="text-xs text-muted-foreground">+{joinedClubIds.length - 5} daha</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
+                                    </ConnectionSection>
+                                </Accordion>
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -825,7 +854,7 @@ export default function ProfilePage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button onClick={handleGenerateStories} disabled={isStoryLoading} className="w-full">
-                                    {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Bu Ayki 5 Hikayeni Oluştur'}
+                                    {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Hikayeni Oluştur'}
                                 </Button>
                                 {isStoryLoading && (
                                     <div className="flex justify-center items-center p-8">

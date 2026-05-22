@@ -337,10 +337,8 @@ export default function TimelinePage() {
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
                     ) : sortedAndFilteredPosts.map((post, index) => {
                     const cached = likeState[post.id];
-                    const fallbackCount = post.likedBy?.length ?? post.likes ?? 0;
                     const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
                     const isLiked = cached ? cached.isLikedByMe : fallbackMine;
-                    const likeCount = cached ? cached.count : fallbackCount;
                     return (
                     <React.Fragment key={post.id}>
                         <Card id={`post-${post.id}`} className="overflow-hidden shadow-none rounded-xl scroll-mt-24">
@@ -384,7 +382,7 @@ export default function TimelinePage() {
                                     aria-pressed={isLiked}
                                 >
                                     <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
-                                    <span>Beğen{likeCount > 0 ? ` (${likeCount})` : ''}</span>
+                                    <span>Beğen</span>
                                 </Button>
                                 <div className="w-[1px] h-6 bg-border self-center" />
                                 <Button
