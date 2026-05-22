@@ -143,6 +143,22 @@ describe.skipIf(!emulatorUp)('firestore.rules — /events/{eventId}', () => {
     );
   });
 
+  it('super-admin CAN set status to "Pasif" (wave 6-7 super-admin/events)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'root', { role: 'super-admin' });
+    await assertSucceeds(
+      updateDoc(doc(db, 'events/e1'), { status: 'Pasif' }),
+    );
+  });
+
+  it('organizer CANNOT set status to "Pasif" (status change is super-admin only)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'organizer-1');
+    await assertFails(
+      updateDoc(doc(db, 'events/e1'), { status: 'Pasif' }),
+    );
+  });
+
   // ----- DELETE -----
 
   it('organizer CAN delete their own event', async () => {

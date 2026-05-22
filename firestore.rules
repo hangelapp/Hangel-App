@@ -83,10 +83,40 @@ service cloud.firestore {
 
     match /posts/{postId} {
       allow read, list: if true; // Public for timeline
-      // Authors (NGO/brand/club admins or individual users) can post as themselves
-      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
-      // Only the author can edit or delete their own post (super-admin has global write)
-      allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+
+      // Wave 6-7: posts can be authored AS an org. The top-level authorId is the
+      // ORG id (ngo/brand/club doc id), NOT the publishing user's uid. The publisher
+      // is a user who manages that org — either the org doc's adminUserId == uid, or
+      // the user doc's managed{Ngo,Brand,Club}Id == authorId (managed*Id fallback
+      // pattern, consistent with ngos/brands/clubs update rules + ngoSenders).
+      function managesOrg(orgId) {
+        return isSignedIn() && (
+          (exists(/databases/$(database)/documents/ngos/$(orgId))
+            && get(/databases/$(database)/documents/ngos/$(orgId)).data.adminUserId == request.auth.uid)
+          || (exists(/databases/$(database)/documents/brands/$(orgId))
+            && get(/databases/$(database)/documents/brands/$(orgId)).data.adminUserId == request.auth.uid)
+          || (exists(/databases/$(database)/documents/clubs/$(orgId))
+            && get(/databases/$(database)/documents/clubs/$(orgId)).data.adminUserId == request.auth.uid)
+          || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == orgId
+              || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedBrandId == orgId
+              || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == orgId
+            ))
+        );
+      }
+
+      // Create: an individual posts as themselves (authorId == uid, backwards-compat)
+      // OR a managing user posts on behalf of the org named in authorId. Super-admin
+      // also allowed (the specific posts match overrides the global allPaths write).
+      allow create: if isSuperAdmin() || (isSignedIn() && (
+        request.resource.data.authorId == request.auth.uid
+        || managesOrg(request.resource.data.authorId)
+      ));
+      // Update/delete: original author, the org's managing user, or super-admin.
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.authorId == request.auth.uid
+        || managesOrg(resource.data.authorId)
+      ));
 
       // PDF-7-likes-rule: per-user like subcollection (doc id = liker uid).
       // Each like is one doc owned by the liker; counts are derived via aggregate.
@@ -601,6 +631,34 @@ service cloud.firestore {
         );
       }
 
+      // Wave 6-7 create-hardening helpers. Normal kullanıcı yalnızca bir kuruma
+      // (STK/marka/kulüp) ya da bir admin/super-admin kullanıcıya mesaj atabilir;
+      // kullanıcı→kullanıcı DM kapalı.
+      // recipientId bir entity (ngo/brand/club) doc id'si mi?
+      function recipientIsEntity(rid) {
+        return exists(/databases/$(database)/documents/ngos/$(rid))
+          || exists(/databases/$(database)/documents/brands/$(rid))
+          || exists(/databases/$(database)/documents/clubs/$(rid));
+      }
+      // recipientId bir admin/super-admin kullanıcı mı? (kurum yöneticileri dahil)
+      function recipientIsAdminUser(rid) {
+        return exists(/databases/$(database)/documents/users/$(rid))
+          && get(/databases/$(database)/documents/users/$(rid)).data.role
+             in ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin'];
+      }
+      // İstek sahibi bir entity-admin mi? (mevcut thread'lerin korunması: entity-admin
+      // bir normal kullanıcıya YANIT verebilmeli — alıcı normal kullanıcı olsa bile.)
+      function senderIsEntityAdmin() {
+        return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && (
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+              in ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin']
+            || ('managedNgoId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+            || ('managedBrandId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+            || ('managedClubId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+          );
+      }
+
       // Tekil okuma: alıcı, gönderen, entity-admin veya super-admin.
       allow read: if isSignedIn() && (
         resource == null ||
@@ -616,9 +674,19 @@ service cloud.firestore {
       // kullanıcı gelen kutusu sorgusu limit'siz çalışır.
       allow list: if isSignedIn();
 
-      // Oluşturma: senderId mutlaka istek sahibinin uid'i olmalı (spoof engeli).
+      // Oluşturma: senderId mutlaka istek sahibinin uid'i olmalı (spoof engeli) VE
+      // alıcı bir kurum (STK/marka/kulüp) ya da bir admin/super-admin kullanıcı olmalı —
+      // normal kullanıcı→normal kullanıcı DM kapalı. Entity-admin, normal kullanıcıya
+      // YANIT verebilir (senderIsEntityAdmin) → mevcut thread'ler korunur.
       // Entity adına yanıt: senderId = admin uid, sender.name = entity adı.
-      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.senderId == request.auth.uid
+        && (
+          recipientIsEntity(request.resource.data.recipientId)
+          || recipientIsAdminUser(request.resource.data.recipientId)
+          || senderIsEntityAdmin()
+          || isSuperAdmin()
+        );
 
       // Güncelleme: yalnızca okundu bilgisi (`readBy`) eklenebilir; alıcı, entity-admin
       // veya super-admin yapabilir. Başka alanlar değiştirilemez.

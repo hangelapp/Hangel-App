@@ -48,10 +48,21 @@ describe.skipIf(!emulatorUp)('firestore.rules — /messages/{messageId}', () => 
     await env.clearFirestore();
     await adminSeed(env, async (ctx) => {
       const db = ctx.firestore();
-      // Entity admin user docs (managed*Id fallback pattern)
-      await db.collection('users').doc('ngo-admin').set({ managedNgoId: 'ngo-1' });
-      await db.collection('users').doc('brand-admin').set({ managedBrandId: 'brand-1' });
-      await db.collection('users').doc('club-admin').set({ managedClubId: 'club-1' });
+      // Entity docs (recipientIsEntity create-check resolves these by doc id).
+      await db.collection('ngos').doc('ngo-1').set({ name: 'STK Bir' });
+      await db.collection('brands').doc('brand-1').set({ name: 'Marka Bir' });
+      await db.collection('clubs').doc('club-1').set({ name: 'Kulüp Bir' });
+
+      // Entity admin user docs (managed*Id fallback pattern + role)
+      await db.collection('users').doc('ngo-admin').set({ managedNgoId: 'ngo-1', role: 'ngo-admin' });
+      await db.collection('users').doc('brand-admin').set({ managedBrandId: 'brand-1', role: 'ngo-admin' });
+      await db.collection('users').doc('club-admin').set({ managedClubId: 'club-1', role: 'ngo-admin' });
+      // A Hangel yöneticisi (admin-role user) — valid DM recipient
+      await db.collection('users').doc('hangel-admin').set({ role: 'admin' });
+      // Plain users (role 'user' or absent) — NOT valid DM recipients
+      await db.collection('users').doc('u1').set({ role: 'user' });
+      await db.collection('users').doc('u2').set({ role: 'user' });
+      await db.collection('users').doc('u3').set({ role: 'user' });
       await db.collection('users').doc('stranger').set({});
 
       // User → user message (sender u1, recipient u2)
@@ -138,22 +149,67 @@ describe.skipIf(!emulatorUp)('firestore.rules — /messages/{messageId}', () => 
 
   // ----- CREATE -----
 
-  it('signed-in user CAN create a message where senderId == their uid', async () => {
+  it('normal user CAN create a message to an ENTITY (ngo) — senderId == uid', async () => {
     const env = await getTestEnv();
     const db = authedAs(env, 'u3');
     await assertSucceeds(
-      setDoc(doc(db, 'messages/m-new'), {
+      setDoc(doc(db, 'messages/m-to-ngo'), {
         sender: { id: 'u3', name: 'User Three', avatarUrl: null },
         senderId: 'u3',
-        recipient: { id: 'u2', name: 'User Two', avatarUrl: null },
-        recipientId: 'u2',
-        subject: 'Yeni', content: 'Mesaj', status: 'sent',
+        recipient: { id: 'ngo-1', name: 'STK Bir', avatarUrl: null },
+        recipientId: 'ngo-1',
+        subject: 'Soru', content: 'Bilgi', status: 'sent',
         timestamp: new Date(),
       }),
     );
   });
 
-  it('entity admin reply: senderId == admin uid but sender.id = entity → create ALLOWED', async () => {
+  it('normal user CAN create a message to an ADMIN-role user (Hangel yöneticisi)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'u3');
+    await assertSucceeds(
+      setDoc(doc(db, 'messages/m-to-admin'), {
+        sender: { id: 'u3', name: 'User Three', avatarUrl: null },
+        senderId: 'u3',
+        recipient: { id: 'hangel-admin', name: 'Hangel', avatarUrl: null },
+        recipientId: 'hangel-admin',
+        subject: 'Destek', content: 'Yardım', status: 'sent',
+        timestamp: new Date(),
+      }),
+    );
+  });
+
+  it('normal user CANNOT DM another NORMAL user (user→user DM disabled)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'u3');
+    await assertFails(
+      setDoc(doc(db, 'messages/m-dm'), {
+        sender: { id: 'u3', name: 'User Three', avatarUrl: null },
+        senderId: 'u3',
+        recipient: { id: 'u2', name: 'User Two', avatarUrl: null },
+        recipientId: 'u2',
+        subject: 'DM', content: 'merhaba', status: 'sent',
+        timestamp: new Date(),
+      }),
+    );
+  });
+
+  it('normal user CANNOT message a non-existent recipient (not entity, not admin)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'u3');
+    await assertFails(
+      setDoc(doc(db, 'messages/m-nowhere'), {
+        sender: { id: 'u3', name: 'User Three', avatarUrl: null },
+        senderId: 'u3',
+        recipient: { id: 'ghost', name: 'Ghost', avatarUrl: null },
+        recipientId: 'ghost',
+        subject: 'x', content: 'x', status: 'sent',
+        timestamp: new Date(),
+      }),
+    );
+  });
+
+  it('entity admin CAN reply to a normal user (existing thread preserved; senderIsEntityAdmin)', async () => {
     const env = await getTestEnv();
     const db = authedAs(env, 'ngo-admin');
     await assertSucceeds(

@@ -1622,3 +1622,141 @@ PDF-R1..PDF-R8 + PDF-50+ (tasks.md 2026-05-21 bölümü). Hepsi disjoint dosyala
 
 ### Durum
 🟡 `npm run build` gate operatör/orchestrator tarafından koşulmalı (yeni dinamik route). `npx tsc --noEmit` lead tarafından koşuldu.
+
+---
+
+## 2026-05-23 — Rules: org-authored posts + messages DM-hardening + events 'Pasif' doğrulama (wave 6-7)
+
+- **Lead**: security-lead
+- **Charter**: Wave 6-7'de merge edilen 3 frontend özelliğinin prod'da `permission-denied` almadan çalışması için `firestore.rules` minimal güncelleme. Sadece `firestore.rules`, `tests/rules/**`, `docs/audit/decisions.md` dokunulur. DEPLOY EDİLMEZ (operatör onayı).
+
+### Mevcut vs Yeni rule metni (koleksiyon başına)
+
+**1) POSTS — `match /posts/{postId}` (KIRIK → düzeltme gerekli)**
+
+Mevcut (firestore.rules:84-89):
+```
+allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+allow update, delete: if isSignedIn() && resource.data.authorId == request.auth.uid;
+```
+Sorun: `ngo-admin/posts/page.tsx` artık `authorId = <org id>` (kullanıcı uid'i DEĞİL) yazıyor; `managerUserId = auth.uid`. Eski rule `authorId == auth.uid` beklediğinden org-authored create/update/delete TÜMÜ reddedilir (yalnız super-admin yazabilir → özellik kırık).
+
+Yeni:
+```
+function managesOrg(orgId) {
+  return isSignedIn() && (
+    (exists(/databases/$(database)/documents/ngos/$(orgId))
+      && get(/databases/$(database)/documents/ngos/$(orgId)).data.adminUserId == request.auth.uid)
+    || (exists(/databases/$(database)/documents/brands/$(orgId))
+      && get(/databases/$(database)/documents/brands/$(orgId)).data.adminUserId == request.auth.uid)
+    || (exists(/databases/$(database)/documents/clubs/$(orgId))
+      && get(/databases/$(database)/documents/clubs/$(orgId)).data.adminUserId == request.auth.uid)
+    || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == orgId
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedBrandId == orgId
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == orgId
+      ))
+  );
+}
+allow create: if isSignedIn() && (
+  request.resource.data.authorId == request.auth.uid  // bireysel kullanıcı kendi adına (geriye dönük)
+  || managesOrg(request.resource.data.authorId)        // org adına yayın (wave 6-7)
+);
+allow update, delete: if isSignedIn() && (
+  resource.data.authorId == request.auth.uid
+  || managesOrg(resource.data.authorId)
+);
+```
+Süper-admin override `/{allPaths=**} { allow write: if isSuperAdmin(); }` ile korunur (posts match bloğu spesifik olduğundan create/update/delete'te global override'ı override eder; bu yüzden bireysel + org branch'leri açıkça eklenir — super-admin için ayrıca `|| isSuperAdmin()` gerekmez çünkü posts'ta zaten create için org-admin yeterli, ama tutarlılık için eklenmedi — mevcut tasarımda posts super-admin write'ı yalnız global rule'a değil, spesifik bloğa düşer → **NOT**: spesifik update/delete bloğu super-admin'i de kapsamalı. Aşağıdaki "super-admin posts" notuna bak).
+
+**super-admin posts notu**: `posts` match bloğu spesifik olduğu için super-admin'in global `allPaths` write'ı bu blok tarafından override edilir. Mevcut kodda super-admin posts'u silebiliyordu çünkü... aslında EDEMİYORDU (eski `update,delete` yalnız `authorId == auth.uid`). Bu görevde super-admin moderasyonu için update/delete'e `|| isSuperAdmin()` EKLENİR (yeni yetenek, gevşetme değil — yalnız super-admin'e). Create için super-admin nadir; org-admin/bireysel branch yeterli, ayrıca `isSuperAdmin()` create'e de eklenir (defense-in-depth, super-admin global write zaten bu niyeti taşır).
+
+**2) MESSAGES — `match /messages/{messageId}` (GÜVENLİK SIKILAŞTIRMA)**
+
+Mevcut (firestore.rules:621):
+```
+allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+```
+Sorun: normal kullanıcı, alıcı başka bir normal kullanıcı olsa bile mesaj oluşturabiliyor (user→user DM açık). Brief: alıcı bir entity (ngo/brand/club) VEYA admin/super-admin kullanıcı OLMALI; aksi halde normal kullanıcı→normal kullanıcı DM reddedilir.
+
+Yeni:
+```
+function recipientIsEntity(rid) {
+  return exists(/databases/$(database)/documents/ngos/$(rid))
+    || exists(/databases/$(database)/documents/brands/$(rid))
+    || exists(/databases/$(database)/documents/clubs/$(rid));
+}
+function recipientIsAdminUser(rid) {
+  return exists(/databases/$(database)/documents/users/$(rid))
+    && get(/databases/$(database)/documents/users/$(rid)).data.role
+       in ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin'];
+}
+function senderIsEntityAdmin() {
+  return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+    && (
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        in ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin']
+      || ('managedNgoId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+      || ('managedBrandId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+      || ('managedClubId' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data)
+    );
+}
+allow create: if isSignedIn()
+  && request.resource.data.senderId == request.auth.uid   // spoof engeli KORUNUR
+  && (
+    recipientIsEntity(request.resource.data.recipientId)      // alıcı bir kurum
+    || recipientIsAdminUser(request.resource.data.recipientId) // alıcı bir admin/super-admin kullanıcı
+    || senderIsEntityAdmin()                                   // entity-admin normal kullanıcıya YANIT verebilir (mevcut thread korunur)
+    || isSuperAdmin()
+  );
+```
+Read/list/update/delete DEĞİŞMEZ. `senderId == auth.uid` spoof-engeli KORUNUR (additional AND koşulu olarak kalır — gevşetme yok, yalnız ek kısıt).
+
+**Mevcut legitimate thread'lerin korunması**: Entity-admin → normal kullanıcı YANITI `senderIsEntityAdmin()` branch'i ile çalışır (alıcı normal kullanıcı olsa bile). Normal kullanıcı → entity/admin ise `recipientIsEntity`/`recipientIsAdminUser` ile çalışır. Yalnız normal→normal DM reddedilir (yeni kısıt = istenen davranış). Update (readBy) kuralı değişmediği için var olan thread'lerde okundu işaretleme bozulmaz.
+
+**3) EVENTS — `match /events/{eventId}` (DEĞİŞİKLİK YOK — doğrulama)**
+
+Mevcut (firestore.rules:126-132):
+```
+allow update: if isSuperAdmin() || (isSignedIn() && resource.data.organizerId == request.auth.uid && !diff.affectedKeys().hasAny(['status']));
+allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.organizerId == request.auth.uid);
+```
+`super-admin/events` artık update/delete + `status = 'Pasif'` yazıyor. `isSuperAdmin()` branch'i HER alanı (status='Pasif' dahil) günceller; 'Pasif' değeri için hiçbir reddetme yoktur (status enum allowlist yok). Delete super-admin için açık. **Rule değişikliği GEREKMİYOR**; yalnız regresyon testi eklenir (super-admin status='Pasif' update + delete).
+
+### 5-bullet plan
+1. **Ne değişiyor**: `firestore.rules` — `posts` create/update/delete'e org-yönetimi branch'i (`managesOrg` helper, adminUserId + managed*Id fallback) + super-admin override; `messages` create'e recipient-türü kısıtı (`recipientIsEntity`/`recipientIsAdminUser`/`senderIsEntityAdmin` helper'ları). `events` DOKUNULMAZ.
+2. **Neden**: posts artık `authorId = org id` yazıyor → eski `authorId == auth.uid` create/update/delete kırık; messages create normal→normal DM'e açıktı → server-side kısıtlama gerekli.
+3. **Testler**: `tests/rules/posts.test.ts` genişletilir (org-admin own-org create/update/delete ALLOW; farklı kullanıcı DENY; super-admin ALLOW; bireysel authorId==uid geriye dönük ALLOW) + `tests/rules/messages.test.ts` genişletilir (normal→normal DM DENY; normal→entity ALLOW; normal→admin-kullanıcı ALLOW; entity-admin→normal-kullanıcı yanıt ALLOW) + `tests/rules/events.test.ts` genişletilir (super-admin status='Pasif' update ALLOW; super-admin delete ALLOW — zaten var, doğrulama).
+4. **Rollback**: Tek dosya `firestore.rules` git-revert; canlıysa önceki rules ile `firebase deploy --only firestore:rules`. Tests pür-additive, revert güvenli.
+5. **Blast radius**: **YÜKSEK** (rules deploy gerektirir). posts değişikliği gevşetme DEĞİL — eski rule org-authored write'ı tamamen reddediyordu; yeni rule yalnız org'u GERÇEKTEN yöneten kullanıcıya (adminUserId == uid VEYA managed*Id == authorId) izin verir. messages değişikliği SIKILAŞTIRMA (create'e ek AND koşulu). events değişiklik yok.
+
+### Risk raporu
+- **posts loosening kontrolü**: Yeni create branch'i yalnız `managesOrg(authorId)` true ise izin verir; `authorId` rastgele bir org id olamaz çünkü o org'un `adminUserId`'i auth.uid olmalı VEYA kullanıcının `managed*Id`'i authorId'e eşit olmalı. Bireysel `authorId == auth.uid` branch'i KORUNUR (timeline'da bireysel kullanıcı gönderisi varsa kırılmaz). Spoof riski yok: bir kullanıcı yönetmediği bir org adına post atamaz.
+- **posts read maliyeti**: create/update/delete'te `managesOrg` en fazla 2 `get()` (org doc + user doc) → fundApplications/ngoSenders ile aynı kabul edilebilir maliyet. read/list (`if true`) değişmez, ek maliyet yok.
+- **messages privacy**: create'e EK kısıt; mevcut read/list/update/delete dokunulmaz. Normal→normal DM artık reddedilir (istenen). Entity-admin yanıtı `senderIsEntityAdmin()` ile korunur → mevcut thread'ler bozulmaz.
+- **messages get() maliyeti**: create'te alıcı türü tespiti için en fazla 3 `exists()` (ngos/brands/clubs) + 1 user `get()`. Yalnız create path'inde (read/list'te değil) → düşük frekans, kabul edilebilir.
+- **events**: değişiklik yok → regresyon riski yok; yalnız test kapsamı artar.
+
+### Test çalıştırma durumu
+`npm run test:rules` LOKALDE KOŞULAMADI — Firestore emulator için **Java Runtime yok** (`java -version` → "Unable to locate a Java Runtime"). `firebase emulators:exec --only firestore` Java gerektirir. Testler `describe.skipIf(!emulatorUp)` ile yazıldığı için emulator yokken `npm run test` (vitest) içinde graceful skip olur ve CI'yı bloklamaz. CI rules-emulator job'u (P0-6) bu testleri çalıştırır.
+
+Exact komut (operatör/CI, Java + emulator mevcutken):
+```
+npm run test:rules
+# = firebase emulators:exec --only firestore "vitest run rules"
+```
+
+### Rollback planı (deploy sonrası)
+- Kod: `git revert <commit>` (yalnız firestore.rules + tests + bu doküman).
+- Rules canlıysa geri alma: önceki `firestore.rules` (posts eski `authorId==uid` + messages eski `senderId==uid`-only create) ile `firebase deploy --only firestore:rules`. UYARI: revert posts org-authoring'i tekrar kırar ve messages user→user DM'i tekrar açar.
+
+### Deploy komutu (operatör — DEPLOY EDİLMEDİ)
+```
+# 1) Önce canlı rules'ı yedekle:
+firebase firestore:rules:get > /tmp/firestore.rules.backup.$(date +%Y%m%d-%H%M%S)
+# 2) Deploy:
+firebase deploy --only firestore:rules --project hangel-new-v18-87297865-9bcc3
+```
+
+### Durum
+🟡 Needs user approval — rules deploy operatör işidir (yüksek blast radius). Kod editleri + testler tamamlandı; `npm run test:rules` Java yokluğundan lokalde koşulamadı (CI doğrular).
