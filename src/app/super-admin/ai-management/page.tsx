@@ -31,10 +31,15 @@ import {
   Save,
   Library as LibraryIcon,
   X,
+  Building2,
+  Plus,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   serverTimestamp,
@@ -320,6 +325,329 @@ function AssistantEditor({
   );
 }
 
+// PDF #3: per-institution "proje çağrı esasları". Doc id = institution slug.
+interface ProjectCallCriteria {
+  institution: string;
+  slug: string;
+  requirements: string;
+  format: string;
+  deadline: string;
+  keywords: string;
+  focusAreas: string;
+}
+
+const EMPTY_CRITERIA: ProjectCallCriteria = {
+  institution: '',
+  slug: '',
+  requirements: '',
+  format: '',
+  deadline: '',
+  keywords: '',
+  focusAreas: '',
+};
+
+/**
+ * Turkish-aware slugify. MUST stay in sync with the API route
+ * (`src/app/api/library/project/route.ts` → `slugifyInstitution`) so the
+ * institution label resolves to the same doc id on write (here) and read (route).
+ */
+function slugifyInstitution(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i')
+    .replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function ProjectCriteriaManager() {
+  const db = useFirestore();
+  const { toast } = useToast();
+
+  const criteriaQuery = useMemoFirebase(
+    () => collection(db, COLLECTIONS.projectCallCriteria),
+    [db],
+  );
+  const { data: criteriaList, isLoading } =
+    useCollection<ProjectCallCriteria>(criteriaQuery);
+
+  const [form, setForm] = useState<ProjectCallCriteria>(EMPTY_CRITERIA);
+  // Doc id currently being edited (null = creating a new record).
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const sortedList = useMemo(() => {
+    return [...(criteriaList ?? [])].sort((a, b) =>
+      (a.institution ?? '').localeCompare(b.institution ?? '', 'tr'),
+    );
+  }, [criteriaList]);
+  // `useCollection` returns `WithId<T>`, so each item carries a string `id`.
+  type CriteriaWithId = ProjectCallCriteria & { id: string };
+
+  const resetForm = () => {
+    setForm(EMPTY_CRITERIA);
+    setEditingId(null);
+  };
+
+  const startEdit = (item: CriteriaWithId) => {
+    setForm({
+      institution: item.institution ?? '',
+      slug: item.slug ?? item.id,
+      requirements: item.requirements ?? '',
+      format: item.format ?? '',
+      deadline: item.deadline ?? '',
+      keywords: item.keywords ?? '',
+      focusAreas: item.focusAreas ?? '',
+    });
+    setEditingId(item.id);
+  };
+
+  const handleSave = async () => {
+    const institution = form.institution.trim();
+    if (!institution) {
+      toast({
+        title: 'Kurum adı zorunlu',
+        description: 'Lütfen çağrı esaslarını gireceğiniz kurumun adını yazın.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    // When editing keep the original doc id; when creating derive it from the label.
+    const docId = editingId ?? slugifyInstitution(institution);
+    if (!docId) {
+      toast({
+        title: 'Geçersiz kurum adı',
+        description: 'Kurum adından geçerli bir kimlik üretilemedi.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSaving(true);
+    try {
+      await setDoc(
+        doc(db, COLLECTIONS.projectCallCriteria, docId),
+        {
+          institution,
+          slug: docId,
+          requirements: form.requirements.trim(),
+          format: form.format.trim(),
+          deadline: form.deadline.trim(),
+          keywords: form.keywords.trim(),
+          focusAreas: form.focusAreas.trim(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      toast({
+        title: 'Kaydedildi',
+        description: `${institution} için proje çağrı esasları güncellendi.`,
+      });
+      resetForm();
+    } catch (err) {
+      toast({
+        title: 'Kayıt başarısız',
+        description: err instanceof Error ? err.message : 'Bilinmeyen hata',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string, institution: string) => {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm(`${institution || id} için çağrı esaslarını silmek istiyor musunuz?`)
+    ) {
+      return;
+    }
+    setDeletingId(id);
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.projectCallCriteria, id));
+      if (editingId === id) resetForm();
+      toast({ title: 'Silindi', description: `${institution || id} çağrı esasları kaldırıldı.` });
+    } catch (err) {
+      toast({
+        title: 'Silme başarısız',
+        description: err instanceof Error ? err.message : 'Bilinmeyen hata',
+        variant: 'destructive',
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border bg-muted/20 p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          {editingId ? (
+            <Pencil className="h-4 w-4 text-fuchsia-500" />
+          ) : (
+            <Plus className="h-4 w-4 text-fuchsia-500" />
+          )}
+          <h3 className="font-semibold text-sm">
+            {editingId ? 'Çağrı Esaslarını Düzenle' : 'Yeni Çağrı Esası Ekle'}
+          </h3>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="crit-institution">Kurum Adı</Label>
+          <Input
+            id="crit-institution"
+            value={form.institution}
+            onChange={e => setForm(prev => ({ ...prev, institution: e.target.value }))}
+            placeholder="Örn. AB (Avrupa Birliği) Fonları"
+            disabled={editingId !== null}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Proje yazma formundaki kurum adıyla birebir aynı yazın. Kimlik:{' '}
+            <code className="bg-muted px-1 rounded">
+              {(editingId ?? slugifyInstitution(form.institution)) || '—'}
+            </code>
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="crit-requirements">Talep ve Esaslar</Label>
+          <Textarea
+            id="crit-requirements"
+            rows={5}
+            value={form.requirements}
+            onChange={e => setForm(prev => ({ ...prev, requirements: e.target.value }))}
+            placeholder="Bu kurumun proje başvurularından beklediği koşullar, uygunluk kriterleri..."
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="crit-format">Format / Şablon Beklentisi</Label>
+            <Textarea
+              id="crit-format"
+              rows={3}
+              value={form.format}
+              onChange={e => setForm(prev => ({ ...prev, format: e.target.value }))}
+              placeholder="İstenen bölümler, sayfa limiti, ek belgeler..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="crit-deadline">Son Başvuru Tarihi / Takvim</Label>
+            <Input
+              id="crit-deadline"
+              value={form.deadline}
+              onChange={e => setForm(prev => ({ ...prev, deadline: e.target.value }))}
+              placeholder="Örn. 31 Aralık 2026 veya yıl boyu açık"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="crit-focus">Odak Alanları</Label>
+            <Textarea
+              id="crit-focus"
+              rows={3}
+              value={form.focusAreas}
+              onChange={e => setForm(prev => ({ ...prev, focusAreas: e.target.value }))}
+              placeholder="Öncelikli temalar (örn. iklim, dijital dönüşüm, gençlik)..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="crit-keywords">Anahtar Kelimeler</Label>
+            <Textarea
+              id="crit-keywords"
+              rows={3}
+              value={form.keywords}
+              onChange={e => setForm(prev => ({ ...prev, keywords: e.target.value }))}
+              placeholder="Virgülle ayrılmış anahtar kelimeler..."
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2">
+          {editingId && (
+            <Button variant="ghost" onClick={resetForm} disabled={saving}>
+              İptal
+            </Button>
+          )}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" /> {editingId ? 'Güncelle' : 'Ekle'}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Tanımlı Çağrı Esasları</Label>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin mr-2" /> Yükleniyor...
+          </div>
+        ) : sortedList.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic py-4">
+            Henüz çağrı esası tanımlanmadı. Yukarıdan ilk kaydı ekleyebilirsiniz.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {sortedList.map(item => {
+              const id = item.id;
+              return (
+                <div
+                  key={id}
+                  className="flex items-start justify-between gap-3 rounded-xl border bg-background p-3"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="font-medium text-sm truncate">{item.institution || id}</span>
+                    </div>
+                    {item.requirements && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        {item.requirements}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => startEdit(item)}
+                      aria-label="Düzenle"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => void handleDelete(id, item.institution)}
+                      disabled={deletingId === id}
+                      aria-label="Sil"
+                    >
+                      {deletingId === id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AIManagementPage() {
   const db = useFirestore();
 
@@ -365,12 +693,15 @@ export default function AIManagementPage() {
             </div>
           ) : (
             <Tabs defaultValue="library">
-              <TabsList className="grid grid-cols-2 w-full max-w-md">
+              <TabsList className="grid grid-cols-3 w-full max-w-2xl">
                 <TabsTrigger value="library" className="flex items-center gap-2">
                   <Bot className="h-4 w-4" /> Kütüphane Asistanı
                 </TabsTrigger>
                 <TabsTrigger value="project" className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" /> Proje Yazma Asistanı
+                </TabsTrigger>
+                <TabsTrigger value="criteria" className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" /> Proje Çağrı Esasları
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="library" className="mt-6">
@@ -378,6 +709,9 @@ export default function AIManagementPage() {
               </TabsContent>
               <TabsContent value="project" className="mt-6">
                 <AssistantEditor kind="project" sectionOptions={sectionOptions} />
+              </TabsContent>
+              <TabsContent value="criteria" className="mt-6">
+                <ProjectCriteriaManager />
               </TabsContent>
             </Tabs>
           )}

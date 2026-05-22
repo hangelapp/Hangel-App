@@ -294,6 +294,106 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             {entityType === 'NGO' && (
                 <div className="space-y-12">
+                    {/* Kayıt Sorgulama — kütük numarası ile otomatik doldurma (formun ilk adımı) */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={Search}>KAYIT SORGULAMA</SectionTitle>
+                        <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
+                            Kütük numaranızı girip <span className="font-bold text-foreground">Bilgileri Getir</span>&apos;e basın; ilgili STK&apos;nın bilgileri formu otomatik doldursun. İsterseniz alanları düzenleyebilir veya kütük numaranız yoksa bilgileri elle girebilirsiniz.
+                        </p>
+                        <div className="space-y-2">
+                            <FormLabel>Kütük Numarası</FormLabel>
+                            <div className="grid grid-cols-[1fr_auto] gap-2">
+                                <FormInput
+                                    placeholder="Kütük No"
+                                    value={formData.registryNo}
+                                    onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleDernekLookup(); } }}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12 rounded-xl px-4 font-bold border-primary/30"
+                                    disabled={registryLookupStatus === 'loading' || !formData.registryNo.trim()}
+                                    onClick={() => void handleDernekLookup()}
+                                >
+                                    {registryLookupStatus === 'loading'
+                                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                                        : "Bilgileri Getir"}
+                                </Button>
+                            </div>
+                            {registryLookupStatus === 'notFound' && (
+                                <p className="text-[11px] text-muted-foreground ml-1">Bu kütük numarasıyla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
+                            )}
+                            {registryLookupStatus === 'error' && (
+                                <p className="text-[11px] text-muted-foreground ml-1">Kayıt sorgulanamadı. Bilgileri elle girebilirsiniz.</p>
+                            )}
+                        </div>
+                        {registryLookupStatus === 'found' && registryMatch && (
+                            <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="space-y-1 text-left">
+                                    <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{registryMatch.name}</p>
+                                    {registryMatch.faaliyetAlani && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.faaliyetAlani}</p>
+                                    )}
+                                    {registryMatch.adres && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.adres}</p>
+                                    )}
+                                    {registryMatch.webSite && (
+                                        <p className="text-[11px] text-primary break-all">{registryMatch.webSite}</p>
+                                    )}
+                                    <p className="text-[10px] text-muted-foreground pt-1">Bilgiler forma aktarıldı; gerekirse düzenleyebilirsiniz.</p>
+                                </div>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <FormLabel>Vakıf adıyla ara</FormLabel>
+                            <p className="text-[11px] text-muted-foreground ml-1 -mt-1">Kütük numaranız yoksa vakfınızı adıyla arayabilirsiniz.</p>
+                            <div className="grid grid-cols-[1fr_auto] gap-2">
+                                <FormInput
+                                    placeholder="En az 3 harf girin"
+                                    value={vakifSearchText}
+                                    onChange={e => setVakifSearchText(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleVakifSearch(); } }}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-12 rounded-xl px-4 font-bold border-primary/30"
+                                    disabled={vakifSearchStatus === 'loading' || vakifSearchText.trim().length < 3}
+                                    onClick={() => void handleVakifSearch()}
+                                >
+                                    {vakifSearchStatus === 'loading'
+                                        ? <Loader2 className="h-4 w-4 animate-spin" />
+                                        : <><Search className="mr-2 h-4 w-4" />Vakfı Bul</>}
+                                </Button>
+                            </div>
+                            {vakifResults.length > 0 && (
+                                <div className="rounded-2xl border bg-card divide-y overflow-hidden">
+                                    {vakifResults.map(v => (
+                                        <button
+                                            key={v.id}
+                                            type="button"
+                                            onClick={() => handleSelectVakif(v)}
+                                            className="w-full text-left px-4 py-3 hover:bg-primary/5 transition-colors"
+                                        >
+                                            <p className="text-[13px] font-bold leading-tight">{v.name}</p>
+                                            {(v.il || v.ilce) && (
+                                                <p className="text-[11px] text-muted-foreground">{[v.ilce, v.il].filter(Boolean).join(' / ')}</p>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            {vakifSearchStatus === 'empty' && (
+                                <p className="text-[11px] text-muted-foreground ml-1">Bu adla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
+                            )}
+                            {vakifSearchStatus === 'error' && (
+                                <p className="text-[11px] text-muted-foreground ml-1">Arama şu anda kullanılamıyor, bilgileri elle girin.</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Kimlik */}
                     <div className="space-y-6">
                         <SectionTitle icon={Building2}>KURULUŞ KİMLİĞİ</SectionTitle>
@@ -319,53 +419,6 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 </Select>
                             </div>
                         </div>
-                        {formData.orgSubType === 'Vakıf' && (
-                            <div className="space-y-2">
-                                <FormLabel>Vakıf adıyla ara</FormLabel>
-                                <div className="grid grid-cols-[1fr_auto] gap-2">
-                                    <FormInput
-                                        placeholder="En az 3 harf girin"
-                                        value={vakifSearchText}
-                                        onChange={e => setVakifSearchText(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleVakifSearch(); } }}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="h-12 rounded-xl px-4 font-bold border-primary/30"
-                                        disabled={vakifSearchStatus === 'loading' || vakifSearchText.trim().length < 3}
-                                        onClick={() => void handleVakifSearch()}
-                                    >
-                                        {vakifSearchStatus === 'loading'
-                                            ? <Loader2 className="h-4 w-4 animate-spin" />
-                                            : <><Search className="mr-2 h-4 w-4" />Vakfı Bul</>}
-                                    </Button>
-                                </div>
-                                {vakifResults.length > 0 && (
-                                    <div className="rounded-2xl border bg-card divide-y overflow-hidden">
-                                        {vakifResults.map(v => (
-                                            <button
-                                                key={v.id}
-                                                type="button"
-                                                onClick={() => handleSelectVakif(v)}
-                                                className="w-full text-left px-4 py-3 hover:bg-primary/5 transition-colors"
-                                            >
-                                                <p className="text-[13px] font-bold leading-tight">{v.name}</p>
-                                                {(v.il || v.ilce) && (
-                                                    <p className="text-[11px] text-muted-foreground">{[v.ilce, v.il].filter(Boolean).join(' / ')}</p>
-                                                )}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                {vakifSearchStatus === 'empty' && (
-                                    <p className="text-[11px] text-muted-foreground ml-1">Bu adla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
-                                )}
-                                {vakifSearchStatus === 'error' && (
-                                    <p className="text-[11px] text-muted-foreground ml-1">Arama şu anda kullanılamıyor, bilgileri elle girin.</p>
-                                )}
-                            </div>
-                        )}
                         <div className="space-y-2">
                             <FormLabel>Hakkınızda</FormLabel>
                             <Textarea
@@ -481,55 +534,17 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <FormLabel>Kütük Numarası</FormLabel>
-                                <div className="grid grid-cols-[1fr_auto] gap-2">
-                                    <FormInput
-                                        placeholder="Kütük No"
-                                        value={formData.registryNo}
-                                        onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleDernekLookup(); } }}
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="h-12 rounded-xl px-4 font-bold border-primary/30"
-                                        disabled={registryLookupStatus === 'loading' || !formData.registryNo.trim()}
-                                        onClick={() => void handleDernekLookup()}
-                                    >
-                                        {registryLookupStatus === 'loading'
-                                            ? <Loader2 className="h-4 w-4 animate-spin" />
-                                            : "Bilgileri Getir"}
-                                    </Button>
-                                </div>
-                                {registryLookupStatus === 'notFound' && (
-                                    <p className="text-[11px] text-muted-foreground ml-1">Bu kütük numarasıyla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
-                                )}
-                                {registryLookupStatus === 'error' && (
-                                    <p className="text-[11px] text-muted-foreground ml-1">Kayıt sorgulanamadı. Bilgileri elle girebilirsiniz.</p>
-                                )}
+                                <FormInput
+                                    placeholder="Kütük No"
+                                    value={formData.registryNo}
+                                    onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>IBAN</FormLabel>
                                 <FormInput placeholder="TR..." value={formData.iban} onChange={e => setFormData({...formData, iban: e.target.value})} />
                             </div>
                         </div>
-                        {registryLookupStatus === 'found' && registryMatch && (
-                            <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-                                <div className="space-y-1 text-left">
-                                    <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{registryMatch.name}</p>
-                                    {registryMatch.faaliyetAlani && (
-                                        <p className="text-[11px] text-muted-foreground">{registryMatch.faaliyetAlani}</p>
-                                    )}
-                                    {registryMatch.adres && (
-                                        <p className="text-[11px] text-muted-foreground">{registryMatch.adres}</p>
-                                    )}
-                                    {registryMatch.webSite && (
-                                        <p className="text-[11px] text-primary break-all">{registryMatch.webSite}</p>
-                                    )}
-                                    <p className="text-[10px] text-muted-foreground pt-1">Bilgiler forma aktarıldı; gerekirse düzenleyebilirsiniz.</p>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Belgeler */}

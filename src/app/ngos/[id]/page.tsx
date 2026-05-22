@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, CreditCard, Target } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, CreditCard, Target, Copy } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -277,6 +277,22 @@ export default function NgoProfilePage() {
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
 
+  // Kütük (devlet sicil) numarası ngo dokümanında birden fazla alan adıyla tutulabilir;
+  // ilk dolu olanı paylaşılabilir hangel.org.tr/<no> linki olarak gösteririz.
+  const ngoRegistry = ngo as NGO & { kutukNo?: string; registryNo?: string; registryNumber?: string; kutuk?: string };
+  const kutukNo = (ngoRegistry.kutukNo ?? ngoRegistry.registryNo ?? ngoRegistry.registryNumber ?? ngoRegistry.kutuk ?? '').toString().trim();
+  const kutukShortLink = kutukNo ? `hangel.org.tr/${kutukNo}` : '';
+
+  const handleCopyKutuk = async () => {
+    if (!kutukShortLink) return;
+    try {
+      await navigator.clipboard.writeText(kutukShortLink);
+      toast({ title: 'Bağlantı kopyalandı', description: kutukShortLink });
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Lütfen bağlantıyı elle kopyalayın.' });
+    }
+  };
+
   return (
     <div className="animate-in fade-in-0">
         <NgoAnalyticsScripts
@@ -379,6 +395,26 @@ export default function NgoProfilePage() {
                         {ngo.foundationYear && <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Yılı:</span><span>{ngo.foundationYear}</span></div>}
                         {ngo.joinDate && <div className="flex justify-between"><span className="font-medium text-foreground">Katılım Tarihi:</span><span>{new Date(ngo.joinDate).toLocaleDateString('tr-TR')}</span></div>}
                         <div className="flex justify-between"><span className="font-medium text-foreground">İktisadi İşletme:</span><span>{ngo.economicEnterpriseStatus === 'var' ? 'Var' : 'Yok'}</span></div>
+                        {kutukNo && (
+                            <div className="flex justify-between items-center gap-2">
+                                <span className="font-medium text-foreground shrink-0">Kütük No:</span>
+                                <div className="flex items-center gap-1 min-w-0">
+                                    <Link href={`/${kutukNo}`} className="text-primary font-medium hover:underline truncate" title={kutukShortLink}>
+                                        {kutukShortLink}
+                                    </Link>
+                                    <Button
+                                        type="button"
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-6 w-6 shrink-0"
+                                        onClick={handleCopyKutuk}
+                                        aria-label="Kütük bağlantısını kopyala"
+                                    >
+                                        <Copy className="h-3.5 w-3.5" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

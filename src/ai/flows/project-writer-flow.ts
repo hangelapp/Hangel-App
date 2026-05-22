@@ -24,6 +24,10 @@ const ProjectWriterInputSchema = z.object({
     impact: z.string().optional(),
   }),
   libraryContext: z.string().describe('Relevant library data and academic context.'),
+  // PDF #3: the selected institution's "proje çağrı esasları" (requirements, format,
+  // deadlines, keywords, focus areas). Optional — when absent the prompt omits it and
+  // behaviour is unchanged. Populated server-side from the projectCallCriteria collection.
+  callCriteria: z.string().optional().describe('The target institution\'s project-call criteria (requirements, format, deadlines, keywords, focus areas).'),
 });
 export type ProjectWriterInput = z.infer<typeof ProjectWriterInputSchema>;
 
@@ -51,6 +55,7 @@ export async function writeProjectProposal(input: ProjectWriterInput, idToken?: 
       impact: input.sections.impact !== undefined ? sanitizeUserInput(input.sections.impact, 4000) : undefined,
     },
     libraryContext: sanitizeUserInput(input.libraryContext, 8000),
+    callCriteria: input.callCriteria !== undefined ? sanitizeUserInput(input.callCriteria, 6000) : undefined,
   };
   const userId = await verifyAIFlowUserId(idToken);
   if (userId) {
@@ -83,13 +88,18 @@ const prompt = ai.definePrompt({
 
   Reference Library Context:
   {{{libraryContext}}}
+{{#if callCriteria}}
+  Project Call Criteria for {{{institution}}} (talep ve esasları — you MUST comply with these):
+  {{{callCriteria}}}
+{{/if}}
 
   Instructions:
   1. Use the specific terminology and standards of {{{institution}}}.
   2. Incorporate data and academic evidence from the Reference Library Context where relevant to strengthen the project's justification.
   3. Format the output professionally using Markdown. Include clear headings for each section.
   4. Ensure the language is formal, persuasive, and methodologically sound (SMART goals, Logical Framework logic).
-  5. The output should be in Turkish.`,
+  5. The output should be in Turkish.{{#if callCriteria}}
+  6. Strictly align the proposal with the Project Call Criteria above: satisfy every stated requirement, follow the requested format, respect any deadline, and weave in the listed keywords and focus areas naturally.{{/if}}`,
 });
 
 const projectWriterFlow = ai.defineFlow(

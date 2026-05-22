@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
@@ -273,6 +273,24 @@ export default function UsersPage() {
       }
       // 2) Kullanıcının roleTitle alanını eşitle (panel rol kapsamı buradan okunur).
       await updateDoc(doc(firestore, COLLECTIONS.users, row.userId), { roleTitle: newRole });
+
+      // 3) Rolü değiştirilen kullanıcıya uygulama içi bildirim gönder.
+      //    Bildirim oluşturulamasa bile rol güncellemesi geri alınmaz.
+      try {
+        const entityName = activeEntity?.data?.name || 'Kuruluş';
+        await addDoc(collection(firestore, COLLECTIONS.notifications), {
+          userId: row.userId,
+          type: 'authorization',
+          title: 'Yetkilendirildiniz',
+          body: `${entityName} için ${newRole} olarak yetkilendirildiniz.`,
+          data: { entityId, entityType: entityKind, role: newRole },
+          read: false,
+          createdAt: serverTimestamp(),
+          createdBy: authUser?.uid || null,
+        });
+      } catch (notifErr) {
+        console.warn('Yetkilendirme bildirimi oluşturulamadı:', notifErr);
+      }
 
       setRoleEdits(prev => {
         const next = { ...prev };

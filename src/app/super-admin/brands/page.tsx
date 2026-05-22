@@ -185,6 +185,24 @@ export default function BrandsPage() {
                 autoAcceptedBy: 'super-admin',
             });
 
+            // 4. Yetkilendirilen kullanıcıya uygulama içi bildirim gönder.
+            //    Bildirim oluşturulamasa bile yetkilendirme geri alınmaz.
+            const brandName = (brands || []).find(b => b.id === brandId)?.name ?? 'Marka';
+            try {
+                await addDoc(collection(db, COLLECTIONS.notifications), {
+                    userId: newUserId,
+                    type: 'authorization',
+                    title: 'Yetkilendirildiniz',
+                    body: `${brandName} için ${role} olarak yetkilendirildiniz.`,
+                    data: { entityId: brandId, entityType: 'brand', role },
+                    read: false,
+                    createdAt: serverTimestamp(),
+                    createdBy: 'super-admin',
+                });
+            } catch (notifErr) {
+                console.warn('Yetkilendirme bildirimi oluşturulamadı:', notifErr);
+            }
+
             toast({
                 title: 'Yetkili Atandı',
                 description: `${newUserName} bu marka için "${role}" olarak yetkilendirildi.`,

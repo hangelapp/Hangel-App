@@ -58,6 +58,11 @@ export const COLLECTIONS = {
   siteSettings: 'siteSettings',
   contracts: 'contracts',
   aiAssistantConfig: 'aiAssistantConfig',
+  // PDF #3: per-institution "proje çağrı esasları" (project call criteria) that the
+  // project-writer AI flow uses to tailor proposals to each org's talep ve esasları.
+  // Doc id = institution slug. { institution, slug, requirements, format, deadline,
+  // keywords, focusAreas, updatedAt }. Super-admin write; signed-in read.
+  projectCallCriteria: 'projectCallCriteria',
   mailQueue: 'mailQueue',
 
   // Transparency

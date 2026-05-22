@@ -11,6 +11,9 @@
  *     model has nothing to expand.
  *   - Reads `aiAssistantConfig/project` for `knowledgeSourceSlugs` (same
  *     filter as the chat route).
+ *   - PDF #3: reads `projectCallCriteria/{slug}` (slug derived from the
+ *     selected `institution`) and forwards the org's "talep ve esasları" to
+ *     the flow as `callCriteria`. Missing doc → field omitted (graceful).
  *   - Optionally accepts `Authorization: Bearer <idToken>` → forwarded to
  *     `writeProjectProposal` for per-user daily quota (P1-8c).
  *   - Errors → `{ errorCode, message }` shape.
@@ -44,6 +47,40 @@ function pickString(value: unknown): string | undefined {
     if (typeof value !== 'string') return undefined;
     const trimmed = value.trim();
     return trimmed.length === 0 ? undefined : trimmed;
+}
+
+/**
+ * Turkish-aware slugify, MUST stay in sync with the super-admin
+ * ai-management page (`slugifyInstitution`) so that an institution label
+ * resolves to the same `projectCallCriteria` doc id on both write and read.
+ */
+function slugifyInstitution(label: string): string {
+    return label
+        .toLowerCase()
+        .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i')
+        .replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Build a plain-text criteria block from a projectCallCriteria document.
+ * Only includes fields that are present so the prompt stays clean.
+ * Returns undefined when the document has no usable content.
+ */
+function buildCriteriaText(data: Record<string, unknown>): string | undefined {
+    const lines: string[] = [];
+    const add = (label: string, value: unknown) => {
+        if (typeof value === 'string' && value.trim().length > 0) {
+            lines.push(`${label}: ${value.trim()}`);
+        }
+    };
+    add('Talep ve Esaslar', data.requirements);
+    add('Format', data.format);
+    add('Son Başvuru Tarihi', data.deadline);
+    add('Odak Alanları', data.focusAreas);
+    add('Anahtar Kelimeler', data.keywords);
+    return lines.length > 0 ? lines.join('\n') : undefined;
 }
 
 export async function POST(req: Request) {
@@ -82,6 +119,7 @@ export async function POST(req: Request) {
         }
 
         let allowedSlugs: string[] = [];
+        let callCriteria: string | undefined;
         try {
             const db = getAdminFirestore();
             const snap = await db.collection(COLLECTIONS.aiAssistantConfig).doc('project').get();
@@ -91,13 +129,24 @@ export async function POST(req: Request) {
                     allowedSlugs = data.knowledgeSourceSlugs.filter((x: unknown): x is string => typeof x === 'string');
                 }
             }
+
+            // PDF #3: look up the selected institution's project-call criteria so the
+            // AI tailors the proposal to that org's "talep ve esasları". Graceful —
+            // missing doc / read failure simply omits the field (existing behavior).
+            const slug = slugifyInstitution(institution);
+            if (slug) {
+                const criteriaSnap = await db.collection(COLLECTIONS.projectCallCriteria).doc(slug).get();
+                if (criteriaSnap.exists) {
+                    callCriteria = buildCriteriaText(criteriaSnap.data() ?? {});
+                }
+            }
         } catch (configErr) {
-            console.warn('library/project: aiAssistantConfig read failed', configErr);
+            console.warn('library/project: config/criteria read failed', configErr);
         }
 
         const libraryContext = buildLibraryContext(allowedSlugs);
         const result = await writeProjectProposal(
-            { institution, sections, libraryContext },
+            { institution, sections, libraryContext, callCriteria },
             idToken ?? undefined,
         );
 
