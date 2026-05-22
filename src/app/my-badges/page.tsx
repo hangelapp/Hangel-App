@@ -2,13 +2,14 @@
 
 import React, { useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Star, Milestone, CheckCircle, Lock, Award, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram } from 'lucide-react';
+import { Star, Milestone, CheckCircle, Lock, Award, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram, Eye } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { badges } from '@/lib/data';
-import { computeAreaPoints } from '@/lib/badge-points';
+import { computeAreaPoints, mapCategoryToBadgeArea } from '@/lib/badge-points';
+import type { Application } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
 import { Badge as BadgeType, BadgeLevel } from '@/lib/types';
@@ -29,6 +30,13 @@ const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
 };
 
 const LEVEL_ORDER: BadgeLevel[] = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Platin'];
+
+/**
+ * PRD kuralı: kullanıcı bir STK'yı bağış/destek (supportedNgos) veya gönüllülük
+ * (volunteerNgos) için seçtiğinde, o STK'nın kategorisinin eşlendiği rozet
+ * alanına +10 puan kazandırır. Her nitelikli seçim için 10 puan.
+ */
+const SELECTION_AREA_POINTS = 10;
 
 const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: number; progress: number }) | null; t: (key: string) => string }) => {
     if (!nextBadge) {
@@ -144,7 +152,45 @@ export default function MyBadgesPage() {
         [db, authUser?.uid],
     );
     const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
-    const certificates = useMemo(() => certificatesData ?? [], [certificatesData]);
+
+    // Onaylı gönüllülük katılımları → sertifika.
+    // Veri modeli: applications koleksiyonunda type === 'Gönüllülük' ve
+    // status === 'Onaylandı' (STK yetkilisi ngo-admin/volunteer ekranından onaylar:
+    // updateDoc(applications/{id}, { status: 'Onaylandı', reviewedAt, reviewedBy })).
+    // Bu, "katılımı kuruluşun yetkili kişisi tarafından ONAYLANAN gönüllüler"
+    // koşulunu karşılar.
+    const approvedAppsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.applications), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: approvedAppsData } = useCollection<Application>(approvedAppsQuery);
+
+    // Onaylı gönüllülük başvurularını sertifika satırına dönüştür.
+    const approvedCertificates = useMemo<CertificateDoc[]>(() => {
+        return (approvedAppsData ?? [])
+            .filter(app => app.type === 'Gönüllülük' && app.status === 'Onaylandı')
+            .map(app => ({
+                id: `app-${app.id}`,
+                title: app.title,
+                organization: app.org || '',
+                date: app.date || '',
+            }));
+    }, [approvedAppsData]);
+
+    // Manuel girilen sertifikalar (users/{uid}/certificates) + onaylı katılımlar.
+    // Aynı başlık+kuruluş tekrarını önlemek için dedupe uygula.
+    const certificates = useMemo<CertificateDoc[]>(() => {
+        const manual = certificatesData ?? [];
+        const seen = new Set(manual.map(c => `${c.title}|${c.organization}`));
+        const merged: CertificateDoc[] = [...manual];
+        for (const c of approvedCertificates) {
+            const key = `${c.title}|${c.organization}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push(c);
+        }
+        return merged;
+    }, [certificatesData, approvedCertificates]);
 
     // Aktivite kaynakları: areaPoints'i kullanıcının gerçek bağış / gönüllülük / davetinden hesapla.
     type DonationDoc = { id?: string; status?: string; ngoIds?: string[]; ngo?: string[] };
@@ -181,66 +227,85 @@ export default function MyBadgesPage() {
     // PDF alıcı adı: profile/page.tsx currentUser.name kullanıyor; burada userData.name / authUser.displayName.
     const recipientName = (userData as { name?: string } | undefined)?.name || authUser?.displayName || 'Gönüllü';
 
+    // Sertifika PDF'ini oluştur (jsPDF dinamik import). İndir ve Görüntüle aynı çıktıyı paylaşır.
+    const buildCertificatePdf = async (cert: { title: string; organization: string; date: string }) => {
+        const { default: jsPDF } = await import('jspdf');
+        const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+
+        // Border
+        pdf.setDrawColor(234, 88, 12);
+        pdf.setLineWidth(2);
+        pdf.rect(10, 10, pageW - 20, pageH - 20);
+        pdf.setLineWidth(0.5);
+        pdf.rect(14, 14, pageW - 28, pageH - 28);
+
+        // Title
+        pdf.setFontSize(32);
+        pdf.setTextColor(234, 88, 12);
+        pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
+
+        pdf.setFontSize(12);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
+
+        // Recipient
+        pdf.setFontSize(14);
+        pdf.setTextColor(60, 60, 60);
+        pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
+
+        pdf.setFontSize(22);
+        pdf.setTextColor(20, 20, 20);
+        pdf.text(recipientName, pageW / 2, 92, { align: 'center' });
+
+        // Body
+        pdf.setFontSize(13);
+        pdf.setTextColor(60, 60, 60);
+        const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
+        pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
+
+        // Title of cert
+        pdf.setFontSize(20);
+        pdf.setTextColor(20, 20, 20);
+        pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
+
+        // Date / org footer
+        pdf.setFontSize(11);
+        pdf.setTextColor(80, 80, 80);
+        pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
+        pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
+
+        pdf.setFontSize(9);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
+
+        return pdf;
+    };
+
     const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
-            const { default: jsPDF } = await import('jspdf');
-            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
-            const pageW = pdf.internal.pageSize.getWidth();
-            const pageH = pdf.internal.pageSize.getHeight();
-
-            // Border
-            pdf.setDrawColor(234, 88, 12);
-            pdf.setLineWidth(2);
-            pdf.rect(10, 10, pageW - 20, pageH - 20);
-            pdf.setLineWidth(0.5);
-            pdf.rect(14, 14, pageW - 28, pageH - 28);
-
-            // Title
-            pdf.setFontSize(32);
-            pdf.setTextColor(234, 88, 12);
-            pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
-
-            pdf.setFontSize(12);
-            pdf.setTextColor(80, 80, 80);
-            pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
-
-            // Recipient
-            pdf.setFontSize(14);
-            pdf.setTextColor(60, 60, 60);
-            pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
-
-            pdf.setFontSize(22);
-            pdf.setTextColor(20, 20, 20);
-            pdf.text(recipientName, pageW / 2, 92, { align: 'center' });
-
-            // Body
-            pdf.setFontSize(13);
-            pdf.setTextColor(60, 60, 60);
-            const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
-            pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
-
-            // Title of cert
-            pdf.setFontSize(20);
-            pdf.setTextColor(20, 20, 20);
-            pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
-
-            // Date / org footer
-            pdf.setFontSize(11);
-            pdf.setTextColor(80, 80, 80);
-            pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
-            pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
-
-            pdf.setFontSize(9);
-            pdf.setTextColor(120, 120, 120);
-            pdf.text('hangel.org', pageW / 2, pageH - 18, { align: 'center' });
-
+            const pdf = await buildCertificatePdf(cert);
             const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
             pdf.save(filename);
-
             toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
         } catch (error) {
             console.error('Certificate PDF generation failed:', error);
             toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+        }
+    };
+
+    const handleViewCertificate = async (cert: { title: string; organization: string; date: string }) => {
+        try {
+            const pdf = await buildCertificatePdf(cert);
+            const blobUrl = pdf.output('bloburl');
+            const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+            if (!opened) {
+                toast({ variant: 'destructive', title: 'Sertifika Açılamadı', description: 'Tarayıcı yeni sekme açmayı engelledi. Lütfen indir seçeneğini kullanın.' });
+            }
+        } catch (error) {
+            console.error('Certificate PDF view failed:', error);
+            toast({ variant: 'destructive', title: 'Sertifika Açılamadı', description: 'PDF oluşturulurken bir hata oluştu.' });
         }
     };
 
@@ -272,7 +337,47 @@ export default function MyBadgesPage() {
     };
 
     // Top-level veya stats.* — invite akışı top-level yazıyor, signup stats altına yazıyor.
-    type UserDataLike = { impactScore?: number; stats?: { impactScore?: number }; areaPoints?: Record<string, number>; inviteCount?: number };
+    type UserDataLike = {
+        impactScore?: number;
+        stats?: { impactScore?: number };
+        areaPoints?: Record<string, number>;
+        inviteCount?: number;
+        supportedNgos?: string[];
+        volunteerNgos?: string[];
+    };
+
+    // Kullanıcının bağış/destek için seçtiği STK'lar (ngos/[id] "Destekle" akışı yazar).
+    const supportedNgoIds = useMemo<string[]>(
+        () => {
+            const v = (userData as UserDataLike | undefined)?.supportedNgos;
+            return Array.isArray(v) ? v : [];
+        },
+        [userData]
+    );
+    // Kullanıcının gönüllülük için seçtiği STK'lar (ngos/[id] "Gönüllü Ol" akışı yazar).
+    const volunteerNgoIds = useMemo<string[]>(
+        () => {
+            const v = (userData as UserDataLike | undefined)?.volunteerNgos;
+            return Array.isArray(v) ? v : [];
+        },
+        [userData]
+    );
+
+    // PRD: her nitelikli STK seçimi (bağış VEYA gönüllülük) → o STK kategorisinin
+    // eşlendiği rozet alanına +10 puan. Bağış seçimi ve gönüllülük seçimi ayrı
+    // sinyaller olduğundan ikisi de ayrı ayrı 10 puan kazandırır.
+    const selectionAreaPoints = useMemo<Record<string, number>>(() => {
+        const totals: Record<string, number> = {};
+        const credit = (ngoId: string) => {
+            const category = ngoCategoryById[ngoId];
+            const area = mapCategoryToBadgeArea(category);
+            if (!area) return;
+            totals[area] = (totals[area] || 0) + SELECTION_AREA_POINTS;
+        };
+        for (const id of supportedNgoIds) credit(id);
+        for (const id of volunteerNgoIds) credit(id);
+        return totals;
+    }, [supportedNgoIds, volunteerNgoIds, ngoCategoryById]);
     const impactScore: number = Math.max(
         Number((userData as UserDataLike | undefined)?.impactScore) || 0,
         Number((userData as UserDataLike | undefined)?.stats?.impactScore) || 0,
@@ -291,14 +396,20 @@ export default function MyBadgesPage() {
         [donations, ngoCategoryById, pastVolunteering, inviteCount]
     );
 
-    // Saklı + hesaplanan birleştir: her alan için max(saklı, hesaplanan).
+    // PRD birincil sinyali: supportedNgos/volunteerNgos seçimlerinden gelen 10'luk
+    // puanlar (selectionAreaPoints) ile bağış/gönüllülük/davet aktivitesinden
+    // hesaplanan puanları (computed) topla; ardından saklı puan ile max al.
+    // Böylece her alanda gösterilen değer kullanıcının GERÇEK seçimlerini yansıtır,
+    // hiçbir nitelikli seçim yoksa 0 kalır.
     const effectiveAreaPoints = useMemo<Record<string, number>>(() => {
         const merged: Record<string, number> = { ...storedAreaPoints };
-        for (const area of Object.keys(computed)) {
-            merged[area] = Math.max(Number(merged[area]) || 0, Number(computed[area]) || 0);
+        const areas = new Set<string>([...Object.keys(computed), ...Object.keys(selectionAreaPoints)]);
+        for (const area of areas) {
+            const activity = (Number(computed[area]) || 0) + (Number(selectionAreaPoints[area]) || 0);
+            merged[area] = Math.max(Number(merged[area]) || 0, activity);
         }
         return merged;
-    }, [storedAreaPoints, computed]);
+    }, [storedAreaPoints, computed, selectionAreaPoints]);
 
     // Saklı puan ile etkin puan farklıysa kullanıcı dokümanına yaz (write-if-changed,
     // hata durumunda non-fatal). Giriş yapılmamışsa yazma; sonsuz döngüye karşı JSON karşılaştır.
@@ -443,6 +554,10 @@ export default function MyBadgesPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
+                                        <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleViewCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
+                                            <Eye className="h-4 w-4 sm:mr-2" />
+                                            <span className="hidden sm:inline">Görüntüle</span>
+                                        </Button>
                                         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
                                             <Download className="h-4 w-4 sm:mr-2" />
                                             <span className="hidden sm:inline">İndir</span>

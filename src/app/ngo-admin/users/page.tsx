@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import React, { useMemo, useState } from 'react';
-import { User, Plus, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
+import { User, Plus, Trash2, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
@@ -15,6 +16,14 @@ import { collection, query, where, doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
+
+// Atanabilir yetkili rolleri — new/page.tsx ile birebir aynı liste.
+const ROLE_OPTIONS = [
+  'Genel Yönetici',
+  'Finans Yöneticisi',
+  'Gönüllü Yöneticisi',
+  'Mini Blog Yöneticisi',
+] as const;
 
 // userInvitations'da kuruluş referansı kind'a göre farklı alanda tutulur.
 const invitationIdFieldByKind: Record<EntityKind, 'ngoId' | 'brandId' | 'clubId'> = {
@@ -151,6 +160,17 @@ export default function UsersPage() {
   const invitationIdField = entityKind ? invitationIdFieldByKind[entityKind] : null;
   const managedIdField = entityKind ? managedIdFieldByKind[entityKind] : null;
 
+  // Kuruluşun sahibi (ana yetkili) — bu kullanıcının rolü/erişimi kaldırılamaz.
+  const ownerUserId = activeEntity?.data?.adminUserId || null;
+
+  // Yalnızca "Genel Yönetici" başkalarının rolünü değiştirebilir veya yetkisini kaldırabilir.
+  // Sinyaller: kuruluş sahibi olmak, roleTitle === 'Genel Yönetici', veya super-admin.
+  const isGeneralAdmin = !!authUser?.uid && (
+    (ownerUserId !== null && ownerUserId === authUser.uid)
+    || userData?.roleTitle === 'Genel Yönetici'
+    || userData?.role === 'super-admin'
+  );
+
   // ---- Bu kuruluşun gerçek yetkilileri ----
   // 1) userInvitations (kind'a göre ngoId/brandId/clubId == entityId), revoke edilmemiş.
   const invitationsQuery = useMemoFirebase(
@@ -232,9 +252,55 @@ export default function UsersPage() {
   }, [entityId, managedUsers, invitations, allUsers]);
 
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [roleEdits, setRoleEdits] = useState<Record<string, string>>({});
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+
+  // Bir satır üzerinde rol değişikliği / yetki kaldırma kontrollerinin gösterilip gösterilmeyeceği.
+  // Sahip ve oturum açan kullanıcının kendi satırı korunur.
+  const canManageRow = (row: AdminRow): boolean =>
+    isGeneralAdmin
+    && row.userId !== ownerUserId
+    && row.userId !== authUser?.uid;
+
+  const handleUpdateRole = async (row: AdminRow, newRole: string) => {
+    if (!firestore || !entityId || !managedIdField) return;
+    if (!canManageRow(row)) return;
+    setUpdatingRole(row.userId);
+    try {
+      // 1) Davet kaydı varsa rolünü güncelle (audit + liste kaynağı).
+      if (row.invitationId) {
+        await updateDoc(doc(firestore, COLLECTIONS.userInvitations, row.invitationId), { role: newRole });
+      }
+      // 2) Kullanıcının roleTitle alanını eşitle (panel rol kapsamı buradan okunur).
+      await updateDoc(doc(firestore, COLLECTIONS.users, row.userId), { roleTitle: newRole });
+
+      setRoleEdits(prev => {
+        const next = { ...prev };
+        delete next[row.userId];
+        return next;
+      });
+      toast({
+        title: 'Rol Güncellendi',
+        description: `${row.name} kullanıcısının rolü "${newRole}" olarak güncellendi.`,
+      });
+    } catch (error) {
+      console.error('Update role failed:', error);
+      const err = error as { code?: string; message?: string };
+      toast({
+        variant: 'destructive',
+        title: 'Rol güncellenemedi',
+        description: err?.code === 'permission-denied'
+          ? 'Bu işlem için yeterli yetkiniz yok.'
+          : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+      });
+    } finally {
+      setUpdatingRole(null);
+    }
+  };
 
   const handleRevoke = async (row: AdminRow) => {
     if (!firestore || !entityId || !managedIdField) return;
+    if (!canManageRow(row)) return;
     setRevoking(row.userId);
     try {
       // 1) Davet kaydı varsa revoke et.
@@ -291,13 +357,24 @@ export default function UsersPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Yetkili Listesi</CardTitle>
-            <CardDescription>Kuruluşunuza yetkili kullanıcılar ve rolleri.</CardDescription>
+            <CardDescription className="flex items-center gap-1.5">
+              {isGeneralAdmin ? (
+                <>
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
+                  Genel Yönetici olarak diğer yetkililerin rolünü değiştirebilir veya yetkilerini kaldırabilirsiniz.
+                </>
+              ) : (
+                'Kuruluşunuza yetkili kullanıcılar ve rolleri.'
+              )}
+            </CardDescription>
           </div>
-          <Button asChild size="sm">
-            <Link href="/ngo-admin/users/new">
-                <Plus className="mr-2 h-4 w-4"/> Yeni Yetkili Ekle
-            </Link>
-          </Button>
+          {isGeneralAdmin && (
+            <Button asChild size="sm">
+              <Link href="/ngo-admin/users/new">
+                  <Plus className="mr-2 h-4 w-4"/> Yeni Yetkili Ekle
+              </Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
             {!authUser ? (
@@ -319,51 +396,89 @@ export default function UsersPage() {
                 {adminRows.length > 0 ? adminRows.map(row => {
                     const since = formatDate(row.since);
                     const isRowRevoking = revoking === row.userId;
+                    const isRowUpdating = updatingRole === row.userId;
+                    const manageable = canManageRow(row);
+                    const isOwnerRow = row.userId === ownerUserId;
+                    const editedRole = roleEdits[row.userId] ?? row.role;
+                    const isKnownRole = (ROLE_OPTIONS as readonly string[]).includes(editedRole);
                     return (
-                    <div key={row.userId} className="flex justify-between items-center p-3 border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div key={row.userId} className="flex justify-between items-center gap-3 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
                             <Avatar className="h-9 w-9 border">
                                 <AvatarImage src={row.avatarUrl} alt={row.name} />
                                 <AvatarFallback className="text-xs font-bold">{(row.name || '?').charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                                <p className="font-medium truncate">{row.name}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="font-medium truncate">{row.name}</p>
+                                    {isOwnerRow && (
+                                        <Badge variant="outline" className="text-[10px] font-bold px-2 py-0 bg-amber-100 text-amber-800 border-amber-300/50 dark:bg-amber-900/40 dark:text-amber-300">
+                                            Kuruluş Sahibi
+                                        </Badge>
+                                    )}
+                                </div>
                                 {since && <p className="text-xs text-muted-foreground">{since}</p>}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                             <Badge variant="outline" className={cn("text-[10px] font-bold px-2 py-0", row.isPrimary && "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300/50")}>
-                                {row.role}
-                            </Badge>
-                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
+                        <div className="flex items-center gap-2 shrink-0">
+                            {manageable ? (
+                                <div className="flex items-center gap-1.5">
+                                    <Select
+                                        value={isKnownRole ? editedRole : undefined}
+                                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [row.userId]: v }))}>
+                                        <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold" aria-label="Rol seç">
+                                            <SelectValue placeholder={row.role} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                     <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        disabled={isRowRevoking}
-                                        aria-label="Yetkiyi kaldır"
-                                    >
-                                        {isRowRevoking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 px-2.5 text-xs font-bold"
+                                        disabled={isRowUpdating || editedRole === row.role}
+                                        onClick={() => { void handleUpdateRole(row, editedRole); }}>
+                                        {isRowUpdating && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                        Güncelle
                                     </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Yetkiyi kaldırmak istediğinizden emin misiniz?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            <span className="font-bold">{row.name}</span> kullanıcısının {activeEntity.data.name || 'kuruluşunuz'} için panel erişimi sonlandırılacak. Bu işlem geri alınabilir; kullanıcıyı tekrar davet edebilirsiniz.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            className={cn(buttonVariants({ variant: "destructive" }))}
-                                            onClick={() => handleRevoke(row)}>
-                                            Evet, Kaldır
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                                </div>
+                            ) : (
+                                <Badge variant="outline" className={cn("text-[10px] font-bold px-2 py-0", row.isPrimary && "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300/50")}>
+                                    {row.role}
+                                </Badge>
+                            )}
+                            {manageable && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                            disabled={isRowRevoking}
+                                            aria-label="Yetkiyi kaldır"
+                                        >
+                                            {isRowRevoking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Yetkiyi kaldırmak istediğinizden emin misiniz?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                <span className="font-bold">{row.name}</span> kullanıcısının {activeEntity.data.name || 'kuruluşunuz'} için panel erişimi sonlandırılacak. Bu işlem geri alınabilir; kullanıcıyı tekrar davet edebilirsiniz.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                className={cn(buttonVariants({ variant: "destructive" }))}
+                                                onClick={() => handleRevoke(row)}>
+                                                Evet, Kaldır
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
                         </div>
                     </div>
                     );

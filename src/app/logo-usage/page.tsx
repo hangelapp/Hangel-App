@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Download,
@@ -160,27 +160,66 @@ const ShowcaseCard = ({
   );
 };
 
-const LogoShowcaseCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
-    <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
-        <div className="relative aspect-square w-full flex items-center justify-center p-4 bg-muted/30">
-            {children}
-        </div>
-        <CardContent className="p-4 flex-1 flex flex-col">
-            <h4 className="font-semibold text-sm">{title}</h4>
-            <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <Button size="sm" variant="ghost" className="text-xs mt-2 p-0 h-auto self-start text-primary hover:text-primary group-hover:underline" onClick={onDownload}>
-                PNG İndir <Download className="ml-1.5 h-3.5 w-3.5"/>
-            </Button>
-        </CardContent>
-    </Card>
-);
+// Logo görseli zeminli mi (siyah/lacivert vb.) — JPG/PDF için arka plan rengi seçimini etkiler.
+type LogoExportFormat = 'png' | 'jpg' | 'pdf';
 
-const FontCard = ({ title, fontName, onDownload }: { title: string, fontName: string, onDownload: () => void }) => (
+const LogoShowcaseCard = ({
+    title,
+    description,
+    children,
+    baseName,
+    captureBg,
+    onDownload,
+}: {
+    title: string;
+    description: string;
+    children: React.ReactNode;
+    baseName: string;
+    captureBg: string;
+    onDownload: (node: HTMLElement, baseName: string, format: LogoExportFormat, captureBg: string) => void;
+}) => {
+    const logoRef = useRef<HTMLDivElement>(null);
+    const trigger = (format: LogoExportFormat) => {
+        if (logoRef.current) {
+            onDownload(logoRef.current, baseName, format, captureBg);
+        }
+    };
+    return (
+        <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
+            <div className="relative aspect-square w-full flex items-center justify-center p-4 bg-muted/30">
+                <div ref={logoRef} className="flex items-center justify-center">
+                    {children}
+                </div>
+            </div>
+            <CardContent className="p-4 flex-1 flex flex-col">
+                <h4 className="font-semibold text-sm">{title}</h4>
+                <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('png')}>
+                        PNG <Download className="ml-1 h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('jpg')}>
+                        JPG <Download className="ml-1 h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('pdf')}>
+                        PDF <Download className="ml-1 h-3 w-3" />
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+// Poppins, next/font/google üzerinden gelir (self-host edilmiş .ttf/.woff dosyası yok).
+// Bu nedenle font, resmi Google Fonts kaynağından indirilir.
+const FontCard = ({ title, fontName, downloadHref }: { title: string, fontName: string, downloadHref: string }) => (
     <div className="border rounded-2xl p-4 text-center space-y-2 bg-white/50">
         <p className="text-xs font-bold text-muted-foreground">{title}</p>
         <p className={cn("text-2xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
         <p className="text-base font-semibold">{fontName}</p>
-        <Button size="sm" variant="link" className="text-primary" onClick={onDownload}>Fontu tıkla ve indir</Button>
+        <Button asChild size="sm" variant="link" className="text-primary">
+            <a href={downloadHref} target="_blank" rel="noopener noreferrer" download>Fontu tıkla ve indir</a>
+        </Button>
     </div>
 );
 
@@ -218,7 +257,77 @@ export default function LogoUsagePage() {
             description: `${file} indiriliyor...`,
         });
     };
-    
+
+    // Logo görselini DOM'dan canvas'a çizip PNG / JPG / PDF olarak indirir.
+    // Logo asset dosyası bulunmadığı için (HangelLogo bir metin component'i),
+    // render edilmiş düğüm html2canvas ile yakalanır — repodaki mevcut desenle aynı.
+    const downloadLogo = async (
+        node: HTMLElement,
+        baseName: string,
+        format: LogoExportFormat,
+        captureBg: string,
+    ) => {
+        toast({
+            title: "İndirme Başlatılıyor",
+            description: `${baseName}.${format} indiriliyor...`,
+        });
+        try {
+            const { default: html2canvas } = await import('html2canvas');
+            // JPG/PDF'de şeffaflık desteklenmediği için zemin rengi uygulanır.
+            const bg = format === 'png' ? null : captureBg;
+            const canvas = await html2canvas(node, {
+                scale: 4,
+                backgroundColor: bg,
+                useCORS: true,
+                logging: false,
+            });
+
+            const triggerBlob = (blob: Blob | null, filename: string) => {
+                if (!blob) {
+                    toast({ variant: 'destructive', title: 'İndirme başarısız', description: 'Görsel oluşturulamadı.' });
+                    return;
+                }
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            };
+
+            if (format === 'png') {
+                canvas.toBlob((blob) => triggerBlob(blob, `${baseName}.png`), 'image/png');
+                return;
+            }
+            if (format === 'jpg') {
+                canvas.toBlob((blob) => triggerBlob(blob, `${baseName}.jpg`), 'image/jpeg', 0.95);
+                return;
+            }
+            // PDF — logo, oranı korunarak A4 sayfasına ortalanır.
+            const { default: jsPDF } = await import('jspdf');
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+            const pageW = pdf.internal.pageSize.getWidth();
+            const pageH = pdf.internal.pageSize.getHeight();
+            const maxW = pageW * 0.6;
+            const ratio = canvas.height / canvas.width;
+            const imgW = maxW;
+            const imgH = maxW * ratio;
+            const x = (pageW - imgW) / 2;
+            const y = (pageH - imgH) / 2;
+            if (captureBg && captureBg !== '#ffffff') {
+                pdf.setFillColor(captureBg);
+                pdf.rect(0, 0, pageW, pageH, 'F');
+            }
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, imgW, imgH);
+            pdf.save(`${baseName}.pdf`);
+        } catch (err) {
+            const e = err as { message?: string };
+            toast({ variant: 'destructive', title: 'İndirme başarısız', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
+        }
+    };
+
     const copyColor = (hex: string) => {
         navigator.clipboard.writeText(hex);
         toast({
@@ -230,26 +339,30 @@ export default function LogoUsagePage() {
     const asLogos = [
         {
             title: "Birincil Logo",
-            description: "Zeminsiz Logo (PNG)",
-            onDownload: () => handleDownload('birincil-logo.png'),
+            description: "Zeminsiz Logo (PNG / JPG / PDF)",
+            baseName: 'hangel-birincil-logo',
+            captureBg: '#ffffff',
             content: <HangelLogo className="text-4xl text-primary" />
         },
         {
             title: "İkincil Logo",
-            description: "Zeminli Logo (PNG)",
-            onDownload: () => handleDownload('ikincil-logo.png'),
+            description: "Zeminli Logo (PNG / JPG / PDF)",
+            baseName: 'hangel-ikincil-logo',
+            captureBg: '#f34723',
             content: <div className="p-3 bg-primary rounded-xl"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
-            description: "Beyaz Logo (PNG) – (Zorunlu hallerde)",
-            onDownload: () => handleDownload('beyaz-logo.png'),
+            description: "Beyaz Logo (PNG / JPG / PDF) – (Zorunlu hallerde)",
+            baseName: 'hangel-beyaz-logo',
+            captureBg: '#000000',
             content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "App Icon",
-            description: "Mobil Uygulama Simgesi (PNG)",
-            onDownload: () => handleDownload('app-icon.png'),
+            description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
+            baseName: 'hangel-app-icon',
+            captureBg: '#f34723',
             content: <div className="p-3 bg-primary rounded-2xl"><span className="text-2xl font-black text-white">h</span></div>
         },
     ];
@@ -257,26 +370,30 @@ export default function LogoUsagePage() {
     const dernekLogos = [
         {
             title: "Birincil Logo",
-            description: "Zeminsiz Logo (PNG)",
-            onDownload: () => handleDownload('dernek-birincil-logo.png'),
+            description: "Zeminsiz Logo (PNG / JPG / PDF)",
+            baseName: 'hangel-dernek-birincil-logo',
+            captureBg: '#ffffff',
             content: <HangelLogo className="text-4xl" style={{color: '#042654'}} />
         },
         {
             title: "İkincil Logo",
-            description: "Zeminli Logo (PNG)",
-            onDownload: () => handleDownload('dernek-ikincil-logo.png'),
+            description: "Zeminli Logo (PNG / JPG / PDF)",
+            baseName: 'hangel-dernek-ikincil-logo',
+            captureBg: '#042654',
             content: <div className="p-3 rounded-xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
-            description: "Beyaz Logo (PNG)",
-            onDownload: () => handleDownload('dernek-beyaz-logo.png'),
+            description: "Beyaz Logo (PNG / JPG / PDF)",
+            baseName: 'hangel-dernek-beyaz-logo',
+            captureBg: '#000000',
             content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
             title: "Dernek Icon",
-            description: "Mobil Uygulama Simgesi (PNG)",
-            onDownload: () => handleDownload('dernek-app-icon.png'),
+            description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
+            baseName: 'hangel-dernek-app-icon',
+            captureBg: '#042654',
             content: <div className="p-3 bg-primary rounded-2xl" style={{backgroundColor: '#042654'}}><span className="text-2xl font-black text-white">h</span></div>
         },
     ];
@@ -391,7 +508,7 @@ export default function LogoUsagePage() {
                                     <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">{t('marketing.logo.asLogolarTitle')}</h4>
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         {asLogos.map((logo, index) => (
-                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} baseName={logo.baseName} captureBg={logo.captureBg} onDownload={downloadLogo}>
                                                 {logo.content}
                                             </LogoShowcaseCard>
                                         ))}
@@ -401,7 +518,7 @@ export default function LogoUsagePage() {
                                     <h4 className="text-2xl font-bold tracking-tight text-center text-muted-foreground">{t('marketing.logo.dernekLogolarTitle')}</h4>
                                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         {dernekLogos.map((logo, index) => (
-                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} onDownload={logo.onDownload}>
+                                            <LogoShowcaseCard key={index} title={logo.title} description={logo.description} baseName={logo.baseName} captureBg={logo.captureBg} onDownload={downloadLogo}>
                                                 {logo.content}
                                             </LogoShowcaseCard>
                                         ))}
@@ -417,9 +534,9 @@ export default function LogoUsagePage() {
                                    <CardTitle>{t('marketing.logo.fontGuideTitle')}</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                                   <FontCard title={t('marketing.logo.logoFontCardTitle')} fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                   <FontCard title={t('marketing.logo.headingFontCardTitle')} fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                   <FontCard title={t('marketing.logo.bodyFontCardTitle')} fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                   <FontCard title={t('marketing.logo.logoFontCardTitle')} fontName="Poppins Bold" downloadHref="https://fonts.google.com/download?family=Poppins" />
+                                   <FontCard title={t('marketing.logo.headingFontCardTitle')} fontName="Poppins SemiBold" downloadHref="https://fonts.google.com/download?family=Poppins" />
+                                   <FontCard title={t('marketing.logo.bodyFontCardTitle')} fontName="Poppins Regular" downloadHref="https://fonts.google.com/download?family=Poppins" />
                                </CardContent>
                            </Card>
                         </div>

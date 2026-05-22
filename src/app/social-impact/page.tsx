@@ -11,6 +11,39 @@ import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useFirestore } from '@/firebase';
+import {
+    collection,
+    query,
+    where,
+    getDocs,
+    getAggregateFromServer,
+    sum,
+} from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+
+/**
+ * Compact Turkish-friendly number formatter for the marketing hero stats.
+ * 1_250_000 -> "1.2M+", 500_000 -> "500K+", 980 -> "980". Returns "0" for
+ * empty/zero so the page never shows a fake number when there is no data.
+ */
+function formatCompactCount(value: number): string {
+    if (!Number.isFinite(value) || value <= 0) return '0';
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M+`;
+    if (value >= 1_000) return `${Math.round(value / 1_000)}K+`;
+    return value.toLocaleString('tr-TR');
+}
+
+/**
+ * Currency-style compact formatter for the donation volume hero stat.
+ * 12_500_000 -> "12.5M ₺", 8_400 -> "8K ₺", 0 -> "0 ₺".
+ */
+function formatCompactCurrency(value: number): string {
+    if (!Number.isFinite(value) || value <= 0) return '0 ₺';
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M ₺`;
+    if (value >= 1_000) return `${Math.round(value / 1_000)}K ₺`;
+    return `${value.toLocaleString('tr-TR')} ₺`;
+}
 
 const ImpactSection = ({ 
     title, 
@@ -61,6 +94,91 @@ export default function SocialImpactPage() {
     const router = useRouter();
     const cms = useWebPage('social-impact');
     const { t } = useTranslation();
+    const db = useFirestore();
+
+    // Live aggregated impact metrics. Each starts as null (loading) and resolves
+    // to a real Firestore-derived number — or 0 when the backing data is empty.
+    // Sources:
+    //  - peopleReached: sum of ngos[].stats.peopleReached (server sum aggregate)
+    //  - volunteerHours: sum of ngos[].stats.volunteerHours (server sum aggregate)
+    //  - donationVolume: sum of parsed donationAmount across donations where
+    //    type != 'income'. donationAmount is stored as a string, so a server-side
+    //    sum() is not possible; we read the (filtered) collection and parse client-side.
+    const [metrics, setMetrics] = React.useState<{
+        peopleReached: number | null;
+        volunteerHours: number | null;
+        donationVolume: number | null;
+    }>({ peopleReached: null, volunteerHours: null, donationVolume: null });
+
+    React.useEffect(() => {
+        if (!db) return;
+        let cancelled = false;
+
+        (async () => {
+            // NGO numeric stat sums via server-side aggregation (1 read each, no
+            // full-collection download).
+            const ngoCol = collection(db, COLLECTIONS.ngos);
+            const peopleReachedPromise = getAggregateFromServer(ngoCol, {
+                total: sum('stats.peopleReached'),
+            })
+                .then((snap) => snap.data().total ?? 0)
+                .catch(() => 0);
+            const volunteerHoursPromise = getAggregateFromServer(ngoCol, {
+                total: sum('stats.volunteerHours'),
+            })
+                .then((snap) => snap.data().total ?? 0)
+                .catch(() => 0);
+
+            // Donation volume: donationAmount is a string field, so we read the
+            // expense donations and parse client-side (mirrors the admin analytics
+            // page). Filtered server-side to exclude 'income' rows.
+            const donationVolumePromise = getDocs(
+                query(collection(db, COLLECTIONS.donations), where('type', '!=', 'income')),
+            )
+                .then((snap) =>
+                    snap.docs.reduce((acc, d) => {
+                        const raw = (d.data() as { donationAmount?: unknown }).donationAmount;
+                        const n = parseFloat(String(raw ?? '0'));
+                        return acc + (Number.isFinite(n) ? n : 0);
+                    }, 0),
+                )
+                // The '!=' filter excludes docs missing the `type` field; fall back
+                // to an unfiltered read so legacy rows without `type` still count.
+                .catch(() =>
+                    getDocs(collection(db, COLLECTIONS.donations))
+                        .then((snap) =>
+                            snap.docs.reduce((acc, d) => {
+                                const data = d.data() as { donationAmount?: unknown; type?: unknown };
+                                if (data.type === 'income') return acc;
+                                const n = parseFloat(String(data.donationAmount ?? '0'));
+                                return acc + (Number.isFinite(n) ? n : 0);
+                            }, 0),
+                        )
+                        .catch(() => 0),
+                );
+
+            const [peopleReached, volunteerHours, donationVolume] = await Promise.all([
+                peopleReachedPromise,
+                volunteerHoursPromise,
+                donationVolumePromise,
+            ]);
+
+            if (cancelled) return;
+            setMetrics({ peopleReached, volunteerHours, donationVolume });
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [db]);
+
+    // While loading (null) show "..."; once resolved show the real figure (or 0).
+    const peopleReachedStat =
+        metrics.peopleReached === null ? '…' : formatCompactCount(metrics.peopleReached);
+    const donationVolumeStat =
+        metrics.donationVolume === null ? '…' : formatCompactCurrency(metrics.donationVolume);
+    const volunteerHoursStat =
+        metrics.volunteerHours === null ? '…' : formatCompactCount(metrics.volunteerHours);
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -80,7 +198,7 @@ export default function SocialImpactPage() {
             {/* Total Reach */}
             <ImpactSection
                 title={cms.title || t('marketing.socialImpact.heroTitleFallback')}
-                stat="1.2M+"
+                stat={peopleReachedStat}
                 subtitle={cms.subtitle || t('marketing.socialImpact.heroSubtitleFallback')}
                 description={cms.description || t('marketing.socialImpact.heroDescriptionFallback')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop'}
@@ -91,7 +209,7 @@ export default function SocialImpactPage() {
             <ImpactSection
                 theme="dark"
                 title={t('marketing.socialImpact.donationTitle')}
-                stat="12.5M ₺"
+                stat={donationVolumeStat}
                 subtitle={t('marketing.socialImpact.donationSubtitle')}
                 description={t('marketing.socialImpact.donationDescription')}
                 imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
@@ -101,7 +219,7 @@ export default function SocialImpactPage() {
             {/* Volunteer Hours */}
             <ImpactSection
                 title={t('marketing.socialImpact.volunteerSecTitle')}
-                stat="500K+"
+                stat={volunteerHoursStat}
                 subtitle={t('marketing.socialImpact.volunteerSecSubtitle')}
                 description={t('marketing.socialImpact.volunteerSecDescription')}
                 imageUrl="https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop"
