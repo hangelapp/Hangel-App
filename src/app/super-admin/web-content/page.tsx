@@ -18,12 +18,20 @@ import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore'
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useTranslation } from '@/components/providers/language-provider';
 
-// Sayfa slug'larından, sayfanın hardcoded fallback'lerinde kullandığı translation
-// key'lerine eşleme. Düzenle dialog'u, CMS override boşken bu key'lerle gerçek
-// yayın metnini t() üzerinden pre-populate eder. Pages source-of-truth bu key'leri
-// `marketing.*` namespace'inden okuduğu için (örn. logo-usage/page.tsx:449), aynı
-// kaynaktan beslemek güvenli — drift olmaz. Bilinmeyen slug → boş varsayılan.
+// Sayfa slug'larından, sayfanın yayında kullandığı varsayılan metne eşleme.
+// Düzenle dialog'u, CMS override boşken bu değerlerle form'u pre-populate eder
+// → kullanıcı yayındaki içeriği görüp düzenleyebilir.
+//
+// Değer formatı:
+//   • `marketing.*` ile başlıyorsa: translation key — t() ile resolve edilir
+//     (pages source-of-truth bu key'leri `marketing.*` namespace'inden okur,
+//     örn. logo-usage/page.tsx:449 → drift olmaz)
+//   • Diğer durumda: literal TR metin (pages dosyasındaki hardcoded fallback
+//     ile birebir, örn. yatirimci-iliskileri/page.tsx:77 `cms.title || '...'`)
+//
+// Bilinmeyen slug → boş varsayılan (mevcut davranış, regresyon yok).
 const PAGE_DEFAULT_KEYS: Record<string, { title?: string; subtitle?: string; description?: string }> = {
+    // --- Translation key kaynaklı (10 sayfa, t() ile çekilir) ---
     'social-impact': {
         title: 'marketing.socialImpact.heroTitleFallback',
         subtitle: 'marketing.socialImpact.heroSubtitleFallback',
@@ -67,6 +75,47 @@ const PAGE_DEFAULT_KEYS: Record<string, { title?: string; subtitle?: string; des
         title: 'marketing.info.heroTitleFallback',
         description: 'marketing.info.heroDescriptionFallback',
     },
+    // --- Literal text kaynaklı (page'deki hardcoded fallback ile birebir) ---
+    'yatirimci-iliskileri': {
+        title: 'Şeffaf Finansal Gelecek.',
+        subtitle: 'Sosyal etkinin ekonomik değeri.',
+        description: "hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır.",
+    },
+    'social-entrepreneurship': {
+        title: 'Kârın Amacı: Toplumsal Fayda.',
+        subtitle: 'Sosyal Girişim Nedir?',
+        description: 'Bir sosyal girişim, ticari faaliyetlerden elde ettiği geliri öncelikli olarak toplumsal veya çevresel bir sorunu çözmek için kullanan bir iş modelidir. Geleneksel şirketlerden farkı, kârı maksimize etmek yerine etkiyi maksimize etmesidir.',
+    },
+    'standards': {
+        title: 'Standartlarına Uyum sağladığımız Sertifikasyon Kurumları.',
+        description: 'hangel, teknoloji ve sosyal fayda arasındaki köprüyü uluslararası otoritelerin belirlediği en sıkı standartlarla inşaa eder. Güvenimiz, uyum sağladığımız bu ilkelerden gelir.',
+    },
+    'support-app-support': {
+        title: 'Uygulama Destek Merkezi',
+        description: 'Sıkça sorulan sorulara göz atın veya bizimle iletişime geçin.',
+    },
+    'feedback': {
+        title: 'Fikirleriniz Değerli.',
+        description: 'Platformumuzu her geçen gün sizinle birlikte geliştiriyoruz. Deneyimlerinizi bizimle paylaşın.',
+    },
+    'corporate': {
+        title: 'Kamu ve Özel Sektör için Değer Yaratıyoruz.',
+        subtitle: 'hangel Kurumsal Çözümler',
+        description: 'Teknoloji, veri ve geniş topluluk ağımızı kullanarak kurumunuzun sosyal etki hedeflerine ulaşmasını sağlıyoruz. Üniversiteler, belediyeler, bakanlıklar ve şirketler için sürdürülebilir işbirliği modelleri sunuyoruz.',
+    },
+    'about': {
+        // /about sayfası ayrı bir CMS şeması kullanır (Hakkımızda sekmesi).
+        // Sayfalar sekmesinden de görmek için defaults eklendi; ancak buradan
+        // kaydedilen override /about live'da ETKİSİZDİR — gerçek edit Hakkımızda
+        // sekmesindendir. Hint dialog header'ında belirtilir.
+        title: 'İyiliği Dijitalleştirdik.',
+        subtitle: 'Geleceğin dayanışma modelini inşa ediyoruz.',
+        description: 'Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, dünyanın en kapsayıcı sosyal etki platformuyuz.',
+    },
+    // login: /login redirect-only (cms yok); sitemap: hardcoded navigasyon (cms yok).
+    // Bu iki sayfada Düzenle anlamlı değil — Sayfalar listesinde gösterilse de
+    // değişiklik live'da yansımaz. Map'te yok → form boş açılır (kullanıcı
+    // "neden boş?" sorgularsa bilinçli skip).
 };
 
 type SitePageMeta = { slug: string; label: string; href: string; group?: string };
@@ -384,19 +433,22 @@ export default function WebContentPage() {
     const handleStartEditPage = (slug: string) => {
         setEditingSlug(slug);
         const stored = pages[slug] || {};
-        const defKeys = PAGE_DEFAULT_KEYS[slug];
-        // CMS override yoksa, sayfanın hardcoded fallback metnini t() ile çekip
-        // form'a doldur — kullanıcı yayındaki içeriği görüp düzenleyebilsin.
-        // Override varsa onu olduğu gibi göster; ne stored ne default varsa boş.
-        const lookupDefault = (key?: string): string => {
-            if (!key) return '';
-            const v = t(key);
-            return v && v !== key ? v : '';
+        const defs = PAGE_DEFAULT_KEYS[slug];
+        // CMS override yoksa, sayfanın yayındaki fallback metniyle form'u doldur.
+        // Değer `marketing.*` ile başlıyorsa translation key — t() ile resolve;
+        // diğer durumda literal TR string olarak doğrudan kullan.
+        const lookupDefault = (v?: string): string => {
+            if (!v) return '';
+            if (v.startsWith('marketing.')) {
+                const resolved = t(v);
+                return resolved && resolved !== v ? resolved : '';
+            }
+            return v;
         };
         setEditPage({
-            title: stored.title || lookupDefault(defKeys?.title),
-            subtitle: stored.subtitle || lookupDefault(defKeys?.subtitle),
-            description: stored.description || lookupDefault(defKeys?.description),
+            title: stored.title || lookupDefault(defs?.title),
+            subtitle: stored.subtitle || lookupDefault(defs?.subtitle),
+            description: stored.description || lookupDefault(defs?.description),
             heroImageUrl: stored.heroImageUrl || '',
             image2Url: stored.image2Url || '',
             image3Url: stored.image3Url || '',
