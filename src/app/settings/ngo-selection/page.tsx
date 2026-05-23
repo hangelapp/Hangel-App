@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
-import { doc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, collection, serverTimestamp, runTransaction, increment } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -226,20 +226,46 @@ export default function NgoSelectionPage() {
         setSelectedNgos(prev => isSelected ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
     };
 
-    const handleSave = () => {
-        if (!userDocRef) return;
+    const handleSave = async () => {
+        if (!userDocRef || !db) return;
         // Onboarding zorunluluğu: devam etmeden önce en az 2 STK seçilmeli.
         if (isOnboarding && selectedNgos.length < 2) {
             toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: 'Devam etmek için en az 2 STK seçmelisin.' });
             return;
         }
-        // Sadece gerçek değişiklik varsa timestamp güncelle (sayaç sıfırlanmasın)
+        // Diff hesapla: kullanıcının seçimine eklenen/çıkarılan STK'lar.
+        // Her eklenen → ilgili NGO stats.donors +1, her çıkarılan → -1
+        // (atomic: user doc + NGO sayaçları aynı transaction).
+        const addedIds = selectedNgos.filter(id => !initialSelected.includes(id));
+        const removedIds = initialSelected.filter(id => !selectedNgos.includes(id));
         const sorted = (arr: string[]) => [...arr].sort().join(',');
         const changed = sorted(selectedNgos) !== sorted(initialSelected);
-        const payload: Record<string, unknown> = { supportedNgos: selectedNgos };
-        if (changed) payload.lastNgoSelectionChange = serverTimestamp();
-        updateDocumentNonBlocking(userDocRef, payload);
-        toast({ title: t('dashboard.settingsNgoSelection.toastSavedTitle'), description: t('dashboard.settingsNgoSelection.toastSavedDesc') });
+        try {
+            await runTransaction(db, async (tx) => {
+                const userPayload: Record<string, unknown> = { supportedNgos: selectedNgos };
+                if (changed) userPayload.lastNgoSelectionChange = serverTimestamp();
+                tx.update(userDocRef, userPayload);
+                for (const id of addedIds) {
+                    tx.set(doc(db, COLLECTIONS.ngos, id), { stats: { donors: increment(1) } }, { merge: true });
+                }
+                for (const id of removedIds) {
+                    tx.set(doc(db, COLLECTIONS.ngos, id), { stats: { donors: increment(-1) } }, { merge: true });
+                }
+            });
+            toast({ title: t('dashboard.settingsNgoSelection.toastSavedTitle'), description: t('dashboard.settingsNgoSelection.toastSavedDesc') });
+        } catch (e) {
+            console.error('NGO selection save failed:', e);
+            // Transaction başarısızsa yine de user-doc'u kaydet (NGO sayaçları
+            // güncellenemese bile kullanıcı seçimi kaybolmasın).
+            updateDocumentNonBlocking(userDocRef, {
+                supportedNgos: selectedNgos,
+                ...(changed ? { lastNgoSelectionChange: serverTimestamp() } : {}),
+            });
+            toast({
+                title: t('dashboard.settingsNgoSelection.toastSavedTitle'),
+                description: 'Seçim kaydedildi; STK sayaçları güncellenemedi (yetki kısıtı).',
+            });
+        }
         if (isOnboarding) {
             localStorage.setItem('onboardingStep', 'profile');
             router.push('/settings/profile');

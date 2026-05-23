@@ -17,7 +17,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, runTransaction } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -170,15 +170,30 @@ export default function NgoProfilePage() {
 
     setDonorBusy(true);
     try {
+      // User doc + NGO stats.donors atomic update: ikisi de aynı transaction'da
+      // değişir → sayaç ve kullanıcı listesi senkron kalır. Eğer biri hata
+      // verirse ikisi de revert eder. NGO ref güncellemesi rules tarafında
+      // public 'viewCount'+'stats' yazımına izin verilen alanlarla aynı tipte
+      // (donor ekleme/çıkarma kullanıcı talebi sonucu).
+      const ngoRef = doc(db, COLLECTIONS.ngos, id);
+      const isFirstSelection = current.length === 0;
+      await runTransaction(db, async (tx) => {
+        if (isSupporter) {
+          // Çıkış: user'dan kaldır + NGO donor sayacını 1 azalt.
+          tx.update(userDocRef, { supportedNgos: arrayRemove(id) });
+          tx.set(ngoRef, { stats: { donors: increment(-1) } }, { merge: true });
+        } else {
+          // Giriş: user'a ekle + NGO donor sayacını 1 artır. İlk seçimde
+          // 30-gün kilidi için lastNgoSelectionChange damgalanır.
+          const userPayload: Record<string, unknown> = { supportedNgos: arrayUnion(id) };
+          if (isFirstSelection) userPayload.lastNgoSelectionChange = serverTimestamp();
+          tx.update(userDocRef, userPayload);
+          tx.set(ngoRef, { stats: { donors: increment(1) } }, { merge: true });
+        }
+      });
       if (isSupporter) {
-        await updateDoc(userDocRef, { supportedNgos: arrayRemove(id) });
         toast({ title: 'Bağışçılıktan çıkıldı', description: `${ngo?.name} artık desteklediğin STK'lar arasında değil.` });
       } else {
-        // İlk seçimde seçim tarihini kaydet (30 günlük kilidi başlatır).
-        const isFirstSelection = current.length === 0;
-        const payload: Record<string, unknown> = { supportedNgos: arrayUnion(id) };
-        if (isFirstSelection) payload.lastNgoSelectionChange = serverTimestamp();
-        await updateDoc(userDocRef, payload);
         toast({ title: 'Bağışçı oldun', description: `Artık ${ngo?.name} bağışçılarındansın. Teşekkürler!` });
       }
     } catch (e) {
@@ -196,11 +211,20 @@ export default function NgoProfilePage() {
     if (volunteerBusy) return;
     setVolunteerBusy(true);
     try {
+      // Atomic: user.volunteerNgos + ngo.stats.volunteers (donor ile aynı kalıp).
+      const ngoRef = doc(db, COLLECTIONS.ngos, id);
+      await runTransaction(db, async (tx) => {
+        if (isVolunteer) {
+          tx.update(userDocRef, { volunteerNgos: arrayRemove(id) });
+          tx.set(ngoRef, { stats: { volunteers: increment(-1) } }, { merge: true });
+        } else {
+          tx.update(userDocRef, { volunteerNgos: arrayUnion(id) });
+          tx.set(ngoRef, { stats: { volunteers: increment(1) } }, { merge: true });
+        }
+      });
       if (isVolunteer) {
-        await updateDoc(userDocRef, { volunteerNgos: arrayRemove(id) });
         toast({ title: 'Gönüllülükten çıkıldı', description: `${ngo?.name} artık gönüllü olduğun STK'lar arasında değil.` });
       } else {
-        await updateDoc(userDocRef, { volunteerNgos: arrayUnion(id) });
         toast({ title: 'Gönüllü oldun', description: `Artık ${ngo?.name} gönüllülerindensin. Hoş geldin!` });
       }
     } catch (e) {
