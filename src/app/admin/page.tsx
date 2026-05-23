@@ -124,20 +124,27 @@ export default function AdminPage() {
   const { data: fallbackBrand } = useDoc<ManagedBrandDoc>(fallbackBrandRef);
   const { data: fallbackClub } = useDoc<ManagedClubDoc>(fallbackClubRef);
 
-  // Tüm yetkilendirmeleri çek: userInvitations'da inviteeUserId=uid + status=accepted.
-  // Bir kullanıcı birden fazla marka/STK'ya yetkili olabilir (örn. Marka Yöneticisi
-  // + Pazarlama Yöneticisi farklı markalarda). user doc'unda tek `managedBrandId`
-  // var, son atanan kazanır — diğerleri gösterilmiyor. userInvitations audit trail'i
-  // ile hepsini buluyoruz.
+  // Tüm yetkilendirmeleri çek: userInvitations'da inviteeUserId=uid.
+  // Status filter (status='accepted') CLIENT-SIDE yapılır — Firestore çift
+  // where ile composite index gerektirir, deploy edilmemiş durumda sessiz
+  // boş döner. Single-equality (inviteeUserId) auto-index ile çalışır,
+  // client'ta status != 'revoked' filtresi uygulanır.
+  // Bir kullanıcı birden fazla marka/STK'ya yetkili olabilir; user doc'unda
+  // tek managedXId var, son atanan kazanır — bu audit trail ile hepsini buluyoruz.
   const invitationsQ = useMemoFirebase(() => {
     if (!db || !authUser?.uid) return null;
     return query(
       collection(db, COLLECTIONS.userInvitations),
       where('inviteeUserId', '==', authUser.uid),
-      where('status', '==', 'accepted'),
     );
   }, [db, authUser?.uid]);
-  const { data: invitations } = useCollection<InvitationDoc>(invitationsQ);
+  const { data: invitationsRaw } = useCollection<InvitationDoc>(invitationsQ);
+  // Client-side filter: 'accepted' veya status alanı olmayan kayıtlar dahil;
+  // 'revoked' / 'pending' (henüz onaylanmamış davet) hariç.
+  const invitations = useMemo(
+    () => (invitationsRaw || []).filter(i => i.status !== 'revoked' && i.status !== 'pending'),
+    [invitationsRaw],
+  );
 
   // Davetlerdeki entity ID'lerini topla (tip başına unique, SINIRSIZ — eskiden
   // slice(0, 10) vardı; Firestore documentId() IN 10-limit yüzünden. Aşağıda
