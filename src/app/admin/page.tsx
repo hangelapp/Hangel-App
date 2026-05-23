@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc } from 'firebase/firestore';
+import { collection, documentId, query, where, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const statusVariantMap = {
@@ -61,6 +61,17 @@ type ManagedEntity = {
   href: string;
   logoUrl?: string;
   status: 'approved' | 'pending';
+  role?: string; // Yetki başlığı (Genel Yönetici, Marka Yöneticisi, vb.)
+};
+
+type InvitationDoc = {
+  id: string;
+  brandId?: string;
+  ngoId?: string;
+  clubId?: string;
+  role?: string;
+  status?: string;
+  inviteeUserId?: string;
 };
 
 // Persisted active org for the ngo-admin panel (read by active-entity-context).
@@ -113,6 +124,63 @@ export default function AdminPage() {
   const { data: fallbackBrand } = useDoc<ManagedBrandDoc>(fallbackBrandRef);
   const { data: fallbackClub } = useDoc<ManagedClubDoc>(fallbackClubRef);
 
+  // Tüm yetkilendirmeleri çek: userInvitations'da inviteeUserId=uid + status=accepted.
+  // Bir kullanıcı birden fazla marka/STK'ya yetkili olabilir (örn. Marka Yöneticisi
+  // + Pazarlama Yöneticisi farklı markalarda). user doc'unda tek `managedBrandId`
+  // var, son atanan kazanır — diğerleri gösterilmiyor. userInvitations audit trail'i
+  // ile hepsini buluyoruz.
+  const invitationsQ = useMemoFirebase(() => {
+    if (!db || !authUser?.uid) return null;
+    return query(
+      collection(db, COLLECTIONS.userInvitations),
+      where('inviteeUserId', '==', authUser.uid),
+      where('status', '==', 'accepted'),
+    );
+  }, [db, authUser?.uid]);
+  const { data: invitations } = useCollection<InvitationDoc>(invitationsQ);
+
+  // Davetlerdeki entity ID'lerini topla (tip başına unique).
+  const invitedBrandIds = useMemo(
+    () => Array.from(new Set((invitations || []).map(i => i.brandId).filter((x): x is string => !!x))).slice(0, 10),
+    [invitations],
+  );
+  const invitedNgoIds = useMemo(
+    () => Array.from(new Set((invitations || []).map(i => i.ngoId).filter((x): x is string => !!x))).slice(0, 10),
+    [invitations],
+  );
+  const invitedClubIds = useMemo(
+    () => Array.from(new Set((invitations || []).map(i => i.clubId).filter((x): x is string => !!x))).slice(0, 10),
+    [invitations],
+  );
+
+  // ID'lerden entity doc'larını batch fetch (Firestore documentId() IN max 10).
+  const invitedBrandsQ = useMemoFirebase(() => {
+    if (!db || invitedBrandIds.length === 0) return null;
+    return query(collection(db, COLLECTIONS.brands), where(documentId(), 'in', invitedBrandIds));
+  }, [db, invitedBrandIds]);
+  const invitedNgosQ = useMemoFirebase(() => {
+    if (!db || invitedNgoIds.length === 0) return null;
+    return query(collection(db, COLLECTIONS.ngos), where(documentId(), 'in', invitedNgoIds));
+  }, [db, invitedNgoIds]);
+  const invitedClubsQ = useMemoFirebase(() => {
+    if (!db || invitedClubIds.length === 0) return null;
+    return query(collection(db, COLLECTIONS.clubs), where(documentId(), 'in', invitedClubIds));
+  }, [db, invitedClubIds]);
+  const { data: invitedBrandsData } = useCollection<ManagedBrandDoc>(invitedBrandsQ);
+  const { data: invitedNgosData } = useCollection<ManagedNgoDoc>(invitedNgosQ);
+  const { data: invitedClubsData } = useCollection<ManagedClubDoc>(invitedClubsQ);
+
+  // Davet → rol eşlemesi (her entity için role badge göstermek için).
+  const roleByEntityId = useMemo(() => {
+    const map: Record<string, string> = {};
+    (invitations || []).forEach(i => {
+      if (i.brandId && i.role) map[`brand:${i.brandId}`] = i.role;
+      if (i.ngoId && i.role) map[`ngo:${i.ngoId}`] = i.role;
+      if (i.clubId && i.role) map[`club:${i.clubId}`] = i.role;
+    });
+    return map;
+  }, [invitations]);
+
   const isLoading = ngosLoading || brandsLoading || clubsLoading;
 
   const managedItems: ManagedEntity[] = useMemo(() => {
@@ -129,6 +197,7 @@ export default function AdminPage() {
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(n.id)}&type=${encodeURIComponent('STK')}`,
         logoUrl: n.avatarUrl || n.logoUrl,
         status: (n.status === 'Pasif' || n.status === 'Beklemede') ? 'pending' : 'approved',
+        role: roleByEntityId[`ngo:${n.id}`],
       });
     };
     const pushBrand = (b: ManagedBrandDoc | null | undefined) => {
@@ -142,6 +211,7 @@ export default function AdminPage() {
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(b.id)}&type=${encodeURIComponent('Marka')}`,
         logoUrl: b.logoUrl,
         status: (b.status === 'Pasif' || b.status === 'Beklemede') ? 'pending' : 'approved',
+        role: roleByEntityId[`brand:${b.id}`],
       });
     };
     const pushClub = (c: ManagedClubDoc | null | undefined) => {
@@ -155,6 +225,7 @@ export default function AdminPage() {
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(c.id)}&type=${encodeURIComponent('Kulüp')}`,
         logoUrl: c.avatarUrl || c.logoUrl,
         status: (c.status === 'Pasif' || c.status === 'Beklemede') ? 'pending' : 'approved',
+        role: roleByEntityId[`club:${c.id}`],
       });
     };
 
@@ -167,8 +238,13 @@ export default function AdminPage() {
     if (fallbackBrand) pushBrand(fallbackBrand);
     if (fallbackClub) pushClub(fallbackClub);
 
+    // userInvitations'tan gelen TÜM yetkilendirmeler (multi-brand/multi-ngo desteği)
+    (invitedNgosData || []).forEach(pushNgo);
+    (invitedBrandsData || []).forEach(pushBrand);
+    (invitedClubsData || []).forEach(pushClub);
+
     return items;
-  }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+  }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub, invitedNgosData, invitedBrandsData, invitedClubsData, roleByEntityId]);
 
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">
@@ -223,11 +299,16 @@ export default function AdminPage() {
                         </div>
                         <div className="flex-1 space-y-0.5">
                             <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.name}</p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-[#f5f5f7] border-none text-muted-foreground">{item.type}</Badge>
                                 <Badge variant="outline" className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-0.5", statusVariantMap[item.status as keyof typeof statusVariantMap])}>
                                     {item.status === 'approved' ? 'Aktif' : 'Onay Bekliyor'}
                                 </Badge>
+                                {item.role && (
+                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-primary/5 border-primary/20 text-primary">
+                                        {item.role}
+                                    </Badge>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
