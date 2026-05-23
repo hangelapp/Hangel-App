@@ -45,9 +45,12 @@ service cloud.firestore {
     // eşleştiriliyor. managedNgoId fallback inline pattern (storage.rules ile uyumlu).
     match /ngos/{ngoId} {
       allow read, list: if true; // Public for marketplace
+      // Super-admin: seed import + manuel ekleme için tam yetki
+      allow create, delete: if isSuperAdmin();
       // Herkes sadece viewCount alanını artırabilir (görüntülenme sayacı)
       // VEYA: NGO admin (adminUserId match VEYA managedNgoId fallback) kendi STK'sını tam günceller
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+      allow update: if isSuperAdmin()
+        || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
         || (isSignedIn() && (
           resource.data.adminUserId == request.auth.uid
           || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
@@ -57,23 +60,27 @@ service cloud.firestore {
 
     match /brands/{brandId} {
       allow read, list: if true; // Public read access for marketplace
+      // Super-admin: seed import + manuel ekleme için tam yetki
+      allow create, delete: if isSuperAdmin();
       // Marka admin (adminUserId match VEYA managedBrandId fallback) kendi markasını günceller
-      allow update: if isSignedIn() && (
+      allow update: if isSuperAdmin() || (isSignedIn() && (
         resource.data.adminUserId == request.auth.uid
         || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedBrandId == brandId)
-      );
+      ));
     }
 
     // Öğrenci kulüpleri (public read, super-admin global write)
     match /clubs/{clubId} {
       allow read, list: if true;
+      // Super-admin: seed import + manuel ekleme için tam yetki
+      allow create, delete: if isSuperAdmin();
       // Owners (adminUserId match VEYA managedClubId fallback) kendi kulübünü güncelleyebilir
-      allow update: if isSignedIn() && (
+      allow update: if isSuperAdmin() || (isSignedIn() && (
         resource.data.adminUserId == request.auth.uid
         || (exists(/databases/$(database)/documents/users/$(request.auth.uid))
             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedClubId == clubId)
-      );
+      ));
     }
 
     // Eski adlandırma — uyumluluk için (boşalsın diye)
