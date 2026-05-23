@@ -87,29 +87,29 @@ export const BrandListRow = ({
                         </Link>
                     </Button>
                 )}
-                {!isApiOnly && (
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" onClick={() => onStartEdit(brand)}>
-                                <Edit3 className="mr-2 h-4 w-4" /> Düzelt
-                            </Button>
-                        </DialogTrigger>
-                        {editingBrand?.id === brand.id && (
-                            <BrandEditDialog
-                                brand={brand}
-                                editFormData={editFormData}
-                                onEditFormDataChange={onEditFormDataChange}
-                                logoUploading={logoUploading}
-                                onLogoFile={onLogoFile}
-                                onSave={onSaveEdit}
-                                onCancel={onCancelEdit}
-                            />
-                        )}
-                    </Dialog>
-                )}
-                {brand.source === 'brands' && (
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" onClick={() => onStartEdit(brand)}>
+                            <Edit3 className="mr-2 h-4 w-4" /> Düzelt
+                        </Button>
+                    </DialogTrigger>
+                    {editingBrand?.id === brand.id && (
+                        <BrandEditDialog
+                            brand={brand}
+                            editFormData={editFormData}
+                            onEditFormDataChange={onEditFormDataChange}
+                            logoUploading={logoUploading}
+                            onLogoFile={onLogoFile}
+                            onSave={onSaveEdit}
+                            onCancel={onCancelEdit}
+                        />
+                    )}
+                </Dialog>
+                {(brand.source === 'brands' || isApiOnly) && (
                     <>
-                        <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onRevoke={onRevokeBrandAdmin} onUpdateRole={onUpdateBrandAdminRole} />
+                        {brand.source === 'brands' && (
+                            <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onRevoke={onRevokeBrandAdmin} onUpdateRole={onUpdateBrandAdminRole} />
+                        )}
                         <Button
                             variant="outline"
                             size="sm"
@@ -120,12 +120,6 @@ export const BrandListRow = ({
                         </Button>
                     </>
                 )}
-                {isApiOnly && (
-                    <span className="text-xs text-muted-foreground font-medium px-2 italic">
-                        Düzenleme/silme kapalı &mdash; affiliate kataloğu yalnız okuma
-                    </span>
-                )}
-                {!isApiOnly && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
@@ -136,7 +130,9 @@ export const BrandListRow = ({
                         <AlertDialogHeader>
                             <AlertDialogTitle className="text-xl font-bold">{brand.name} markasını silmek istiyor musunuz?</AlertDialogTitle>
                             <AlertDialogDescription className="text-base font-medium">
-                                Bu işlem geri alınamaz. Marka ve ilişkili tüm veriler platformdan kalıcı olarak silinecektir.
+                                {isApiOnly
+                                    ? 'Bu marka affiliate kataloğundan geliyor. Silme işlemi, marka için bir gizleme kaydı oluşturur — affiliate listesi yenilense bile market ve admin listelerinde görünmez.'
+                                    : 'Bu işlem geri alınamaz. Marka ve ilişkili tüm veriler platformdan kalıcı olarak silinecektir.'}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="gap-2">
@@ -145,12 +141,11 @@ export const BrandListRow = ({
                                 className={cn(buttonVariants({ variant: "destructive" }), "rounded-2xl font-bold")}
                                 onClick={() => onRemove(brand.id, brand.name)}
                             >
-                                Evet, Kalıcı Olarak Sil
+                                Evet, {isApiOnly ? 'Gizle' : 'Kalıcı Olarak Sil'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-                )}
             </div>
         </div>
     );

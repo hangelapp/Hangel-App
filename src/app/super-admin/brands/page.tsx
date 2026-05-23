@@ -4,8 +4,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getApp } from 'firebase/app';
 import { Loader2, Inbox } from 'lucide-react';
@@ -173,31 +173,74 @@ export default function BrandsPage() {
         return sorted;
     }, [brands, applications, apiBrands, statusFilter, searchTerm, sortBy]);
 
-    const handleToggleStatus = (id: string, currentStatus: string) => {
+    const handleToggleStatus = async (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
+        const newStatus = isPassive ? 'Aktif' : 'Pasif';
         const brandRef = doc(db, COLLECTIONS.brands, id);
-        updateDocumentNonBlocking(brandRef, { status: isPassive ? 'Aktif' : 'Pasif' });
-
-        toast({
-            title: isPassive ? "Marka Aktifleştirildi" : "Marka Pasife Alındı",
-            description: "Durum değişikliği sisteme yansıtıldı."
-        });
+        // API source markaları için Firestore doc henüz yok → setDoc merge
+        // ile otomatik oluştur (API verisini import eder). Mevcut brands için
+        // de güvenli (merge: true sadece güncellenen alanları yazar).
+        const item = filteredBrands.find(b => b.id === id);
+        try {
+            if (item?.source === 'api') {
+                const { source: _src, ...apiData } = item as BrandItem & { source?: string };
+                await setDoc(brandRef, { ...apiData, status: newStatus }, { merge: true });
+            } else {
+                await setDoc(brandRef, { status: newStatus }, { merge: true });
+            }
+            toast({
+                title: isPassive ? "Marka Aktifleştirildi" : "Marka Pasife Alındı",
+                description: "Durum değişikliği sisteme yansıtıldı."
+            });
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            toast({
+                variant: 'destructive',
+                title: 'Durum değiştirilemedi',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : (e instanceof Error ? e.message : 'Beklenmeyen hata.'),
+            });
+        }
     };
 
-    const handleRemove = (id: string, name: string) => {
-        // Item kaynağına göre doğru koleksiyondan sil: approved kayıtlar
-        // `brands` altında, henüz onaylanmamış başvurular `applications` altında.
+    const handleRemove = async (id: string, name: string) => {
+        // Üç senaryo:
+        // 1. Application row → applications koleksiyonundan hard delete (başvuru)
+        // 2. API source → brands'e setDoc merge ile {status:'Silindi'} yaz (soft delete:
+        //    affiliate listesi yenilense bile market/super-admin filtreleri gizler)
+        // 3. Normal brand row → brands koleksiyonundan hard delete (kalıcı)
         const item = filteredBrands.find(b => b.id === id);
-        const targetCollection = item?.source === 'applications'
-            ? COLLECTIONS.applications
-            : COLLECTIONS.brands;
-        const targetRef = doc(db, targetCollection, id);
-        deleteDocumentNonBlocking(targetRef);
-        toast({
-            variant: 'destructive',
-            title: item?.source === 'applications' ? "Başvuru Silindi" : "Marka Kaldırıldı",
-            description: `${name} platformdan kalıcı olarak silindi.`
-        });
+        try {
+            if (item?.source === 'applications') {
+                await deleteDoc(doc(db, COLLECTIONS.applications, id));
+                toast({ variant: 'destructive', title: 'Başvuru Silindi', description: `${name} platformdan silindi.` });
+                return;
+            }
+            const brandRef = doc(db, COLLECTIONS.brands, id);
+            if (item?.source === 'api') {
+                const { source: _src, ...apiData } = item as BrandItem & { source?: string };
+                await setDoc(brandRef, { ...apiData, status: 'Silindi' }, { merge: true });
+                toast({
+                    variant: 'destructive',
+                    title: 'Marka Gizlendi',
+                    description: `${name} affiliate kataloğundan gizlendi (Silindi). Market ve admin listelerinde görünmez.`,
+                });
+                return;
+            }
+            // Normal brand → hard delete
+            await deleteDoc(brandRef);
+            toast({ variant: 'destructive', title: 'Marka Kaldırıldı', description: `${name} platformdan kalıcı olarak silindi.` });
+        } catch (e) {
+            const code = (e as { code?: string } | null)?.code;
+            toast({
+                variant: 'destructive',
+                title: 'Silme başarısız',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : (e instanceof Error ? e.message : 'Beklenmeyen hata.'),
+            });
+        }
     };
 
     const handleAssignBrandAdmin = async (brandId: string, newUserId: string, newUserName: string, role: BrandRole) => {
@@ -459,13 +502,14 @@ export default function BrandsPage() {
 
     const handleLogoFile = async (file: File, kind: 'logo' | 'cover') => {
         if (!editingBrand?.id) return;
-        // Görsel yüklemesi yalnızca gerçek marka kayıtları için (başvuru satırlarının
-        // brands koleksiyonunda doc'u yok; yükleme orphan path'e gider, kaydedilemez).
-        if (editingBrand.source !== 'brands') {
+        // Görsel yüklemesi: brands ve api source için geçerli (api save'de
+        // setDoc merge ile brand doc otomatik oluşturuluyor). Sadece başvurular
+        // hâlâ engelli — başvuru önce onaylanmalı.
+        if (editingBrand.source === 'applications') {
             toast({
                 variant: 'destructive',
                 title: 'Görsel yüklenemez',
-                description: 'Yalnızca onaylanmış markalara görsel yüklenebilir.',
+                description: 'Önce başvuruyu onaylayın, sonra görsel yükleyin.',
             });
             return;
         }
@@ -520,15 +564,13 @@ export default function BrandsPage() {
     const handleSaveEdit = async () => {
         if (!editingBrand || !editingBrand.id) return;
 
-        // Düzenleme yalnızca gerçek Firestore marka kayıtları için geçerli.
-        // Başvuru (applications) satırlarının `id`'si brands koleksiyonunda
-        // bulunmadığından updateDoc 'not-found' ile patlar — başvuruyu marka
-        // olarak düzenleme yerine onaylama akışına yönlendir.
-        if (editingBrand.source !== 'brands') {
+        // Başvurular (applications) brands koleksiyonunda yok — direkt düzenleme
+        // yerine onaylama akışına yönlendir.
+        if (editingBrand.source === 'applications') {
             toast({
                 variant: 'destructive',
                 title: "Bu kayıt düzenlenemez",
-                description: "Yalnızca onaylanmış markalar düzenlenebilir. Başvuruları önce onaylayın.",
+                description: "Önce başvuruyu onaylayın, sonra düzenleyin.",
             });
             return;
         }
@@ -539,7 +581,9 @@ export default function BrandsPage() {
             // ayarlı değil). Boş metin alanlarını '' , geçersiz sayıyı 0 yap.
             const donationRate = Number.isFinite(fd.donationRate as number) ? (fd.donationRate as number) : 0;
             const brandRef = doc(db, COLLECTIONS.brands, editingBrand.id);
-            await updateDoc(brandRef, {
+            // API source markaları için Firestore doc yok → setDoc merge ile
+            // hem create hem update'i tek operasyonla yapar (otomatik import).
+            await setDoc(brandRef, {
                 name: fd.name || '',
                 slug: fd.slug || '',
                 category: fd.category || '',

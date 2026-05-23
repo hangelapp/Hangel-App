@@ -139,7 +139,12 @@ export default function MarketPage() {
     // Hide brands whose donation rate is outside a meaningful range
     // (PDF audit #3: bazı markalar %0 / %100 gösteriyor). Anything <1 or >100
     // is treated as missing/bogus and excluded from the public list.
+    // 2026-05-23: ayrıca super-admin tarafından Pasif/Silindi işaretlenen
+    // markalar public listede görünmez (API kataloğundan gelse bile Firestore
+    // doc'u öncelikli olduğundan status alanı buraya yansır).
     list = list.filter(b => {
+      const status = (b as Brand & { status?: string }).status;
+      if (status === 'Silindi' || status === 'Pasif' || status === 'Reddedildi') return false;
       const rate = Number(b.donationRate);
       return Number.isFinite(rate) && rate >= 1 && rate <= 100;
     });
