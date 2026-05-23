@@ -9,7 +9,7 @@ import { useFirestore } from '@/firebase';
 import {
     collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2 } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 
 export default function MaintenancePage() {
@@ -321,6 +321,75 @@ export default function MaintenancePage() {
         }
     };
 
+    // 4) BUG-17c: Stale userInvitations'ları revoke et. Bir davet, var olmayan
+    //    ngo/brand/club'a işaret ediyorsa status='revoked' işaretle. /admin
+    //    zaten gösteremiyor, popup'ta da fallback ID gözükmesini engeller.
+    const revokeStaleInvitations = async () => {
+        if (!db) return;
+        setRunning('staleInvitations');
+        setLogs([]);
+        log('info', 'Geçerli entity ID setleri yükleniyor...');
+        try {
+            const [ngosSnap, brandsSnap, clubsSnap, invitesSnap] = await Promise.all([
+                getDocs(collection(db, COLLECTIONS.ngos)),
+                getDocs(collection(db, COLLECTIONS.brands)),
+                getDocs(collection(db, COLLECTIONS.clubs)),
+                getDocs(collection(db, COLLECTIONS.userInvitations)),
+            ]);
+            const ngoIds = new Set(ngosSnap.docs.map(d => d.id));
+            const brandIds = new Set(brandsSnap.docs.map(d => d.id));
+            const clubIds = new Set(clubsSnap.docs.map(d => d.id));
+            log('info', `${ngoIds.size} STK, ${brandIds.size} marka, ${clubIds.size} kulüp, ${invitesSnap.size} davet`);
+
+            type StaleInvite = { id: string; entity: 'ngo' | 'brand' | 'club'; entityId: string };
+            const stale: StaleInvite[] = [];
+            invitesSnap.forEach(d => {
+                const data = d.data() as { ngoId?: string; brandId?: string; clubId?: string; status?: string };
+                if (data.status === 'revoked') return;
+                if (data.ngoId && !ngoIds.has(data.ngoId)) stale.push({ id: d.id, entity: 'ngo', entityId: data.ngoId });
+                else if (data.brandId && !brandIds.has(data.brandId)) stale.push({ id: d.id, entity: 'brand', entityId: data.brandId });
+                else if (data.clubId && !clubIds.has(data.clubId)) stale.push({ id: d.id, entity: 'club', entityId: data.clubId });
+            });
+
+            log('info', `${stale.length} stale davet tespit edildi (entity Firestore'da yok).`);
+
+            if (stale.length === 0) {
+                log('ok', 'Stale davet yok. Tüm aktif davetler geçerli entity\'lere işaret ediyor.');
+                toast({ title: 'Stale davet yok', description: 'Temizliğe gerek kalmadı.' });
+                return;
+            }
+
+            // Örnek stale ID'leri logla
+            const samples = stale.slice(0, 10).map(s => `${s.entity}:${s.entityId}`).join(', ');
+            log('info', `Örnekler: ${samples}${stale.length > 10 ? '...' : ''}`);
+
+            let revoked = 0;
+            let failed = 0;
+            for (const s of stale) {
+                try {
+                    await updateDoc(doc(db, COLLECTIONS.userInvitations, s.id), {
+                        status: 'revoked',
+                        revokedAt: serverTimestamp(),
+                        revokedReason: 'stale-entity-not-found',
+                    });
+                    revoked++;
+                } catch (e) {
+                    failed++;
+                    console.error(`[revokeStaleInvitations] ${s.id} failed:`, e);
+                }
+            }
+
+            log('ok', `Tamamlandı: ${revoked} davet revoke edildi, ${failed} hata.`);
+            toast({ title: 'Cleanup tamamlandı', description: `${revoked} stale invitation revoked.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-3xl">
             <div className="space-y-1">
@@ -365,6 +434,28 @@ export default function MaintenancePage() {
                     >
                         {running === 'invitations' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Eksik invitation kayıtlarını oluştur
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-red-300/40 bg-red-50/30">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Trash2 className="h-4 w-4" /> Stale Invitations Revoke (BUG-17c)</CardTitle>
+                    <CardDescription>
+                        Geçmişten kalan davetler artık var olmayan (silinmiş / import edilmemiş) STK/marka/kulüplere işaret ediyor olabilir.
+                        Bu tarama her aktif davetin entity'sinin Firestore'da gerçekten var olup olmadığını kontrol eder; olmayanları <code>status:&apos;revoked&apos;</code> + <code>revokedReason:&apos;stale-entity-not-found&apos;</code> ile işaretler.
+                        Belge silinmez (audit için saklanır), sadece aktif listelerden çıkarılır.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={revokeStaleInvitations}
+                        disabled={running !== null}
+                        variant="destructive"
+                        className="rounded-xl"
+                    >
+                        {running === 'staleInvitations' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Stale invitation'ları revoke et
                     </Button>
                 </CardContent>
             </Card>

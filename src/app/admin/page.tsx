@@ -279,43 +279,12 @@ export default function AdminPage() {
     return items;
   }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub, invitedNgosData, invitedBrandsData, invitedClubsData, roleByEntityId]);
 
-  // BUG-17c debug: ?debug=1 query param ile geçici tanılama paneli.
-  // Super-admin'in /admin sayfasında varlıkların görünmemesinin nedenini
-  // tespit etmek için authUser.uid + invitation/managed/fallback verisini gösterir.
-  const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
-
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">
       <div className="space-y-1 px-1">
         <h1 className="text-3xl font-bold font-headline">Yönetim Paneli</h1>
         <p className="text-muted-foreground text-sm">Varlıklarınızı ve yönetim araçlarınızı buradan yönetin.</p>
       </div>
-
-      {showDebug && (
-        <Card className="bg-amber-50 border-amber-300/40 rounded-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-bold">DEBUG — /admin tanılama (?debug=1)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="text-[10px] font-mono whitespace-pre-wrap break-all leading-relaxed">
-{JSON.stringify({
-  authUserUid: authUser?.uid || '(null — sign in lazım)',
-  userDoc: userData ? { managedNgoId: userData.managedNgoId, managedBrandId: userData.managedBrandId, managedClubId: userData.managedClubId } : '(loading)',
-  managedNgosViaAdminUserId: { count: managedNgos?.length ?? 0, ids: (managedNgos || []).map(n => n.id) },
-  managedBrandsViaAdminUserId: { count: managedBrands?.length ?? 0, ids: (managedBrands || []).map(b => b.id) },
-  managedClubsViaAdminUserId: { count: managedClubs?.length ?? 0, ids: (managedClubs || []).map(c => c.id) },
-  fallback: { ngo: fallbackNgo?.id || null, brand: fallbackBrand?.id || null, club: fallbackClub?.id || null },
-  invitationsRaw: { count: invitationsRaw?.length ?? 0, sample: (invitationsRaw || []).slice(0, 5).map(i => ({ id: i.id, brandId: i.brandId, ngoId: i.ngoId, clubId: i.clubId, status: i.status, role: i.role })) },
-  invitationsFiltered: invitations.length,
-  extractedIds: { brand: invitedBrandIds, ngo: invitedNgoIds, club: invitedClubIds },
-  chunkedFetchResults: { brands: invitedBrandsData.length, ngos: invitedNgosData.length, clubs: invitedClubsData.length },
-  finalManagedItemsCount: managedItems.length,
-  loadingStates: { ngos: ngosLoading, brands: brandsLoading, clubs: clubsLoading, isLoading },
-}, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-      )}
 
       <Card className="shadow-sm border-black/5 rounded-[2rem] overflow-hidden">
         <CardHeader className="bg-muted/20 p-8 border-b border-black/5">

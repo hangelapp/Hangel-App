@@ -165,32 +165,43 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     const accepted = (userInvitations || []).filter(
       inv => inv.status !== 'revoked' && inv.status !== 'pending',
     );
+    // BUG-17c: Sadece Firestore'da gerçekten var olan entity'lere ait davetleri
+    // göster. Stale (entity'si silinmiş/import edilmemiş) davetler /admin
+    // sayfasında zaten görünmüyor — popup ve /admin'in eşleşmesi için burada da
+    // filtreleniyor. Cleanup için /super-admin/maintenance'a stale-invitation
+    // revoke butonu eklendi.
     for (const inv of accepted) {
       if (inv.ngoId) {
         const key = `ngo:${inv.ngoId}`;
         if (seen.has(key)) continue;
+        const name = ngoNameById.get(inv.ngoId);
+        if (!name) continue; // entity Firestore'da yok → atla
         seen.add(key);
         out.push({
           kind: 'ngo', entityId: inv.ngoId,
-          entityName: ngoNameById.get(inv.ngoId) || inv.ngoId,
+          entityName: name,
           roleTitle: inv.role || '—',
         });
       } else if (inv.brandId) {
         const key = `brand:${inv.brandId}`;
         if (seen.has(key)) continue;
+        const name = brandNameById.get(inv.brandId);
+        if (!name) continue;
         seen.add(key);
         out.push({
           kind: 'brand', entityId: inv.brandId,
-          entityName: brandNameById.get(inv.brandId) || inv.brandId,
+          entityName: name,
           roleTitle: inv.role || '—',
         });
       } else if (inv.clubId) {
         const key = `club:${inv.clubId}`;
         if (seen.has(key)) continue;
+        const name = clubNameById.get(inv.clubId);
+        if (!name) continue;
         seen.add(key);
         out.push({
           kind: 'club', entityId: inv.clubId,
-          entityName: clubNameById.get(inv.clubId) || inv.clubId,
+          entityName: name,
           roleTitle: inv.role || '—',
         });
       }
@@ -199,7 +210,7 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     // Fallback: invitation kaydı olmayan eski managed*Id atamaları da görünür.
     // Bracket access — managed* alanları UserRow'da var ama Next prod build
     // bazı durumlarda User base tipinden inheritance'ı resolve edemediği için
-    // record-style access kullanıyoruz.
+    // record-style access kullanıyoruz. Burada da entity Firestore'da yoksa atla.
     const u = user as unknown as Record<string, string | null | undefined>;
     const fbFields: Array<[EntityKind, string | null | undefined, Map<string, string>]> = [
       ['ngo', u.managedNgoId, ngoNameById],
@@ -208,10 +219,12 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     ];
     for (const [kind, id, map] of fbFields) {
       if (!id || seen.has(`${kind}:${id}`)) continue;
+      const name = map.get(id);
+      if (!name) continue;
       seen.add(`${kind}:${id}`);
       out.push({
         kind, entityId: id,
-        entityName: map.get(id) || id,
+        entityName: name,
         roleTitle: (u.roleTitle as string | undefined) || '—',
       });
     }
