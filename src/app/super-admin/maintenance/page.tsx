@@ -7,9 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import {
-    collection, getDocs, doc, updateDoc, setDoc, serverTimestamp, Timestamp,
+    collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 
 export default function MaintenancePage() {
@@ -202,6 +202,125 @@ export default function MaintenancePage() {
         }
     };
 
+    // 3) BUG-17b: Eksik userInvitations kayıtlarını backfill et.
+    //    Daha önce super-admin atadığı kullanıcılar için firestore rules
+    //    yetersizliği yüzünden silent reject olmuştu; bu nedenle /admin sayfası
+    //    primary olmayan rolleri listeleyemiyor.
+    //    İki kaynaktan veri toparla:
+    //      a) ngos/brands/clubs.adminUserId set olanlar → Genel Yönetici
+    //      b) users.managedNgoId/managedBrandId/managedClubId → ilgili roleTitle
+    //    Mevcut invitation varsa atla; yoksa status:'accepted' ile oluştur.
+    const reconcileInvitations = async () => {
+        if (!db) return;
+        setRunning('invitations');
+        setLogs([]);
+        log('info', 'Veri kaynakları taranıyor...');
+        try {
+            const [ngosSnap, brandsSnap, clubsSnap, usersSnap, invitesSnap] = await Promise.all([
+                getDocs(collection(db, COLLECTIONS.ngos)),
+                getDocs(collection(db, COLLECTIONS.brands)),
+                getDocs(collection(db, COLLECTIONS.clubs)),
+                getDocs(collection(db, COLLECTIONS.users)),
+                getDocs(collection(db, COLLECTIONS.userInvitations)),
+            ]);
+            log('info', `${ngosSnap.size} STK, ${brandsSnap.size} marka, ${clubsSnap.size} kulüp, ${usersSnap.size} kullanıcı, ${invitesSnap.size} mevcut davet`);
+
+            // Mevcut davet seti: "{entityField}:{entityId}:{userId}" → invitation
+            const existing = new Set<string>();
+            invitesSnap.forEach(d => {
+                const data = d.data() as { ngoId?: string; brandId?: string; clubId?: string; inviteeUserId?: string; status?: string };
+                if (data.status === 'revoked') return;
+                if (!data.inviteeUserId) return;
+                if (data.ngoId) existing.add(`ngo:${data.ngoId}:${data.inviteeUserId}`);
+                if (data.brandId) existing.add(`brand:${data.brandId}:${data.inviteeUserId}`);
+                if (data.clubId) existing.add(`club:${data.clubId}:${data.inviteeUserId}`);
+            });
+
+            type UserRow = { managedNgoId?: string; managedBrandId?: string; managedClubId?: string; ngoRoleTitle?: string; brandRoleTitle?: string; clubRoleTitle?: string; roleTitle?: string; name?: string; displayName?: string; personalInfo?: { firstName?: string; lastName?: string } };
+            const userMap = new Map<string, UserRow>();
+            usersSnap.forEach(d => userMap.set(d.id, d.data() as UserRow));
+
+            // Hedef invitationları topla (dedup)
+            type Plan = { entity: 'ngo' | 'brand' | 'club'; entityId: string; userId: string; role: string; inviteeName: string };
+            const plans: Plan[] = [];
+            const planKey = (p: Plan) => `${p.entity}:${p.entityId}:${p.userId}`;
+            const planned = new Set<string>();
+
+            const addPlan = (entity: Plan['entity'], entityId: string, userId: string, role: string) => {
+                const k = `${entity}:${entityId}:${userId}`;
+                if (existing.has(k) || planned.has(k)) return;
+                const u = userMap.get(userId);
+                const name = u?.name || u?.displayName || [u?.personalInfo?.firstName, u?.personalInfo?.lastName].filter(Boolean).join(' ').trim() || 'Üye';
+                plans.push({ entity, entityId, userId, role, inviteeName: name });
+                planned.add(`${entity}:${entityId}:${userId}`);
+            };
+
+            // (a) entity.adminUserId → Genel Yönetici
+            ngosSnap.forEach(d => {
+                const { adminUserId } = d.data() as { adminUserId?: string };
+                if (adminUserId && userMap.has(adminUserId)) addPlan('ngo', d.id, adminUserId, 'Genel Yönetici');
+            });
+            brandsSnap.forEach(d => {
+                const { adminUserId } = d.data() as { adminUserId?: string };
+                if (adminUserId && userMap.has(adminUserId)) addPlan('brand', d.id, adminUserId, 'Genel Yönetici');
+            });
+            clubsSnap.forEach(d => {
+                const { adminUserId } = d.data() as { adminUserId?: string };
+                if (adminUserId && userMap.has(adminUserId)) addPlan('club', d.id, adminUserId, 'Genel Yönetici');
+            });
+
+            // (b) users.managedXId → user.{X}RoleTitle (yoksa 'Genel Yönetici')
+            usersSnap.forEach(d => {
+                const u = d.data() as { managedNgoId?: string; managedBrandId?: string; managedClubId?: string; ngoRoleTitle?: string; brandRoleTitle?: string; clubRoleTitle?: string; roleTitle?: string };
+                if (u.managedNgoId) addPlan('ngo', u.managedNgoId, d.id, u.ngoRoleTitle || u.roleTitle || 'Genel Yönetici');
+                if (u.managedBrandId) addPlan('brand', u.managedBrandId, d.id, u.brandRoleTitle || u.roleTitle || 'Genel Yönetici');
+                if (u.managedClubId) addPlan('club', u.managedClubId, d.id, u.clubRoleTitle || u.roleTitle || 'Genel Yönetici');
+            });
+
+            log('info', `${plans.length} eksik invitation tespit edildi.`);
+
+            if (plans.length === 0) {
+                log('ok', 'Tüm yetkilendirmeler zaten userInvitations koleksiyonunda mevcut.');
+                toast({ title: 'Backfill gerekmedi', description: 'Eksik kayıt bulunamadı.' });
+                return;
+            }
+
+            let created = 0;
+            let failed = 0;
+            for (const p of plans) {
+                try {
+                    const payload: Record<string, unknown> = {
+                        inviteeUserId: p.userId,
+                        inviteeName: p.inviteeName,
+                        role: p.role,
+                        status: 'accepted',
+                        invitedBy: 'super-admin',
+                        invitedAt: serverTimestamp(),
+                        autoAcceptedBy: 'super-admin',
+                        backfilled: true,
+                    };
+                    if (p.entity === 'ngo') payload.ngoId = p.entityId;
+                    if (p.entity === 'brand') payload.brandId = p.entityId;
+                    if (p.entity === 'club') payload.clubId = p.entityId;
+                    await addDoc(collection(db, COLLECTIONS.userInvitations), payload);
+                    created++;
+                } catch (e) {
+                    failed++;
+                    console.error(`[reconcileInvitations] ${planKey(p)} failed:`, e);
+                }
+            }
+
+            log('ok', `Tamamlandı: ${created} davet oluşturuldu, ${failed} hata.`);
+            toast({ title: 'Backfill tamamlandı', description: `${created} eksik invitation eklendi.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-3xl">
             <div className="space-y-1">
@@ -225,6 +344,27 @@ export default function MaintenancePage() {
                     >
                         {running === 'createdAt' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Backfill başlat
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-amber-300/40 bg-amber-50/30">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4" /> userInvitations Reconcile (BUG-17)</CardTitle>
+                    <CardDescription>
+                        Geçmişte super-admin tarafından yapılan yetkilendirmelerin firestore rules silent reject yüzünden invitation kaydı oluşmamış olabilir.
+                        Bu tarama (a) ngos/brands/clubs.adminUserId set olan ve (b) users.managedXId set olan tüm yetkilendirmeleri kontrol eder; eksik invitation kayıtlarını <code>status:&apos;accepted&apos;</code> ile yeniden oluşturur.
+                        Mevcut kayıtlar atlanır (idempotent).
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={reconcileInvitations}
+                        disabled={running !== null}
+                        className="rounded-xl"
+                    >
+                        {running === 'invitations' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Eksik invitation kayıtlarını oluştur
                     </Button>
                 </CardContent>
             </Card>
