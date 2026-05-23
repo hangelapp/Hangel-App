@@ -59,13 +59,20 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         name: '',
         shortName: '',
         orgSubType: '',
+        // NGO alt türü: 'Dernek' | 'Vakif' | 'OzelIzinli' (Dernek/Vakıf/Özel İzinli)
+        ngoSubType: '',
         sector: '',
+        // Detaylı Faaliyet Alanı (registryDernekler doc'undan auto-fill ile gelir)
+        detayliFaaliyetAlani: '',
         email: '',
         phone: '',
         phoneCountryCode: '+90',
         website: '',
         legalTitle: '',
         iban: '',
+        // Banka Hesap Adı (NGO YASAL & FİNANSAL — Kütük No alanı registryNo'ya
+        // taşındı, burada artık hesap sahibi adı girilir).
+        bankAccountName: '',
         registryNo: '',
         country: 'Türkiye',
         city: '',
@@ -86,6 +93,38 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         trackingLink: '',
         pixelScript: '',
     });
+
+    // Türkiye il plaka kodları — kütük no'nun ilk 2 hanesi il plaka kodudur.
+    // Auto-fill: kütük lookup başarılıysa city alanını da plate code'dan doldur.
+    const TR_IL_PLATES: Record<string, string> = {
+        '01': 'Adana', '02': 'Adıyaman', '03': 'Afyonkarahisar', '04': 'Ağrı', '05': 'Amasya',
+        '06': 'Ankara', '07': 'Antalya', '08': 'Artvin', '09': 'Aydın', '10': 'Balıkesir',
+        '11': 'Bilecik', '12': 'Bingöl', '13': 'Bitlis', '14': 'Bolu', '15': 'Burdur',
+        '16': 'Bursa', '17': 'Çanakkale', '18': 'Çankırı', '19': 'Çorum', '20': 'Denizli',
+        '21': 'Diyarbakır', '22': 'Edirne', '23': 'Elazığ', '24': 'Erzincan', '25': 'Erzurum',
+        '26': 'Eskişehir', '27': 'Gaziantep', '28': 'Giresun', '29': 'Gümüşhane', '30': 'Hakkari',
+        '31': 'Hatay', '32': 'Isparta', '33': 'Mersin', '34': 'İstanbul', '35': 'İzmir',
+        '36': 'Kars', '37': 'Kastamonu', '38': 'Kayseri', '39': 'Kırklareli', '40': 'Kırşehir',
+        '41': 'Kocaeli', '42': 'Konya', '43': 'Kütahya', '44': 'Malatya', '45': 'Manisa',
+        '46': 'Kahramanmaraş', '47': 'Mardin', '48': 'Muğla', '49': 'Muş', '50': 'Nevşehir',
+        '51': 'Niğde', '52': 'Ordu', '53': 'Rize', '54': 'Sakarya', '55': 'Samsun',
+        '56': 'Siirt', '57': 'Sinop', '58': 'Sivas', '59': 'Tekirdağ', '60': 'Tokat',
+        '61': 'Trabzon', '62': 'Tunceli', '63': 'Şanlıurfa', '64': 'Uşak', '65': 'Van',
+        '66': 'Yozgat', '67': 'Zonguldak', '68': 'Aksaray', '69': 'Bayburt', '70': 'Karaman',
+        '71': 'Kırıkkale', '72': 'Batman', '73': 'Şırnak', '74': 'Bartın', '75': 'Ardahan',
+        '76': 'Iğdır', '77': 'Yalova', '78': 'Karabük', '79': 'Kilis', '80': 'Osmaniye',
+        '81': 'Düzce',
+    };
+
+    // Kütük no auto-format: kullanıcı sadece rakam girer (e.g. "34262102"),
+    // sistem otomatik tire ekler → "34-262-102" (XX-XXX-XXX standardı).
+    // Lookup için tire'lı format kullanılır (registryDernekler doc id = "06-154-120").
+    const formatKutukNo = (raw: string): string => {
+        const digits = raw.replace(/\D/g, '').slice(0, 8); // max 8 digit: 2+3+3
+        if (digits.length <= 2) return digits;
+        if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+        return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+    };
 
     const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
     const [selectedSdgs, setSelectedSdgs] = useState<string[]>([]);
@@ -192,19 +231,37 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             }
             const r = snap.data() as Record<string, unknown>;
             const name = typeof r.name === 'string' ? r.name : '';
-            const foundedYear = typeof r.foundedYear === 'number' ? String(r.foundedYear) : '';
+            const foundedYear = typeof r.foundedYear === 'number'
+                ? String(r.foundedYear)
+                : typeof r.foundedYear === 'string' ? r.foundedYear : '';
+            const faaliyetAlani = typeof r.faaliyetAlani === 'string' ? r.faaliyetAlani : '';
+            const detayliFaaliyetAlani = typeof r.detayliFaaliyetAlani === 'string'
+                ? r.detayliFaaliyetAlani
+                : typeof r['Detaylı Faaliyet Alanı'] === 'string' ? r['Detaylı Faaliyet Alanı'] as string : '';
+            const adres = typeof r.adres === 'string' ? r.adres : '';
+            const webSite = typeof r.webSite === 'string' ? r.webSite : '';
+            // İl plate code: kütük no'nun ilk 2 hanesi (e.g. "06-154-120" → "06" → "Ankara").
+            // Kullanıcı manuel girdiği city'i ezme; yalnız boşsa doldur.
+            const platePrefix = key.split('-')[0]?.padStart(2, '0') || '';
+            const ilFromPlate = TR_IL_PLATES[platePrefix] || '';
             setFormData(prev => ({
                 ...prev,
-                // name is the identity being looked up → always fill from record.
                 name: name || prev.name,
-                // foundedYear only if record has it and user hasn't set one.
                 foundedYear: foundedYear && !prev.foundedYear ? foundedYear : prev.foundedYear,
+                sector: faaliyetAlani && !prev.sector ? faaliyetAlani : prev.sector,
+                detayliFaaliyetAlani: detayliFaaliyetAlani && !prev.detayliFaaliyetAlani
+                    ? detayliFaaliyetAlani : prev.detayliFaaliyetAlani,
+                country: prev.country || 'Türkiye',
+                city: ilFromPlate && !prev.city ? ilFromPlate : prev.city,
+                addressLine: adres && !prev.addressLine ? adres : prev.addressLine,
+                website: webSite && !prev.website ? webSite : prev.website,
             }));
             setRegistryMatch({
                 name,
-                faaliyetAlani: typeof r.faaliyetAlani === 'string' ? r.faaliyetAlani : undefined,
-                adres: typeof r.adres === 'string' ? r.adres : undefined,
-                webSite: typeof r.webSite === 'string' ? r.webSite : undefined,
+                faaliyetAlani: faaliyetAlani || undefined,
+                adres: adres || undefined,
+                webSite: webSite || undefined,
+                il: ilFromPlate || undefined,
             });
             setRegistryLookupStatus('found');
         } catch {
@@ -294,19 +351,59 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             {entityType === 'NGO' && (
                 <div className="space-y-12">
-                    {/* Kayıt Sorgulama — kütük numarası ile otomatik doldurma (formun ilk adımı) */}
+                    {/* Kayıt Sorgulama — alt türe göre lookup farklılaşır:
+                          - Dernek: kütük numarası ile (XX-XXX-XXX format)
+                          - Vakıf: vakıf adıyla arama
+                          - Özel İzinli: ad-soyad (lookup yok, manuel) */}
                     <div className="space-y-6">
                         <SectionTitle icon={Search}>KAYIT SORGULAMA</SectionTitle>
-                        <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
-                            Kütük numaranızı girip <span className="font-bold text-foreground">Bilgileri Getir</span>&apos;e basın; ilgili STK&apos;nın bilgileri formu otomatik doldursun. İsterseniz alanları düzenleyebilir veya kütük numaranız yoksa bilgileri elle girebilirsiniz.
-                        </p>
+                        <div className="space-y-2">
+                            <FormLabel>Kuruluş Alt Türü</FormLabel>
+                            <Select value={formData.ngoSubType} onValueChange={(val) => {
+                                setFormData(prev => ({ ...prev, ngoSubType: val }));
+                                setRegistryLookupStatus('idle');
+                                setRegistryMatch(null);
+                                setVakifResults([]);
+                                setVakifSearchStatus('idle');
+                            }}>
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left">
+                                    <SelectValue placeholder="Seçiniz..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Dernek">Dernek</SelectItem>
+                                    <SelectItem value="Vakif">Vakıf</SelectItem>
+                                    <SelectItem value="OzelIzinli">Özel İzinli Kuruluş</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[11px] text-muted-foreground ml-1 leading-snug">
+                                Alt tür seçiminize göre kayıt sorgu yöntemi belirlenir.
+                            </p>
+                        </div>
+
+                        {formData.ngoSubType === 'Dernek' && (
+                            <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
+                                Kütük numaranızı girip <span className="font-bold text-foreground">Bilgileri Getir</span>&apos;e basın; STK&apos;nın bilgileri (ad, adres, faaliyet alanı, kuruluş yılı, il) otomatik doldurulur. Tire (-) işaretleri sistem tarafından eklenir; sadece rakamları yazın.
+                            </p>
+                        )}
+                        {formData.ngoSubType === 'Vakif' && (
+                            <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
+                                Vakfınızın adını girip <span className="font-bold text-foreground">Ara</span>&apos;ya basın; eşleşen vakıflardan birini seçerseniz adres ve iletişim bilgileri otomatik doldurulur. Vakıflar kütük numarası kullanmaz, isimle eşleştirilir.
+                            </p>
+                        )}
+                        {formData.ngoSubType === 'OzelIzinli' && (
+                            <p className="text-[12px] text-muted-foreground -mt-2 leading-snug">
+                                Özel izinli kuruluşlar için otomatik kayıt sorgulaması yoktur. Lütfen aşağıdaki alanları elle doldurun. Yetkili kişinin ad-soyadı bilgisi gerekir.
+                            </p>
+                        )}
+
+                        {formData.ngoSubType === 'Dernek' && (
                         <div className="space-y-2">
                             <FormLabel>Kütük Numarası</FormLabel>
                             <div className="grid grid-cols-[1fr_auto] gap-2">
                                 <FormInput
-                                    placeholder="Kütük No"
+                                    placeholder="örn. 34-262-102"
                                     value={formData.registryNo}
-                                    onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
+                                    onChange={e => { setFormData({...formData, registryNo: formatKutukNo(e.target.value)}); setRegistryLookupStatus('idle'); }}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleDernekLookup(); } }}
                                 />
                                 <Button
@@ -328,30 +425,14 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <p className="text-[11px] text-muted-foreground ml-1">Kayıt sorgulanamadı. Bilgileri elle girebilirsiniz.</p>
                             )}
                         </div>
-                        {registryLookupStatus === 'found' && registryMatch && (
-                            <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
-                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-                                <div className="space-y-1 text-left">
-                                    <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{registryMatch.name}</p>
-                                    {registryMatch.faaliyetAlani && (
-                                        <p className="text-[11px] text-muted-foreground">{registryMatch.faaliyetAlani}</p>
-                                    )}
-                                    {registryMatch.adres && (
-                                        <p className="text-[11px] text-muted-foreground">{registryMatch.adres}</p>
-                                    )}
-                                    {registryMatch.webSite && (
-                                        <p className="text-[11px] text-primary break-all">{registryMatch.webSite}</p>
-                                    )}
-                                    <p className="text-[10px] text-muted-foreground pt-1">Bilgiler forma aktarıldı; gerekirse düzenleyebilirsiniz.</p>
-                                </div>
-                            </div>
                         )}
+
+                        {formData.ngoSubType === 'Vakif' && (
                         <div className="space-y-2">
-                            <FormLabel>Vakıf adıyla ara</FormLabel>
-                            <p className="text-[11px] text-muted-foreground ml-1 -mt-1">Kütük numaranız yoksa vakfınızı adıyla arayabilirsiniz.</p>
+                            <FormLabel>Vakıf Adı</FormLabel>
                             <div className="grid grid-cols-[1fr_auto] gap-2">
                                 <FormInput
-                                    placeholder="En az 3 harf girin"
+                                    placeholder="örn. Türkiye Eğitim Vakfı (en az 3 harf)"
                                     value={vakifSearchText}
                                     onChange={e => setVakifSearchText(e.target.value)}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleVakifSearch(); } }}
@@ -392,6 +473,43 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <p className="text-[11px] text-muted-foreground ml-1">Arama şu anda kullanılamıyor, bilgileri elle girin.</p>
                             )}
                         </div>
+                        )}
+
+                        {formData.ngoSubType === 'OzelIzinli' && (
+                        <div className="space-y-2">
+                            <FormLabel required>Yetkili Adı Soyadı</FormLabel>
+                            <FormInput
+                                placeholder="Ad Soyad"
+                                value={formData.authorized.name}
+                                onChange={e => setFormData(prev => ({ ...prev, authorized: { ...prev.authorized, name: e.target.value } }))}
+                            />
+                            <p className="text-[11px] text-muted-foreground ml-1">Özel izinli kuruluşlar için otomatik kayıt sorgulaması yoktur — tüm bilgileri aşağıda elle doldurun.</p>
+                        </div>
+                        )}
+
+                        {/* Bulunan kayıt onayı — hem Dernek hem Vakif (handleSelectVakif) için.
+                            registryMatch ve registryLookupStatus state'leri ortak. */}
+                        {registryLookupStatus === 'found' && registryMatch && (
+                            <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                <div className="space-y-1 text-left">
+                                    <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{registryMatch.name}</p>
+                                    {registryMatch.faaliyetAlani && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.faaliyetAlani}</p>
+                                    )}
+                                    {registryMatch.adres && (
+                                        <p className="text-[11px] text-muted-foreground">{registryMatch.adres}</p>
+                                    )}
+                                    {registryMatch.webSite && (
+                                        <p className="text-[11px] text-primary break-all">{registryMatch.webSite}</p>
+                                    )}
+                                    {registryMatch.il && (
+                                        <p className="text-[11px] text-muted-foreground">İl: {registryMatch.il}</p>
+                                    )}
+                                    <p className="text-[10px] text-muted-foreground pt-1">Bilgiler forma aktarıldı; gerekirse düzenleyebilirsiniz.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Kimlik */}
@@ -403,13 +521,6 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <FormLabel>Kuruluş Alt Türü</FormLabel>
-                                <Select value={formData.orgSubType} onValueChange={v => setFormData({...formData, orgSubType: v})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
-                                    <SelectContent><SelectItem value="Dernek">Dernek</SelectItem><SelectItem value="Vakıf">Vakıf</SelectItem><SelectItem value="Diğer">Diğer</SelectItem></SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
                                 <FormLabel>Kuruluş Yılı</FormLabel>
                                 <Select value={formData.foundedYear} onValueChange={v => setFormData({...formData, foundedYear: v})}>
                                     <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Yıl Seç" /></SelectTrigger>
@@ -418,6 +529,22 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div className="space-y-2">
+                                <FormLabel>Faaliyet Alanı</FormLabel>
+                                <FormInput
+                                    placeholder="Örn. Eğitim, Sağlık"
+                                    value={formData.sector}
+                                    onChange={e => setFormData({...formData, sector: e.target.value})}
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>Detaylı Faaliyet Alanı</FormLabel>
+                            <FormInput
+                                placeholder="Faaliyet alanınızın detayı"
+                                value={formData.detayliFaaliyetAlani}
+                                onChange={e => setFormData({...formData, detayliFaaliyetAlani: e.target.value})}
+                            />
                         </div>
                         <div className="space-y-2">
                             <FormLabel>Hakkınızda</FormLabel>
@@ -528,16 +655,17 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Yasal & Finansal */}
+                    {/* Yasal & Finansal — Kütük No artık yukarıda KAYIT SORGULAMA'da
+                        alınır (Dernek için). Burada banka hesap bilgileri girilir. */}
                     <div className="space-y-6">
                         <SectionTitle icon={FileText}>YASAL & FİNANSAL</SectionTitle>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <FormLabel>Kütük Numarası</FormLabel>
+                                <FormLabel>Banka Hesap Adı</FormLabel>
                                 <FormInput
-                                    placeholder="Kütük No"
-                                    value={formData.registryNo}
-                                    onChange={e => { setFormData({...formData, registryNo: e.target.value}); setRegistryLookupStatus('idle'); }}
+                                    placeholder="Hesap sahibinin tam adı"
+                                    value={formData.bankAccountName}
+                                    onChange={e => setFormData({...formData, bankAccountName: e.target.value})}
                                 />
                             </div>
                             <div className="space-y-2">
