@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type BulkOp = 'idle' | 'clearing' | 'seeding';
+type BulkOp = 'idle' | 'clearing' | 'seeding' | 'deleting-demo';
 
 interface BrandBulkToolsCardProps {
     bulkOp: BulkOp;
@@ -16,9 +16,10 @@ interface BrandBulkToolsCardProps {
     onClearAll: () => void | Promise<void>;
     onSeed: () => void | Promise<void>;
     onResetAndSeed: () => void | Promise<void>;
+    onDeleteDemoOnly: () => void | Promise<void>;
 }
 
-export const BrandBulkToolsCard = ({ bulkOp, seedCount, onClearAll, onSeed, onResetAndSeed }: BrandBulkToolsCardProps) => {
+export const BrandBulkToolsCard = ({ bulkOp, seedCount, onClearAll, onSeed, onResetAndSeed, onDeleteDemoOnly }: BrandBulkToolsCardProps) => {
     return (
         <Card className="rounded-2xl border-amber-200 bg-amber-50/30">
             <CardHeader className="pb-3">
@@ -26,6 +27,35 @@ export const BrandBulkToolsCard = ({ bulkOp, seedCount, onClearAll, onSeed, onRe
                 <CardDescription>Demo verileri temizle ve mevcut marka datalarını ({seedCount} marka) Firestore'a yükle.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row gap-2 flex-wrap">
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" disabled={bulkOp !== 'idle'} className="gap-1.5 border-amber-400 text-amber-700 hover:bg-amber-100">
+                            {bulkOp === 'deleting-demo'
+                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                : <Trash2 className="h-4 w-4" />}
+                            Sadece Demo Markaları Sil ({seedCount})
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Demo markaları silinsin mi?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                <code>docs/database-exports/brands.json</code>'da listelenen <strong>{seedCount}</strong> seed marka kaydı Firestore&apos;dan silinir.
+                                Super-admin&apos;in elle eklediği veya başvurudan onaylanan <strong>gerçek markalar etkilenmez</strong>.
+                                Bu işlem kalıcıdır.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                            <AlertDialogAction
+                                className={cn(buttonVariants({ variant: 'destructive' }))}
+                                onClick={onDeleteDemoOnly}>
+                                Evet, Demo&apos;ları Sil
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="outline" disabled={bulkOp !== 'idle'} className="gap-1.5">

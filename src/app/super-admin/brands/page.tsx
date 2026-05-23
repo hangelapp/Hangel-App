@@ -36,7 +36,7 @@ export default function BrandsPage() {
     const [sortBy, setSortBy] = useState<SortOption>('default');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<EditFormData>({});
-    const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding'>('idle');
+    const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding' | 'deleting-demo'>('idle');
     const [logoUploading, setLogoUploading] = useState(false);
 
     // Load approved brands
@@ -147,11 +147,17 @@ export default function BrandsPage() {
     };
 
     const handleRemove = (id: string, name: string) => {
-        const brandRef = doc(db, COLLECTIONS.brands, id);
-        deleteDocumentNonBlocking(brandRef);
+        // Item kaynağına göre doğru koleksiyondan sil: approved kayıtlar
+        // `brands` altında, henüz onaylanmamış başvurular `applications` altında.
+        const item = filteredBrands.find(b => b.id === id);
+        const targetCollection = item?.source === 'applications'
+            ? COLLECTIONS.applications
+            : COLLECTIONS.brands;
+        const targetRef = doc(db, targetCollection, id);
+        deleteDocumentNonBlocking(targetRef);
         toast({
             variant: 'destructive',
-            title: "Marka Kaldırıldı",
+            title: item?.source === 'applications' ? "Başvuru Silindi" : "Marka Kaldırıldı",
             description: `${name} platformdan kalıcı olarak silindi.`
         });
     };
@@ -338,6 +344,49 @@ export default function BrandsPage() {
     const handleResetAndSeed = async () => {
         await handleClearAll();
         await handleSeed();
+    };
+
+    // Seed JSON'daki marka id'lerini hedef alır; super-admin'in elle eklediği
+    // veya başvuru üzerinden onaylanmış gerçek markaları DOKUNULMADAN bırakır.
+    const handleDeleteDemoBrands = async () => {
+        setBulkOp('deleting-demo');
+        try {
+            const demoIds = (seedBrands as Array<{ id: string }>).map(b => b.id).filter(Boolean);
+            const batches: ReturnType<typeof writeBatch>[] = [];
+            let current = writeBatch(db);
+            let pending = 0;
+            let attempted = 0;
+            for (const id of demoIds) {
+                current.delete(doc(db, COLLECTIONS.brands, id));
+                pending += 1;
+                attempted += 1;
+                if (pending >= 450) {
+                    batches.push(current);
+                    current = writeBatch(db);
+                    pending = 0;
+                }
+            }
+            if (pending > 0) batches.push(current);
+            await Promise.all(batches.map(b => b.commit()));
+            toast({
+                variant: 'destructive',
+                title: 'Demo Markalar Silindi',
+                description: `${attempted} demo marka kaydı silindi (varsa). Gerçek markalar dokunulmadı.`,
+            });
+        } catch (e) {
+            console.error('Delete demo brands failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
+            toast({
+                variant: 'destructive',
+                title: 'Demo silme başarısız',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : message,
+            });
+        } finally {
+            setBulkOp('idle');
+        }
     };
 
     const handleStartEdit = (brand: BrandItem) => {
@@ -535,6 +584,7 @@ export default function BrandsPage() {
                 onClearAll={handleClearAll}
                 onSeed={handleSeed}
                 onResetAndSeed={handleResetAndSeed}
+                onDeleteDemoOnly={handleDeleteDemoBrands}
             />
 
             <BrandStatsCards stats={stats} onStatusFilterChange={setStatusFilter} />

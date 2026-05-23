@@ -24,11 +24,12 @@ import { COLLECTIONS } from '@/firebase/collections';
 
 /**
  * Compact Turkish-friendly number formatter for the marketing hero stats.
- * 1_250_000 -> "1.2M+", 500_000 -> "500K+", 980 -> "980". Returns "0" for
- * empty/zero so the page never shows a fake number when there is no data.
+ * 1_250_000 -> "1.2M+", 500_000 -> "500K+", 980 -> "980". Returns "" for
+ * empty/zero so the stat element is hidden entirely (per user request:
+ * "0 sa hiç rakam olmamalı").
  */
 function formatCompactCount(value: number): string {
-    if (!Number.isFinite(value) || value <= 0) return '0';
+    if (!Number.isFinite(value) || value <= 0) return '';
     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M+`;
     if (value >= 1_000) return `${Math.round(value / 1_000)}K+`;
     return value.toLocaleString('tr-TR');
@@ -36,10 +37,11 @@ function formatCompactCount(value: number): string {
 
 /**
  * Currency-style compact formatter for the donation volume hero stat.
- * 12_500_000 -> "12.5M ₺", 8_400 -> "8K ₺", 0 -> "0 ₺".
+ * 12_500_000 -> "12.5M ₺", 8_400 -> "8K ₺". Returns "" when value is zero
+ * so the donation stat is hidden entirely until there is real volume.
  */
 function formatCompactCurrency(value: number): string {
-    if (!Number.isFinite(value) || value <= 0) return '0 ₺';
+    if (!Number.isFinite(value) || value <= 0) return '';
     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M ₺`;
     if (value >= 1_000) return `${Math.round(value / 1_000)}K ₺`;
     return `${value.toLocaleString('tr-TR')} ₺`;
