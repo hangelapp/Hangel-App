@@ -57,31 +57,76 @@ interface ClubApplication {
 
 const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
-const TransferAdminDialog = ({ club, allUsers, onAssign }: {
+// Kulüp roller — super-admin/ngos + brands ile aynı kalıp.
+type ClubRole = 'Genel Yönetici' | 'Etkinlik Yöneticisi' | 'İçerik Yöneticisi' | 'Üye Yöneticisi';
+const CLUB_ROLE_OPTIONS: ClubRole[] = [
+    'Genel Yönetici',
+    'Etkinlik Yöneticisi',
+    'İçerik Yöneticisi',
+    'Üye Yöneticisi',
+];
+
+interface ClubInvitation {
+    id: string;
+    clubId?: string;
+    inviteeUserId?: string;
+    inviteeName?: string;
+    role?: string;
+    status?: string;
+    invitedAt?: { toDate?: () => Date } | Date | null;
+}
+
+const TransferAdminDialog = ({ club, allUsers, onAssign, onRevoke }: {
     club: ClubItem;
     allUsers: SimpleClubUser[] | null;
-    onAssign: (clubId: string, newUserId: string, newUserName: string) => Promise<void>;
+    onAssign: (clubId: string, newUserId: string, newUserName: string, role: ClubRole) => Promise<void>;
+    onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
 }) => {
+    const db = useFirestore();
     const [open, setOpen] = useState(false);
-    const [phone, setPhone] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRole, setSelectedRole] = useState<ClubRole>('Genel Yönetici');
     const [submitting, setSubmitting] = useState(false);
 
-    const normalizedSearch = normalizePhone(phone);
+    const isEmailSearch = searchTerm.includes('@');
+    const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
+
     const matchedUser = useMemo(() => {
-        if (!allUsers || normalizedSearch.length < 3) return null;
+        if (!allUsers) return null;
+        if (isEmailSearch) {
+            if (normalizedSearch.length < 3) return null;
+            return allUsers.find(u => {
+                const email = (u.personalInfo?.email || (u as { email?: string }).email || '').toLowerCase();
+                return email && email.includes(normalizedSearch);
+            }) || null;
+        }
+        if (normalizedSearch.length < 3) return null;
         return allUsers.find(u => {
             const cands = ([u.personalInfo?.phone, u.phoneNumber, u.phone].filter(Boolean) as string[]).map(normalizePhone);
             return cands.some(c => c.endsWith(normalizedSearch) || normalizedSearch.endsWith(c));
         }) || null;
-    }, [allUsers, normalizedSearch]);
+    }, [allUsers, normalizedSearch, isEmailSearch]);
+
+    // Daha önce yetkilendirilenleri listele (ngos/brands ile aynı pattern).
+    const invitationsQuery = useMemoFirebase(
+        () => open ? query(collection(db, COLLECTIONS.userInvitations), where('clubId', '==', club.id)) : null,
+        [db, club.id, open],
+    );
+    const { data: invitations } = useCollection<ClubInvitation>(invitationsQuery);
+
+    const activeInvitations = useMemo(
+        () => (invitations || []).filter(i => i.status !== 'revoked'),
+        [invitations],
+    );
 
     const handleAssign = async () => {
         if (!matchedUser) return;
         setSubmitting(true);
         try {
-            await onAssign(club.id, matchedUser.id, matchedUser.name || matchedUser.displayName || 'Üye');
+            await onAssign(club.id, matchedUser.id, matchedUser.name || matchedUser.displayName || 'Üye', selectedRole);
             setOpen(false);
-            setPhone('');
+            setSearchTerm('');
+            setSelectedRole('Genel Yönetici');
         } finally {
             setSubmitting(false);
         }
@@ -94,28 +139,66 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
                     <UserCog className="mr-2 h-4 w-4" /> Yetkili
                 </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
                 <DialogHeader>
                     <DialogTitle>Kulüp Yetkilisini Belirle</DialogTitle>
                     <DialogDescription>
-                        <strong>{club.name}</strong> için yeni yöneticiyi telefon numarasıyla bulun ve atayın.
+                        <strong>{club.name}</strong> için yeni yöneticiyi telefon veya e-posta ile bulun, role atayın.
                     </DialogDescription>
                 </DialogHeader>
+
+                {/* Mevcut yetkililer listesi */}
+                {activeInvitations.length > 0 && (
+                    <div className="space-y-2 border rounded-2xl p-3 bg-muted/20">
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({activeInvitations.length})</p>
+                        <div className="space-y-2">
+                            {activeInvitations.map(inv => (
+                                <div key={inv.id} className="flex items-center justify-between gap-2 p-2 bg-card rounded-xl border border-black/5">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-sm truncate">{inv.inviteeName || inv.inviteeUserId}</p>
+                                        <p className="text-[11px] text-muted-foreground">{inv.role || 'Yetkili'}</p>
+                                    </div>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-destructive h-8"
+                                        onClick={() => onRevoke(inv.id, inv.inviteeName || 'Üye')}
+                                    >
+                                        Kaldır
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 <div className="space-y-4 py-2">
                     <div className="space-y-2">
-                        <Label>Telefon Numarası</Label>
+                        <Label>Kullanıcı Arama (telefon veya e-posta)</Label>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
-                                type="tel"
-                                value={phone}
-                                onChange={e => setPhone(e.target.value)}
-                                placeholder="5XX XXX XX XX"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                placeholder="5XX XXX XX XX veya kullanici@example.com"
                                 className="pl-10"
                                 autoFocus
                             />
                         </div>
-                        <p className="text-xs text-muted-foreground">En az 3 hane girin.</p>
+                        <p className="text-xs text-muted-foreground">En az 3 karakter girin.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Rol</Label>
+                        <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as ClubRole)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                {CLUB_ROLE_OPTIONS.map(r => (
+                                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <p className="text-[11px] text-muted-foreground">Genel Yönetici, kulüp dokümanının ana yetkilisi olur. Diğer roller ek yetkilendirme sağlar.</p>
                     </div>
 
                     {normalizedSearch.length >= 3 && matchedUser && (
@@ -139,14 +222,9 @@ const TransferAdminDialog = ({ club, allUsers, onAssign }: {
                     {normalizedSearch.length >= 3 && !matchedUser && (
                         <div className="flex items-center gap-2 p-3 border border-destructive/30 bg-destructive/5 rounded-lg text-sm text-destructive">
                             <XCircle className="h-4 w-4" />
-                            <span>Bu telefon numarasıyla kayıtlı üye bulunamadı.</span>
+                            <span>Bu telefon/e-posta ile kayıtlı üye bulunamadı.</span>
                         </div>
                     )}
-
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                        Atanan kullanıcı <strong>"ngo-admin"</strong> rolüyle yetkilendirilir ve bu kulüp için yönetim panelini kullanabilir.
-                        Süper admin'in rolü değişmez.
-                    </p>
                 </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={() => setOpen(false)}>İptal</Button>
@@ -285,33 +363,61 @@ export default function ClubsAdminPage() {
         }
     };
 
-    const handleAssignAdmin = async (clubId: string, newUserId: string, newUserName: string) => {
+    const handleAssignAdmin = async (clubId: string, newUserId: string, newUserName: string, role: ClubRole) => {
         try {
-            await updateDoc(doc(db, COLLECTIONS.clubs, clubId), { adminUserId: newUserId });
+            // 1. Sadece "Genel Yönetici" rolünde kulüp doc'una adminUserId yaz (super-admin/ngos
+            //    + super-admin/brands ile aynı pattern). Diğer roller yetkilendirme yapar ama
+            //    primary admin değiştirmez.
+            if (role === 'Genel Yönetici') {
+                await updateDoc(doc(db, COLLECTIONS.clubs, clubId), { adminUserId: newUserId });
+            }
 
-            // Super-admin'in rolünü düşürme; sadece henüz super-admin olmayanları yükselt.
+            // 2. Super-admin'in rolünü düşürme; sadece henüz super-admin olmayanları yükselt.
+            //    Tüm rollerde user'a managedClubId + clubRoleTitle eklenir.
             const userSnap = await getDoc(doc(db, COLLECTIONS.users, newUserId));
             const currentRole = userSnap.exists() ? (userSnap.data() as { role?: string }).role : null;
-            const updatePayload: Record<string, unknown> = { managedClubId: clubId };
+            const updatePayload: Record<string, unknown> = {
+                managedClubId: clubId,
+                clubRoleTitle: role,
+            };
             if (currentRole !== 'super-admin') {
                 updatePayload.role = 'ngo-admin';
             }
             await updateDoc(doc(db, COLLECTIONS.users, newUserId), updatePayload);
 
+            // 3. userInvitations'a audit kaydı — /admin Yönetim Paneli ve diğer sayfaların
+            //    tutarlı görüntüleme için tek kaynak.
             await addDoc(collection(db, COLLECTIONS.userInvitations), {
                 clubId,
                 inviteeUserId: newUserId,
                 inviteeName: newUserName,
-                role: 'Kulüp Yöneticisi',
+                role,
                 status: 'accepted',
                 invitedBy: 'super-admin',
                 invitedAt: serverTimestamp(),
                 autoAcceptedBy: 'super-admin',
             });
 
+            // 4. Bildirim — yetkilendirilen kullanıcıya in-app notification (ngos/brands pattern).
+            try {
+                const clubName = (clubs || []).find(c => c.id === clubId)?.name || 'Kulüp';
+                await addDoc(collection(db, COLLECTIONS.notifications), {
+                    userId: newUserId,
+                    type: 'authorization',
+                    title: 'Yetkilendirildiniz',
+                    body: `${clubName} için ${role} olarak yetkilendirildiniz.`,
+                    data: { entityId: clubId, entityType: 'club', role },
+                    read: false,
+                    createdAt: serverTimestamp(),
+                    createdBy: 'super-admin',
+                });
+            } catch (notifErr) {
+                console.warn('Yetkilendirme bildirimi oluşturulamadı:', notifErr);
+            }
+
             toast({
                 title: 'Yetkili Atandı',
-                description: `${newUserName} bu kulübün yöneticisi olarak işaretlendi.`,
+                description: `${newUserName} bu kulüp için "${role}" olarak yetkilendirildi.`,
             });
         } catch (e) {
             console.error('Club admin assign failed:', e);
@@ -320,6 +426,31 @@ export default function ClubsAdminPage() {
             toast({
                 variant: 'destructive',
                 title: 'Atama başarısız',
+                description: code === 'permission-denied'
+                    ? 'Bu işlem için super-admin yetkisi gerekli.'
+                    : message,
+            });
+        }
+    };
+
+    const handleRevokeAdmin = async (invitationId: string, inviteeName: string) => {
+        try {
+            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
+                status: 'revoked',
+                revokedAt: serverTimestamp(),
+                revokedBy: 'super-admin',
+            });
+            toast({
+                title: 'Yetki Kaldırıldı',
+                description: `${inviteeName} için yetkilendirme iptal edildi.`,
+            });
+        } catch (e) {
+            console.error('Club admin revoke failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+            toast({
+                variant: 'destructive',
+                title: 'Yetki kaldırılamadı',
                 description: code === 'permission-denied'
                     ? 'Bu işlem için super-admin yetkisi gerekli.'
                     : message,
@@ -466,7 +597,7 @@ export default function ClubsAdminPage() {
                                                         <Edit3 className="mr-2 h-4 w-4" /> Düzelt
                                                     </Link>
                                                 </Button>
-                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} />
+                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} />
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
