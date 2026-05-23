@@ -4,34 +4,40 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ChevronRight, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle } from 'lucide-react';
-import { schoolRepresentatives as schoolRepresentativesRaw } from '@/lib/data';
-import type { SchoolRepresentative, StudentClub } from '@/lib/types';
-
-const schoolRepresentatives = schoolRepresentativesRaw as SchoolRepresentative[];
+import { ArrowLeft, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle, UserCircle2 } from 'lucide-react';
+import type { StudentClub } from '@/lib/types';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShareButtons } from '@/components/shared/share-buttons';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { doc, updateDoc, arrayUnion, arrayRemove, collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
+interface ClubInvitation {
+  id: string;
+  clubId?: string;
+  inviteeUserId?: string;
+  inviteeName?: string;
+  inviteeAvatarUrl?: string;
+  role?: string;
+  status?: string;
+}
 
-const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl: string }) => (
+
+const RepresentativeCard = ({ name, role, avatarUrl }: { name: string, role: string, avatarUrl?: string }) => (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors">
         <Avatar className="h-10 w-10">
             <AvatarImage src={avatarUrl} alt={name} />
-            <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{(name || 'Ü').charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>
             <p className="font-semibold text-sm">{name}</p>
             <p className="text-xs text-muted-foreground">{role}</p>
         </div>
-        <ChevronRight className="ml-auto h-5 w-5 text-muted-foreground" />
     </div>
 );
 
@@ -62,6 +68,25 @@ export default function ClubProfilePage() {
     volunteerInfo?: { education?: { school?: string }[] };
   }>(userDocRef);
   const isJoined = !!userData?.joinedClubs?.includes(id);
+
+  // Kulüp yöneticilerini userInvitations'tan çek (BUG-12 ile aynı pattern)
+  const adminsQuery = useMemoFirebase(
+    () => (db && id ? query(collection(db, COLLECTIONS.userInvitations), where('clubId', '==', id)) : null),
+    [db, id],
+  );
+  const { data: adminInvitations } = useCollection<ClubInvitation>(adminsQuery);
+  const activeAdmins = useMemo(() => {
+    return (adminInvitations || [])
+      .filter(inv => inv.status !== 'revoked' && inv.status !== 'pending')
+      .map(inv => ({
+        id: inv.id,
+        name: inv.inviteeName || 'Üye',
+        role: inv.role || 'Yetkili',
+        avatarUrl: inv.inviteeAvatarUrl,
+      }));
+  }, [adminInvitations]);
+  const president = activeAdmins.find(a => a.role === 'Genel Yönetici');
+  const otherBoardMembers = activeAdmins.filter(a => a.role !== 'Genel Yönetici');
 
   const handleToggleJoin = async () => {
     if (!authUser) {
@@ -156,12 +181,6 @@ export default function ClubProfilePage() {
   if (!club) {
     notFound();
   }
-
-  const president = schoolRepresentatives[0];
-  const boardMembers = schoolRepresentatives.slice(1, 5).map(rep => ({
-      ...rep,
-      role: ['Başkan Yardımcısı', 'Genel Sekreter', 'Sayman', 'Proje Koordinatörü'][schoolRepresentatives.indexOf(rep) - 1]
-  }));
 
   return (
     <div className="animate-in fade-in-0">
@@ -285,20 +304,32 @@ export default function ClubProfilePage() {
             </div>
         </TabsContent>
         <TabsContent value="management" className="p-4 space-y-4">
-             <Card>
-                <CardHeader><CardTitle className="text-lg">Kulüp Başkanı</CardTitle></CardHeader>
-                <CardContent>
-                    <RepresentativeCard name={president.name} role="Kulüp Başkanı" avatarUrl={president.avatarUrl} />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader><CardTitle className="text-lg">Yönetim Kurulu</CardTitle></CardHeader>
-                <CardContent className="divide-y">
-                    {boardMembers.map(member => (
-                        <RepresentativeCard key={member.id} name={member.name} role={member.role} avatarUrl={member.avatarUrl} />
-                    ))}
-                </CardContent>
-            </Card>
+             {president && (
+                 <Card>
+                    <CardHeader><CardTitle className="text-lg">Kulüp Başkanı</CardTitle></CardHeader>
+                    <CardContent>
+                        <RepresentativeCard name={president.name} role="Kulüp Başkanı" avatarUrl={president.avatarUrl} />
+                    </CardContent>
+                </Card>
+             )}
+             {otherBoardMembers.length > 0 && (
+                 <Card>
+                    <CardHeader><CardTitle className="text-lg">Yönetim Kurulu</CardTitle></CardHeader>
+                    <CardContent className="divide-y">
+                        {otherBoardMembers.map(member => (
+                            <RepresentativeCard key={member.id} name={member.name} role={member.role} avatarUrl={member.avatarUrl} />
+                        ))}
+                    </CardContent>
+                </Card>
+             )}
+             {!president && otherBoardMembers.length === 0 && (
+                 <Card>
+                    <CardContent className="p-6 text-center text-sm text-muted-foreground">
+                        <UserCircle2 className="h-10 w-10 mx-auto mb-2 text-muted-foreground/40" aria-hidden="true" />
+                        Bu kulüp için henüz yönetim bilgisi eklenmemiş.
+                    </CardContent>
+                </Card>
+             )}
         </TabsContent>
       </Tabs>
     </div>
