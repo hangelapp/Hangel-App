@@ -42,6 +42,7 @@ interface InvitationRow {
   brandId?: string;
   clubId?: string;
   status?: string;
+  role?: string;
 }
 
 // PDF-30 — Bildirim helper'ı: yetkilendir/yetki kaldır işlemlerinde kullanıcıya
@@ -136,9 +137,15 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
     [allEntities, selectedEntityId],
   );
 
-  // PDF-29 — Mevcut yetkiler özeti (single-value `managedXId` schema).
-  // Multi-entity için ayrı koleksiyon ihtiyacı var; şu an tek-değerli alanlardan
-  // okuyup gösteriyoruz. revoke = field'ı null'a set + role'ü 'user'a indir.
+  // Mevcut yetkiler özeti — userInvitations'tan TÜM aktif yetkilendirmeleri
+  // derler (multi-entity desteği). Önceki davranış sadece user.managed*Id
+  // alanlarını okuyordu (her tipten max 1) → multi-brand/multi-ngo yetkileri
+  // listede görünmüyordu. Şimdi:
+  //   1. userInvitations status != 'revoked' && != 'pending' filtreli
+  //   2. ngoId/brandId/clubId'lere göre kind eşle, ad'ı ngos/brands/clubs map'inden çek
+  //   3. Dedupe (aynı entity'ye çoklu davet → tek satır)
+  //   4. Fallback: invitation'ı olmayan eski managed*Id kayıtları da gösterilir
+  // revoke = managed*Id null + ilgili invitations'ları status='revoked' işaretle.
   type ActiveAuth = {
     kind: EntityKind;
     entityId: string;
@@ -149,27 +156,68 @@ export const AssignEntityDialog = ({ user, open, onOpenChange }: {
   const activeAuthorizations: ActiveAuth[] = useMemo(() => {
     if (!user) return [];
     const out: ActiveAuth[] = [];
+    const seen = new Set<string>();
+
+    const ngoNameById = new Map((ngos || []).map(n => [n.id, n.name || n.id] as const));
+    const brandNameById = new Map((brands || []).map(b => [b.id, b.name || b.id] as const));
+    const clubNameById = new Map((clubs || []).map(c => [c.id, c.name || c.id] as const));
+
+    const accepted = (userInvitations || []).filter(
+      inv => inv.status !== 'revoked' && inv.status !== 'pending',
+    );
+    for (const inv of accepted) {
+      if (inv.ngoId) {
+        const key = `ngo:${inv.ngoId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          kind: 'ngo', entityId: inv.ngoId,
+          entityName: ngoNameById.get(inv.ngoId) || inv.ngoId,
+          roleTitle: inv.role || '—',
+        });
+      } else if (inv.brandId) {
+        const key = `brand:${inv.brandId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          kind: 'brand', entityId: inv.brandId,
+          entityName: brandNameById.get(inv.brandId) || inv.brandId,
+          roleTitle: inv.role || '—',
+        });
+      } else if (inv.clubId) {
+        const key = `club:${inv.clubId}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({
+          kind: 'club', entityId: inv.clubId,
+          entityName: clubNameById.get(inv.clubId) || inv.clubId,
+          roleTitle: inv.role || '—',
+        });
+      }
+    }
+
+    // Fallback: invitation kaydı olmayan eski managed*Id atamaları da görünür.
     // Bracket access — managed* alanları UserRow'da var ama Next prod build
     // bazı durumlarda User base tipinden inheritance'ı resolve edemediği için
     // record-style access kullanıyoruz.
     const u = user as unknown as Record<string, string | null | undefined>;
-    const fields: Array<[EntityKind, string | null | undefined, EntityRow[] | null]> = [
-      ['ngo', u.managedNgoId, ngos],
-      ['brand', u.managedBrandId, brands],
-      ['club', u.managedClubId, clubs],
+    const fbFields: Array<[EntityKind, string | null | undefined, Map<string, string>]> = [
+      ['ngo', u.managedNgoId, ngoNameById],
+      ['brand', u.managedBrandId, brandNameById],
+      ['club', u.managedClubId, clubNameById],
     ];
-    for (const [kind, id, list] of fields) {
-      if (!id) continue;
-      const ent = list?.find(e => e.id === id);
+    for (const [kind, id, map] of fbFields) {
+      if (!id || seen.has(`${kind}:${id}`)) continue;
+      seen.add(`${kind}:${id}`);
       out.push({
-        kind,
-        entityId: id,
-        entityName: ent?.name || id,
+        kind, entityId: id,
+        entityName: map.get(id) || id,
         roleTitle: (u.roleTitle as string | undefined) || '—',
       });
     }
+
     return out;
-  }, [user, ngos, brands, clubs]);
+  }, [user, userInvitations, ngos, brands, clubs]);
 
   const [revoking, setRevoking] = useState<string | null>(null);
 
