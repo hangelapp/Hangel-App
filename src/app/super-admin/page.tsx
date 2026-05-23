@@ -18,6 +18,7 @@ import {
   HandCoins,
   HeartHandshake,
   HelpCircle,
+  Library,
   LifeBuoy,
   Megaphone,
   MessageSquare,
@@ -45,6 +46,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   HandCoins,
   HeartHandshake,
   HelpCircle,
+  Library,
   LifeBuoy,
   Megaphone,
   MessageSquare,
@@ -142,6 +144,7 @@ const superAdminNavSections = [
     {
         title: 'Zeka & Analiz',
         items: [
+            { href: '/super-admin/library', label: 'Kütüphane Yönetimi', icon: 'Library', description: 'Veri kütüphanesi, akademik makaleler, rehberler ve sözlük terimlerini yönet; bölümler ve içerikler ekle/düzenle.' },
             { href: '/super-admin/ai-management', label: 'Yapay Zeka Yönetimi', icon: 'Brain', description: 'Kütüphane Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
             { href: '/super-admin/analytics', label: 'İstatistik, Analizler & Demografi', icon: 'BarChart3', description: 'Platformun genel metrikleri ve STK bazında destekçi demografi profili (yaş, cinsiyet, konum, meslek, ilgi alanları) birleşik panelde.' },
             { href: '/super-admin/activity', label: 'Aktiviteler & İşlem Logu', icon: 'Activity', description: 'Platform genelinde tüm aktivite ve sistem işlemlerinin merkezi listesi.' },

@@ -212,6 +212,11 @@ function isInventorySection(section: LibrarySection): boolean {
   return t.includes('envanter') || t.includes('inventory') || t.includes('sosyal etki envanteri');
 }
 
+function isDataLibrarySection(section: LibrarySection): boolean {
+  const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
+  return t.includes('veri kütüphanesi') || t.includes('veri kutuphanesi') || t.includes('veri-kutuphanesi');
+}
+
 function isAcademicSection(section: LibrarySection): boolean {
   const t = `${section.slug ?? ''} ${section.title ?? ''}`.toLowerCase();
   return t.includes('akademik') || t.includes('academic') || t.includes('makale');
@@ -221,6 +226,35 @@ function isAcademicSection(section: LibrarySection): boolean {
 // Veri kaynağı: src/lib/hangel-impact-inventory.json — her item.content HTML içinde
 // "Sektör", "Merkez Ülke", "Kuruluş Yılı", "Skor" alanları geçer. `itemContainsValue`
 // haystack araması bu serbest-metin alanlarını yakalar.
+// Veri Kütüphanesi (resmi/akademik veri setleri) için filtre seti.
+// Item içeriklerinde kaynak kurum, yıl ve konu metinleri haystack araması ile
+// eşleşir (itemContainsValue serbest-metin tarayıcı).
+const DATA_LIBRARY_FILTERS: FilterDef[] = [
+  {
+    key: 'source', label: 'Kaynak Kurum', type: 'select',
+    options: [
+      'T.C. İçişleri Bakanlığı', 'T.C. Sağlık Bakanlığı', 'T.C. Aile ve Sosyal Hizmetler',
+      'T.C. Çevre, Şehircilik ve İklim Değişikliği', 'T.C. Milli Eğitim Bakanlığı',
+      'T.C. Hazine ve Maliye', 'TÜİK', 'Cumhurbaşkanlığı SBB',
+      'İstanbul Büyükşehir Belediyesi', 'Ankara Büyükşehir Belediyesi',
+      'İzmir Büyükşehir Belediyesi', 'TÜSEV', 'TÜBİTAK', 'Üniversite Araştırması',
+    ],
+  },
+  {
+    key: 'scope', label: 'Kapsam', type: 'select',
+    options: ['Türkiye geneli', 'İstanbul', 'Ankara', 'İzmir', 'Bölgesel', 'AB', 'Uluslararası'],
+  },
+  { key: 'year', label: 'Veri Yılı', type: 'year-range', min: 2000, max: 2025 },
+  {
+    key: 'topic', label: 'Konu', type: 'select',
+    options: [
+      'Sosyal Etki', 'Sosyal Yardım', 'Gönüllülük', 'Eğitim', 'Sağlık', 'Çevre',
+      'Afet', 'Göç', 'Yoksulluk', 'Cinsiyet Eşitliği', 'Engellilik',
+      'Yaşlılık', 'Çocuk Hakları', 'STK Yönetimi', 'Bağışçılık',
+    ],
+  },
+];
+
 const INVENTORY_FILTERS: FilterDef[] = [
   {
     key: 'sector', label: 'Sektör', type: 'select',
@@ -250,6 +284,7 @@ function getFilterDefs(section: LibrarySection): FilterDef[] {
   if (isFilmSection(section)) return FILM_FILTERS;
   if (isBookSection(section)) return BOOK_FILTERS;
   if (isInventorySection(section)) return INVENTORY_FILTERS;
+  if (isDataLibrarySection(section)) return DATA_LIBRARY_FILTERS;
   if (isAcademicSection(section)) return ACADEMIC_FILTERS;
   return [];
 }
