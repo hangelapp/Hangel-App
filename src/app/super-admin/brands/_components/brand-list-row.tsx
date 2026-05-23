@@ -54,6 +54,7 @@ export const BrandListRow = ({
     const isPending = brand.status === 'Beklemede';
     const isRejected = brand.status === 'Reddedildi';
     const isApproved = brand.source === 'brands' && brand.status === 'Aktif';
+    const isApiOnly = brand.source === 'api';
 
     return (
         <div className={cn("p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-muted/30 transition-colors", (isPassive || isRejected) && "opacity-60 grayscale")}>
@@ -69,6 +70,7 @@ export const BrandListRow = ({
                         {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
                         {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}
                         {isRejected && <Badge variant="destructive" className="text-[9px] font-black uppercase">REDDEDİLDİ</Badge>}
+                        {isApiOnly && <Badge className="bg-blue-600 text-white text-[9px] font-black uppercase">API KAYNAĞI</Badge>}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium">
                         {brand.donationRate ? <span className="flex items-center gap-1">%{brand.donationRate} Bağış</span> : null}
@@ -78,33 +80,33 @@ export const BrandListRow = ({
                 </div>
             </div>
             <div className="flex items-center gap-2 w-full md:w-auto flex-wrap" onClick={e => e.stopPropagation()}>
-                {brand.source === 'brands' && (
-                    <>
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
-                            <Link href={`/market/${brand.slug}`}>
-                                <Eye className="mr-2 h-4 w-4" /> Profili Gör
-                            </Link>
-                        </Button>
-                    </>
+                {(brand.source === 'brands' || isApiOnly) && (
+                    <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
+                        <Link href={`/market/${brand.slug}`}>
+                            <Eye className="mr-2 h-4 w-4" /> Profili Gör
+                        </Link>
+                    </Button>
                 )}
-                <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" onClick={() => onStartEdit(brand)}>
-                            <Edit3 className="mr-2 h-4 w-4" /> Düzelt
-                        </Button>
-                    </DialogTrigger>
-                    {editingBrand?.id === brand.id && (
-                        <BrandEditDialog
-                            brand={brand}
-                            editFormData={editFormData}
-                            onEditFormDataChange={onEditFormDataChange}
-                            logoUploading={logoUploading}
-                            onLogoFile={onLogoFile}
-                            onSave={onSaveEdit}
-                            onCancel={onCancelEdit}
-                        />
-                    )}
-                </Dialog>
+                {!isApiOnly && (
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" onClick={() => onStartEdit(brand)}>
+                                <Edit3 className="mr-2 h-4 w-4" /> Düzelt
+                            </Button>
+                        </DialogTrigger>
+                        {editingBrand?.id === brand.id && (
+                            <BrandEditDialog
+                                brand={brand}
+                                editFormData={editFormData}
+                                onEditFormDataChange={onEditFormDataChange}
+                                logoUploading={logoUploading}
+                                onLogoFile={onLogoFile}
+                                onSave={onSaveEdit}
+                                onCancel={onCancelEdit}
+                            />
+                        )}
+                    </Dialog>
+                )}
                 {brand.source === 'brands' && (
                     <>
                         <TransferBrandAdminDialog brand={brand} allUsers={allUsers} onAssign={onAssignBrandAdmin} onRevoke={onRevokeBrandAdmin} onUpdateRole={onUpdateBrandAdminRole} />
@@ -118,6 +120,12 @@ export const BrandListRow = ({
                         </Button>
                     </>
                 )}
+                {isApiOnly && (
+                    <span className="text-xs text-muted-foreground font-medium px-2 italic">
+                        Düzenleme/silme kapalı &mdash; affiliate kataloğu yalnız okuma
+                    </span>
+                )}
+                {!isApiOnly && (
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
@@ -142,6 +150,7 @@ export const BrandListRow = ({
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+                )}
             </div>
         </div>
     );

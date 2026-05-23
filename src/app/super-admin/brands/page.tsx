@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
@@ -54,11 +54,31 @@ export default function BrandsPage() {
     const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection<SimpleUser>(usersQuery);
 
-    // Super-admin Marka Yönetimi yalnızca YÖNETİLEBİLİR Firestore markalarını +
-    // başvuruları gösterir. /api/offers affiliate kataloğu (read-only, Firestore'da
-    // doc'u olmayan 195 teklif) bu yönetim ekranına dahil EDİLMEZ — düzenle/yetkili/
-    // pasife/sil butonları onlar için çalışmadığından "demo" kalabalık yaratıyordu.
-    // O katalog yalnızca public /market sayfasında yayınlanır (gelir korunur).
+    // /api/offers affiliate kataloğu (Tune/ReklamAction'dan gelen markalar) —
+    // read-only kayıtlar (Firestore'da doc'u yok). Kullanıcı talebi üzerine
+    // (2026-05-23) marka listesinde GÖRÜNÜR olarak listelenir; ancak yalnız
+    // "Profili Gör" butonu açılır (düzenle/yetkili/pasife/sil işlemleri API
+    // kataloğunda anlamsız çünkü kalıcı doc yok).
+    const [apiBrands, setApiBrands] = useState<Brand[]>([]);
+    const [apiLoading, setApiLoading] = useState(true);
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/offers')
+            .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+            .then((data: { brands?: Brand[] }) => {
+                if (cancelled) return;
+                setApiBrands(Array.isArray(data?.brands) ? data.brands : []);
+            })
+            .catch(err => {
+                if (cancelled) return;
+                console.warn('[super-admin/brands] /api/offers fetch failed:', err);
+                setApiBrands([]);
+            })
+            .finally(() => {
+                if (!cancelled) setApiLoading(false);
+            });
+        return () => { cancelled = true; };
+    }, []);
 
     // Combine and filter brands
     const filteredBrands = useMemo(() => {
@@ -93,6 +113,23 @@ export default function BrandsPage() {
                     id: app.id,
                     source: 'applications' as const, // spread'den sonra override garantili
                 } as BrandItem);
+            });
+        }
+
+        // Add API offers (affiliate katalog — yalnız okuma). brandsLookup ile
+        // dedupe: Firestore'da aynı slug/id varsa API kaydını atla (Firestore
+        // kaydı "yönetilebilir" olduğundan öncelikli gösterilir).
+        const existingKeys = new Set<string>();
+        if (brands) brands.forEach(b => { if (b.id) existingKeys.add(b.id); if (b.slug) existingKeys.add(`slug:${b.slug}`); });
+        if (apiBrands.length > 0) {
+            apiBrands.forEach(b => {
+                if (b.id && existingKeys.has(b.id)) return;
+                if (b.slug && existingKeys.has(`slug:${b.slug}`)) return;
+                combinedList.push({
+                    ...b,
+                    source: 'api' as const,
+                    status: 'Aktif',
+                });
             });
         }
 
@@ -133,7 +170,7 @@ export default function BrandsPage() {
         }
 
         return sorted;
-    }, [brands, applications, statusFilter, searchTerm, sortBy]);
+    }, [brands, applications, apiBrands, statusFilter, searchTerm, sortBy]);
 
     const handleToggleStatus = (id: string, currentStatus: string) => {
         const isPassive = currentStatus === 'Pasif';
@@ -551,7 +588,7 @@ export default function BrandsPage() {
         }
     };
 
-    const isLoading = brandsLoading || appsLoading;
+    const isLoading = brandsLoading || appsLoading || apiLoading;
 
     // useMemo, conditional return'den ÖNCE çağrılmalı (Rules of Hooks)
     const stats = useMemo(() => {
@@ -559,8 +596,10 @@ export default function BrandsPage() {
         const passive = (brands || []).filter((b) => (b as Brand & { status?: string }).status === 'Pasif').length;
         const pending = (applications || []).filter((a) => (a as { status?: string }).status === 'Beklemede').length;
         const rejected = (applications || []).filter((a) => (a as { status?: string }).status === 'Reddedildi').length;
-        return { approved, passive, pending, rejected, total: approved + passive + pending + rejected };
-    }, [brands, applications]);
+        // API kataloğu Firestore'da yok — toplam'a dahil ama "approved" kategorisinden ayrı.
+        const api = apiBrands.length;
+        return { approved, passive, pending, rejected, api, total: approved + passive + pending + rejected + api };
+    }, [brands, applications, apiBrands]);
 
     if (isLoading) {
         return (
