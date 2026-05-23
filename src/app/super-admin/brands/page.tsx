@@ -63,11 +63,12 @@ export default function BrandsPage() {
     const [apiLoading, setApiLoading] = useState(true);
     useEffect(() => {
         let cancelled = false;
+        // /api/offers, market sayfasıyla aynı kontratta array döner (objet değil).
         fetch('/api/offers')
             .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-            .then((data: { brands?: Brand[] }) => {
+            .then((data: Brand[]) => {
                 if (cancelled) return;
-                setApiBrands(Array.isArray(data?.brands) ? data.brands : []);
+                setApiBrands(Array.isArray(data) ? data : []);
             })
             .catch(err => {
                 if (cancelled) return;

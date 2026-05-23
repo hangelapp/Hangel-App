@@ -16,6 +16,58 @@ import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useTranslation } from '@/components/providers/language-provider';
+
+// Sayfa slug'larından, sayfanın hardcoded fallback'lerinde kullandığı translation
+// key'lerine eşleme. Düzenle dialog'u, CMS override boşken bu key'lerle gerçek
+// yayın metnini t() üzerinden pre-populate eder. Pages source-of-truth bu key'leri
+// `marketing.*` namespace'inden okuduğu için (örn. logo-usage/page.tsx:449), aynı
+// kaynaktan beslemek güvenli — drift olmaz. Bilinmeyen slug → boş varsayılan.
+const PAGE_DEFAULT_KEYS: Record<string, { title?: string; subtitle?: string; description?: string }> = {
+    'social-impact': {
+        title: 'marketing.socialImpact.heroTitleFallback',
+        subtitle: 'marketing.socialImpact.heroSubtitleFallback',
+        description: 'marketing.socialImpact.heroDescriptionFallback',
+    },
+    'press': {
+        title: 'marketing.press.heroTitleFallback',
+        description: 'marketing.press.heroDescriptionFallback',
+    },
+    'careers': {
+        title: 'marketing.careers.heroTitle',
+        subtitle: 'marketing.careers.heroSubtitle',
+        description: 'marketing.careers.heroDescription',
+    },
+    'logo-usage': {
+        title: 'marketing.logo.heroTitle',
+        description: 'marketing.logo.heroDescription',
+    },
+    'support': {
+        title: 'marketing.support.heroTitleFallback',
+        description: 'marketing.support.heroDescriptionFallback',
+    },
+    'merchant': {
+        title: 'marketing.merchant.heroTitle',
+        subtitle: 'marketing.merchant.heroSubtitle',
+        description: 'marketing.merchant.heroDescription',
+    },
+    'campus-advantages': {
+        title: 'marketing.campus.heroTitleFallback',
+        description: 'marketing.campus.heroDescriptionFallback',
+    },
+    'ngo-onboarding': {
+        title: 'marketing.ngoOnboarding.heroTitleFallback',
+        description: 'marketing.ngoOnboarding.heroDescriptionFallback',
+    },
+    'accessibility': {
+        title: 'marketing.accessibility.heroTitleFallback',
+        description: 'marketing.accessibility.heroDescriptionFallback',
+    },
+    'bilgi-toplumu-hizmetleri': {
+        title: 'marketing.info.heroTitleFallback',
+        description: 'marketing.info.heroDescriptionFallback',
+    },
+};
 
 type SitePageMeta = { slug: string; label: string; href: string; group?: string };
 
@@ -156,6 +208,7 @@ function ImageUploaderCompact({
 export default function WebContentPage() {
     const { toast } = useToast();
     const db = useFirestore();
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -330,7 +383,25 @@ export default function WebContentPage() {
 
     const handleStartEditPage = (slug: string) => {
         setEditingSlug(slug);
-        setEditPage(pages[slug] || {});
+        const stored = pages[slug] || {};
+        const defKeys = PAGE_DEFAULT_KEYS[slug];
+        // CMS override yoksa, sayfanın hardcoded fallback metnini t() ile çekip
+        // form'a doldur — kullanıcı yayındaki içeriği görüp düzenleyebilsin.
+        // Override varsa onu olduğu gibi göster; ne stored ne default varsa boş.
+        const lookupDefault = (key?: string): string => {
+            if (!key) return '';
+            const v = t(key);
+            return v && v !== key ? v : '';
+        };
+        setEditPage({
+            title: stored.title || lookupDefault(defKeys?.title),
+            subtitle: stored.subtitle || lookupDefault(defKeys?.subtitle),
+            description: stored.description || lookupDefault(defKeys?.description),
+            heroImageUrl: stored.heroImageUrl || '',
+            image2Url: stored.image2Url || '',
+            image3Url: stored.image3Url || '',
+            body: stored.body || '',
+        });
     };
 
     const handleSavePage = async () => {
@@ -804,10 +875,14 @@ export default function WebContentPage() {
                         <DialogTitle>
                             {SITE_PAGES.find(p => p.slug === editingSlug)?.label || 'Sayfa'} — Düzenle
                         </DialogTitle>
-                        <DialogDescription>
+                        <DialogDescription className="space-y-1">
                             <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded">
                                 {SITE_PAGES.find(p => p.slug === editingSlug)?.href}
                             </code>
+                            <span className="block text-[11px] text-muted-foreground italic">
+                                Formdaki metinler şu an yayında olan içerikler. Üzerinde değişiklik yapıp Kaydet ile yayına alabilirsiniz.
+                                Bir alanı boş bırakıp kaydederseniz, sayfa o alanın varsayılan halini gösterir.
+                            </span>
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-2">
