@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, type ComponentType } from 'react';
+import React, { useEffect, useMemo, useState, type ComponentType } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, documentId, query, where, doc } from 'firebase/firestore';
+import { collection, documentId, getDocs, query, where, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const statusVariantMap = {
@@ -139,36 +139,62 @@ export default function AdminPage() {
   }, [db, authUser?.uid]);
   const { data: invitations } = useCollection<InvitationDoc>(invitationsQ);
 
-  // Davetlerdeki entity ID'lerini topla (tip başına unique).
+  // Davetlerdeki entity ID'lerini topla (tip başına unique, SINIRSIZ — eskiden
+  // slice(0, 10) vardı; Firestore documentId() IN 10-limit yüzünden. Aşağıda
+  // chunked fetch ile bu kısıt kalktı: kullanıcı kaç entity'ye yetkili olursa
+  // olsun tümü listelenir).
   const invitedBrandIds = useMemo(
-    () => Array.from(new Set((invitations || []).map(i => i.brandId).filter((x): x is string => !!x))).slice(0, 10),
+    () => Array.from(new Set((invitations || []).map(i => i.brandId).filter((x): x is string => !!x))),
     [invitations],
   );
   const invitedNgoIds = useMemo(
-    () => Array.from(new Set((invitations || []).map(i => i.ngoId).filter((x): x is string => !!x))).slice(0, 10),
+    () => Array.from(new Set((invitations || []).map(i => i.ngoId).filter((x): x is string => !!x))),
     [invitations],
   );
   const invitedClubIds = useMemo(
-    () => Array.from(new Set((invitations || []).map(i => i.clubId).filter((x): x is string => !!x))).slice(0, 10),
+    () => Array.from(new Set((invitations || []).map(i => i.clubId).filter((x): x is string => !!x))),
     [invitations],
   );
 
-  // ID'lerden entity doc'larını batch fetch (Firestore documentId() IN max 10).
-  const invitedBrandsQ = useMemoFirebase(() => {
-    if (!db || invitedBrandIds.length === 0) return null;
-    return query(collection(db, COLLECTIONS.brands), where(documentId(), 'in', invitedBrandIds));
-  }, [db, invitedBrandIds]);
-  const invitedNgosQ = useMemoFirebase(() => {
-    if (!db || invitedNgoIds.length === 0) return null;
-    return query(collection(db, COLLECTIONS.ngos), where(documentId(), 'in', invitedNgoIds));
-  }, [db, invitedNgoIds]);
-  const invitedClubsQ = useMemoFirebase(() => {
-    if (!db || invitedClubIds.length === 0) return null;
-    return query(collection(db, COLLECTIONS.clubs), where(documentId(), 'in', invitedClubIds));
-  }, [db, invitedClubIds]);
-  const { data: invitedBrandsData } = useCollection<ManagedBrandDoc>(invitedBrandsQ);
-  const { data: invitedNgosData } = useCollection<ManagedNgoDoc>(invitedNgosQ);
-  const { data: invitedClubsData } = useCollection<ManagedClubDoc>(invitedClubsQ);
+  // Chunked batch fetch: Firestore `documentId() IN` 10-limit. ID listesini
+  // 10'arlık parçalara böl, Promise.all ile paralel sorgular, sonuçları
+  // birleştir. ID listesi değişince state sıfırlanır + yeniden fetch.
+  const [invitedBrandsData, setInvitedBrandsData] = useState<ManagedBrandDoc[]>([]);
+  const [invitedNgosData, setInvitedNgosData] = useState<ManagedNgoDoc[]>([]);
+  const [invitedClubsData, setInvitedClubsData] = useState<ManagedClubDoc[]>([]);
+
+  useEffect(() => {
+    if (!db) return;
+    let cancelled = false;
+    const chunkFetch = async <T extends { id: string }>(
+      ids: string[],
+      collName: string,
+    ): Promise<T[]> => {
+      if (ids.length === 0) return [];
+      const chunks: string[][] = [];
+      for (let i = 0; i < ids.length; i += 10) chunks.push(ids.slice(i, i + 10));
+      const results = await Promise.all(
+        chunks.map(c =>
+          getDocs(query(collection(db, collName), where(documentId(), 'in', c)))
+            .then(snap => snap.docs.map(d => ({ ...(d.data() as Omit<T, 'id'>), id: d.id } as T)))
+            .catch(err => { console.warn(`[admin] ${collName} chunk fetch failed:`, err); return [] as T[]; }),
+        ),
+      );
+      return results.flat();
+    };
+    (async () => {
+      const [b, n, c] = await Promise.all([
+        chunkFetch<ManagedBrandDoc>(invitedBrandIds, COLLECTIONS.brands),
+        chunkFetch<ManagedNgoDoc>(invitedNgoIds, COLLECTIONS.ngos),
+        chunkFetch<ManagedClubDoc>(invitedClubIds, COLLECTIONS.clubs),
+      ]);
+      if (cancelled) return;
+      setInvitedBrandsData(b);
+      setInvitedNgosData(n);
+      setInvitedClubsData(c);
+    })();
+    return () => { cancelled = true; };
+  }, [db, invitedBrandIds, invitedNgoIds, invitedClubIds]);
 
   // Davet → rol eşlemesi (her entity için role badge göstermek için).
   const roleByEntityId = useMemo(() => {
