@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Heart, Users, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
@@ -175,30 +175,46 @@ export default function NgosPage() {
                 </div>
             ) : (
                 <div className="space-y-3">
-                    {filteredNgos.map((ngo) => (
-                        <Link key={ngo.id} href={`/ngos/${ngo.id}`}>
-                            <Card className="transition-colors hover:bg-accent/50 p-3 cursor-pointer">
-                                <div className="flex gap-3 items-center">
-                                    <Avatar className="h-12 w-12 border shrink-0">
-                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                                        <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 overflow-hidden">
-                                        <p className="font-semibold text-sm truncate">{ngo.name}</p>
-                                        <p className="text-xs text-muted-foreground">{ngo.category}</p>
+                    {filteredNgos.map((ngo) => {
+                        const donors = ngo.stats?.donors ?? 0;
+                        const volunteers = ngo.stats?.volunteers ?? 0;
+                        const transparency = ngo.transparencyScore ?? 0;
+                        return (
+                            <Link key={ngo.id} href={`/ngos/${ngo.id}`}>
+                                <Card className="transition-colors hover:bg-accent/50 p-3 cursor-pointer">
+                                    <div className="flex gap-3 items-center">
+                                        <Avatar className="h-12 w-12 border shrink-0">
+                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
+                                            <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="font-semibold text-sm truncate">{ngo.name}</p>
+                                            <p className="text-xs text-muted-foreground">{ngo.category}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                {ngo.memberOf && ngo.memberOf.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
-                                        <span className="text-[10px] text-muted-foreground self-center">Platformlar:</span>
-                                        {ngo.memberOf.map((platform) => (
-                                            <Badge key={platform} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">{platform}</Badge>
-                                        ))}
+                                    <div className="mt-2 flex items-center gap-4 text-[11px] text-muted-foreground">
+                                        <span className="flex items-center gap-1" title="Bağışçı sayısı">
+                                            <Heart className="h-3 w-3" /> {donors.toLocaleString('tr-TR')}
+                                        </span>
+                                        <span className="flex items-center gap-1" title="Gönüllü sayısı">
+                                            <Users className="h-3 w-3" /> {volunteers.toLocaleString('tr-TR')}
+                                        </span>
+                                        <span className="flex items-center gap-1" title="Şeffaflık skoru">
+                                            <ShieldCheck className="h-3 w-3" /> %{transparency}
+                                        </span>
                                     </div>
-                                )}
-                            </Card>
-                        </Link>
-                    ))}
+                                    {ngo.memberOf && ngo.memberOf.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            <span className="text-[10px] text-muted-foreground self-center">Platformlar:</span>
+                                            {ngo.memberOf.map((platform) => (
+                                                <Badge key={platform} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">{platform}</Badge>
+                                            ))}
+                                        </div>
+                                    )}
+                                </Card>
+                            </Link>
+                        );
+                    })}
                 </div>
             )}
 
