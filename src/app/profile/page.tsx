@@ -102,34 +102,59 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
     );
 };
 
-const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, children }: {
+// BUG-28: Her bağlı kurumu kart olarak göster (logo + isim + sağ üst düzenle ikonu)
+type ConnectionItem = { id: string; name?: string; logoUrl?: string; href: string };
+
+const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, items }: {
     value: string;
     title: string;
     count: number;
     editHref: string;
     editLabel: string;
     emptyText: string;
-    children: React.ReactNode;
+    items: ConnectionItem[];
 }) => (
     <AccordionItem value={value} className="border-b-0">
-        <div className="flex items-center justify-between gap-2">
-            <AccordionTrigger className="flex-1 py-3 hover:no-underline">
-                <span className="flex items-center gap-2">
-                    <span className="font-bold text-sm">{title}</span>
-                    <span className="text-xs text-muted-foreground">{count}</span>
-                </span>
-            </AccordionTrigger>
-            <Button asChild variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label={editLabel}>
-                <Link href={editHref}>
-                    <Edit className="h-4 w-4" />
-                </Link>
-            </Button>
-        </div>
+        <AccordionTrigger className="py-3 hover:no-underline">
+            <span className="flex items-center gap-2">
+                <span className="font-bold text-sm">{title}</span>
+                <span className="text-xs text-muted-foreground">{count}</span>
+            </span>
+        </AccordionTrigger>
         <AccordionContent>
             {count === 0 ? (
                 <p className="text-sm text-muted-foreground">{emptyText}</p>
             ) : (
-                children
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    {items.map(item => (
+                        <div
+                            key={item.id}
+                            className="relative flex items-center gap-3 p-3 rounded-2xl border border-black/5 bg-muted/20 hover:bg-accent/40 transition-colors"
+                        >
+                            <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0 pr-8">
+                                <Avatar className="h-10 w-10 shrink-0">
+                                    <AvatarImage src={item.logoUrl} alt={item.name || ''} />
+                                    <AvatarFallback className="text-xs font-bold">
+                                        {(item.name || '?').charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <p className="text-sm font-semibold truncate">{item.name || '—'}</p>
+                            </Link>
+                            <Button
+                                asChild
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 absolute top-1.5 right-1.5"
+                                aria-label={editLabel}
+                                title="Düzenle"
+                            >
+                                <Link href={editHref}>
+                                    <Edit className="h-3.5 w-3.5" />
+                                </Link>
+                            </Button>
+                        </div>
+                    ))}
+                </div>
             )}
         </AccordionContent>
     </AccordionItem>
@@ -697,21 +722,13 @@ export default function ProfilePage() {
                                         editHref="/settings/ngo-selection"
                                         editLabel="Bağışçı olduğun STK'ları düzenle"
                                         emptyText="Henüz bağış yaptığın STK yok."
-                                    >
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {(supportedNgosData || []).slice(0, 5).map((ngo) => (
-                                                <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
-                                                        <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                </Link>
-                                            ))}
-                                            {supportedNgoIds.length > 5 && (
-                                                <span className="text-xs text-muted-foreground">+{supportedNgoIds.length - 5} daha</span>
-                                            )}
-                                        </div>
-                                    </ConnectionSection>
+                                        items={(supportedNgosData || []).map(ngo => ({
+                                            id: ngo.id,
+                                            name: ngo.name,
+                                            logoUrl: ngo.avatarUrl,
+                                            href: `/ngos/${ngo.id}`,
+                                        }))}
+                                    />
                                     <ConnectionSection
                                         value="volunteer-ngos"
                                         title="Gönüllü Olduğun STK'lar"
@@ -719,21 +736,13 @@ export default function ProfilePage() {
                                         editHref="/settings/volunteer-ngo-selection"
                                         editLabel="Gönüllü olduğun STK'ları düzenle"
                                         emptyText="Henüz gönüllü olduğun STK yok."
-                                    >
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {(volunteerNgosData || []).slice(0, 5).map((ngo) => (
-                                                <Link key={ngo.id} href={`/ngos/${ngo.id}`} aria-label={ngo.name || 'STK'}>
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name || ''} />
-                                                        <AvatarFallback>{(ngo.name || '?').charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                </Link>
-                                            ))}
-                                            {volunteerNgoIds.length > 5 && (
-                                                <span className="text-xs text-muted-foreground">+{volunteerNgoIds.length - 5} daha</span>
-                                            )}
-                                        </div>
-                                    </ConnectionSection>
+                                        items={(volunteerNgosData || []).map(ngo => ({
+                                            id: ngo.id,
+                                            name: ngo.name,
+                                            logoUrl: ngo.avatarUrl,
+                                            href: `/ngos/${ngo.id}`,
+                                        }))}
+                                    />
                                     <ConnectionSection
                                         value="brands"
                                         title="Takip Ettiğin Markalar"
@@ -741,21 +750,13 @@ export default function ProfilePage() {
                                         editHref="/settings/brands"
                                         editLabel="Takip ettiğin markaları düzenle"
                                         emptyText="Henüz takip ettiğin marka yok."
-                                    >
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {(followedBrandsData || []).slice(0, 5).map((brand) => (
-                                                <Link key={brand.id} href={`/market/${brand.slug || brand.id}`} aria-label={brand.name || 'Marka'}>
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={brand.logoUrl} alt={brand.name || ''} />
-                                                        <AvatarFallback>{(brand.name || '?').charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                </Link>
-                                            ))}
-                                            {followedBrandIds.length > 5 && (
-                                                <span className="text-xs text-muted-foreground">+{followedBrandIds.length - 5} daha</span>
-                                            )}
-                                        </div>
-                                    </ConnectionSection>
+                                        items={(followedBrandsData || []).map(brand => ({
+                                            id: brand.id,
+                                            name: brand.name,
+                                            logoUrl: brand.logoUrl,
+                                            href: `/market/${brand.slug || brand.id}`,
+                                        }))}
+                                    />
                                     <ConnectionSection
                                         value="clubs"
                                         title="Üye Olduğun Kulüpler"
@@ -763,21 +764,13 @@ export default function ProfilePage() {
                                         editHref="/clubs"
                                         editLabel="Üye olduğun kulüpleri düzenle"
                                         emptyText="Henüz üye olduğun kulüp yok."
-                                    >
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {(joinedClubsData || []).slice(0, 5).map((club) => (
-                                                <Link key={club.id} href={`/clubs/profile/${club.id}`} aria-label={club.name || 'Kulüp'}>
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={club.avatarUrl} alt={club.name || ''} />
-                                                        <AvatarFallback>{(club.name || '?').charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                </Link>
-                                            ))}
-                                            {joinedClubIds.length > 5 && (
-                                                <span className="text-xs text-muted-foreground">+{joinedClubIds.length - 5} daha</span>
-                                            )}
-                                        </div>
-                                    </ConnectionSection>
+                                        items={(joinedClubsData || []).map(club => ({
+                                            id: club.id,
+                                            name: club.name,
+                                            logoUrl: club.avatarUrl,
+                                            href: `/clubs/profile/${club.id}`,
+                                        }))}
+                                    />
                                 </Accordion>
                             </CardContent>
                         </Card>
