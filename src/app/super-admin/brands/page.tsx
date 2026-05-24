@@ -477,6 +477,9 @@ export default function BrandsPage() {
             name: brand.name,
             slug: brand.slug,
             category: brand.category,
+            categories: Array.isArray((brand as Brand & { categories?: string[] }).categories)
+                ? [...((brand as Brand & { categories?: string[] }).categories || [])]
+                : [],
             type: brand.type,
             logoUrl: brand.logoUrl,
             coverPhotoUrl: brand.coverPhotoUrl,
@@ -587,6 +590,7 @@ export default function BrandsPage() {
                 name: fd.name || '',
                 slug: fd.slug || '',
                 category: fd.category || '',
+                categories: Array.isArray(fd.categories) ? fd.categories.filter(Boolean) : [],
                 type: fd.type || 'brand',
                 logoUrl: fd.logoUrl || '',
                 coverPhotoUrl: fd.coverPhotoUrl || '',

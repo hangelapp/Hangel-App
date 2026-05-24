@@ -155,7 +155,14 @@ export default function MarketPage() {
     }
 
     if (activeCategory !== 'Tümü') {
-      list = list.filter(b => b.category === activeCategory);
+      // BUG-26: Marka birincil kategorisi VEYA çoklu kategori listesi (categories[])
+      // ile aktif kategoride görünür. Bir markanın birden fazla kategoride ürünü
+      // varsa categories[] alanına eklenir → her ilgili kategori sekmesinde çıkar.
+      list = list.filter(b => {
+        const cats = (b as Brand & { categories?: string[] }).categories;
+        if (Array.isArray(cats) && cats.includes(activeCategory)) return true;
+        return b.category === activeCategory;
+      });
     }
 
     if (brandType !== 'all') {
@@ -172,10 +179,18 @@ export default function MarketPage() {
     return list;
   }, [firestoreBrands, apiBrands, activeCategory, searchTerm, brandType, sortBy, randomRank]);
 
-  // Derive categories dynamically from all loaded brands
+  // Derive categories dynamically from all loaded brands.
+  // Marka çoklu kategori desteği: primary `category` + `categories[]` array'i birleşir.
   const allCategories = useMemo(() => {
-    const cats = new Set(brandsToShow.map(b => b.category).filter(Boolean));
-    return ['Tümü', ...Array.from(cats).sort()];
+    const cats = new Set<string>();
+    for (const b of brandsToShow) {
+      if (b.category) cats.add(b.category);
+      const multi = (b as Brand & { categories?: string[] }).categories;
+      if (Array.isArray(multi)) {
+        for (const c of multi) if (c) cats.add(c);
+      }
+    }
+    return ['Tümü', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'tr'))];
   }, [brandsToShow]);
 
   return (

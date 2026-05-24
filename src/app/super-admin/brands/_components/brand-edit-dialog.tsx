@@ -59,13 +59,39 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-category" className="text-sm font-semibold">Kategori</Label>
+                            <Label htmlFor="edit-category" className="text-sm font-semibold">Birincil Kategori</Label>
                             <Input
                                 id="edit-category"
                                 value={editFormData.category || ''}
                                 onChange={(e) => onEditFormDataChange({ ...editFormData, category: e.target.value })}
                                 className="rounded-xl"
                             />
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                            <Label htmlFor="edit-categories" className="text-sm font-semibold">Ek Kategoriler (virgülle ayır)</Label>
+                            <Input
+                                id="edit-categories"
+                                value={(editFormData.categories || []).join(', ')}
+                                onChange={(e) => {
+                                    const list = e.target.value
+                                        .split(',')
+                                        .map(s => s.trim())
+                                        .filter(Boolean);
+                                    onEditFormDataChange({ ...editFormData, categories: list });
+                                }}
+                                placeholder="Örn: Giyim, Spor, Outdoor — birden fazla kategoride satılıyorsa hepsini yazın"
+                                className="rounded-xl"
+                            />
+                            {editFormData.categories && editFormData.categories.length > 0 && (
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                    {editFormData.categories.map(c => (
+                                        <span key={c} className="text-[10px] font-bold uppercase tracking-wider bg-muted px-2 py-0.5 rounded-full">{c}</span>
+                                    ))}
+                                </div>
+                            )}
+                            <p className="text-[11px] text-muted-foreground">
+                                Marka birden fazla kategoride ürün satıyorsa burada listele; market sayfasında her kategoride görünür.
+                            </p>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="edit-type" className="text-sm font-semibold">Tür</Label>

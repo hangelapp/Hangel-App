@@ -58,7 +58,8 @@ export type Brand = {
   id: string;
   slug: string;
   name: string;
-  category: string;
+  category: string;             // Birincil kategori (geriye uyumluluk için tutuldu)
+  categories?: string[];        // Çoklu kategori: marka birden fazla kategoride satıyorsa hepsinde görünür
   type: 'brand' | 'cooperative' | 'social' | 'economic';
   ngoId?: string;
   logoUrl: string;
