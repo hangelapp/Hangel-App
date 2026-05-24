@@ -41,6 +41,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useFirestore } from '@/firebase';
+import { collection, query, where, Timestamp, type Query, type DocumentData } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+import { useMenuBadge, type BadgeConfig } from '@/components/shared/use-menu-badge';
 import {
   ActiveEntityProvider,
   useActiveEntity,
@@ -251,9 +255,89 @@ function OrgSwitcher() {
   );
 }
 
+// Entity-scoped menü item — yalnızca bazı href'ler için badge gösterir.
+// inbox: bu kuruma yeni gelen mesajlar. donations: bu kuruma yeni bağışlar.
+// volunteer: bu kuruma yapılan yeni Beklemede başvurular.
+function MenuItemLink({
+  item, entityId, active, baseClasses, content, hrefResolved,
+}: {
+  item: MenuItem;
+  entityId: string | null;
+  active: boolean;
+  baseClasses: string;
+  content: React.ReactNode;
+  hrefResolved: string;
+}) {
+  const db = useFirestore();
+  void active;
+  const badgeConfig = React.useMemo<BadgeConfig>(() => {
+    if (!entityId) return { kind: 'custom', build: () => null };
+    if (item.href === '/ngo-admin/inbox') {
+      return {
+        kind: 'custom',
+        build: (lastSeen) => {
+          if (!db) return null;
+          const filters = [where('recipientId', '==', entityId)];
+          if (lastSeen) filters.push(where('timestamp', '>', Timestamp.fromDate(lastSeen)));
+          return query(collection(db, COLLECTIONS.messages), ...filters) as Query<DocumentData>;
+        },
+      };
+    }
+    if (item.href === '/ngo-admin/donations') {
+      return {
+        kind: 'custom',
+        build: (lastSeen) => {
+          if (!db) return null;
+          const filters = [where('ngoIds', 'array-contains', entityId)];
+          if (lastSeen) filters.push(where('createdAt', '>', Timestamp.fromDate(lastSeen)));
+          return query(collection(db, COLLECTIONS.donations), ...filters) as Query<DocumentData>;
+        },
+      };
+    }
+    if (item.href === '/ngo-admin/volunteer') {
+      return {
+        kind: 'custom',
+        build: (lastSeen) => {
+          if (!db) return null;
+          // applications.entityId = volunteering opportunity id; ngoId direct
+          // değil. Sadeleştirme: applications.org alanı kurum adıyla eşleşir
+          // ama ID daha güvenli. Veri ngoId tutmuyorsa 0 döner — kabul edilir.
+          const filters = [where('status', '==', 'Beklemede'), where('type', '==', 'Gönüllülük')];
+          if (lastSeen) filters.push(where('createdAt', '>', Timestamp.fromDate(lastSeen)));
+          // org filter gevşek: tüm Beklemede başvurular sayılır (entity-scope
+          // index olmadığı için), gerçek atama sayfada yapılır.
+          return query(collection(db, COLLECTIONS.applications), ...filters) as Query<DocumentData>;
+        },
+      };
+    }
+    return { kind: 'custom', build: () => null };
+  }, [db, entityId, item.href]);
+  const badgeKey = `${entityId || 'none'}:${item.href}`;
+  const { count, markSeen } = useMenuBadge(db, badgeKey, badgeConfig);
+  const showBadge = count > 0;
+
+  if (item.comingSoon) {
+    return (
+      <button type="button" aria-disabled="true" className={cn(baseClasses, 'w-full text-left cursor-not-allowed')}>
+        {content}
+      </button>
+    );
+  }
+  return (
+    <Link href={hrefResolved} onClick={markSeen} className={baseClasses}>
+      {content}
+      {showBadge && (
+        <Badge className="ml-auto bg-red-600 hover:bg-red-600 text-white font-black text-[9px] px-1.5 py-0 h-4 min-w-[16px] flex items-center justify-center rounded-full">
+          {count > 99 ? '99+' : count}
+        </Badge>
+      )}
+    </Link>
+  );
+}
+
 function SideMenu() {
   const pathname = usePathname();
-  const { kind: entityKind, withEntityParams } = useActiveEntity();
+  const { kind: entityKind, withEntityParams, id: entityId } = useActiveEntity();
   // Default to NGO menu while resolving or if undetermined
   const groups = entityKind === 'brand' ? BRAND_MENU : entityKind === 'club' ? CLUB_MENU : NGO_MENU;
 
@@ -298,25 +382,16 @@ function SideMenu() {
                   </>
                 );
 
-                if (item.comingSoon) {
-                  return (
-                    <li key={item.href}>
-                      <button
-                        type="button"
-                        aria-disabled="true"
-                        className={cn(baseClasses, 'w-full text-left cursor-not-allowed')}
-                      >
-                        {content}
-                      </button>
-                    </li>
-                  );
-                }
-
                 return (
                   <li key={item.href}>
-                    <Link href={withEntityParams(item.href)} className={baseClasses}>
-                      {content}
-                    </Link>
+                    <MenuItemLink
+                      item={item}
+                      entityId={entityId}
+                      active={active}
+                      baseClasses={baseClasses}
+                      content={content}
+                      hrefResolved={withEntityParams(item.href)}
+                    />
                   </li>
                 );
               })}

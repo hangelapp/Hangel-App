@@ -64,6 +64,20 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 import { useFirestore } from '@/firebase';
 import { collection, getCountFromServer, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useMenuBadge, type BadgeConfig } from '@/components/shared/use-menu-badge';
+
+// Hangi menü href'i için hangi koleksiyon + status filtresi badge sayar?
+// Yoksa: badge gösterilmez. createdAt > lastSeen (localStorage) filtresi
+// useMenuBadge tarafından otomatik uygulanır → ziyaret edince badge sıfırlanır.
+const SUPER_ADMIN_BADGE_CONFIG: Record<string, BadgeConfig> = {
+    '/super-admin/applications': { kind: 'collection', collectionName: COLLECTIONS.applications, status: 'Beklemede' },
+    '/super-admin/emergency': { kind: 'collection', collectionName: COLLECTIONS.emergencyRequests, status: 'pending' },
+    '/super-admin/support': { kind: 'collection', collectionName: COLLECTIONS.supportTickets, status: 'open' },
+    '/super-admin/donations': { kind: 'collection', collectionName: COLLECTIONS.donations },
+    '/super-admin/posts': { kind: 'collection', collectionName: COLLECTIONS.posts },
+    '/super-admin/communications': { kind: 'collection', collectionName: COLLECTIONS.messages },
+    '/super-admin/users': { kind: 'collection', collectionName: COLLECTIONS.users },
+};
 
 const iconColorMap: { [key: string]: string } = {
   'FileText': 'bg-sky-500',
@@ -160,6 +174,44 @@ const superAdminNavSections = [
         ],
     },
 ];
+
+// Tek menü satırı — opsiyonel olarak useMenuBadge çağırır. Hook'lar koşullu
+// çalıştırılamadığı için her item ayrı bir component'te.
+function SuperAdminMenuItem({ href, label, description, Icon, color, badgeConfig }: {
+    href: string;
+    label: string;
+    description: string;
+    Icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    badgeConfig?: BadgeConfig;
+}) {
+    const db = useFirestore();
+    const fallback = React.useMemo<BadgeConfig>(() => ({ kind: 'custom', build: () => null }), []);
+    const { count, markSeen } = useMenuBadge(db, href, badgeConfig || fallback);
+    const showBadge = !!badgeConfig && count > 0;
+
+    return (
+        <Link href={href} onClick={markSeen} className="block hover:bg-muted/30 transition-all group">
+            <div className="flex items-center p-6">
+                <div className={cn("h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110", color)}>
+                    <Icon className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1 space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{label}</p>
+                        {showBadge && (
+                            <Badge className="bg-red-600 hover:bg-red-600 text-white font-black text-[10px] px-2 py-0 h-5 min-w-[20px] flex items-center justify-center rounded-full">
+                                {count > 99 ? '99+' : count}
+                            </Badge>
+                        )}
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium leading-tight">{description}</p>
+                </div>
+                <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
+            </div>
+        </Link>
+    );
+}
 
 export default function SuperAdminDashboard() {
   const db = useFirestore();
@@ -293,20 +345,18 @@ export default function SuperAdminDashboard() {
                             {section.items.map(item => {
                                 const Icon = iconMap[item.icon] || HelpCircle;
                                 const color = iconColorMap[item.icon as keyof typeof iconColorMap] || 'bg-gray-500';
+                                const badgeCfg = SUPER_ADMIN_BADGE_CONFIG[item.href];
                                 return (
-                                    <Link href={item.href} key={item.href} className="block hover:bg-muted/30 transition-all group">
-                                        <div className="flex items-center p-6">
-                                            <div className={cn("h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110", color)}>
-                                                <Icon className="h-6 w-6 text-white" />
-                                            </div>
-                                            <div className="flex-1 space-y-0.5">
-                                                <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{item.label}</p>
-                                                <p className="text-sm text-muted-foreground font-medium leading-tight">{item.description}</p>
-                                            </div>
-                                            <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
-                                        </div>
-                                    </Link>
-                                )
+                                    <SuperAdminMenuItem
+                                        key={item.href}
+                                        href={item.href}
+                                        label={item.label}
+                                        description={item.description}
+                                        Icon={Icon}
+                                        color={color}
+                                        badgeConfig={badgeCfg}
+                                    />
+                                );
                             })}
                         </div>
                     </div>
