@@ -112,13 +112,10 @@ service cloud.firestore {
         );
       }
 
-      // Create: an individual posts as themselves (authorId == uid, backwards-compat)
-      // OR a managing user posts on behalf of the org named in authorId. Super-admin
-      // also allowed (the specific posts match overrides the global allPaths write).
-      allow create: if isSuperAdmin() || (isSignedIn() && (
-        request.resource.data.authorId == request.auth.uid
-        || managesOrg(request.resource.data.authorId)
-      ));
+      // Faz 1-C: Sadece STK/Marka/Kulüp adına paylaşım. Normal kullanıcı
+      // (authorId == request.auth.uid) artık post oluşturamaz — yalnızca
+      // org-managed post veya super-admin geçerli.
+      allow create: if isSuperAdmin() || (isSignedIn() && managesOrg(request.resource.data.authorId));
       // Update/delete: original author, the org's managing user, or super-admin.
       allow update, delete: if isSuperAdmin() || (isSignedIn() && (
         resource.data.authorId == request.auth.uid

@@ -228,9 +228,9 @@ export default function NgoSelectionPage() {
 
     const handleSave = async () => {
         if (!userDocRef || !db) return;
-        // Onboarding zorunluluğu: devam etmeden önce en az 2 STK seçilmeli.
-        if (isOnboarding && selectedNgos.length < 2) {
-            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: 'Devam etmek için en az 2 STK seçmelisin.' });
+        // Onboarding zorunluluğu: devam etmeden önce en az 1 STK seçilmeli (max 2).
+        if (isOnboarding && selectedNgos.length < 1) {
+            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: 'Devam etmek için en az 1 STK seçmelisin.' });
             return;
         }
         // Diff hesapla: kullanıcının seçimine eklenen/çıkarılan STK'lar.
