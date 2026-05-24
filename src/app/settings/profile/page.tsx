@@ -61,8 +61,8 @@ import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram,
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -228,25 +228,57 @@ export default function ProfileSettingsPage() {
       }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userDocRef) return;
+    if (!userDocRef || isSaving) return;
+    setIsSaving(true);
 
-    updateDocumentNonBlocking(userDocRef, {
-        name: profile.name,
-        username: profile.username,
-        avatarUrl: profile.avatarUrl,
-        personalInfo: profile.personalInfo,
+    // Address normalize: undefined yerine '' (Firestore undefined kabul etmez,
+    // empty string ok). Kullanılmayan eski alanlar (street, doorNo) state'te
+    // varsa korunur — handleChange merge mantığı sayesinde.
+    const addr = profile.personalInfo.address || {};
+    const normalizedAddress = {
+        ...addr,
+        country: addr.country ?? '',
+        city: addr.city ?? '',
+        district: addr.district ?? '',
+        neighborhood: (addr as { neighborhood?: string }).neighborhood ?? '',
+        fullAddress: (addr as { fullAddress?: string }).fullAddress ?? '',
+    };
+
+    const payload = {
+        name: profile.name ?? '',
+        username: profile.username ?? '',
+        avatarUrl: profile.avatarUrl ?? '',
+        personalInfo: {
+            ...profile.personalInfo,
+            address: normalizedAddress,
+        },
         'volunteerInfo.education': educationList,
-    });
+    };
 
-    toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
-    
-    if (isOnboarding) {
-        localStorage.setItem('onboardingStep', 'volunteer');
-        router.push('/settings/volunteer');
-    } else {
-        router.push('/settings');
+    try {
+        await updateDoc(userDocRef, payload);
+        toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
+
+        if (isOnboarding) {
+            localStorage.setItem('onboardingStep', 'volunteer');
+            router.push('/settings/volunteer');
+        } else {
+            router.push('/settings');
+        }
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        toast({
+            variant: 'destructive',
+            title: 'Kayıt başarısız',
+            description: msg.slice(0, 200),
+        });
+        console.error('[profile save] failed:', err);
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -703,7 +735,9 @@ export default function ProfileSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-4">
-          <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">{t('dashboard.settingsProfile.saveCta')}</Button>
+          <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">
+            {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...</> : t('dashboard.settingsProfile.saveCta')}
+          </Button>
         </div>
       </form>
     </div>
