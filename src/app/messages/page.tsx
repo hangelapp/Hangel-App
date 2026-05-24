@@ -54,6 +54,7 @@ interface EntityRecord {
     files?: { logo?: string }; logoUrl?: string;
     ngoId?: string;
     dates?: { eventEnd?: string };
+    adminUserId?: string;
 }
 
 export default function MessagesPage() {
@@ -182,6 +183,15 @@ export default function MessagesPage() {
         matchSearch(getRecipientName(m)) || matchSearch(m.subject || '')
     );
 
+    // entityId -> adminUserId lookup (bildirim göndermek için)
+    const entityAdminMap = useMemo<Map<string, string>>(() => {
+        const m = new Map<string, string>();
+        [...(allNgos || []), ...(allBrands || []), ...(allClubs || [])].forEach(e => {
+            if (e.adminUserId) m.set(e.id, e.adminUserId);
+        });
+        return m;
+    }, [allNgos, allBrands, allClubs]);
+
     // Sadece izinli kurumlar: kullanıcının ilişkili olduğu STK/marka/kulüp
     const entityCandidates = useMemo<UserRecord[]>(() => {
         const mapEntity = (e: EntityRecord, kind: 'ngo' | 'brand' | 'club'): UserRecord => ({
@@ -219,14 +229,40 @@ export default function MessagesPage() {
         setSending(true);
         try {
             const recipientName = selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || 'Kullanıcı';
-            await addDoc(collection(db, COLLECTIONS.messages), {
-                sender: { id: authUser.uid, name: authUser.displayName || 'Kullanıcı', avatarUrl: authUser.photoURL || null },
+            const senderName = authUser.displayName || 'Bir kullanıcı';
+            const trimmedSubject = subject.trim() || '(Konu yok)';
+            const trimmedContent = content.trim();
+            const msgDoc = await addDoc(collection(db, COLLECTIONS.messages), {
+                sender: { id: authUser.uid, name: senderName, avatarUrl: authUser.photoURL || null },
                 senderId: authUser.uid,
                 recipient: { id: selectedRecipient.id, name: recipientName, avatarUrl: selectedRecipient.photoURL || selectedRecipient.avatarUrl || null },
                 recipientId: selectedRecipient.id,
-                subject: subject.trim() || '(Konu yok)', content: content.trim(),
+                subject: trimmedSubject, content: trimmedContent,
                 timestamp: serverTimestamp(), status: 'sent',
             });
+
+            // Bildirim: alıcı bir entity ise admin user'a, kullanıcı ise direkt ona
+            // (mevcut kısıt: alıcı her zaman entity, ama defansif)
+            const targetUserId = selectedRecipient.recipientKind
+                ? entityAdminMap.get(selectedRecipient.id)
+                : selectedRecipient.id;
+            if (targetUserId) {
+                try {
+                    await addDoc(collection(db, COLLECTIONS.notifications), {
+                        userId: targetUserId,
+                        type: 'message',
+                        title: `Yeni mesaj: ${senderName}`,
+                        body: trimmedContent.length > 120 ? `${trimmedContent.slice(0, 120)}…` : trimmedContent,
+                        data: { messageId: msgDoc.id, senderId: authUser.uid, recipientEntityId: selectedRecipient.id },
+                        read: false,
+                        createdAt: serverTimestamp(),
+                        createdBy: 'message-system',
+                    });
+                } catch (e) {
+                    console.warn('message notification create failed', e);
+                }
+            }
+
             toast({ title: t('dashboard.messages.toastSentTitle'), description: `${recipientName}${t('dashboard.messages.toastSentDescSuffix')}` });
             setComposeOpen(false); resetCompose();
         } catch (err) {

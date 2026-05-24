@@ -203,7 +203,8 @@ export default function NgoAdminInboxPage() {
         try {
             const originalSubject = openMessage.subject || '';
             const replySubject = originalSubject.startsWith('Re:') ? originalSubject : `Re: ${originalSubject || '(Konu yok)'}`;
-            await addDoc(collection(firestore, COLLECTIONS.messages), {
+            const trimmedReply = replyContent.trim();
+            const msgDoc = await addDoc(collection(firestore, COLLECTIONS.messages), {
                 // Görsel gönderen: ENTITY. Rule-güvenliği için senderId = admin uid.
                 sender: { id: entityId, name: entityName, avatarUrl: entityLogo },
                 senderId: authUser.uid,
@@ -214,10 +215,27 @@ export default function NgoAdminInboxPage() {
                 },
                 recipientId: openMessage.senderId,
                 subject: replySubject,
-                content: replyContent.trim(),
+                content: trimmedReply,
                 timestamp: serverTimestamp(),
                 status: 'sent',
             });
+
+            // Bildirim: kullanıcıya yanıt geldiğini bildir
+            try {
+                await addDoc(collection(firestore, COLLECTIONS.notifications), {
+                    userId: openMessage.senderId,
+                    type: 'message',
+                    title: `Yeni mesaj: ${entityName}`,
+                    body: trimmedReply.length > 120 ? `${trimmedReply.slice(0, 120)}…` : trimmedReply,
+                    data: { messageId: msgDoc.id, fromEntityId: entityId, fromEntityName: entityName },
+                    read: false,
+                    createdAt: serverTimestamp(),
+                    createdBy: 'message-system',
+                });
+            } catch (e) {
+                console.warn('reply notification create failed', e);
+            }
+
             toast({ title: 'Yanıt gönderildi.', description: `${openMessage.sender?.name || 'Kullanıcı'} kişisine iletildi.` });
             setOpenMessage(null);
             setReplyContent('');

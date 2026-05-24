@@ -203,14 +203,17 @@ export default function DonationsAdminPage() {
             }
             await updateDoc(doc(db, COLLECTIONS.donations, donationId), updatePayload);
 
-            // Kullanıcıya bildirim gönder
-            if (userId && newStatus === 'Yatırıldı') {
+            // Kullanıcıya bildirim gönder — Yatırıldı veya Tamamlandı için
+            if (userId && (newStatus === 'Yatırıldı' || newStatus === 'Tamamlandı')) {
                 try {
+                    const isCompleted = newStatus === 'Tamamlandı';
                     await addDoc(collection(db, COLLECTIONS.notifications), {
                         userId,
                         type: 'donation',
-                        title: 'Bağışınız STK\'ya aktarıldı',
-                        body: `${brandName || 'Marka'} üzerinden yaptığınız ${donationAmount || '0'} ₺ bağış başarıyla STK'ya aktarıldı.`,
+                        title: isCompleted ? 'Bağışınız tamamlandı' : 'Bağışınız STK\'ya aktarıldı',
+                        body: isCompleted
+                            ? `${brandName || 'Marka'} üzerinden yaptığınız ${donationAmount || '0'} ₺ bağış tamamlandı. Teşekkürler!`
+                            : `${brandName || 'Marka'} üzerinden yaptığınız ${donationAmount || '0'} ₺ bağış başarıyla STK'ya aktarıldı.`,
                         data: { donationId },
                         read: false,
                         createdAt: serverTimestamp(),

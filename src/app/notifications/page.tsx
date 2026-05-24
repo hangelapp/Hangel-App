@@ -4,7 +4,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck, MessageSquare } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -23,6 +23,7 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'volunteer': Heart,
   'donation': Sparkles,
   'authorization': ShieldCheck,
+  'message': MessageSquare,
 };
 
 const typeColor: Record<string, string> = {
@@ -31,6 +32,7 @@ const typeColor: Record<string, string> = {
   'volunteer': 'text-green-600 bg-green-100',
   'donation': 'text-amber-600 bg-amber-100',
   'authorization': 'text-indigo-600 bg-indigo-100',
+  'message': 'text-primary bg-primary/10',
 };
 
 export default function NotificationsPage() {
@@ -134,6 +136,8 @@ export default function NotificationsPage() {
         return '/admin';
       case 'donation':
         return '/my-donations';
+      case 'message':
+        return '/messages';
       case 'broadcast':
       case 'dm':
         return n.data?.link || null;
