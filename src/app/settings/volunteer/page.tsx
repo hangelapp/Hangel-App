@@ -219,7 +219,9 @@ export default function VolunteerSettingsPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userDocRef) return;
 
@@ -286,7 +288,14 @@ export default function VolunteerSettingsPage() {
     // sunucu tarafı tamamlanma bayrağını yaz. Yalnızca onboarding zincirinde
     // ilerleyen kullanıcılar için set edilir; normal düzenlemede dokunulmaz.
     const onboardingFlagPatch = isOnboarding ? { onboardingComplete: true } : {};
-    updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch, ...onboardingFlagPatch });
+    setIsSaving(true);
+    const result = await updateDocumentNonBlocking(userDocRef, { volunteerInfo, ...personalInfoPatch, ...onboardingFlagPatch });
+    setIsSaving(false);
+
+    if (!result.ok) {
+      toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+      return;
+    }
 
     if (isOnboarding) {
       toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });
@@ -497,7 +506,7 @@ export default function VolunteerSettingsPage() {
         <ConsentsSection value={consents} onChange={setConsents} />
 
         <div className="flex justify-end pt-4 pb-10">
-          <Button type="submit" size="lg" className="px-12 rounded-2xl font-black shadow-xl">Profili Tamamla</Button>
+          <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">{isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...</> : 'Profili Tamamla'}</Button>
         </div>
       </form>
     </div>

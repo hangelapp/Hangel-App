@@ -186,7 +186,8 @@ export default function AccessibilitySettingsPage() {
         }
     }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (isSaving) return;
         setIsSaving(true);
         const settings = {
             highContrast, fontSize, lineHeight, wordSpacing, paragraphSpacing, colorFilter, dyslexiaFont, textAlignment, separateText, showContrastInfo, reflowMode,
@@ -195,29 +196,33 @@ export default function AccessibilitySettingsPage() {
             screenReader, dynamicAnnouncements, mediaDescriptions, logicalOrder, audioFeedback, visualAlerts, muteAutoAudio, ignoreDecorative,
             timeoutWarnings, autoSave, disableTimeLimits, transactionConfirmation, undoSupport, undoTime
         };
-        
+
         localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
         // Aynı tab'da anında uygula (storage event same-tab tetiklenmiyor)
         window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
 
         // Persist core a11y preferences to Firestore so they sync across devices.
         if (userDocRef) {
-            updateDocumentNonBlocking(userDocRef, {
+            const result = await updateDocumentNonBlocking(userDocRef, {
                 accessibilitySettings: {
                     fontSize,
                     highContrast,
                     reducedMotion: reduceMotion,
                 },
             });
+            setIsSaving(false);
+            if (!result.ok) {
+                toast({ variant: 'destructive', title: 'Bulut senkronu başarısız', description: 'Yerelde uygulandı; cihazlar arası senkron için tekrar deneyin.' });
+                return;
+            }
+        } else {
+            setIsSaving(false);
         }
 
-        setTimeout(() => {
-            setIsSaving(false);
-            toast({
-                title: t('dashboard.settingsAccessibility.toastSavedTitle'),
-                description: t('dashboard.settingsAccessibility.toastSavedDesc'),
-            });
-        }, 800);
+        toast({
+            title: t('dashboard.settingsAccessibility.toastSavedTitle'),
+            description: t('dashboard.settingsAccessibility.toastSavedDesc'),
+        });
     };
 
     return (

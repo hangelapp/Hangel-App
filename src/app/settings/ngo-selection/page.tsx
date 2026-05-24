@@ -257,14 +257,19 @@ export default function NgoSelectionPage() {
             console.error('NGO selection save failed:', e);
             // Transaction başarısızsa yine de user-doc'u kaydet (NGO sayaçları
             // güncellenemese bile kullanıcı seçimi kaybolmasın).
-            updateDocumentNonBlocking(userDocRef, {
+            const fb = await updateDocumentNonBlocking(userDocRef, {
                 supportedNgos: selectedNgos,
                 ...(changed ? { lastNgoSelectionChange: serverTimestamp() } : {}),
             });
-            toast({
-                title: t('dashboard.settingsNgoSelection.toastSavedTitle'),
-                description: 'Seçim kaydedildi; STK sayaçları güncellenemedi (yetki kısıtı).',
-            });
+            if (fb.ok) {
+                toast({
+                    title: t('dashboard.settingsNgoSelection.toastSavedTitle'),
+                    description: 'Seçim kaydedildi; STK sayaçları güncellenemedi (yetki kısıtı).',
+                });
+            } else {
+                toast({ variant: 'destructive', title: 'Kayıt başarısız', description: fb.error.message.slice(0, 200) });
+                return;
+            }
         }
         if (isOnboarding) {
             localStorage.setItem('onboardingStep', 'profile');

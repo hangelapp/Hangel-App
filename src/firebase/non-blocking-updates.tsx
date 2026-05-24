@@ -55,11 +55,21 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: Docume
 
 /**
  * Initiates an updateDoc operation for a document reference.
- * Does NOT await the write operation internally.
+ * Does NOT await internally — caller may fire-and-forget (no `await`) OR
+ * `await` the returned promise to know if it succeeded.
+ *
+ * Return shape: `{ ok: true } | { ok: false, error }`. Errors are still
+ * emitted via errorEmitter for the global listener, but ALSO surfaced in
+ * the resolved value so awaiting callers can branch on it without
+ * dealing with thrown promises (which would crash fire-and-forget paths).
  */
-export function updateDocumentNonBlocking(docRef: DocumentReference, data: DocumentData) {
-  updateDoc(docRef, data)
-    .catch(_error => {
+export function updateDocumentNonBlocking(
+  docRef: DocumentReference,
+  data: DocumentData
+): Promise<{ ok: true } | { ok: false; error: Error }> {
+  return updateDoc(docRef, data)
+    .then(() => ({ ok: true as const }))
+    .catch((error: Error) => {
       errorEmitter.emit(
         'permission-error',
         new FirestorePermissionError({
@@ -67,7 +77,8 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: Docum
           operation: 'update',
           requestResourceData: data,
         })
-      )
+      );
+      return { ok: false as const, error };
     });
 }
 

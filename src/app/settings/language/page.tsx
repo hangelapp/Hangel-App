@@ -23,15 +23,26 @@ export default function LanguageSettingsPage() {
         return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
-    const handleSave = () => {
-        const langName = languages.find(l => l.value === language)?.label;
-        if (userDocRef) {
-            updateDocumentNonBlocking(userDocRef, { language });
+    const handleSave = async () => {
+        if (!userDocRef) {
+            // Anon: sadece localStorage'a yazılır (LanguageProvider sayesinde)
+            const langName = languages.find(l => l.value === language)?.label;
+            toast({
+                title: t('dashboard.settingsLanguage.toastSavedTitle'),
+                description: `${t('dashboard.settingsLanguage.toastSavedDescPrefix')}${langName}${t('dashboard.settingsLanguage.toastSavedDescSuffix')}`,
+            });
+            return;
         }
-        toast({
-            title: t('dashboard.settingsLanguage.toastSavedTitle'),
-            description: `${t('dashboard.settingsLanguage.toastSavedDescPrefix')}${langName}${t('dashboard.settingsLanguage.toastSavedDescSuffix')}`,
-        });
+        const result = await updateDocumentNonBlocking(userDocRef, { language });
+        if (result.ok) {
+            const langName = languages.find(l => l.value === language)?.label;
+            toast({
+                title: t('dashboard.settingsLanguage.toastSavedTitle'),
+                description: `${t('dashboard.settingsLanguage.toastSavedDescPrefix')}${langName}${t('dashboard.settingsLanguage.toastSavedDescSuffix')}`,
+            });
+        } else {
+            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+        }
     };
 
   return (

@@ -127,10 +127,19 @@ export default function FollowedBrandsPage() {
     );
   };
 
-  const handleSave = () => {
-    if (userDocRef) updateDocumentNonBlocking(userDocRef, { followedBrands: selectedBrands });
-    toast({ title: t('dashboard.settingsBrands.toastSavedTitle'), description: t('dashboard.settingsBrands.toastSavedDesc') });
-    router.push('/settings');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!userDocRef || isSaving) return;
+    setIsSaving(true);
+    const result = await updateDocumentNonBlocking(userDocRef, { followedBrands: selectedBrands });
+    setIsSaving(false);
+    if (result.ok) {
+      toast({ title: t('dashboard.settingsBrands.toastSavedTitle'), description: t('dashboard.settingsBrands.toastSavedDesc') });
+      router.push('/settings');
+    } else {
+      toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+    }
   };
 
   if (isUserLoading || isUserDataLoading) {
@@ -248,7 +257,7 @@ export default function FollowedBrandsPage() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave}>{t('dashboard.settingsBrands.saveBtn')}</Button>
+        <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Kaydediliyor...' : t('dashboard.settingsBrands.saveBtn')}</Button>
       </div>
     </div>
   );

@@ -83,15 +83,16 @@ export default function NotificationSettingsPage() {
         setSettings(prev => ({ ...prev, [id]: !prev[id] }));
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (!userDocRef || saving) return;
         setSaving(true);
-        if (userDocRef) {
-            updateDocumentNonBlocking(userDocRef, { notificationSettings: settings });
-        }
-        setTimeout(() => {
-            setSaving(false);
+        const result = await updateDocumentNonBlocking(userDocRef, { notificationSettings: settings });
+        setSaving(false);
+        if (result.ok) {
             toast({ title: t('dashboard.settingsNotifications.toastSavedTitle'), description: t('dashboard.settingsNotifications.toastSavedDesc') });
-        }, 500);
+        } else {
+            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+        }
     };
 
     if (isUserLoading) {

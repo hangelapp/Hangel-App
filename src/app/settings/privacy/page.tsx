@@ -73,20 +73,21 @@ export default function PrivacySettingsPage() {
         setHideDonations(!!p.hideDonations);
     }, [userData]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
+        if (!userDocRef || saving) return;
         setSaving(true);
-        if (userDocRef) {
-            updateDocumentNonBlocking(userDocRef, {
-                privacySettings: {
-                    isPrivate, hideScore, hideAbout, hideVolunteer,
-                    hideBadges, hideCertificates, hidePosts, hideDonations,
-                }
-            });
-        }
-        setTimeout(() => {
-            setSaving(false);
+        const result = await updateDocumentNonBlocking(userDocRef, {
+            privacySettings: {
+                isPrivate, hideScore, hideAbout, hideVolunteer,
+                hideBadges, hideCertificates, hidePosts, hideDonations,
+            }
+        });
+        setSaving(false);
+        if (result.ok) {
             toast({ title: t('dashboard.settingsPrivacy.toastSavedTitle'), description: t('dashboard.settingsPrivacy.toastSavedDesc') });
-        }, 500);
+        } else {
+            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+        }
     };
 
     if (isUserLoading) {
