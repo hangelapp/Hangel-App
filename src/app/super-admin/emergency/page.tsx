@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon } from 'lucide-react';
+import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon, Pencil, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, getCountFromServer, documentId, type Query, type QueryConstraint } from 'firebase/firestore';
@@ -297,6 +297,93 @@ export default function EmergencyManagementPage() {
     toast({ title: 'Talep yüklendi', description: 'İl/ilçe/mahalle seçip "Acil Talep Gönder"e basarak yayınlayabilirsiniz.' });
     // Form bölümüne kaydır
     setTimeout(() => document.getElementById('emergency-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  };
+
+  // BUG-25: Mevcut onaylanmış talebi forma yükle (düzenleme akışı)
+  // loadIntoForm ile aynı ama 'edit' flag set ediliyor — handleSendRequest
+  // status'u 'sent' bırakıp updateDoc yapacak, bildirim re-fan-out edecek.
+  const loadIntoFormForEdit = (req: EmergencyDoc) => {
+    setHospitalName(req.hospitalName || '');
+    setHospitalAddress(req.hospitalAddress || '');
+    setBloodType(req.bloodType || '');
+    setMessage(req.message || '');
+    setContactPhone(req.contactPhone || '');
+    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
+    setScope((req.scope as ScopeLevel) || 'city');
+    setCity(req.city || '');
+    setDistrict(req.district || '');
+    setNeighborhood(req.neighborhood || '');
+    pendingApprovalIdRef.current = req.id;
+    setActiveTab('blood');
+    toast({ title: 'Düzenleme modu', description: 'Bilgileri güncelleyip "Gönder"e basın; talep güncellenir ve eşleşen kullanıcılara tekrar bildirim gider.' });
+    setTimeout(() => document.getElementById('emergency-form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  };
+
+  // BUG-25: Onaylanmış talep için tekrar bildirim (form/doc değişikliği yok)
+  const handleResendNotifications = async (req: EmergencyDoc) => {
+    if (!confirm(`"${req.hospitalName}" için kapsamdaki kullanıcılara tekrar bildirim gönderilsin mi?`)) return;
+    try {
+      const sel: ScopeSelection = {
+        scope: (req.scope as ScopeLevel) || 'city',
+        city: req.city || '',
+        district: req.district || '',
+        neighborhood: req.neighborhood || '',
+        bloodType: req.bloodType || '',
+      };
+      const constraints = buildScopeConstraints(sel);
+      const scopedQuery: Query = constraints.length > 0
+        ? query(collection(db, COLLECTIONS.users), ...constraints)
+        : query(collection(db, COLLECTIONS.users));
+      const targetSnap = await getDocs(scopedQuery);
+      const targetUserIds = targetSnap.docs.map(d => d.id);
+
+      if (targetUserIds.length === 0) {
+        toast({ variant: 'destructive', title: 'Hedef yok', description: 'Kapsama uyan kullanıcı bulunamadı.' });
+        return;
+      }
+
+      const batches: ReturnType<typeof writeBatch>[] = [];
+      let current = writeBatch(db);
+      let count = 0;
+      for (const uid of targetUserIds) {
+        const notifRef = doc(collection(db, COLLECTIONS.notifications));
+        current.set(notifRef, {
+          userId: uid,
+          type: 'emergency-blood',
+          title: `🩸 Acil Kan Talebi (Tekrar) — ${req.bloodType}`,
+          body: `${req.hospitalName} hastanesi için ${req.bloodType} kan grubuna acil ihtiyaç devam ediyor.${req.message ? ` ${String(req.message).slice(0, 100)}` : ''}`,
+          data: {
+            requestId: req.id,
+            hospitalName: req.hospitalName,
+            hospitalAddress: req.hospitalAddress,
+            bloodType: req.bloodType,
+            contactPhone: req.contactPhone || null,
+          },
+          read: false,
+          createdAt: serverTimestamp(),
+        });
+        count += 1;
+        if (count >= 450) { batches.push(current); current = writeBatch(db); count = 0; }
+      }
+      if (count > 0) batches.push(current);
+      await Promise.all(batches.map(b => b.commit()));
+
+      const prevResent = (req as unknown as { resentCount?: number }).resentCount;
+      await updateDoc(doc(db, COLLECTIONS.emergencyRequests, req.id), {
+        lastResentAt: serverTimestamp(),
+        resentCount: (typeof prevResent === 'number' ? prevResent : 0) + 1,
+      });
+
+      toast({ title: '✅ Tekrar bildirim gönderildi', description: `${targetUserIds.length} kullanıcıya yeniden iletildi.` });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      const msg = e instanceof Error ? e.message : 'Bilinmeyen hata';
+      toast({
+        variant: 'destructive',
+        title: 'Gönderilemedi',
+        description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : msg,
+      });
+    }
   };
 
   // Kullanıcı talebini reddet
@@ -727,8 +814,8 @@ export default function EmergencyManagementPage() {
                 <p className="text-center text-sm text-muted-foreground py-8">Henüz acil talep gönderilmemiş.</p>
               ) : (
                 <div className="space-y-3">
-                  {requests.filter(r => r.type === 'blood').map(req => (
-                    <div key={req.id} className="border rounded-xl p-4 hover:bg-muted/30 transition-colors">
+                  {requests.filter(r => r.type === 'blood' && r.status === 'sent').map(req => (
+                    <div key={req.id} className="border rounded-xl p-4 hover:bg-muted/30 transition-colors space-y-2">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -738,15 +825,42 @@ export default function EmergencyManagementPage() {
                               <CheckCircle className="h-3 w-3 mr-1" />
                               {req.targetCount || 0} kişiye gönderildi
                             </Badge>
+                            {(() => {
+                              const rc = (req as unknown as { resentCount?: number }).resentCount;
+                              return typeof rc === 'number' && rc > 0 ? (
+                                <Badge variant="outline" className="text-[10px] bg-amber-50 border-amber-300 text-amber-700">
+                                  <RefreshCw className="h-3 w-3 mr-1" />
+                                  {rc}x tekrar
+                                </Badge>
+                              ) : null;
+                            })()}
                           </div>
                           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
                             <MapPin className="h-3 w-3" />
                             {scopeLabel[req.scope as ScopeLevel] || req.scope}
                             {req.city && ` • ${req.city}`}{req.district && `/${req.district}`}{req.neighborhood && `/${req.neighborhood}`}
                           </p>
-                          {req.message && <p className="text-xs text-muted-foreground mt-2 italic">"{req.message}"</p>}
+                          {req.message && <p className="text-xs text-muted-foreground mt-2 italic">&quot;{req.message}&quot;</p>}
                         </div>
                         <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(req.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap pt-1 border-t mt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl h-8"
+                          onClick={() => loadIntoFormForEdit(req)}
+                        >
+                          <Pencil className="mr-1.5 h-3.5 w-3.5" /> Düzenle
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-xl h-8 bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100"
+                          onClick={() => handleResendNotifications(req)}
+                        >
+                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Tekrar Bildirim Gönder
+                        </Button>
                       </div>
                     </div>
                   ))}
