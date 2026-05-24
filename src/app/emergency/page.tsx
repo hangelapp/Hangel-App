@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -6,7 +7,7 @@ import { Droplets, Siren, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { countryPhoneCodes } from '@/lib/data';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc, serverTimestamp } from 'firebase/firestore';
@@ -206,9 +207,18 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
 }
 
 export default function EmergencyPage() {
+    const router = useRouter();
     const { toast } = useToast();
     const db = useFirestore();
-    const { user: authUser } = useUser();
+    const { user: authUser, isUserLoading } = useUser();
+
+    // Anon ziyaretçi /emergency'ye düşerse (eski link, bookmark, paylaşılan URL)
+    // tanıtım sayfasına yönlendir — canlı talep akışı yalnızca auth'lu kullanıcılara.
+    useEffect(() => {
+        if (!isUserLoading && !authUser) {
+            router.replace('/emergency/about');
+        }
+    }, [authUser, isUserLoading, router]);
 
     // Talep edenin profil konumu — pending talebe damgalanır, böylece süper admin
     // formu il/ilçe/mahalle ile ön-doldurabilir.
