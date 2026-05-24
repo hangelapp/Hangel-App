@@ -5,17 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import {
     collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap, RefreshCw } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap, RefreshCw, Users as UsersIcon } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 import seedNgosJson from '../../../../docs/database-exports/ngos.json';
 import seedBrandsJson from '../../../../docs/database-exports/brands.json';
 
 export default function MaintenancePage() {
     const db = useFirestore();
+    const { user: authUser } = useUser();
     const { toast } = useToast();
 
     const [running, setRunning] = useState<string | null>(null);
@@ -323,6 +324,48 @@ export default function MaintenancePage() {
         }
     };
 
+    // 3b) BUG-19: Auth ↔ Firestore users sync. /super-admin/users sayfasında
+    //     görünmeyen tüm Auth user'ları için minimal Firestore doc oluştur.
+    //     Doc'u olmayan kullanıcılar app-shell guard ile force signout edilir.
+    const syncAuthUsers = async () => {
+        if (!authUser) return;
+        setRunning('authSync');
+        setLogs([]);
+        log('info', 'Auth ↔ Firestore senkronizasyonu başlatılıyor...');
+        try {
+            const token = await authUser.getIdToken();
+            const res = await fetch('/api/admin/users/sync-firestore', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                log('err', `${data.errorCode}: ${data.message}`);
+                toast({ variant: 'destructive', title: 'Sync başarısız', description: data.message });
+                return;
+            }
+            log('info', `Auth: ${data.authCount} user, Firestore: ${data.firestoreCount} user`);
+            log('info', `Eksik: ${data.missingCount} user`);
+            log('ok', `${data.created} kullanıcı için Firestore doc oluşturuldu.`);
+            if (data.errors?.length) {
+                for (const e of data.errors.slice(0, 10)) {
+                    log('err', `${e.uid}: ${e.message}`);
+                }
+                if (data.errors.length > 10) log('err', `...ve ${data.errors.length - 10} hata daha`);
+            }
+            toast({ title: 'Sync tamamlandı', description: `${data.created} eksik kullanıcı eklendi.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
     // 4) BUG-17c (b): /super-admin/setup setDocumentNonBlocking ile fire-and-forget
     //    çalışıyor → hataları yutuyor. Bu await'li versiyon her seed kaydı için
     //    başarı/hata raporlar; rules veya başka sebepten import başarısız olursa
@@ -548,6 +591,26 @@ export default function MaintenancePage() {
                     >
                         {running === 'invitations' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Eksik invitation kayıtlarını oluştur
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-purple-300/40 bg-purple-50/30">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><UsersIcon className="h-4 w-4" /> Auth ↔ Firestore Users Sync (BUG-19)</CardTitle>
+                    <CardDescription>
+                        Firebase Auth'ta var olup Firestore <code>users</code> koleksiyonunda olmayan kullanıcılar için minimal doc oluşturur. Bunlar <code>/super-admin/users</code> listesinde görünmediği için login guard tarafından force signout ediliyor.
+                        Sync sonrası tüm kullanıcılar listede görünür ve normal şekilde giriş yapabilir.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={syncAuthUsers}
+                        disabled={running !== null}
+                        className="rounded-xl"
+                    >
+                        {running === 'authSync' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Auth user'larını Firestore'a senkronize et
                     </Button>
                 </CardContent>
             </Card>

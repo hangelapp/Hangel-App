@@ -163,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         return doc(db, COLLECTIONS.users, authUser.uid);
     }, [db, authUser]);
 
-    const { data: userData } = useDoc<User>(userDocRef);
+    const { data: userData, isLoading: userDataLoading } = useDoc<User>(userDocRef);
 
     useEffect(() => {
         setIsMounted(true);
@@ -295,6 +295,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     });
                 return;
             }
+            // BUG-19: Firestore users/{uid} dokümanı YOKSA force signout.
+            // Tüm kullanıcılar /super-admin/users listesinde görünmek zorunda;
+            // doc oluşmamışsa (signup race, manuel auth ekleme, eski hesap)
+            // kullanıcı sisteme giremez.
+            // GRACE PERIOD: Hesap < 60 sn önce oluşmuşsa atla (signup setDoc
+            // race condition'ı için). authUser.metadata.creationTime kontrolü.
+            const accountCreatedMs = authUser.metadata?.creationTime
+                ? new Date(authUser.metadata.creationTime).getTime()
+                : 0;
+            const accountAgeMs = accountCreatedMs ? Date.now() - accountCreatedMs : Infinity;
+            const isNewAccount = accountAgeMs < 60_000;
+
+            if (!userDataLoading && !userData && !isNewAccount) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Hesap doğrulanamadı',
+                    description: 'Hesabınız sistem listesinde bulunamadı. Lütfen yöneticinizle iletişime geçin.',
+                });
+                if (typeof window !== 'undefined') {
+                    try {
+                        sessionStorage.setItem('session-expired-toast-at', String(Date.now()));
+                    } catch {
+                        // private mode
+                    }
+                }
+                signOut(auth)
+                    .catch(() => undefined)
+                    .finally(() => {
+                        router.replace('/login/selection?action=login');
+                    });
+                return;
+            }
+
             // BUG-18: Logged-in kullanıcılar /login/selection'da bireysel +
             // kurumsal kayıt başvuru formlarına her zaman erişebilmeli — buradan
             // /market'e otomatik redirect kaldırıldı. Form içleri logged-in
@@ -302,7 +335,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             // verify-sent akışı için bu sayfada kalma izni zaten vardı.
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authUser, isUserLoading, pathname, router, isMounted, userData]);
+    }, [authUser, isUserLoading, pathname, router, isMounted, userData, userDataLoading]);
 
     // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
     // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma
