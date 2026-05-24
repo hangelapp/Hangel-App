@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink, Plus, Trash2, FilePlus2, Eye, FileText } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X, Pencil, Plus, Trash2, FilePlus2, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';

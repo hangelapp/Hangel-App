@@ -10,7 +10,6 @@ import { Briefcase, ArrowLeft, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LocationFields } from '@/components/shared/location-fields';
 
 export default function CompaniesPage() {
