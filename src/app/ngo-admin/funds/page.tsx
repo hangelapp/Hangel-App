@@ -3,19 +3,11 @@
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, HandCoins, ExternalLink, Filter, Search, ArrowDownUp, Info, CheckCircle2, Calendar, Target, DollarSign, X, Send } from 'lucide-react';
+import { ArrowLeft, HandCoins, Filter, Search, ArrowDownUp, X, Send, Calendar, DollarSign, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,8 +91,6 @@ export default function FundsPage() {
     const { toast } = useToast();
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedFund, setSelectedFund] = useState<Fund | null>(null);
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     // Filtering and Sorting States
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
@@ -167,8 +157,7 @@ export default function FundsPage() {
     }, [searchTerm, statusFilter, areaFilters, sortConfig, funds]);
 
     const handleOpenDetails = (fund: typeof funds[0]) => {
-        setSelectedFund(fund);
-        setIsDetailsOpen(true);
+        router.push(`/ngo-admin/funds/${fund.id}`);
     };
 
     const toggleAreaFilter = (area: string) => {
@@ -368,80 +357,6 @@ export default function FundsPage() {
                 </CardContent>
             </Card>
 
-            {/* Fund Details Dialog */}
-            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                {selectedFund && (
-                    <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] border-none shadow-2xl overflow-hidden p-0">
-                        <div className="h-2 w-full bg-primary" />
-                        <div className="p-8">
-                            <DialogHeader>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <HandCoins className="h-6 w-6 text-primary" />
-                                    <Badge className={cn(
-                                        "font-black text-[9px] tracking-widest px-3 py-1 uppercase rounded-lg border-none",
-                                        selectedFund.status === 'Açık' ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
-                                    )}>
-                                        {selectedFund.status}
-                                    </Badge>
-                                </div>
-                                <DialogTitle className="text-2xl font-bold tracking-tight text-[#1d1d1f] leading-tight">{selectedFund.name}</DialogTitle>
-                                <DialogDescription className="text-base font-bold text-primary mt-1">{selectedFund.provider}</DialogDescription>
-                            </DialogHeader>
-                            
-                            <div className="py-6 space-y-6 max-h-[50vh] overflow-y-auto no-scrollbar pr-2 mt-4 border-t border-dashed">
-                                <div className="space-y-3">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        <Info className="h-3.5 w-3.5" /> Program Hakkında
-                                    </h4>
-                                    <p className="text-sm leading-relaxed text-[#1d1d1f]/80 font-medium">{selectedFund.description}</p>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-[#f5f5f7] rounded-2xl">
-                                    <div className="space-y-1">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                            <DollarSign className="h-3.5 w-3.5 text-primary" /> Bütçe Aralığı
-                                        </h4>
-                                        <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.budget}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                            <Calendar className="h-3.5 w-3.5 text-primary" /> Son Tarih
-                                        </h4>
-                                        <p className="text-sm font-bold text-[#1d1d1f]">{selectedFund.deadline}</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        <Target className="h-3.5 w-3.5" /> Başvuru Koşulları
-                                    </h4>
-                                    <p className="text-sm font-medium text-[#1d1d1f]/80 leading-relaxed">{selectedFund.requirements}</p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                                        <CheckCircle2 className="h-3.5 w-3.5" /> Odak Alanları
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {(selectedFund.areas || []).map((area: string) => (
-                                            <Badge key={area} variant="secondary" className="rounded-xl font-bold px-4 py-1 bg-white border border-black/5 text-[#1d1d1f]/80">{area}</Badge>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <DialogFooter className="gap-3 sm:gap-0 mt-8 pt-6 border-t">
-                                <Button variant="ghost" onClick={() => setIsDetailsOpen(false)} className="rounded-2xl font-bold h-12 flex-1">Kapat</Button>
-                                <Button asChild className="rounded-2xl font-bold h-12 flex-1 shadow-xl shadow-primary/20">
-                                    <a href={selectedFund.url} target="_blank" rel="noopener noreferrer">
-                                        Resmi Başvuru <ExternalLink className="ml-2 h-4 w-4" />
-                                    </a>
-                                </Button>
-                            </DialogFooter>
-                        </div>
-                    </DialogContent>
-                )}
-            </Dialog>
         </div>
     );
 }
