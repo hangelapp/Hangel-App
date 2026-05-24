@@ -40,7 +40,8 @@ import {
     VolumeX,
     ImageOff,
     Command,
-    Rows
+    Rows,
+    RotateCcw,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -185,6 +186,59 @@ export default function AccessibilitySettingsPage() {
             }
         }
     }, []);
+
+    // Tüm tercihleri ilk açılıştaki güvenli/varsayılan değerlerine getirir;
+    // localStorage'tan tercihleri temizler ve aynı tab'a A11Y_CHANGED event'i
+    // yayar — kullanıcı dilerse sonra "Kaydet"e basıp Firestore'a da yazar.
+    const handleResetToDefaults = () => {
+        if (!confirm('Tüm erişilebilirlik tercihleri varsayılana sıfırlansın mı?')) return;
+        setHighContrast(false);
+        setFontSize('normal');
+        setLineHeight('normal');
+        setWordSpacing('normal');
+        setParagraphSpacing('normal');
+        setColorFilter('yok');
+        setDyslexiaFont(false);
+        setTextAlignment('left');
+        setSeparateText(false);
+        setShowContrastInfo(true);
+        setReflowMode(true);
+        setReduceMotion(false);
+        setLargeTouchTargets(false);
+        setLongPressDuration('normal');
+        setFullKeyboard(false);
+        setFocusFrame('thin');
+        setDragDropAlt(false);
+        setLimitShortcuts(false);
+        setReadingLevel('B2');
+        setStepByStep(false);
+        setTerminologyConsistency(false);
+        setFocusMode(false);
+        setTermDefinitions(true);
+        setErrorPrevention(true);
+        setScreenReader(true);
+        setDynamicAnnouncements(true);
+        setMediaDescriptions(false);
+        setLogicalReadingOrder(true);
+        setAudioFeedback(false);
+        setVisualAlerts(false);
+        setMuteAutoAudio(true);
+        setIgnoreDecorative(true);
+        setTimeoutWarnings(true);
+        setAutoSave(true);
+        setDisableTimeLimits(false);
+        setTransactionConfirmation(true);
+        setUndoSupport(true);
+        setUndoTime('10s');
+        try {
+            localStorage.removeItem('hangel-a11y-v3');
+        } catch { /* private mode — ignore */ }
+        window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
+        toast({
+            title: '↺ Varsayılanlara döndürüldü',
+            description: 'Cihazlar arası senkron için "Ayarları Uygula ve Kaydet"e basın.',
+        });
+    };
 
     const handleSave = async () => {
         if (isSaving) return;
@@ -485,6 +539,22 @@ export default function AccessibilitySettingsPage() {
                 
                 <div className="p-6 bg-primary/5 rounded-[2rem] text-center border border-primary/10">
                     <p className="text-sm font-bold text-primary">Daha kapsayıcı bir dünya için birlikte çalışıyoruz.</p>
+                </div>
+
+                {/* --- Sıfırlama --- */}
+                <div className="pt-4 flex flex-col items-center gap-2">
+                    <p className="text-xs text-muted-foreground">
+                        Tüm tercihleri ilk haline döndürmek ister misin?
+                    </p>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetToDefaults}
+                        className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Ayarları Varsayılana Sıfırla
+                    </Button>
                 </div>
             </div>
 
