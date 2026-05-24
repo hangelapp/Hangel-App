@@ -9,8 +9,10 @@ import { useFirestore } from '@/firebase';
 import {
     collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2 } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import seedNgosJson from '../../../../docs/database-exports/ngos.json';
+import seedBrandsJson from '../../../../docs/database-exports/brands.json';
 
 export default function MaintenancePage() {
     const db = useFirestore();
@@ -321,7 +323,54 @@ export default function MaintenancePage() {
         }
     };
 
-    // 4) BUG-17c: Stale userInvitations'ları revoke et. Bir davet, var olmayan
+    // 4) BUG-17c (b): /super-admin/setup setDocumentNonBlocking ile fire-and-forget
+    //    çalışıyor → hataları yutuyor. Bu await'li versiyon her seed kaydı için
+    //    başarı/hata raporlar; rules veya başka sebepten import başarısız olursa
+    //    görünür olur. Hedef: seed brand/ngo ID'leri (brand-3, ngo-43, ...)
+    //    gerçekten Firestore'a aktarılsın → invitation'lar valid hâle gelsin.
+    const seedImportBrandsNgos = async () => {
+        if (!db) return;
+        setRunning('seedImport');
+        setLogs([]);
+        log('info', `${(seedBrandsJson as Array<{id:string}>).length} marka + ${(seedNgosJson as Array<{id:string}>).length} STK import edilecek...`);
+        try {
+            let brandsOk = 0, brandsFail = 0;
+            for (const b of seedBrandsJson as Array<{ id: string; [k: string]: unknown }>) {
+                try {
+                    await setDoc(doc(db, COLLECTIONS.brands, b.id), b, { merge: true });
+                    brandsOk++;
+                } catch (e) {
+                    brandsFail++;
+                    const msg = e instanceof Error ? e.message : String(e);
+                    log('err', `brand ${b.id}: ${msg}`);
+                }
+            }
+            log('ok', `Markalar: ${brandsOk} ok, ${brandsFail} hata`);
+
+            let ngosOk = 0, ngosFail = 0;
+            for (const n of seedNgosJson as Array<{ id: string; [k: string]: unknown }>) {
+                try {
+                    await setDoc(doc(db, COLLECTIONS.ngos, n.id), n, { merge: true });
+                    ngosOk++;
+                } catch (e) {
+                    ngosFail++;
+                    const msg = e instanceof Error ? e.message : String(e);
+                    log('err', `ngo ${n.id}: ${msg}`);
+                }
+            }
+            log('ok', `STK'lar: ${ngosOk} ok, ${ngosFail} hata`);
+
+            toast({ title: 'Seed import tamamlandı', description: `${brandsOk + ngosOk} kayıt import edildi, ${brandsFail + ngosFail} hata.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
+    // 5) BUG-17c: Stale userInvitations'ları revoke et. Bir davet, var olmayan
     //    ngo/brand/club'a işaret ediyorsa status='revoked' işaretle. /admin
     //    zaten gösteremiyor, popup'ta da fallback ID gözükmesini engeller.
     const revokeStaleInvitations = async () => {
@@ -434,6 +483,27 @@ export default function MaintenancePage() {
                     >
                         {running === 'invitations' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Eksik invitation kayıtlarını oluştur
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-blue-300/40 bg-blue-50/30">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><DatabaseZap className="h-4 w-4" /> Seed Brands + NGOs Import (await'li)</CardTitle>
+                    <CardDescription>
+                        <code>docs/database-exports/brands.json</code> (30 marka) ve <code>ngos.json</code> (65 STK) içindeki kayıtları sırayla Firestore'a aktarır.
+                        <code>/super-admin/setup</code>'tan farklı olarak her <code>setDoc</code>'u await eder ve hata olursa per-item logger.
+                        Mevcut kayıtların üstüne yazar (merge). Yetkilendirme invitation'larının işaret ettiği <code>brand-3, ngo-43</code> gibi seed ID'lerin Firestore'da gerçekten var olmasını garantiler.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={seedImportBrandsNgos}
+                        disabled={running !== null}
+                        className="rounded-xl"
+                    >
+                        {running === 'seedImport' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Brand/NGO seed kayıtlarını import et
                     </Button>
                 </CardContent>
             </Card>
