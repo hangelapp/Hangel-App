@@ -399,11 +399,19 @@ export default function SuperAdminEventsPage() {
       const bT = (b as { createdAt?: { toMillis?: () => number } }).createdAt?.toMillis?.() ?? 0;
       return bT - aT;
     });
+    // /events sayfası `Beklemede / Pasif / Reddedildi` dışındaki tüm
+    // statusleri (Yayında, Aktif, Onaylandı, eski/bilinmeyen değerler dahil)
+    // herkese gösterir. Super-admin'in görünümü de aynı kapsamı yansıtır:
+    // published = NOT (pending/passive/rejected). Böylece /events'te listelenen
+    // her etkinlik buradan da yönetilebilir.
     return {
       pending: list.filter((e) => (e.status || 'Beklemede') === 'Beklemede'),
-      published: list.filter((e) => e.status === 'Yayında' || e.status === 'Aktif'),
       passive: list.filter((e) => e.status === 'Pasif'),
       rejected: list.filter((e) => e.status === 'Reddedildi'),
+      published: list.filter((e) => {
+        const s = e.status || 'Beklemede';
+        return s !== 'Beklemede' && s !== 'Pasif' && s !== 'Reddedildi';
+      }),
     };
   }, [events]);
 
