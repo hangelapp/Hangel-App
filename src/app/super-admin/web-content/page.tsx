@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink, Plus, Trash2, FilePlus2 } from 'lucide-react';
+import { Loader2, Upload, ImageIcon, X, Pencil, ExternalLink, Plus, Trash2, FilePlus2, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';
@@ -739,41 +739,56 @@ export default function WebContentPage() {
                                 Sayfaların kendi yapısı (örn. tablolar, accordion'lar) korunur — buradaki alanlar başlık ve hero bölümlerinde kullanılır.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-6">
+                        <CardContent className="space-y-8">
                             {Array.from(new Set(SITE_PAGES.map(p => p.group || 'Diğer'))).map(group => (
-                                <div key={group} className="space-y-2">
-                                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground px-1">{group}</h4>
-                                    <div className="border rounded-2xl overflow-hidden divide-y">
+                                <div key={group} className="space-y-3">
+                                    <h4 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground px-1">{group}</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {SITE_PAGES.filter(p => (p.group || 'Diğer') === group).map(p => {
                                             const stored = pages[p.slug] || {};
                                             const hasContent = !!(stored.title || stored.subtitle || stored.description || stored.heroImageUrl || stored.image2Url || stored.image3Url || stored.body);
+                                            const previewTitle = stored.title || PAGE_DEFAULT_KEYS[p.slug]?.title || p.label;
+                                            const resolvedTitle = previewTitle.startsWith('marketing.') ? t(previewTitle) : previewTitle;
                                             return (
-                                                <div key={p.slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
-                                                    <div className="flex-1 min-w-0 space-y-1">
-                                                        <div className="flex items-center gap-2 flex-wrap">
-                                                            <p className="font-bold text-sm">{p.label}</p>
-                                                            {hasContent ? (
-                                                                <Badge className="bg-green-600 text-[10px]">Düzenlendi</Badge>
-                                                            ) : (
-                                                                <Badge variant="outline" className="text-[10px]">Varsayılan</Badge>
-                                                            )}
-                                                            <Link href={p.href} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
-                                                                {p.href} <ExternalLink className="h-3 w-3" />
-                                                            </Link>
-                                                        </div>
-                                                        {stored.title && (
-                                                            <p className="text-xs text-muted-foreground truncate">{stored.title}</p>
+                                                <Card key={p.slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
+                                                    <div className="relative h-32 bg-gradient-to-br from-muted to-muted/40 overflow-hidden">
+                                                        {stored.heroImageUrl ? (
+                                                            // eslint-disable-next-line @next/next/no-img-element
+                                                            <img src={stored.heroImageUrl} alt={p.label} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                                        ) : (
+                                                            <div className="h-full w-full flex items-center justify-center">
+                                                                <FileText className="h-10 w-10 text-muted-foreground/30" />
+                                                            </div>
                                                         )}
+                                                        <div className="absolute top-2 right-2">
+                                                            {hasContent ? (
+                                                                <Badge className="bg-green-600 hover:bg-green-600 text-[9px] font-black uppercase tracking-wider">Düzenlendi</Badge>
+                                                            ) : (
+                                                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider bg-background/80 backdrop-blur">Varsayılan</Badge>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleStartEditPage(p.slug)}
-                                                        className="rounded-xl shrink-0"
-                                                    >
-                                                        <Pencil className="mr-2 h-3.5 w-3.5" /> Düzenle
-                                                    </Button>
-                                                </div>
+                                                    <div className="p-3 space-y-2">
+                                                        <div className="space-y-0.5">
+                                                            <p className="font-bold text-sm truncate" title={p.label}>{p.label}</p>
+                                                            <p className="text-[11px] text-muted-foreground truncate" title={resolvedTitle}>{resolvedTitle}</p>
+                                                        </div>
+                                                        <code className="text-[10px] text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded inline-block truncate max-w-full">{p.href}</code>
+                                                        <div className="flex items-center gap-1 pt-1 border-t border-black/5">
+                                                            <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Yayında görüntüle">
+                                                                <Link href={p.href} target="_blank" rel="noopener noreferrer" aria-label="Yayında görüntüle">
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleStartEditPage(p.slug)} title="Görseli değiştir" aria-label="Görseli değiştir">
+                                                                <ImageIcon className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button variant="default" size="sm" className="h-8 rounded-lg ml-auto gap-1.5" onClick={() => handleStartEditPage(p.slug)} title="İçeriği düzenle">
+                                                                <Pencil className="h-3.5 w-3.5" /> Düzenle
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </Card>
                                             );
                                         })}
                                     </div>
@@ -800,43 +815,52 @@ export default function WebContentPage() {
                         </CardHeader>
                         <CardContent>
                             {Object.keys(customPages).length === 0 ? (
-                                <div className="py-10 text-center text-sm text-muted-foreground">
-                                    Henüz özel sayfa oluşturulmadı. &quot;Yeni Sayfa Oluştur&quot; ile başlayın.
+                                <div className="py-16 text-center space-y-3 border-2 border-dashed rounded-2xl">
+                                    <FilePlus2 className="h-12 w-12 mx-auto text-muted-foreground/30" />
+                                    <p className="text-sm text-muted-foreground">Henüz özel sayfa oluşturulmadı.</p>
+                                    <Button onClick={handleStartNewCustomPage} className="rounded-xl">
+                                        <Plus className="h-4 w-4 mr-1" /> İlk Sayfanı Oluştur
+                                    </Button>
                                 </div>
                             ) : (
-                                <div className="border rounded-2xl overflow-hidden divide-y">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {Object.entries(customPages).map(([slug, p]) => (
-                                        <div key={slug} className="p-4 flex items-start justify-between gap-3 hover:bg-muted/30">
-                                            <div className="flex-1 min-w-0 space-y-1">
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="font-bold text-sm">{p.title || slug}</p>
-                                                    <Badge variant="outline" className="text-[10px]">{CUSTOM_PAGE_BASE}/{slug}</Badge>
-                                                    <Link
-                                                        href={`${CUSTOM_PAGE_BASE}/${slug}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
-                                                    >
-                                                        aç <ExternalLink className="h-3 w-3" />
-                                                    </Link>
+                                        <Card key={slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
+                                            <div className="relative h-32 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+                                                {p.heroImageUrl ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={p.heroImageUrl} alt={p.title || slug} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                                ) : (
+                                                    <div className="h-full w-full flex items-center justify-center">
+                                                        <FileText className="h-10 w-10 text-primary/30" />
+                                                    </div>
+                                                )}
+                                                <Badge className="absolute top-2 right-2 bg-primary text-[9px] font-black uppercase tracking-wider">Özel</Badge>
+                                            </div>
+                                            <div className="p-3 space-y-2">
+                                                <div className="space-y-0.5">
+                                                    <p className="font-bold text-sm truncate" title={p.title || slug}>{p.title || slug}</p>
+                                                    {p.subtitle && <p className="text-[11px] text-muted-foreground truncate">{p.subtitle}</p>}
                                                 </div>
-                                                {p.subtitle && <p className="text-xs text-muted-foreground truncate">{p.subtitle}</p>}
+                                                <code className="text-[10px] text-muted-foreground/80 bg-muted/40 px-1.5 py-0.5 rounded inline-block truncate max-w-full">{CUSTOM_PAGE_BASE}/{slug}</code>
+                                                <div className="flex items-center gap-1 pt-1 border-t border-black/5">
+                                                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Yayında görüntüle">
+                                                        <Link href={`${CUSTOM_PAGE_BASE}/${slug}`} target="_blank" rel="noopener noreferrer" aria-label="Yayında görüntüle">
+                                                            <Eye className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => handleStartEditCustomPage(slug)} title="Görseli değiştir" aria-label="Görseli değiştir">
+                                                        <ImageIcon className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCustomPage(slug)} title="Sayfayı sil" aria-label="Sayfayı sil">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="default" size="sm" className="h-8 rounded-lg ml-auto gap-1.5" onClick={() => handleStartEditCustomPage(slug)} title="İçeriği düzenle">
+                                                        <Pencil className="h-3.5 w-3.5" /> Düzenle
+                                                    </Button>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <Button variant="outline" size="sm" onClick={() => handleStartEditCustomPage(slug)} className="rounded-xl">
-                                                    <Pencil className="h-3.5 w-3.5 mr-1" /> Düzenle
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDeleteCustomPage(slug)}
-                                                    className="text-destructive hover:bg-destructive/10 rounded-xl"
-                                                    aria-label="Sayfayı sil"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
+                                        </Card>
                                     ))}
                                 </div>
                             )}
