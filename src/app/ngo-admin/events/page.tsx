@@ -38,9 +38,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, query, where } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -48,13 +49,6 @@ interface EntityDoc {
     id: string;
     name?: string;
     adminUserId?: string;
-}
-
-interface UserDocData {
-    id: string;
-    managedNgoId?: string;
-    managedBrandId?: string;
-    managedClubId?: string;
 }
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
@@ -135,56 +129,16 @@ export default function EventManagementPage() {
     const firestore = useFirestore();
     const { user: authUser } = useUser();
 
-    // ---- Resolve activeEntity (same pattern from manage-profile) ----
-    const adminNgosQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const adminBrandsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const adminClubsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
-    const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
-    const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
-
-    const userDocRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-        [firestore, authUser?.uid],
-    );
-    const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-    const fallbackNgoRef = useMemoFirebase(
-        () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-        [firestore, userData?.managedNgoId],
-    );
-    const fallbackBrandRef = useMemoFirebase(
-        () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-        [firestore, userData?.managedBrandId],
-    );
-    const fallbackClubRef = useMemoFirebase(
-        () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-        [firestore, userData?.managedClubId],
-    );
-    const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
-    const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
-    const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
+    // Aktif kuruluş (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+    const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
 
     const activeEntity = useMemo<{ kind: EntityKind; data: EntityDoc } | null>(() => {
-        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
-        if (ngo?.id) return { kind: 'ngo', data: ngo };
-        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-        if (brand?.id) return { kind: 'brand', data: brand };
-        const club = (adminClubs && adminClubs[0]) || fallbackClub;
-        if (club?.id) return { kind: 'club', data: club };
-        return null;
-    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+        if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
+        return { kind: activeKind, data: activeDoc };
+    }, [activeIdFromCtx, activeKind, activeDoc]);
 
-    const initialLoading = ngosLoading || brandsLoading || clubsLoading;
+    const initialLoading = activeLoading;
     const isClub = activeEntity?.kind === 'club';
 
     // ---- Existing events for this club ----

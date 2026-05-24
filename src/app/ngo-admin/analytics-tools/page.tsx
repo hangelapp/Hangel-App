@@ -11,9 +11,10 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { collection, doc, query, updateDoc, where } from 'firebase/firestore';
-import { useCollection, useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 
 type NgoAnalyticsDoc = {
     id: string;
@@ -38,27 +39,11 @@ export default function AnalyticsToolsPage() {
     const db = useFirestore();
     const { user: authUser } = useUser();
 
-    // Yönettiği NGO'yu çöz: önce adminUserId == uid, sonra users/{uid}.managedNgoId
-    const adminNgosQ = useMemoFirebase(
-        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-        [db, authUser?.uid],
-    );
-    const { data: adminNgos } = useCollection<NgoAnalyticsDoc>(adminNgosQ);
-
-    const userDocRef = useMemoFirebase(
-        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
-        [db, authUser?.uid],
-    );
-    const { data: userData } = useDoc<{ managedNgoId?: string }>(userDocRef);
-
-    const fallbackNgoRef = useMemoFirebase(
-        () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
-        [db, userData?.managedNgoId],
-    );
-    const { data: fallbackNgo } = useDoc<NgoAnalyticsDoc>(fallbackNgoRef);
-
-    const ngoData = useMemo(() => (adminNgos && adminNgos[0]) || fallbackNgo || null, [adminNgos, fallbackNgo]);
-    const ngoId: string | null = ngoData?.id || null;
+    // Aktif kurum (ActiveEntityProvider) — yalnız NGO için anlamlı.
+    const { id: activeIdFromCtx, kind: activeKind } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<NgoAnalyticsDoc>();
+    const ngoData = useMemo(() => (activeKind === 'ngo' && activeDoc ? activeDoc : null), [activeKind, activeDoc]);
+    const ngoId: string | null = activeKind === 'ngo' ? activeIdFromCtx : null;
 
     const [gaId, setGaId] = useState('');
     const [metaPixelId, setMetaPixelId] = useState('');

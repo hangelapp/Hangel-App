@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -100,60 +101,21 @@ export default function UsersPage() {
   const firestore = useFirestore();
   const { user: authUser } = useUser();
 
-  // ---- Aktif kuruluşu çöz (NGO / Marka / Kulüp) — posts/page.tsx ile aynı desen ----
-  const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: adminNgos } = useCollection<ManagedEntityDoc>(adminNgosQ);
-  const { data: adminBrands } = useCollection<ManagedEntityDoc>(adminBrandsQ);
-  const { data: adminClubs } = useCollection<ManagedEntityDoc>(adminClubsQ);
+  // Aktif kuruluş (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+  const { id: activeIdFromCtx, kind: activeKindFromCtx } = useActiveEntity();
+  const { data: activeDoc } = useActiveEntityDoc<ManagedEntityDoc>();
 
-  const userDocRef = useMemoFirebase(
+  const activeEntity = useMemo<{ kind: EntityKind; data: ManagedEntityDoc } | null>(() => {
+    if (!activeIdFromCtx || !activeKindFromCtx || !activeDoc) return null;
+    return { kind: activeKindFromCtx, data: activeDoc };
+  }, [activeIdFromCtx, activeKindFromCtx, activeDoc]);
+
+  // Auth user'ın kendi doc'u — sadece role/roleTitle alanları (isGeneralAdmin kontrolü için).
+  const authUserDocRef = useMemoFirebase(
     () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
     [firestore, authUser?.uid],
   );
-  const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-  const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-    [firestore, userData?.managedNgoId],
-  );
-  const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-    [firestore, userData?.managedBrandId],
-  );
-  const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-    [firestore, userData?.managedClubId],
-  );
-  const { data: fallbackNgo } = useDoc<ManagedEntityDoc>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<ManagedEntityDoc>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<ManagedEntityDoc>(fallbackClubRef);
-
-  const selfNgoRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.ngos, authUser.uid) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: selfNgo } = useDoc<ManagedEntityDoc>(selfNgoRef);
-
-  const activeEntity = useMemo<{ kind: EntityKind; data: ManagedEntityDoc } | null>(() => {
-    const ngo = (adminNgos && adminNgos[0]) || fallbackNgo || selfNgo;
-    if (ngo?.id) return { kind: 'ngo', data: ngo };
-    const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-    if (brand?.id) return { kind: 'brand', data: brand };
-    const club = (adminClubs && adminClubs[0]) || fallbackClub;
-    if (club?.id) return { kind: 'club', data: club };
-    return null;
-  }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub, selfNgo]);
+  const { data: userData } = useDoc<UserDocData>(authUserDocRef);
 
   const entityId = activeEntity?.data?.id || null;
   const entityKind = activeEntity?.kind || null;

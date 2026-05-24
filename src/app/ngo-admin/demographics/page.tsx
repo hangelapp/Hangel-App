@@ -5,8 +5,9 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Suspense, useState, useEffect, useMemo } from 'react';
 import { Loader2, BarChart3, Users, ShieldAlert } from 'lucide-react';
-import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8', '#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
@@ -80,68 +81,18 @@ function DemographicsPageContent() {
 
   useEffect(() => { setIsMounted(true); }, []);
 
-  // 1) Kullanıcının yönettiği varlığı tespit et: önce NGO/Brand/Club query, sonra user doc fallback
-  const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
+  // Aktif kurum (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+  const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+  const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
+  const ngosLoading = activeLoading;
+  const brandsLoading = activeLoading;
+  const clubsLoading = activeLoading;
 
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
-
-  // Fallback: user doc'taki managed*Id
-  const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-  const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-    [firestore, userData?.managedNgoId],
-  );
-  const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-    [firestore, userData?.managedBrandId],
-  );
-  const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-    [firestore, userData?.managedClubId],
-  );
-  const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
-
-  // Yönetici olduğu varlıkları topla (NGO > Brand > Club önceliği)
-  const managedEntities = useMemo<ManagedEntity[]>(() => {
-    const list: ManagedEntity[] = [];
-    const seen = new Set<string>();
-    const push = (kind: EntityKind, e: EntityDoc | null | undefined) => {
-      if (!e?.id) return;
-      const key = `${kind}:${e.id}`;
-      if (seen.has(key)) return;
-      seen.add(key);
-      list.push({ kind, id: e.id, name: e.name || (kind === 'ngo' ? 'STK' : kind === 'brand' ? 'Marka' : 'Kulüp') });
-    };
-    (adminNgos || []).forEach(e => push('ngo', e));
-    if (fallbackNgo) push('ngo', fallbackNgo);
-    (adminBrands || []).forEach(e => push('brand', e));
-    if (fallbackBrand) push('brand', fallbackBrand);
-    (adminClubs || []).forEach(e => push('club', e));
-    if (fallbackClub) push('club', fallbackClub);
-    return list;
-  }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
-
-  const activeEntity = managedEntities[0] || null;
+  const activeEntity = useMemo<ManagedEntity | null>(() => {
+    if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
+    const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+    return { kind: activeKind, id: activeIdFromCtx, name: activeDoc.name || labels[activeKind] };
+  }, [activeIdFromCtx, activeKind, activeDoc]);
 
   // Tüm kullanıcıları + tüm markaları oku (filtreleme için)
   const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, COLLECTIONS.users) : null), [firestore]);

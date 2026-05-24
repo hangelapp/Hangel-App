@@ -21,9 +21,10 @@ import {
 import React, { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { SectionCard } from './_components/section-card';
 import { DomainSection } from './_components/domain-section';
 import { ColorsSection } from './_components/colors-section';
@@ -53,25 +54,12 @@ export default function WebsiteBuilderPage() {
     const db = useFirestore();
     const { user: authUser } = useUser();
 
-    // Yönetici olduğu varlığı tespit et (NGO öncelikli)
-    const adminNgosQ = useMemoFirebase(
-        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-        [db, authUser?.uid],
-    );
-    const { data: adminNgos } = useCollection<NgoDoc>(adminNgosQ);
-    const userDocRef = useMemoFirebase(
-        () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
-        [db, authUser?.uid],
-    );
-    const { data: userData } = useDoc<{ managedNgoId?: string }>(userDocRef);
-    const fallbackNgoRef = useMemoFirebase(
-        () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
-        [db, userData?.managedNgoId],
-    );
-    const { data: fallbackNgo } = useDoc<NgoDoc>(fallbackNgoRef);
-
-    const ngoData = useMemo(() => (adminNgos && adminNgos[0]) || fallbackNgo || null, [adminNgos, fallbackNgo]);
-    const ngoId: string | null = ngoData?.id || null;
+    // Aktif kurum (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+    // Website builder yalnızca NGO için anlamlı; aktif kurum NGO değilse null bırakılır.
+    const { id: activeIdFromCtx, kind: activeKind } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<NgoDoc>();
+    const ngoData = useMemo(() => (activeKind === 'ngo' && activeDoc ? activeDoc : null), [activeKind, activeDoc]);
+    const ngoId: string | null = activeKind === 'ngo' ? activeIdFromCtx : null;
 
     const [sections, setSections] = useState(defaultSections);
 
