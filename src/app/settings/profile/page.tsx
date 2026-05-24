@@ -216,7 +216,11 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  const currentCountry = profile.personalInfo.address.country;
+  // BUG-21: address.country boşsa default Türkiye kabul et. UI zaten 'Türkiye'
+  // placeholder gösteriyordu ama state boş kalıyordu → isTurkey false → il/ilçe/
+  // mahalle dropdownları çalışmıyordu. Boş = Türkiye varsayımı ile dropdownlar
+  // otomatik açılır; kullanıcı başka ülke seçince override eder.
+  const currentCountry = profile.personalInfo.address.country || 'Türkiye';
   const currentCity = profile.personalInfo.address.city;
   const currentDistrict = profile.personalInfo.address.district;
   const currentNeighborhood = (profile.personalInfo.address as { neighborhood?: string }).neighborhood || '';
