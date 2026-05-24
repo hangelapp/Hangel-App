@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from '@/components/ui/dialog';
-import { Search, Send, Bell, History, MessageSquare, User, Building, School, Loader2, CheckCircle2 } from 'lucide-react';
+    Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Progress } from '@/components/ui/progress';
+import { Search, Send, Bell, History, MessageSquare, User, Building, School, Loader2, CheckCircle2, BarChart3, Users, Eye, MailOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
@@ -110,128 +111,70 @@ function toDateMaybe(value: unknown): Date | null {
     return v?.toDate ? v.toDate() : null;
 }
 
-// Tek bir duyuru satırı — okundu sayısını kendi içinde lazy olarak çeker.
-// Composite index henüz deploy edilmemişse '—' gösterir (crash etmez).
-function BroadcastRow({
-    broadcast,
-    onClick,
-}: {
-    broadcast: BroadcastDoc;
-    onClick: () => void;
-}) {
+// Tüm broadcast'ler için okundu sayılarını TEK seferde paralel çeker — özet kartı
+// ve satır rozetleri aynı veriden beslenir, render sırasında dalgalı sayı görmeyiz.
+function useBroadcastReadCounts(
+    broadcasts: BroadcastDoc[] | null | undefined,
+): Map<string, number | null> {
     const db = useFirestore();
-    const [readCount, setReadCount] = useState<number | null>(null);
-    const sent = broadcast.targetCount ?? 0;
+    const [counts, setCounts] = useState<Map<string, number | null>>(new Map());
 
-    useEffect(() => {
-        let cancelled = false;
-        (async () => {
-            try {
-                const snap = await getCountFromServer(query(
-                    collection(db, COLLECTIONS.notifications),
-                    where('broadcastId', '==', broadcast.id),
-                    where('read', '==', true),
-                ));
-                if (!cancelled) setReadCount(snap.data().count);
-            } catch {
-                // Composite index eksikse veya yetki yoksa sessizce '—' bırak.
-                if (!cancelled) setReadCount(null);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [db, broadcast.id]);
-
-    const rate = readCount !== null && sent > 0
-        ? Math.round((readCount / sent) * 100)
-        : null;
-    const created = toDateMaybe(broadcast.createdAt);
-
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className="w-full p-3 flex items-start justify-between gap-3 hover:bg-muted/30 text-left transition-colors"
-        >
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-sm truncate">{broadcast.title}</p>
-                    <Badge variant="outline" className="text-[9px] uppercase">{broadcast.type || 'broadcast'}</Badge>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-1">{broadcast.body}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                    {targetLabel(broadcast.target)} · {created ? created.toLocaleString('tr-TR') : '—'}
-                </p>
-            </div>
-            <div className="shrink-0 flex items-center gap-2">
-                <Badge variant="secondary" className="text-[10px]">Gönderildi: {sent}</Badge>
-                <Badge variant="secondary" className="text-[10px]">
-                    Okundu: {readCount !== null ? readCount : '—'}
-                    {rate !== null ? ` (%${rate})` : ''}
-                </Badge>
-            </div>
-        </button>
+    // Stabil bir bağımlılık — broadcasts referansı her render değişebiliyor, biz
+    // sadece id seti değiştiğinde yeniden çekmek istiyoruz.
+    const idsKey = useMemo(
+        () => (broadcasts || []).map((b) => b.id).join('|'),
+        [broadcasts],
     );
-}
-
-// Drilldown — seçili duyurunun tüm alıcılarını okundu durumuyla listeler.
-// Tek alanlı filtre (broadcastId) olduğu için composite index gerekmez.
-function BroadcastDrilldownDialog({
-    broadcast,
-    allUsers,
-    ngos,
-    brands,
-    clubs,
-    onClose,
-}: {
-    broadcast: BroadcastDoc | null;
-    allUsers: CommsUser[] | null;
-    ngos: EntityRow[] | null;
-    brands: EntityRow[] | null;
-    clubs: EntityRow[] | null;
-    onClose: () => void;
-}) {
-    const db = useFirestore();
-    const [recipients, setRecipients] = useState<NotifDoc[] | null>(null);
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (!broadcast) {
-            setRecipients(null);
+        if (!broadcasts || broadcasts.length === 0) {
+            setCounts(new Map());
             return;
         }
         let cancelled = false;
-        setLoading(true);
         (async () => {
-            try {
-                const snap = await getDocs(query(
-                    collection(db, COLLECTIONS.notifications),
-                    where('broadcastId', '==', broadcast.id),
-                ));
-                const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<NotifDoc, 'id'>) }));
-                if (!cancelled) setRecipients(rows);
-            } catch {
-                if (!cancelled) setRecipients([]);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
+            const results = await Promise.all(
+                broadcasts.map(async (b) => {
+                    try {
+                        const snap = await getCountFromServer(query(
+                            collection(db, COLLECTIONS.notifications),
+                            where('broadcastId', '==', b.id),
+                            where('read', '==', true),
+                        ));
+                        return [b.id, snap.data().count] as const;
+                    } catch {
+                        // Composite index eksikse veya yetki yoksa null — UI '—' gösterir.
+                        return [b.id, null as number | null] as const;
+                    }
+                }),
+            );
+            if (!cancelled) setCounts(new Map(results));
         })();
         return () => { cancelled = true; };
-    }, [db, broadcast]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [db, idsKey]);
 
-    // userId → { isim, avatar, kurum adı, kurum türü } — tek seferde bellekte kurulur,
-    // alıcı başına ekstra Firestore okuması yapılmaz.
-    const userById = useMemo(() => {
+    return counts;
+}
+
+// userId → ResolvedUser map — tüm accordion item'lar ve satırlar bunu paylaşır,
+// alıcı başına ekstra Firestore okuması yapılmaz.
+function useUserResolver(
+    allUsers: CommsUser[] | null,
+    ngos: EntityRow[] | null,
+    brands: EntityRow[] | null,
+    clubs: EntityRow[] | null,
+): Map<string, ResolvedUser> {
+    return useMemo(() => {
         const ngoName = new Map<string, string>();
-        (ngos || []).forEach(e => ngoName.set(e.id, e.name || e.id));
+        (ngos || []).forEach((e) => ngoName.set(e.id, e.name || e.id));
         const brandName = new Map<string, string>();
-        (brands || []).forEach(e => brandName.set(e.id, e.name || e.id));
+        (brands || []).forEach((e) => brandName.set(e.id, e.name || e.id));
         const clubName = new Map<string, string>();
-        (clubs || []).forEach(e => clubName.set(e.id, e.name || e.id));
+        (clubs || []).forEach((e) => clubName.set(e.id, e.name || e.id));
 
         const map = new Map<string, ResolvedUser>();
-        (allUsers || []).forEach(u => {
-            // Bracket access — managed* alanları CommsUser'da var ama Next prod build
-            // bazı durumlarda tipi resolve edemediği için record-style erişim.
+        (allUsers || []).forEach((u) => {
             const rec = u as unknown as Record<string, string | null | undefined>;
             let orgName = 'Bireysel';
             let orgKind: ResolvedUser['orgKind'] = 'Bireysel';
@@ -254,13 +197,34 @@ function BroadcastDrilldownDialog({
         });
         return map;
     }, [allUsers, ngos, brands, clubs]);
+}
 
-    const readCount = (recipients || []).filter(r => r.read).length;
+// Inline accordion item — collapsed haldeyken özet rozeti, açıldığında kurum
+// kırılımı + bireysel alıcı listesi. Alıcılar lazy fetch (sadece ilk açılışta).
+function BroadcastAccordionItem({
+    broadcast,
+    readCount,
+    recipients,
+    isLoading,
+    userById,
+}: {
+    broadcast: BroadcastDoc;
+    readCount: number | null;
+    recipients: NotifDoc[] | null;
+    isLoading: boolean;
+    userById: Map<string, ResolvedUser>;
+}) {
+    const sent = broadcast.targetCount ?? 0;
+    const rate = readCount !== null && sent > 0
+        ? Math.round((readCount / sent) * 100)
+        : null;
+    const created = toDateMaybe(broadcast.createdAt);
 
     // Kurum/STK-bazlı okuma kırılımı — alıcıları kurum adına göre gruplar.
     const orgBreakdown = useMemo(() => {
+        if (!recipients) return [];
         const groups = new Map<string, { orgName: string; orgKind: ResolvedUser['orgKind']; sent: number; read: number }>();
-        (recipients || []).forEach(r => {
+        recipients.forEach((r) => {
             const resolved = r.userId ? userById.get(r.userId) : undefined;
             const orgName = resolved?.orgName || 'Bireysel';
             const orgKind = resolved?.orgKind || 'Bireysel';
@@ -269,96 +233,144 @@ function BroadcastDrilldownDialog({
             if (r.read) existing.read += 1;
             groups.set(orgName, existing);
         });
-        // Çok alıcılı kurumlar önce, ardından okuma oranı yüksek olanlar.
         return Array.from(groups.values()).sort((a, b) => b.sent - a.sent || b.read - a.read);
     }, [recipients, userById]);
 
     return (
-        <Dialog open={!!broadcast} onOpenChange={(open) => { if (!open) onClose(); }}>
-            <DialogContent className="max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>{broadcast?.title}</DialogTitle>
-                    <DialogDescription>
-                        Gönderildi: {broadcast?.targetCount ?? (recipients?.length ?? 0)} · Okundu: {readCount}
-                    </DialogDescription>
-                </DialogHeader>
-
-                {/* Kurum / STK bazlı okuma kırılımı */}
-                {!loading && orgBreakdown.length > 0 && (
-                    <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                            Kuruma Göre Okuma
+        <AccordionItem value={broadcast.id} className="border-b last:border-b-0">
+            <AccordionTrigger className="px-3 py-3 hover:bg-muted/30 hover:no-underline [&[data-state=open]]:bg-muted/40">
+                <div className="flex-1 flex items-start justify-between gap-3 text-left">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-sm truncate">{broadcast.title || '(başlıksız)'}</p>
+                            <Badge variant="outline" className="text-[9px] uppercase">
+                                {broadcast.type || 'broadcast'}
+                            </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{broadcast.body}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                            {targetLabel(broadcast.target)} · {created ? created.toLocaleString('tr-TR') : '—'}
                         </p>
-                        <div className="max-h-40 overflow-y-auto border rounded-xl divide-y bg-muted/20">
-                            {orgBreakdown.map((g) => {
-                                const rate = g.sent > 0 ? Math.round((g.read / g.sent) * 100) : 0;
-                                return (
-                                    <div key={g.orgName} className="p-2 flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                            <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-bold truncate">{g.orgName}</p>
-                                                <p className="text-[10px] text-muted-foreground">{g.orgKind}</p>
-                                            </div>
-                                        </div>
-                                        <div className="shrink-0 flex items-center gap-1.5">
-                                            <Badge variant="secondary" className="text-[10px]">Gönderilen: {g.sent}</Badge>
-                                            <Badge variant="secondary" className="text-[10px]">
-                                                Okuyan: {g.read} (%{rate})
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
                     </div>
-                )}
-
-                <div className="max-h-[50vh] overflow-y-auto border rounded-xl divide-y">
-                    {loading ? (
-                        <div className="py-10 text-center text-muted-foreground">
-                            <Loader2 className="h-6 w-6 mx-auto animate-spin opacity-50" />
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1.5">
+                            <Badge variant="secondary" className="text-[10px]">
+                                <Send className="h-2.5 w-2.5 mr-1" />
+                                {sent}
+                            </Badge>
+                            <Badge
+                                variant={rate !== null && rate >= 50 ? 'default' : 'secondary'}
+                                className="text-[10px]"
+                            >
+                                <MailOpen className="h-2.5 w-2.5 mr-1" />
+                                {readCount !== null ? readCount : '—'}
+                                {rate !== null ? ` (%${rate})` : ''}
+                            </Badge>
                         </div>
-                    ) : (recipients && recipients.length > 0) ? recipients.map((r) => {
-                        const readAt = toDateMaybe(r.readAt);
-                        const resolved = r.userId ? userById.get(r.userId) : undefined;
-                        const displayName = resolved?.name || (r.userId ? r.userId.slice(0, 8) + '…' : '—');
-                        return (
-                            <div key={r.id} className="p-2.5 flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <Avatar className="h-6 w-6 shrink-0">
-                                        <AvatarImage src={resolved?.avatarUrl} alt={displayName} />
-                                        <AvatarFallback className="text-[10px]">
-                                            {(displayName[0] || '?').toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="min-w-0">
-                                        <span className="text-sm truncate block">{displayName}</span>
-                                        <span className="text-[10px] text-muted-foreground truncate block">
-                                            {resolved?.orgName || 'Bireysel'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="shrink-0 flex items-center gap-2">
-                                    {readAt && (
-                                        <span className="text-[10px] text-muted-foreground">
-                                            {readAt.toLocaleString('tr-TR')}
-                                        </span>
-                                    )}
-                                    <Badge variant={r.read ? 'secondary' : 'outline'} className="text-[10px]">
-                                        {r.read ? 'Okundu' : 'Okunmadı'}
-                                    </Badge>
+                        {rate !== null && (
+                            <Progress value={rate} className="h-1 w-24" />
+                        )}
+                    </div>
+                </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-3 pb-3 bg-muted/10">
+                {isLoading ? (
+                    <div className="py-8 text-center text-muted-foreground">
+                        <Loader2 className="h-5 w-5 mx-auto animate-spin opacity-50" />
+                        <p className="text-xs mt-2">Alıcı kayıtları yükleniyor...</p>
+                    </div>
+                ) : recipients && recipients.length > 0 ? (
+                    <div className="space-y-4 pt-2">
+                        {orgBreakdown.length > 0 && (
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                    <Building className="h-3 w-3" />
+                                    Kuruma Göre Okuma ({orgBreakdown.length} kurum)
+                                </p>
+                                <div className="max-h-44 overflow-y-auto border rounded-xl divide-y bg-background">
+                                    {orgBreakdown.map((g) => {
+                                        const ratePct = g.sent > 0 ? Math.round((g.read / g.sent) * 100) : 0;
+                                        return (
+                                            <div key={g.orgName} className="p-2 flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-bold truncate">{g.orgName}</p>
+                                                        <p className="text-[10px] text-muted-foreground">{g.orgKind}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="shrink-0 flex items-center gap-1.5">
+                                                    <Badge variant="outline" className="text-[10px]">
+                                                        Gönderilen: {g.sent}
+                                                    </Badge>
+                                                    <Badge
+                                                        variant={ratePct >= 50 ? 'default' : 'secondary'}
+                                                        className="text-[10px]"
+                                                    >
+                                                        Okuyan: {g.read} (%{ratePct})
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        );
-                    }) : (
-                        <div className="py-10 text-center text-muted-foreground text-sm">
-                            Alıcı kaydı bulunamadı.
+                        )}
+
+                        <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                <Users className="h-3 w-3" />
+                                Bireysel Alıcılar ({recipients.length})
+                            </p>
+                            <div className="max-h-72 overflow-y-auto border rounded-xl divide-y bg-background">
+                                {recipients.map((r) => {
+                                    const readAt = toDateMaybe(r.readAt);
+                                    const resolved = r.userId ? userById.get(r.userId) : undefined;
+                                    const displayName = resolved?.name || (r.userId ? r.userId.slice(0, 8) + '…' : '—');
+                                    return (
+                                        <div key={r.id} className="p-2.5 flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <Avatar className="h-6 w-6 shrink-0">
+                                                    <AvatarImage src={resolved?.avatarUrl} alt={displayName} />
+                                                    <AvatarFallback className="text-[10px]">
+                                                        {(displayName[0] || '?').toUpperCase()}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="min-w-0">
+                                                    <span className="text-sm truncate block">{displayName}</span>
+                                                    <span className="text-[10px] text-muted-foreground truncate block">
+                                                        {resolved?.orgName || 'Bireysel'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="shrink-0 flex items-center gap-2">
+                                                {readAt && (
+                                                    <span className="text-[10px] text-muted-foreground hidden sm:inline">
+                                                        {readAt.toLocaleString('tr-TR')}
+                                                    </span>
+                                                )}
+                                                <Badge
+                                                    variant={r.read ? 'default' : 'outline'}
+                                                    className="text-[10px]"
+                                                >
+                                                    {r.read ? (
+                                                        <><Eye className="h-2.5 w-2.5 mr-1" />Okundu</>
+                                                    ) : 'Okunmadı'}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
+                    </div>
+                ) : (
+                    <div className="py-8 text-center text-muted-foreground text-xs">
+                        Alıcı kaydı bulunamadı.
+                    </div>
+                )}
+            </AccordionContent>
+        </AccordionItem>
     );
 }
 
@@ -408,9 +420,94 @@ export default function CommunicationsPage() {
 
     // İzleme arama
     const [logSearchTerm, setLogSearchTerm] = useState('');
+    const [monitorSearchTerm, setMonitorSearchTerm] = useState('');
 
-    // Drilldown — seçili duyurunun alıcı listesi
-    const [selectedBroadcast, setSelectedBroadcast] = useState<BroadcastDoc | null>(null);
+    // Trafik İzleme — açılmış accordion item'lar + alıcı cache (lazy fetch).
+    // Aynı broadcast tekrar açılırsa cache'den okur, Firestore'a yeniden gitmez.
+    const [openBroadcastIds, setOpenBroadcastIds] = useState<string[]>([]);
+    const [recipientsCache, setRecipientsCache] = useState<Map<string, NotifDoc[]>>(new Map());
+    const [recipientsLoading, setRecipientsLoading] = useState<Set<string>>(new Set());
+
+    // Tüm broadcast'lerin okundu sayılarını TEK seferde paralel çek — hem özet
+    // kartı hem her satır rozetinin tek kaynaktan beslenmesi için.
+    const broadcastReadCounts = useBroadcastReadCounts(broadcasts);
+    const userById = useUserResolver(allUsers, ngos, brands, clubs);
+
+    const handleAccordionChange = (newOpen: string[]) => {
+        const newlyOpened = newOpen.filter((id) => !openBroadcastIds.includes(id));
+        setOpenBroadcastIds(newOpen);
+        newlyOpened.forEach((id) => {
+            if (recipientsCache.has(id) || recipientsLoading.has(id)) return;
+            setRecipientsLoading((prev) => {
+                const next = new Set(prev);
+                next.add(id);
+                return next;
+            });
+            (async () => {
+                try {
+                    const snap = await getDocs(query(
+                        collection(db, COLLECTIONS.notifications),
+                        where('broadcastId', '==', id),
+                    ));
+                    const rows = snap.docs.map((d) => ({
+                        id: d.id,
+                        ...(d.data() as Omit<NotifDoc, 'id'>),
+                    }));
+                    setRecipientsCache((prev) => new Map(prev).set(id, rows));
+                } catch {
+                    setRecipientsCache((prev) => new Map(prev).set(id, []));
+                } finally {
+                    setRecipientsLoading((prev) => {
+                        const next = new Set(prev);
+                        next.delete(id);
+                        return next;
+                    });
+                }
+            })();
+        });
+    };
+
+    // Trafik İzleme — özet aggregate'leri (toplam gönderim, toplam okuma, oran).
+    const monitorSummary = useMemo(() => {
+        const list = broadcasts || [];
+        let totalSent = 0;
+        let totalRead = 0;
+        let readCountsKnown = 0;
+        list.forEach((b) => {
+            totalSent += b.targetCount ?? 0;
+            const rc = broadcastReadCounts.get(b.id);
+            if (rc !== undefined && rc !== null) {
+                totalRead += rc;
+                readCountsKnown += 1;
+            }
+        });
+        const overallRate = totalSent > 0 && readCountsKnown > 0
+            ? Math.round((totalRead / totalSent) * 100)
+            : null;
+        return {
+            totalBroadcasts: list.length,
+            totalSent,
+            totalRead,
+            overallRate,
+            allCountsLoaded: readCountsKnown === list.length,
+        };
+    }, [broadcasts, broadcastReadCounts]);
+
+    // Filtre + gruplama (Toplu Duyurular / Direkt Mesajlar)
+    const groupedBroadcasts = useMemo(() => {
+        const q = monitorSearchTerm.toLowerCase().trim();
+        const filtered = (broadcasts || []).filter((b) =>
+            !q
+            || (b.title || '').toLowerCase().includes(q)
+            || (b.body || '').toLowerCase().includes(q)
+            || (b.type || '').toLowerCase().includes(q)
+            || targetLabel(b.target).toLowerCase().includes(q),
+        );
+        return {
+            broadcast: filtered.filter((b) => (b.type || 'broadcast') === 'broadcast'),
+            dm: filtered.filter((b) => b.type === 'dm'),
+        };
+    }, [broadcasts, monitorSearchTerm]);
 
     // Hedef gruba göre kullanıcıları filtrele (broadcast)
     const targetUsers = useMemo(() => {
@@ -851,38 +948,172 @@ export default function CommunicationsPage() {
 
                 {/* TRAFİK İZLEME */}
                 <TabsContent value="monitor" className="mt-6 space-y-6">
-                    {/* Gönderilen duyuru özeti — gönderildi / okundu, tıklayınca drilldown */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Gönderilen Duyurular</CardTitle>
+                    {/* ÖZET — toplam duyuru / gönderim / okuma / okuma oranı */}
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <BarChart3 className="h-4 w-4 text-primary" />
+                                Trafik Özeti
+                            </CardTitle>
                             <CardDescription>
-                                Her duyuru için kaç kişiye gönderildiği ve kaç kişinin okuduğu. Detaylı kim
-                                aldı / kim okudu için bir satıra tıklayın.
+                                Gönderilen tüm mesaj ve bildirimlerin toplam erişim ve okuma istatistikleri.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="border rounded-xl overflow-hidden divide-y">
-                                {(broadcasts || []).length === 0 ? (
-                                    <div className="py-12 text-center text-muted-foreground">
-                                        <Bell className="h-10 w-10 mx-auto opacity-30 mb-2" />
-                                        <p>Henüz gönderilmiş duyuru yok.</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="p-3 rounded-xl border bg-background">
+                                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                                        <Bell className="h-3 w-3" />
+                                        Toplam Duyuru
                                     </div>
-                                ) : (broadcasts || []).map((b) => (
-                                    <BroadcastRow
-                                        key={b.id}
-                                        broadcast={b}
-                                        onClick={() => setSelectedBroadcast(b)}
-                                    />
-                                ))}
+                                    <p className="text-2xl font-bold mt-1">
+                                        {monitorSummary.totalBroadcasts.toLocaleString('tr-TR')}
+                                    </p>
+                                </div>
+                                <div className="p-3 rounded-xl border bg-background">
+                                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                                        <Send className="h-3 w-3" />
+                                        Toplam Gönderim
+                                    </div>
+                                    <p className="text-2xl font-bold mt-1">
+                                        {monitorSummary.totalSent.toLocaleString('tr-TR')}
+                                    </p>
+                                </div>
+                                <div className="p-3 rounded-xl border bg-background">
+                                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                                        <MailOpen className="h-3 w-3" />
+                                        Okuyan Kişi
+                                    </div>
+                                    <p className="text-2xl font-bold mt-1">
+                                        {monitorSummary.allCountsLoaded
+                                            ? monitorSummary.totalRead.toLocaleString('tr-TR')
+                                            : <span className="text-muted-foreground text-base">hesaplanıyor…</span>}
+                                    </p>
+                                </div>
+                                <div className="p-3 rounded-xl border bg-background">
+                                    <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
+                                        <Eye className="h-3 w-3" />
+                                        Okuma Oranı
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <p className="text-2xl font-bold">
+                                            {monitorSummary.overallRate !== null
+                                                ? `%${monitorSummary.overallRate}`
+                                                : <span className="text-muted-foreground text-base">—</span>}
+                                        </p>
+                                    </div>
+                                    {monitorSummary.overallRate !== null && (
+                                        <Progress value={monitorSummary.overallRate} className="h-1.5 mt-2" />
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
 
-                    {/* Ham bildirim kayıtları (eski düz liste) */}
+                    {/* ARAMA */}
+                    <div className="relative max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Başlık, mesaj, tip veya hedef grup ile ara..."
+                            className="pl-10 h-10"
+                            value={monitorSearchTerm}
+                            onChange={(e) => setMonitorSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    {/* GRUPLU LİSTE — Toplu Duyurular */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Bell className="h-4 w-4" />
+                                Toplu Duyurular
+                                <Badge variant="secondary" className="ml-1 text-[10px]">
+                                    {groupedBroadcasts.broadcast.length}
+                                </Badge>
+                            </CardTitle>
+                            <CardDescription>
+                                Tıklayarak alıcı listesini ve kurum bazlı okuma kırılımını görüntüleyin.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {groupedBroadcasts.broadcast.length === 0 ? (
+                                <div className="py-12 text-center text-muted-foreground">
+                                    <Bell className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                                    <p>Henüz toplu duyuru gönderilmedi.</p>
+                                </div>
+                            ) : (
+                                <div className="border rounded-xl overflow-hidden">
+                                    <Accordion
+                                        type="multiple"
+                                        value={openBroadcastIds}
+                                        onValueChange={handleAccordionChange}
+                                    >
+                                        {groupedBroadcasts.broadcast.map((b) => (
+                                            <BroadcastAccordionItem
+                                                key={b.id}
+                                                broadcast={b}
+                                                readCount={broadcastReadCounts.get(b.id) ?? null}
+                                                recipients={recipientsCache.get(b.id) ?? null}
+                                                isLoading={recipientsLoading.has(b.id)}
+                                                userById={userById}
+                                            />
+                                        ))}
+                                    </Accordion>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* GRUPLU LİSTE — Direkt Mesajlar */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <MessageSquare className="h-4 w-4" />
+                                Direkt Mesajlar
+                                <Badge variant="secondary" className="ml-1 text-[10px]">
+                                    {groupedBroadcasts.dm.length}
+                                </Badge>
+                            </CardTitle>
+                            <CardDescription>
+                                Süper admin tarafından bireysel olarak gönderilen mesajlar.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {groupedBroadcasts.dm.length === 0 ? (
+                                <div className="py-12 text-center text-muted-foreground">
+                                    <MessageSquare className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                                    <p>Henüz direkt mesaj gönderilmedi.</p>
+                                </div>
+                            ) : (
+                                <div className="border rounded-xl overflow-hidden">
+                                    <Accordion
+                                        type="multiple"
+                                        value={openBroadcastIds}
+                                        onValueChange={handleAccordionChange}
+                                    >
+                                        {groupedBroadcasts.dm.map((b) => (
+                                            <BroadcastAccordionItem
+                                                key={b.id}
+                                                broadcast={b}
+                                                readCount={broadcastReadCounts.get(b.id) ?? null}
+                                                recipients={recipientsCache.get(b.id) ?? null}
+                                                isLoading={recipientsLoading.has(b.id)}
+                                                userById={userById}
+                                            />
+                                        ))}
+                                    </Accordion>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* HAM BİLDİRİM KAYITLARI — son 100 satır düz liste */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Tüm Bildirim Kayıtları</CardTitle>
-                            <CardDescription>Son 100 bildirim — tip, başlık, alıcı, tarih.</CardDescription>
+                            <CardTitle className="text-base">Ham Bildirim Akışı</CardTitle>
+                            <CardDescription>
+                                Son 100 bildirim — tip, başlık, alıcı, tarih (broadcast'e bağlı olmayanlar dahil).
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="relative max-w-md">
@@ -920,15 +1151,6 @@ export default function CommunicationsPage() {
                             </div>
                         </CardContent>
                     </Card>
-
-                    <BroadcastDrilldownDialog
-                        broadcast={selectedBroadcast}
-                        allUsers={allUsers}
-                        ngos={ngos}
-                        brands={brands}
-                        clubs={clubs}
-                        onClose={() => setSelectedBroadcast(null)}
-                    />
                 </TabsContent>
             </Tabs>
         </div>
