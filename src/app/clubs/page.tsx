@@ -15,11 +15,17 @@ import { collection, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 
-const ClubCard = ({ club }: { club: StudentClub }) => {
+const ClubCard = ({
+    club,
+    actualMembers,
+    actualPoints,
+}: {
+    club: StudentClub;
+    actualMembers: number;
+    actualPoints: number;
+}) => {
     const name = club?.name || 'İsimsiz Kulüp';
     const university = club?.university || '—';
-    const members = Number(club?.members) || 0;
-    const points = Number(club?.points) || 0;
     return (
         <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
             <Card className="hover:bg-accent transition-colors">
@@ -32,8 +38,8 @@ const ClubCard = ({ club }: { club: StudentClub }) => {
                         <p className="font-semibold text-sm truncate">{name}</p>
                         <p className="text-xs text-muted-foreground truncate">{university}</p>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {members} Üye</span>
-                            <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {points} Puan</span>
+                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {actualMembers.toLocaleString('tr-TR')} Üye</span>
+                            <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {actualPoints.toLocaleString('tr-TR')} Puan</span>
                         </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
@@ -42,6 +48,25 @@ const ClubCard = ({ club }: { club: StudentClub }) => {
         </Link>
     );
 };
+
+// Üye sayısı + puan toplamı için kullanıcı şeması — joinedClubs ve managedClubId
+// kulüp üyeliğini; volunteerInfo.education[].school üniversite öğrencisi
+// sayımını besler. Etki puanı için iki yaygın schema'yı da destekler.
+interface MemberUser {
+    id: string;
+    joinedClubs?: string[];
+    managedClubId?: string;
+    volunteerInfo?: { education?: { school?: string }[] };
+    impactScore?: number;
+    stats?: { impactScore?: number };
+}
+
+function getImpact(u: MemberUser): number {
+    return Math.max(
+        Number(u.impactScore) || 0,
+        Number(u.stats?.impactScore) || 0,
+    );
+}
 
 export default function ClubsPage() {
   const db = useFirestore();
@@ -56,6 +81,58 @@ export default function ClubsPage() {
 
   const clubsRef = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
+
+  // Tüm kullanıcıları yükle — kulüp/üniversite üye sayıları ve puan toplamları
+  // bunların üzerinden hesaplanır. (joinedClubs.includes(clubId) ya da
+  // managedClubId === clubId → kulüp üyesi; volunteerInfo.education[].school
+  // eşleşmesi → üniversite öğrencisi.)
+  const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+  const { data: allUsers } = useCollection<MemberUser>(usersRef);
+
+  // Kulüp bazında üye sayısı + etki puanı toplamı (yöneticiler dahil).
+  const clubStats = useMemo(() => {
+    const map = new Map<string, { members: number; points: number }>();
+    if (!allUsers) return map;
+    for (const u of allUsers) {
+      const joined = new Set<string>(u.joinedClubs || []);
+      if (u.managedClubId) joined.add(u.managedClubId);
+      if (joined.size === 0) continue;
+      const impact = getImpact(u);
+      joined.forEach((cid) => {
+        const cur = map.get(cid) || { members: 0, points: 0 };
+        cur.members += 1;
+        cur.points += impact;
+        map.set(cid, cur);
+      });
+    }
+    return map;
+  }, [allUsers]);
+
+  // Üniversite bazında ayırt edici üye sayısı — eğitiminde o okulu listelemiş
+  // kullanıcılar (büyük/küçük harf ve trim normalize).
+  const universityStats = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    if (!allUsers) return map;
+    for (const u of allUsers) {
+      const edu = u.volunteerInfo?.education || [];
+      const seen = new Set<string>();
+      for (const e of edu) {
+        const s = (e?.school || '').trim().toLowerCase();
+        if (!s || seen.has(s)) continue;
+        seen.add(s);
+        const cur = map.get(s) || new Set<string>();
+        cur.add(u.id);
+        map.set(s, cur);
+      }
+    }
+    return map;
+  }, [allUsers]);
+
+  // İsim → ayırt edici üye sayısı yardımcısı (case-insensitive lookup)
+  const getUniversityMemberCount = (univName: string): number => {
+    const key = (univName || '').trim().toLowerCase();
+    return universityStats.get(key)?.size || 0;
+  };
 
   type ClubWithMeta = StudentClub & {
     location?: { country?: string; city?: string };
@@ -166,13 +243,19 @@ export default function ClubsPage() {
     const list = Array.from(map.entries()).map(([university, clubsArr]) => {
       // Kulüpleri grup içinde de seçilen ölçüte göre sırala (sıralama görünür olsun)
       const sortedClubs = [...clubsArr].sort((a, b) => {
-        if (sortMode === 'members') return (b.members || 0) - (a.members || 0);
+        if (sortMode === 'members') {
+          const aMembers = clubStats.get(a.id)?.members || 0;
+          const bMembers = clubStats.get(b.id)?.members || 0;
+          return bMembers - aMembers;
+        }
         return (a.name || '').localeCompare(b.name || '', 'tr');
       });
       return {
         university,
         clubs: sortedClubs,
-        memberTotal: sortedClubs.reduce((s, c) => s + (c.members || 0), 0),
+        // Üniversitenin gerçek öğrenci sayısı (profilinde bu okulu seçenler;
+        // tek kullanıcı birden fazla kulüpte olsa da bir kez sayılır).
+        memberTotal: getUniversityMemberCount(university),
       };
     });
 
@@ -184,7 +267,8 @@ export default function ClubsPage() {
       list.sort((a, b) => b.clubs.length - a.clubs.length);
     }
     return list;
-  }, [filteredClubs, sortMode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getUniversityMemberCount, universityStats'tan türer ve universityStats deps'te var
+  }, [filteredClubs, sortMode, clubStats, universityStats]);
 
   const userSchoolSublabel = userSchools[0]
     ? userSchools.length > 1
@@ -397,7 +481,17 @@ export default function ClubsPage() {
                   </button>
                   {isOpen && (
                     <div className="border-t bg-muted/20 p-3 space-y-2">
-                      {uClubs.map(club => <ClubCard key={club.id} club={club} />)}
+                      {uClubs.map(club => {
+                        const stats = clubStats.get(club.id);
+                        return (
+                          <ClubCard
+                            key={club.id}
+                            club={club}
+                            actualMembers={stats?.members || 0}
+                            actualPoints={stats?.points || 0}
+                          />
+                        );
+                      })}
                     </div>
                   )}
                 </Card>

@@ -69,6 +69,35 @@ export default function ClubProfilePage() {
   }>(userDocRef);
   const isJoined = !!userData?.joinedClubs?.includes(id);
 
+  // Bu kulübün üyelerini ve etki puanı toplamını hesapla — joinedClubs.includes(id)
+  // ya da managedClubId === id eşleşmesiyle (yöneticiler dahil).
+  const membersQuery = useMemoFirebase(
+    () => (db ? collection(db, COLLECTIONS.users) : null),
+    [db],
+  );
+  const { data: allUsersForStats } = useCollection<{
+    id: string;
+    joinedClubs?: string[];
+    managedClubId?: string;
+    impactScore?: number;
+    stats?: { impactScore?: number };
+  }>(membersQuery);
+  const memberStats = useMemo(() => {
+    if (!allUsersForStats || !id) return { members: 0, points: 0 };
+    let members = 0;
+    let points = 0;
+    for (const u of allUsersForStats) {
+      const joined = u.joinedClubs?.includes(id) || u.managedClubId === id;
+      if (!joined) continue;
+      members += 1;
+      points += Math.max(
+        Number(u.impactScore) || 0,
+        Number(u.stats?.impactScore) || 0,
+      );
+    }
+    return { members, points };
+  }, [allUsersForStats, id]);
+
   // Kulüp yöneticilerini userInvitations'tan çek (BUG-12 ile aynı pattern)
   const adminsQuery = useMemoFirebase(
     () => (db && id ? query(collection(db, COLLECTIONS.userInvitations), where('clubId', '==', id)) : null),
@@ -215,11 +244,11 @@ export default function ClubProfilePage() {
          <div className="mt-4 space-y-2">
             <div className="grid grid-cols-2">
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{(club.members ?? 0).toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{memberStats.members.toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Üye</p>
                 </div>
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{(club.points ?? 0).toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{memberStats.points.toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Puan</p>
                 </div>
             </div>
@@ -291,7 +320,7 @@ export default function ClubProfilePage() {
              <Card>
                 <CardHeader><CardTitle className="text-lg">Kulüp İstatistikleri</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.members ?? 0}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
+                    <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{memberStats.members.toLocaleString('tr-TR')}</p><p className="text-sm text-muted-foreground">Toplam Üye</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.projects || 0}</p><p className="text-sm text-muted-foreground">Tamamlanan Projeler</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">{club.volunteerHours || 0} Saat</p><p className="text-sm text-muted-foreground">Gönüllülük Saati</p></div>
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate || 0}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
