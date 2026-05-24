@@ -328,6 +328,63 @@ function SideMenu() {
   );
 }
 
+// Aktif yönetilen entity'nin kimliği — her alt panelin başında görünür.
+// Avatar + isim + tür rozeti + kamu profili linki. Henüz çözülmediyse
+// skeleton placeholder, hiç entity yoksa hiç gösterilmez.
+function EntityIdentityBanner() {
+  const { id, kind, type, managedList, isLoading } = useActiveEntity();
+
+  if (isLoading) {
+    return (
+      <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3">
+        <div className="h-12 w-12 rounded-2xl bg-muted animate-pulse" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-20 bg-muted rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!id || !kind) return null;
+
+  const current = managedList.find(o => o.id === id && o.kind === kind) || managedList[0];
+  if (!current) return null;
+
+  const Icon = KIND_ICON[current.kind];
+  const publicHref =
+    current.kind === 'ngo' ? `/ngos/profile/${current.id}` :
+    current.kind === 'brand' ? `/market/${current.id}` :
+    `/clubs/profile/${current.id}`;
+
+  return (
+    <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm">
+      <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+        {current.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
+        ) : (
+          <Icon className="h-6 w-6 text-primary" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
+          <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold">
+            {type}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground truncate">Yönetim Paneli</p>
+      </div>
+      <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
+        <Link href={publicHref} target="_blank" rel="noopener noreferrer">
+          Kamu Profili
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -350,7 +407,10 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
         )}
         <div className="flex gap-6">
           <SideMenu />
-          <main className="flex-1 min-w-0">{children}</main>
+          <main className="flex-1 min-w-0">
+            <EntityIdentityBanner />
+            {children}
+          </main>
         </div>
       </div>
     </div>
