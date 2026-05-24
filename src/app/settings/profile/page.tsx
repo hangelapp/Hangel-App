@@ -236,7 +236,8 @@ export default function ProfileSettingsPage() {
         name: profile.name,
         username: profile.username,
         avatarUrl: profile.avatarUrl,
-        personalInfo: profile.personalInfo
+        personalInfo: profile.personalInfo,
+        'volunteerInfo.education': educationList,
     });
 
     toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
