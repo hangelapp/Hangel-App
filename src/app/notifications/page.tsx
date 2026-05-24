@@ -20,6 +20,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'invitation': UserPlus,
   'emergency-blood': Droplet,
+  'emergency-blood-contact': Droplet,
   'volunteer': Heart,
   'donation': Sparkles,
   'authorization': ShieldCheck,
@@ -29,6 +30,7 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
 const typeColor: Record<string, string> = {
   'invitation': 'text-blue-600 bg-blue-100',
   'emergency-blood': 'text-red-600 bg-red-100',
+  'emergency-blood-contact': 'text-red-700 bg-red-50',
   'volunteer': 'text-green-600 bg-green-100',
   'donation': 'text-amber-600 bg-amber-100',
   'authorization': 'text-indigo-600 bg-indigo-100',
@@ -60,7 +62,16 @@ export default function NotificationsPage() {
     createdAt?: { toDate?: () => Date } | string | null;
     read?: boolean;
     responseStatus?: 'positive' | 'negative';
-    data?: { requestId?: string; bloodType?: string; hospitalName?: string; link?: string; href?: string };
+    data?: {
+      requestId?: string;
+      bloodType?: string;
+      hospitalName?: string;
+      hospitalAddress?: string;
+      contactName?: string;
+      contactPhone?: string;
+      link?: string;
+      href?: string;
+    };
   }
   const { data: notifications, isLoading, error: notifError } = useCollection<NotifItem>(notifQuery);
 
@@ -110,6 +121,46 @@ export default function NotificationsPage() {
         responseStatus: status,
         respondedAt: new Date().toISOString(),
       });
+
+      // 3. Olumlu yanıtta — kan talebinin iletişim bilgilerini içeren bir takip
+      //    bildirimi yaz (hastane, ad-soyad, telefon). Böylece kullanıcı /messages
+      //    yerine /notifications akışında bu bilgiyi her zaman geri okuyabilir.
+      if (status === 'positive') {
+        const hospital = notif.data?.hospitalName || '';
+        const address = notif.data?.hospitalAddress || '';
+        const contactName = notif.data?.contactName || '';
+        const contactPhone = notif.data?.contactPhone || '';
+        const bodyParts: string[] = [];
+        if (hospital) bodyParts.push(`Hastane: ${hospital}`);
+        if (address) bodyParts.push(`Adres: ${address}`);
+        if (contactName) bodyParts.push(`Yetkili: ${contactName}`);
+        if (contactPhone) bodyParts.push(`Telefon: ${contactPhone}`);
+        // Hiç iletişim verisi yoksa sessizce geç — sadece toast yeterli olur.
+        if (bodyParts.length > 0) {
+          try {
+            await addDoc(collection(db, COLLECTIONS.notifications), {
+              userId: authUser.uid,
+              type: 'emergency-blood-contact',
+              title: '🩸 Kan Talebi İletişim Bilgileri',
+              body: bodyParts.join(' · '),
+              data: {
+                requestId: notif.data?.requestId || notif.id,
+                hospitalName: hospital,
+                hospitalAddress: address,
+                contactName,
+                contactPhone,
+                bloodType: notif.data?.bloodType || null,
+              },
+              read: false,
+              createdAt: serverTimestamp(),
+              createdBy: 'emergency-system',
+            });
+          } catch (notifErr) {
+            // Takip bildirimi yazılamasa da yanıt kaydı oluştu — sessiz bırak.
+            console.warn('emergency contact notification failed:', notifErr);
+          }
+        }
+      }
 
       toast({
         title: status === 'positive' ? t('dashboard.notifications.toastThanksTitle') : t('dashboard.notifications.toastReceivedTitle'),

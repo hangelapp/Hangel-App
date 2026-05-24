@@ -76,6 +76,9 @@ interface ScopeSelection {
   district: string;
   neighborhood: string;
   bloodType: string;
+  // 'all' = filtre uygulanmaz; 'Erkek' / 'Kadın' = profilinde bu cinsiyeti
+  // seçmiş kullanıcıları kapsar.
+  gender: 'all' | 'Erkek' | 'Kadın';
 }
 
 // Seçili kapsamı, kullanıcıların `personalInfo.address.*` alanlarına karşı
@@ -86,6 +89,9 @@ function buildScopeConstraints(sel: ScopeSelection): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];
   if (sel.bloodType) {
     constraints.push(where('personalInfo.bloodType', '==', sel.bloodType));
+  }
+  if (sel.gender && sel.gender !== 'all') {
+    constraints.push(where('personalInfo.gender', '==', sel.gender));
   }
   if (sel.scope === 'all') {
     // "Tüm Türkiye" = ülke Türkiye olan kullanıcılar.
@@ -117,8 +123,10 @@ export default function EmergencyManagementPage() {
   const [district, setDistrict] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [scope, setScope] = useState<ScopeLevel>('city');
+  const [gender, setGender] = useState<'all' | 'Erkek' | 'Kadın'>('all');
   const [message, setMessage] = useState('');
   const [contactPhone, setContactPhone] = useState('');
+  const [contactName, setContactName] = useState('');
   const [unitsNeeded, setUnitsNeeded] = useState('');
   const [isSending, setIsSending] = useState(false);
   const pendingApprovalIdRef = useRef<string | null>(null);
@@ -250,7 +258,7 @@ export default function EmergencyManagementPage() {
     setCountError(null);
     const handle = setTimeout(async () => {
       try {
-        const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType });
+        const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType, gender });
         const scopedQuery: Query = constraints.length > 0
           ? query(collection(db, COLLECTIONS.users), ...constraints)
           : query(collection(db, COLLECTIONS.users));
@@ -277,7 +285,7 @@ export default function EmergencyManagementPage() {
       }
     }, 350);
     return () => { cancelled = true; clearTimeout(handle); };
-  }, [db, scope, city, district, neighborhood, bloodType]);
+  }, [db, scope, city, district, neighborhood, bloodType, gender]);
 
   // Kullanıcı talebini forma yükle (preview & onayla)
   const loadIntoForm = (req: EmergencyDoc) => {
@@ -286,11 +294,15 @@ export default function EmergencyManagementPage() {
     setBloodType(req.bloodType || '');
     setMessage(req.message || '');
     setContactPhone(req.contactPhone || '');
+    // Yanıtlayan kullanıcının ulaşacağı isim — kullanıcı talebinden contactName,
+    // yoksa requestedByName ile pre-fill.
+    setContactName((req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || '');
     setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
     setScope((req.scope as ScopeLevel) || 'city');
     setCity(req.city || '');
     setDistrict(req.district || '');
     setNeighborhood(req.neighborhood || '');
+    setGender(((req as EmergencyDoc & { gender?: 'all' | 'Erkek' | 'Kadın' }).gender) || 'all');
     // Forma gönderilen kullanıcı talebinin id'sini sakla — onay sonrası güncellenecek
     pendingApprovalIdRef.current = req.id;
     setActiveTab('blood');
@@ -308,11 +320,13 @@ export default function EmergencyManagementPage() {
     setBloodType(req.bloodType || '');
     setMessage(req.message || '');
     setContactPhone(req.contactPhone || '');
+    setContactName((req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || '');
     setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
     setScope((req.scope as ScopeLevel) || 'city');
     setCity(req.city || '');
     setDistrict(req.district || '');
     setNeighborhood(req.neighborhood || '');
+    setGender(((req as EmergencyDoc & { gender?: 'all' | 'Erkek' | 'Kadın' }).gender) || 'all');
     pendingApprovalIdRef.current = req.id;
     setActiveTab('blood');
     toast({ title: 'Düzenleme modu', description: 'Bilgileri güncelleyip "Gönder"e basın; talep güncellenir ve eşleşen kullanıcılara tekrar bildirim gider.' });
@@ -329,6 +343,7 @@ export default function EmergencyManagementPage() {
         district: req.district || '',
         neighborhood: req.neighborhood || '',
         bloodType: req.bloodType || '',
+        gender: ((req as EmergencyDoc & { gender?: 'all' | 'Erkek' | 'Kadın' }).gender) || 'all',
       };
       const constraints = buildScopeConstraints(sel);
       const scopedQuery: Query = constraints.length > 0
@@ -357,6 +372,7 @@ export default function EmergencyManagementPage() {
             hospitalName: req.hospitalName,
             hospitalAddress: req.hospitalAddress,
             bloodType: req.bloodType,
+            contactName: (req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || null,
             contactPhone: req.contactPhone || null,
           },
           read: false,
@@ -424,7 +440,7 @@ export default function EmergencyManagementPage() {
     try {
       // 1. Hedef kullanıcıları seçili kapsama göre Firestore'dan çek (tüm
       //    koleksiyonu yüklemeden — yalnız eşleşenler).
-      const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType });
+      const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType, gender });
       const scopedQuery: Query = constraints.length > 0
         ? query(collection(db, COLLECTIONS.users), ...constraints)
         : query(collection(db, COLLECTIONS.users));
@@ -444,7 +460,9 @@ export default function EmergencyManagementPage() {
         city: city || null,
         district: district || null,
         neighborhood: neighborhood || null,
+        gender,
         message: message.trim(),
+        contactName: contactName.trim(),
         contactPhone: contactPhone.trim(),
         unitsNeeded: Number(unitsNeeded) || null,
         targetCount: targetUserIds.length,
@@ -486,6 +504,7 @@ export default function EmergencyManagementPage() {
               hospitalName,
               hospitalAddress,
               bloodType,
+              contactName: contactName || null,
               contactPhone: contactPhone || null,
             },
             read: false,
@@ -517,9 +536,11 @@ export default function EmergencyManagementPage() {
       setDistrict('');
       setNeighborhood('');
       setMessage('');
+      setContactName('');
       setContactPhone('');
       setUnitsNeeded('');
       setScope('city');
+      setGender('all');
     } catch (err) {
       const code = (err as { code?: string } | null)?.code;
       const errMessage = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu.';
@@ -690,7 +711,7 @@ export default function EmergencyManagementPage() {
                 <Input value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} placeholder="Tam adres bilgisi" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="space-y-2">
                   <Label>Kapsam *</Label>
                   <Select value={scope} onValueChange={(v: ScopeLevel) => setScope(v)}>
@@ -704,6 +725,17 @@ export default function EmergencyManagementPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
+                  <Label>Cinsiyet</Label>
+                  <Select value={gender} onValueChange={(v: 'all' | 'Erkek' | 'Kadın') => setGender(v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tümü</SelectItem>
+                      <SelectItem value="Erkek">Erkek</SelectItem>
+                      <SelectItem value="Kadın">Kadın</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
                   <Label>İhtiyaç Birimi (kan torbası)</Label>
                   <Input type="number" value={unitsNeeded} onChange={e => setUnitsNeeded(e.target.value)} placeholder="Ör: 5" />
                 </div>
@@ -711,6 +743,18 @@ export default function EmergencyManagementPage() {
                   <Label>İletişim Telefonu</Label>
                   <Input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="0212 xxx xx xx" />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>İletişim Kişisi (Ad Soyad)</Label>
+                <Input
+                  value={contactName}
+                  onChange={e => setContactName(e.target.value)}
+                  placeholder="Yanıtlayan kullanıcıya iletilecek isim"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Bu isim ve telefon, "Yardım edebilirim" diyen kullanıcıya otomatik bildirim olarak gönderilir.
+                </p>
               </div>
 
               {scope !== 'all' && (
