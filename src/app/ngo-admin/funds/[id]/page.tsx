@@ -24,6 +24,15 @@ interface Fund {
   url?: string;
 }
 
+const normalizeUrl = (raw?: string | null): string | null => {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^\/\//.test(trimmed)) return `https:${trimmed}`;
+  return `https://${trimmed.replace(/^\/+/, '')}`;
+};
+
 // Same fallback list used in /ngo-admin/funds — kept in sync.
 const fallbackFunds: Fund[] = [
     { id: '1', name: 'Avrupa Birliği Sivil Toplum Destek Programı', provider: 'Avrupa Birliği Delegasyonu', status: 'Açık', deadline: '2024-10-31', areas: ['İnsan Hakları', 'Çevre'], description: 'Türkiye ve AB arasındaki sivil toplum diyaloğunu güçlendirmek, sivil toplumun kurumsal kapasitesini artırmak ve karar alma süreçlerine katılımını desteklemek amacıyla hibe desteği sunar.', budget: '60.000 € - 150.000 €', requirements: 'En az 3 yıldır aktif faaliyet gösteren dernek ve vakıflar.', url: 'https://www.ab.gov.tr' },
@@ -145,13 +154,16 @@ export default function FundDetailPage() {
 
                     <div className="pt-6 border-t flex flex-col sm:flex-row gap-3">
                         <Button variant="outline" onClick={() => router.back()} className="rounded-2xl font-bold h-12 flex-1">Geri Dön</Button>
-                        {fund.url && (
-                            <Button asChild className="rounded-2xl font-bold h-12 flex-1 shadow-xl shadow-primary/20">
-                                <a href={fund.url} target="_blank" rel="noopener noreferrer">
-                                    Resmi Başvuru <ExternalLink className="ml-2 h-4 w-4" />
-                                </a>
-                            </Button>
-                        )}
+                        {(() => {
+                            const officialUrl = normalizeUrl(fund.url);
+                            return officialUrl ? (
+                                <Button asChild className="rounded-2xl font-bold h-12 flex-1 shadow-xl shadow-primary/20">
+                                    <a href={officialUrl} target="_blank" rel="noopener noreferrer">
+                                        Resmi Başvuru <ExternalLink className="ml-2 h-4 w-4" />
+                                    </a>
+                                </Button>
+                            ) : null;
+                        })()}
                     </div>
                 </div>
             </Card>

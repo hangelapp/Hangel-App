@@ -35,6 +35,17 @@ interface Fund {
   url?: string;
 }
 
+// Firestore'da http(s):// olmadan kaydedilmiş URL'leri relative path olarak
+// açmasın diye normalize et. Boş/null URL null döner.
+const normalizeUrl = (raw?: string | null): string | null => {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (/^\/\//.test(trimmed)) return `https:${trimmed}`;
+  return `https://${trimmed.replace(/^\/+/, '')}`;
+};
+
 const fallbackFunds: Fund[] = [
     { 
         id: '1', 
@@ -332,13 +343,16 @@ export default function FundsPage() {
                                     <Send className="mr-2 h-3.5 w-3.5" />
                                     Proje Hazırla
                                 </Button>
-                                {fund.url && (
-                                    <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
-                                        <a href={fund.url} target="_blank" rel="noopener noreferrer">
-                                            Resmi Sayfa <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                                        </a>
-                                    </Button>
-                                )}
+                                {(() => {
+                                    const officialUrl = normalizeUrl(fund.url);
+                                    return officialUrl ? (
+                                        <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
+                                            <a href={officialUrl} target="_blank" rel="noopener noreferrer">
+                                                Resmi Sayfa <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                                            </a>
+                                        </Button>
+                                    ) : null;
+                                })()}
                             </CardFooter>
                         </Card>
                     )) : (
