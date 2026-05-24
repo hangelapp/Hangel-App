@@ -71,6 +71,14 @@ export default function MessagesPage() {
     );
     const { data: messages, isLoading } = useCollection(messagesQuery);
 
+    // Gönderilen mesajlar — senderId == kullanıcı uid (entity adına yanıt da
+    // dahildir; o durumda sender.name entity adı olur, senderId yine admin uid)
+    const sentMessagesQuery = useMemoFirebase(
+        () => authUser ? query(collection(db, COLLECTIONS.messages), where('senderId', '==', authUser.uid)) : null,
+        [db, authUser?.uid]
+    );
+    const { data: sentMessages, isLoading: sentLoading } = useCollection(sentMessagesQuery);
+
     // Yeni Mesaj Dialog state
     const [composeOpen, setComposeOpen] = useState(false);
     const [recipientSearch, setRecipientSearch] = useState('');
@@ -144,14 +152,34 @@ export default function MessagesPage() {
     const allowedClubIds = useMemo<Set<string>>(() => new Set(userRel?.joinedClubs || []), [userRel]);
 
     interface MessageItem {
-        id?: string; sender?: string; senderId?: string; senderAvatarUrl?: string;
+        id?: string;
+        // Legacy: sender may be a string (old test data) OR an object
+        sender?: string | { id?: string; name?: string; avatarUrl?: string | null };
+        senderId?: string;
+        senderAvatarUrl?: string;
+        recipient?: { id?: string; name?: string; avatarUrl?: string | null };
+        recipientId?: string;
         subject?: string; excerpt?: string; content?: string; time?: string;
         senderType?: string; unread?: boolean;
         readBy?: Record<string, unknown>;
     }
+
+    // Sender / recipient adını her iki şemadan da güvenli çıkar
+    const getSenderName = (m: MessageItem): string => typeof m.sender === 'string' ? m.sender : (m.sender?.name || 'Kullanıcı');
+    const getSenderAvatar = (m: MessageItem): string | null => {
+        if (typeof m.sender === 'object' && m.sender?.avatarUrl) return m.sender.avatarUrl;
+        return m.senderAvatarUrl || null;
+    };
+    const getRecipientName = (m: MessageItem): string => m.recipient?.name || 'Alıcı';
+    const getRecipientAvatar = (m: MessageItem): string | null => m.recipient?.avatarUrl || null;
+
+    const matchSearch = (text: string) => text.toLowerCase().includes(searchTerm.toLowerCase());
+
     const filteredMessages = ((messages || []) as MessageItem[]).filter((m) =>
-        m.sender?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+        matchSearch(getSenderName(m)) || matchSearch(m.subject || '')
+    );
+    const filteredSentMessages = ((sentMessages || []) as MessageItem[]).filter((m) =>
+        matchSearch(getRecipientName(m)) || matchSearch(m.subject || '')
     );
 
     // Sadece izinli kurumlar: kullanıcının ilişkili olduğu STK/marka/kulüp
@@ -291,22 +319,25 @@ export default function MessagesPage() {
                             title={t('dashboard.messages.emptyTitle')}
                             description={t('dashboard.messages.emptyDesc')}
                         />
-                    ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => (
+                    ) : filteredMessages.length > 0 ? filteredMessages.map((msg) => {
+                        const senderName = getSenderName(msg);
+                        const senderAvatar = getSenderAvatar(msg);
+                        return (
                         <Card key={msg.id} onClick={() => void markAsRead(msg)} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",
                             isUnread(msg) && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
-                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${msg.sender} profilini gör`}>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${senderName} profilini gör`}>
                                     <Avatar className="h-12 w-12 border">
-                                        {msg.senderAvatarUrl ? <AvatarImage src={msg.senderAvatarUrl} /> : null}
-                                        <AvatarFallback>{(msg.sender || '?')[0]}</AvatarFallback>
+                                        {senderAvatar ? <AvatarImage src={senderAvatar} /> : null}
+                                        <AvatarFallback>{senderName[0]}</AvatarFallback>
                                     </Avatar>
                                 </button>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-center mb-1">
                                         <div className="flex items-center gap-2">
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left">{msg.sender}</button>
+                                            <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="font-bold text-sm truncate hover:underline text-left">{senderName}</button>
                                             {msg.senderType && (
                                                 <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[msg.senderType] || null}</div>
                                             )}
@@ -318,7 +349,8 @@ export default function MessagesPage() {
                                 </div>
                             </CardContent>
                         </Card>
-                    )) : (
+                        );
+                    }) : (
                         <div className="text-center py-20 text-muted-foreground">
                             <Inbox className="h-12 w-12 mx-auto mb-4 opacity-20" />
                             <p>{t('dashboard.messages.notFound')}</p>
@@ -326,9 +358,49 @@ export default function MessagesPage() {
                     )}
                 </TabsContent>
 
-                <TabsContent value="sent" className="mt-4 text-center py-20 text-muted-foreground">
-                    <SendHorizontal className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <p>{t('dashboard.messages.sentEmpty')}</p>
+                <TabsContent value="sent" className="mt-4 space-y-3">
+                    {sentLoading ? (
+                        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                    ) : !authUser ? (
+                        <div className="text-center py-20 text-muted-foreground">
+                            <SendHorizontal className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                            <p>{t('dashboard.messages.loginPrompt')}</p>
+                        </div>
+                    ) : (sentMessages || []).length === 0 ? (
+                        <EmptyState
+                            icon={SendHorizontal}
+                            title="Henüz mesaj göndermediniz"
+                            description="Gönderdiğiniz mesajlar burada görünecek."
+                        />
+                    ) : filteredSentMessages.length > 0 ? filteredSentMessages.map((msg) => {
+                        const recipientName = getRecipientName(msg);
+                        const recipientAvatar = getRecipientAvatar(msg);
+                        return (
+                            <Card key={msg.id} className="hover:bg-accent/50 transition-colors">
+                                <CardContent className="p-4 flex items-center gap-4">
+                                    <Avatar className="h-12 w-12 border">
+                                        {recipientAvatar ? <AvatarImage src={recipientAvatar} /> : null}
+                                        <AvatarFallback>{recipientName[0]}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Alıcı</span>
+                                                <span className="font-bold text-sm truncate">{recipientName}</span>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm font-semibold text-foreground truncate">{msg.subject || '(Konu yok)'}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{msg.excerpt || msg.content}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    }) : (
+                        <div className="text-center py-20 text-muted-foreground">
+                            <SendHorizontal className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                            <p>{t('dashboard.messages.notFound')}</p>
+                        </div>
+                    )}
                 </TabsContent>
             </Tabs>
 
