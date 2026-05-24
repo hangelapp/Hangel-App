@@ -19,7 +19,7 @@ import { Search, Inbox, SendHorizontal, MessageSquare, Building, School, Shield,
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { addDoc, collection, doc, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -37,17 +37,23 @@ interface UserRecord {
     email?: string; phoneNumber?: string; photoURL?: string; avatarUrl?: string;
     bio?: string; personalInfo?: { phone?: string; bio?: string };
     role?: 'super-admin' | 'ngo-admin' | 'brand-admin' | 'club-admin' | 'admin' | 'user';
-    // FEAT-ENTITY-INBOX: recipient may also be an entity (STK/marka/kulüp) or a Hangel yöneticisi
-    recipientKind?: 'admin' | 'ngo' | 'brand' | 'club';
+    recipientKind?: 'ngo' | 'brand' | 'club';
 }
 
-// Bir normal kullanıcı yalnızca STK / kulüp / marka / Hangel yöneticisi ile mesajlaşabilir.
-// Kullanıcı-kullanıcı (DM) kapalı. Alıcı kullanıcılar bu rollere sahip olmalı.
-const ADMIN_RECIPIENT_ROLES = ['super-admin', 'ngo-admin', 'brand-admin', 'club-admin', 'admin'] as const;
+// Spec: Kullanıcı yalnızca ilişkili olduğu kurumlara mesaj yazabilir:
+//   • bağışçısı olduğu STK (supportedNgos)
+//   • gönüllüsü olduğu STK (volunteerNgos)
+//   • takip ettiği marka (followedBrands)
+//   • üye olduğu kulüp (joinedClubs)
+//   • gönüllülük başvurusu KABUL edilmiş STK (applications.status='Onaylandı'
+//     ve volunteering.dates.eventEnd >= bugün)
+// Kullanıcı-kullanıcı DM kapalı. Hangel destek için /contact rotası var.
 
 interface EntityRecord {
     id: string; name?: string; shortName?: string;
     files?: { logo?: string }; logoUrl?: string;
+    ngoId?: string;
+    dates?: { eventEnd?: string };
 }
 
 export default function MessagesPage() {
@@ -73,22 +79,69 @@ export default function MessagesPage() {
     const [content, setContent] = useState('');
     const [sending, setSending] = useState(false);
 
-    // Yalnızca Hangel yöneticileri (super-admin + kurum yöneticileri) alıcı olabilir.
-    // Normal kullanıcılar (role: 'user') alıcı listesine asla dahil edilmez —
-    // kullanıcı-kullanıcı mesajlaşma kapalıdır.
-    const adminsRef = useMemoFirebase(
-        () => composeOpen ? query(collection(db, COLLECTIONS.users), where('role', 'in', [...ADMIN_RECIPIENT_ROLES])) : null,
-        [db, composeOpen]
+    // Kullanıcının ilişki alanlarını oku (supported/volunteer ngos, followed
+    // brands, joined clubs). Compose dialog açıldığında lazy yüklenir.
+    const userRelDocRef = useMemoFirebase(
+        () => (composeOpen && authUser?.uid) ? doc(db, COLLECTIONS.users, authUser.uid) : null,
+        [db, composeOpen, authUser?.uid]
     );
-    const { data: adminUsers } = useCollection<UserRecord>(adminsRef);
+    const { data: userRel } = useDoc<{
+        supportedNgos?: string[];
+        volunteerNgos?: string[];
+        followedBrands?: string[];
+        joinedClubs?: string[];
+    }>(userRelDocRef);
 
-    // FEAT-ENTITY-INBOX: kurumlar da alıcı olabilir (STK / marka / kulüp)
+    // Kabul edilmiş gönüllülük başvuruları (entityId = volunteering opportunity ID)
+    const acceptedAppsRef = useMemoFirebase(
+        () => (composeOpen && authUser?.uid) ? query(
+            collection(db, COLLECTIONS.applications),
+            where('userId', '==', authUser.uid),
+            where('status', '==', 'Onaylandı'),
+            where('type', '==', 'Gönüllülük'),
+        ) : null,
+        [db, composeOpen, authUser?.uid]
+    );
+    const { data: acceptedApps } = useCollection<{ entityId?: string }>(acceptedAppsRef);
+
+    // Volunteering opportunities — kabul edilmiş başvurunun ngoId'sini ve
+    // eventEnd tarihini çıkarmak için. Compose açıldığında tüm aktif ilanları
+    // çekiyoruz (genellikle <500 ilan; client-side filtreleme yeterli).
+    const oppsRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.volunteering) : null, [db, composeOpen]);
+    const { data: allOpps } = useCollection<EntityRecord>(oppsRef);
+
     const ngosRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.ngos) : null, [db, composeOpen]);
     const brandsRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.brands) : null, [db, composeOpen]);
     const clubsRef = useMemoFirebase(() => composeOpen ? collection(db, COLLECTIONS.clubs) : null, [db, composeOpen]);
     const { data: allNgos } = useCollection<EntityRecord>(ngosRef);
     const { data: allBrands } = useCollection<EntityRecord>(brandsRef);
     const { data: allClubs } = useCollection<EntityRecord>(clubsRef);
+
+    // Kabul edilmiş başvurudan gelen STK'lar (eventEnd > bugün ise)
+    const acceptedActiveNgoIds = useMemo<Set<string>>(() => {
+        if (!acceptedApps || !allOpps) return new Set();
+        const today = new Date().toISOString().slice(0, 10);
+        const appOppIds = new Set((acceptedApps || []).map(a => a.entityId).filter((x): x is string => !!x));
+        const ngoIds = new Set<string>();
+        for (const opp of allOpps) {
+            if (!appOppIds.has(opp.id)) continue;
+            if (!opp.ngoId) continue;
+            if (opp.dates?.eventEnd && opp.dates.eventEnd < today) continue;
+            ngoIds.add(opp.ngoId);
+        }
+        return ngoIds;
+    }, [acceptedApps, allOpps]);
+
+    const allowedNgoIds = useMemo<Set<string>>(() => {
+        const ids = new Set<string>();
+        (userRel?.supportedNgos || []).forEach(id => ids.add(id));
+        (userRel?.volunteerNgos || []).forEach(id => ids.add(id));
+        acceptedActiveNgoIds.forEach(id => ids.add(id));
+        return ids;
+    }, [userRel, acceptedActiveNgoIds]);
+
+    const allowedBrandIds = useMemo<Set<string>>(() => new Set(userRel?.followedBrands || []), [userRel]);
+    const allowedClubIds = useMemo<Set<string>>(() => new Set(userRel?.joinedClubs || []), [userRel]);
 
     interface MessageItem {
         id?: string; sender?: string; senderId?: string; senderAvatarUrl?: string;
@@ -101,7 +154,7 @@ export default function MessagesPage() {
         m.subject?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // FEAT-ENTITY-INBOX: kurumları UserRecord şekline map et (recipientKind ile)
+    // Sadece izinli kurumlar: kullanıcının ilişkili olduğu STK/marka/kulüp
     const entityCandidates = useMemo<UserRecord[]>(() => {
         const mapEntity = (e: EntityRecord, kind: 'ngo' | 'brand' | 'club'): UserRecord => ({
             id: e.id,
@@ -110,31 +163,19 @@ export default function MessagesPage() {
             recipientKind: kind,
         });
         return [
-            ...(allNgos || []).map((e) => mapEntity(e, 'ngo')),
-            ...(allBrands || []).map((e) => mapEntity(e, 'brand')),
-            ...(allClubs || []).map((e) => mapEntity(e, 'club')),
+            ...(allNgos || []).filter(n => allowedNgoIds.has(n.id)).map((e) => mapEntity(e, 'ngo')),
+            ...(allBrands || []).filter(b => allowedBrandIds.has(b.id)).map((e) => mapEntity(e, 'brand')),
+            ...(allClubs || []).filter(c => allowedClubIds.has(c.id)).map((e) => mapEntity(e, 'club')),
         ].filter((e) => e.name);
-    }, [allNgos, allBrands, allClubs]);
+    }, [allNgos, allBrands, allClubs, allowedNgoIds, allowedBrandIds, allowedClubIds]);
 
     const recipientCandidates = useMemo<UserRecord[]>(() => {
         const term = recipientSearch.trim().toLowerCase();
-        // Yalnızca yöneticiler — normal kullanıcılar listeye girmez.
-        const adminPool = (adminUsers || [])
-            .filter((u) => u.id !== authUser?.uid)
-            .map((u) => ({ ...u, recipientKind: 'admin' as const }));
-        if (!term) return [...adminPool.slice(0, 15), ...entityCandidates.slice(0, 10)];
-        const matchAdmin = (u: UserRecord) => {
-            const name = (u.displayName || u.fullName || u.name || '').toLowerCase();
-            const phone = (u.phoneNumber || u.personalInfo?.phone || '').toLowerCase();
-            const email = (u.email || '').toLowerCase();
-            return name.includes(term) || phone.includes(term) || email.includes(term);
-        };
-        const matchEntity = (e: UserRecord) => (e.name || '').toLowerCase().includes(term);
-        return [
-            ...adminPool.filter(matchAdmin).slice(0, 20),
-            ...entityCandidates.filter(matchEntity).slice(0, 10),
-        ];
-    }, [adminUsers, entityCandidates, recipientSearch, authUser?.uid]);
+        if (!term) return entityCandidates;
+        return entityCandidates.filter(e => (e.name || '').toLowerCase().includes(term));
+    }, [entityCandidates, recipientSearch]);
+
+    const hasAnyRelations = entityCandidates.length > 0;
 
     const resetCompose = () => {
         setRecipientSearch('');
@@ -309,30 +350,34 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div>
                                         <p className="text-sm font-semibold">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
-                                        <p className="text-xs text-muted-foreground">{(selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : selectedRecipient.recipientKind === 'admin' ? 'Hangel Yöneticisi' : '') || selectedRecipient.email || selectedRecipient.phoneNumber || selectedRecipient.personalInfo?.phone || ''}</p>
+                                        <p className="text-xs text-muted-foreground">{selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : ''}</p>
                                     </div>
                                 </div>
                                 <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>Değiştir</Button>
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <Input placeholder={t('dashboard.messages.recipientSearchPlaceholder')} value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
+                                <Input placeholder="STK / Kulüp / Marka adı ara..." value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
                                 <div className="max-h-44 overflow-y-auto rounded-lg border divide-y">
-                                    {recipientCandidates.length === 0 ? (
-                                        <p className="text-xs text-muted-foreground text-center py-4">{t('dashboard.messages.recipientNoResult')}</p>
+                                    {!hasAnyRelations ? (
+                                        <div className="text-xs text-muted-foreground text-center py-6 px-4 space-y-2">
+                                            <p>Henüz bağlantı kurduğunuz bir kurum yok.</p>
+                                            <p className="opacity-80">Sadece bağışçısı/gönüllüsü olduğunuz STK'lara, takip ettiğiniz markalara, üye olduğunuz kulüplere ve kabul edilmiş gönüllülük başvurularınızdaki STK'lara mesaj yazabilirsiniz.</p>
+                                        </div>
+                                    ) : recipientCandidates.length === 0 ? (
+                                        <p className="text-xs text-muted-foreground text-center py-4">Aramanızla eşleşen kurum bulunamadı.</p>
                                     ) : recipientCandidates.map((u) => {
-                                        const name = u.displayName || u.fullName || u.name || 'Kullanıcı';
-                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : u.recipientKind === 'admin' ? 'Hangel Yöneticisi' : '';
-                                        const sub = kindLabel || u.email || u.phoneNumber || u.personalInfo?.phone || '';
+                                        const name = u.displayName || u.fullName || u.name || 'Kurum';
+                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : '';
                                         return (
-                                            <button key={`${u.recipientKind || 'user'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
+                                            <button key={`${u.recipientKind || 'entity'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
                                                 <Avatar className="h-8 w-8">
                                                     {(u.photoURL || u.avatarUrl) ? <AvatarImage src={u.photoURL || u.avatarUrl} /> : null}
                                                     <AvatarFallback>{name[0]}</AvatarFallback>
                                                 </Avatar>
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-medium truncate">{name}</p>
-                                                    {sub ? <p className="text-xs text-muted-foreground truncate">{sub}</p> : null}
+                                                    {kindLabel ? <p className="text-xs text-muted-foreground truncate">{kindLabel}</p> : null}
                                                 </div>
                                             </button>
                                         );
