@@ -15,9 +15,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc, setDoc, getDoc, increment } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 interface ManagedEntityDoc {
@@ -27,12 +28,6 @@ interface ManagedEntityDoc {
     adminUserId?: string;
     files?: { logo?: string };
     logoUrl?: string;
-}
-interface UserDocData {
-    id: string;
-    managedNgoId?: string;
-    managedBrandId?: string;
-    managedClubId?: string;
 }
 
 export default function PostsPage() {
@@ -49,60 +44,14 @@ export default function PostsPage() {
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
-    // ---- Resolve managed entity (NGO / brand / club) so posts publish on entity's behalf ----
-    const adminNgosQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const adminBrandsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const adminClubsQ = useMemoFirebase(
-        () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-        [firestore, authUser?.uid],
-    );
-    const { data: adminNgos } = useCollection<ManagedEntityDoc>(adminNgosQ);
-    const { data: adminBrands } = useCollection<ManagedEntityDoc>(adminBrandsQ);
-    const { data: adminClubs } = useCollection<ManagedEntityDoc>(adminClubsQ);
-
-    const userDocRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-        [firestore, authUser?.uid],
-    );
-    const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-    const fallbackNgoRef = useMemoFirebase(
-        () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-        [firestore, userData?.managedNgoId],
-    );
-    const fallbackBrandRef = useMemoFirebase(
-        () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-        [firestore, userData?.managedBrandId],
-    );
-    const fallbackClubRef = useMemoFirebase(
-        () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-        [firestore, userData?.managedClubId],
-    );
-    const { data: fallbackNgo } = useDoc<ManagedEntityDoc>(fallbackNgoRef);
-    const { data: fallbackBrand } = useDoc<ManagedEntityDoc>(fallbackBrandRef);
-    const { data: fallbackClub } = useDoc<ManagedEntityDoc>(fallbackClubRef);
-
-    const selfNgoRef = useMemoFirebase(
-        () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.ngos, authUser.uid) : null),
-        [firestore, authUser?.uid],
-    );
-    const { data: selfNgo } = useDoc<ManagedEntityDoc>(selfNgoRef);
+    // ---- Aktif kurum (ActiveEntityProvider'dan) — banner ve sayfa tek kaynak ----
+    const { id: activeId, kind: activeKind } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<ManagedEntityDoc>();
 
     const activeEntity = useMemo<{ kind: EntityKind; data: ManagedEntityDoc } | null>(() => {
-        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo || selfNgo;
-        if (ngo?.id) return { kind: 'ngo', data: ngo };
-        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-        if (brand?.id) return { kind: 'brand', data: brand };
-        const club = (adminClubs && adminClubs[0]) || fallbackClub;
-        if (club?.id) return { kind: 'club', data: club };
-        return null;
-    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub, selfNgo]);
+        if (!activeId || !activeKind || !activeDoc) return null;
+        return { kind: activeKind, data: activeDoc };
+    }, [activeId, activeKind, activeDoc]);
 
     // Load the ACTIVE ORG's own posts from Firestore. We query by the org id
     // (authorId == org id) so each org sees and manages only its own content.

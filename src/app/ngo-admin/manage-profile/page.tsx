@@ -15,8 +15,9 @@ import { useToast } from '@/hooks/use-toast';
 import { countryPhoneCodes, sportsFederations, neighborhoodsData } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where, updateDoc } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -100,13 +101,6 @@ interface EntityDoc {
     };
 }
 
-interface UserDocData {
-    id: string;
-    managedNgoId?: string;
-    managedBrandId?: string;
-    managedClubId?: string;
-}
-
 const FileUpload = ({label, currentFile, required}: {label: string, currentFile?: string, required?: boolean}) => (
     <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
@@ -155,65 +149,19 @@ export default function ManageProfilePage() {
   const firestore = useFirestore();
   const { user: authUser } = useUser();
 
-  // 1) Try to find entities admin'd by current user
-  const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
-
-  // 2) Fallback through user.managedNgoId / managedBrandId / managedClubId
-  const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-  const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-    [firestore, userData?.managedNgoId],
-  );
-  const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-    [firestore, userData?.managedBrandId],
-  );
-  const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-    [firestore, userData?.managedClubId],
-  );
-  const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
-
-  // Last resort: try user uid as ngo doc id (common convention)
-  const selfNgoRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.ngos, authUser.uid) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: selfNgo } = useDoc<EntityDoc>(selfNgoRef);
+  // Aktif kurum (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+  // Eski adminUserId / managedNgoId / selfNgo zinciri çoklu-kurum adminlerde
+  // hep ilk STK'yı seçiyordu; artık layout banner'ı hangi kurumu gösteriyorsa
+  // form da o kurumun verisini yükler.
+  const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+  const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
 
   const activeEntity = useMemo<{ kind: EntityKind; data: EntityDoc } | null>(() => {
-    const ngo = (adminNgos && adminNgos[0]) || fallbackNgo || selfNgo;
-    if (ngo?.id) return { kind: 'ngo', data: ngo };
-    const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-    if (brand?.id) return { kind: 'brand', data: brand };
-    const club = (adminClubs && adminClubs[0]) || fallbackClub;
-    if (club?.id) return { kind: 'club', data: club };
-    return null;
-  }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub, selfNgo]);
+    if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
+    return { kind: activeKind, data: activeDoc };
+  }, [activeIdFromCtx, activeKind, activeDoc]);
 
-  const initialLoading = ngosLoading || brandsLoading || clubsLoading;
+  const initialLoading = activeLoading;
 
   // -------- Form state (initialized empty; hydrated from Firestore) --------
   const [name, setName] = useState('');
@@ -313,7 +261,7 @@ export default function ManageProfilePage() {
       }
       setIsSaving(true);
       try {
-        const collectionName = activeEntity.kind === 'ngo' ? 'ngos' : activeEntity.kind === 'brand' ? 'brands' : 'clubs';
+        const collectionName = activeEntity.kind === 'ngo' ? COLLECTIONS.ngos : activeEntity.kind === 'brand' ? COLLECTIONS.brands : COLLECTIONS.clubs;
         await updateDoc(doc(firestore, collectionName, activeEntity.data.id), {
           name,
           shortName,

@@ -11,8 +11,9 @@ import {
     TrendingUp, Users, Heart, HeartHandshake,
     Newspaper, ShieldCheck, Building2, Loader2,
 } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, updateDoc, where } from 'firebase/firestore';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { getApp } from 'firebase/app';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useToast } from '@/hooks/use-toast';
@@ -84,54 +85,23 @@ function StoryViewer() {
     const { user: authUser } = useUser();
     const db = useFirestore();
 
-    // Yönetici olduğu varlığı tespit et
-    const adminNgosQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-      [db, authUser?.uid],
-    );
-    const adminBrandsQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-      [db, authUser?.uid],
-    );
-    const adminClubsQ = useMemoFirebase(
-      () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-      [db, authUser?.uid],
-    );
-    const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
-    const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
-    const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
-
-    const userDocRef = useMemoFirebase(
-      () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
-      [db, authUser?.uid],
-    );
-    const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-    const fallbackNgoRef = useMemoFirebase(
-      () => (db && userData?.managedNgoId ? doc(db, COLLECTIONS.ngos, userData.managedNgoId) : null),
-      [db, userData?.managedNgoId],
-    );
-    const fallbackBrandRef = useMemoFirebase(
-      () => (db && userData?.managedBrandId ? doc(db, COLLECTIONS.brands, userData.managedBrandId) : null),
-      [db, userData?.managedBrandId],
-    );
-    const fallbackClubRef = useMemoFirebase(
-      () => (db && userData?.managedClubId ? doc(db, COLLECTIONS.clubs, userData.managedClubId) : null),
-      [db, userData?.managedClubId],
-    );
-    const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
-    const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
-    const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
+    // Aktif kurum (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
+    const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
+    const ngosLoading = activeLoading;
+    const brandsLoading = activeLoading;
+    const clubsLoading = activeLoading;
 
     const activeEntity = useMemo<ManagedEntity | null>(() => {
-        const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
-        if (ngo?.id) return { kind: 'ngo', id: ngo.id, name: ngo.name || 'STK', data: ngo };
-        const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-        if (brand?.id) return { kind: 'brand', id: brand.id, name: brand.name || 'Marka', data: brand };
-        const club = (adminClubs && adminClubs[0]) || fallbackClub;
-        if (club?.id) return { kind: 'club', id: club.id, name: club.name || 'Kulüp', data: club };
-        return null;
-    }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+        if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
+        const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+        return {
+            kind: activeKind,
+            id: activeIdFromCtx,
+            name: activeDoc.name || labels[activeKind],
+            data: activeDoc,
+        };
+    }, [activeIdFromCtx, activeKind, activeDoc]);
 
     // İlgili koleksiyonları topla
     const allUsersQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);

@@ -1,13 +1,17 @@
 'use client';
 
 // PDF audit #2 (Wave 1D flag): marka yöneticisi için ayrı `/brand-admin/posts`
-// rotası. Mevcut `/ngo-admin/posts` sayfası entity-aware (NGO + marka + kulüp
-// `users/{uid}.managedBrandId` üzerinden çözer) — burada o sayfayı yeniden
-// kullanıyoruz ki tek bir mantık deposu kalsın ve "her kurum kendi paylaşımını
-// silme/düzenle yetkisine sahip" gereksinimi mevcut çözümle karşılansın.
+// rotası. /ngo-admin/posts sayfası artık ActiveEntityProvider context'i
+// gerektirdiği için burada provider'ı manuel sarıyoruz — context'siz import
+// useActiveEntity throw eder.
 
 import PostsPage from '@/app/ngo-admin/posts/page';
+import { ActiveEntityProvider } from '@/app/ngo-admin/active-entity-context';
 
 export default function BrandAdminPostsPage() {
-  return <PostsPage />;
+  return (
+    <ActiveEntityProvider>
+      <PostsPage />
+    </ActiveEntityProvider>
+  );
 }

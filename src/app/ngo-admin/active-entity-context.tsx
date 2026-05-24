@@ -335,3 +335,31 @@ export function useActiveEntity(): ActiveEntityValue {
   }
   return ctx;
 }
+
+/**
+ * Aktif kurumun Firestore dokümanını çeker — iç sayfalar bunu kullanır.
+ *
+ * Eski pattern (her sayfada manuel adminUserId/managedNgoId resolution +
+ * `[0]` alma) çoklu kurum sahibi adminlerde HEP ilk kurumu döndürüyordu. Bu
+ * hook tek kaynaktan (ActiveEntityProvider) gelen id/kind'e bağlanır, böylece
+ * banner'da görünen kurum ile sayfa verisi her zaman aynı.
+ *
+ * Dönüş şekli `useDoc` ile aynıdır: `{ data, isLoading, error }`.
+ */
+export function useActiveEntityDoc<T = EntityDoc>() {
+  const firestore = useFirestore();
+  const { id, kind } = useActiveEntity();
+  const colName =
+    kind === 'ngo'
+      ? COLLECTIONS.ngos
+      : kind === 'brand'
+        ? COLLECTIONS.brands
+        : kind === 'club'
+          ? COLLECTIONS.clubs
+          : null;
+  const docRef = useMemoFirebase(
+    () => (firestore && id && colName ? doc(firestore, colName, id) : null),
+    [firestore, id, colName],
+  );
+  return useDoc<T>(docRef);
+}

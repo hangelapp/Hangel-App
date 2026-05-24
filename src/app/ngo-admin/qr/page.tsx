@@ -19,12 +19,11 @@ import {
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 
 interface ImportedContact {
   id: string;
@@ -72,18 +71,10 @@ type ManagedEntity = { kind: EntityKind; id: string; name: string };
 interface EntityDoc {
   id: string;
   name?: string;
-  adminUserId?: string;
-}
-interface UserDocData {
-  id: string;
-  managedNgoId?: string;
-  managedBrandId?: string;
-  managedClubId?: string;
 }
 
 export default function QrPage() {
   const { toast } = useToast();
-  const firestore = useFirestore();
   const { user: authUser } = useUser();
   const [origin, setOrigin] = useState('');
 
@@ -91,57 +82,19 @@ export default function QrPage() {
     if (typeof window !== 'undefined') setOrigin(window.location.origin);
   }, []);
 
-  const adminNgosQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.ngos), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminBrandsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.brands), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-  const adminClubsQ = useMemoFirebase(
-    () => (firestore && authUser?.uid ? query(collection(firestore, COLLECTIONS.clubs), where('adminUserId', '==', authUser.uid)) : null),
-    [firestore, authUser?.uid],
-  );
-
-  const { data: adminNgos, isLoading: ngosLoading } = useCollection<EntityDoc>(adminNgosQ);
-  const { data: adminBrands, isLoading: brandsLoading } = useCollection<EntityDoc>(adminBrandsQ);
-  const { data: adminClubs, isLoading: clubsLoading } = useCollection<EntityDoc>(adminClubsQ);
-
-  // Fallback: user doc'taki managed*Id (duplicate doc edge case'i için)
-  const userDocRef = useMemoFirebase(
-    () => (firestore && authUser?.uid ? doc(firestore, COLLECTIONS.users, authUser.uid) : null),
-    [firestore, authUser?.uid],
-  );
-  const { data: userData } = useDoc<UserDocData>(userDocRef);
-
-  const fallbackNgoRef = useMemoFirebase(
-    () => (firestore && userData?.managedNgoId ? doc(firestore, COLLECTIONS.ngos, userData.managedNgoId) : null),
-    [firestore, userData?.managedNgoId],
-  );
-  const fallbackBrandRef = useMemoFirebase(
-    () => (firestore && userData?.managedBrandId ? doc(firestore, COLLECTIONS.brands, userData.managedBrandId) : null),
-    [firestore, userData?.managedBrandId],
-  );
-  const fallbackClubRef = useMemoFirebase(
-    () => (firestore && userData?.managedClubId ? doc(firestore, COLLECTIONS.clubs, userData.managedClubId) : null),
-    [firestore, userData?.managedClubId],
-  );
-  const { data: fallbackNgo } = useDoc<EntityDoc>(fallbackNgoRef);
-  const { data: fallbackBrand } = useDoc<EntityDoc>(fallbackBrandRef);
-  const { data: fallbackClub } = useDoc<EntityDoc>(fallbackClubRef);
+  // Aktif kurum — layout banner'ı ve switcher hangi kurumu seçtiyse o.
+  // Manuel adminUserId+managedNgoId+[0] pattern'i terk edildi; çoklu-kurum
+  // adminlerde HEP ilk kurumu döndürüyordu (active-entity-context.tsx ile çelişiyordu).
+  const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+  const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
 
   const activeEntity = useMemo<ManagedEntity | null>(() => {
-    const ngo = (adminNgos && adminNgos[0]) || fallbackNgo;
-    if (ngo?.id) return { kind: 'ngo', id: ngo.id, name: ngo.name || 'STK' };
-    const brand = (adminBrands && adminBrands[0]) || fallbackBrand;
-    if (brand?.id) return { kind: 'brand', id: brand.id, name: brand.name || 'Marka' };
-    const club = (adminClubs && adminClubs[0]) || fallbackClub;
-    if (club?.id) return { kind: 'club', id: club.id, name: club.name || 'Kulüp' };
-    return null;
-  }, [adminNgos, adminBrands, adminClubs, fallbackNgo, fallbackBrand, fallbackClub]);
+    if (!activeIdFromCtx || !activeKind) return null;
+    const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+    return { kind: activeKind, id: activeIdFromCtx, name: activeDoc?.name || labels[activeKind] };
+  }, [activeIdFromCtx, activeKind, activeDoc]);
 
-  const isLoading = ngosLoading || brandsLoading || clubsLoading;
+  const isLoading = activeLoading;
 
   const profilePath = useMemo(() => {
     if (!activeEntity) return '';
