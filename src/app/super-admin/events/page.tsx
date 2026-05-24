@@ -41,7 +41,6 @@ import {
   doc,
   updateDoc,
   deleteDoc,
-  orderBy,
   query,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -385,14 +384,21 @@ export default function SuperAdminEventsPage() {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // orderBy('createdAt') koymuyoruz — createdAt alanı eksik eski etkinlikler
+  // sessizce listeden düşüyordu. Tüm koleksiyon çekilir, client-side sıralanır.
   const eventsQuery = useMemoFirebase(
-    () => (db ? query(collection(db, COLLECTIONS.events), orderBy('createdAt', 'desc')) : null),
+    () => (db ? query(collection(db, COLLECTIONS.events)) : null),
     [db],
   );
   const { data: events, isLoading } = useCollection<EventDoc>(eventsQuery);
 
   const grouped = useMemo(() => {
-    const list = (events || []) as EventDoc[];
+    const list = ((events || []) as EventDoc[]).slice().sort((a, b) => {
+      // createdAt varsa (Firestore Timestamp), descending — yoksa en sona koy
+      const aT = (a as { createdAt?: { toMillis?: () => number } }).createdAt?.toMillis?.() ?? 0;
+      const bT = (b as { createdAt?: { toMillis?: () => number } }).createdAt?.toMillis?.() ?? 0;
+      return bT - aT;
+    });
     return {
       pending: list.filter((e) => (e.status || 'Beklemede') === 'Beklemede'),
       published: list.filter((e) => e.status === 'Yayında' || e.status === 'Aktif'),
