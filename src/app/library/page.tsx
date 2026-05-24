@@ -29,9 +29,9 @@ import {
 import Link from 'next/link';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
-import { COLLECTIONS } from '@/firebase/collections';
 
 // Kütüphane bölüm icon allow-list'i. Bölüm icon'ları Firestore'dan runtime string
 // olarak gelir; lucide wildcard import yerine kapalı küme map kullanıyoruz.
@@ -753,8 +753,20 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
 function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const meta = ASSISTANT_META.project;
   const { toast } = useToast();
+  const db = useFirestore();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [institution, setInstitution] = useState<string>('');
+
+  // Süper-admin'in yayınladığı hibe/fon programları — dialog açıldığında lazy yüklenir
+  const fundsRef = useMemoFirebase(() => (open && db ? collection(db, COLLECTIONS.funds) : null), [open, db]);
+  const { data: funds } = useCollection<{ id: string; name?: string; provider?: string; status?: string }>(fundsRef);
+
+  const fundInstitutions = useMemo(() => {
+    const list = (funds || [])
+      .filter(f => f.name && (!f.status || f.status === 'Açık'))
+      .map(f => `${f.name}${f.provider ? ` — ${f.provider}` : ''}`);
+    return Array.from(new Set(list)).sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [funds]);
   const [summary, setSummary] = useState('');
   const [goals, setGoals] = useState('');
   const [audience, setAudience] = useState('');
@@ -871,20 +883,33 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           {step === 1 && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Hedef Kurum
+                Hedef Kurum / Hibe Programı
               </label>
               <Select value={institution} onValueChange={setInstitution}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Kurum seçin..." />
+                  <SelectValue placeholder="Kurum veya hibe seçin..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-72">
+                  {fundInstitutions.length > 0 && (
+                    <>
+                      <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Açık Hibe & Fon Programları
+                      </div>
+                      {fundInstitutions.map(inst => (
+                        <SelectItem key={`fund:${inst}`} value={inst}>{inst}</SelectItem>
+                      ))}
+                      <div className="px-2 py-1.5 mt-1 border-t text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        Genel Kurumlar
+                      </div>
+                    </>
+                  )}
                   {PROJECT_INSTITUTIONS.map(inst => (
                     <SelectItem key={inst} value={inst}>{inst}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground">
-                Proje, seçtiğiniz kurumun talep ve esaslarına uygun şekilde yazılacaktır.
+                Proje, seçtiğiniz kurumun veya hibenin talep ve esaslarına uygun şekilde yazılacaktır.
               </p>
             </div>
           )}
