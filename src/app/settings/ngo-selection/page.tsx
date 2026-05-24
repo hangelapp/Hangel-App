@@ -288,9 +288,15 @@ export default function NgoSelectionPage() {
             <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
-            <div>
-                <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNgoSelection.heading')}</h1>
-                <p className="text-muted-foreground text-sm">{t('dashboard.settingsNgoSelection.subheading')}</p>
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                    <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsNgoSelection.heading')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('dashboard.settingsNgoSelection.subheading')}</p>
+                </div>
+                {/* Üstteki kaydet butonu — alttakinin aynısı, uzun listede aşağı kaydırmadan kaydetmek için. */}
+                <Button onClick={handleSave} className="shrink-0">
+                    {isOnboarding ? 'Devam Et' : t('dashboard.settingsNgoSelection.saveBtn')}
+                </Button>
             </div>
 
             <Alert variant="destructive">

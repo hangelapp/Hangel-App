@@ -55,8 +55,10 @@ type LeaderboardTableProps = {
 const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading }: LeaderboardTableProps) => {
   const sortedData = useMemo(() => {
     if (!allUsers) return [];
-    // Min 10 etki puanı şartı: leaderboard sadece nitelikli kullanıcıları gösterir
-    let dataToFilter = allUsers.filter(u => getValue(u, 'impactScore') >= 10);
+    // Her sekme kendi metriğine göre filtre + sıralama yapar; ilk 100 kullanıcı
+    // listelenir. (Eski 'impactScore >= 10' ön-filtresi sekme bağımsız davranıyor
+    // ve katılım azken listeyi boşaltıyordu — kaldırıldı.)
+    let dataToFilter = [...allUsers];
     const me = authUserId ? dataToFilter.find(u => u.id === authUserId) : null;
 
       if (scope === 'city' && me) {
@@ -69,7 +71,7 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
         }
       }
 
-    return [...dataToFilter]
+    return dataToFilter
       .map(u => ({ user: u, value: getValue(u, valueKey) }))
       .filter(x => x.value > 0)
       .sort((a, b) => b.value - a.value)

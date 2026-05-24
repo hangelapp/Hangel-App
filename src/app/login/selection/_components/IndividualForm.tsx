@@ -73,36 +73,92 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 if (entityId) {
                     try {
                         const userDocRef = doc(db, COLLECTIONS.users, userCredential.user.uid);
+                        const userSnap = await getDoc(userDocRef);
+                        const userData = (userSnap.exists() ? userSnap.data() : {}) as {
+                            supportedNgos?: string[];
+                            volunteerInfo?: { education?: { level?: string; school?: string }[] };
+                            lastNgoSelectionChange?: { toDate?: () => Date } | string;
+                        };
                         let update: Record<string, unknown> | null = null;
                         let roleLabel = '';
                         let collectionName: 'ngos' | 'clubs' | 'brands' | null = null;
+                        let lockedAsVolunteer = false;
+                        let lockRemainingDays = 0;
                         if (kind === 'ngo') {
-                            update = {
-                                supportedNgos: arrayUnion(entityId),
-                                volunteerNgos: arrayUnion(entityId),
-                            };
-                            roleLabel = 'STK destekçisi ve gönüllüsü';
                             collectionName = 'ngos';
+                            // 30 günlük STK değişim kilidi: kullanıcının desteklediği STK varsa ve
+                            // lastNgoSelectionChange 30 gün dolmadıysa, mevcut STK'sını DEĞİŞTİRMEYİZ;
+                            // sadece bu STK'nın GÖNÜLLÜSÜ yaparız ve durumu kullanıcıya bildiririz.
+                            const supportedIds = Array.isArray(userData.supportedNgos) ? userData.supportedNgos : [];
+                            const lockRaw = userData.lastNgoSelectionChange;
+                            let lockDate: Date | null = null;
+                            if (lockRaw && typeof lockRaw === 'object' && typeof lockRaw.toDate === 'function') {
+                                try { lockDate = lockRaw.toDate(); } catch { lockDate = null; }
+                            } else if (typeof lockRaw === 'string') {
+                                const parsed = new Date(lockRaw);
+                                if (!isNaN(parsed.getTime())) lockDate = parsed;
+                            }
+                            const daysSinceChange = lockDate ? (Date.now() - lockDate.getTime()) / (24 * 60 * 60 * 1000) : Infinity;
+                            const alreadyMember = supportedIds.includes(entityId);
+                            const isLocked = supportedIds.length > 0 && daysSinceChange < 30 && !alreadyMember;
+                            if (isLocked) {
+                                update = { volunteerNgos: arrayUnion(entityId) };
+                                roleLabel = 'STK gönüllüsü';
+                                lockedAsVolunteer = true;
+                                lockRemainingDays = Math.max(1, Math.ceil(30 - daysSinceChange));
+                            } else {
+                                update = {
+                                    supportedNgos: arrayUnion(entityId),
+                                    volunteerNgos: arrayUnion(entityId),
+                                };
+                                roleLabel = 'STK destekçisi ve gönüllüsü';
+                            }
                         } else if (kind === 'club') {
+                            collectionName = 'clubs';
                             update = { joinedClubs: arrayUnion(entityId) };
                             roleLabel = 'Kulüp üyesi';
-                            collectionName = 'clubs';
                         } else if (kind === 'brand') {
+                            collectionName = 'brands';
                             update = { followedBrands: arrayUnion(entityId) };
                             roleLabel = 'Marka takipçisi';
-                            collectionName = 'brands';
                         }
                         if (update && collectionName) {
+                            // Kulüp ise: profile okul ekle (mevcut education[] ile birleştirilir)
+                            if (kind === 'club') {
+                                try {
+                                    const clubSnap = await getDoc(doc(db, collectionName, entityId));
+                                    const university = (clubSnap.exists() && (clubSnap.data() as { university?: string }).university) || '';
+                                    if (university) {
+                                        const existingEdu = userData.volunteerInfo?.education || [];
+                                        const hasSchool = existingEdu.some((e) => (e?.school || '').trim().toLowerCase() === university.trim().toLowerCase());
+                                        if (!hasSchool) {
+                                            update = {
+                                                ...update,
+                                                'volunteerInfo.education': [...existingEdu, { level: 'Lisans', school: university }],
+                                            };
+                                        }
+                                    }
+                                } catch { /* okul auto-fill best-effort */ }
+                            }
                             await updateDoc(userDocRef, update);
                             try {
                                 const entitySnap = await getDoc(doc(db, collectionName, entityId));
                                 const entityName = (entitySnap.exists() && (entitySnap.data() as { name?: string }).name) || '';
-                                toast({
-                                    title: 'Davet kabul edildi',
-                                    description: entityName
-                                        ? `${entityName} kuruluşundan davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`
-                                        : `Davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`,
-                                });
+                                if (lockedAsVolunteer) {
+                                    toast({
+                                        title: 'STK gönüllüsü oldun',
+                                        description: entityName
+                                            ? `${entityName} STK'sının gönüllüsü oldun. Bağışçısı olduğun STK'yı değiştirme süren ${lockRemainingDays} gün sonra dolacak; süre dolunca /settings/ngo-selection'dan değiştirebilirsin.`
+                                            : `Bu STK'nın gönüllüsü oldun. Bağışçısı olduğun STK'yı değiştirme süren ${lockRemainingDays} gün sonra dolacak.`,
+                                    });
+                                } else {
+                                    toast({
+                                        title: 'Davet kabul edildi',
+                                        description: entityName
+                                            ? `${entityName} kuruluşundan davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`
+                                            : `Davet aldınız ve otomatik olarak ${roleLabel} oldunuz.`,
+                                    });
+                                }
                             } catch {
                                 // sessiz geç — toast opsiyonel
                             }
@@ -156,6 +212,19 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         autoActionKind = 'club';
                         autoActionEntityId = entityId;
                         autoActionFields = { joinedClubs: [entityId] };
+                        // Kulübün üniversitesini profile otomatik ekle — kullanıcı sonra
+                        // /settings/profile'da değiştirebilir. Yeni hesapta education[]
+                        // boştur; bu tek elemanlı bir dizi olarak başlatılır.
+                        try {
+                            const clubSnap = await getDoc(doc(db, 'clubs', entityId));
+                            const university = (clubSnap.exists() && (clubSnap.data() as { university?: string }).university) || '';
+                            if (university) {
+                                autoActionFields = {
+                                    ...autoActionFields,
+                                    volunteerInfo: { education: [{ level: 'Lisans', school: university }] },
+                                };
+                            }
+                        } catch { /* okul auto-fill best-effort */ }
                     } else if (kind === 'brand') {
                         autoActionKind = 'brand';
                         autoActionEntityId = entityId;
