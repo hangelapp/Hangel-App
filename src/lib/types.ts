@@ -280,7 +280,14 @@ export type User = {
         skills: string[];
         dailySkills: string[];
         interests: string[];
-        education: { level: string; school: string; }[];
+        education: {
+            level: string;          // 'Lise' | 'Önlisans' | 'Lisans' | 'Yüksek Lisans' | 'Doktora'
+            school: string;
+            department?: string;    // Bölüm / Fakülte
+            status?: string;        // 'Devam Ediyor' | 'Mezun' | 'Terk'
+            grade?: string;         // Devam ediyorsa kaçıncı sınıf (1./2./3./4./Hazırlık)
+            graduationYear?: string;
+        }[];
         profession: string | null;
         sector?: string | null;
         position?: string | null;

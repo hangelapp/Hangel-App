@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { neighborhoodsData } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { Country, State, City } from 'country-state-city';
+import { TURKISH_UNIVERSITIES, EDUCATION_LEVELS, EDUCATION_STATUS } from '@/lib/turkish-universities';
 import type { User } from '@/lib/types';
 
 const emptyUser: User = {
@@ -56,7 +57,7 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -181,6 +182,38 @@ export default function ProfileSettingsPage() {
 
   const removeCustomLink = (index: number) => {
     setCustomLinks(customLinks.filter((_, i) => i !== index));
+  };
+
+  // Eğitim entry'leri (lise / önlisans / lisans / yüksek lisans / doktora)
+  type EducationEntry = {
+    level: string;
+    school: string;
+    department?: string;
+    status?: string;
+    grade?: string;
+    graduationYear?: string;
+  };
+  const educationList: EducationEntry[] = profile.volunteerInfo?.education ?? [];
+
+  const setEducationList = (next: EducationEntry[]) => {
+    setProfile(prev => {
+      const newProfile = JSON.parse(JSON.stringify(prev));
+      newProfile.volunteerInfo = { ...(newProfile.volunteerInfo || {}), education: next };
+      return newProfile;
+    });
+  };
+
+  const addEducation = (level: string) => {
+    setEducationList([...educationList, { level, school: '', status: 'Devam Ediyor' }]);
+  };
+
+  const updateEducation = (index: number, field: keyof EducationEntry, value: string) => {
+    const next = educationList.map((e, i) => i === index ? { ...e, [field]: value } : e);
+    setEducationList(next);
+  };
+
+  const removeEducation = (index: number) => {
+    setEducationList(educationList.filter((_, i) => i !== index));
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -447,6 +480,140 @@ export default function ProfileSettingsPage() {
                             className="h-11 rounded-xl"
                         />
                     </div>
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary" /> Eğitim Bilgileri</CardTitle>
+                <CardDescription>Lise, üniversite, yüksek lisans ve doktora bilgilerinizi ekleyin. Birden fazla kayıt girebilirsiniz.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {educationList.length === 0 && (
+                    <p className="text-sm text-muted-foreground italic">Henüz eğitim bilgisi eklenmedi.</p>
+                )}
+                {educationList.map((entry, index) => {
+                    const isUniLevel = entry.level !== 'Lise';
+                    return (
+                        <div key={index} className="rounded-2xl border border-black/5 bg-muted/20 p-4 space-y-3 relative">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 text-destructive"
+                                onClick={() => removeEducation(index)}
+                                aria-label="Kaldır"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                            <div className="flex items-center gap-2">
+                                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{entry.level}</span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label className="text-xs">{entry.level === 'Lise' ? 'Lise Adı' : 'Üniversite'}</Label>
+                                {isUniLevel ? (
+                                    <Select
+                                        value={entry.school || ''}
+                                        onValueChange={(v) => updateEducation(index, 'school', v)}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl"><SelectValue placeholder="Üniversite seçin..." /></SelectTrigger>
+                                        <SelectContent className="max-h-72">
+                                            {TURKISH_UNIVERSITIES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                            <SelectItem value="Diğer">Diğer (Yurt dışı vb.)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        value={entry.school || ''}
+                                        onChange={(e) => updateEducation(index, 'school', e.target.value)}
+                                        placeholder="Lise adı"
+                                        className="h-10 rounded-xl"
+                                    />
+                                )}
+                            </div>
+
+                            {isUniLevel && (
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs">Bölüm / Fakülte</Label>
+                                    <Input
+                                        value={entry.department || ''}
+                                        onChange={(e) => updateEducation(index, 'department', e.target.value)}
+                                        placeholder="Örn. Bilgisayar Mühendisliği"
+                                        className="h-10 rounded-xl"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs">Durum</Label>
+                                    <Select
+                                        value={entry.status || 'Devam Ediyor'}
+                                        onValueChange={(v) => updateEducation(index, 'status', v)}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {EDUCATION_STATUS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {entry.status === 'Devam Ediyor' ? (
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs">Sınıf</Label>
+                                        <Select
+                                            value={entry.grade || ''}
+                                            onValueChange={(v) => updateEducation(index, 'grade', v)}
+                                        >
+                                            <SelectTrigger className="h-10 rounded-xl"><SelectValue placeholder="Sınıf seç" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Hazırlık">Hazırlık</SelectItem>
+                                                <SelectItem value="1. Sınıf">1. Sınıf</SelectItem>
+                                                <SelectItem value="2. Sınıf">2. Sınıf</SelectItem>
+                                                <SelectItem value="3. Sınıf">3. Sınıf</SelectItem>
+                                                <SelectItem value="4. Sınıf">4. Sınıf</SelectItem>
+                                                {entry.level !== 'Lise' && entry.level !== 'Önlisans' && (
+                                                    <>
+                                                        <SelectItem value="5. Sınıf">5. Sınıf</SelectItem>
+                                                        <SelectItem value="6. Sınıf">6. Sınıf</SelectItem>
+                                                    </>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ) : entry.status === 'Mezun' ? (
+                                    <div className="space-y-1.5">
+                                        <Label className="text-xs">Mezuniyet Yılı</Label>
+                                        <Input
+                                            value={entry.graduationYear || ''}
+                                            onChange={(e) => updateEducation(index, 'graduationYear', e.target.value)}
+                                            placeholder="Örn. 2023"
+                                            className="h-10 rounded-xl"
+                                            inputMode="numeric"
+                                            maxLength={4}
+                                        />
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+                    );
+                })}
+
+                <div className="flex flex-wrap gap-2 pt-2">
+                    {EDUCATION_LEVELS.map(level => (
+                        <Button
+                            key={level}
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-9 rounded-xl gap-1.5 border-dashed"
+                            onClick={() => addEducation(level)}
+                        >
+                            <Plus className="h-3.5 w-3.5" /> {level} Ekle
+                        </Button>
+                    ))}
                 </div>
             </CardContent>
         </Card>
