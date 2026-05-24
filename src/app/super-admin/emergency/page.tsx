@@ -14,7 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon, Pencil, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, getCountFromServer, documentId, type Query, type QueryConstraint } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, documentId } from 'firebase/firestore';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -57,10 +57,59 @@ interface UserDoc {
   avatarUrl?: string;
   personalInfo?: {
     bloodType?: string;
+    gender?: string;
     firstName?: string;
     lastName?: string;
-    address?: { city?: string; district?: string; neighborhood?: string };
+    address?: { country?: string; city?: string; district?: string; neighborhood?: string };
   };
+}
+
+// Trailing whitespace + büyük/küçük harf farklarını yutar — `'İstanbul '` ile
+// `'İstanbul'` veya `'erkek'` ile `'Erkek'` aynı sayılır.
+function norm(s: string | undefined | null): string {
+  return (s || '').trim().toLocaleLowerCase('tr');
+}
+
+// Kan grubunu olası tüm yazımlardan ('A Rh+', 'A+', 'A pozitif', ...) tek bir
+// kanonik forma çevirir — Firestore'da inkonsistent veri yazımlarını birleştirir.
+function canonBlood(s: string | undefined | null): string {
+  if (!s) return '';
+  let t = s.toLocaleLowerCase('tr').replace(/\s+/g, '').replace(/rh/g, '');
+  t = t.replace('pozitif', '+').replace('positive', '+').replace('negatif', '-').replace('negative', '-');
+  return t; // örn: 'a+', '0-', 'ab+'
+}
+
+// Bir kullanıcı verilen filtre kriterlerini karşılıyor mu? Hem sayım hem
+// fan-out aynı bu predicate'i kullanır → ekrandaki sayı her zaman gerçek
+// bildirim alacak kitle sayısına eşit.
+function matchesScope(u: UserDoc, sel: ScopeSelection): boolean {
+  const pi = u.personalInfo;
+  if (!pi) return false;
+  if (sel.bloodType) {
+    if (canonBlood(pi.bloodType) !== canonBlood(sel.bloodType)) return false;
+  }
+  if (sel.gender && sel.gender !== 'all') {
+    if (norm(pi.gender) !== norm(sel.gender)) return false;
+  }
+  if (sel.scope === 'all') {
+    // 'Tüm Türkiye' = country yok ya da Türkiye/TR (defansif).
+    const c = norm(pi.address?.country);
+    if (c && c !== 'türkiye' && c !== 'turkiye' && c !== 'tr' && c !== 'türkiye cumhuriyeti') {
+      return false;
+    }
+  } else {
+    const userCity = norm(pi.address?.city);
+    if (!userCity || userCity !== norm(sel.city)) return false;
+    if (sel.scope === 'district' || sel.scope === 'neighborhood') {
+      const userDistrict = norm(pi.address?.district);
+      if (!userDistrict || userDistrict !== norm(sel.district)) return false;
+    }
+    if (sel.scope === 'neighborhood') {
+      const userNbh = norm(pi.address?.neighborhood);
+      if (!userNbh || userNbh !== norm(sel.neighborhood)) return false;
+    }
+  }
+  return true;
 }
 
 const scopeLabel: Record<ScopeLevel, string> = {
@@ -79,33 +128,6 @@ interface ScopeSelection {
   // 'all' = filtre uygulanmaz; 'Erkek' / 'Kadın' = profilinde bu cinsiyeti
   // seçmiş kullanıcıları kapsar.
   gender: 'all' | 'Erkek' | 'Kadın';
-}
-
-// Seçili kapsamı, kullanıcıların `personalInfo.address.*` alanlarına karşı
-// çalışan Firestore equality-filter listesine çevirir. Tüm kullanıcıları
-// client'a yüklemeden hem sayım (getCountFromServer) hem fan-out (getDocs)
-// aynı kısıtları kullanır.
-function buildScopeConstraints(sel: ScopeSelection): QueryConstraint[] {
-  const constraints: QueryConstraint[] = [];
-  if (sel.bloodType) {
-    constraints.push(where('personalInfo.bloodType', '==', sel.bloodType));
-  }
-  if (sel.gender && sel.gender !== 'all') {
-    constraints.push(where('personalInfo.gender', '==', sel.gender));
-  }
-  if (sel.scope === 'all') {
-    // "Tüm Türkiye" = ülke Türkiye olan kullanıcılar.
-    constraints.push(where('personalInfo.address.country', '==', 'Türkiye'));
-  } else {
-    if (sel.city) constraints.push(where('personalInfo.address.city', '==', sel.city));
-    if (sel.scope === 'district' || sel.scope === 'neighborhood') {
-      if (sel.district) constraints.push(where('personalInfo.address.district', '==', sel.district));
-    }
-    if (sel.scope === 'neighborhood' && sel.neighborhood) {
-      constraints.push(where('personalInfo.address.neighborhood', '==', sel.neighborhood));
-    }
-  }
-  return constraints;
 }
 
 export default function EmergencyManagementPage() {
@@ -131,12 +153,15 @@ export default function EmergencyManagementPage() {
   const [isSending, setIsSending] = useState(false);
   const pendingApprovalIdRef = useRef<string | null>(null);
 
-  // Hedef kitle önizlemesi — TÜM kullanıcıları client'a yüklemek yerine
-  // seçili kapsama göre Firestore aggregation (getCountFromServer) ile sayılır.
-  const [matchCount, setMatchCount] = useState<number | null>(null);
-  const [totalUsers, setTotalUsers] = useState<number | null>(null);
-  const [countLoading, setCountLoading] = useState(false);
-  const [countError, setCountError] = useState<string | null>(null);
+  // Hedef kitle önizlemesi — tüm kullanıcılar tek seferde yüklenir; sayım ve
+  // fan-out (handleSendRequest) aynı client-side predicate'i kullanır. Bu
+  // sayede üretim verisindeki trailing whitespace, eksik country, kan grubu
+  // yazım farkları gibi tutarsızlıklar tek normalize katmanından geçer ve
+  // ekrandaki sayı = gerçekten bildirim alacak kullanıcı sayısı olur.
+  const allUsersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+  const { data: allUsersData, isLoading: usersLoading } = useCollection<UserDoc>(allUsersRef);
+  const countError: string | null = null;
+  const countLoading = usersLoading;
 
   // Geçmiş talepler
   const requestsQuery = useMemoFirebase(() => {
@@ -238,54 +263,22 @@ export default function EmergencyManagementPage() {
   const districtOptions = city ? (districtsData[city] ?? []) : [];
   const neighborhoodOptions = (city && district) ? ((neighborhoodsData as Record<string, Record<string, string[]>>)[city]?.[district] ?? []) : [];
 
-  // Hedef kitle sayısı önizlemesi — seçili kapsama göre Firestore aggregation.
-  // Tüm kullanıcılar client'a yüklenmez; getCountFromServer tek bir sayım okur.
-  // Not: kan grubu seçili değilse kapsam (scope/şehir/ilçe/mahalle) bazlı sayım yapar.
-  useEffect(() => {
-    if (!db) return;
-    // Kapsam seçimi eksikse (örn. il seçilmedi) sayım yapma.
-    const scopeIncomplete =
-      (scope === 'city' && !city) ||
-      (scope === 'district' && (!city || !district)) ||
-      (scope === 'neighborhood' && (!city || !district || !neighborhood));
-    if (scopeIncomplete) {
-      setMatchCount(null);
-      setCountError(null);
-      return;
-    }
-    let cancelled = false;
-    setCountLoading(true);
-    setCountError(null);
-    const handle = setTimeout(async () => {
-      try {
-        const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType, gender });
-        const scopedQuery: Query = constraints.length > 0
-          ? query(collection(db, COLLECTIONS.users), ...constraints)
-          : query(collection(db, COLLECTIONS.users));
-        const [matchSnap, totalSnap] = await Promise.all([
-          getCountFromServer(scopedQuery),
-          getCountFromServer(collection(db, COLLECTIONS.users)),
-        ]);
-        if (!cancelled) {
-          setMatchCount(matchSnap.data().count);
-          setTotalUsers(totalSnap.data().count);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setMatchCount(null);
-          const code = (e as { code?: string } | null)?.code;
-          setCountError(
-            code === 'failed-precondition'
-              ? 'Bu filtre için Firestore dizini gerekli. Konsol bağlantısından dizini oluşturun.'
-              : (e instanceof Error ? e.message : 'Hedef kitle sayılamadı.'),
-          );
-        }
-      } finally {
-        if (!cancelled) setCountLoading(false);
-      }
-    }, 350);
-    return () => { cancelled = true; clearTimeout(handle); };
-  }, [db, scope, city, district, neighborhood, bloodType, gender]);
+  // Kapsam seçimi eksikse sayım gösterme (kullanıcı önce il/ilçe/mahalle seçmeli).
+  const scopeIncomplete =
+    (scope === 'city' && !city) ||
+    (scope === 'district' && (!city || !district)) ||
+    (scope === 'neighborhood' && (!city || !district || !neighborhood));
+
+  // Hedef kullanıcıları client-side filtre ile hesapla — sayım ve fan-out tek
+  // kaynaktan beslenir, üretim verisindeki yazım tutarsızlıkları normalize ile
+  // yutulur (trim, case fix, kan grubu kanonikalleştirme, country opsiyonel).
+  const matchedUserIds = useMemo<string[] | null>(() => {
+    if (!allUsersData || scopeIncomplete) return null;
+    const sel: ScopeSelection = { scope, city, district, neighborhood, bloodType, gender };
+    return allUsersData.filter((u) => matchesScope(u, sel)).map((u) => u.id);
+  }, [allUsersData, scopeIncomplete, scope, city, district, neighborhood, bloodType, gender]);
+  const matchCount = matchedUserIds?.length ?? null;
+  const totalUsers = allUsersData?.length ?? null;
 
   // Kullanıcı talebini forma yükle (preview & onayla)
   const loadIntoForm = (req: EmergencyDoc) => {
@@ -345,12 +338,13 @@ export default function EmergencyManagementPage() {
         bloodType: req.bloodType || '',
         gender: ((req as EmergencyDoc & { gender?: 'all' | 'Erkek' | 'Kadın' }).gender) || 'all',
       };
-      const constraints = buildScopeConstraints(sel);
-      const scopedQuery: Query = constraints.length > 0
-        ? query(collection(db, COLLECTIONS.users), ...constraints)
-        : query(collection(db, COLLECTIONS.users));
-      const targetSnap = await getDocs(scopedQuery);
-      const targetUserIds = targetSnap.docs.map(d => d.id);
+      // Aynı normalize'lı predicate'i kullan — Hedef Kitle Önizlemesindeki sayı
+      // ile bildirim alacak kullanıcılar her zaman birebir aynı.
+      const targetSnap = await getDocs(collection(db, COLLECTIONS.users));
+      const targetUserIds = targetSnap.docs
+        .map((d) => ({ id: d.id, data: d.data() as UserDoc }))
+        .filter((row) => matchesScope({ ...row.data, id: row.id }, sel))
+        .map((row) => row.id);
 
       if (targetUserIds.length === 0) {
         toast({ variant: 'destructive', title: 'Hedef yok', description: 'Kapsama uyan kullanıcı bulunamadı.' });
@@ -438,14 +432,9 @@ export default function EmergencyManagementPage() {
 
     setIsSending(true);
     try {
-      // 1. Hedef kullanıcıları seçili kapsama göre Firestore'dan çek (tüm
-      //    koleksiyonu yüklemeden — yalnız eşleşenler).
-      const constraints = buildScopeConstraints({ scope, city, district, neighborhood, bloodType, gender });
-      const scopedQuery: Query = constraints.length > 0
-        ? query(collection(db, COLLECTIONS.users), ...constraints)
-        : query(collection(db, COLLECTIONS.users));
-      const targetSnap = await getDocs(scopedQuery);
-      const targetUserIds = targetSnap.docs.map(d => d.id);
+      // 1. Hedef kullanıcılar — useMemo'da hesaplanmış matchedUserIds aynen kullanılır.
+      // Bu sayede Hedef Kitle Önizlemesindeki sayı = gönderilen kullanıcı sayısı.
+      const targetUserIds = matchedUserIds ?? [];
 
       // 2. Tek mantıksal talep = tek doküman. Kullanıcı talebinden onaylanıyorsa
       //    orijinal pending dokümanı güncellenir; değilse yeni doküman açılır.
