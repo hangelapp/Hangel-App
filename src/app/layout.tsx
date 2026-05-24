@@ -12,6 +12,7 @@ import { RatingPopup } from '@/components/shared/rating-popup';
 import { OfflineBanner } from '@/components/shared/offline-banner';
 import { AccessibilityApplier } from '@/components/shared/accessibility-applier';
 import { ThemeApplier } from '@/components/shared/theme-applier';
+import { LocationPermissionPrompt } from '@/components/shared/location-permission-prompt';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -93,6 +94,7 @@ export default function RootLayout({
             <AppBottomNav />
             <RatingPopup />
             <AccessibilityApplier />
+            <LocationPermissionPrompt />
             <Toaster />
           </LanguageProvider>
         </FirebaseClientProvider>

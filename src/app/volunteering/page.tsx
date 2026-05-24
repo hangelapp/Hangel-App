@@ -161,9 +161,10 @@ function computeMatch(opp: Volunteering, profile: MatchingUserProfile) {
     };
 }
 
-const OpportunityCard = ({ opp, profile }: {
+const OpportunityCard = ({ opp, profile, hasProfile }: {
     opp: Volunteering;
     profile: MatchingUserProfile;
+    hasProfile: boolean;
 }) => {
     const ngo = ngos.find(n => n.id === opp.ngoId);
     const match = computeMatch(opp, profile);
@@ -195,14 +196,16 @@ const OpportunityCard = ({ opp, profile }: {
                                     <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                                 </div>
                             </div>
-                            {/* Belirgin uygunluk rozeti */}
-                            <div
-                                className={`flex flex-col items-center justify-center shrink-0 rounded-xl px-2.5 py-1.5 ring-1 ${matchTone.bg} ${matchTone.ring}`}
-                                title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
-                            >
-                                <span className={`text-base font-black leading-none ${matchTone.text}`}>%{matchPercentage}</span>
-                                <span className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 ${matchTone.text}`}>Uygun</span>
-                            </div>
+                            {/* Belirgin uygunluk rozeti — sadece profilini doldurmuş kullanıcılar için */}
+                            {hasProfile && (
+                                <div
+                                    className={`flex flex-col items-center justify-center shrink-0 rounded-xl px-2.5 py-1.5 ring-1 ${matchTone.bg} ${matchTone.ring}`}
+                                    title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
+                                >
+                                    <span className={`text-base font-black leading-none ${matchTone.text}`}>%{matchPercentage}</span>
+                                    <span className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 ${matchTone.text}`}>Uygun</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 flex-wrap gap-2">
@@ -218,15 +221,20 @@ const OpportunityCard = ({ opp, profile }: {
                             </div>
                         </div>
 
-                        <div className="mt-3 space-y-1.5">
-                            <div className="flex justify-between text-[10px] uppercase tracking-wider">
-                                <span className="font-bold text-muted-foreground">Profil Uygunluğu</span>
-                                <span className={`font-black ${matchTone.text}`}>%{matchPercentage}</span>
+                        {hasProfile && (
+                            <div className="mt-3 space-y-1.5">
+                                <div className="flex justify-between text-[10px] uppercase tracking-wider">
+                                    <span className="font-bold text-muted-foreground">Profil Uygunluğu</span>
+                                    <span className={`font-black ${matchTone.text}`}>%{matchPercentage}</span>
+                                </div>
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full ${matchTone.bar} rounded-full transition-all duration-500 ease-out`}
+                                        style={{ width: `${matchPercentage}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className={`h-full ${matchTone.bar} transition-all`} style={{ width: `${matchPercentage}%` }} />
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </CardContent>
             </Link>
@@ -460,6 +468,7 @@ export default function VolunteeringPage() {
                       key={opp.id}
                       opp={opp}
                       profile={matchingProfile}
+                      hasProfile={hasVolunteerProfile}
                   />
               ))
           ) : (
