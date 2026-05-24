@@ -262,18 +262,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [authUser, isUserLoading, pathname, router, isMounted]);
 
     // Giriş yapmış kullanıcıyı login sayfalarından market'e yönlendir.
-    // E-postası doğrulanmamış kullanıcı /login/selection üzerinde verify-sent
-    // adımını görebilmeli, bu yüzden redirect'i emailVerified'a koşullu tutuyoruz.
-    // Kayıt/başvuru (bireysel VE kurumsal Marka/STK/Kulüp) akışı giriş yapmış
-    // kullanıcılar için de erişilebilir olmalı; action=register iken /market'e
-    // redirect uygulanmaz. Yeni bir kuruluş kaydı/başvurusu yapacak kullanıcı
-    // formdan çıkarılmaz.
-    const isRegisterFlow = useMemo(() => {
-        if (pathname !== '/login/selection') return false;
-        const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-        return params.get('action') === 'register';
-    }, [pathname]);
-
     useEffect(() => {
         if (!isUserLoading && authUser && isMounted) {
             // SEC-DISABLE-ENFORCE — Erişimi engellenmiş kullanıcı (super-admin
@@ -307,14 +295,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     });
                 return;
             }
-            // E-posta doğrulama bekleyenler /login/selection üzerinde verify-sent
-            // adımını görebilmeli — orada yalnızca emailVerified olanları yönlendiriyoruz.
-            if (authUser.emailVerified && pathname === '/login/selection' && !isRegisterFlow) {
-                router.push('/market');
-            }
+            // BUG-18: Logged-in kullanıcılar /login/selection'da bireysel +
+            // kurumsal kayıt başvuru formlarına her zaman erişebilmeli — buradan
+            // /market'e otomatik redirect kaldırıldı. Form içleri logged-in
+            // kullanıcıyı zaten handle ediyor (application doc'una userId yazma vs.).
+            // verify-sent akışı için bu sayfada kalma izni zaten vardı.
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authUser, isUserLoading, pathname, router, isMounted, isRegisterFlow, userData]);
+    }, [authUser, isUserLoading, pathname, router, isMounted, userData]);
 
     // 2./3. girişte kişisel/gönüllülük bilgisi yönlendirmesi (PDF page 25)
     // - İlk login (loginCount yok / 0) → loginCount: 1 yaz, redirect yapma

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from 'lucide-react';
@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { IndividualForm } from './_components/IndividualForm';
 import { CorporateForm } from './_components/CorporateForm';
-import { useUser } from '@/firebase';
 
 // P2-6c: God-page (1174 LoC) refactored into _components/.
 // page.tsx is now a thin router. Auth-critical flows (handleCheckEmail,
@@ -27,24 +26,15 @@ const resolveNext = (raw: string | null): string => {
 const FormRenderer = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { user, isUserLoading } = useUser();
     const tab = searchParams.get('tab') || 'individual';
     const entity = searchParams.get('entity') || 'NGO';
     const nextPath = resolveNext(searchParams.get('next'));
-    // Kayıt/başvuru akışı: giriş yapmış kullanıcı da yeni STK/Marka/Kulüp veya
-    // bireysel kayıt formunu açabilmeli. action=register iken /market'e
-    // yönlendirme yapılmaz (bireysel VE kurumsal başvuru formları erişilebilir).
-    const isRegisterFlow = searchParams.get('action') === 'register';
 
-    // PDF-3: Authenticated user re-visiting /login/selection should land
-    // directly on /market (or ?next=… if provided). Wait for auth resolution
-    // to avoid flicker on first paint. Register/apply flow is exempt so logged-in
-    // users can still submit a new corporate/individual application.
-    useEffect(() => {
-        if (!isUserLoading && user && !isRegisterFlow) {
-            router.replace(nextPath);
-        }
-    }, [isUserLoading, user, nextPath, router, isRegisterFlow]);
+    // BUG-18: Logged-in kullanıcılar da /login/selection'da bireysel + kurumsal
+    // kayıt başvuru formlarını her zaman açabilmeli. Önceki redirect (PDF-3)
+    // sadece action=register olmadığında atıyordu → kullanıcılar başvuru
+    // formuna ulaşamıyordu. Form içleri logged-in user'ı zaten handle ediyor
+    // (CorporateForm authUser?.uid'i applications doc'una yazıyor).
 
     return (
         <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">

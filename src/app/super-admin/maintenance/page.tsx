@@ -9,7 +9,7 @@ import { useFirestore } from '@/firebase';
 import {
     collection, getDocs, doc, updateDoc, setDoc, addDoc, serverTimestamp, Timestamp,
 } from 'firebase/firestore';
-import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, Wrench, Database, Film, UserCheck, Trash2, DatabaseZap, RefreshCw } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 import seedNgosJson from '../../../../docs/database-exports/ngos.json';
 import seedBrandsJson from '../../../../docs/database-exports/brands.json';
@@ -370,6 +370,71 @@ export default function MaintenancePage() {
         }
     };
 
+    // 4b) Stale-revoke geri al: seed import sonrası entity artık var olduğunda
+    //     daha önce 'stale-entity-not-found' ile revoke edilmiş davetleri tekrar
+    //     'accepted' yap. Yalnızca revokedReason eşleşirse — manuel revoke'lar
+    //     korunur.
+    const restoreRevivedInvitations = async () => {
+        if (!db) return;
+        setRunning('restoreRevoked');
+        setLogs([]);
+        log('info', 'Revoked stale davetler taranıyor...');
+        try {
+            const [ngosSnap, brandsSnap, clubsSnap, invitesSnap] = await Promise.all([
+                getDocs(collection(db, COLLECTIONS.ngos)),
+                getDocs(collection(db, COLLECTIONS.brands)),
+                getDocs(collection(db, COLLECTIONS.clubs)),
+                getDocs(collection(db, COLLECTIONS.userInvitations)),
+            ]);
+            const ngoIds = new Set(ngosSnap.docs.map(d => d.id));
+            const brandIds = new Set(brandsSnap.docs.map(d => d.id));
+            const clubIds = new Set(clubsSnap.docs.map(d => d.id));
+
+            type Candidate = { id: string; entity: 'ngo' | 'brand' | 'club'; entityId: string };
+            const candidates: Candidate[] = [];
+            invitesSnap.forEach(d => {
+                const data = d.data() as { status?: string; revokedReason?: string; ngoId?: string; brandId?: string; clubId?: string };
+                if (data.status !== 'revoked' || data.revokedReason !== 'stale-entity-not-found') return;
+                if (data.ngoId && ngoIds.has(data.ngoId)) candidates.push({ id: d.id, entity: 'ngo', entityId: data.ngoId });
+                else if (data.brandId && brandIds.has(data.brandId)) candidates.push({ id: d.id, entity: 'brand', entityId: data.brandId });
+                else if (data.clubId && clubIds.has(data.clubId)) candidates.push({ id: d.id, entity: 'club', entityId: data.clubId });
+            });
+
+            log('info', `${candidates.length} davet restore edilebilir (entity şimdi var).`);
+
+            if (candidates.length === 0) {
+                log('ok', 'Restore edilecek davet yok.');
+                toast({ title: 'Restore edilecek yok', description: 'Hiçbir stale davet revive edilebilir değil.' });
+                return;
+            }
+
+            let restored = 0, failed = 0;
+            for (const c of candidates) {
+                try {
+                    await updateDoc(doc(db, COLLECTIONS.userInvitations, c.id), {
+                        status: 'accepted',
+                        revokedAt: null,
+                        revokedReason: null,
+                        restoredAt: serverTimestamp(),
+                    });
+                    restored++;
+                } catch (e) {
+                    failed++;
+                    console.error(`[restoreRevived] ${c.id}:`, e);
+                }
+            }
+
+            log('ok', `Tamamlandı: ${restored} davet restore edildi, ${failed} hata.`);
+            toast({ title: 'Restore tamamlandı', description: `${restored} davet accepted'e geri çevrildi.` });
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Hata';
+            log('err', message);
+            toast({ variant: 'destructive', title: 'Hata', description: message });
+        } finally {
+            setRunning(null);
+        }
+    };
+
     // 5) BUG-17c: Stale userInvitations'ları revoke et. Bir davet, var olmayan
     //    ngo/brand/club'a işaret ediyorsa status='revoked' işaretle. /admin
     //    zaten gösteremiyor, popup'ta da fallback ID gözükmesini engeller.
@@ -504,6 +569,27 @@ export default function MaintenancePage() {
                     >
                         {running === 'seedImport' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Brand/NGO seed kayıtlarını import et
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <Card className="rounded-2xl border-green-300/40 bg-green-50/30">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><RefreshCw className="h-4 w-4" /> Stale-Revoked Restore (seed import sonrası)</CardTitle>
+                    <CardDescription>
+                        &quot;Stale Invitations Revoke&quot; ile <code>revokedReason:&apos;stale-entity-not-found&apos;</code> olarak işaretlenmiş davetleri, entity şimdi Firestore&apos;da varsa <code>status:&apos;accepted&apos;</code>&apos;e geri çevirir.
+                        Seed import çalıştırdıktan sonra brand-3 / ngo-X gibi kayıtlar yeniden geçerli olur — bunları otomatik canlandırır.
+                        Manuel revoke edilenler (farklı reason) korunur.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={restoreRevivedInvitations}
+                        disabled={running !== null}
+                        className="rounded-xl"
+                    >
+                        {running === 'restoreRevoked' && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Revoked stale davetleri geri al
                     </Button>
                 </CardContent>
             </Card>
