@@ -191,44 +191,54 @@ export default function ClubsPage() {
       ? `${userSchools[0].slice(0, 14)}…`
       : userSchools[0]
     : undefined;
+  // BUG-27: tek filtre state'i (locationFilter) iki satıra ayrıldı —
+  // 2. satır: kulüp türü (Üniversite/Lise), 3. satır: konum (Global/Ülkem/Şehrim/Okulum)
+  const typeTabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[] = [
+    { value: 'university', label: 'Üniversite', icon: GraduationCap },
+    { value: 'highSchool', label: 'Lise', icon: BookOpen },
+  ];
   const locationTabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[] = [
     { value: 'global', label: 'Global', icon: Globe },
     { value: 'country', label: 'Ülkemde', icon: MapPin, sublabel: userCountry || undefined },
     { value: 'city', label: 'Şehrimde', icon: MapPin, sublabel: userCity || undefined },
     { value: 'school', label: 'Okulumda', icon: School, sublabel: userSchoolSublabel },
-    { value: 'university', label: 'Üniversite', icon: GraduationCap },
-    { value: 'highSchool', label: 'Lise', icon: BookOpen },
   ];
+
+  // Ortak tab render helper (iki ayrı tabset için)
+  const renderTabsList = (
+    tabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[],
+    columns: 2 | 4,
+  ) => (
+    <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as typeof locationFilter)}>
+      <TabsList className={`flex w-full overflow-x-auto sm:grid ${columns === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-4'} gap-1 p-1 h-12 rounded-2xl bg-muted/50`}>
+        {tabs.map(t => {
+          const Icon = t.icon;
+          return (
+            <TabsTrigger
+              key={t.value}
+              value={t.value}
+              className="shrink-0 sm:shrink rounded-[1rem] h-full px-3 sm:px-1 text-xs sm:text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
+            >
+              <span className="flex items-center gap-1.5">
+                <Icon className="h-3.5 w-3.5" /> {t.label}
+              </span>
+              {t.sublabel && (
+                <span className="text-[9px] text-muted-foreground font-normal mt-0.5 truncate max-w-[80px]">
+                  {t.sublabel}
+                </span>
+              )}
+            </TabsTrigger>
+          );
+        })}
+      </TabsList>
+    </Tabs>
+  );
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <h1 className="text-2xl font-bold font-headline">Öğrenci Kulüpleri</h1>
 
-      {/* Konum tabları (üst satır): Global / Ülkemde / Şehrimde / Okulumda / Üniversite / Lise */}
-      <Tabs value={locationFilter} onValueChange={(v) => setLocationFilter(v as typeof locationFilter)}>
-        <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-6 gap-1 p-1 h-12 rounded-2xl bg-muted/50">
-          {locationTabs.map(t => {
-            const Icon = t.icon;
-            return (
-              <TabsTrigger
-                key={t.value}
-                value={t.value}
-                className="shrink-0 sm:shrink rounded-[1rem] h-full px-3 sm:px-1 text-xs sm:text-[11px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm flex flex-col items-center justify-center"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Icon className="h-3.5 w-3.5" /> {t.label}
-                </span>
-                {t.sublabel && (
-                  <span className="text-[9px] text-muted-foreground font-normal mt-0.5 truncate max-w-[80px]">
-                    {t.sublabel}
-                  </span>
-                )}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-      </Tabs>
-
+      {/* 1. satır: Arama + filtre/sıralama */}
       <div className="p-0 flex gap-2 items-center sticky top-14 bg-background z-10 py-2">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -324,6 +334,12 @@ export default function ClubsPage() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* 2. satır: Üniversite / Lise */}
+      {renderTabsList(typeTabs, 2)}
+
+      {/* 3. satır: Global / Ülkemde / Şehrimde / Okulumda */}
+      {renderTabsList(locationTabs, 4)}
 
       {/* Login bilgi mesajı */}
       {locationFilter === 'country' && !userCountry && authUser && (
