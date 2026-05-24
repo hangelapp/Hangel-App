@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { ShieldAlert, Loader2, Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
+import { Timestamp, deleteField } from 'firebase/firestore';
 import type { UserRow } from './types';
 
 type EducationRow = { level: string; school: string };
@@ -86,6 +87,9 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   // Adres (detay)
   const [neighborhood, setNeighborhood] = useState('');
   const [fullAddress, setFullAddress] = useState('');
+  // 30-günlük STK seçim kilidi başlangıç tarihi — son STK seçim değişikliği
+  // ngo profil sayfası ve settings/ngo-selection burayı kontrol eder.
+  const [ngoLockSince, setNgoLockSince] = useState(''); // YYYY-MM-DD
 
   const [saving, setSaving] = useState(false);
 
@@ -176,6 +180,13 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       setUsesRegularMedication(vi.emergency?.usesRegularMedication ?? false);
       setHasPhysicalLimitation(vi.emergency?.hasPhysicalLimitation ?? false);
       setEmergencyContacts((vi.emergency?.emergencyContacts || []).map(c => ({ name: c?.name || '', phone: c?.phone || '' })));
+
+      // lastNgoSelectionChange okunması — Firestore Timestamp veya seconds objesi olabilir
+      const rawLock = (user as unknown as { lastNgoSelectionChange?: { toDate?: () => Date; seconds?: number } | null }).lastNgoSelectionChange;
+      let lockDate: Date | null = null;
+      if (rawLock && typeof rawLock.toDate === 'function') lockDate = rawLock.toDate();
+      else if (rawLock && typeof rawLock.seconds === 'number') lockDate = new Date(rawLock.seconds * 1000);
+      setNgoLockSince(lockDate ? lockDate.toISOString().slice(0, 10) : '');
     }
   }, [user]);
 
@@ -206,7 +217,21 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       const prevTravel = ((prevVi.travelInfo as Record<string, unknown>) || {});
       const prevEmergency = ((prevVi.emergency as Record<string, unknown>) || {});
 
+      // 30-günlük STK seçim kilidi: süper-admin tarihi değiştirebilir veya
+      // tamamen silebilir (boş bırakırsa). Boş → deleteField (alanı kaldırır,
+      // sıfırdan limit yazılmamış kabul edilir).
+      const lockPayload: { lastNgoSelectionChange?: Timestamp | ReturnType<typeof deleteField> } = {};
+      if (ngoLockSince.trim()) {
+        const d = new Date(ngoLockSince + 'T00:00:00');
+        if (!isNaN(d.getTime())) lockPayload.lastNgoSelectionChange = Timestamp.fromDate(d);
+      } else {
+        // Eski değer vardı ama admin boşalttı → alanı sil (kilit kalksın)
+        const hadLock = !!(user as unknown as { lastNgoSelectionChange?: unknown }).lastNgoSelectionChange;
+        if (hadLock) lockPayload.lastNgoSelectionChange = deleteField();
+      }
+
       await onSave(user.id, {
+        ...lockPayload,
         name: name.trim(),
         username: username.trim(),
         avatarUrl: avatarUrl.trim(),
@@ -326,6 +351,34 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* STK Seçim Kilidi (30 günlük) */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">STK Seçim Kilidi (30 Gün)</p>
+            <div className="space-y-2">
+              <Label className="text-xs">Son seçim değişikliği tarihi</Label>
+              <Input
+                type="date"
+                value={ngoLockSince}
+                onChange={(e) => setNgoLockSince(e.target.value)}
+                className="rounded-xl"
+              />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Kullanıcı STK seçim/değişiklik kilidi bu tarihten itibaren 30 gün sürer.
+                {ngoLockSince && (() => {
+                  const start = new Date(ngoLockSince + 'T00:00:00');
+                  const ends = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+                  const remaining = Math.max(0, Math.ceil((ends.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+                  return (
+                    <>
+                      {' '}Bitiş: <strong>{ends.toLocaleDateString('tr-TR')}</strong> ({remaining > 0 ? `${remaining} gün kaldı` : 'süre doldu'}).
+                    </>
+                  );
+                })()}
+                {!ngoLockSince && ' Alanı boş bırakırsanız kilit tamamen kaldırılır.'}
+              </p>
+            </div>
           </div>
 
           {/* İletişim */}
