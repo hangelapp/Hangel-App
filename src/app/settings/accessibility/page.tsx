@@ -48,6 +48,7 @@ import { useUser, useFirestore, useMemoFirebase, updateDocumentNonBlocking } fro
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { A11Y_CHANGED_EVENT } from '@/components/shared/accessibility-applier';
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -196,8 +197,8 @@ export default function AccessibilitySettingsPage() {
         };
         
         localStorage.setItem('hangel-a11y-v3', JSON.stringify(settings));
-        // Apply settings immediately to current page
-        window.dispatchEvent(new StorageEvent('storage', { key: 'hangel-a11y-v3', newValue: JSON.stringify(settings) }));
+        // Aynı tab'da anında uygula (storage event same-tab tetiklenmiyor)
+        window.dispatchEvent(new Event(A11Y_CHANGED_EVENT));
 
         // Persist core a11y preferences to Firestore so they sync across devices.
         if (userDocRef) {

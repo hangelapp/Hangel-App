@@ -143,3 +143,40 @@ html.a11y-focus-mode .animate-in,
 html.a11y-focus-mode [data-decorative] {
   animation: none !important;
 }
+
+/* Paragraf aralığı (WCAG 1.4.12) */
+html[data-a11y-paragraph-spacing="wide"] body p {
+  margin-bottom: 1.5em !important;
+}
+html[data-a11y-paragraph-spacing="extra"] body p {
+  margin-bottom: 2.5em !important;
+}
+
+/* Metin hizalama */
+html[data-a11y-text-align="center"] body p,
+html[data-a11y-text-align="center"] body h1,
+html[data-a11y-text-align="center"] body h2,
+html[data-a11y-text-align="center"] body h3 {
+  text-align: center !important;
+}
+html[data-a11y-text-align="justify"] body p {
+  text-align: justify !important;
+}
+
+/* Renk filtresi (renk körlüğü simülasyon değil, kullanıcıya görüş yardımı) */
+html[data-a11y-color-filter="protanopi"] body { filter: url('#a11y-protanopi'); }
+html[data-a11y-color-filter="deuteranopi"] body { filter: url('#a11y-deuteranopi'); }
+html[data-a11y-color-filter="tritanopi"] body { filter: url('#a11y-tritanopi'); }
+html[data-a11y-color-filter="akromatopsi"] body { filter: grayscale(100%) !important; }
+
+/* Klavye ile tam kullanım — focus-visible'ı her zaman göster */
+html.a11y-full-keyboard *:focus {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 2px !important;
+}
+
+/* Otomatik sesleri kapat (autoplay audio/video sessize alma) */
+html.a11y-mute-auto audio[autoplay],
+html.a11y-mute-auto video[autoplay] {
+  /* JS tarafında mute=true yapılmalı, CSS sadece görsel ipucu */
+}
