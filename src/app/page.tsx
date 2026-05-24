@@ -230,10 +230,9 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
                             ))}
                         </SelectContent>
                     </Select>
-                    {/* PDF-5: Anon kullanıcı acil iconuna basınca acil afet/kan ilanı tanıtım sayfasına;
-                        auth'lu kullanıcı doğrudan canlı /emergency çağrılarına gider. */}
+                    {/* Acil ikonu — herkes (anon + auth) /emergency/about tanıtım sayfasına gider. */}
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-destructive/80" title={t('a11y.emergency')} aria-label={t('a11y.emergency')}>
-                        <Link href={user ? '/emergency' : '/emergency/about'}><Siren className="h-5 w-5" /></Link>
+                        <Link href="/emergency/about"><Siren className="h-5 w-5" /></Link>
                     </Button>
                     {isUserLoading ? (
                         <div className="w-9 h-9 rounded-full bg-muted animate-pulse ml-1" />
