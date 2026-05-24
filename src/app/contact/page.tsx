@@ -12,74 +12,20 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData, globalCitiesData, globalDistrictsData } from '@/lib/data';
+import { countryPhoneCodes } from '@/lib/data';
+import { LocationFields, type LocationValue } from '@/components/shared/location-fields';
 
 const institutionTypeOptions = ["Belediye", "Bakanlık", "Üniversite", "Lise", "Şirket", "Diğer"];
 
-const AddressSelection = ({ required = true }: { required?: boolean }) => {
-    const [country, setCountry] = useState('Türkiye');
-    const [city, setCity] = useState('');
-    const [district, setDistrict] = useState('');
-    const [neighborhood, setNeighborhood] = useState('');
-
-    const isTurkey = country === 'Türkiye';
-    const cityOptions = isTurkey ? (allProvinces || []) : (globalCitiesData[country] || []);
-    const districtOptions = isTurkey ? (districtsData[city] || []) : (globalDistrictsData[city] || []);
+const AddressSelection = ({ required = false }: { required?: boolean }) => {
+    const [addr, setAddr] = useState<LocationValue>({ country: 'Türkiye', city: '', district: '', neighborhood: '' });
 
     return (
         <div className="space-y-4 pt-2 border-t border-dashed">
             <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5" /> Adres Bilgileri
             </h4>
-            
-            <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
-                <Select value={country} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }} required={required}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Ülke Seç" /></SelectTrigger>
-                    <SelectContent>
-                        {["Türkiye", "Almanya", "ABD", "Azerbaycan"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{isTurkey ? 'İl' : 'Şehir'}</Label>
-                    {cityOptions.length > 0 ? (
-                        <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required={required}>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                        </Select>
-                    ) : (
-                        <Input placeholder="Şehir girin" value={city} onChange={e => setCity(e.target.value)} required={required} className="h-11 rounded-xl" />
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{isTurkey ? 'İlçe' : 'Bölge'}</Label>
-                    {districtOptions.length > 0 ? (
-                        <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required={required}>
-                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                            <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                        </Select>
-                    ) : (
-                        <Input placeholder="İlçe / Bölge girin" value={district} onChange={e => setDistrict(e.target.value)} required={required} className="h-11 rounded-xl" />
-                    )}
-                </div>
-            </div>
-            
-            <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
-                {isTurkey && city && district && neighborhoodsData[city]?.[district] ? (
-                    <Select value={neighborhood} onValueChange={setNeighborhood} required={required}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seç" /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                            {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                ) : (
-                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required={required} disabled={isTurkey && !district} className="h-11 rounded-xl" />
-                )}
-            </div>
+            <LocationFields value={addr} onChange={setAddr} required={required} />
         </div>
     );
 };

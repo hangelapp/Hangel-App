@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
+import { LocationFields } from '@/components/shared/location-fields';
 
 export default function CompaniesPage() {
     const router = useRouter();
@@ -76,36 +76,16 @@ export default function CompaniesPage() {
                             <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
                                 <MapPin className="h-3.5 w-3.5" /> Şirket Adres Bilgileri
                             </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İl</Label>
-                                    <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }} required>
-                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl Seç" /></SelectTrigger>
-                                        <SelectContent>{(allProvinces || []).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">İlçe</Label>
-                                    <Select value={district} onValueChange={(val) => { setDistrict(val); setNeighborhood(''); }} disabled={!city} required>
-                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İlçe Seç" /></SelectTrigger>
-                                        <SelectContent>{city && (districtsData[city] || []).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Mahalle</Label>
-                                {city && district && neighborhoodsData[city]?.[district] ? (
-                                    <Select value={neighborhood} onValueChange={setNeighborhood} required>
-                                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Mahalle Seç" /></SelectTrigger>
-                                        <SelectContent>
-                                            {neighborhoodsData[city][district].map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                                        </SelectContent>
-                                    </Select>
-                                ) : (
-                                    <Input placeholder="Mahalle girin" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} required disabled={!district} className="h-11 rounded-xl" />
-                                )}
-                            </div>
+                            <LocationFields
+                                value={{ country: 'Türkiye', city, district, neighborhood }}
+                                onChange={(next) => {
+                                    setCity(next.city ?? '');
+                                    setDistrict(next.district ?? '');
+                                    setNeighborhood(next.neighborhood ?? '');
+                                }}
+                                showCountry={false}
+                                required
+                            />
                         </div>
 
                          <div className="space-y-2">

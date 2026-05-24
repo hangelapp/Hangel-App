@@ -22,19 +22,19 @@ import {
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { allCountries, allSdgs } from '@/lib/data';
+import { allCountries, allSdgs, neighborhoodsData } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { LocationFields } from '@/components/shared/location-fields';
 import {
     FileUpload,
     SectionTitle,
     FormLabel,
     FormInput,
     IconInput,
-    placeholderCities,
     clubUniversityOptions,
     brandSectorOptions,
     ngoPlatformOptions,
@@ -602,24 +602,21 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     {/* Adres */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>ADRES BİLGİLERİ</SectionTitle>
-                        {/* TODO: Replace placeholder city list with full Turkish address dataset (il/ilçe/mahalle). */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <FormLabel>İl</FormLabel>
-                                <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl Seç" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{placeholderCities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>İlçe</FormLabel>
-                                <FormInput placeholder="İlçe" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <FormLabel>Mahalle</FormLabel>
-                            <FormInput placeholder="Mahalle" value={formData.neighborhood} onChange={e => setFormData({...formData, neighborhood: e.target.value})} />
-                        </div>
+                        <LocationFields
+                            value={{
+                                country: formData.country,
+                                city: formData.city,
+                                district: formData.district,
+                                neighborhood: formData.neighborhood,
+                            }}
+                            onChange={(next) => setFormData({
+                                ...formData,
+                                city: next.city ?? '',
+                                district: next.district ?? '',
+                                neighborhood: next.neighborhood ?? '',
+                            })}
+                            showCountry={false}
+                        />
                     </div>
 
                     {/* İletişim */}
@@ -794,24 +791,21 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     {/* Adres */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>ADRES BİLGİLERİ</SectionTitle>
-                        {/* TODO: Replace placeholder city list with full Turkish address dataset (il/ilçe/mahalle). */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <FormLabel>İl</FormLabel>
-                                <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl Seç" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">{placeholderCities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>İlçe</FormLabel>
-                                <FormInput placeholder="İlçe" value={formData.district} onChange={e => setFormData({...formData, district: e.target.value})} />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <FormLabel>Mahalle</FormLabel>
-                            <FormInput placeholder="Mahalle" value={formData.neighborhood} onChange={e => setFormData({...formData, neighborhood: e.target.value})} />
-                        </div>
+                        <LocationFields
+                            value={{
+                                country: formData.country,
+                                city: formData.city,
+                                district: formData.district,
+                                neighborhood: formData.neighborhood,
+                            }}
+                            onChange={(next) => setFormData({
+                                ...formData,
+                                city: next.city ?? '',
+                                district: next.district ?? '',
+                                neighborhood: next.neighborhood ?? '',
+                            })}
+                            showCountry={false}
+                        />
                     </div>
 
                     <div className="space-y-6">
@@ -959,7 +953,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <Select value={formData.clubAffiliation} onValueChange={v => setFormData({...formData, clubAffiliation: v})}>
                                     <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl Seçin" /></SelectTrigger>
                                     <SelectContent className="max-h-60">
-                                        {placeholderCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                        {Object.keys(neighborhoodsData).sort((a,b) => a.localeCompare(b, 'tr')).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>

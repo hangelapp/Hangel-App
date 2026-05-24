@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Brand } from "@/lib/types";
-import { neighborhoodsData } from '@/lib/neighborhoods-data';
+import { LocationFields } from '@/components/shared/location-fields';
 
 import type { BrandItem, EditFormData } from './types';
 
@@ -322,105 +322,23 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                 {/* --- Adres --- */}
                 <div className="space-y-4">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Adres</p>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                        <LocationFields
+                            value={{
+                                country: editFormData._country || 'Türkiye',
+                                city: editFormData._city || '',
+                                district: editFormData._district || '',
+                                neighborhood: editFormData._neighborhood || '',
+                            }}
+                            onChange={(next) => onEditFormDataChange({
+                                ...editFormData,
+                                _country: next.country || 'Türkiye',
+                                _city: next.city || '',
+                                _district: next.district || '',
+                                _neighborhood: next.neighborhood || '',
+                            })}
+                        />
                         <div className="space-y-2">
-                            <Label htmlFor="edit-country" className="text-sm font-semibold">Ülke</Label>
-                            <Select
-                                value={editFormData._country || 'Türkiye'}
-                                onValueChange={(v) => onEditFormDataChange({ ...editFormData, _country: v, _city: '', _district: '', _neighborhood: '' })}
-                            >
-                                <SelectTrigger id="edit-country" className="rounded-xl">
-                                    <SelectValue placeholder="Ülke seçin" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Türkiye">Türkiye</SelectItem>
-                                    <SelectItem value="KKTC">KKTC</SelectItem>
-                                    <SelectItem value="Almanya">Almanya</SelectItem>
-                                    <SelectItem value="ABD">ABD</SelectItem>
-                                    <SelectItem value="İngiltere">İngiltere</SelectItem>
-                                    <SelectItem value="Diğer">Diğer</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-city" className="text-sm font-semibold">İl</Label>
-                            {(editFormData._country || 'Türkiye') === 'Türkiye' ? (
-                                <Select
-                                    value={editFormData._city || ''}
-                                    onValueChange={(v) => onEditFormDataChange({ ...editFormData, _city: v, _district: '', _neighborhood: '' })}
-                                >
-                                    <SelectTrigger id="edit-city" className="rounded-xl">
-                                        <SelectValue placeholder="İl seçin" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')).map(city => (
-                                            <SelectItem key={city} value={city}>{city}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            ) : (
-                                <Input
-                                    id="edit-city"
-                                    value={editFormData._city || ''}
-                                    onChange={(e) => onEditFormDataChange({ ...editFormData, _city: e.target.value })}
-                                    className="rounded-xl"
-                                    placeholder="Şehir adı"
-                                />
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-district" className="text-sm font-semibold">İlçe</Label>
-                            {(editFormData._country || 'Türkiye') === 'Türkiye' && editFormData._city && neighborhoodsData[editFormData._city] ? (
-                                <Select
-                                    value={editFormData._district || ''}
-                                    onValueChange={(v) => onEditFormDataChange({ ...editFormData, _district: v, _neighborhood: '' })}
-                                >
-                                    <SelectTrigger id="edit-district" className="rounded-xl">
-                                        <SelectValue placeholder="İlçe seçin" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Object.keys(neighborhoodsData[editFormData._city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => (
-                                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            ) : (
-                                <Input
-                                    id="edit-district"
-                                    value={editFormData._district || ''}
-                                    onChange={(e) => onEditFormDataChange({ ...editFormData, _district: e.target.value })}
-                                    className="rounded-xl"
-                                    placeholder="İlçe"
-                                />
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-neighborhood" className="text-sm font-semibold">Mahalle</Label>
-                            {(editFormData._country || 'Türkiye') === 'Türkiye' && editFormData._city && editFormData._district && neighborhoodsData[editFormData._city]?.[editFormData._district] ? (
-                                <Select
-                                    value={editFormData._neighborhood || ''}
-                                    onValueChange={(v) => onEditFormDataChange({ ...editFormData, _neighborhood: v })}
-                                >
-                                    <SelectTrigger id="edit-neighborhood" className="rounded-xl">
-                                        <SelectValue placeholder="Mahalle seçin" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {neighborhoodsData[editFormData._city][editFormData._district].slice().sort((a, b) => a.localeCompare(b, 'tr')).map(n => (
-                                            <SelectItem key={n} value={n}>{n}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            ) : (
-                                <Input
-                                    id="edit-neighborhood"
-                                    value={editFormData._neighborhood || ''}
-                                    onChange={(e) => onEditFormDataChange({ ...editFormData, _neighborhood: e.target.value })}
-                                    className="rounded-xl"
-                                    placeholder="Mahalle"
-                                />
-                            )}
-                        </div>
-                        <div className="space-y-2 col-span-2">
                             <Label htmlFor="edit-street" className="text-sm font-semibold">Sokak / Cadde / No</Label>
                             <Input
                                 id="edit-street"
