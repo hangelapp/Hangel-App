@@ -136,45 +136,25 @@ export default function NewUserPage() {
 
             const invitationMessage = `Sizi ${entityName} ${entityKindAccusative} ${rolePhrase} olarak yönetmek üzere davet edildiniz.`;
 
-            // 1. Davet kaydı
-            const invitationRef = await addDoc(collection(db, COLLECTIONS.userInvitations), {
-                ngoId,
-                entityKind,
-                entityName,
-                inviteeUserId: matchedUser.id,
-                inviteeName: matchedUser.name || matchedUser.displayName || '',
-                inviteePhone: normalizedSearch,
-                inviteeEmail: matchedUser.personalInfo?.email || null,
-                role,
-                status: 'pending',
-                invitedBy: authUser?.uid || null,
-                invitedAt: serverTimestamp(),
-                message: invitationMessage,
+            // Server-side davet endpoint'i: Admin SDK ile davetlinin
+            // managed*Id + roleTitle alanlarını anında set eder (SEC-2026-05-25
+            // hardened rules sonrası client'tan yazılamaz) ve userInvitations +
+            // notifications kayıtlarını atomik tek batch'te oluşturur.
+            const token = await authUser?.getIdToken();
+            if (!token) throw new Error('Auth token alınamadı');
+            const apiRes = await fetch('/api/ngo-admin/users/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ inviteeUserId: matchedUser.id, role }),
             });
-
-            // 2. Uygulama içi bildirim
-            try {
-                await addDoc(collection(db, COLLECTIONS.notifications), {
-                    userId: matchedUser.id,
-                    type: 'invitation',
-                    title: `🤝 ${entityName} Yetkili Daveti`,
-                    body: invitationMessage,
-                    data: {
-                        invitationId: invitationRef.id,
-                        ngoId,
-                        entityName,
-                        entityKind,
-                        role,
-                    },
-                    read: false,
-                    createdAt: serverTimestamp(),
-                    createdBy: authUser?.uid || null,
-                });
-            } catch (notifErr) {
-                console.warn('Bildirim oluşturulamadı (rules?):', notifErr);
+            const apiJson = await apiRes.json().catch(() => ({} as Record<string, unknown>));
+            if (!apiRes.ok) {
+                const errMsg = (apiJson as { error?: string }).error || `HTTP ${apiRes.status}`;
+                throw new Error(errMsg);
             }
+            const invitationId = (apiJson as { invitationId?: string }).invitationId;
 
-            // 3. Mail kuyruğu (sunucu tarafı/Cloud Function tarafından işlenecek)
+            // Mail kuyruğu — best-effort, fail olsa da davet işlemi başarılı sayılır.
             const inviteeEmail = matchedUser.personalInfo?.email;
             if (inviteeEmail) {
                 try {
@@ -189,7 +169,7 @@ export default function NewUserPage() {
                             entityName,
                             entityKind,
                             role: rolePhrase,
-                            invitationId: invitationRef.id,
+                            invitationId,
                         },
                         status: 'pending',
                         createdAt: serverTimestamp(),
@@ -201,8 +181,8 @@ export default function NewUserPage() {
             }
 
             toast({
-                title: 'Davet Gönderildi',
-                description: `${matchedUser.name || 'Üye'} kişisine bildirim ve e-posta gönderildi.`,
+                title: 'Yetkilendirme Tamamlandı',
+                description: `${matchedUser.name || 'Üye'} kişisi ${rolePhrase} olarak panelinize eklendi.`,
             });
             router.push('/ngo-admin/users');
         } catch (err) {
