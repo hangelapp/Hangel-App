@@ -49,58 +49,61 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
         className,
       )}
     >
-      <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 border shrink-0">
+      {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot */}
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div className="flex items-baseline flex-wrap gap-1.5 min-w-0">
+          <p className="font-bold text-sm leading-tight">{ngo.name}</p>
+          {shortName && <span className="text-xs text-muted-foreground font-medium">({shortName})</span>}
+        </div>
+        {rightSlot && <div className="shrink-0">{rightSlot}</div>}
+      </div>
+
+      {/* Satır 2: [Logo] Şeffaflık | Bağışçı | Gönüllü | Kategori */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <Avatar className="h-10 w-10 border shrink-0">
           <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
           <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Ad + kısa ad */}
-          <div className="flex items-baseline flex-wrap gap-1.5">
-            <p className="font-bold text-sm leading-tight">{ngo.name}</p>
-            {shortName && <span className="text-xs text-muted-foreground font-medium">({shortName})</span>}
-          </div>
-
-          {/* Kategori */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] flex-1 min-w-0">
+          <span className="flex items-center gap-1 font-medium" title="Şeffaflık endeksi">
+            <ShieldCheck className="h-3 w-3 text-primary/80" />
+            <span>Şeffaflık: <span className="font-bold">%{transparency}</span></span>
+          </span>
+          <span className="text-muted-foreground/40">|</span>
+          <span className="flex items-center gap-1 font-medium" title="Bağışçı sayısı">
+            <Heart className="h-3 w-3 text-rose-500" />
+            <span>Bağışçı: <span className="font-bold">{donors.toLocaleString('tr-TR')}</span></span>
+          </span>
+          <span className="text-muted-foreground/40">|</span>
+          <span className="flex items-center gap-1 font-medium" title="Gönüllü sayısı">
+            <Users className="h-3 w-3 text-emerald-600" />
+            <span>Gönüllü: <span className="font-bold">{volunteers.toLocaleString('tr-TR')}</span></span>
+          </span>
           {ngo.category && (
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Tag className="h-3 w-3 shrink-0" />
-              <span className="truncate">{ngo.category}</span>
-            </p>
-          )}
-
-          {/* Şeffaflık | Bağışçı | Gönüllü */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
-            <span className="flex items-center gap-1 font-medium" title="Şeffaflık endeksi">
-              <ShieldCheck className="h-3 w-3 text-primary/80" />
-              <span>Şeffaflık <span className="font-bold">%{transparency}</span></span>
-            </span>
-            <span className="flex items-center gap-1 font-medium" title="Bağışçı sayısı">
-              <Heart className="h-3 w-3 text-rose-500" />
-              <span>Bağışçı <span className="font-bold">{donors.toLocaleString('tr-TR')}</span></span>
-            </span>
-            <span className="flex items-center gap-1 font-medium" title="Gönüllü sayısı">
-              <Users className="h-3 w-3 text-emerald-600" />
-              <span>Gönüllü <span className="font-bold">{volunteers.toLocaleString('tr-TR')}</span></span>
-            </span>
-          </div>
-
-          {/* Platformlar (varsa hepsi) */}
-          {platforms.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 pt-0.5">
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium shrink-0">
-                <Network className="h-3 w-3" /> Platform
+            <>
+              <span className="text-muted-foreground/40">|</span>
+              <span className="flex items-center gap-1 text-muted-foreground font-medium min-w-0" title="Kategori">
+                <Tag className="h-3 w-3 shrink-0" />
+                <span className="truncate">{ngo.category}</span>
               </span>
-              {platforms.map(p => (
-                <Badge key={p} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
-                  {p}
-                </Badge>
-              ))}
-            </div>
+            </>
           )}
         </div>
-        {rightSlot && <div className="shrink-0 pt-1">{rightSlot}</div>}
       </div>
+
+      {/* Satır 3: Platformlar */}
+      {platforms.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 pt-2 pl-[3.25rem]">
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium shrink-0">
+            <Network className="h-3 w-3" /> Platform
+          </span>
+          {platforms.map(p => (
+            <Badge key={p} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+              {p}
+            </Badge>
+          ))}
+        </div>
+      )}
     </Card>
   );
 

@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDocs, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { NgoListItem } from '@/components/shared/ngo-list-item';
 import {
   Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
   XCircle, Search, Database, Upload, RefreshCw, X, ArrowDownUp,
@@ -811,51 +812,38 @@ export default function NgosPage() {
               const isPending = ngo.status === 'Beklemede';
               const isRejected = ngo.status === 'Reddedildi';
               const isApproved = ngo.source === 'ngos' && ngo.status === 'Aktif';
+              const statusBadge = isApproved ? <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>
+                : isPending ? <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>
+                : isPassive ? <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>
+                : isRejected ? <Badge variant="destructive" className="text-[9px] font-black uppercase">REDDEDİLDİ</Badge>
+                : null;
               return (
-                <div key={ngo.id}
-                     className={cn('p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:bg-muted/30 transition-colors',
-                       (isPassive || isRejected) && 'opacity-60 grayscale')}>
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <Avatar className="h-12 w-12 border-2 border-white shadow">
-                      <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-1" />
-                      <AvatarFallback className="font-black">{ngo.name?.[0] || '?'}</AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-black text-base text-[#1d1d1f] tracking-tight truncate">{ngo.name}</p>
-                        {isApproved && <Badge className="bg-green-600 text-white text-[9px] font-black uppercase">YAYINDA</Badge>}
-                        {isPending && <Badge className="bg-amber-500 text-white text-[9px] font-black uppercase">ONAY BEKLİYOR</Badge>}
-                        {isPassive && <Badge variant="secondary" className="text-[9px] font-black uppercase">PASİF</Badge>}
-                        {isRejected && <Badge variant="destructive" className="text-[9px] font-black uppercase">REDDEDİLDİ</Badge>}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground font-medium flex-wrap">
-                        {ngo.source === 'ngos' && (
-                          <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> {ngo.transparencyScore || 0} Puan</span>
-                        )}
-                        {ngo.type && <><span>•</span> <span className="capitalize">{ngo.type}</span></>}
-                        {ngo.category && <><span>•</span> <span>{ngo.category}</span></>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 flex-wrap" onClick={e => e.stopPropagation()}>
+                <div key={ngo.id} className={cn('p-3 space-y-3', (isPassive || isRejected) && 'opacity-60')}>
+                  {/* Standart STK kartı + status badge sağ üstte */}
+                  <NgoListItem
+                    ngo={ngo as unknown as Parameters<typeof NgoListItem>[0]['ngo']}
+                    href={null}
+                    rightSlot={statusBadge}
+                  />
+                  {/* Aksiyon butonları — kartın altında */}
+                  <div className="flex items-center gap-2 flex-wrap pl-2" onClick={e => e.stopPropagation()}>
                     {ngo.source === 'ngos' && (
                       <>
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
+                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
                           <Link href={`/ngos/${ngo.id}`}>Profili Gör</Link>
                         </Button>
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
-                          <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-2 h-4 w-4" />Düzelt</Link>
+                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
+                          <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-1.5 h-3.5 w-3.5" />Düzelt</Link>
                         </Button>
                         <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} onChangeRole={handleChangeAdminRole} />
-                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4"
+                        <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3"
                                 onClick={() => handleToggleStatus(ngo.id, ngo.status)}>
-                          {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife</>}
+                          {isPassive ? <><Power className="mr-1.5 h-3.5 w-3.5" /> Aktif</> : <><PowerOff className="mr-1.5 h-3.5 w-3.5" /> Pasife</>}
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
-                              <Trash2 className="h-5 w-5" />
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10 rounded-xl" aria-label="Sil">
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent className="rounded-[2rem]">
@@ -878,7 +866,7 @@ export default function NgosPage() {
                       </>
                     )}
                     {ngo.source === 'applications' && (
-                      <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
+                      <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3" asChild>
                         <Link href="/super-admin/applications">Başvuru Yönetimine Git</Link>
                       </Button>
                     )}
