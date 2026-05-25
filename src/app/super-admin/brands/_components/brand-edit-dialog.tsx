@@ -68,29 +68,53 @@ export const BrandEditDialog = ({ brand, editFormData, onEditFormDataChange, log
                             />
                         </div>
                         <div className="space-y-2 col-span-2">
-                            <Label htmlFor="edit-categories" className="text-sm font-semibold">Ek Kategoriler (virgülle ayır)</Label>
+                            <Label htmlFor="edit-categories" className="text-sm font-semibold">Ek Kategoriler (çoklu seçim)</Label>
+                            {/* Çip stilinde multi-select — tıkla ekle/çıkar */}
+                            <div className="flex flex-wrap gap-1.5 p-3 rounded-xl border bg-card">
+                                {[
+                                    'Gıda', 'Tekstil', 'Teknoloji', 'Sağlık', 'Eğitim', 'Finans', 'Lojistik',
+                                    'Turizm', 'İnşaat', 'Otomotiv', 'Enerji', 'Tarım', 'Hizmet', 'Perakende',
+                                    'Üretim', 'Medya', 'Kozmetik', 'Mobilya', 'Giyim', 'Spor', 'Outdoor',
+                                    'Ev & Yaşam', 'Hediyelik', 'Elektronik', 'Mücevher', 'Kitap', 'Müzik',
+                                    'Oyuncak', 'Hayvan', 'Diğer',
+                                ].map(opt => {
+                                    const sel = (editFormData.categories || []).includes(opt);
+                                    return (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            onClick={() => {
+                                                const current = editFormData.categories || [];
+                                                const next = sel ? current.filter(c => c !== opt) : [...current, opt];
+                                                onEditFormDataChange({ ...editFormData, categories: next });
+                                            }}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                                                sel ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-accent'
+                                            }`}
+                                        >
+                                            {opt}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {/* Manuel ekleme — listede olmayan kategori için */}
                             <Input
-                                id="edit-categories"
-                                value={(editFormData.categories || []).join(', ')}
-                                onChange={(e) => {
-                                    const list = e.target.value
-                                        .split(',')
-                                        .map(s => s.trim())
-                                        .filter(Boolean);
-                                    onEditFormDataChange({ ...editFormData, categories: list });
+                                id="edit-categories-manual"
+                                placeholder="Listede olmayan kategori? Buraya yaz + Enter"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const val = e.currentTarget.value.trim();
+                                        if (val && !(editFormData.categories || []).includes(val)) {
+                                            onEditFormDataChange({ ...editFormData, categories: [...(editFormData.categories || []), val] });
+                                            e.currentTarget.value = '';
+                                        }
+                                    }
                                 }}
-                                placeholder="Örn: Giyim, Spor, Outdoor — birden fazla kategoride satılıyorsa hepsini yazın"
-                                className="rounded-xl"
+                                className="rounded-xl text-xs"
                             />
-                            {editFormData.categories && editFormData.categories.length > 0 && (
-                                <div className="flex flex-wrap gap-1 pt-1">
-                                    {editFormData.categories.map(c => (
-                                        <span key={c} className="text-[10px] font-bold uppercase tracking-wider bg-muted px-2 py-0.5 rounded-full">{c}</span>
-                                    ))}
-                                </div>
-                            )}
                             <p className="text-[11px] text-muted-foreground">
-                                Marka birden fazla kategoride ürün satıyorsa burada listele; market sayfasında her kategoride görünür.
+                                Marka birden fazla kategoride ürün satıyorsa hepsini seç; market sayfasında her kategoride görünür ve profilde rozet olarak listelenir.
                             </p>
                         </div>
                         <div className="space-y-2">

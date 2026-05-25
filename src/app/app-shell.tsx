@@ -462,6 +462,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const publicWebsitePaths = [
         '/',
+        '/home',
         '/onboarding',
         '/about',
         '/press',

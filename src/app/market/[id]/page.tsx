@@ -280,7 +280,14 @@ export default function BrandProfilePage() {
                     <p>{brand.about}</p>
                     <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-dashed">
                         <Badge variant="secondary" className="font-bold rounded-lg">{brand.type}</Badge>
-                        <Badge variant="secondary" className="font-bold rounded-lg">{brand.category}</Badge>
+                        {/* Birincil kategori + ek kategoriler — multi-cat desteği. */}
+                        {(() => {
+                            const cats = Array.isArray(brand.categories) ? brand.categories.filter(Boolean) : [];
+                            const all = brand.category && !cats.includes(brand.category) ? [brand.category, ...cats] : cats.length > 0 ? cats : (brand.category ? [brand.category] : []);
+                            return all.map(c => (
+                                <Badge key={c} variant="secondary" className="font-bold rounded-lg">{c}</Badge>
+                            ));
+                        })()}
                         {brand.joinDate && <Badge variant="outline" className='text-[9px] uppercase font-black tracking-widest bg-muted/50 border-none'>Katılım: {brand.joinDate}</Badge>}
                     </div>
                 </CardContent>
