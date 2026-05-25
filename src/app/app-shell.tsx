@@ -60,6 +60,10 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -155,6 +159,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const { toast } = useToast();
     // 2./3. girişte bilgi yönlendirmesi mantığı sadece bir kez çalışsın diye guard
     const loginCountHandledRef = useRef(false);
+
+    // Bağış STK seçimi yapmamış kullanıcılar için pop-up uyarı
+    const [showNgoSelectionPrompt, setShowNgoSelectionPrompt] = useState(false);
+    const ngoPromptShownRef = useRef(false);
 
     const translateItems = (items: SideNavItem[]) => items.map(it => ({ ...it, label: t(it.label) }));
 
@@ -423,6 +431,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         router.push(gateTarget);
     }, [authUser, isUserLoading, isMounted, userData, isSuperAdmin, isNgoAdmin, pathname, router]);
 
+    // Bağış STK seçimi yapmamış mevcut kullanıcılar için pop-up uyarı.
+    // Onboarding gate'inden ayrıdır — yeni kullanıcı zaten /settings/ngo-selection'a
+    // yönlendirilir. Bu pop-up, eski/mevcut kullanıcıların supportedNgos boş ya da
+    // 2'den az olduğu durumda app içi her sayfada bir kez gösterilir.
+    useEffect(() => {
+        if (isUserLoading || !authUser || !isMounted || !userData) return;
+        if (isSuperAdmin || isNgoAdmin) return; // sadece bireysel kullanıcı
+        if (ngoPromptShownRef.current) return;
+        // Onboarding gate kendi yönlendirmesini yapıyorsa popup gösterme
+        const onboardingComplete = (userData as { onboardingComplete?: boolean }).onboardingComplete;
+        const hasVolunteerInfo = !!(userData as { volunteerInfo?: unknown }).volunteerInfo;
+        const supportedNgos = Array.isArray(userData.supportedNgos) ? userData.supportedNgos : [];
+        const looksGenuinelyNew = onboardingComplete === false || (supportedNgos.length === 0 && !hasVolunteerInfo);
+        if (looksGenuinelyNew) return; // onboarding gate halleder
+        // Settings/ngo-selection üzerindeyken popup açmayalım
+        if (pathname.startsWith('/settings/ngo-selection')) return;
+        if (supportedNgos.length < 2) {
+            ngoPromptShownRef.current = true;
+            setShowNgoSelectionPrompt(true);
+        }
+    }, [authUser, isUserLoading, isMounted, userData, isSuperAdmin, isNgoAdmin, pathname]);
+
     if (!isMounted) {
         return <div className="min-h-screen bg-background">{children}</div>;
     }
@@ -524,6 +554,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {children}
             </main>
           </div>
+
+          {/* Bağış STK seçimi yapmamış kullanıcılar için pop-up uyarı */}
+          <AlertDialog open={showNgoSelectionPrompt} onOpenChange={setShowNgoSelectionPrompt}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                  <HeartHandshake className="h-5 w-5 text-primary" />
+                  Bağışçısı Olduğun STK'ları Seç
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Etki yaratabilmen ve sana özel öneriler alabilmen için bağışçısı olduğun{' '}
+                  <strong>en az 2 STK</strong> seçmelisin. Seçim 30 günde bir değiştirilebilir.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Daha sonra</AlertDialogCancel>
+                <AlertDialogAction onClick={() => router.push('/settings/ngo-selection')}>
+                  STK'larımı Seç
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
     );
 }

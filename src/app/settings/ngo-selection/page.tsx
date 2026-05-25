@@ -149,33 +149,25 @@ export default function NgoSelectionPage() {
         beneficiaryFilter.length;
 
     const filteredNgos = useMemo(() => {
-        let filtered = [...activeNgos];
-
-        if (typeFilter !== 'Tümü') filtered = filtered.filter(n => n.type === typeFilter);
-
-        if (searchTerm) {
-            const lower = searchTerm.toLowerCase();
-            filtered = filtered.filter(n =>
-                n.name.toLowerCase().includes(lower) || n.category.toLowerCase().includes(lower)
-            );
-        }
-
-        if (categoryFilter.length > 0) filtered = filtered.filter(n => categoryFilter.includes(n.category));
-
-        if (cityFilter) {
-            filtered = filtered.filter(n => {
+        // Seçili STK'lar her zaman görünsün — kullanıcı seçtiğini kaybetmesin.
+        // Filtre eşleşmesi olmasa bile selectedNgos içindekiler kalır.
+        const selectedSet = new Set(selectedNgos);
+        const passesFilters = (n: typeof activeNgos[number]) => {
+            if (typeFilter !== 'Tümü' && n.type !== typeFilter) return false;
+            if (searchTerm) {
+                const lower = searchTerm.toLowerCase();
+                if (!(n.name.toLowerCase().includes(lower) || n.category.toLowerCase().includes(lower))) return false;
+            }
+            if (categoryFilter.length > 0 && !categoryFilter.includes(n.category)) return false;
+            if (cityFilter) {
                 const city = getNgoCity(n);
-                return city ? city === cityFilter : false;
-            });
-        }
-
-        if (platformFilter.length > 0) {
-            filtered = filtered.filter(n => (n.memberOf ?? []).some(p => platformFilter.includes(p)));
-        }
-
-        if (beneficiaryFilter.length > 0) {
-            filtered = filtered.filter(n => (n.beneficiaryGroups ?? []).some(b => beneficiaryFilter.includes(b)));
-        }
+                if (city !== cityFilter) return false;
+            }
+            if (platformFilter.length > 0 && !(n.memberOf ?? []).some(p => platformFilter.includes(p))) return false;
+            if (beneficiaryFilter.length > 0 && !(n.beneficiaryGroups ?? []).some(b => beneficiaryFilter.includes(b))) return false;
+            return true;
+        };
+        const filtered = activeNgos.filter(n => selectedSet.has(n.id) || passesFilters(n));
 
         filtered.sort((a, b) => {
             // Seçili STK'lar her zaman üstte
@@ -228,9 +220,13 @@ export default function NgoSelectionPage() {
 
     const handleSave = async () => {
         if (!userDocRef || !db) return;
-        // Onboarding zorunluluğu: devam etmeden önce en az 1 STK seçilmeli (max 2).
-        if (isOnboarding && selectedNgos.length < 1) {
-            toast({ variant: 'destructive', title: t('dashboard.settingsNgoSelection.toastLimitTitle'), description: 'Devam etmek için en az 1 STK seçmelisin.' });
+        // Zorunluluk: en az 2 STK seçilmeli (hem onboarding hem sonradan değişiklik için).
+        if (selectedNgos.length < 2) {
+            toast({
+                variant: 'destructive',
+                title: t('dashboard.settingsNgoSelection.toastLimitTitle'),
+                description: 'En az 2 STK seçmen gerekiyor.',
+            });
             return;
         }
         // Diff hesapla: kullanıcının seçimine eklenen/çıkarılan STK'lar.
