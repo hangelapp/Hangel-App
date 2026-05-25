@@ -25,7 +25,7 @@ import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTime
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 import {
-  Loader2, ShieldCheck, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
+  Loader2, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
   XCircle, Search, Database, Upload, RefreshCw, X, ArrowDownUp,
 } from 'lucide-react';
 import type { NGO } from '@/lib/types';

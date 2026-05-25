@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
-import { Loader2, PlayCircle, Sparkles, Globe, FileSpreadsheet, Wand2, Wallet, ChevronDown, ChevronRight, Download, CheckCircle2, Circle, Mail, Phone, MapPin, Hash, Users, Network, Award, FileText, Search } from 'lucide-react';
+import { Loader2, PlayCircle, Sparkles, Globe, FileSpreadsheet, Wand2, Wallet, ChevronDown, ChevronRight, Download, CheckCircle2, Mail, Phone, MapPin, Hash, Users, Network, Award, FileText, Search } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
