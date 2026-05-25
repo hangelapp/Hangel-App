@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle, UserCircle2 } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle, UserCircle2, Sparkles, ShieldCheck, Flame, Award, Instagram, Linkedin, Twitter, Calendar, GraduationCap } from 'lucide-react';
 import type { StudentClub } from '@/lib/types';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -114,8 +114,9 @@ export default function ClubProfilePage() {
         avatarUrl: inv.inviteeAvatarUrl,
       }));
   }, [adminInvitations]);
-  const president = activeAdmins.find(a => a.role === 'Genel Yönetici');
-  const otherBoardMembers = activeAdmins.filter(a => a.role !== 'Genel Yönetici');
+  // 'Kulüp Başkanı' yeni rol (Faz 3), eski kayıtlar 'Genel Yönetici' ile kaldı.
+  const president = activeAdmins.find(a => a.role === 'Kulüp Başkanı' || a.role === 'Genel Yönetici');
+  const otherBoardMembers = activeAdmins.filter(a => a.role !== 'Kulüp Başkanı' && a.role !== 'Genel Yönetici');
 
   const handleToggleJoin = async () => {
     if (!authUser) {
@@ -233,11 +234,29 @@ export default function ClubProfilePage() {
                 <AvatarImage src={club.avatarUrl} alt={club.name} className="object-contain p-2"/>
                 <AvatarFallback>{club.name.slice(0,2)}</AvatarFallback>
             </Avatar>
-             <div className="space-y-1 pt-16">
-                 <h1 className="text-2xl font-bold font-headline">{club.name}</h1>
+             <div className="space-y-1 pt-16 min-w-0">
+                 <h1 className="text-2xl font-bold font-headline truncate">{club.name}</h1>
                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
                     <School className="h-3.5 w-3.5" />
-                    <span>{club.university}</span>
+                    <span className="truncate">{club.university}</span>
+                 </div>
+                 {/* Kulüp rozetleri — Doğrulanmış / Aktif / Kampüs Elçisi */}
+                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    {club.verified && (
+                        <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-blue-300 text-[10px] font-bold uppercase tracking-wider">
+                            <ShieldCheck className="h-3 w-3 mr-1" /> Doğrulanmış Kulüp
+                        </Badge>
+                    )}
+                    {club.activeClub && (
+                        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-100 border-orange-300 text-[10px] font-bold uppercase tracking-wider">
+                            <Flame className="h-3 w-3 mr-1" /> Aktif Kulüp
+                        </Badge>
+                    )}
+                    {club.campusAmbassador && (
+                        <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-purple-300 text-[10px] font-bold uppercase tracking-wider">
+                            <Award className="h-3 w-3 mr-1" /> Kampüs Elçisi
+                        </Badge>
+                    )}
                  </div>
             </div>
         </div>
@@ -281,40 +300,102 @@ export default function ClubProfilePage() {
             <Card>
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Info className="h-5 w-5 text-primary"/> Kulüp Hakkında</CardTitle></CardHeader>
                 <CardContent className="text-sm text-muted-foreground space-y-4">
-                    {club.category && (
-                        <div className="flex items-center gap-2 mb-4">
-                            <Tag className="h-4 w-4 text-primary" />
-                            <Badge variant="secondary" className="font-bold">{club.category}</Badge>
+                    {club.shortDescription && (
+                        <p className="font-medium text-foreground/90 leading-relaxed border-l-4 border-primary pl-3 italic">
+                            {club.shortDescription}
+                        </p>
+                    )}
+                    {club.eventFrequency && (
+                        <div className="flex items-center gap-2 text-xs">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            <span className="text-muted-foreground">Etkinlik sıklığı:</span>
+                            <span className="font-bold text-foreground">{club.eventFrequency}</span>
                         </div>
                     )}
-                    <p className="leading-relaxed">
-                        {club.description} Kulübümüz, öğrenciler arasında {(club.category ?? 'genel').toLowerCase()} ruhunu teşvik etmek, yenilikçi fikirleri desteklemek ve geleceğin liderlerini yetiştirmek amacıyla kurulmuştur. Düzenlediğimiz atölyeler, zirveler ve yarışmalarla üyelerimize ilham veriyor ve onları iş dünyasına hazırlıyoruz.
-                    </p>
+                    {club.description && (
+                        <p className="leading-relaxed">{club.description}</p>
+                    )}
                     {club.joinDate && (
                         <p className="text-xs pt-4 border-t italic">hangel&apos;a Katılım Tarihi: {club.joinDate}</p>
                     )}
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader><CardTitle className="text-lg">Vizyonumuz</CardTitle></CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                    <p className="leading-relaxed">{club.vision}</p>
-                </CardContent>
-            </Card>
+
+            {/* Çalışma Alanları — kategorilerden oluşur (STK Etki Alanları muadili) */}
+            {(club.categories && club.categories.length > 0) || club.category ? (
+                <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Tag className="h-5 w-5 text-primary"/> Çalışma Alanları</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                            {(club.categories && club.categories.length > 0 ? club.categories : [club.category!]).map(cat => (
+                                <Badge key={cat} variant="secondary" className="font-medium text-xs">{cat}</Badge>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+            ) : null}
+
+            {club.vision && (
+                <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/> Vizyonumuz</CardTitle></CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                        <p className="leading-relaxed">{club.vision}</p>
+                    </CardContent>
+                </Card>
+            )}
+
             <Card>
-                <CardHeader><CardTitle className="text-lg">İletişim</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Mail className="h-5 w-5 text-primary"/> İletişim</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                     {club.contact?.email && (
-                        <div className="flex items-center gap-3 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{club.contact.email}</span></div>
+                        <a href={`mailto:${club.contact.email}`} className="flex items-center gap-3 text-sm hover:text-primary"><Mail className="h-4 w-4 text-muted-foreground" /><span>{club.contact.email}</span></a>
                     )}
                     {club.contact?.phone && (
-                        <div className="flex items-center gap-3 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{club.contact.phone}</span></div>
+                        <a href={`tel:${club.contact.phone}`} className="flex items-center gap-3 text-sm hover:text-primary"><Phone className="h-4 w-4 text-muted-foreground" /><span>{club.contact.phone}</span></a>
                     )}
                     {club.contact?.website && (
-                        <div className="flex items-center gap-3 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /><span>{club.contact.website}</span></div>
+                        <a href={club.contact.website.startsWith('http') ? club.contact.website : `https://${club.contact.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary"><Globe className="h-4 w-4 text-muted-foreground" /><span className="truncate">{club.contact.website}</span></a>
                     )}
                 </CardContent>
             </Card>
+
+            {/* Sosyal Medya */}
+            {(club.contact?.instagram || club.contact?.linkedin || club.contact?.twitter) && (
+                <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Globe className="h-5 w-5 text-primary"/> Sosyal Medya</CardTitle></CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                        {club.contact.instagram && (
+                            <a href={club.contact.instagram.startsWith('http') ? club.contact.instagram : `https://instagram.com/${club.contact.instagram.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
+                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Instagram className="h-4 w-4" /> <span className="text-sm">{club.contact.instagram}</span>
+                            </a>
+                        )}
+                        {club.contact.linkedin && (
+                            <a href={club.contact.linkedin.startsWith('http') ? club.contact.linkedin : `https://linkedin.com/company/${club.contact.linkedin.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
+                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Linkedin className="h-4 w-4" /> <span className="text-sm">{club.contact.linkedin}</span>
+                            </a>
+                        )}
+                        {club.contact.twitter && (
+                            <a href={club.contact.twitter.startsWith('http') ? club.contact.twitter : `https://x.com/${club.contact.twitter.replace(/^@/, '')}`} target="_blank" rel="noopener noreferrer"
+                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border bg-card hover:bg-accent transition-colors">
+                                <Twitter className="h-4 w-4" /> <span className="text-sm">{club.contact.twitter}</span>
+                            </a>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Akademik Danışman — sadece ad, iletişim KVKK private */}
+            {club.advisorName && (
+                <Card>
+                    <CardHeader><CardTitle className="text-lg flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary"/> Akademik Danışman</CardTitle></CardHeader>
+                    <CardContent>
+                        <p className="text-sm font-bold">{club.advisorName}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1">İletişim bilgileri KVKK gereği gizlidir.</p>
+                    </CardContent>
+                </Card>
+            )}
         </TabsContent>
         <TabsContent value="stats" className="p-4 space-y-4">
              <Card>

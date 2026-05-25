@@ -460,6 +460,17 @@ export default function ClubsPage() {
             </p>
             {universitiesGrouped.map(({ university, clubs: uClubs, memberTotal }) => {
               const isOpen = expandedUniversity === university;
+              // Okulun kulüplerinde toplam üye ve puan toplamı (clubStats'ten)
+              // memberTotal = okul öğrencileri (unique users), bu farklı bir metrik.
+              let totalClubMembers = 0;
+              let totalClubPoints = 0;
+              for (const c of uClubs) {
+                const s = clubStats.get(c.id);
+                if (s) {
+                  totalClubMembers += s.members;
+                  totalClubPoints += s.points;
+                }
+              }
               return (
                 <Card key={university} className="overflow-hidden">
                   <button
@@ -470,11 +481,25 @@ export default function ClubsPage() {
                     <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
                       <GraduationCap className="h-5 w-5" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 space-y-1">
                       <p className="font-bold text-sm truncate">{university}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        <Badge variant="secondary" className="text-[10px]">{uClubs.length} kulüp</Badge>
-                        <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {memberTotal} üye</span>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap">
+                        <Badge variant="secondary" className="text-[10px] font-bold">{uClubs.length} kulüp</Badge>
+                        <span className="flex items-center gap-1 font-medium">
+                          <Users className="h-3 w-3" /> {totalClubMembers.toLocaleString('tr-TR')} kulüp üyesi
+                        </span>
+                        <span className="text-muted-foreground/40">|</span>
+                        <span className="flex items-center gap-1 font-medium" title="Üye etki puanları toplamı">
+                          <span className="font-bold">{totalClubPoints.toLocaleString('tr-TR')}</span> puan
+                        </span>
+                        {memberTotal > 0 && (
+                          <>
+                            <span className="text-muted-foreground/40">|</span>
+                            <span className="flex items-center gap-1 font-medium" title="Bu okulda profilini yapan üye sayısı">
+                              {memberTotal} okul üyesi
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />

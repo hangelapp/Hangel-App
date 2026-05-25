@@ -381,6 +381,12 @@ export type StudentClub = {
     university: string;
     type: 'university' | 'high-school';
     category?: string;
+    /** Çoklu kategori — başvuru formundan gelir. Profil "Çalışma Alanları" bölümünde rozet listesi. */
+    categories?: string[];
+    /** Etkinlik sıklığı: Haftalık / Aylık / Dönemsel / Düzensiz */
+    eventFrequency?: string;
+    /** Kısa kulüp tanıtımı (2-3 cümle) — başvuru formundan. */
+    shortDescription?: string;
     avatarUrl: string;
     coverPhotoUrl: string;
     members: number;
@@ -392,10 +398,21 @@ export type StudentClub = {
       email: string;
       phone: string;
       website: string;
+      instagram?: string;
+      linkedin?: string;
+      twitter?: string;
     };
+    /** Akademik danışmanın adı — iletişim bilgileri KVKK private, sadece admin görür */
+    advisorName?: string;
     projects?: number;
     volunteerHours?: number;
     activeMemberRate?: number;
+    /** Super-admin onayladığında true olur → "Doğrulanmış Kulüp" rozeti */
+    verified?: boolean;
+    /** Hangel kampüs elçisi — başvuruda veya sonradan super-admin atar → "Kampüs Elçisi" rozeti */
+    campusAmbassador?: boolean;
+    /** Okulun en aktif 3 kulübünden biri (super-admin manuel set veya aktivite metriğinden) */
+    activeClub?: boolean;
 };
 
 export type SchoolRepresentative = {

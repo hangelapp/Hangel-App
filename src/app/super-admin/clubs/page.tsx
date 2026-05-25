@@ -57,9 +57,13 @@ interface ClubApplication {
 
 const normalizePhone = (raw: string): string => raw.replace(/[^0-9]/g, '');
 
-// Kulüp roller — super-admin/ngos + brands ile aynı kalıp.
-type ClubRole = 'Genel Yönetici' | 'Etkinlik Yöneticisi' | 'İçerik Yöneticisi' | 'Üye Yöneticisi';
+// Kulüp roller — super-admin/ngos + brands ile aynı kalıp + Kulüp Başkanı (yeni).
+// Profile sayfası 'Kulüp Başkanı' rolünü öncelik gösterir; 'Genel Yönetici' geriye
+// uyumluluk için tutuluyor (eski kayıtlar). Akademik Danışman başvuru formundan
+// otomatik gelir, davet sistemi üzerinden gitmediği için bu listede değil.
+type ClubRole = 'Kulüp Başkanı' | 'Genel Yönetici' | 'Etkinlik Yöneticisi' | 'İçerik Yöneticisi' | 'Üye Yöneticisi';
 const CLUB_ROLE_OPTIONS: ClubRole[] = [
+    'Kulüp Başkanı',
     'Genel Yönetici',
     'Etkinlik Yöneticisi',
     'İçerik Yöneticisi',
@@ -398,10 +402,10 @@ export default function ClubsAdminPage() {
 
     const handleAssignAdmin = async (clubId: string, newUserId: string, newUserName: string, role: ClubRole) => {
         try {
-            // 1. Sadece "Genel Yönetici" rolünde kulüp doc'una adminUserId yaz (super-admin/ngos
-            //    + super-admin/brands ile aynı pattern). Diğer roller yetkilendirme yapar ama
-            //    primary admin değiştirmez.
-            if (role === 'Genel Yönetici') {
+            // 1. "Kulüp Başkanı" veya "Genel Yönetici" rolünde kulüp doc'una adminUserId yaz
+            //    (super-admin/ngos + brands ile aynı pattern). Diğer roller yetkilendirme yapar
+            //    ama primary admin değiştirmez. Kulüp Başkanı = profil sayfasında "Başkan" görünür.
+            if (role === 'Kulüp Başkanı' || role === 'Genel Yönetici') {
                 await updateDoc(doc(db, COLLECTIONS.clubs, clubId), { adminUserId: newUserId });
             }
 
@@ -480,7 +484,7 @@ export default function ClubsAdminPage() {
                 roleChangedBy: 'super-admin',
             });
             if (userId) {
-                if (newRole === 'Genel Yönetici') {
+                if (newRole === 'Kulüp Başkanı' || newRole === 'Genel Yönetici') {
                     await updateDoc(doc(db, COLLECTIONS.studentClubs, clubId), { adminUserId: userId });
                 }
                 await updateDoc(doc(db, COLLECTIONS.users, userId), {
@@ -678,7 +682,7 @@ export default function ClubsAdminPage() {
                                                     </Link>
                                                 </Button>
                                                 <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
-                                                    <Link href={`/admin/clubs/profile/${club.id}`}>
+                                                    <Link href={`/super-admin/clubs/${club.id}/edit`}>
                                                         <Edit3 className="mr-2 h-4 w-4" /> Düzelt
                                                     </Link>
                                                 </Button>

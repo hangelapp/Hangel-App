@@ -19,7 +19,11 @@ import {
     School,
     Search,
     CheckCircle2,
+    Phone,
+    Globe,
+    GraduationCap,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { allCountries, allSdgs, neighborhoodsData } from '@/lib/data';
@@ -92,6 +96,24 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         affiliateId: '',
         trackingLink: '',
         pixelScript: '',
+        // CLUB-specific yeni alanlar
+        clubShortDescription: '',
+        clubEventFrequency: '', // Haftalık / Aylık / Dönemsel / Düzensiz
+        clubContactPhone: '',
+        clubContactPhoneCountryCode: '+90',
+        clubContactEmail: '',
+        clubSocialInstagram: '',
+        clubSocialLinkedin: '',
+        clubSocialTwitter: '',
+        clubSocialWebsite: '',
+        clubAdvisorName: '',
+        clubAdvisorEmail: '',
+        clubAdvisorPhone: '',
+        clubAdvisorPhoneCountryCode: '+90',
+        clubPresidentName: '',
+        clubPresidentPhone: '',
+        clubPresidentPhoneCountryCode: '+90',
+        clubPresidentEmail: '',
     });
 
     // Türkiye il plaka kodları — kütük no'nun ilk 2 hanesi il plaka kodudur.
@@ -920,10 +942,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 <div className="space-y-12">
                     <div className="space-y-6">
                         <SectionTitle icon={School}>KULÜP BİLGİLERİ</SectionTitle>
-                        <div className="space-y-2">
-                            <FormLabel required>Kulüp Adı</FormLabel>
-                            <FormInput placeholder="Kulübün tam adı" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-                        </div>
+
+                        {/* Kulüp Türü — Ad'dan ÖNCE (kullanıcı talebi) */}
                         <div className="space-y-2">
                             <FormLabel required>Kulüp Türü</FormLabel>
                             <Select value={formData.clubType} onValueChange={v => setFormData({...formData, clubType: v, clubAffiliation: ''})}>
@@ -958,31 +978,168 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 </Select>
                             </div>
                         )}
+
+                        <div className="space-y-2">
+                            <FormLabel required>Kulüp Adı</FormLabel>
+                            <FormInput placeholder="Kulübün tam adı" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                        </div>
+
+                        {/* Kısa tanıtım */}
+                        <div className="space-y-2">
+                            <FormLabel required>Kulübünüzü kısaca tanıtın</FormLabel>
+                            <Textarea
+                                placeholder="Kulübünüzün amacı, faaliyetleri ve hedefleri hakkında 2-3 cümle..."
+                                value={formData.clubShortDescription}
+                                onChange={e => setFormData({...formData, clubShortDescription: e.target.value})}
+                                rows={3}
+                                className="rounded-xl bg-card border-none"
+                                required
+                            />
+                        </div>
+
+                        {/* Etkinlik sıklığı */}
+                        <div className="space-y-2">
+                            <FormLabel required>Düzenli Etkinlik Yapıyor musunuz?</FormLabel>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {['Haftalık', 'Aylık', 'Dönemsel', 'Düzensiz'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={() => setFormData({...formData, clubEventFrequency: opt})}
+                                        className={cn(
+                                            'h-12 rounded-xl border px-3 text-sm font-bold transition-colors',
+                                            formData.clubEventFrequency === opt
+                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                : 'bg-card hover:bg-accent border-transparent'
+                                        )}
+                                    >
+                                        {opt}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Kulüp Kategorisi */}
+                    {/* Kulüp Kategorisi — UI iyileştirildi */}
                     <div className="space-y-6">
                         <SectionTitle icon={Target}>KULÜP KATEGORİSİ</SectionTitle>
-                        <p className="text-[11px] text-muted-foreground -mt-2">
-                            Birden fazla kategori seçebilirsiniz.
+                        <p className="text-xs text-muted-foreground -mt-2 leading-relaxed">
+                            Kulübünüze uyan kategorileri seçin. <strong>Herhangi bir gruptan istediğiniz kadar seçim yapabilirsiniz</strong> — gruplar zorunlu değil, sadece sınıflandırma için.
                         </p>
-                        <div className="space-y-5">
-                            {clubCategoryGroups.map(group => (
-                                <div key={group.group} className="space-y-2">
-                                    <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">{group.group}</h4>
-                                    <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
-                                        {group.items.map(item => (
-                                            <label key={item} className="flex items-center gap-2 cursor-pointer group">
-                                                <Checkbox
-                                                    checked={selectedClubCategories.includes(item)}
-                                                    onCheckedChange={checked => setSelectedClubCategories(prev => checked ? [...prev, item] : prev.filter(i => i !== item))}
-                                                />
-                                                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
-                                            </label>
-                                        ))}
+                        <div className="rounded-2xl border bg-card p-4">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                                Seçili: {selectedClubCategories.length} kategori
+                            </p>
+                            <div className="space-y-4">
+                                {clubCategoryGroups.map(group => (
+                                    <div key={group.group} className="space-y-1.5">
+                                        <h4 className="text-[11px] font-black uppercase tracking-widest text-primary/70 border-b border-dashed border-primary/20 pb-1">
+                                            {group.group}
+                                        </h4>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {group.items.map(item => {
+                                                const checked = selectedClubCategories.includes(item);
+                                                return (
+                                                    <button
+                                                        key={item}
+                                                        type="button"
+                                                        onClick={() => setSelectedClubCategories(prev =>
+                                                            checked ? prev.filter(i => i !== item) : [...prev, item]
+                                                        )}
+                                                        className={cn(
+                                                            'px-3 py-1.5 rounded-full text-xs font-medium transition-colors border',
+                                                            checked
+                                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                                : 'bg-background border-border hover:bg-accent hover:border-accent-foreground/20'
+                                                        )}
+                                                    >
+                                                        {item}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* İletişim Bilgileri */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={Phone}>İLETİŞİM BİLGİLERİ</SectionTitle>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel required>Kulübün Telefon Numarası</FormLabel>
+                                <FormInput
+                                    type="tel"
+                                    placeholder="0532 XXX XX XX"
+                                    value={formData.clubContactPhone}
+                                    onChange={e => setFormData({...formData, clubContactPhone: e.target.value})}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>Kulübün Mail Adresi</FormLabel>
+                                <FormInput
+                                    type="email"
+                                    placeholder="kulup@example.com"
+                                    value={formData.clubContactEmail}
+                                    onChange={e => setFormData({...formData, clubContactEmail: e.target.value})}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sosyal Medya Hesapları */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={Globe}>SOSYAL MEDYA HESAPLARI</SectionTitle>
+                        <p className="text-[11px] text-muted-foreground -mt-2">Opsiyonel. Kullanıcı adınızı veya tam URL'yi yazabilirsiniz.</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>Instagram</FormLabel>
+                                <FormInput placeholder="@kulubunuz" value={formData.clubSocialInstagram} onChange={e => setFormData({...formData, clubSocialInstagram: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>LinkedIn</FormLabel>
+                                <FormInput placeholder="linkedin.com/company/kulubunuz" value={formData.clubSocialLinkedin} onChange={e => setFormData({...formData, clubSocialLinkedin: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>X (Twitter)</FormLabel>
+                                <FormInput placeholder="@kulubunuz" value={formData.clubSocialTwitter} onChange={e => setFormData({...formData, clubSocialTwitter: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Web Sitesi</FormLabel>
+                                <FormInput type="url" placeholder="https://kulubunuz.com" value={formData.clubSocialWebsite} onChange={e => setFormData({...formData, clubSocialWebsite: e.target.value})} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Akademik Danışman */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={GraduationCap}>AKADEMİK DANIŞMAN</SectionTitle>
+                        <p className="text-[11px] text-muted-foreground -mt-2">KVKK gereği iletişim bilgileri profilde yayınlanmaz, sadece admin görür.</p>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel required>Akademik Danışmanın Adı Soyadı</FormLabel>
+                                <FormInput placeholder="Prof. Dr. ..." value={formData.clubAdvisorName} onChange={e => setFormData({...formData, clubAdvisorName: e.target.value})} required />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel required>Mail Adresi</FormLabel>
+                                    <FormInput type="email" placeholder="danisman@universite.edu.tr" value={formData.clubAdvisorEmail} onChange={e => setFormData({...formData, clubAdvisorEmail: e.target.value})} required />
                                 </div>
-                            ))}
+                                <div className="space-y-2">
+                                    <FormLabel required>Telefon Numarası</FormLabel>
+                                    <FormInput
+                                        type="tel"
+                                        placeholder="0532 XXX XX XX"
+                                        value={formData.clubAdvisorPhone}
+                                        onChange={e => setFormData({...formData, clubAdvisorPhone: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -990,11 +1147,51 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     <div className="space-y-6">
                         <SectionTitle icon={Upload}>YASAL BELGELER & LOGOLAR</SectionTitle>
                         <FileUpload label="KULÜP LOGOSU" accept=".png,.jpg,.jpeg,.svg" hint="PNG, JPG veya SVG formatında logonuzu yükleyin." />
-                        <FileUpload
-                            label="FAALİYET BELGESİ"
-                            accept=".pdf,.png,.jpg,.jpeg"
-                            hint="Bağlı olduğunuz okuldan veya ilgili makamdan aldığınız faaliyet belgesini yükleyin (PDF veya resim)."
-                        />
+                        {formData.clubType === 'Üniversite' ? (
+                            <FileUpload
+                                label="SKS / ÖĞRENCİ DEKANLIĞI YAZISI"
+                                accept=".pdf,.png,.jpg,.jpeg"
+                                hint="SKS veya Öğrenci Dekanlığı'ndan kulübünüzün faal olduğuna dair yazı (PDF veya resim)."
+                            />
+                        ) : (
+                            <FileUpload
+                                label="FAALİYET BELGESİ"
+                                accept=".pdf,.png,.jpg,.jpeg"
+                                hint="Bağlı olduğunuz okuldan aldığınız faaliyet belgesini yükleyin (PDF veya resim)."
+                            />
+                        )}
+                    </div>
+
+                    {/* Başkan Bilgileri — KVKK private */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={UserCircle}>BAŞKAN BİLGİLERİ</SectionTitle>
+                        <p className="text-[11px] text-muted-foreground -mt-2 leading-relaxed">
+                            KVKK gereği başkanın iletişim bilgileri profilde yayınlanmaz, sadece admin görür.
+                            <br />
+                            <strong>Mail adresi:</strong> hangele kayıt olduğunuz veya olacağınız mail adresinizi yazınız.
+                        </p>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel required>Başkanın Adı Soyadı</FormLabel>
+                                <FormInput placeholder="Adı Soyadı" value={formData.clubPresidentName} onChange={e => setFormData({...formData, clubPresidentName: e.target.value})} required />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel required>Başkanın Telefon Numarası</FormLabel>
+                                    <FormInput
+                                        type="tel"
+                                        placeholder="0532 XXX XX XX"
+                                        value={formData.clubPresidentPhone}
+                                        onChange={e => setFormData({...formData, clubPresidentPhone: e.target.value})}
+                                        required
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel required>Başkanın Mail Adresi (hangel kayıt mail)</FormLabel>
+                                    <FormInput type="email" placeholder="baskan@example.com" value={formData.clubPresidentEmail} onChange={e => setFormData({...formData, clubPresidentEmail: e.target.value})} required />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-2 pt-6 border-t border-dashed">
