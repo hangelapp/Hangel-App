@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network } from 'lucide-react';
+import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection, serverTimestamp, runTransaction, increment } from 'firebase/firestore';
@@ -484,73 +485,36 @@ export default function NgoSelectionPage() {
                     {isNgosLoading ? (
                         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
                     ) : (
-                        <div className="divide-y">
+                        <div className="space-y-2 p-2">
                             {filteredNgos.length > 0 ? filteredNgos.map(ngo => {
-                                const donors = ngo.stats?.followers ?? 0;
-                                const volunteers = ngo.stats?.volunteers ?? 0;
-                                const platforms = (ngo.memberOf ?? []).filter(Boolean);
+                                const isSel = selectedNgos.includes(ngo.id);
                                 return (
-                                <div
-                                    key={ngo.id}
-                                    className={cn(
-                                      "flex items-start justify-between p-3 hover:bg-accent cursor-pointer gap-3",
-                                      selectedNgos.includes(ngo.id) && "bg-primary/5"
-                                    )}
-                                    onClick={() => handleNgoSelect(ngo.id)}
-                                >
-                                    <div className="flex items-start gap-3 flex-1 min-w-0">
-                                        <Avatar className="h-10 w-10 shrink-0">
-                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                                            <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="min-w-0 space-y-1">
-                                            <p className="font-medium text-sm truncate">{ngo.name}</p>
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                                                <span className="truncate max-w-[120px]">{ngo.category}</span>
-                                                <span className="text-muted-foreground/50">|</span>
-                                                <ShieldCheck className="h-3 w-3 text-primary/80" /> {ngo.transparencyScore}
-                                            </p>
-                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                                                <span className="flex items-center gap-1">
-                                                    <Users className="h-3 w-3" /> {donors.toLocaleString('tr-TR')} bağışçı
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Users className="h-3 w-3" /> {volunteers.toLocaleString('tr-TR')} gönüllü
-                                                </span>
-                                            </div>
-                                            {platforms.length > 0 && (
-                                                <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                                                    <Network className="h-3 w-3 text-muted-foreground shrink-0" />
-                                                    {platforms.slice(0, 3).map(p => (
-                                                        <Badge key={p} variant="outline" className="text-[10px] py-0 px-1.5 font-medium">
-                                                            {p}
-                                                        </Badge>
-                                                    ))}
-                                                    {platforms.length > 3 && (
-                                                        <span className="text-[10px] text-muted-foreground">+{platforms.length - 3}</span>
-                                                    )}
+                                    <NgoListItem
+                                        key={ngo.id}
+                                        ngo={ngo}
+                                        href={null}
+                                        onClick={() => handleNgoSelect(ngo.id)}
+                                        className={cn(isSel && 'bg-primary/5 border-primary/30')}
+                                        rightSlot={
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    aria-label="İncele"
+                                                    onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <div className={cn(
+                                                    "h-6 w-6 rounded-full border-2 flex items-center justify-center",
+                                                    isSel ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground'
+                                                )}>
+                                                    {isSel && <CheckCircle className="h-4 w-4 text-white" />}
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 shrink-0 pt-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                            aria-label="İncele"
-                                            onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <div className={cn(
-                                            "h-6 w-6 rounded-full border-2 flex items-center justify-center",
-                                            selectedNgos.includes(ngo.id) ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground'
-                                        )}>
-                                            {selectedNgos.includes(ngo.id) && <CheckCircle className="h-4 w-4 text-white" />}
-                                        </div>
-                                    </div>
-                                </div>
+                                            </div>
+                                        }
+                                    />
                                 );
                             }) : (
                                 <p className="text-center text-muted-foreground p-8">Bu filtrelerle eşleşen STK bulunamadı.</p>

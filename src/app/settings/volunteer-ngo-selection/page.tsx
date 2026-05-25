@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, Search, ShieldCheck, Filter, ArrowDownUp, Loader2 } from 'lucide-react';
+import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
@@ -175,35 +176,27 @@ export default function VolunteerNgoSelectionPage() {
                     {isNgosLoading ? (
                         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
                     ) : (
-                        <div className="divide-y">
-                            {filteredNgos.length > 0 ? filteredNgos.map(ngo => (
-                                <div
-                                    key={ngo.id}
-                                    className="flex items-center justify-between p-4 hover:bg-accent cursor-pointer"
-                                    onClick={() => handleSelectNgo(ngo.id)}
-                                >
-                                    <Label htmlFor={`ngo-${ngo.id}`} className="flex items-center gap-4 cursor-pointer flex-1">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
-                                            <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <p className="font-medium">{ngo.name}</p>
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                                {ngo.category}
-                                                <span className="text-muted-foreground/50">|</span>
-                                                <ShieldCheck className="h-3 w-3 text-primary/80" /> {ngo.transparencyScore}
-                                            </p>
-                                        </div>
-                                    </Label>
-                                    <Checkbox
-                                        id={`ngo-${ngo.id}`}
-                                        checked={selectedNgos.includes(ngo.id)}
-                                        onCheckedChange={() => handleSelectNgo(ngo.id)}
-                                        onClick={e => e.stopPropagation()}
+                        <div className="space-y-2 p-2">
+                            {filteredNgos.length > 0 ? filteredNgos.map(ngo => {
+                                const isSel = selectedNgos.includes(ngo.id);
+                                return (
+                                    <NgoListItem
+                                        key={ngo.id}
+                                        ngo={ngo}
+                                        href={null}
+                                        onClick={() => handleSelectNgo(ngo.id)}
+                                        className={isSel ? 'bg-primary/5 border-primary/30' : ''}
+                                        rightSlot={
+                                            <Checkbox
+                                                id={`ngo-${ngo.id}`}
+                                                checked={isSel}
+                                                onCheckedChange={() => handleSelectNgo(ngo.id)}
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                        }
                                     />
-                                </div>
-                            )) : (
+                                );
+                            }) : (
                                 <p className="text-center text-muted-foreground p-8">Bu filtrelerle eşleşen STK bulunamadı.</p>
                             )}
                         </div>
