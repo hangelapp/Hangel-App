@@ -137,6 +137,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const ABOUT_MAX = 1000;
     // Özel İzinli: İzin amaçları (multi-select). FAYDALANICILARINIZ gibi.
     const [selectedIzinAmaclari, setSelectedIzinAmaclari] = useState<string[]>([]);
+    // Spor Kulübü için kayıtlı federasyonlar (platformlar'dan ayrı)
+    const [selectedSporFederasyonlari, setSelectedSporFederasyonlari] = useState<string[]>([]);
     const OZEL_IZIN_AMAC_OPTIONS = ['Yardım Toplama', 'Eğitim Faaliyeti', 'Sosyal Etkinlik', 'Afet Yardımı', 'Sağlık Destek', 'Kültürel Etkinlik', 'Diğer'];
     // Sosyal medya platform önerileri (diğer platformlar için)
     const SOCIAL_PLATFORM_OPTIONS = ['TikTok', 'YouTube', 'Facebook', 'Snapchat', 'Threads', 'Pinterest', 'Mastodon', 'Behance', 'Telegram', 'WhatsApp Kanalı', 'Diğer'];
@@ -230,6 +232,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 donationCategories,
                 otherSocials,
                 selectedIzinAmaclari,
+                selectedSporFederasyonlari,
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
@@ -293,9 +296,17 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             const adres = typeof r.adres === 'string' ? r.adres : '';
             const webSite = typeof r.webSite === 'string' ? r.webSite : '';
             // İl plate code: kütük no'nun ilk 2 hanesi (e.g. "06-154-120" → "06" → "Ankara").
-            // Kullanıcı manuel girdiği city'i ezme; yalnız boşsa doldur.
             const platePrefix = key.split('-')[0]?.padStart(2, '0') || '';
             const ilFromPlate = TR_IL_PLATES[platePrefix] || '';
+            // Adres'ten naïve parse: mahalle + kapı no
+            let mahalleParsed = '';
+            let doorNoParsed = '';
+            if (adres) {
+                const mahMatch = adres.match(/([\wÇĞİÖŞÜçğıöşü]+)\s+(?:Mah(?:allesi)?|Mh)\.?/i);
+                if (mahMatch) mahalleParsed = mahMatch[1];
+                const noMatch = adres.match(/No\s*:?\s*([\d\/-]+)/i);
+                if (noMatch) doorNoParsed = noMatch[1];
+            }
             setFormData(prev => ({
                 ...prev,
                 name: name || prev.name,
@@ -305,7 +316,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     ? detayliFaaliyetAlani : prev.detayliFaaliyetAlani,
                 country: prev.country || 'Türkiye',
                 city: ilFromPlate && !prev.city ? ilFromPlate : prev.city,
+                neighborhood: !prev.neighborhood && mahalleParsed ? mahalleParsed : prev.neighborhood,
                 addressLine: adres && !prev.addressLine ? adres : prev.addressLine,
+                doorNo: !prev.doorNo && doorNoParsed ? doorNoParsed : prev.doorNo,
                 website: webSite && !prev.website ? webSite : prev.website,
             }));
             // Auto-fill marker (yeşil bordur) — bu alanlar registry'den geldi
@@ -315,7 +328,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             if (faaliyetAlani) newFilled.add('sector');
             if (detayliFaaliyetAlani) newFilled.add('detayliFaaliyetAlani');
             if (ilFromPlate) newFilled.add('city');
+            if (mahalleParsed) newFilled.add('neighborhood');
             if (adres) newFilled.add('addressLine');
+            if (doorNoParsed) newFilled.add('doorNo');
             if (webSite) newFilled.add('website');
             setAutoFilled(newFilled);
             setRegistryMatch({
@@ -368,13 +383,25 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const handleSelectVakif = (v: VakifResult) => {
         const cleanEmail = v.ePosta && v.ePosta !== '-' ? v.ePosta : '';
         const localPhone = v.telefon1 ? v.telefon1.replace(/\D/g, '').replace(/^90/, '').replace(/^0/, '') : '';
+        // Adres → mahalle/sokak/kapı no parse (naïve regex; fallback addressLine)
+        let mahalleParsed = '';
+        let doorNoParsed = '';
+        let cleanedAddr = v.adres || '';
+        if (v.adres) {
+            const mahMatch = v.adres.match(/([\wÇĞİÖŞÜçğıöşü]+)\s+(?:Mah(?:allesi)?|Mh)\.?/i);
+            if (mahMatch) mahalleParsed = mahMatch[1];
+            const noMatch = v.adres.match(/No\s*:?\s*([\d\/-]+)/i);
+            if (noMatch) doorNoParsed = noMatch[1];
+            cleanedAddr = v.adres;
+        }
         setFormData(prev => ({
             ...prev,
             name: v.name || prev.name,
             city: v.il || prev.city,
             district: v.ilce || prev.district,
-            // adres → about/notes only if empty (do not overwrite user text).
-            about: prev.about ? prev.about : (v.adres || prev.about),
+            neighborhood: !prev.neighborhood && mahalleParsed ? mahalleParsed : prev.neighborhood,
+            addressLine: !prev.addressLine && cleanedAddr ? cleanedAddr : prev.addressLine,
+            doorNo: !prev.doorNo && doorNoParsed ? doorNoParsed : prev.doorNo,
             email: !prev.email && cleanEmail ? cleanEmail : prev.email,
             phone: !prev.phone && localPhone ? localPhone : prev.phone,
         }));
@@ -382,7 +409,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         if (v.name) newFilled.add('name');
         if (v.il) newFilled.add('city');
         if (v.ilce) newFilled.add('district');
-        if (v.adres) newFilled.add('addressLine');
+        if (mahalleParsed) newFilled.add('neighborhood');
+        if (cleanedAddr) newFilled.add('addressLine');
+        if (doorNoParsed) newFilled.add('doorNo');
         if (cleanEmail) newFilled.add('email');
         if (localPhone) newFilled.add('phone');
         setAutoFilled(newFilled);
@@ -533,7 +562,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 >
                                     {vakifSearchStatus === 'loading'
                                         ? <Loader2 className="h-4 w-4 animate-spin" />
-                                        : <><Search className="mr-2 h-4 w-4" />Vakfı Bul</>}
+                                        : <><Search className="mr-2 h-4 w-4" />Bilgileri Getir</>}
                                 </Button>
                             </div>
                             {vakifResults.length > 0 && (
@@ -742,9 +771,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* Platformlar — Özel İzinli için 'Katıldığınız Platformlar', diğerleri 'STK OLARAK PLATFORMLAR' */}
+                    {/* Platformlar — Özel İzinli için bölüm tamamen kaldırıldı (kullanıcı talebi) */}
+                    {!isOzelIzinli && (
                     <div className="space-y-6">
-                        <SectionTitle icon={Activity}>{isOzelIzinli ? 'KATILDIĞINIZ PLATFORMLAR' : 'STK OLARAK PLATFORMLAR'}</SectionTitle>
+                        <SectionTitle icon={Activity}>KAYITLI OLDUĞUNUZ PLATFORMLAR</SectionTitle>
                         <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
                             {ngoPlatformOptions.map(item => (
                                 <label key={item} className="flex items-center gap-2 cursor-pointer group">
@@ -767,6 +797,50 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </label>
                         )}
                     </div>
+                    )}
+
+                    {/* Spor Kulübü → Kayıtlı Federasyonlar (Adres'ten önce) */}
+                    {isSpor && (
+                        <div className="space-y-6">
+                            <SectionTitle icon={Activity}>KAYITLI OLDUĞUNUZ FEDERASYONLAR</SectionTitle>
+                            <p className="text-[11px] text-muted-foreground -mt-2">Birden fazla seçebilirsiniz.</p>
+                            <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                                {[
+                                    'Türkiye Futbol Federasyonu (TFF)',
+                                    'Türkiye Basketbol Federasyonu (TBF)',
+                                    'Türkiye Voleybol Federasyonu (TVF)',
+                                    'Türkiye Tenis Federasyonu (TTF)',
+                                    'Türkiye Atletizm Federasyonu (TAF)',
+                                    'Türkiye Yüzme Federasyonu (TYF)',
+                                    'Türkiye Hentbol Federasyonu (THF)',
+                                    'Türkiye Satranç Federasyonu (TSF)',
+                                    'Türkiye Güreş Federasyonu (TGF)',
+                                    'Türkiye Judo Federasyonu (TJF)',
+                                    'Türkiye Boks Federasyonu (TBoF)',
+                                    'Türkiye Bisiklet Federasyonu (TBiF)',
+                                    'Türkiye Dağcılık Federasyonu (TDF)',
+                                    'Türkiye Yelken Federasyonu (TYelF)',
+                                    'Türkiye Binicilik Federasyonu (TBinF)',
+                                    'Türkiye Okçuluk Federasyonu (TOF)',
+                                    'Türkiye Karate Federasyonu (TKF)',
+                                    'Türkiye Taekwondo Federasyonu (TTaeF)',
+                                    'Türkiye Halter Federasyonu (THaF)',
+                                    'Türkiye Eskrim Federasyonu (TEF)',
+                                    'TÜFAD (Türkiye Faal Futbol Hakemleri)',
+                                    'TMOK (Türkiye Milli Olimpiyat Komitesi)',
+                                    'Diğer',
+                                ].map(fed => (
+                                    <label key={fed} className="flex items-center gap-2 cursor-pointer group">
+                                        <Checkbox
+                                            checked={selectedSporFederasyonlari.includes(fed)}
+                                            onCheckedChange={c => setSelectedSporFederasyonlari(prev => c ? [...prev, fed] : prev.filter(x => x !== fed))}
+                                        />
+                                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{fed}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Adres — herbiri tek satır */}
                     <div className="space-y-6">
@@ -793,7 +867,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel>Mahalle</FormLabel>
                                 <Select value={formData.neighborhood} onValueChange={v => setFormData({...formData, neighborhood: v})} disabled={!formData.district}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.district ? 'Mahalle seç...' : 'Önce ilçe seçin'} /></SelectTrigger>
+                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('neighborhood'))}><SelectValue placeholder={formData.district ? 'Mahalle seç...' : 'Önce ilçe seçin'} /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                                     </SelectContent>
@@ -805,14 +879,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Kapı No</FormLabel>
-                                <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} />
+                                <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} className={autoFillCls('doorNo')} />
                             </div>
                         </div>
-                        {autoFilled.size > 0 && (
-                            <p className="text-[11px] text-green-700 font-medium flex items-center gap-1.5">
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Yeşil çerçeveli alanlar registry sorgusundan otomatik dolduruldu. Gerekirse düzenleyebilirsiniz.
-                            </p>
-                        )}
                     </div>
 
                     {/* İletişim & Sosyal Medya — her biri tek satır, sıra: Telefon/Mail/Web/IG/X/LinkedIn/+Ekle */}
