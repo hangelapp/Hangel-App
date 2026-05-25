@@ -114,7 +114,25 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         clubPresidentPhone: '',
         clubPresidentPhoneCountryCode: '+90',
         clubPresidentEmail: '',
+        // NGO ek alanlar (kullanıcı talebi)
+        doorNo: '',
+        instagram: '',
+        twitter: '',
+        linkedin: '',
+        kamuYarariStatusu: false,
+        authorizedPhone: '',
+        authorizedEmail: '',
+        // Özel İzinli alanları
+        ozelIzinTarihi: '',
+        ozelIzinBitisTarihi: '',
+        ozelIzinVerenValilik: '',
+        ozelIzinAmaci: '',
+        ozelIzinAmaciDiger: '',
+        authorizedRelation: '', // 'görevi' yerine 'yakınlığı'
     });
+    // Diğer sosyal medya platformları (+Ekle ile)
+    const [otherSocials, setOtherSocials] = useState<{ platform: string; url: string }[]>([]);
+    const ABOUT_MAX = 1000;
 
     // Türkiye il plaka kodları — kütük no'nun ilk 2 hanesi il plaka kodudur.
     // Auto-fill: kütük lookup başarılıysa city alanını da plate code'dan doldur.
@@ -200,6 +218,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 selectedClubCategories,
                 categories: selectedClubCategories,
                 donationCategories,
+                otherSocials,
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
@@ -371,14 +390,27 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
             <Separator className="border-dashed" />
 
-            {entityType === 'NGO' && (
+            {entityType === 'NGO' && (() => {
+                const ngoSub = formData.ngoSubType;
+                const isOzelIzinli = ngoSub === 'OzelIzinli';
+                const isSpor = ngoSub === 'SporKulubu';
+                const isDernek = ngoSub === 'Dernek';
+                const isVakif = ngoSub === 'Vakif';
+                const identityTitle = isDernek ? 'DERNEĞİN KİMLİĞİ'
+                    : isVakif ? "VAKIF'IN KİMLİĞİ"
+                    : isSpor ? 'SPOR KULÜBÜNÜN KİMLİĞİ'
+                    : isOzelIzinli ? 'ÖZEL İZİNLİ KİŞİ KİMLİĞİ'
+                    : 'KURULUŞ KİMLİĞİ';
+                const shortNameLabel = isDernek ? 'Dernek Kısa Adı'
+                    : isVakif ? 'Vakıf Kısa Adı'
+                    : isSpor ? 'Spor Kulübü Kısa Adı'
+                    : '';
+                const allProvinces = Object.values(TR_IL_PLATES).sort((a, b) => a.localeCompare(b, 'tr'));
+                return (
                 <div className="space-y-12">
-                    {/* Kayıt Sorgulama — alt türe göre lookup farklılaşır:
-                          - Dernek: kütük numarası ile (XX-XXX-XXX format)
-                          - Vakıf: vakıf adıyla arama
-                          - Özel İzinli: ad-soyad (lookup yok, manuel) */}
+                    {/* Alt tür seçimi — başlık kaldırıldı (kullanıcı talebi).
+                        Lookup formları alt türe göre değişir. */}
                     <div className="space-y-6">
-                        <SectionTitle icon={Search}>KAYIT SORGULAMA</SectionTitle>
                         <div className="space-y-2">
                             <FormLabel>Kuruluş Alt Türü</FormLabel>
                             <Select value={formData.ngoSubType} onValueChange={(val) => {
@@ -394,11 +426,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <SelectContent>
                                     <SelectItem value="Dernek">Dernek</SelectItem>
                                     <SelectItem value="Vakif">Vakıf</SelectItem>
-                                    <SelectItem value="OzelIzinli">Özel İzinli Kuruluş</SelectItem>
+                                    <SelectItem value="SporKulubu">Spor Kulübü</SelectItem>
+                                    <SelectItem value="OzelIzinli">Özel İzinli Kişi</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-[11px] text-muted-foreground ml-1 leading-snug">
-                                Alt tür seçiminize göre kayıt sorgu yöntemi belirlenir.
+                                Alt tür seçiminize göre alanlar şekillenir.
                             </p>
                         </div>
 
@@ -534,114 +567,223 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         )}
                     </div>
 
-                    {/* Kimlik */}
+                    {/* Kimlik — başlık alt türe göre değişir */}
                     <div className="space-y-6">
-                        <SectionTitle icon={Building2}>KURULUŞ KİMLİĞİ</SectionTitle>
+                        <SectionTitle icon={Building2}>{identityTitle}</SectionTitle>
                         <div className="space-y-2">
-                            <FormLabel required>Kuruluş Tam Adı</FormLabel>
-                            <FormInput placeholder="Dernek veya vakfın tam resmi adı" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                            <FormLabel required>{isOzelIzinli ? 'Özel İzinli Kişinin Adı Soyadı' : 'Kuruluş Tam Adı'}</FormLabel>
+                            <FormInput placeholder={isOzelIzinli ? 'Ad Soyad' : 'Tam resmi ad'} required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <FormLabel>Kuruluş Yılı</FormLabel>
-                                <Select value={formData.foundedYear} onValueChange={v => setFormData({...formData, foundedYear: v})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Yıl Seç" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {yearOptions.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
+                        {!isOzelIzinli && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Kuruluş Yılı</FormLabel>
+                                    <Select value={formData.foundedYear} onValueChange={v => setFormData({...formData, foundedYear: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Yıl Seç" /></SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {yearOptions.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {/* Faaliyet Alanı'nın eski yerine kısa ad (alt türe göre etiket) */}
+                                <div className="space-y-2">
+                                    <FormLabel>{shortNameLabel}</FormLabel>
+                                    <FormInput
+                                        placeholder="Örn. AİP, TEMA, MEB-OS"
+                                        value={formData.shortName}
+                                        onChange={e => setFormData({...formData, shortName: e.target.value})}
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <FormLabel>Faaliyet Alanı</FormLabel>
-                                <FormInput
-                                    placeholder="Örn. Eğitim, Sağlık"
-                                    value={formData.sector}
-                                    onChange={e => setFormData({...formData, sector: e.target.value})}
-                                />
+                        )}
+
+                        {/* Faaliyet Alanı tek başına bir satır (yarım genişlik) — sadece Dernek/Vakıf/Spor */}
+                        {!isOzelIzinli && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Faaliyet Alanı</FormLabel>
+                                    <FormInput
+                                        placeholder="Örn. Eğitim, Sağlık"
+                                        value={formData.sector}
+                                        onChange={e => setFormData({...formData, sector: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Detaylı Faaliyet Alanı</FormLabel>
+                                    <FormInput
+                                        placeholder="Detay"
+                                        value={formData.detayliFaaliyetAlani}
+                                        onChange={e => setFormData({...formData, detayliFaaliyetAlani: e.target.value})}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Özel İzinli için ek alanlar — izin tarihi + bitiş + valilik + amaç */}
+                        {isOzelIzinli && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <FormLabel required>İzin Tarihi</FormLabel>
+                                        <FormInput type="date" value={formData.ozelIzinTarihi} onChange={e => setFormData({...formData, ozelIzinTarihi: e.target.value})} required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <FormLabel required>İzin Bitiş Tarihi</FormLabel>
+                                        <FormInput type="date" value={formData.ozelIzinBitisTarihi} onChange={e => setFormData({...formData, ozelIzinBitisTarihi: e.target.value})} required />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel required>İzni Veren Valilik</FormLabel>
+                                    <Select value={formData.ozelIzinVerenValilik} onValueChange={v => setFormData({...formData, ozelIzinVerenValilik: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Valilik seç..." /></SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {allProvinces.map(il => <SelectItem key={il} value={`${il} Valiliği`}>{il} Valiliği</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel required>İzin Amacı</FormLabel>
+                                    <Select value={formData.ozelIzinAmaci} onValueChange={v => setFormData({...formData, ozelIzinAmaci: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Amaç seç..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {['Yardım Toplama', 'Eğitim Faaliyeti', 'Sosyal Etkinlik', 'Afet Yardımı', 'Sağlık Destek', 'Kültürel Etkinlik', 'Diğer'].map(o =>
+                                                <SelectItem key={o} value={o}>{o}</SelectItem>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                    {formData.ozelIzinAmaci === 'Diğer' && (
+                                        <FormInput
+                                            placeholder="Diğer amaç açıklaması..."
+                                            value={formData.ozelIzinAmaciDiger}
+                                            onChange={e => setFormData({...formData, ozelIzinAmaciDiger: e.target.value})}
+                                        />
+                                    )}
+                                </div>
+                            </>
+                        )}
+
                         <div className="space-y-2">
-                            <FormLabel>Detaylı Faaliyet Alanı</FormLabel>
-                            <FormInput
-                                placeholder="Faaliyet alanınızın detayı"
-                                value={formData.detayliFaaliyetAlani}
-                                onChange={e => setFormData({...formData, detayliFaaliyetAlani: e.target.value})}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <FormLabel>Hakkınızda</FormLabel>
+                            <div className="flex items-center justify-between">
+                                <FormLabel>Hakkınızda</FormLabel>
+                                <span className={cn(
+                                    "text-[10px] font-mono",
+                                    formData.about.length > ABOUT_MAX ? 'text-destructive font-bold' : 'text-muted-foreground'
+                                )}>
+                                    {formData.about.length} / {ABOUT_MAX}
+                                </span>
+                            </div>
                             <Textarea
                                 className="rounded-2xl bg-card border-none shadow-sm focus-visible:ring-1 focus-visible:ring-primary/30 min-h-[96px]"
-                                placeholder="Kuruluşunuzu kısaca tanıtın"
+                                placeholder={isOzelIzinli ? 'Kendinizi ve faaliyetinizi kısaca anlatın' : 'Kuruluşunuzu kısaca tanıtın'}
                                 value={formData.about}
+                                maxLength={ABOUT_MAX}
                                 onChange={e => setFormData({...formData, about: e.target.value})}
                             />
                         </div>
                     </div>
 
-                    {/* Faydalanıcılar */}
-                    <div className="space-y-6">
-                        <SectionTitle icon={Target}>FAYDALANICILARINIZ</SectionTitle>
-                        <div className="space-y-3">
-                            <FormLabel>Faydalanıcı Gruplar (Birden fazla seçebilirsiniz)</FormLabel>
-                            <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
-                                {ngoBeneficiaryOptions.map(item => (
+                    {/* Faydalanıcılar — Özel İzinli için gizli */}
+                    {!isOzelIzinli && (
+                        <div className="space-y-6">
+                            <SectionTitle icon={Target}>FAYDALANICILARINIZ</SectionTitle>
+                            <div className="space-y-3">
+                                <FormLabel>Faydalanıcı Gruplar (Birden fazla seçebilirsiniz)</FormLabel>
+                                <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                                    {ngoBeneficiaryOptions.map(item => (
+                                        <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                            <Checkbox checked={selectedBeneficiaries.includes(item)} onCheckedChange={checked => setSelectedBeneficiaries(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
+                                            <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SKA — Özel İzinli için gizli */}
+                    {!isOzelIzinli && (
+                        <div className="space-y-6">
+                            <SectionTitle icon={Target}>Sürdürülebilir Kalkınma Amaçlarını kapsamaktadır? (Birden fazla seçebilirsiniz)</SectionTitle>
+                            <div className="grid grid-cols-1 gap-2 p-4 border rounded-2xl bg-card">
+                                {allSdgs.slice(0, 8).map(item => (
                                     <label key={item} className="flex items-center gap-2 cursor-pointer group">
-                                        <Checkbox checked={selectedBeneficiaries.includes(item)} onCheckedChange={checked => setSelectedBeneficiaries(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
+                                        <Checkbox checked={selectedSdgs.includes(item)} onCheckedChange={checked => setSelectedSdgs(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
                                         <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
                                     </label>
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* SKA */}
-                    <div className="space-y-6">
-                        <SectionTitle icon={Target}>Sürdürülebilir Kalkınma Amaçlarını kapsamaktadır? (Birden fazla seçebilirsiniz)</SectionTitle>
-                        <div className="grid grid-cols-1 gap-2 p-4 border rounded-2xl bg-card">
-                            {allSdgs.slice(0, 8).map(item => (
-                                <label key={item} className="flex items-center gap-2 cursor-pointer group">
-                                    <Checkbox checked={selectedSdgs.includes(item)} onCheckedChange={checked => setSelectedSdgs(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
-                                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
-                                </label>
-                            ))}
+                    {/* STK Olarak Platformlar + Kamu Yararı Statüsü — Özel İzinli için gizli */}
+                    {!isOzelIzinli && (
+                        <div className="space-y-6">
+                            <SectionTitle icon={Activity}>STK OLARAK PLATFORMLAR</SectionTitle>
+                            <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                                {ngoPlatformOptions.map(item => (
+                                    <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                        <Checkbox checked={selectedNetworks.includes(item)} onCheckedChange={checked => setSelectedNetworks(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
+                                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                    </label>
+                                ))}
+                            </div>
+                            {/* Kamu Yararı Statüsü — özel rozet */}
+                            <label className="flex items-center gap-3 cursor-pointer p-3 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
+                                <Checkbox
+                                    checked={formData.kamuYarariStatusu}
+                                    onCheckedChange={(c) => setFormData({...formData, kamuYarariStatusu: !!c})}
+                                />
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold">Kamu Yararı Statüsü</p>
+                                    <p className="text-[10px] text-muted-foreground">Bakanlar Kurulu kararıyla kamu yararına çalışan {isDernek ? 'dernek' : isVakif ? 'vakıf' : 'kuruluş'} statüsünde misiniz?</p>
+                                </div>
+                            </label>
                         </div>
-                    </div>
+                    )}
 
-                    {/* STK Olarak Platformlar */}
-                    <div className="space-y-6">
-                        <SectionTitle icon={Activity}>STK OLARAK PLATFORMLAR</SectionTitle>
-                        <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
-                            {ngoPlatformOptions.map(item => (
-                                <label key={item} className="flex items-center gap-2 cursor-pointer group">
-                                    <Checkbox checked={selectedNetworks.includes(item)} onCheckedChange={checked => setSelectedNetworks(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
-                                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Adres */}
+                    {/* Adres — herbiri tek satır */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>ADRES BİLGİLERİ</SectionTitle>
-                        <LocationFields
-                            value={{
-                                country: formData.country,
-                                city: formData.city,
-                                district: formData.district,
-                                neighborhood: formData.neighborhood,
-                            }}
-                            onChange={(next) => setFormData({
-                                ...formData,
-                                city: next.city ?? '',
-                                district: next.district ?? '',
-                                neighborhood: next.neighborhood ?? '',
-                            })}
-                            showCountry={false}
-                        />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel required>İl</FormLabel>
+                                <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl seç..." /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {allProvinces.map(il => <SelectItem key={il} value={il}>{il}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>İlçe</FormLabel>
+                                <Select value={formData.district} onValueChange={v => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.city ? 'İlçe seç...' : 'Önce il seçin'} /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {formData.city && neighborhoodsData[formData.city] && Object.keys(neighborhoodsData[formData.city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Mahalle</FormLabel>
+                                <Select value={formData.neighborhood} onValueChange={v => setFormData({...formData, neighborhood: v})} disabled={!formData.district}>
+                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.district ? 'Mahalle seç...' : 'Önce ilçe seçin'} /></SelectTrigger>
+                                    <SelectContent className="max-h-60">
+                                        {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Açık Adres</FormLabel>
+                                <FormInput placeholder="Sokak, cadde, bina adı" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Kapı No</FormLabel>
+                                <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* İletişim */}
+                    {/* İletişim & Sosyal Medya */}
                     <div className="space-y-6">
                         <SectionTitle icon={Mail}>İLETİŞİM & SOSYAL MEDYA</SectionTitle>
                         <div className="space-y-4">
@@ -671,6 +813,43 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <FormInput type="tel" placeholder="5XXXXXXXXX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                                 </div>
                             </div>
+                            {/* Sosyal medya sabit alanlar */}
+                            <div className="space-y-2">
+                                <FormLabel>Web Sitesi</FormLabel>
+                                <IconInput icon={Globe} type="url" placeholder="https://kurum.org" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <FormLabel>Instagram</FormLabel>
+                                    <FormInput placeholder="@kurum" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>X (Twitter)</FormLabel>
+                                    <FormInput placeholder="@kurum" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
+                                </div>
+                                <div className="space-y-2 sm:col-span-2">
+                                    <FormLabel>LinkedIn</FormLabel>
+                                    <FormInput placeholder="linkedin.com/company/kurum" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+                                </div>
+                            </div>
+                            {/* Diğer platformlar — +Ekle ile dinamik */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <FormLabel>Diğer Platformlar (Opsiyonel)</FormLabel>
+                                    <Button type="button" variant="outline" size="sm" className="h-8 rounded-xl gap-1" onClick={() => setOtherSocials(prev => [...prev, { platform: '', url: '' }])}>
+                                        <span className="text-base leading-none">+</span> Ekle
+                                    </Button>
+                                </div>
+                                {otherSocials.map((s, idx) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                        <FormInput placeholder="Platform (TikTok, YouTube...)" value={s.platform} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, platform: e.target.value } : p))} />
+                                        <FormInput placeholder="URL" value={s.url} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, url: e.target.value } : p))} />
+                                        <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-destructive shrink-0" onClick={() => setOtherSocials(prev => prev.filter((_, i) => i !== idx))} aria-label="Kaldır">
+                                            <span className="text-xl leading-none">×</span>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -694,14 +873,39 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Belgeler */}
+                    {/* YASAL BELGELER — alt türe göre */}
                     <div className="space-y-6">
                         <SectionTitle icon={Upload}>YASAL BELGELER</SectionTitle>
-                        <FileUpload label="TÜZÜK / VAKIF SENEDİ" accept=".pdf" required />
-                        <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg" required />
+                        {isDernek && (
+                            <>
+                                <FileUpload label="DERNEK TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış güncel dernek tüzüğü." required />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış faaliyet belgesi." required />
+                            </>
+                        )}
+                        {isVakif && (
+                            <>
+                                <FileUpload label="VAKIF SENEDİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış güncel vakıf senedi." required />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış faaliyet belgesi." required />
+                            </>
+                        )}
+                        {isSpor && (
+                            <>
+                                <FileUpload label="SPOR KULÜBÜ TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tüzüğü." required />
+                                <FileUpload label="FAALİYET (TESCİL) BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tescil/faaliyet belgesi." required />
+                            </>
+                        )}
+                        {isOzelIzinli && (
+                            <>
+                                <FileUpload label="ÖZEL İZİNLİ KİŞİNİN FOTOĞRAFI" accept=".jpg,.jpeg,.png" hint="JPG veya PNG formatında vesikalık/portre." required />
+                                <FileUpload label="İZİN BELGESİ" accept=".pdf,.jpg,.jpeg,.png" hint="Valilik tarafından düzenlenmiş izin belgesi (PDF/JPG/PNG)." required />
+                            </>
+                        )}
+                        {!ngoSub && (
+                            <p className="text-[11px] text-muted-foreground italic">Önce alt türü seçin (Dernek/Vakıf/Spor Kulübü/Özel İzinli), belge listesi otomatik gelir.</p>
+                        )}
                     </div>
 
-                    {/* Yetkili */}
+                    {/* Yetkili Kişi — Özel İzinli için 'görevi' → 'yakınlığı', diğerleri için 'görevi' */}
                     <div className="space-y-6">
                         <SectionTitle icon={UserCircle}>YETKİLİ KİŞİ BİLGİLERİ</SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -710,8 +914,36 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 <FormInput placeholder="Yetkili ad soyad" required value={formData.authorized.name} onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})} />
                             </div>
                             <div className="space-y-2">
-                                <FormLabel required>Görevi</FormLabel>
-                                <FormInput placeholder="Örn: Genel Sekreter" required value={formData.authorized.role} onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})} />
+                                <FormLabel required>{isOzelIzinli ? 'Yakınlığı' : 'Görevi'}</FormLabel>
+                                <FormInput
+                                    placeholder={isOzelIzinli ? 'Örn. Kardeşi, Babası' : 'Örn. Genel Sekreter'}
+                                    required
+                                    value={isOzelIzinli ? formData.authorizedRelation : formData.authorized.role}
+                                    onChange={e => isOzelIzinli
+                                        ? setFormData({...formData, authorizedRelation: e.target.value})
+                                        : setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>Telefon</FormLabel>
+                                <FormInput
+                                    type="tel"
+                                    placeholder="0532 XXX XX XX"
+                                    required
+                                    value={formData.authorizedPhone}
+                                    onChange={e => setFormData({...formData, authorizedPhone: e.target.value})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>E-posta</FormLabel>
+                                <FormInput
+                                    type="email"
+                                    placeholder="yetkili@example.com"
+                                    required
+                                    value={formData.authorizedEmail}
+                                    onChange={e => setFormData({...formData, authorizedEmail: e.target.value})}
+                                />
                             </div>
                         </div>
                     </div>
@@ -777,7 +1009,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         {isSubmitting ? <Loader2 className="animate-spin" /> : "BAŞVURUYU TAMAMLA"}
                     </Button>
                 </div>
-            )}
+                );
+            })()}
 
             {entityType === 'BRAND' && (
                 <div className="space-y-12">
