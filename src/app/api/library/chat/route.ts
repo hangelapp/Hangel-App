@@ -55,9 +55,9 @@ export async function POST(req: Request) {
             );
         }
 
-        // Read AI config (system prompt is owned by ai-management UI; only the
-        // knowledge-source slug filter is consumed server-side today).
+        // Read AI config: knowledgeSourceSlugs + sistem prompt + model + temp + maxTokens
         let allowedSlugs: string[] = [];
+        let runtimeConfig: { systemPrompt?: string; model?: string; temperature?: number; maxTokens?: number } | undefined;
         try {
             const db = getAdminFirestore();
             const snap = await db.collection(COLLECTIONS.aiAssistantConfig).doc('library').get();
@@ -66,9 +66,14 @@ export async function POST(req: Request) {
                 if (Array.isArray(data.knowledgeSourceSlugs)) {
                     allowedSlugs = data.knowledgeSourceSlugs.filter((x: unknown): x is string => typeof x === 'string');
                 }
+                runtimeConfig = {
+                    systemPrompt: typeof data.systemPrompt === 'string' ? data.systemPrompt : undefined,
+                    model: typeof data.model === 'string' ? data.model : undefined,
+                    temperature: typeof data.temperature === 'number' ? data.temperature : undefined,
+                    maxTokens: typeof data.maxTokens === 'number' ? data.maxTokens : undefined,
+                };
             }
         } catch (configErr) {
-            // Config read failure is non-fatal — fall back to all sections.
             console.warn('library/chat: aiAssistantConfig read failed', configErr);
         }
 
@@ -76,6 +81,7 @@ export async function POST(req: Request) {
         const result = await askLibraryAssistant(
             { userQuestion: message, libraryContext },
             idToken ?? undefined,
+            runtimeConfig,
         );
 
         return NextResponse.json({ reply: result.answer });

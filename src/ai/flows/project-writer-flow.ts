@@ -36,14 +36,38 @@ const ProjectWriterOutputSchema = z.object({
 });
 export type ProjectWriterOutput = z.infer<typeof ProjectWriterOutputSchema>;
 
-/**
- * P1-8c: `idToken` (optional) is the caller's Firebase ID token. NEVER
- * trust a bare uid. Token absent → quota skipped (fail-open). Cap hit →
- * throws `AIQuotaExceededError`.
- */
-export async function writeProjectProposal(input: ProjectWriterInput, idToken?: string): Promise<ProjectWriterOutput> {
-  // P1-8: sanitize every user-supplied string (clamp + strip control chars)
-  // before prompt interpolation.
+export interface AssistantRuntimeConfig {
+  systemPrompt?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+const DEFAULT_PROJECT_SYSTEM =
+  'You are an expert Social Project Writer. Your goal is to transform user notes into a professional project proposal. ' +
+  'Use formal, persuasive, methodologically sound language (SMART goals, Logical Framework logic). Output in Turkish. ' +
+  'Format with Markdown headings.';
+
+function clampTemp(t: number | undefined): number {
+  if (typeof t !== 'number' || Number.isNaN(t)) return 0.7;
+  return Math.max(0, Math.min(1, t));
+}
+function clampTokens(n: number | undefined): number {
+  if (typeof n !== 'number' || Number.isNaN(n)) return MAX_OUTPUT_TOKENS;
+  return Math.max(64, Math.min(MAX_OUTPUT_TOKENS, Math.floor(n)));
+}
+function normalizeModel(m: string | undefined): string | null {
+  if (!m) return null;
+  if (m.startsWith('googleai/')) return m;
+  if (m.startsWith('gemini-')) return `googleai/${m}`;
+  return null;
+}
+
+export async function writeProjectProposal(
+  input: ProjectWriterInput,
+  idToken?: string,
+  runtimeConfig?: AssistantRuntimeConfig,
+): Promise<ProjectWriterOutput> {
   const safeInput: ProjectWriterInput = {
     institution: sanitizeUserInput(input.institution, 200),
     sections: {
@@ -64,54 +88,48 @@ export async function writeProjectProposal(input: ProjectWriterInput, idToken?: 
       throw new AIQuotaExceededError('project-writer');
     }
   }
-  return projectWriterFlow(safeInput);
+
+  const systemPrompt = (runtimeConfig?.systemPrompt?.trim()) || DEFAULT_PROJECT_SYSTEM;
+  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-1.5-flash-latest';
+  const temperature = clampTemp(runtimeConfig?.temperature);
+  const maxOutputTokens = clampTokens(runtimeConfig?.maxTokens);
+
+  const userPrompt = [
+    `${systemPrompt}`,
+    ``,
+    `Target Institution: ${safeInput.institution}`,
+    ``,
+    `User Inputs:`,
+    `- Summary Notes: ${safeInput.sections.summary || ''}`,
+    `- Goals & Objectives: ${safeInput.sections.goals || ''}`,
+    `- Target Audience: ${safeInput.sections.audience || ''}`,
+    `- Activity Plan: ${safeInput.sections.activities || ''}`,
+    `- Budget Logic: ${safeInput.sections.budget || ''}`,
+    `- Impact & Measurement: ${safeInput.sections.impact || ''}`,
+    ``,
+    `Reference Library Context:`,
+    safeInput.libraryContext,
+    safeInput.callCriteria
+      ? `\nProject Call Criteria for ${safeInput.institution} (talep ve esasları — you MUST comply with these):\n${safeInput.callCriteria}\n`
+      : '',
+    ``,
+    `Instructions:`,
+    `1. Use the specific terminology and standards of ${safeInput.institution}.`,
+    `2. Incorporate data and academic evidence from the Reference Library Context where relevant.`,
+    `3. Format the output professionally using Markdown.`,
+    `4. Ensure the language is formal, persuasive, methodologically sound.`,
+    `5. The output must be in Turkish.`,
+    safeInput.callCriteria
+      ? `6. Strictly align the proposal with the Project Call Criteria above.`
+      : '',
+  ].join('\n');
+
+  const { output } = await ai.generate({
+    model: modelId,
+    prompt: userPrompt,
+    config: { temperature, maxOutputTokens },
+    output: { schema: ProjectWriterOutputSchema },
+  });
+  const safe = (output ?? { fullProposal: '' }) as ProjectWriterOutput;
+  return { ...safe, fullProposal: clampOutputText(safe.fullProposal || '') };
 }
-
-const prompt = ai.definePrompt({
-  name: 'projectWriterPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
-  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
-  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
-  input: {schema: ProjectWriterInputSchema},
-  output: {schema: ProjectWriterOutputSchema},
-  prompt: `You are an expert Social Project Writer. Your goal is to transform user notes into a professional project proposal suitable for {{{institution}}}.
-
-  Target Institution: {{{institution}}}
-  
-  User Inputs:
-  - Summary Notes: {{{sections.summary}}}
-  - Goals & Objectives: {{{sections.goals}}}
-  - Target Audience: {{{sections.audience}}}
-  - Activity Plan: {{{sections.activities}}}
-  - Budget Logic: {{{sections.budget}}}
-  - Impact & Measurement: {{{sections.impact}}}
-
-  Reference Library Context:
-  {{{libraryContext}}}
-{{#if callCriteria}}
-  Project Call Criteria for {{{institution}}} (talep ve esasları — you MUST comply with these):
-  {{{callCriteria}}}
-{{/if}}
-
-  Instructions:
-  1. Use the specific terminology and standards of {{{institution}}}.
-  2. Incorporate data and academic evidence from the Reference Library Context where relevant to strengthen the project's justification.
-  3. Format the output professionally using Markdown. Include clear headings for each section.
-  4. Ensure the language is formal, persuasive, and methodologically sound (SMART goals, Logical Framework logic).
-  5. The output should be in Turkish.{{#if callCriteria}}
-  6. Strictly align the proposal with the Project Call Criteria above: satisfy every stated requirement, follow the requested format, respect any deadline, and weave in the listed keywords and focus areas naturally.{{/if}}`,
-});
-
-const projectWriterFlow = ai.defineFlow(
-  {
-    name: 'projectWriterFlow',
-    inputSchema: ProjectWriterInputSchema,
-    outputSchema: ProjectWriterOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    const safe = output!;
-    // P2-9: post-clamp output as a last-resort guard against oversized responses.
-    return {...safe, fullProposal: clampOutputText(safe.fullProposal)};
-  }
-);

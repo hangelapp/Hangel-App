@@ -24,6 +24,19 @@ const AskLibraryAssistantOutputSchema = z.object({
 });
 export type AskLibraryAssistantOutput = z.infer<typeof AskLibraryAssistantOutputSchema>;
 
+// Super-admin tarafından `aiAssistantConfig/library` üzerinden yönetilen runtime
+// override'lar — sistem prompt, model, sıcaklık ve token sınırı.
+export interface AssistantRuntimeConfig {
+  systemPrompt?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+const DEFAULT_SYSTEM_PROMPT =
+  'You are the "Hangel Kütüphane Asistanı" (Library Assistant). Your goal is to help users navigate and understand the resources available in the Hangel Library.\n\n' +
+  'CRITICAL RULE: Answer questions based ONLY on the provided Library Context. If the information is not in the context, politely state that you can only answer questions about the resources available in the library.';
+
 /**
  * P1-8c: `idToken` (optional) is the caller's Firebase ID token, used to
  * enforce a per-user daily quota. No UI caller exists yet — when wired,
@@ -31,9 +44,11 @@ export type AskLibraryAssistantOutput = z.infer<typeof AskLibraryAssistantOutput
  * Token absent → quota check is skipped (fail-open). Cap exceeded →
  * throws `AIQuotaExceededError`.
  */
-export async function askLibraryAssistant(input: AskLibraryAssistantInput, idToken?: string): Promise<AskLibraryAssistantOutput> {
-  // P1-8: sanitize user-supplied strings (clamp + strip control chars) before
-  // prompt interpolation.
+export async function askLibraryAssistant(
+  input: AskLibraryAssistantInput,
+  idToken?: string,
+  runtimeConfig?: AssistantRuntimeConfig,
+): Promise<AskLibraryAssistantOutput> {
   const safeInput: AskLibraryAssistantInput = {
     userQuestion: sanitizeUserInput(input.userQuestion, 2000),
     libraryContext: sanitizeUserInput(input.libraryContext, 8000),
@@ -45,38 +60,40 @@ export async function askLibraryAssistant(input: AskLibraryAssistantInput, idTok
       throw new AIQuotaExceededError('library-assistant');
     }
   }
-  return getLibraryAnswerFlow(safeInput);
+
+  // Super-admin tarafından kaydedilen sistem prompt ve model parametreleri uygulanır.
+  const systemPrompt = (runtimeConfig?.systemPrompt?.trim()) || DEFAULT_SYSTEM_PROMPT;
+  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-1.5-flash-latest';
+  const temperature = clampTemp(runtimeConfig?.temperature);
+  const maxOutputTokens = clampTokens(runtimeConfig?.maxTokens);
+
+  const userPrompt = `${systemPrompt}\n\n` +
+    `Context of available resources:\n${safeInput.libraryContext}\n\n` +
+    `---\n\nUser Request: "${safeInput.userQuestion}"`;
+
+  const { output } = await ai.generate({
+    model: modelId,
+    prompt: userPrompt,
+    config: { temperature, maxOutputTokens },
+    output: { schema: AskLibraryAssistantOutputSchema },
+  });
+  const safe = (output ?? { answer: '' }) as AskLibraryAssistantOutput;
+  return { ...safe, answer: clampOutputText(safe.answer || '') };
 }
 
-const prompt = ai.definePrompt({
-  name: 'getLibraryAnswerPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
-  // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
-  config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
-  input: {schema: AskLibraryAssistantInputSchema},
-  output: {schema: AskLibraryAssistantOutputSchema},
-  prompt: `You are the "Hangel Kütüphane Asistanı" (Library Assistant). Your goal is to help users navigate and understand the resources available in the Hangel Library.
-
-  CRITICAL RULE: Answer questions based ONLY on the provided Library Context. If the information is not in the context, politely state that you can only answer questions about the resources available in the library.
-
-  Context of available resources:
-  {{{libraryContext}}}
-  
-  ---
-  
-  User Request: "{{{userQuestion}}}"`,
-});
-
-const getLibraryAnswerFlow = ai.defineFlow(
-  {
-    name: 'getLibraryAnswerFlow',
-    inputSchema: AskLibraryAssistantInputSchema,
-    outputSchema: AskLibraryAssistantOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    const safe = output!;
-    // P2-9: post-clamp output as a last-resort guard against oversized responses.
-    return {...safe, answer: clampOutputText(safe.answer)};
-  }
-);
+function clampTemp(t: number | undefined): number {
+  if (typeof t !== 'number' || Number.isNaN(t)) return 0.3;
+  return Math.max(0, Math.min(1, t));
+}
+function clampTokens(n: number | undefined): number {
+  if (typeof n !== 'number' || Number.isNaN(n)) return MAX_OUTPUT_TOKENS;
+  return Math.max(64, Math.min(MAX_OUTPUT_TOKENS, Math.floor(n)));
+}
+function normalizeModel(m: string | undefined): string | null {
+  if (!m) return null;
+  // Sade `gemini-*` adları geliyorsa Genkit prefix'i ekle.
+  if (m.startsWith('googleai/')) return m;
+  if (m.startsWith('gemini-')) return `googleai/${m}`;
+  // Desteklenmeyen sağlayıcılar (gpt-4o vb.) için sessizce default'a düş.
+  return null;
+}

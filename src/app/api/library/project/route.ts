@@ -120,6 +120,7 @@ export async function POST(req: Request) {
 
         let allowedSlugs: string[] = [];
         let callCriteria: string | undefined;
+        let runtimeConfig: { systemPrompt?: string; model?: string; temperature?: number; maxTokens?: number } | undefined;
         try {
             const db = getAdminFirestore();
             const snap = await db.collection(COLLECTIONS.aiAssistantConfig).doc('project').get();
@@ -128,11 +129,14 @@ export async function POST(req: Request) {
                 if (Array.isArray(data.knowledgeSourceSlugs)) {
                     allowedSlugs = data.knowledgeSourceSlugs.filter((x: unknown): x is string => typeof x === 'string');
                 }
+                runtimeConfig = {
+                    systemPrompt: typeof data.systemPrompt === 'string' ? data.systemPrompt : undefined,
+                    model: typeof data.model === 'string' ? data.model : undefined,
+                    temperature: typeof data.temperature === 'number' ? data.temperature : undefined,
+                    maxTokens: typeof data.maxTokens === 'number' ? data.maxTokens : undefined,
+                };
             }
 
-            // PDF #3: look up the selected institution's project-call criteria so the
-            // AI tailors the proposal to that org's "talep ve esasları". Graceful —
-            // missing doc / read failure simply omits the field (existing behavior).
             const slug = slugifyInstitution(institution);
             if (slug) {
                 const criteriaSnap = await db.collection(COLLECTIONS.projectCallCriteria).doc(slug).get();
@@ -148,6 +152,7 @@ export async function POST(req: Request) {
         const result = await writeProjectProposal(
             { institution, sections, libraryContext, callCriteria },
             idToken ?? undefined,
+            runtimeConfig,
         );
 
         return NextResponse.json({ fullProposal: result.fullProposal });

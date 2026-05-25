@@ -82,9 +82,10 @@ const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
 };
 
 const MODELS = [
+  { value: 'gemini-1.5-flash-latest', label: 'Gemini 1.5 Flash (hızlı, ucuz)' },
+  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (kapsamlı)' },
   { value: 'gemini-pro', label: 'Gemini Pro' },
-  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
-  { value: 'gpt-4o', label: 'GPT-4o' },
+  { value: 'gpt-4o', label: 'GPT-4o (henüz aktif değil)' },
 ];
 
 function AssistantEditor({
@@ -263,7 +264,7 @@ function AssistantEditor({
             </SelectContent>
           </Select>
           <p className="text-[11px] text-muted-foreground">
-            Şu an placeholder; API anahtarı tanımlandığında aktifleşecek.
+            Gemini Pro / 1.5 Pro doğrudan aktif. GPT-4o seçilirse desteklenmediğinden default Gemini Flash'a düşülür.
           </p>
         </div>
 
