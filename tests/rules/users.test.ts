@@ -1,17 +1,17 @@
 /**
  * Security rule tests for `/users/{userId}`.
  *
- * Rules being asserted (see firestore.rules):
+ * Rules being asserted (see firestore.rules — SEC-2026-05-25 hardened):
  *   allow read:   if isSignedIn();
- *   allow create: if isSignedIn();
- *   allow update: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+ *   allow create: if isSignedIn() && isOwner(userId) &&
+ *                  (no privileged role or managed*Id fields);
+ *   allow update: if isSuperAdmin() || (isOwner(userId) &&
+ *                  no diff in role/managed*Id/superAdminPermissions);
  *   allow delete: if isSuperAdmin();
  *
- * Notes:
- *   - After P0-4, `isSuperAdmin()` checks ONLY the `request.auth.token.role ==
- *     'super-admin'` custom claim. The hard-coded email literal and the
- *     Firestore-doc fallback have both been removed. Super-admin actors are
- *     authenticated via `authedAs(env, uid, { role: 'super-admin' })`.
+ * SEC-2026-05-25 prevents privilege escalation: a regular user can no longer
+ * self-assign `role: 'super-admin'`, `managedNgoId: '<orgId>'`, etc., which
+ * would have hijacked NGO/brand/club update rules + ngoSenders + messaging.
  */
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { doc, getDoc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -82,11 +82,44 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
     );
   });
 
-  it('signed-in user can create their own /users doc', async () => {
+  it('signed-in user can create their own /users doc (no privileged fields)', async () => {
     const env = await getTestEnv();
     const db = authedAs(env, 'newuser');
     await assertSucceeds(
       setDoc(doc(db, 'users', 'newuser'), { name: 'New', role: 'user' }),
+    );
+  });
+
+  it('signed-in user CANNOT create /users doc for someone else', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'mallory');
+    await assertFails(
+      setDoc(doc(db, 'users', 'victim'), { name: 'Victim' }),
+    );
+  });
+
+  // SEC-2026-05-25: privilege escalation blockers on CREATE
+  it('signed-in user CANNOT self-create with role=super-admin', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'mallory');
+    await assertFails(
+      setDoc(doc(db, 'users', 'mallory'), { name: 'Mallory', role: 'super-admin' }),
+    );
+  });
+
+  it('signed-in user CANNOT self-create with managedNgoId set', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'mallory');
+    await assertFails(
+      setDoc(doc(db, 'users', 'mallory'), { name: 'Mallory', managedNgoId: 'victim-ngo' }),
+    );
+  });
+
+  it('signed-in user CANNOT self-create with superAdminPermissions', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'mallory');
+    await assertFails(
+      setDoc(doc(db, 'users', 'mallory'), { name: 'Mallory', superAdminPermissions: ['*'] }),
     );
   });
 
@@ -103,6 +136,55 @@ describe.skipIf(!emulatorUp)('firestore.rules — /users/{uid}', () => {
     const db = authedAs(env, 'alice');
     await assertFails(
       updateDoc(doc(db, 'users', 'root'), { name: 'Pwned' }),
+    );
+  });
+
+  // SEC-2026-05-25: privilege escalation blockers on UPDATE
+  it('owner CANNOT self-update to role=super-admin', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'alice');
+    await assertFails(
+      updateDoc(doc(db, 'users', 'alice'), { role: 'super-admin' }),
+    );
+  });
+
+  it('owner CANNOT self-update managedNgoId (NGO hijack vector)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'alice');
+    await assertFails(
+      updateDoc(doc(db, 'users', 'alice'), { managedNgoId: 'victim-ngo' }),
+    );
+  });
+
+  it('owner CANNOT self-update managedBrandId', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'alice');
+    await assertFails(
+      updateDoc(doc(db, 'users', 'alice'), { managedBrandId: 'victim-brand' }),
+    );
+  });
+
+  it('owner CANNOT self-update managedClubId', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'alice');
+    await assertFails(
+      updateDoc(doc(db, 'users', 'alice'), { managedClubId: 'victim-club' }),
+    );
+  });
+
+  it('owner CANNOT self-update superAdminPermissions', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'alice');
+    await assertFails(
+      updateDoc(doc(db, 'users', 'alice'), { superAdminPermissions: ['*'] }),
+    );
+  });
+
+  it('super-admin CAN update role/managedNgoId (legitimate flow)', async () => {
+    const env = await getTestEnv();
+    const db = authedAs(env, 'root', { role: 'super-admin' });
+    await assertSucceeds(
+      updateDoc(doc(db, 'users', 'alice'), { role: 'ngo-admin', managedNgoId: 'foo-ngo' }),
     );
   });
 

@@ -86,7 +86,7 @@ export default function PostPermalinkPage() {
               // unoptimized prop'u ile next/image kullanıyoruz.
               <Image
                 src={authorAvatar}
-                alt=""
+                alt={authorName ? `${authorName} avatar` : 'Yazar avatar'}
                 width={40}
                 height={40}
                 className="h-10 w-10 rounded-full object-cover"
@@ -110,7 +110,7 @@ export default function PostPermalinkPage() {
             <div className="relative aspect-video mb-4 rounded-md overflow-hidden bg-muted">
               <Image
                 src={post.imageUrl}
-                alt=""
+                alt={post.content ? post.content.slice(0, 100) : 'Gönderi görseli'}
                 fill
                 className="object-cover"
                 unoptimized

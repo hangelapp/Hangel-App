@@ -28,12 +28,37 @@ service cloud.firestore {
     }
 
     // Kullanıcı koleksiyonu
+    // SEC-2026-05-25: Privilege-escalation hardening. Owner kendi user docunu
+    // güncelleyebilir AMA security-gate alanlarını DEĞİŞTİREMEZ:
+    //   role, superAdminPermissions, managed{Ngo,Brand,Club}Id
+    // Bu alanlar yalnızca super-admin (UI veya Admin SDK) tarafından set edilir.
+    // Aksi halde kullanıcı kendi user docuna `managedNgoId: '<anyOrg>'` yazarak
+    // başka kurumun rules-gated update'lerini hijack edebilir
+    // (NGO/marka/kulüp update + ngoSenders + messaging + msgs).
+    function userPrivilegedFields() {
+      return ['role', 'superAdminPermissions',
+              'managedNgoId', 'managedBrandId', 'managedClubId'];
+    }
+    // Non-privileged 'role' values allowed on self-signup (display label only,
+    // not a security gate). Admin/super-admin/managed-* roles set server-side.
+    function isAllowedSignupRole(role) {
+      return role in ['user', 'volunteer', 'donor', 'student', 'individual'];
+    }
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      // Create: only own user doc. May set 'role' to a non-privileged value
+      // (user/volunteer/donor/student/individual); privileged ownership fields
+      // (managed*Id, superAdminPermissions) only via server-side Admin SDK.
+      allow create: if isSignedIn() && isOwner(userId) &&
+        (!('role' in request.resource.data) || isAllowedSignupRole(request.resource.data.role)) &&
+        !request.resource.data.keys().hasAny(['superAdminPermissions', 'managedNgoId', 'managedBrandId', 'managedClubId']);
+      // Update: super-admin everything; owner can update self EXCEPT privileged fields.
+      allow update: if isSuperAdmin() || (
+        isSignedIn() && isOwner(userId) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(userPrivilegedFields())
+      );
       allow delete: if isSuperAdmin();
-      
+
       match /{allChildren=**} {
         allow read: if isSignedIn();
         allow write: if isSignedIn() && (isOwner(userId) || isSuperAdmin());

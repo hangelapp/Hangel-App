@@ -280,7 +280,7 @@ export default function PostsAdminPage() {
                                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{post.content}</p>
                                 {post.imageUrl && (
                                     <div className="relative mt-3 aspect-video rounded-xl overflow-hidden border">
-                                        <Image src={post.imageUrl} alt="" fill className="object-cover" />
+                                        <Image src={post.imageUrl} alt={post.content ? post.content.slice(0, 80) : 'Gönderi görseli'} fill className="object-cover" />
                                     </div>
                                 )}
                                 <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
@@ -363,7 +363,7 @@ export default function PostsAdminPage() {
                             />
                             {editImageUrl && (
                                 <div className="relative aspect-video rounded-lg overflow-hidden border">
-                                    <Image src={editImageUrl} alt="" fill className="object-cover" />
+                                    <Image src={editImageUrl} alt="Gönderi görseli önizleme" fill className="object-cover" />
                                 </div>
                             )}
                         </div>
