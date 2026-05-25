@@ -492,9 +492,9 @@ export default function InvitePage() {
         return sorted;
     }, [phoneContacts, sortCriteria]);
 
-    // Telefon Rehberini Bağla — Web Contacts API; desteklenmeyen tarayıcıda toast.
+    // Telefon Rehberini Bağla — Web Contacts API; desteklenmeyen tarayıcıda
+    // toast + vCard/CSV upload dialog'ını otomatik aç (fallback UX).
     const handlePhoneConnect = async () => {
-        // Native uygulamada Capacitor; web'de Contacts API.
         if (isNativeApp()) {
             await handlePhoneSync();
             return;
@@ -502,10 +502,11 @@ export default function InvitePage() {
         const nav = typeof navigator !== 'undefined' ? (navigator as unknown as { contacts?: { select?: unknown } }) : null;
         if (!nav?.contacts?.select) {
             toast({
-                variant: 'destructive',
-                title: 'Bu tarayıcı rehber erişimi desteklemiyor.',
-                description: 'Mobil uygulamayı kullanın ya da aşağıdan vCard/CSV yükleyin.',
+                title: 'Tarayıcı rehber erişimini desteklemiyor',
+                description: 'Mobil uygulamayı kullanın veya vCard/CSV dosyası yükleyin (otomatik açıldı).',
             });
+            // Email provider dialog'unu aç — vCard/CSV upload kısmı orada
+            setEmailProviderDialogOpen(true);
             return;
         }
         await handlePhoneSync();
@@ -532,8 +533,8 @@ export default function InvitePage() {
             }
             if (res.status === 503 && data?.errorCode === 'OAUTH_NOT_CONFIGURED') {
                 toast({
-                    title: 'Yakında',
-                    description: data.message ?? 'E-posta sağlayıcı bağlantısı henüz yapılandırılmadı.',
+                    title: provider === 'google' ? 'Gmail bağlantısı henüz aktif değil' : 'Outlook bağlantısı henüz aktif değil',
+                    description: 'Şimdilik kişilerini Gmail/Outlook\'tan vCard (.vcf) veya CSV olarak indir ve aşağıdan yükle.',
                 });
                 return;
             }
