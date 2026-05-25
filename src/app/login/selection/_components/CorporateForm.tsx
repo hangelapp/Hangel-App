@@ -19,7 +19,6 @@ import {
     School,
     Search,
     CheckCircle2,
-    Phone,
     Globe,
     GraduationCap,
 } from 'lucide-react';
@@ -393,20 +392,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
 
     return (
         <form onSubmit={handleFormSubmit} className="space-y-10 animate-in fade-in-0 pb-10">
+            {/* SADECE Kuruluş Türü görünür; seçim yapılınca alt alanlar açılır */}
             <div className="space-y-6">
-                <div className="space-y-2">
-                    <FormLabel>Ülke</FormLabel>
-                    <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
-                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                            {allCountries.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
                 <div className="space-y-2">
                     <FormLabel>Kuruluş Türü</FormLabel>
                     <Select value={entityType} onValueChange={setEntityType}>
-                        <SelectTrigger className="h-12 rounded-xl border-primary bg-primary/5 shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-12 rounded-xl border-primary bg-primary/5 shadow-sm font-bold text-left"><SelectValue placeholder="Önce kuruluş türünü seçin..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="NGO">Sivil Toplum Kuruluşu (STK)</SelectItem>
                             <SelectItem value="BRAND">Marka / Sosyal İşletme</SelectItem>
@@ -414,9 +405,20 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </SelectContent>
                     </Select>
                 </div>
+                {entityType && (
+                    <div className="space-y-2">
+                        <FormLabel>Ülke</FormLabel>
+                        <Select value={formData.country} onValueChange={(val) => setFormData({...formData, country: val})}>
+                            <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold text-left"><SelectValue /></SelectTrigger>
+                            <SelectContent className="max-h-60">
+                                {allCountries.map((c, i) => <SelectItem key={`${c}-${i}`} value={c}>{c}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
 
-            <Separator className="border-dashed" />
+            {entityType && <Separator className="border-dashed" />}
 
             {entityType === 'NGO' && (() => {
                 const ngoSub = formData.ngoSubType;
@@ -811,16 +813,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         )}
                     </div>
 
-                    {/* İletişim & Sosyal Medya */}
+                    {/* İletişim & Sosyal Medya — her biri tek satır, sıra: Telefon/Mail/Web/IG/X/LinkedIn/+Ekle */}
                     <div className="space-y-6">
                         <SectionTitle icon={Mail}>İLETİŞİM & SOSYAL MEDYA</SectionTitle>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <FormLabel required>Kurumsal E-posta</FormLabel>
-                                <IconInput icon={Mail} type="email" placeholder="iletisim@kurum.org" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel required>Kurumsal Telefon</FormLabel>
+                                <FormLabel required>Telefon</FormLabel>
                                 <div className="grid grid-cols-[140px_1fr] gap-2">
                                     <Select value={formData.phoneCountryCode} onValueChange={v => setFormData({...formData, phoneCountryCode: v})}>
                                         <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
@@ -841,29 +839,29 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <FormInput type="tel" placeholder="5XXXXXXXXX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
                                 </div>
                             </div>
-                            {/* Sosyal medya sabit alanlar */}
+                            <div className="space-y-2">
+                                <FormLabel required>Mail</FormLabel>
+                                <IconInput icon={Mail} type="email" placeholder="iletisim@kurum.org" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                            </div>
                             <div className="space-y-2">
                                 <FormLabel>Web Sitesi</FormLabel>
                                 <IconInput icon={Globe} type="url" placeholder="https://kurum.org" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <FormLabel>Instagram</FormLabel>
-                                    <FormInput placeholder="@kurum" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
-                                </div>
-                                <div className="space-y-2">
-                                    <FormLabel>X (Twitter)</FormLabel>
-                                    <FormInput placeholder="@kurum" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
-                                </div>
-                                <div className="space-y-2 sm:col-span-2">
-                                    {/* Özel İzinli için LinkedIn yerine ikinci Instagram (kişisel/kurumsal ayrımı) */}
-                                    <FormLabel>{isOzelIzinli ? 'Instagram (Kişisel/İkinci)' : 'LinkedIn'}</FormLabel>
-                                    <FormInput
-                                        placeholder={isOzelIzinli ? '@kullanici' : 'linkedin.com/company/kurum'}
-                                        value={formData.linkedin}
-                                        onChange={e => setFormData({...formData, linkedin: e.target.value})}
-                                    />
-                                </div>
+                            <div className="space-y-2">
+                                <FormLabel>Instagram</FormLabel>
+                                <FormInput placeholder="@kurum" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>X (Twitter)</FormLabel>
+                                <FormInput placeholder="@kurum" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>{isOzelIzinli ? 'Instagram (Kişisel/İkinci)' : 'LinkedIn'}</FormLabel>
+                                <FormInput
+                                    placeholder={isOzelIzinli ? '@kullanici' : 'linkedin.com/company/kurum'}
+                                    value={formData.linkedin}
+                                    onChange={e => setFormData({...formData, linkedin: e.target.value})}
+                                />
                             </div>
                             {/* Diğer platformlar — +Ekle ile dinamik, platform dropdown'lu */}
                             <div className="space-y-2">
@@ -1192,6 +1190,78 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
+                    {/* MARKA: İletişim & Sosyal Medya — her biri tek satır */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={Mail}>İLETİŞİM & SOSYAL MEDYA</SectionTitle>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel required>Telefon</FormLabel>
+                                <div className="grid grid-cols-[140px_1fr] gap-2">
+                                    <Select value={formData.phoneCountryCode} onValueChange={v => setFormData({...formData, phoneCountryCode: v})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
+                                            <SelectValue>
+                                                <span className="text-base">{selectedCorporatePhone.flag}</span>
+                                                <span className="ml-1">{selectedCorporatePhone.code}</span>
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {COUNTRY_PHONE_CODES.map((c) => (
+                                                <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                                    <span className="text-base mr-2">{c.flag}</span>
+                                                    {c.country} ({c.code})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormInput type="tel" placeholder="5XXXXXXXXX" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>Mail</FormLabel>
+                                <IconInput icon={Mail} type="email" placeholder="iletisim@marka.com" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Web Sitesi</FormLabel>
+                                <IconInput icon={Globe} type="url" placeholder="https://marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>Instagram</FormLabel>
+                                <FormInput placeholder="@marka" value={formData.instagram} onChange={e => setFormData({...formData, instagram: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>X (Twitter)</FormLabel>
+                                <FormInput placeholder="@marka" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel>LinkedIn</FormLabel>
+                                <FormInput placeholder="linkedin.com/company/marka" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+                            </div>
+                            {/* Diğer platformlar — +Ekle */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <FormLabel>Diğer Platformlar (Opsiyonel)</FormLabel>
+                                    <Button type="button" variant="outline" size="sm" className="h-8 rounded-xl gap-1" onClick={() => setOtherSocials(prev => [...prev, { platform: '', url: '' }])}>
+                                        <span className="text-base leading-none">+</span> Ekle
+                                    </Button>
+                                </div>
+                                {otherSocials.map((s, idx) => (
+                                    <div key={idx} className="grid grid-cols-[160px_1fr_auto] gap-2 items-center">
+                                        <Select value={s.platform} onValueChange={(v) => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, platform: v } : p))}>
+                                            <SelectTrigger className="h-10 rounded-xl bg-card border"><SelectValue placeholder="Platform seç..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {SOCIAL_PLATFORM_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormInput placeholder="URL veya @handle" value={s.url} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, url: e.target.value } : p))} />
+                                        <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-destructive shrink-0" onClick={() => setOtherSocials(prev => prev.filter((_, i) => i !== idx))} aria-label="Kaldır">
+                                            <span className="text-xl leading-none">×</span>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-6">
                         <SectionTitle icon={Target}>AFFILIATE & TEKNİK TAKİP</SectionTitle>
                         <div className="space-y-4">
@@ -1470,12 +1540,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* İletişim Bilgileri */}
+                    {/* İletişim & Sosyal Medya — her biri tek satır, sıra: Telefon/Mail/Web/IG/X/LinkedIn/+Ekle */}
                     <div className="space-y-6">
-                        <SectionTitle icon={Phone}>İLETİŞİM BİLGİLERİ</SectionTitle>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <SectionTitle icon={Mail}>İLETİŞİM & SOSYAL MEDYA</SectionTitle>
+                        <div className="space-y-4">
                             <div className="space-y-2">
-                                <FormLabel required>Kulübün Telefon Numarası</FormLabel>
+                                <FormLabel required>Telefon</FormLabel>
                                 <FormInput
                                     type="tel"
                                     placeholder="0532 XXX XX XX"
@@ -1485,7 +1555,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <FormLabel required>Kulübün Mail Adresi</FormLabel>
+                                <FormLabel required>Mail</FormLabel>
                                 <FormInput
                                     type="email"
                                     placeholder="kulup@example.com"
@@ -1494,29 +1564,44 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     required
                                 />
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Sosyal Medya Hesapları */}
-                    <div className="space-y-6">
-                        <SectionTitle icon={Globe}>SOSYAL MEDYA HESAPLARI</SectionTitle>
-                        <p className="text-[11px] text-muted-foreground -mt-2">Opsiyonel. Kullanıcı adınızı veya tam URL'yi yazabilirsiniz.</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <FormLabel>Web Sitesi</FormLabel>
+                                <FormInput type="url" placeholder="https://kulubunuz.com" value={formData.clubSocialWebsite} onChange={e => setFormData({...formData, clubSocialWebsite: e.target.value})} />
+                            </div>
                             <div className="space-y-2">
                                 <FormLabel>Instagram</FormLabel>
                                 <FormInput placeholder="@kulubunuz" value={formData.clubSocialInstagram} onChange={e => setFormData({...formData, clubSocialInstagram: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>LinkedIn</FormLabel>
-                                <FormInput placeholder="linkedin.com/company/kulubunuz" value={formData.clubSocialLinkedin} onChange={e => setFormData({...formData, clubSocialLinkedin: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>X (Twitter)</FormLabel>
                                 <FormInput placeholder="@kulubunuz" value={formData.clubSocialTwitter} onChange={e => setFormData({...formData, clubSocialTwitter: e.target.value})} />
                             </div>
                             <div className="space-y-2">
-                                <FormLabel>Web Sitesi</FormLabel>
-                                <FormInput type="url" placeholder="https://kulubunuz.com" value={formData.clubSocialWebsite} onChange={e => setFormData({...formData, clubSocialWebsite: e.target.value})} />
+                                <FormLabel>LinkedIn</FormLabel>
+                                <FormInput placeholder="linkedin.com/company/kulubunuz" value={formData.clubSocialLinkedin} onChange={e => setFormData({...formData, clubSocialLinkedin: e.target.value})} />
+                            </div>
+                            {/* Diğer platformlar — +Ekle */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <FormLabel>Diğer Platformlar (Opsiyonel)</FormLabel>
+                                    <Button type="button" variant="outline" size="sm" className="h-8 rounded-xl gap-1" onClick={() => setOtherSocials(prev => [...prev, { platform: '', url: '' }])}>
+                                        <span className="text-base leading-none">+</span> Ekle
+                                    </Button>
+                                </div>
+                                {otherSocials.map((s, idx) => (
+                                    <div key={idx} className="grid grid-cols-[160px_1fr_auto] gap-2 items-center">
+                                        <Select value={s.platform} onValueChange={(v) => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, platform: v } : p))}>
+                                            <SelectTrigger className="h-10 rounded-xl bg-card border"><SelectValue placeholder="Platform seç..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {SOCIAL_PLATFORM_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormInput placeholder="URL veya @handle" value={s.url} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, url: e.target.value } : p))} />
+                                        <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-destructive shrink-0" onClick={() => setOtherSocials(prev => prev.filter((_, i) => i !== idx))} aria-label="Kaldır">
+                                            <span className="text-xl leading-none">×</span>
+                                        </Button>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
