@@ -36,8 +36,6 @@ import {
     ImageOff,
     Rss,
     FileVideo,
-    Settings2,
-    ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -108,13 +106,16 @@ export default function AccessibilityPublicPage() {
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
                             {cms.description || t('marketing.accessibility.heroDescriptionFallback')}
                         </p>
-                        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <Button asChild size="lg" className="rounded-full px-8 md:px-10 h-12 md:h-14 font-bold shadow-xl shadow-primary/20 text-base w-full sm:w-auto">
-                                <Link href="/settings/accessibility">
-                                    <Settings2 className="mr-2 h-5 w-5" />
-                                    {t('marketing.accessibility.configureCta')}
-                                </Link>
-                            </Button>
+                        <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                                <ShieldCheck className="h-3.5 w-3.5" /> WCAG 2.2 AA
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                                <Scale className="h-3.5 w-3.5" /> EN 301 549
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-primary/20 text-xs font-bold text-primary">
+                                <Globe className="h-3.5 w-3.5" /> Evrensel Tasarım
+                            </span>
                         </div>
                     </div>
                     <div className="relative w-full max-w-6xl mx-auto aspect-[16/9] md:aspect-[21/9] mt-12 md:mt-16 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden shadow-2xl">
@@ -236,20 +237,18 @@ export default function AccessibilityPublicPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Configure CTA banner — sends users to the real settings page */}
-                        <div className="p-6 md:p-8 bg-primary/5 rounded-[2rem] border border-primary/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-white rounded-2xl shadow-sm shrink-0">
-                                    <Settings2 className="h-6 w-6 text-primary" />
-                                </div>
-                                <p className="text-sm font-bold text-[#1d1d1f] leading-snug">{t('marketing.accessibility.together')}</p>
+                        {/* Promotional praise banner — accessibility as core value */}
+                        <div className="p-8 md:p-10 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-[2rem] border border-primary/15 text-center space-y-4">
+                            <div className="inline-flex p-4 bg-white rounded-2xl shadow-sm">
+                                <ShieldCheck className="h-8 w-8 text-primary" />
                             </div>
-                            <Button asChild size="lg" className="rounded-full px-8 h-12 font-bold shadow-lg shadow-primary/20 w-full sm:w-auto shrink-0">
-                                <Link href="/settings/accessibility">
-                                    {t('marketing.accessibility.configureCta')}
-                                    <ArrowRight className="ml-2 h-5 w-5" />
-                                </Link>
-                            </Button>
+                            <h3 className="text-2xl md:text-3xl font-black tracking-tight text-[#1d1d1f]">
+                                Hangel'de erişilebilirlik bir özellik değil, bir hak.
+                            </h3>
+                            <p className="text-sm md:text-base text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
+                                Herkes — görme, işitme, motor, bilişsel farklılıkları olan kullanıcılar dahil — platformumuzu
+                                tam ve eşit şekilde kullanabilsin diye 40+ ince ayar ve 5 farklı uyarlama kategorisi geliştirdik.
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -277,7 +276,7 @@ export default function AccessibilityPublicPage() {
                     </div>
                 </section>
 
-                {/* Final CTA */}
+                {/* Final commitment — promotional / inspirational */}
                 <section className="py-16 md:py-24 px-6 text-center bg-[#f5f5f7]">
                     <div className="container mx-auto max-w-3xl space-y-8 md:space-y-10">
                         <ShieldCheck className="h-12 w-12 md:h-16 md:w-16 text-primary mx-auto mb-4 md:mb-6" />
@@ -285,13 +284,10 @@ export default function AccessibilityPublicPage() {
                         <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
                             {t('marketing.accessibility.finalCommitDesc')}
                         </p>
+                        <p className="text-sm md:text-base text-muted-foreground font-medium italic">
+                            "İyilik için tasarlanmış bir platform önce iyilik tasarlanmış olmalı."
+                        </p>
                         <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Button asChild size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold shadow-xl shadow-primary/20 text-base md:text-lg w-full sm:w-auto">
-                                <Link href="/settings/accessibility">
-                                    <Settings2 className="mr-2 h-5 w-5" />
-                                    {t('marketing.accessibility.configureCta')}
-                                </Link>
-                            </Button>
                             <Button asChild variant="ghost" size="lg" className="rounded-full px-10 md:px-12 h-12 md:h-14 font-bold border border-black/10 hover:bg-white text-base md:text-lg w-full sm:w-auto">
                                 <Link href="/feedback">{t('marketing.accessibility.feedbackCta')}</Link>
                             </Button>
