@@ -264,23 +264,27 @@ export default function EventDetailPage() {
     }
   };
 
+  const safeImageUrl = event.imageUrl && event.imageUrl.trim().length > 0
+    ? event.imageUrl
+    : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
+
   return (
-    <div className="animate-in fade-in-0 w-full px-4 sm:px-6 lg:px-8">
-        <div className="p-4 bg-background">
-            <div className="flex justify-between items-center mb-6">
+    <div className="animate-in fade-in-0 w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pb-28">
+        <div className="pt-3 pb-4 sm:pt-4 sm:pb-6">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-border text-foreground hover:bg-accent"/>
             </div>
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold font-headline leading-tight">{event.name}</h1>
-              <p className="text-lg font-bold text-primary">{event.organizer}</p>
+            <div className="space-y-1.5">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-headline leading-tight break-words">{event.name}</h1>
+              <p className="text-base sm:text-lg font-bold text-primary">{event.organizer}</p>
             </div>
         </div>
 
-      <div className="p-4 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-8">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4 sm:gap-6 lg:gap-8">
             {/* Info Section (Left or Top) */}
             <div className="md:col-span-3 lg:col-span-5 space-y-6">
                 <Tabs defaultValue="details" className="w-full">
@@ -388,14 +392,15 @@ export default function EventDetailPage() {
                 </Tabs>
             </div>
 
-            {/* Poster Section (Right or Bottom) */}
-            <div className="md:col-span-2 lg:col-span-2">
-                <div className="relative aspect-[210/297] w-full max-w-md lg:max-w-none mx-auto rounded-[2.5rem] overflow-hidden shadow-2xl border border-black/5 bg-muted sticky top-20">
-                    <Image 
-                        src={event.imageUrl} 
-                        alt={event.name} 
-                        fill 
-                        className="object-cover" 
+            {/* Poster Section (Right on desktop, top-ish on mobile when reordered) */}
+            <div className="md:col-span-2 lg:col-span-2 order-first md:order-last">
+                <div className="relative aspect-[210/297] w-full max-w-xs sm:max-w-sm md:max-w-none mx-auto rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl border border-black/5 bg-muted md:sticky md:top-20">
+                    <Image
+                        src={safeImageUrl}
+                        alt={event.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 30vw"
                         priority
                         data-ai-hint="event poster a4 portrait"
                     />
@@ -405,7 +410,7 @@ export default function EventDetailPage() {
 
         {/* FEAT-EVENT-RSVP — capacity progress */}
         {event.capacity?.max > 0 && (
-          <div className="px-4 pb-2">
+          <div>
             <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-1">
               <span>Kapasite</span>
               <span>{event.capacity.current} / {event.capacity.max}</span>
@@ -413,7 +418,10 @@ export default function EventDetailPage() {
             <Progress value={Math.min(100, (event.capacity.current / event.capacity.max) * 100)} className="h-2 rounded-full" />
           </div>
         )}
-        <div className="sticky bottom-0 bg-background/80 backdrop-blur-lg p-4 border-t z-20 flex gap-3">
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg p-3 sm:p-4 border-t z-20">
+        <div className="max-w-6xl mx-auto flex gap-2 sm:gap-3">
             {isGoing ? (
               <Button
                 size="lg"
