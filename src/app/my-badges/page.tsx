@@ -38,7 +38,9 @@ const LEVEL_ORDER: BadgeLevel[] = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Pla
  */
 const SELECTION_AREA_POINTS = 10;
 
-const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: number; progress: number }) | null; t: (key: string) => string }) => {
+type NextBadgeRow = TierBadge & { tierCurrent: number; tierDelta: number; tierProgress: number };
+
+const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: NextBadgeRow | null; t: (key: string) => string }) => {
     if (!nextBadge) {
         return (
             <Card className="bg-primary/5 border-primary/10">
@@ -56,7 +58,7 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: nu
         );
     }
     const Icon = nextBadge.iconName;
-    const remaining = Math.max(nextBadge.pointsRequired - nextBadge.current, 0);
+    const remaining = Math.max(nextBadge.tierDelta - nextBadge.tierCurrent, 0);
     return (
         <Card className="bg-primary/5 border-primary/10">
             <CardHeader className="pb-3">
@@ -72,11 +74,11 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: nu
                     <div className="flex-1 space-y-2">
                         <div className="flex justify-between items-end">
                             <p className="font-bold text-sm">{nextBadge.name}</p>
-                            <p className="text-xs font-bold text-primary">%{Math.round(nextBadge.progress)}</p>
+                            <p className="text-xs font-bold text-primary">%{Math.round(nextBadge.tierProgress)}</p>
                         </div>
-                        <Progress value={nextBadge.progress} className="h-2" />
+                        <Progress value={nextBadge.tierProgress} className="h-2" />
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            {nextBadge.current.toLocaleString('tr-TR')} / {nextBadge.pointsRequired.toLocaleString('tr-TR')} Puan (Kalan: {remaining.toLocaleString('tr-TR')})
+                            {nextBadge.tierCurrent.toLocaleString('tr-TR')} / {nextBadge.tierDelta.toLocaleString('tr-TR')} Puan (Kalan: {remaining.toLocaleString('tr-TR')})
                         </p>
                     </div>
                 </div>
@@ -85,12 +87,25 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: (BadgeType & { current: nu
     );
 };
 
-const VectorBadge = ({ badge }: { badge: BadgeType }) => {
+/**
+ * Tier-based ilerleme:
+ * Bir alanda Bakır=100, Bronz=250, Gümüş=500, areaPoints=350 ise:
+ *   - Bakır: 100/100 TAMAMLANDI
+ *   - Bronz: 150/150 TAMAMLANDI (delta = 250-100)
+ *   - Gümüş: 100/250 (areaPoints-Bronz = 100, delta = 500-250 = 250)
+ * Yani 1. kademe dolduğunda 2. kademenin sayacı SIFIRDAN başlar.
+ */
+type TierBadge = BadgeType & { prevTierRequired: number };
+
+const VectorBadge = ({ badge }: { badge: TierBadge }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
     const Icon = badge.iconName;
     const colors = levelColors[badge.level];
-    const progress = Math.min((badge.currentPoints / badge.pointsRequired) * 100, 100);
-    const pointsRemaining = Math.max(badge.pointsRequired - badge.currentPoints, 0);
+
+    const tierDelta = Math.max(1, badge.pointsRequired - badge.prevTierRequired);
+    const tierCurrent = Math.max(0, Math.min(tierDelta, badge.currentPoints - badge.prevTierRequired));
+    const progress = Math.min((tierCurrent / tierDelta) * 100, 100);
+    const pointsRemaining = Math.max(tierDelta - tierCurrent, 0);
 
     return (
         <Card
@@ -120,7 +135,7 @@ const VectorBadge = ({ badge }: { badge: BadgeType }) => {
                     <Progress value={progress} className="h-1.5" />
                     <div className="flex justify-between text-[9px] font-black uppercase tracking-widest mt-2">
                         <span className="text-muted-foreground">
-                            {badge.currentPoints.toLocaleString('tr-TR')} / {badge.pointsRequired.toLocaleString('tr-TR')}
+                            {tierCurrent.toLocaleString('tr-TR')} / {tierDelta.toLocaleString('tr-TR')}
                         </span>
                         {isEarned ? (
                             <span className="text-green-600">TAMAMLANDI</span>
@@ -427,24 +442,44 @@ export default function MyBadgesPage() {
         })();
     }, [db, authUser, storedAreaPoints, effectiveAreaPoints]);
 
-    // Rozetlere effectiveAreaPoints'ten currentPoints aktar
-    const enrichedBadges: BadgeType[] = useMemo(() => {
-        return badges.map(b => ({
-            ...b,
-            currentPoints: Number(effectiveAreaPoints[b.socialArea]) || 0,
-        }));
+    // Rozetlere effectiveAreaPoints'ten currentPoints + tier-prev hesabı aktar.
+    // prevTierRequired: aynı alanda kendinden ÖNCEKİ tier'ın pointsRequired'i.
+    // İlk tier (Bakır) için 0. Böylece 1. kademe dolunca 2. kademe SIFIRDAN sayar.
+    const enrichedBadges: TierBadge[] = useMemo(() => {
+        // Önce alan bazında grupla + tier sırasına göre sırala
+        const byArea = groupBy(badges, 'socialArea');
+        const out: TierBadge[] = [];
+        Object.entries(byArea).forEach(([area, areaBadges]) => {
+            const sorted = [...areaBadges].sort(
+                (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level),
+            );
+            const areaCurrent = Number(effectiveAreaPoints[area]) || 0;
+            sorted.forEach((b, idx) => {
+                out.push({
+                    ...b,
+                    currentPoints: areaCurrent,
+                    prevTierRequired: idx === 0 ? 0 : sorted[idx - 1].pointsRequired,
+                });
+            });
+        });
+        return out;
     }, [effectiveAreaPoints]);
 
-    // Sıradaki hedef: en yakın kazanılmamış rozet (kalan puan en az olan)
-    const nextBadge = useMemo(() => {
+    // Sıradaki hedef: en yakın kazanılmamış tier (delta cinsinden kalan puan en az).
+    const nextBadge = useMemo<NextBadgeRow | null>(() => {
         const candidates = enrichedBadges
             .filter(b => b.currentPoints < b.pointsRequired)
-            .map(b => ({
-                ...b,
-                current: b.currentPoints,
-                progress: Math.min((b.currentPoints / b.pointsRequired) * 100, 100),
-                remaining: b.pointsRequired - b.currentPoints,
-            }))
+            .map(b => {
+                const tierDelta = Math.max(1, b.pointsRequired - b.prevTierRequired);
+                const tierCurrent = Math.max(0, Math.min(tierDelta, b.currentPoints - b.prevTierRequired));
+                return {
+                    ...b,
+                    tierCurrent,
+                    tierDelta,
+                    tierProgress: Math.min((tierCurrent / tierDelta) * 100, 100),
+                    remaining: tierDelta - tierCurrent,
+                };
+            })
             .sort((a, b) => a.remaining - b.remaining);
         return candidates[0] || null;
     }, [enrichedBadges]);

@@ -299,11 +299,18 @@ export default function VolunteeringPage() {
 
     const personalizedRecs = useMemo(() => {
         if (!authUser || !hasVolunteerProfile || !oppsData || oppsData.length === 0) return [];
+        const today = new Date(); today.setHours(0, 0, 0, 0);
         const activeOpps = oppsData.filter(opp => {
             const status = (opp as Volunteering & { status?: string }).status;
-            return !status || status === 'Aktif';
+            if (status && status !== 'Aktif') return false;
+            // Süresi dolmuş ilanları gizle
+            try {
+                const end = parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date());
+                if (!isNaN(end.getTime()) && end < today) return false;
+            } catch { /* tarih okunmazsa göster */ }
+            return true;
         });
-        return rankOpportunities(activeOpps, matchingProfile, 6).filter(r => r.score > 0);
+        return rankOpportunities(activeOpps, matchingProfile, 5).filter(r => r.score > 0);
     }, [authUser, hasVolunteerProfile, oppsData, matchingProfile]);
 
     const { interestOptions, skillOptions, cityOptions } = useMemo(() => {
@@ -325,11 +332,16 @@ export default function VolunteeringPage() {
 
     const filteredOpps = useMemo(() => {
         if (!oppsData) return [];
-        // Sadece onaylanmış (Aktif) ilanlar — Beklemede/Pasif gizli
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        // Sadece onaylanmış (Aktif) + süresi dolmamış ilanlar
         let filtered = oppsData.filter(opp => {
             const status = (opp as Volunteering & { status?: string }).status;
-            // Eski ilanlar status alanı olmayabilir — varsayılan olarak gösterilir
-            return !status || status === 'Aktif';
+            if (status && status !== 'Aktif') return false;
+            try {
+                const end = parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date());
+                if (!isNaN(end.getTime()) && end < today) return false;
+            } catch { /* tarih okunmazsa göster */ }
+            return true;
         });
 
         if (interestFilter.length > 0) {
@@ -433,16 +445,32 @@ export default function VolunteeringPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {personalizedRecs.map(({ opportunity, score, reasons }) => (
                 <Link key={opportunity.id} href={`/volunteering/${opportunity.id}`} className="block group">
-                  <Card className="h-full overflow-hidden border-primary/20 shadow-sm hover:shadow-md hover:border-primary/40 transition-all">
+                  {/* Nar çiçeği (pomegranate flower) çerçeve — #E34234 */}
+                  <Card className="h-full overflow-hidden border-2 shadow-sm hover:shadow-lg transition-all"
+                        style={{ borderColor: '#E34234' }}>
                     <CardContent className="p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">{opportunity.organization}</p>
                           <h3 className="font-semibold text-sm leading-tight mt-0.5 group-hover:text-primary transition-colors line-clamp-2">{opportunity.title}</h3>
                         </div>
-                        <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-xs font-black">
+                        <span className="shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black text-white"
+                              style={{ backgroundColor: '#E34234' }}>
                           %{score}
                         </span>
+                      </div>
+                      {/* Uyum yüzdesi çubuğu */}
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-[9px] uppercase tracking-wider font-bold">
+                          <span className="text-muted-foreground">Profil Uyumun</span>
+                          <span style={{ color: '#E34234' }}>%{score}</span>
+                        </div>
+                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${score}%`, backgroundColor: '#E34234' }}
+                          />
+                        </div>
                       </div>
                       {reasons[0] && (
                         <p className="text-xs text-muted-foreground line-clamp-1">{reasons[0]}</p>
