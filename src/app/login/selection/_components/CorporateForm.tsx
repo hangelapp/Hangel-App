@@ -177,6 +177,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
     const [selectedClubCategories, setSelectedClubCategories] = useState<string[]>([]);
     const [donationCategories, setDonationCategories] = useState([{ id: '1', category: '', rate: '' }]);
+    // Registry sorgusundan otomatik dolan alanlar — UI'da yeşil bordur gösterilir.
+    const [autoFilled, setAutoFilled] = useState<Set<string>>(new Set());
+    const autoFillCls = (field: string) => autoFilled.has(field) ? 'border border-green-500/60 ring-1 ring-green-100' : '';
     const [agreements, setAgreements] = useState({
         userAgreement: false,
         kvkk: false,
@@ -304,6 +307,16 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 addressLine: adres && !prev.addressLine ? adres : prev.addressLine,
                 website: webSite && !prev.website ? webSite : prev.website,
             }));
+            // Auto-fill marker (yeşil bordur) — bu alanlar registry'den geldi
+            const newFilled = new Set(autoFilled);
+            if (name) newFilled.add('name');
+            if (foundedYear) newFilled.add('foundedYear');
+            if (faaliyetAlani) newFilled.add('sector');
+            if (detayliFaaliyetAlani) newFilled.add('detayliFaaliyetAlani');
+            if (ilFromPlate) newFilled.add('city');
+            if (adres) newFilled.add('addressLine');
+            if (webSite) newFilled.add('website');
+            setAutoFilled(newFilled);
             setRegistryMatch({
                 name,
                 faaliyetAlani: faaliyetAlani || undefined,
@@ -364,6 +377,14 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             email: !prev.email && cleanEmail ? cleanEmail : prev.email,
             phone: !prev.phone && localPhone ? localPhone : prev.phone,
         }));
+        const newFilled = new Set(autoFilled);
+        if (v.name) newFilled.add('name');
+        if (v.il) newFilled.add('city');
+        if (v.ilce) newFilled.add('district');
+        if (v.adres) newFilled.add('addressLine');
+        if (cleanEmail) newFilled.add('email');
+        if (localPhone) newFilled.add('phone');
+        setAutoFilled(newFilled);
         setRegistryMatch({ name: v.name, adres: v.adres, il: v.il, ilce: v.ilce });
         setRegistryLookupStatus('found');
         setVakifResults([]);
@@ -574,7 +595,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <SectionTitle icon={Building2}>{identityTitle}</SectionTitle>
                         <div className="space-y-2">
                             <FormLabel required>{isOzelIzinli ? 'Özel İzinli Kişinin Adı Soyadı' : 'Kuruluş Tam Adı'}</FormLabel>
-                            <FormInput placeholder={isOzelIzinli ? 'Ad Soyad' : 'Tam resmi ad'} required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                            <FormInput placeholder={isOzelIzinli ? 'Ad Soyad' : 'Tam resmi ad'} required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className={autoFillCls('name')} />
                         </div>
                         {!isOzelIzinli && (
                             <div className="grid grid-cols-2 gap-4">
@@ -750,7 +771,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel required>İl</FormLabel>
                                 <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl seç..." /></SelectTrigger>
+                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('city'))}><SelectValue placeholder="İl seç..." /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {allProvinces.map(il => <SelectItem key={il} value={il}>{il}</SelectItem>)}
                                     </SelectContent>
@@ -759,7 +780,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <div className="space-y-2">
                                 <FormLabel required>İlçe</FormLabel>
                                 <Select value={formData.district} onValueChange={v => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.city ? 'İlçe seç...' : 'Önce il seçin'} /></SelectTrigger>
+                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('district'))}><SelectValue placeholder={formData.city ? 'İlçe seç...' : 'Önce il seçin'} /></SelectTrigger>
                                     <SelectContent className="max-h-60">
                                         {formData.city && neighborhoodsData[formData.city] && Object.keys(neighborhoodsData[formData.city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                     </SelectContent>
@@ -776,13 +797,18 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Açık Adres</FormLabel>
-                                <FormInput placeholder="Sokak, cadde, bina adı" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
+                                <FormInput placeholder="Sokak, cadde, bina adı" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} className={autoFillCls('addressLine')} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Kapı No</FormLabel>
                                 <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} />
                             </div>
                         </div>
+                        {autoFilled.size > 0 && (
+                            <p className="text-[11px] text-green-700 font-medium flex items-center gap-1.5">
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Yeşil çerçeveli alanlar registry sorgusundan otomatik dolduruldu. Gerekirse düzenleyebilirsiniz.
+                            </p>
+                        )}
                     </div>
 
                     {/* İletişim & Sosyal Medya */}
