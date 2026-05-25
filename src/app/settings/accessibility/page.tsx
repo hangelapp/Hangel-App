@@ -515,6 +515,22 @@ export default function AccessibilitySettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* --- Sıfırlama (ayarların hemen altında) --- */}
+                <div className="flex flex-col items-center gap-2 pt-2">
+                    <p className="text-xs text-muted-foreground">
+                        Tüm tercihleri ilk haline döndürmek ister misin?
+                    </p>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetToDefaults}
+                        className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Ayarları Varsayılana Sıfırla
+                    </Button>
+                </div>
             </div>
 
             {/* --- Footer Context Section --- */}
@@ -536,25 +552,9 @@ export default function AccessibilitySettingsPage() {
                         <p className="text-xs text-muted-foreground leading-relaxed">Deneyiminizi geliştirmek için WCAG güncellemelerini ve geri bildirimlerinizi anlık olarak takip ediyoruz.</p>
                     </div>
                 </div>
-                
+
                 <div className="p-6 bg-primary/5 rounded-[2rem] text-center border border-primary/10">
                     <p className="text-sm font-bold text-primary">Daha kapsayıcı bir dünya için birlikte çalışıyoruz.</p>
-                </div>
-
-                {/* --- Sıfırlama --- */}
-                <div className="pt-4 flex flex-col items-center gap-2">
-                    <p className="text-xs text-muted-foreground">
-                        Tüm tercihleri ilk haline döndürmek ister misin?
-                    </p>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleResetToDefaults}
-                        className="text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                        <RotateCcw className="h-4 w-4 mr-2" />
-                        Ayarları Varsayılana Sıfırla
-                    </Button>
                 </div>
             </div>
 
