@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
 import { districtsData, neighborhoodsData } from '@/lib/data';
 import {
   PROFESSIONS, SKILLS, DAILY_SKILLS, INTERESTS,
@@ -25,7 +24,7 @@ import { FilteredMultiSelect } from './_components/filtered-multi-select';
 import { FilteredSingleSelect } from './_components/filtered-single-select';
 import { LanguageSelect } from './_components/language-select';
 import { MotivationsSection } from './_components/motivations-section';
-import { AvailabilitySection } from './_components/availability-section';
+import { AvailabilitySection, type TimeRange } from './_components/availability-section';
 import { MuhtarSection } from './_components/muhtar-section';
 import { EmergencyContactsSection } from './_components/emergency-contacts-section';
 import { AddressSection } from './_components/address-section';
@@ -85,6 +84,7 @@ export default function VolunteerSettingsPage() {
   // Müsaitlik & çalışma şekli
   const [availabilityDays, setAvailabilityDays] = useState<string[]>([]);
   const [availabilityTimes, setAvailabilityTimes] = useState<string[]>([]);
+  const [availabilityTimeRanges, setAvailabilityTimeRanges] = useState<Record<string, TimeRange>>({});
   const [workModes, setWorkModes] = useState<string[]>([]);
 
   // Motivasyonlar (çok seçimli)
@@ -174,6 +174,7 @@ export default function VolunteerSettingsPage() {
 
     if (Array.isArray(vi.availabilityDays)) setAvailabilityDays(vi.availabilityDays);
     if (Array.isArray(vi.availabilityTimes)) setAvailabilityTimes(vi.availabilityTimes);
+    if (vi.availabilityTimeRanges && typeof vi.availabilityTimeRanges === 'object') setAvailabilityTimeRanges(vi.availabilityTimeRanges);
     if (Array.isArray(vi.workModes)) setWorkModes(vi.workModes);
     if (Array.isArray(vi.motivations)) setMotivations(vi.motivations);
     if (vi.consents) setConsents(prev => ({ ...prev, ...vi.consents }));
@@ -221,6 +222,19 @@ export default function VolunteerSettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // "Formu daha sonra dolduracağım" — onboarding'i yarıda bırakıp /market'e geçer.
+  // Önceden seçilmiş STK'lar varsa hoşgeldin popup'ı /market'te gösterilir;
+  // burada flag'leyip /market'in açılışında AlertDialog tetiklenir.
+  const handleSkipForm = () => {
+    if (isOnboarding) {
+      try {
+        localStorage.removeItem('onboardingStep');
+        localStorage.setItem('showWelcomeBenefitsPopup', '1');
+      } catch { /* localStorage erişilemedi — popup atlanır */ }
+    }
+    router.push('/market');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userDocRef) return;
@@ -260,6 +274,7 @@ export default function VolunteerSettingsPage() {
       },
       availabilityDays,
       availabilityTimes,
+      availabilityTimeRanges,
       workModes,
       motivations,
       consents,
@@ -299,8 +314,8 @@ export default function VolunteerSettingsPage() {
 
     if (isOnboarding) {
       toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });
-      localStorage.removeItem('onboardingStep');
-      router.push('/market');
+      try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
+      router.push('/settings/volunteer-ngo-selection');
     } else {
       toast({ title: t('dashboard.settingsVolunteer.toastUpdatedTitle'), description: t('dashboard.settingsVolunteer.toastUpdatedDesc') });
       router.push('/settings');
@@ -324,8 +339,13 @@ export default function VolunteerSettingsPage() {
           <p className="text-lg text-muted-foreground leading-relaxed font-medium">
             {t('dashboard.settingsVolunteer.heroDesc')}
           </p>
-          <Button asChild variant="outline" className="rounded-xl font-bold h-11 px-6">
-            <Link href="/market">{t('dashboard.settingsVolunteer.laterCta')}</Link>
+          <Button
+            type="button"
+            onClick={handleSkipForm}
+            className="rounded-xl font-bold h-11 px-6 text-white shadow-md hover:opacity-90"
+            style={{ backgroundColor: '#E34234' }}
+          >
+            Formu daha sonra dolduracağım
           </Button>
         </div>
       </div>
@@ -449,6 +469,8 @@ export default function VolunteerSettingsPage() {
           onDaysChange={setAvailabilityDays}
           times={availabilityTimes}
           onTimesChange={setAvailabilityTimes}
+          timeRanges={availabilityTimeRanges}
+          onTimeRangesChange={setAvailabilityTimeRanges}
           workModes={workModes}
           onWorkModesChange={setWorkModes}
         />
@@ -505,8 +527,20 @@ export default function VolunteerSettingsPage() {
 
         <ConsentsSection value={consents} onChange={setConsents} />
 
-        <div className="flex justify-end pt-4 pb-10">
-          <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">{isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...</> : 'Profili Tamamla'}</Button>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end pt-4 pb-10">
+          <Button
+            type="button"
+            onClick={handleSkipForm}
+            size="lg"
+            variant="outline"
+            className="px-8 rounded-2xl font-bold border-2"
+            style={{ borderColor: '#E34234', color: '#E34234' }}
+          >
+            Formu daha sonra dolduracağım
+          </Button>
+          <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">
+            {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...</> : 'Profili Tamamla'}
+          </Button>
         </div>
       </form>
     </div>

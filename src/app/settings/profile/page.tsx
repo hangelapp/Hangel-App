@@ -1,12 +1,14 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { neighborhoodsData } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { Country, State, City } from 'country-state-city';
@@ -74,8 +76,11 @@ export default function ProfileSettingsPage() {
   const db = useFirestore();
   
   const [isOnboarding, setIsOnboarding] = useState(false);
-  const [_isPhotoEditorOpen, setIsPhotoEditorOpen] = useState(false);
-  const [_zoom, _setZoom] = useState([1]);
+  // Photo editor (zoom + pan + crop circle 256x256 → data URL)
+  const [photoEditorSrc, setPhotoEditorSrc] = useState<string | null>(null);
+  const [zoom, setZoom] = useState([1]);
+  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const dragRef = useRef<{ startX: number; startY: number; startOffsetX: number; startOffsetY: number } | null>(null);
 
   const userDocRef = useMemoFirebase(() => {
     if (!db || !authUser) return null;
@@ -218,14 +223,68 @@ export default function ProfileSettingsPage() {
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-              handleChange('avatarUrl', 'avatarUrl', reader.result as string);
-              setIsPhotoEditorOpen(true);
-          };
-          reader.readAsDataURL(file);
-      }
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          // Düzenleyiciye gönder; avatarUrl yalnızca "Uygula" sonrası set edilir.
+          setPhotoEditorSrc(reader.result as string);
+          setZoom([1]);
+          setOffset({ x: 0, y: 0 });
+      };
+      reader.readAsDataURL(file);
+      // Aynı dosya tekrar seçilebilsin diye input'u sıfırla.
+      e.target.value = '';
+  };
+
+  const PREVIEW_SIZE = 256;
+  const handlePreviewPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, startOffsetX: offset.x, startOffsetY: offset.y };
+  };
+  const handlePreviewPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    setOffset({ x: dragRef.current.startOffsetX + dx, y: dragRef.current.startOffsetY + dy });
+  };
+  const handlePreviewPointerUp = () => { dragRef.current = null; };
+
+  const applyPhotoEditor = async () => {
+    if (!photoEditorSrc) return;
+    // Browser-side render: 512x512 PNG (preview 256, ×2 for retina)
+    const OUT = 512;
+    const previewToOut = OUT / PREVIEW_SIZE;
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image();
+        el.crossOrigin = 'anonymous';
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = photoEditorSrc;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = OUT;
+      canvas.height = OUT;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      // Object-fit: cover hesabı (preview ile birebir)
+      const scale = Math.max(PREVIEW_SIZE / img.width, PREVIEW_SIZE / img.height) * zoom[0];
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+      const cx = PREVIEW_SIZE / 2 + offset.x;
+      const cy = PREVIEW_SIZE / 2 + offset.y;
+      const drawX = cx - drawW / 2;
+      const drawY = cy - drawH / 2;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, OUT, OUT);
+      ctx.drawImage(img, drawX * previewToOut, drawY * previewToOut, drawW * previewToOut, drawH * previewToOut);
+      const dataUrl = canvas.toDataURL('image/png');
+      handleChange('avatarUrl', 'avatarUrl', dataUrl);
+      setPhotoEditorSrc(null);
+    } catch (err) {
+      console.error('photo editor apply failed:', err);
+      toast({ variant: 'destructive', title: 'Düzenleme başarısız', description: 'Görsel işlenirken bir hata oluştu.' });
+    }
   };
 
   const [isSaving, setIsSaving] = useState(false);
@@ -311,6 +370,40 @@ export default function ProfileSettingsPage() {
     if (isTurkey) return 'TR';
     return Country.getAllCountries().find(c => c.name === currentCountry || c.isoCode === currentCountry)?.isoCode || null;
   }, [currentCountry, isTurkey]);
+
+  // O ülkede telaffuz edilen yönetim birimi adları (Türkçe açıklamalı).
+  // country-state-city library 2 seviye (state → city) veri sağlar; üçüncü
+  // seviye (mahalle/semt) sadece TR için neighborhoodsData'dan beslenir.
+  const adminLabels = useMemo(() => {
+    const iso = countryISO;
+    const M: Record<string, { l1: string; l2: string; l3: string }> = {
+      TR: { l1: 'İl', l2: 'İlçe', l3: 'Mahalle' },
+      US: { l1: 'Eyalet (State)', l2: 'Şehir (City)', l3: 'Semt (Neighborhood)' },
+      GB: { l1: 'Bölge (County)', l2: 'Şehir (City/Town)', l3: 'Semt (District)' },
+      DE: { l1: 'Eyalet (Bundesland)', l2: 'Şehir (Stadt)', l3: 'Semt (Stadtteil)' },
+      FR: { l1: 'Bölge (Région)', l2: 'Şehir (Ville)', l3: 'Semt (Quartier)' },
+      IT: { l1: 'Bölge (Regione)', l2: 'Şehir (Città)', l3: 'Semt (Quartiere)' },
+      ES: { l1: 'Topluluk (Comunidad)', l2: 'Şehir (Ciudad)', l3: 'Semt (Barrio)' },
+      NL: { l1: 'Eyalet (Provincie)', l2: 'Şehir (Stad)', l3: 'Semt (Wijk)' },
+      BE: { l1: 'Bölge (Région)', l2: 'Şehir (Ville)', l3: 'Semt (Quartier)' },
+      CH: { l1: 'Kanton', l2: 'Şehir (Stadt)', l3: 'Semt (Quartier)' },
+      AT: { l1: 'Eyalet (Bundesland)', l2: 'Şehir (Stadt)', l3: 'Semt (Stadtteil)' },
+      CA: { l1: 'Eyalet/Bölge (Province)', l2: 'Şehir (City)', l3: 'Semt (Neighbourhood)' },
+      AU: { l1: 'Eyalet (State)', l2: 'Şehir (City)', l3: 'Semt (Suburb)' },
+      JP: { l1: 'Vilayet (都道府県)', l2: 'Şehir (市)', l3: 'Semt (区)' },
+      KR: { l1: 'İl (도/시)', l2: 'Şehir (시)', l3: 'Semt (동)' },
+      CN: { l1: 'Vilayet (省)', l2: 'Şehir (市)', l3: 'Semt (区)' },
+      RU: { l1: 'Bölge (Область)', l2: 'Şehir (Город)', l3: 'Semt (Район)' },
+      AZ: { l1: 'Vilayet (Rayon)', l2: 'Şehir (Şəhər)', l3: 'Məhəllə' },
+      SA: { l1: 'Bölge (مِنْطَقَة)', l2: 'Şehir (مَدِينَة)', l3: 'Mahalle (حَيّ)' },
+      AE: { l1: 'Emirlik (إِمَارَة)', l2: 'Şehir (مَدِينَة)', l3: 'Mahalle (حَيّ)' },
+      IN: { l1: 'Eyalet (State)', l2: 'Şehir (City)', l3: 'Semt (Locality)' },
+      BR: { l1: 'Eyalet (Estado)', l2: 'Şehir (Cidade)', l3: 'Semt (Bairro)' },
+      MX: { l1: 'Eyalet (Estado)', l2: 'Şehir (Ciudad)', l3: 'Semt (Colonia)' },
+      GR: { l1: 'Bölge (Περιφέρεια)', l2: 'Şehir (Πόλη)', l3: 'Semt (Συνοικία)' },
+    };
+    return iso && M[iso] ? M[iso] : { l1: 'Bölge / Eyalet', l2: 'Şehir', l3: 'Semt' };
+  }, [countryISO]);
 
   // For Türkiye, list of il from neighborhoodsData; otherwise country-state-city states/cities
   const cityOptions = useMemo<string[]>(() => {
@@ -455,18 +548,18 @@ export default function ProfileSettingsPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                        <Label>{isTurkey ? 'İl' : 'Şehir'}</Label>
+                        <Label>{adminLabels.l1}</Label>
                         {cityOptions.length > 0 ? (
                             <Select value={currentCity || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { city: v, district: '', neighborhood: '' })}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={`${adminLabels.l1} seçin...`} /></SelectTrigger>
                                 <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder="Şehir" className="h-11 rounded-xl" />
+                            <Input value={currentCity || ''} onChange={(e) => handleChange('personalInfo', 'address', { city: e.target.value })} placeholder={adminLabels.l1} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label>{isTurkey ? 'İlçe' : 'Bölge'}</Label>
+                        <Label>{adminLabels.l2}</Label>
                         {isTurkey ? (
                             <Select
                                 value={currentDistrict || ''}
@@ -474,21 +567,21 @@ export default function ProfileSettingsPage() {
                                 disabled={!currentCity || districtOptions.length === 0}
                             >
                                 <SelectTrigger className="h-11 rounded-xl">
-                                    <SelectValue placeholder={!currentCity ? 'Önce il seçin' : 'İlçe seçin...'} />
+                                    <SelectValue placeholder={!currentCity ? `Önce ${adminLabels.l1} seçin` : `${adminLabels.l2} seçin...`} />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : districtOptions.length > 0 ? (
                             <Select value={currentDistrict || ''} onValueChange={(v) => handleChange('personalInfo', 'address', { district: v, neighborhood: '' })} disabled={!currentCity}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={`${adminLabels.l2} seçin...`} /></SelectTrigger>
                                 <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder="Bölge" className="h-11 rounded-xl" />
+                            <Input value={currentDistrict || ''} onChange={(e) => handleChange('personalInfo', 'address', { district: e.target.value })} placeholder={adminLabels.l2} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label>Mahalle</Label>
+                        <Label>{adminLabels.l3}</Label>
                         {isTurkey ? (
                             <Select
                                 value={currentNeighborhood || ''}
@@ -496,12 +589,12 @@ export default function ProfileSettingsPage() {
                                 disabled={!currentDistrict || neighborhoodOptions.length === 0}
                             >
                                 <SelectTrigger className="h-11 rounded-xl">
-                                    <SelectValue placeholder={!currentDistrict ? 'Önce ilçe seçin' : 'Mahalle seçin...'} />
+                                    <SelectValue placeholder={!currentDistrict ? `Önce ${adminLabels.l2} seçin` : `${adminLabels.l3} seçin...`} />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-60">{neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={currentNeighborhood} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder="Mahalle" className="h-11 rounded-xl" />
+                            <Input value={currentNeighborhood} onChange={(e) => handleChange('personalInfo', 'address', { neighborhood: e.target.value })} placeholder={adminLabels.l3} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
@@ -740,6 +833,57 @@ export default function ProfileSettingsPage() {
           </Button>
         </div>
       </form>
+
+      <Dialog open={!!photoEditorSrc} onOpenChange={(open) => !open && setPhotoEditorSrc(null)}>
+        <DialogContent className="rounded-3xl max-w-md">
+          <DialogHeader>
+            <DialogTitle>Profil Fotoğrafını Düzenle</DialogTitle>
+            <DialogDescription>Yakınlaştır ve sürükleyerek konumlandır. Dairesel alan kaydedilecek görüntüyü gösterir.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div
+              className="relative overflow-hidden bg-muted shadow-inner select-none touch-none"
+              style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE, borderRadius: '50%' }}
+              onPointerDown={handlePreviewPointerDown}
+              onPointerMove={handlePreviewPointerMove}
+              onPointerUp={handlePreviewPointerUp}
+              onPointerCancel={handlePreviewPointerUp}
+            >
+              {photoEditorSrc && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={photoEditorSrc}
+                  alt="Düzenlenen fotoğraf"
+                  draggable={false}
+                  className="absolute pointer-events-none"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom[0]})`,
+                    transformOrigin: 'center center',
+                  }}
+                />
+              )}
+              <div className="absolute inset-0 ring-2 ring-primary/60 rounded-full pointer-events-none" />
+            </div>
+            <div className="w-full space-y-2">
+              <Label className="text-xs text-muted-foreground flex items-center justify-between">
+                <span>Yakınlaştırma</span>
+                <span className="font-mono">{zoom[0].toFixed(1)}×</span>
+              </Label>
+              <Slider value={zoom} onValueChange={setZoom} min={1} max={3} step={0.1} />
+            </div>
+            <Button type="button" variant="ghost" size="sm" onClick={() => { setZoom([1]); setOffset({ x: 0, y: 0 }); }}>
+              Sıfırla
+            </Button>
+          </div>
+          <DialogFooter className="flex flex-row gap-2 sm:flex-row">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setPhotoEditorSrc(null)}>İptal</Button>
+            <Button type="button" className="flex-1" onClick={applyPhotoEditor}>Uygula</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

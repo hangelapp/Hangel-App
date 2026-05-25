@@ -485,30 +485,55 @@ export default function NgoSelectionPage() {
                         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
                     ) : (
                         <div className="divide-y">
-                            {filteredNgos.length > 0 ? filteredNgos.map(ngo => (
+                            {filteredNgos.length > 0 ? filteredNgos.map(ngo => {
+                                const donors = ngo.stats?.followers ?? 0;
+                                const volunteers = ngo.stats?.volunteers ?? 0;
+                                const platforms = (ngo.memberOf ?? []).filter(Boolean);
+                                return (
                                 <div
                                     key={ngo.id}
                                     className={cn(
-                                      "flex items-center justify-between p-3 hover:bg-accent cursor-pointer",
+                                      "flex items-start justify-between p-3 hover:bg-accent cursor-pointer gap-3",
                                       selectedNgos.includes(ngo.id) && "bg-primary/5"
                                     )}
                                     onClick={() => handleNgoSelect(ngo.id)}
                                 >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <Avatar className="h-10 w-10">
+                                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                                        <Avatar className="h-10 w-10 shrink-0">
                                             <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
                                             <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
                                         </Avatar>
-                                        <div className="min-w-0">
+                                        <div className="min-w-0 space-y-1">
                                             <p className="font-medium text-sm truncate">{ngo.name}</p>
-                                            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                                {ngo.category}
+                                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                                                <span className="truncate max-w-[120px]">{ngo.category}</span>
                                                 <span className="text-muted-foreground/50">|</span>
                                                 <ShieldCheck className="h-3 w-3 text-primary/80" /> {ngo.transparencyScore}
                                             </p>
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                                                <span className="flex items-center gap-1">
+                                                    <Users className="h-3 w-3" /> {donors.toLocaleString('tr-TR')} bağışçı
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Users className="h-3 w-3" /> {volunteers.toLocaleString('tr-TR')} gönüllü
+                                                </span>
+                                            </div>
+                                            {platforms.length > 0 && (
+                                                <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                                                    <Network className="h-3 w-3 text-muted-foreground shrink-0" />
+                                                    {platforms.slice(0, 3).map(p => (
+                                                        <Badge key={p} variant="outline" className="text-[10px] py-0 px-1.5 font-medium">
+                                                            {p}
+                                                        </Badge>
+                                                    ))}
+                                                    {platforms.length > 3 && (
+                                                        <span className="text-[10px] text-muted-foreground">+{platforms.length - 3}</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 shrink-0">
+                                    <div className="flex items-center gap-2 shrink-0 pt-1">
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -526,7 +551,8 @@ export default function NgoSelectionPage() {
                                         </div>
                                     </div>
                                 </div>
-                            )) : (
+                                );
+                            }) : (
                                 <p className="text-center text-muted-foreground p-8">Bu filtrelerle eşleşen STK bulunamadı.</p>
                             )}
                         </div>

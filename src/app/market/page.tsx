@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, HeartHandshake } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -13,6 +13,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { COLLECTIONS } from '@/firebase/collections';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const [imgSrc, setImgSrc] = useState(brand.logoUrl || '');
@@ -86,6 +87,20 @@ export default function MarketPage() {
       })
       .catch(() => setApiBrands([]))
       .finally(() => setApiLoading(false));
+  }, []);
+
+  // Onboarding'i "Formu daha sonra dolduracağım" ile atlayan kullanıcılar için
+  // hoşgeldin popup'ı: settings/volunteer flag'i kontrol eder, bir kez gösterip
+  // localStorage'dan siler.
+  const [showWelcome, setShowWelcome] = useState(false);
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return;
+      if (localStorage.getItem('showWelcomeBenefitsPopup') === '1') {
+        setShowWelcome(true);
+        localStorage.removeItem('showWelcomeBenefitsPopup');
+      }
+    } catch { /* localStorage erişilemedi — popup atlanır */ }
   }, []);
 
   const isLoading = firestoreLoading || apiLoading;
@@ -300,6 +315,30 @@ export default function MarketPage() {
           )}
         </main>
       </div>
+
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent className="rounded-3xl max-w-md">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-2">
+              <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ backgroundColor: '#E34234' }}>
+                <HeartHandshake className="h-7 w-7 text-white" />
+              </div>
+            </div>
+            <DialogTitle className="text-center text-xl font-black">Hoş geldin aramıza!</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 text-sm text-left pt-2 text-foreground leading-relaxed">
+                <p>Merhaba, hoş geldin aramıza, iyi ki geldin.</p>
+                <p>Anlaşmalı markalardan yaptığın alışverişlerin bir kısmı biraz önce seçtiğin STK&apos;lara bağışlanacak.</p>
+                <p>Kooperatif ve sosyal işletmelerden yaptığınız alışverişlerden ise hâli hazırda bir sosyal sorunu çözmek üzere kurulduklarından ve kârlarını bu amaç doğrultusunda kullandıkları için seçtiğin STK&apos;lara bağış gerçekleşmeyecek.</p>
+                <p className="font-bold">Bu ülkenin sosyal sorunları için birlikte mücadele edeceğiz… hep birlikte.</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowWelcome(false)} className="w-full rounded-xl">Anladım, devam et</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

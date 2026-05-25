@@ -23,6 +23,8 @@ export type VolunteerUserDoc = {
     };
     availabilityDays?: string[];
     availabilityTimes?: string[];
+    /** Per-time-of-day saat aralığı; örn. { Gündüz: { from: '09:00', to: '17:00' }, Akşam: { from: '19:00', to: '22:00' } } */
+    availabilityTimeRanges?: Record<string, { from?: string; to?: string }>;
     workModes?: string[];
     motivations?: string[];
     consents?: Partial<{
