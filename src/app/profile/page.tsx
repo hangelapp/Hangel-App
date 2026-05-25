@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
     Star, Briefcase, School, FileText, Languages,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut
+    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut, Store, HeartHandshake,
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -106,7 +106,7 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
 // BUG-28: Her bağlı kurumu kart olarak göster (logo + isim + sağ üst düzenle ikonu)
 type ConnectionItem = { id: string; name?: string; logoUrl?: string; href: string };
 
-const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, items }: {
+const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, items, icon: Icon }: {
     value: string;
     title: string;
     count: number;
@@ -114,17 +114,28 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
     editLabel: string;
     emptyText: string;
     items: ConnectionItem[];
+    icon: React.ComponentType<{ className?: string }>;
 }) => (
-    <AccordionItem value={value} className="border-b-0">
-        <AccordionTrigger className="py-3 hover:no-underline">
-            <span className="flex items-center gap-2">
-                <span className="font-bold text-sm">{title}</span>
-                <span className="text-xs text-muted-foreground">{count}</span>
+    <AccordionItem value={value} className="border-b">
+        <AccordionTrigger className="py-3.5 hover:no-underline">
+            <span className="flex items-center gap-3">
+                <span className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="h-4 w-4 text-primary" />
+                </span>
+                <span className="flex flex-col items-start gap-0.5">
+                    <span className="font-bold text-sm leading-tight text-left">{title}</span>
+                    <span className="text-[11px] text-muted-foreground font-medium">{count} kuruluş</span>
+                </span>
             </span>
         </AccordionTrigger>
         <AccordionContent>
             {count === 0 ? (
-                <p className="text-sm text-muted-foreground">{emptyText}</p>
+                <div className="py-3 px-2 text-center space-y-2">
+                    <p className="text-sm text-muted-foreground">{emptyText}</p>
+                    <Button asChild variant="outline" size="sm" className="rounded-xl">
+                        <Link href={editHref}>{editLabel}</Link>
+                    </Button>
+                </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                     {items.map(item => (
@@ -132,7 +143,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                             key={item.id}
                             className="relative flex items-center gap-3 p-3 rounded-2xl border border-black/5 bg-muted/20 hover:bg-accent/40 transition-colors"
                         >
-                            <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0 pr-8">
+                            <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0 pr-9">
                                 <Avatar className="h-10 w-10 shrink-0">
                                     <AvatarImage src={item.logoUrl} alt={item.name || ''} />
                                     <AvatarFallback className="text-xs font-bold">
@@ -143,9 +154,9 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                             </Link>
                             <Button
                                 asChild
-                                variant="ghost"
+                                variant="outline"
                                 size="icon"
-                                className="h-7 w-7 absolute top-1.5 right-1.5"
+                                className="h-7 w-7 absolute top-1.5 right-1.5 bg-background hover:bg-primary hover:text-primary-foreground border-primary/30"
                                 aria-label={editLabel}
                                 title="Düzenle"
                             >
@@ -716,7 +727,7 @@ export default function ProfilePage() {
                         <Card className="rounded-2xl">
                             <CardHeader><CardTitle className='text-lg'>Bağlantılarım</CardTitle></CardHeader>
                             <CardContent>
-                                <Accordion type="single" collapsible className="w-full divide-y">
+                                <Accordion type="multiple" className="w-full">
                                     <ConnectionSection
                                         value="donor-ngos"
                                         title="Bağışçı Olduğun STK'lar"
@@ -724,6 +735,7 @@ export default function ProfilePage() {
                                         editHref="/settings/ngo-selection"
                                         editLabel="Bağışçı olduğun STK'ları düzenle"
                                         emptyText="Henüz bağış yaptığın STK yok."
+                                        icon={HandCoins}
                                         items={(supportedNgosData || []).map(ngo => ({
                                             id: ngo.id,
                                             name: ngo.name,
@@ -738,6 +750,7 @@ export default function ProfilePage() {
                                         editHref="/settings/volunteer-ngo-selection"
                                         editLabel="Gönüllü olduğun STK'ları düzenle"
                                         emptyText="Henüz gönüllü olduğun STK yok."
+                                        icon={HeartHandshake}
                                         items={(volunteerNgosData || []).map(ngo => ({
                                             id: ngo.id,
                                             name: ngo.name,
@@ -752,6 +765,7 @@ export default function ProfilePage() {
                                         editHref="/settings/brands"
                                         editLabel="Takip ettiğin markaları düzenle"
                                         emptyText="Henüz takip ettiğin marka yok."
+                                        icon={Store}
                                         items={(followedBrandsData || []).map(brand => ({
                                             id: brand.id,
                                             name: brand.name,
@@ -766,6 +780,7 @@ export default function ProfilePage() {
                                         editHref="/clubs"
                                         editLabel="Üye olduğun kulüpleri düzenle"
                                         emptyText="Henüz üye olduğun kulüp yok."
+                                        icon={School}
                                         items={(joinedClubsData || []).map(club => ({
                                             id: club.id,
                                             name: club.name,

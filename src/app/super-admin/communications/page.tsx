@@ -96,6 +96,7 @@ const TARGET_LABELS: Record<TargetGroup, string> = {
 const DM_TARGET_LABELS: Record<string, string> = {
     user: 'Kullanıcı (DM)',
     ngo: 'STK Yöneticisi (DM)',
+    brand: 'Marka Yöneticisi (DM)',
     club: 'Kulüp Yöneticisi (DM)',
 };
 
@@ -411,7 +412,7 @@ export default function CommunicationsPage() {
     const [bcSending, setBcSending] = useState(false);
 
     // DM state
-    const [recipientType, setRecipientType] = useState<'user' | 'ngo' | 'club' | ''>('');
+    const [recipientType, setRecipientType] = useState<'user' | 'ngo' | 'brand' | 'club' | ''>('');
     const [entitySearchTerm, setEntitySearchTerm] = useState('');
     const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
     const [dmSubject, setDmSubject] = useState('');
@@ -561,6 +562,18 @@ export default function CommunicationsPage() {
                 icon: Building,
             }));
         }
+        if (recipientType === 'brand') {
+            return (allUsers || []).filter(u =>
+                u.managedBrandId && (u.name || '').toLowerCase().includes(q),
+            ).slice(0, 50).map(u => ({
+                id: u.id,
+                name: u.name || 'Marka Admin',
+                sub: 'Marka Yöneticisi',
+                phone: '',
+                avatar: u.avatarUrl,
+                icon: Building,
+            }));
+        }
         if (recipientType === 'club') {
             return (allUsers || []).filter(u =>
                 u.managedClubId && (u.name || '').toLowerCase().includes(q),
@@ -691,7 +704,45 @@ export default function CommunicationsPage() {
                 createdAt: serverTimestamp(),
                 createdBy: authUser?.uid || 'super-admin',
             });
-            toast({ title: '✅ Mesaj Gönderildi', description: 'Alıcıya bildirim ulaştırıldı.' });
+
+            // Kuruluş yöneticilerine DM giderken kurumun kurumsal mesaj inbox'ına
+            // (/messages → entity-admin görür) de aynı içeriği yaz. Böylece yönetici
+            // kişisel bildirim yanında kuruluşunun panelinden de erişebilir.
+            if (recipientType === 'ngo' || recipientType === 'brand' || recipientType === 'club') {
+                const targetUser = (allUsers || []).find(u => u.id === selectedEntityId);
+                const entityId =
+                    recipientType === 'ngo' ? targetUser?.managedNgoId :
+                    recipientType === 'brand' ? targetUser?.managedBrandId :
+                    targetUser?.managedClubId;
+                const entityList =
+                    recipientType === 'ngo' ? ngos :
+                    recipientType === 'brand' ? brands :
+                    clubs;
+                const entityName = entityId
+                    ? ((entityList || []).find(e => e.id === entityId)?.name || entityId)
+                    : null;
+                if (entityId) {
+                    try {
+                        await addDoc(collection(db, COLLECTIONS.messages), {
+                            sender: { id: authUser?.uid || 'super-admin', name: 'Hangel Süper Admin', avatarUrl: null },
+                            senderId: authUser?.uid || 'super-admin',
+                            recipient: { id: entityId, name: entityName, avatarUrl: null },
+                            recipientId: entityId,
+                            subject: dmSubject.trim(),
+                            content: dmBody.trim(),
+                            timestamp: serverTimestamp(),
+                            status: 'sent',
+                            broadcastId: broadcastRef.id,
+                            source: 'super-admin-dm',
+                        });
+                    } catch (e2) {
+                        // Kurumsal inbox yazımı başarısızsa DM yine de iletilmiş sayılır.
+                        console.warn('Kurumsal inbox yazılamadı:', e2);
+                    }
+                }
+            }
+
+            toast({ title: '✅ Mesaj Gönderildi', description: 'Alıcıya bildirim ulaştırıldı; kuruluş ise panelin mesaj kutusuna da kopyalandı.' });
             setDmSubject('');
             setDmBody('');
             setSelectedEntityId(null);
@@ -850,7 +901,7 @@ export default function CommunicationsPage() {
                                     <Select
                                         value={recipientType}
                                         onValueChange={(v) => {
-                                            setRecipientType(v as 'user' | 'ngo' | 'club' | '');
+                                            setRecipientType(v as 'user' | 'ngo' | 'brand' | 'club' | '');
                                             setSelectedEntityId(null);
                                             setEntitySearchTerm('');
                                         }}
@@ -859,6 +910,7 @@ export default function CommunicationsPage() {
                                         <SelectContent>
                                             <SelectItem value="user">Kullanıcı</SelectItem>
                                             <SelectItem value="ngo">STK Yöneticisi</SelectItem>
+                                            <SelectItem value="brand">Marka Yöneticisi</SelectItem>
                                             <SelectItem value="club">Kulüp Yöneticisi</SelectItem>
                                         </SelectContent>
                                     </Select>
