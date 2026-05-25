@@ -133,6 +133,11 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     // Diğer sosyal medya platformları (+Ekle ile)
     const [otherSocials, setOtherSocials] = useState<{ platform: string; url: string }[]>([]);
     const ABOUT_MAX = 1000;
+    // Özel İzinli: İzin amaçları (multi-select). FAYDALANICILARINIZ gibi.
+    const [selectedIzinAmaclari, setSelectedIzinAmaclari] = useState<string[]>([]);
+    const OZEL_IZIN_AMAC_OPTIONS = ['Yardım Toplama', 'Eğitim Faaliyeti', 'Sosyal Etkinlik', 'Afet Yardımı', 'Sağlık Destek', 'Kültürel Etkinlik', 'Diğer'];
+    // Sosyal medya platform önerileri (diğer platformlar için)
+    const SOCIAL_PLATFORM_OPTIONS = ['TikTok', 'YouTube', 'Facebook', 'Snapchat', 'Threads', 'Pinterest', 'Mastodon', 'Behance', 'Telegram', 'WhatsApp Kanalı', 'Diğer'];
 
     // Türkiye il plaka kodları — kütük no'nun ilk 2 hanesi il plaka kodudur.
     // Auto-fill: kütük lookup başarılıysa city alanını da plate code'dan doldur.
@@ -219,6 +224,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 categories: selectedClubCategories,
                 donationCategories,
                 otherSocials,
+                selectedIzinAmaclari,
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
@@ -530,18 +536,6 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                         )}
 
-                        {formData.ngoSubType === 'OzelIzinli' && (
-                        <div className="space-y-2">
-                            <FormLabel required>Yetkili Adı Soyadı</FormLabel>
-                            <FormInput
-                                placeholder="Ad Soyad"
-                                value={formData.authorized.name}
-                                onChange={e => setFormData(prev => ({ ...prev, authorized: { ...prev.authorized, name: e.target.value } }))}
-                            />
-                            <p className="text-[11px] text-muted-foreground ml-1">Özel izinli kuruluşlar için otomatik kayıt sorgulaması yoktur — tüm bilgileri aşağıda elle doldurun.</p>
-                        </div>
-                        )}
-
                         {/* Bulunan kayıt onayı — hem Dernek hem Vakif (handleSelectVakif) için.
                             registryMatch ve registryLookupStatus state'leri ortak. */}
                         {registryLookupStatus === 'found' && registryMatch && (
@@ -641,17 +635,17 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-2">
-                                    <FormLabel required>İzin Amacı</FormLabel>
-                                    <Select value={formData.ozelIzinAmaci} onValueChange={v => setFormData({...formData, ozelIzinAmaci: v})}>
-                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="Amaç seç..." /></SelectTrigger>
-                                        <SelectContent>
-                                            {['Yardım Toplama', 'Eğitim Faaliyeti', 'Sosyal Etkinlik', 'Afet Yardımı', 'Sağlık Destek', 'Kültürel Etkinlik', 'Diğer'].map(o =>
-                                                <SelectItem key={o} value={o}>{o}</SelectItem>
-                                            )}
-                                        </SelectContent>
-                                    </Select>
-                                    {formData.ozelIzinAmaci === 'Diğer' && (
+                                <div className="space-y-3">
+                                    <FormLabel required>İzin Amacı (Birden fazla seçebilirsiniz)</FormLabel>
+                                    <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                                        {OZEL_IZIN_AMAC_OPTIONS.map(item => (
+                                            <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                                <Checkbox checked={selectedIzinAmaclari.includes(item)} onCheckedChange={c => setSelectedIzinAmaclari(prev => c ? [...prev, item] : prev.filter(i => i !== item))} />
+                                                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    {selectedIzinAmaclari.includes('Diğer') && (
                                         <FormInput
                                             placeholder="Diğer amaç açıklaması..."
                                             value={formData.ozelIzinAmaciDiger}
@@ -715,19 +709,19 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* STK Olarak Platformlar + Kamu Yararı Statüsü — Özel İzinli için gizli */}
-                    {!isOzelIzinli && (
-                        <div className="space-y-6">
-                            <SectionTitle icon={Activity}>STK OLARAK PLATFORMLAR</SectionTitle>
-                            <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
-                                {ngoPlatformOptions.map(item => (
-                                    <label key={item} className="flex items-center gap-2 cursor-pointer group">
-                                        <Checkbox checked={selectedNetworks.includes(item)} onCheckedChange={checked => setSelectedNetworks(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
-                                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            {/* Kamu Yararı Statüsü — özel rozet */}
+                    {/* Platformlar — Özel İzinli için 'Katıldığınız Platformlar', diğerleri 'STK OLARAK PLATFORMLAR' */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={Activity}>{isOzelIzinli ? 'KATILDIĞINIZ PLATFORMLAR' : 'STK OLARAK PLATFORMLAR'}</SectionTitle>
+                        <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                            {ngoPlatformOptions.map(item => (
+                                <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                    <Checkbox checked={selectedNetworks.includes(item)} onCheckedChange={checked => setSelectedNetworks(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
+                                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+                        {/* Kamu Yararı Statüsü — sadece Dernek/Vakıf/Spor */}
+                        {!isOzelIzinli && (
                             <label className="flex items-center gap-3 cursor-pointer p-3 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
                                 <Checkbox
                                     checked={formData.kamuYarariStatusu}
@@ -738,8 +732,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <p className="text-[10px] text-muted-foreground">Bakanlar Kurulu kararıyla kamu yararına çalışan {isDernek ? 'dernek' : isVakif ? 'vakıf' : 'kuruluş'} statüsünde misiniz?</p>
                                 </div>
                             </label>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     {/* Adres — herbiri tek satır */}
                     <div className="space-y-6">
@@ -828,11 +822,16 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     <FormInput placeholder="@kurum" value={formData.twitter} onChange={e => setFormData({...formData, twitter: e.target.value})} />
                                 </div>
                                 <div className="space-y-2 sm:col-span-2">
-                                    <FormLabel>LinkedIn</FormLabel>
-                                    <FormInput placeholder="linkedin.com/company/kurum" value={formData.linkedin} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+                                    {/* Özel İzinli için LinkedIn yerine ikinci Instagram (kişisel/kurumsal ayrımı) */}
+                                    <FormLabel>{isOzelIzinli ? 'Instagram (Kişisel/İkinci)' : 'LinkedIn'}</FormLabel>
+                                    <FormInput
+                                        placeholder={isOzelIzinli ? '@kullanici' : 'linkedin.com/company/kurum'}
+                                        value={formData.linkedin}
+                                        onChange={e => setFormData({...formData, linkedin: e.target.value})}
+                                    />
                                 </div>
                             </div>
-                            {/* Diğer platformlar — +Ekle ile dinamik */}
+                            {/* Diğer platformlar — +Ekle ile dinamik, platform dropdown'lu */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <FormLabel>Diğer Platformlar (Opsiyonel)</FormLabel>
@@ -841,9 +840,14 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                     </Button>
                                 </div>
                                 {otherSocials.map((s, idx) => (
-                                    <div key={idx} className="flex items-center gap-2">
-                                        <FormInput placeholder="Platform (TikTok, YouTube...)" value={s.platform} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, platform: e.target.value } : p))} />
-                                        <FormInput placeholder="URL" value={s.url} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, url: e.target.value } : p))} />
+                                    <div key={idx} className="grid grid-cols-[160px_1fr_auto] gap-2 items-center">
+                                        <Select value={s.platform} onValueChange={(v) => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, platform: v } : p))}>
+                                            <SelectTrigger className="h-10 rounded-xl bg-card border"><SelectValue placeholder="Platform seç..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {SOCIAL_PLATFORM_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormInput placeholder="URL veya @handle" value={s.url} onChange={e => setOtherSocials(prev => prev.map((p, i) => i === idx ? { ...p, url: e.target.value } : p))} />
                                         <Button type="button" variant="ghost" size="icon" className="h-10 w-10 text-destructive shrink-0" onClick={() => setOtherSocials(prev => prev.filter((_, i) => i !== idx))} aria-label="Kaldır">
                                             <span className="text-xl leading-none">×</span>
                                         </Button>
