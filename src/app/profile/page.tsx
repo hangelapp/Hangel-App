@@ -29,6 +29,7 @@ import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
+import { StoryDesigns, type StoryInput } from './_components/story-designs';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -169,6 +170,7 @@ export default function ProfilePage() {
     const { toast } = useToast();
     const [isStoryLoading, setIsStoryLoading] = useState(false);
     const [stories, setStories] = useState<string[]>([]);
+    const [showStoryDesigns, setShowStoryDesigns] = useState(false);
     const [viewingCert, setViewingCert] = useState<{ id?: string; title: string; organization: string; date: string } | null>(null);
 
     const { user: authUser, isUserLoading } = useUser();
@@ -842,18 +844,52 @@ export default function ProfilePage() {
                     <TabsContent value="story" className="p-4 space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Destekli Etki Hikayen</CardTitle>
-                                <CardDescription>Bu ayki katkılarınla sağladığın pozitif etkiyi gör ve paylaş!</CardDescription>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Etki Hikayem</CardTitle>
+                                <CardDescription>Bağışların, gönüllülüğün ve topluluğunla ilgili 5 farklı hikaye tasarımı oluştur, indir, paylaş.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <Button onClick={handleGenerateStories} disabled={isStoryLoading} className="w-full">
-                                    {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Hikayeni Oluştur'}
-                                </Button>
-                                {isStoryLoading && (
-                                    <div className="flex justify-center items-center p-8">
-                                        <p>Hikayeleriniz hazırlanıyor, lütfen bekleyin...</p>
-                                    </div>
+                                {!showStoryDesigns ? (
+                                    <Button onClick={() => setShowStoryDesigns(true)} className="w-full">
+                                        <Sparkles className="mr-2 h-4 w-4" /> Hikayeni Oluştur
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <StoryDesigns
+                                            data={{
+                                                name: currentUser.name || 'Hangel Üyesi',
+                                                avatarUrl: currentUser.avatarUrl,
+                                                impactScore: Number(currentUser.impactScore) || 0,
+                                                totalDonation: Number(currentUser.stats.totalDonation) || 0,
+                                                donationCount: Number(currentUser.stats.donationCount) || 0,
+                                                supportedNgosCount: Number(currentUser.stats.supportedNgosCount) || (supportedNgosData?.length || 0),
+                                                mostSupportedNgo: currentUser.stats.mostSupportedNgo || (supportedNgosData?.[0]?.name) || undefined,
+                                                volunteerHours: Number(currentUser.stats.volunteerHours) || 0,
+                                                completedProjects: Number(currentUser.stats.completedProjects) || 0,
+                                                mostActiveVolunteerArea: currentUser.stats.mostActiveVolunteerArea || undefined,
+                                                totalImpactValue: Number(currentUser.stats.totalImpactValue) || 0,
+                                                badgeCount: badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length,
+                                                supportedNgos: (supportedNgosData || []).map(n => ({ name: n.name, avatarUrl: n.avatarUrl })),
+                                                volunteerNgos: (volunteerNgosData || []).map(n => ({ name: n.name, avatarUrl: n.avatarUrl })),
+                                                joinedClubs: (joinedClubsData || []).map(c => ({ name: c.name, avatarUrl: c.avatarUrl })),
+                                            } as StoryInput}
+                                        />
+                                        <Button variant="outline" onClick={() => setShowStoryDesigns(false)} className="w-full">
+                                            Hikayeleri Gizle
+                                        </Button>
+                                    </>
                                 )}
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Anlatımı</CardTitle>
+                                <CardDescription>Verilerinden ilham alarak kişisel bir hikaye metni oluştur.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <Button onClick={handleGenerateStories} disabled={isStoryLoading} variant="secondary" className="w-full">
+                                    {isStoryLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Anlatım hazırlanıyor...</> : 'Anlatımlı Hikaye Üret (AI)'}
+                                </Button>
                                 {stories.length > 0 && (
                                     <div className="space-y-4">
                                         {stories.map((story, index) => (
@@ -864,14 +900,9 @@ export default function ProfilePage() {
                                     </div>
                                 )}
                             </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-xs text-muted-foreground">
-                                {stories.length > 0 && (
-                                    <Button onClick={handleGenerateStories} disabled={isStoryLoading} variant="secondary" className="w-full">
-                                        {isStoryLoading ? 'Hikayelerin oluşturuluyor...' : 'Yeni Hikayeler Oluştur'}
-                                    </Button>
-                                )}
+                            <CardFooter className="text-xs text-muted-foreground">
                                 <div className="w-full flex justify-between items-center">
-                                    <p>Yapay zeka tarafından sağlanan verilerle oluşturulmuştur.</p>
+                                    <p>Yapay zeka tarafından oluşturulmuştur.</p>
                                     <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
                                 </div>
                             </CardFooter>
