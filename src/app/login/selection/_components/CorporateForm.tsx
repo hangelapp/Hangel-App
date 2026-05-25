@@ -112,6 +112,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         clubPresidentPhone: '',
         clubPresidentPhoneCountryCode: '+90',
         clubPresidentEmail: '',
+        // Lise kulübü: İl Milli Eğitim seçildikten sonra İlçe Müdürlüğü
+        clubIlceMudurlugu: '',
         // NGO ek alanlar (kullanıcı talebi)
         doorNo: '',
         instagram: '',
@@ -1444,15 +1446,28 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         )}
 
                         {formData.clubType === 'Lise' && (
-                            <div className="space-y-2">
-                                <FormLabel>Bağlı olduğunuz İl Milli Eğitim Müdürlüğü</FormLabel>
-                                <Select value={formData.clubAffiliation} onValueChange={v => setFormData({...formData, clubAffiliation: v})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl Seçin" /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {Object.keys(neighborhoodsData).sort((a,b) => a.localeCompare(b, 'tr')).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            <>
+                                <div className="space-y-2">
+                                    <FormLabel>Bağlı olduğunuz İl Milli Eğitim Müdürlüğü</FormLabel>
+                                    <Select value={formData.clubAffiliation} onValueChange={v => setFormData({...formData, clubAffiliation: v, clubIlceMudurlugu: ''})}>
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl Seçin" /></SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {Object.keys(neighborhoodsData).sort((a,b) => a.localeCompare(b, 'tr')).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                {formData.clubAffiliation && (
+                                    <div className="space-y-2">
+                                        <FormLabel>Bağlı olduğunuz İlçe Milli Eğitim Müdürlüğü</FormLabel>
+                                        <Select value={formData.clubIlceMudurlugu} onValueChange={v => setFormData({...formData, clubIlceMudurlugu: v})}>
+                                            <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İlçe Müdürlüğü Seçin" /></SelectTrigger>
+                                            <SelectContent className="max-h-60">
+                                                {Object.keys(neighborhoodsData[formData.clubAffiliation] || {}).sort((a,b) => a.localeCompare(b, 'tr')).map(d => <SelectItem key={d} value={d}>{d} İlçe Milli Eğitim Müdürlüğü</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         <div className="space-y-2">
@@ -1606,14 +1621,14 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Akademik Danışman */}
+                    {/* Akademik Danışman / Danışman Öğretmen — Lise için terminoloji farklı */}
                     <div className="space-y-6">
-                        <SectionTitle icon={GraduationCap}>AKADEMİK DANIŞMAN</SectionTitle>
+                        <SectionTitle icon={GraduationCap}>{formData.clubType === 'Lise' ? 'DANIŞMAN ÖĞRETMEN' : 'AKADEMİK DANIŞMAN'}</SectionTitle>
                         <p className="text-[11px] text-muted-foreground -mt-2">KVKK gereği iletişim bilgileri profilde yayınlanmaz, sadece admin görür.</p>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <FormLabel required>Akademik Danışmanın Adı Soyadı</FormLabel>
-                                <FormInput placeholder="Prof. Dr. ..." value={formData.clubAdvisorName} onChange={e => setFormData({...formData, clubAdvisorName: e.target.value})} required />
+                                <FormLabel required>{formData.clubType === 'Lise' ? 'Danışman Öğretmenin Adı Soyadı' : 'Akademik Danışmanın Adı Soyadı'}</FormLabel>
+                                <FormInput placeholder={formData.clubType === 'Lise' ? 'Öğretmen ad soyad' : 'Prof. Dr. ...'} value={formData.clubAdvisorName} onChange={e => setFormData({...formData, clubAdvisorName: e.target.value})} required />
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -1648,7 +1663,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <FileUpload
                                 label="FAALİYET BELGESİ"
                                 accept=".pdf,.png,.jpg,.jpeg"
-                                hint="Bağlı olduğunuz okuldan aldığınız faaliyet belgesini yükleyin (PDF veya resim)."
+                                hint="Okul müdüründen kulübün faal olduğuna dair bir yazı alın ve buraya yükleyin (PDF veya resim)."
                             />
                         )}
                     </div>
