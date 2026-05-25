@@ -15,6 +15,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { COLLECTIONS } from '@/firebase/collections';
+import { AdminList } from '@/app/ngo-admin/users/_components/admin-list';
 
 const roles = [
     { id: 'Genel Yönetici', label: 'Genel Yönetici', description: 'Tüm yetkilere sahiptir. Profil, finans, gönüllü ve içerik yönetimini tam yetkiyle gerçekleştirebilir.' },
@@ -225,8 +226,10 @@ export default function NewUserPage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
-                <h1 className="text-2xl font-bold font-headline">Yeni Yetkili Ekle</h1>
+                <h1 className="text-2xl font-bold font-headline">Yetkili Yönetimi</h1>
             </div>
+
+            <AdminList />
 
             <Card>
                 <CardHeader>
