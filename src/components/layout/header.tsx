@@ -39,7 +39,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   if (isManagementPage) return null;
 
   return (
-      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64">
+      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64 pt-[env(safe-area-inset-top)]">
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label={t('a11y.openMenu')}>
