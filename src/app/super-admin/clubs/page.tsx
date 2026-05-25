@@ -76,17 +76,20 @@ interface ClubInvitation {
     invitedAt?: { toDate?: () => Date } | Date | null;
 }
 
-const TransferAdminDialog = ({ club, allUsers, onAssign, onRevoke }: {
+const TransferAdminDialog = ({ club, allUsers, onAssign, onRevoke, onChangeRole }: {
     club: ClubItem;
     allUsers: SimpleClubUser[] | null;
     onAssign: (clubId: string, newUserId: string, newUserName: string, role: ClubRole) => Promise<void>;
     onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
+    onChangeRole: (clubId: string, invitationId: string, userId: string | undefined, newRole: ClubRole, name: string) => Promise<void>;
 }) => {
     const db = useFirestore();
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedRole, setSelectedRole] = useState<ClubRole>('Genel Yönetici');
     const [submitting, setSubmitting] = useState(false);
+    const [roleEdits, setRoleEdits] = useState<Record<string, ClubRole>>({});
+    const [updatingInv, setUpdatingInv] = useState<string | null>(null);
 
     const isEmailSearch = searchTerm.includes('@');
     const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
@@ -152,12 +155,41 @@ const TransferAdminDialog = ({ club, allUsers, onAssign, onRevoke }: {
                     <div className="space-y-2 border rounded-2xl p-3 bg-muted/20">
                         <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Mevcut Yetkililer ({activeInvitations.length})</p>
                         <div className="space-y-2">
-                            {activeInvitations.map(inv => (
-                                <div key={inv.id} className="flex items-center justify-between gap-2 p-2 bg-card rounded-xl border border-black/5">
-                                    <div className="flex-1 min-w-0">
+                            {activeInvitations.map(inv => {
+                                const currentRole = (inv.role || 'Genel Yönetici') as ClubRole;
+                                const editedRole = roleEdits[inv.id] ?? currentRole;
+                                const isKnownRole = CLUB_ROLE_OPTIONS.includes(editedRole as ClubRole);
+                                const isUpdatingThis = updatingInv === inv.id;
+                                return (
+                                <div key={inv.id} className="flex items-center justify-between gap-2 p-2 bg-card rounded-xl border border-black/5 flex-wrap">
+                                    <div className="flex-1 min-w-[120px]">
                                         <p className="font-bold text-sm truncate">{inv.inviteeName || inv.inviteeUserId}</p>
-                                        <p className="text-[11px] text-muted-foreground">{inv.role || 'Yetkili'}</p>
                                     </div>
+                                    <Select
+                                        value={isKnownRole ? editedRole : undefined}
+                                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [inv.id]: v as ClubRole }))}>
+                                        <SelectTrigger className="h-8 w-auto min-w-[140px] text-xs font-bold rounded-lg" aria-label="Rol değiştir">
+                                            <SelectValue placeholder={currentRole} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {CLUB_ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 px-2 text-xs font-bold"
+                                        disabled={isUpdatingThis || editedRole === currentRole}
+                                        onClick={async () => {
+                                            setUpdatingInv(inv.id);
+                                            try {
+                                                await onChangeRole(club.id, inv.id, inv.inviteeUserId, editedRole as ClubRole, inv.inviteeName || 'Üye');
+                                                setRoleEdits(prev => { const n = { ...prev }; delete n[inv.id]; return n; });
+                                            } finally { setUpdatingInv(null); }
+                                        }}>
+                                        {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                                        Güncelle
+                                    </Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -167,7 +199,8 @@ const TransferAdminDialog = ({ club, allUsers, onAssign, onRevoke }: {
                                         Kaldır
                                     </Button>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -433,6 +466,58 @@ export default function ClubsAdminPage() {
         }
     };
 
+    const handleChangeAdminRole = async (
+        clubId: string,
+        invitationId: string,
+        userId: string | undefined,
+        newRole: ClubRole,
+        inviteeName: string,
+    ) => {
+        try {
+            await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
+                role: newRole,
+                roleChangedAt: serverTimestamp(),
+                roleChangedBy: 'super-admin',
+            });
+            if (userId) {
+                if (newRole === 'Genel Yönetici') {
+                    await updateDoc(doc(db, COLLECTIONS.studentClubs, clubId), { adminUserId: userId });
+                }
+                await updateDoc(doc(db, COLLECTIONS.users, userId), {
+                    clubRoleTitle: newRole,
+                    roleTitle: newRole,
+                });
+                try {
+                    const clubSnap = await getDoc(doc(db, COLLECTIONS.studentClubs, clubId));
+                    const clubName = clubSnap.exists() ? ((clubSnap.data() as { name?: string }).name || 'Kulüp') : 'Kulüp';
+                    await addDoc(collection(db, COLLECTIONS.notifications), {
+                        userId,
+                        type: 'authorization',
+                        title: 'Rolünüz Güncellendi',
+                        body: `${clubName} için rolünüz "${newRole}" olarak güncellendi.`,
+                        data: { entityId: clubId, entityType: 'club', role: newRole },
+                        read: false,
+                        createdAt: serverTimestamp(),
+                        createdBy: 'super-admin',
+                    });
+                } catch { /* bildirim opsiyonel */ }
+            }
+            toast({
+                title: 'Rol Güncellendi',
+                description: `${inviteeName} için rol "${newRole}" olarak güncellendi.`,
+            });
+        } catch (e) {
+            console.error('Club role change failed:', e);
+            const code = (e as { code?: string } | null)?.code;
+            const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+            toast({
+                variant: 'destructive',
+                title: 'Rol güncellenemedi',
+                description: code === 'permission-denied' ? 'Bu işlem için super-admin yetkisi gerekli.' : message,
+            });
+        }
+    };
+
     const handleRevokeAdmin = async (invitationId: string, inviteeName: string) => {
         try {
             await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
@@ -597,7 +682,7 @@ export default function ClubsAdminPage() {
                                                         <Edit3 className="mr-2 h-4 w-4" /> Düzelt
                                                     </Link>
                                                 </Button>
-                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} />
+                                                <TransferAdminDialog club={club} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} onChangeRole={handleChangeAdminRole} />
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

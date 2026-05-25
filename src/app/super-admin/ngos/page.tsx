@@ -77,17 +77,20 @@ interface NgoInvitation {
   invitedAt?: { toDate?: () => Date } | Date | null;
 }
 
-const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke }: {
+const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke, onChangeRole }: {
   ngo: NgoItem;
   allUsers: SimpleNgoUser[] | null;
   onAssign: (ngoId: string, newUserId: string, newUserName: string, role: NgoRole) => Promise<void>;
   onRevoke: (invitationId: string, inviteeName: string) => Promise<void>;
+  onChangeRole: (ngoId: string, invitationId: string, userId: string | undefined, newRole: NgoRole, name: string) => Promise<void>;
 }) => {
   const db = useFirestore();
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState<NgoRole>('Genel Yönetici');
   const [submitting, setSubmitting] = useState(false);
+  const [roleEdits, setRoleEdits] = useState<Record<string, NgoRole>>({});
+  const [updatingInv, setUpdatingInv] = useState<string | null>(null);
 
   const isEmailSearch = searchTerm.includes('@');
   const normalizedSearch = isEmailSearch ? searchTerm.trim().toLowerCase() : normalizePhone(searchTerm);
@@ -168,25 +171,51 @@ const TransferAdminDialog = ({ ngo, allUsers, onAssign, onRevoke }: {
                 {activeInvitations.map(inv => {
                   const userInfo = (allUsers || []).find(u => u.id === inv.inviteeUserId);
                   const displayName = inv.inviteeName || userInfo?.name || userInfo?.displayName || 'Üye';
+                  const currentRole = (inv.role || 'Yönetici') as NgoRole;
+                  const editedRole = roleEdits[inv.id] ?? currentRole;
+                  const isKnownRole = (NGO_ROLE_OPTIONS as readonly string[]).includes(editedRole);
+                  const isUpdatingThis = updatingInv === inv.id;
                   return (
-                    <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-white">
-                      <Avatar className="h-8 w-8">
+                    <div key={inv.id} className="flex items-center gap-2 p-2 rounded-xl bg-white flex-wrap">
+                      <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={userInfo?.avatarUrl} />
                         <AvatarFallback className="text-xs font-bold">{displayName.charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-[140px]">
                         <p className="font-bold text-sm truncate">{displayName}</p>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <Badge variant="secondary" className="text-[9px] font-bold">{inv.role || 'Yönetici'}</Badge>
-                          {inv.invitedAt && (
-                            <span className="text-[10px] text-muted-foreground">{formatDate(inv.invitedAt)}</span>
-                          )}
-                        </div>
+                        {inv.invitedAt && (
+                          <span className="text-[10px] text-muted-foreground">{formatDate(inv.invitedAt)}</span>
+                        )}
                       </div>
+                      <Select
+                        value={isKnownRole ? editedRole : undefined}
+                        onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [inv.id]: v as NgoRole }))}>
+                        <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold rounded-lg" aria-label="Rol değiştir">
+                          <SelectValue placeholder={currentRole} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {NGO_ROLE_OPTIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs font-bold rounded-lg"
+                        disabled={isUpdatingThis || editedRole === currentRole}
+                        onClick={async () => {
+                          setUpdatingInv(inv.id);
+                          try {
+                            await onChangeRole(ngo.id, inv.id, inv.inviteeUserId, editedRole, displayName);
+                            setRoleEdits(prev => { const n = { ...prev }; delete n[inv.id]; return n; });
+                          } finally { setUpdatingInv(null); }
+                        }}>
+                        {isUpdatingThis ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                        Güncelle
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg shrink-0"
                         aria-label="Yetkiyi Kaldır"
                         onClick={() => onRevoke(inv.id, displayName)}>
                         <X className="h-4 w-4" />
@@ -527,6 +556,59 @@ export default function NgosPage() {
     }
   };
 
+  const handleChangeAdminRole = async (
+    ngoId: string,
+    invitationId: string,
+    userId: string | undefined,
+    newRole: NgoRole,
+    inviteeName: string,
+  ) => {
+    try {
+      await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
+        role: newRole,
+        roleChangedAt: serverTimestamp(),
+        roleChangedBy: 'super-admin',
+      });
+      if (userId) {
+        const patch: Record<string, unknown> = { ngoRoleTitle: newRole, roleTitle: newRole };
+        if (newRole === 'Genel Yönetici') {
+          await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), { adminUserId: userId });
+        }
+        await updateDoc(doc(db, COLLECTIONS.users, userId), patch);
+
+        try {
+          const ngoSnap = await getDoc(doc(db, COLLECTIONS.ngos, ngoId));
+          const ngoName = ngoSnap.exists() ? ((ngoSnap.data() as { name?: string }).name || 'STK') : 'STK';
+          await addDoc(collection(db, COLLECTIONS.notifications), {
+            userId,
+            type: 'authorization',
+            title: 'Rolünüz Güncellendi',
+            body: `${ngoName} için rolünüz "${newRole}" olarak güncellendi.`,
+            data: { entityId: ngoId, entityType: 'ngo', role: newRole },
+            read: false,
+            createdAt: serverTimestamp(),
+            createdBy: 'super-admin',
+          });
+        } catch { /* bildirim zorunlu değil */ }
+      }
+      toast({
+        title: 'Rol Güncellendi',
+        description: `${inviteeName} kullanıcısının rolü "${newRole}" olarak güncellendi.`,
+      });
+    } catch (e) {
+      console.error('Change role failed:', e);
+      const code = (e as { code?: string } | null)?.code;
+      const message = e instanceof Error ? e.message : 'Beklenmeyen bir hata oluştu.';
+      toast({
+        variant: 'destructive',
+        title: 'Rol güncellenemedi',
+        description: code === 'permission-denied'
+          ? 'Bu işlem için super-admin yetkisi gerekli.'
+          : message,
+      });
+    }
+  };
+
   const handleRevokeAdmin = async (invitationId: string, inviteeName: string) => {
     try {
       await updateDoc(doc(db, COLLECTIONS.userInvitations, invitationId), {
@@ -765,7 +847,7 @@ export default function NgosPage() {
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4" asChild>
                           <Link href={`/super-admin/ngos/${ngo.id}/edit`}><Edit3 className="mr-2 h-4 w-4" />Düzelt</Link>
                         </Button>
-                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} />
+                        <TransferAdminDialog ngo={ngo} allUsers={allUsers || null} onAssign={handleAssignAdmin} onRevoke={handleRevokeAdmin} onChangeRole={handleChangeAdminRole} />
                         <Button variant="outline" size="sm" className="rounded-xl font-bold h-10 px-4"
                                 onClick={() => handleToggleStatus(ngo.id, ngo.status)}>
                           {isPassive ? <><Power className="mr-2 h-4 w-4" /> Aktif</> : <><PowerOff className="mr-2 h-4 w-4" /> Pasife</>}
