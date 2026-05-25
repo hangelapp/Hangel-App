@@ -2,12 +2,11 @@
 
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import {
   Sparkles, HandCoins, Handshake, Users, Award, Download, Share2,
-  Heart, TrendingUp, Trophy, Loader2, Image as ImageIcon,
+  Trophy, Loader2,
 } from 'lucide-react';
 
 type NGO = { id?: string; name?: string; avatarUrl?: string };

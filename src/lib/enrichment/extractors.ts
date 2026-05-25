@@ -102,7 +102,8 @@ export function normalizeName(s: string): string {
   return s
     .toLocaleLowerCase('tr-TR')
     .replace(/ı/g, 'i')
-    .replace(/[İİ]/g, 'i')
+    .replace(/İ/g, 'i')
+    .replace(/İ/g, 'i')
     .replace(/ğ/g, 'g')
     .replace(/ş/g, 's')
     .replace(/ç/g, 'c')
