@@ -8,13 +8,14 @@ import { ShareButtons } from '@/components/shared/share-buttons';
 import Image from 'next/image';
 import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Volunteering, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
+import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
@@ -40,6 +41,50 @@ export default function VolunteeringDetailPage() {
   const { user: authUser } = useUser();
   const { toast } = useToast();
   const [isApplying, setIsApplying] = useState(false);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !authUser) return null;
+    return doc(db, COLLECTIONS.users, authUser.uid);
+  }, [db, authUser]);
+  const { data: userData } = useDoc<{
+    volunteerInfo?: MatchingUserProfile['volunteerInfo'];
+    personalInfo?: MatchingUserProfile['personalInfo'];
+  }>(userDocRef);
+
+  const matchingProfile = useMemo<MatchingUserProfile>(() => ({
+    volunteerInfo: userData?.volunteerInfo ?? null,
+    personalInfo: userData?.personalInfo ?? null,
+  }), [userData]);
+
+  const hasProfile = useMemo(() => {
+    const vi = matchingProfile.volunteerInfo;
+    const city = matchingProfile.personalInfo?.address?.city;
+    const arrays = vi ? [vi.skills, vi.dailySkills, vi.interests, vi.languages, vi.availabilityDays, vi.availabilityTimes, vi.workModes, vi.motivations] : [];
+    return arrays.some(a => Array.isArray(a) && a.length > 0) || Boolean(city && city.trim());
+  }, [matchingProfile]);
+
+  const matchPercentage = useMemo(() => {
+    if (!opportunity || !hasProfile) return 0;
+    const opp = opportunity as Volunteering & { dailySkills?: string[]; availabilityDays?: string[]; availabilityTimes?: string[] };
+    const { score } = scoreMatch({
+      id: opp.id,
+      skills: opp.skills ?? null,
+      dailySkills: opp.dailySkills ?? null,
+      socialArea: opp.socialArea ?? null,
+      interests: opp.interests ?? null,
+      languages: opp.languages ?? null,
+      location: { city: opp.location?.city ?? null, type: opp.location?.type ?? null },
+      availabilityDays: opp.availabilityDays ?? null,
+      availabilityTimes: opp.availabilityTimes ?? null,
+    }, matchingProfile);
+    return Math.max(0, Math.min(100, Math.round(score)));
+  }, [opportunity, matchingProfile, hasProfile]);
+
+  const matchTone = matchPercentage >= 75
+    ? { text: 'text-green-700', bar: 'bg-green-500' }
+    : matchPercentage >= 50
+      ? { text: 'text-amber-700', bar: 'bg-amber-500' }
+      : { text: 'text-muted-foreground', bar: 'bg-muted-foreground/40' };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -145,7 +190,24 @@ export default function VolunteeringDetailPage() {
                  <h1 className="text-2xl font-bold font-headline text-foreground p-3">{opportunity.title}</h1>
                  <Link href={`/ngos/${opportunity.ngoId}`} className="text-foreground/90 text-base font-medium hover:underline px-3 pb-3 block">{opportunity.organization}</Link>
             </div>
-            
+
+            {authUser && hasProfile && (
+                <Card>
+                    <CardContent className="p-4 space-y-2">
+                        <div className="flex justify-between items-center text-xs uppercase tracking-wider">
+                            <span className="font-bold text-muted-foreground">Profil Uygunluğun</span>
+                            <span className={`font-black text-base ${matchTone.text}`}>%{matchPercentage}</span>
+                        </div>
+                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                                className={`h-full ${matchTone.bar} rounded-full transition-all duration-700 ease-out`}
+                                style={{ width: `${matchPercentage}%` }}
+                            />
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
             <div className="space-y-4 mt-4">
                 <Card>
                     <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
