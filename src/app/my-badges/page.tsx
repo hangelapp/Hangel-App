@@ -378,21 +378,30 @@ export default function MyBadgesPage() {
         [userData]
     );
 
+    // Kullanıcının seçtiği sosyal hassasiyetler (volunteerInfo.interests).
+    const userInterests = useMemo<string[]>(() => {
+        const raw = (userData as { volunteerInfo?: { interests?: string[] } } | undefined)?.volunteerInfo?.interests;
+        return Array.isArray(raw) ? raw.filter(s => typeof s === 'string' && s.trim()) : [];
+    }, [userData]);
+
     // PRD: her nitelikli STK seçimi (bağış VEYA gönüllülük) → o STK kategorisinin
     // eşlendiği rozet alanına +10 puan. Bağış seçimi ve gönüllülük seçimi ayrı
     // sinyaller olduğundan ikisi de ayrı ayrı 10 puan kazandırır.
+    // Ayrıca her sosyal hassasiyet seçimi (volunteerInfo.interests) ilgili
+    // rozet alanına +10 puan kazandırır.
     const selectionAreaPoints = useMemo<Record<string, number>>(() => {
         const totals: Record<string, number> = {};
-        const credit = (ngoId: string) => {
-            const category = ngoCategoryById[ngoId];
-            const area = mapCategoryToBadgeArea(category);
+        const credit = (areaCandidate: string | undefined | null) => {
+            const area = mapCategoryToBadgeArea(areaCandidate);
             if (!area) return;
             totals[area] = (totals[area] || 0) + SELECTION_AREA_POINTS;
         };
-        for (const id of supportedNgoIds) credit(id);
-        for (const id of volunteerNgoIds) credit(id);
+        for (const id of supportedNgoIds) credit(ngoCategoryById[id]);
+        for (const id of volunteerNgoIds) credit(ngoCategoryById[id]);
+        // Hassasiyet seçimleri — her biri +10 puan
+        for (const interest of userInterests) credit(interest);
         return totals;
-    }, [supportedNgoIds, volunteerNgoIds, ngoCategoryById]);
+    }, [supportedNgoIds, volunteerNgoIds, ngoCategoryById, userInterests]);
     const impactScore: number = Math.max(
         Number((userData as UserDataLike | undefined)?.impactScore) || 0,
         Number((userData as UserDataLike | undefined)?.stats?.impactScore) || 0,
