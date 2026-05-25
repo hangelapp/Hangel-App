@@ -237,6 +237,13 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Gönüllülük puantajı kataloğu — süper-admin yönetir, herkes okur.
+    // NGO admin ilan açarken bu kataloğu okuyup taskType seçer; puanı manuel girmez.
+    match /volunteerScoring/{itemId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     // PDF-17: Hibe başvuruları. NGO admin başvuru oluşturur, kendi başvurularını okur;
     // super-admin tüm başvuruları görür ve karar verir (status alanını günceller).
     // Veri şeması (src/app/ngo-admin/funds/page.tsx#handleApply):

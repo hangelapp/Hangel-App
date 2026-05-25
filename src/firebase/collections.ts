@@ -124,6 +124,11 @@ export const COLLECTIONS = {
   registryDernekler: 'registryDernekler',
   registryVakiflar: 'registryVakiflar',
 
+  // Volunteer scoring catalog — super-admin tarafından yönetilir.
+  // Her doc bir "iş kalemi" (öğretmenlik, boyama, vb.) ve onun puan + adam-saat
+  // maliyeti. NGO admin ilan açarken bu katalogdan seçer; puanı el ile giremez.
+  volunteerScoring: 'volunteerScoring',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;

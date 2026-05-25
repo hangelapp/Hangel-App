@@ -10,11 +10,38 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import Link from "next/link"
+import { Handshake, ChevronRight } from "lucide-react"
 
 export default function SettingsPage() {
     return (
         <>
             <h1 className="text-lg font-semibold md:text-2xl">Panel Ayarları</h1>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Alt Modüller</CardTitle>
+                    <CardDescription>Belirli alanlara özel ayar sayfaları.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Link
+                        href="/super-admin/settings/volunteer-scoring"
+                        className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <Handshake className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold">Gönüllülük Puantajı</p>
+                            <p className="text-xs text-muted-foreground">
+                                İlan iş kalemleri, saat başı etki puanı ve adam-saat maliyeti.
+                            </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </Link>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Genel Platform Ayarları</CardTitle>

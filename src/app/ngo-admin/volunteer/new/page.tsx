@@ -19,8 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, doc, addDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { Country, State, City } from 'country-state-city';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import {
@@ -139,9 +139,28 @@ function NewOpportunityForm() {
   const [accommodation, setAccommodation] = useState(false);
   const [preTraining, setPreTraining] = useState(false);
   const [providesCertificate, setProvidesCertificate] = useState(false);
-  const [points, setPoints] = useState('');
+  const [taskTypeId, setTaskTypeId] = useState('');
+  const [estimatedHours, setEstimatedHours] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Süper-admin tarafından yönetilen iş kalemleri kataloğu
+  const scoringQuery = useMemoFirebase(
+    () => (db ? query(collection(db, COLLECTIONS.volunteerScoring), orderBy('order', 'asc')) : null),
+    [db],
+  );
+  const { data: scoringItems } = useCollection<{
+    id: string; taskType: string; pointsPerHour: number; manHourCost: number; isActive: boolean;
+  }>(scoringQuery);
+
+  const activeScoringItems = useMemo(() => (scoringItems || []).filter(i => i.isActive), [scoringItems]);
+  const selectedTask = useMemo(
+    () => activeScoringItems.find(i => i.id === taskTypeId) || null,
+    [activeScoringItems, taskTypeId],
+  );
+  const hoursNum = Number(estimatedHours) || 0;
+  const computedPoints = selectedTask ? Math.round(selectedTask.pointsPerHour * hoursNum) : 0;
+  const computedMHValue = selectedTask ? Math.round(selectedTask.manHourCost * hoursNum) : 0;
 
   const isTurkey = country === 'Türkiye' || country === 'Turkey' || country === 'TR';
 
@@ -220,6 +239,14 @@ function NewOpportunityForm() {
       toast({ variant: 'destructive', title: 'Son başvuru tarihi gerekli' });
       return;
     }
+    if (!selectedTask) {
+      toast({ variant: 'destructive', title: 'İş kalemi gerekli', description: 'Süper-admin kataloğundan bir iş kalemi seçin.' });
+      return;
+    }
+    if (hoursNum <= 0) {
+      toast({ variant: 'destructive', title: 'Tahmini süre gerekli', description: 'Gönüllülük süresini saat olarak girin.' });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -282,7 +309,13 @@ function NewOpportunityForm() {
           providesCertificate,
         },
         education: education || null,
-        points: Number(points) || 0,
+        taskTypeId: selectedTask.id,
+        taskTypeName: selectedTask.taskType,
+        pointsPerHour: selectedTask.pointsPerHour,
+        manHourCost: selectedTask.manHourCost,
+        estimatedHours: hoursNum,
+        points: computedPoints,
+        manHourValue: computedMHValue,
         status: 'Beklemede',
         createdAt: serverTimestamp(),
         createdBy: authUser?.uid || null,
@@ -525,9 +558,59 @@ function NewOpportunityForm() {
               <Label htmlFor="provides-certificate" className="font-medium">Sertifika verilecek mi?</Label>
               <Switch id="provides-certificate" checked={providesCertificate} onCheckedChange={setProvidesCertificate} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="points">Kazandırılacak Sosyal Etki Puanı</Label>
-              <Input id="points" type="number" value={points} onChange={e => setPoints(e.target.value)} placeholder="Örn: 500" />
+            <div className="space-y-3 border-t pt-4 mt-2">
+              <div>
+                <Label className="text-sm font-bold">İş Kalemi ve Süre (Süper-Admin Kataloğu)</Label>
+                <p className="text-xs text-muted-foreground">Puan ve adam-saat değeri otomatik hesaplanır — manuel girilemez.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="taskType">İş Kalemi *</Label>
+                  <Select value={taskTypeId} onValueChange={setTaskTypeId}>
+                    <SelectTrigger id="taskType">
+                      <SelectValue placeholder={activeScoringItems.length === 0 ? 'Katalog boş — süper-admin doldurmalı' : 'Seçiniz...'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeScoringItems.map(item => (
+                        <SelectItem key={item.id} value={item.id}>
+                          {item.taskType} <span className="text-muted-foreground text-xs">({item.pointsPerHour} pt/saat)</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="estimatedHours">Tahmini Süre (saat) *</Label>
+                  <Input
+                    id="estimatedHours"
+                    type="number"
+                    min={0}
+                    step="0.5"
+                    value={estimatedHours}
+                    onChange={e => setEstimatedHours(e.target.value)}
+                    placeholder="Örn: 4"
+                  />
+                </div>
+              </div>
+              {selectedTask && hoursNum > 0 && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 rounded-lg">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Kazanılacak Etki Puanı</p>
+                    <p className="text-2xl font-black text-primary tabular-nums">{computedPoints.toLocaleString('tr-TR')}</p>
+                    <p className="text-[10px] text-muted-foreground">{selectedTask.pointsPerHour} × {hoursNum} saat</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adam-Saat Değeri</p>
+                    <p className="text-2xl font-black text-primary tabular-nums">{computedMHValue.toLocaleString('tr-TR')} ₺</p>
+                    <p className="text-[10px] text-muted-foreground">{selectedTask.manHourCost} ₺ × {hoursNum} saat</p>
+                  </div>
+                </div>
+              )}
+              {activeScoringItems.length === 0 && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                  ⚠️ Henüz iş kalemi yok. Süper-admin <code className="text-[10px]">/super-admin/settings/volunteer-scoring</code> üzerinden katalog oluşturmalı.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
