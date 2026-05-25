@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -27,6 +27,7 @@ import {
   GraduationCap,
   LifeBuoy,
   Leaf,
+  Loader2,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -498,8 +499,10 @@ export default function NgoAdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ActiveEntityProvider>
-      <NgoAdminLayoutInner>{children}</NgoAdminLayoutInner>
-    </ActiveEntityProvider>
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+      <ActiveEntityProvider>
+        <NgoAdminLayoutInner>{children}</NgoAdminLayoutInner>
+      </ActiveEntityProvider>
+    </Suspense>
   );
 }

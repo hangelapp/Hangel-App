@@ -30,6 +30,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { collection, doc, query, where } from 'firebase/firestore';
 import {
   useFirestore,
@@ -91,6 +92,7 @@ type UserDocData = {
   managedNgoId?: string;
   managedBrandId?: string;
   managedClubId?: string;
+  role?: 'super-admin' | 'ngo-admin' | 'user';
 };
 
 type EntityDoc = {
@@ -105,28 +107,18 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
   const firestore = useFirestore();
   const { user: authUser, isUserLoading } = useUser();
 
-  // --- 1) URL params (client-only; avoids useSearchParams CSR-bailout in layout) ---
-  // We read window.location on mount and on history navigation so deep links and
-  // switcher-driven router pushes both update the active context.
-  const [urlSelection, setUrlSelection] = useState<{ id: string; type: EntityType } | null>(null);
+  // --- 1) URL params — Next.js usePathname/useSearchParams ensures we re-read
+  // on every route change (router.push, link clicks, deep links, popstate).
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const read = () => {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const type = params.get('type');
-      const kind = typeToKind(type);
-      if (id && kind) {
-        setUrlSelection({ id, type: KIND_TO_TYPE[kind] });
-      } else {
-        setUrlSelection(null);
-      }
-    };
-    read();
-    window.addEventListener('popstate', read);
-    return () => window.removeEventListener('popstate', read);
-  }, []);
+  const urlSelection = useMemo<{ id: string; type: EntityType } | null>(() => {
+    const id = searchParams?.get('id') ?? null;
+    const type = searchParams?.get('type') ?? null;
+    const kind = typeToKind(type);
+    if (id && kind) return { id, type: KIND_TO_TYPE[kind] };
+    return null;
+  }, [pathname, searchParams]);
 
   // --- 2) localStorage persisted selection ---
   const [storedSelection, setStoredSelection] = useState<{ id: string; type: EntityType } | null>(null);
@@ -262,15 +254,16 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
   // otherwise we fall back, which keeps single-org admins safe.
   const selection = urlSelection || storedSelection;
 
+  const isSuperAdmin = userData?.role === 'super-admin';
+
   const active = useMemo<{ id: string | null; kind: EntityKind | null; type: EntityType | null }>(() => {
     if (selection) {
       const selKind = typeToKind(selection.type);
       const inList = managedList.some((o) => o.id === selection.id && o.kind === selKind);
       // Trust the selection if it's in the managed list, OR if the list hasn't
-      // resolved yet (deep link before queries return). Reject only when the
-      // list is loaded and the org is genuinely not managed.
+      // resolved yet, OR the user is super-admin (can view any entity).
       const listResolved = managedList.length > 0;
-      if (selKind && (inList || !listResolved)) {
+      if (selKind && (inList || !listResolved || isSuperAdmin)) {
         return { id: selection.id, kind: selKind, type: KIND_TO_TYPE[selKind] };
       }
     }
@@ -278,7 +271,7 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
       return { id: fallbackId, kind: fallbackKind, type: KIND_TO_TYPE[fallbackKind] };
     }
     return { id: null, kind: null, type: null };
-  }, [selection, managedList, fallbackKind, fallbackId]);
+  }, [selection, managedList, fallbackKind, fallbackId, isSuperAdmin]);
 
   const isLoading =
     isUserLoading || userDocLoading || ngosLoading || brandsLoading || clubsLoading;
@@ -295,7 +288,8 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
       }
     }
     setStoredSelection(normalized);
-    setUrlSelection(normalized);
+    // urlSelection artık usePathname/useSearchParams ile otomatik güncellenir —
+    // setUrlSelection state'i yok. router.push(...) sonrası Next.js hooks tetiklenir.
   }, []);
 
   const withEntityParams = useCallback(

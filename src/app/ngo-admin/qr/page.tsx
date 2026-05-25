@@ -152,7 +152,12 @@ export default function QrPage() {
       ? (navigator as unknown as { contacts?: { select?: (p: string[], o: { multiple: boolean }) => Promise<Array<{ name?: string[]; tel?: string[]; email?: string[] }>> } })
       : null;
     if (!nav?.contacts?.select) {
-      toast({ variant: 'destructive', title: 'Bu tarayıcı rehber erişimi desteklemiyor.', description: 'Mobil uygulamayı kullanın ya da vCard/CSV yükleyin.' });
+      toast({
+        title: 'Tarayıcı rehber erişimini desteklemiyor',
+        description: 'Mobil uygulama (Chrome Android) destekler. Vakit kaybetme — vCard/CSV upload dialog\'u açıldı.',
+      });
+      // Otomatik fallback: email/vCard dialog'unu aç — vCard/CSV upload orada
+      setEmailDialogOpen(true);
       return;
     }
     try {
@@ -219,7 +224,10 @@ export default function QrPage() {
         return;
       }
       if (res.status === 503 && data?.errorCode === 'OAUTH_NOT_CONFIGURED') {
-        toast({ title: 'Yakında', description: data.message ?? 'E-posta sağlayıcı bağlantısı henüz yapılandırılmadı.' });
+        toast({
+          title: provider === 'google' ? 'Gmail bağlantısı henüz aktif değil' : 'Outlook bağlantısı henüz aktif değil',
+          description: 'Kişilerini Gmail/Outlook\'tan vCard (.vcf) veya CSV olarak indir, aşağıdan yükle.',
+        });
         return;
       }
       toast({ variant: 'destructive', title: 'Bağlanılamadı', description: data?.message ?? 'E-posta kişileri içe aktarılamadı. Lütfen tekrar deneyin.' });
