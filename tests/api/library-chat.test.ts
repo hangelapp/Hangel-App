@@ -57,7 +57,7 @@ vi.mock('@/lib/library', () => ({
   ],
 }));
 
-import { makeRequest } from './_setup';
+import { makeNextRequest } from './_setup';
 
 describe('POST /api/library/chat', () => {
   beforeEach(() => {
@@ -71,7 +71,7 @@ describe('POST /api/library/chat', () => {
 
   async function post(body: unknown, headers: Record<string, string> = {}) {
     const mod = await import('@/app/api/library/chat/route');
-    const req = makeRequest('https://x/api/library/chat', {
+    const req = await makeNextRequest('https://x/api/library/chat', {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...headers },
       body: JSON.stringify(body),

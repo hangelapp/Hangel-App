@@ -43,7 +43,7 @@ vi.mock('@/lib/library', () => ({
   ],
 }));
 
-import { makeRequest } from './_setup';
+import { makeNextRequest } from './_setup';
 
 describe('POST /api/library/project', () => {
   beforeEach(() => {
@@ -56,7 +56,7 @@ describe('POST /api/library/project', () => {
 
   async function post(body: unknown, headers: Record<string, string> = {}) {
     const mod = await import('@/app/api/library/project/route');
-    const req = makeRequest('https://x/api/library/project', {
+    const req = await makeNextRequest('https://x/api/library/project', {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...headers },
       body: JSON.stringify(body),

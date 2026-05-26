@@ -22,14 +22,30 @@
  * dialog only submits 5 fields — we pass `impact` through if present, but
  * do not require it.
  */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { writeProjectProposal, type ProjectWriterInput } from '@/ai/flows/project-writer-flow';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { librarySections, type LibrarySection } from '@/lib/library';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
+
+// Proposal yazımı pahalı bir AI işlemi — çok daha sıkı limit (5 / 5 dk / IP).
+const RATE_LIMIT_WINDOW_MS = 5 * 60_000;
+const RATE_LIMIT_MAX = 5;
+
+function getClientIp(request: NextRequest): string {
+    const xff = request.headers.get('x-forwarded-for');
+    if (xff) {
+        const first = xff.split(',')[0]?.trim();
+        if (first) return first;
+    }
+    const xri = request.headers.get('x-real-ip');
+    if (xri) return xri.trim();
+    return 'unknown';
+}
 
 function buildLibraryContext(allowedSlugs: string[]): string {
     const sections: LibrarySection[] = allowedSlugs.length > 0
@@ -83,8 +99,23 @@ function buildCriteriaText(data: Record<string, unknown>): string | undefined {
     return lines.length > 0 ? lines.join('\n') : undefined;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
+        const ip = getClientIp(req);
+        const { allowed, resetAt } = await checkRateLimit({
+            bucket: 'ai-library-project',
+            key: ip,
+            limit: RATE_LIMIT_MAX,
+            windowMs: RATE_LIMIT_WINDOW_MS,
+        });
+        if (!allowed) {
+            const retryAfterMs = Math.max(0, resetAt - Date.now());
+            console.warn('library/project rate-limited', { ip, retryAfterMs });
+            return NextResponse.json(
+                { errorCode: 'RATE_LIMITED', message: 'Çok fazla proje yazımı isteği. Lütfen birkaç dakika bekleyin.' },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+            );
+        }
         const idToken = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
         const body = await req.json().catch(() => null);
         const institution = typeof body?.institution === 'string' ? body.institution.trim() : '';

@@ -20,14 +20,31 @@
  * NOT included (deferred to Wave 6F-tail):
  *   - Per-IP rate limit via `checkRateLimit`. See PDF-71-impl follow-up.
  */
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { askLibraryAssistant } from '@/ai/flows/library-ai-assistant';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { librarySections, type LibrarySection } from '@/lib/library';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
+
+// PDF-71-impl follow-up: Per-IP rate limit. AI çağrıları Gemini kotasını yer ve
+// her tetik para harcatır → anonim botlardan koru. 15 istek / dk / IP.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 15;
+
+function getClientIp(request: NextRequest): string {
+    const xff = request.headers.get('x-forwarded-for');
+    if (xff) {
+        const first = xff.split(',')[0]?.trim();
+        if (first) return first;
+    }
+    const xri = request.headers.get('x-real-ip');
+    if (xri) return xri.trim();
+    return 'unknown';
+}
 
 function buildLibraryContext(allowedSlugs: string[]): string {
     const sections: LibrarySection[] = allowedSlugs.length > 0
@@ -43,8 +60,23 @@ function buildLibraryContext(allowedSlugs: string[]): string {
         .join('\n\n');
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
+        const ip = getClientIp(req);
+        const { allowed, resetAt } = await checkRateLimit({
+            bucket: 'ai-library-chat',
+            key: ip,
+            limit: RATE_LIMIT_MAX,
+            windowMs: RATE_LIMIT_WINDOW_MS,
+        });
+        if (!allowed) {
+            const retryAfterMs = Math.max(0, resetAt - Date.now());
+            console.warn('library/chat rate-limited', { ip, retryAfterMs });
+            return NextResponse.json(
+                { errorCode: 'RATE_LIMITED', message: 'Çok fazla AI isteği. Lütfen bir dakika bekleyin.' },
+                { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) } }
+            );
+        }
         const idToken = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
         const body = await req.json().catch(() => null);
         const message = typeof body?.message === 'string' ? body.message.trim() : '';
