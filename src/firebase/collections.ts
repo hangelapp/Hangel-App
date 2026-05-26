@@ -48,6 +48,8 @@ export const COLLECTIONS = {
   userFeedback: 'userFeedback',
   // OTP kodları (WhatsApp / SMS doğrulama) — server-only (firestore.rules:19).
   otpCodes: 'otp_codes',
+  // Magic link tokens (WhatsApp link auth) — server-only.
+  loginLinks: 'login_links',
   events: 'events',
   // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
   // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.
