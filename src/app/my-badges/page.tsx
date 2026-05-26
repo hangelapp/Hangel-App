@@ -7,8 +7,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { badges } from '@/lib/data';
-import { computeAreaPoints, mapCategoryToBadgeArea } from '@/lib/badge-points';
+import { computeAreaPoints, mapCategoryToBadgeArea, enrichBadges, type TierEnrichedBadge } from '@/lib/badge-points';
 import type { Application } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
 import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
@@ -515,27 +514,12 @@ export default function MyBadgesPage() {
     }, [db, authUser, storedAreaPoints, effectiveAreaPoints]);
 
     // Rozetlere effectiveAreaPoints'ten currentPoints + tier-prev hesabı aktar.
-    // prevTierRequired: aynı alanda kendinden ÖNCEKİ tier'ın pointsRequired'i.
-    // İlk tier (Bakır) için 0. Böylece 1. kademe dolunca 2. kademe SIFIRDAN sayar.
-    const enrichedBadges: TierBadge[] = useMemo(() => {
-        // Önce alan bazında grupla + tier sırasına göre sırala
-        const byArea = groupBy(badges, 'socialArea');
-        const out: TierBadge[] = [];
-        Object.entries(byArea).forEach(([area, areaBadges]) => {
-            const sorted = [...areaBadges].sort(
-                (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level),
-            );
-            const areaCurrent = Number(effectiveAreaPoints[area]) || 0;
-            sorted.forEach((b, idx) => {
-                out.push({
-                    ...b,
-                    currentPoints: areaCurrent,
-                    prevTierRequired: idx === 0 ? 0 : sorted[idx - 1].pointsRequired,
-                });
-            });
-        });
-        return out;
-    }, [effectiveAreaPoints]);
+    // Profile sayfası ile aynı kaynağı kullanmak için lib/badge-points/enrichBadges
+    // çağrılır — her iki sayfa da aynı puanlardan aynı listeyi türetir.
+    const enrichedBadges: TierEnrichedBadge[] = useMemo(
+        () => enrichBadges(effectiveAreaPoints),
+        [effectiveAreaPoints]
+    );
 
     // Sıradaki hedef: en yakın kazanılmamış tier (delta cinsinden kalan puan en az).
     const nextBadge = useMemo<NextBadgeRow | null>(() => {

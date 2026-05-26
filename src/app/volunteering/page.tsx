@@ -4,7 +4,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, Calendar, ChevronDown, Heart, Briefcase } from 'lucide-react';
+import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp } from 'lucide-react';
 import { ngos } from '@/lib/data';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
@@ -18,9 +18,10 @@ import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { rankOpportunities, scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 import { Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }: {
-    icon: React.ElementType;
+const FilterButton = ({ title, options, selected, onSelectedChange }: {
+    icon?: React.ElementType;
     title: string;
     options: string[];
     selected: string[];
@@ -30,7 +31,6 @@ const FilterButton = ({ icon: Icon, title, options, selected, onSelectedChange }
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full shrink-0">
-                    <Icon className="h-3.5 w-3.5" />
                     <span className="text-xs font-medium">{title}</span>
                     {selected.length > 0 && (
                         <span className="ml-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
@@ -173,10 +173,8 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
     const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
 
-    const matchTone =
-        matchPercentage >= 75 ? { bg: 'bg-green-100', text: 'text-green-700', ring: 'ring-green-200', bar: 'bg-green-500' } :
-        matchPercentage >= 50 ? { bg: 'bg-amber-100', text: 'text-amber-700', ring: 'ring-amber-200', bar: 'bg-amber-500' } :
-                                 { bg: 'bg-muted', text: 'text-muted-foreground', ring: 'ring-border', bar: 'bg-muted-foreground/40' };
+    // Profil uyumu satırı kullanıcı talebine göre tek renk: narçiçeği (#E34234).
+    const matchAccent = '#E34234';
 
     return (
         <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20 h-full">
@@ -196,16 +194,13 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                                     <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                                 </div>
                             </div>
-                            {/* Belirgin uygunluk rozeti — sadece profilini doldurmuş kullanıcılar için */}
-                            {hasProfile && (
-                                <div
-                                    className={`flex flex-col items-center justify-center shrink-0 rounded-xl px-2.5 py-1.5 ring-1 ${matchTone.bg} ${matchTone.ring}`}
-                                    title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
-                                >
-                                    <span className={`text-base font-black leading-none ${matchTone.text}`}>%{matchPercentage}</span>
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider mt-0.5 ${matchTone.text}`}>Uygun</span>
-                                </div>
-                            )}
+                            {/* Sağ üst köşe: İncele butonu (kibar tasarım) */}
+                            <span
+                                className="shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+                                style={{ color: matchAccent, border: `1px solid ${matchAccent}` }}
+                            >
+                                İncele
+                            </span>
                         </div>
 
                         <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 flex-wrap gap-2">
@@ -222,15 +217,18 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                         </div>
 
                         {hasProfile && (
-                            <div className="mt-3 space-y-1.5">
+                            <div
+                                className="mt-3 space-y-1.5"
+                                title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
+                            >
                                 <div className="flex justify-between text-[10px] uppercase tracking-wider">
                                     <span className="font-bold text-muted-foreground">Profil Uygunluğu</span>
-                                    <span className={`font-black ${matchTone.text}`}>%{matchPercentage}</span>
+                                    <span className="font-black" style={{ color: matchAccent }}>%{matchPercentage}</span>
                                 </div>
                                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full ${matchTone.bar} rounded-full transition-all duration-500 ease-out`}
-                                        style={{ width: `${matchPercentage}%` }}
+                                        className="h-full rounded-full transition-all duration-500 ease-out"
+                                        style={{ width: `${matchPercentage}%`, backgroundColor: matchAccent }}
                                     />
                                 </div>
                             </div>
@@ -249,7 +247,8 @@ export default function VolunteeringPage() {
     const [interestFilter, setInterestFilter] = useState<string[]>([]);
     const [skillFilter, setSkillFilter] = useState<string[]>([]);
     const [cityFilter, setCityFilter] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState<'match' | 'points' | 'deadline'>('match');
+    const [sortBy, setSortBy] = useState<'points' | 'deadline'>('points');
+    const [recsOpen, setRecsOpen] = useState(false);
 
     const oppsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.volunteering), [db]);
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
@@ -363,12 +362,6 @@ export default function VolunteeringPage() {
             );
         }
 
-        if (sortBy === 'match') {
-            return filtered
-                .map(o => ({ o, m: computeMatch(o, matchingProfile).percent }))
-                .sort((a, b) => b.m - a.m)
-                .map(x => x.o);
-        }
         if (sortBy === 'deadline') {
             return filtered.sort((a, b) => {
                 const ad = differenceInDays(parse(a.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
@@ -389,12 +382,23 @@ export default function VolunteeringPage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input placeholder="İlan ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
-              <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele"><Filter size={20} /></Button>
+              <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele" title="Filtrele"><Filter size={20} /></Button>
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala" title="Sırala"><ArrowDownUp size={20} /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Sıralama</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem checked={sortBy === 'points'} onCheckedChange={() => setSortBy('points')}>Puana göre</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={sortBy === 'deadline'} onCheckedChange={() => setSortBy('deadline')}>Son tarihe göre</DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar items-center">
-              <FilterButton icon={Heart} title="Hassasiyet" options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
-              <FilterButton icon={Briefcase} title="Yetkinlikler" options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
-              <FilterButton icon={MapPin} title="Konum" options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
+              <FilterButton title="Hassasiyet" options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
+              <FilterButton title="Yetkinlikler" options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
+              <FilterButton title="Konum" options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
               {(interestFilter.length + skillFilter.length + cityFilter.length) > 0 && (
                   <Button
                       variant="ghost"
@@ -405,44 +409,37 @@ export default function VolunteeringPage() {
                       Filtreleri temizle
                   </Button>
               )}
-              <div className="ml-auto flex items-center gap-1 shrink-0 pl-2">
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Sırala:</span>
-                  <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs font-bold">
-                              {sortBy === 'match' ? 'Uygunluğa göre' : sortBy === 'deadline' ? 'Son tarihe göre' : 'Puana göre'}
-                              <ChevronDown className="h-3 w-3 opacity-60" />
-                          </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                          <DropdownMenuCheckboxItem checked={sortBy === 'match'} onCheckedChange={() => setSortBy('match')}>Uygunluğa göre</DropdownMenuCheckboxItem>
-                          <DropdownMenuCheckboxItem checked={sortBy === 'points'} onCheckedChange={() => setSortBy('points')}>Puana göre</DropdownMenuCheckboxItem>
-                          <DropdownMenuCheckboxItem checked={sortBy === 'deadline'} onCheckedChange={() => setSortBy('deadline')}>Son tarihe göre</DropdownMenuCheckboxItem>
-                      </DropdownMenuContent>
-                  </DropdownMenu>
-              </div>
           </div>
         </div>
 
         {personalizedRecs.length > 0 && (
           <section aria-labelledby="imece-recs-heading" className="space-y-3">
-            <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setRecsOpen(prev => !prev)}
+              aria-expanded={recsOpen}
+              aria-controls="imece-recs-grid"
+              className="w-full flex items-center justify-between gap-2 py-1 group"
+            >
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <h2 id="imece-recs-heading" className="text-base font-bold">Sana Özel Öneriler</h2>
+                <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-primary/10 text-primary">
+                  {personalizedRecs.length}
+                </span>
               </div>
-              <a
-                href="#imece-all-listings"
-                className="text-xs font-bold text-primary hover:underline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById('imece-all-listings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
-              >
-                Tümünü Gör
-              </a>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground',
+                  recsOpen && 'rotate-180',
+                )}
+              />
+            </button>
+            <div
+              id="imece-recs-grid"
+              hidden={!recsOpen}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+            >
               {personalizedRecs.map(({ opportunity, score, reasons }) => (
                 <Link key={opportunity.id} href={`/volunteering/${opportunity.id}`} className="block group">
                   {/* Nar çiçeği (pomegranate flower) çerçeve — #E34234 */}

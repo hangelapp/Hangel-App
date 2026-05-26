@@ -178,3 +178,42 @@ export function computeAreaPoints(input: ComputeAreaPointsInput): Record<string,
 
   return totals;
 }
+
+import type { Badge as BadgeDef, BadgeLevel } from './types';
+import { badges as STATIC_BADGES } from './data';
+
+export type TierEnrichedBadge = BadgeDef & { prevTierRequired: number };
+
+const LEVEL_ORDER: BadgeLevel[] = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Platin'];
+
+/**
+ * Statik badge tanımlarını (`lib/data` `badges`) verilen sosyal-alan
+ * puanlarıyla zenginleştir. Her badge'in `currentPoints`'i o alanın toplam
+ * puanı olur; `prevTierRequired` aynı alandaki bir önceki tier'ın eşiği —
+ * Bakır için 0. Böylece UI tier ilerlemesini "sıfırdan say" mantığıyla
+ * gösterebilir.
+ *
+ * Hem my-badges sayfası hem profile/badges-certificates tab'ı bu fonksiyondan
+ * üretilen aynı listeyi kullanarak veriyi senkronize tutar.
+ */
+export function enrichBadges(areaPoints: Record<string, number>): TierEnrichedBadge[] {
+  const byArea: Record<string, BadgeDef[]> = {};
+  for (const b of STATIC_BADGES) {
+    (byArea[b.socialArea] ||= []).push(b);
+  }
+  const out: TierEnrichedBadge[] = [];
+  for (const [area, areaBadges] of Object.entries(byArea)) {
+    const sorted = [...areaBadges].sort(
+      (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level),
+    );
+    const areaCurrent = Number(areaPoints[area]) || 0;
+    sorted.forEach((b, idx) => {
+      out.push({
+        ...b,
+        currentPoints: areaCurrent,
+        prevTierRequired: idx === 0 ? 0 : sorted[idx - 1].pointsRequired,
+      });
+    });
+  }
+  return out;
+}

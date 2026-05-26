@@ -24,6 +24,7 @@ import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
+import { enrichBadges } from '@/lib/badge-points';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useCollection } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
@@ -290,9 +291,24 @@ export default function ProfilePage() {
     const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
     const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
 
-    const badges = useMemo(() => badgesData ?? [], [badgesData]);
     const certificates = useMemo(() => certificatesData ?? [], [certificatesData]);
     const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
+
+    // PRD/Sync: my-badges sayfası ile aynı kaynaktan rozet listesi türet.
+    // userData.areaPoints (my-badges canonical olarak yazıyor) → enrichBadges →
+    // currentPoints + prevTierRequired dolu liste. badgesData (users/{uid}/badges
+    // subcollection) artık kullanılmıyor — eski/manuel veri okumayı kaldırdık.
+    const userAreaPoints = useMemo<Record<string, number>>(
+        () => (userData as { areaPoints?: Record<string, number> } | undefined)?.areaPoints || {},
+        [userData]
+    );
+    const badges = useMemo(() => enrichBadges(userAreaPoints), [userAreaPoints]);
+    // Profile tab'ında yarım rozetler dahil 1+ puanlı tüm rozetler gösterilir.
+    const visibleBadges = useMemo(
+        () => badges.filter(b => (b.currentPoints ?? 0) > 0),
+        [badges]
+    );
+    void badgesData; // legacy subcollection — şu an kullanılmıyor (dashboard sync)
 
 
     const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
@@ -760,11 +776,11 @@ export default function ProfilePage() {
 
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
                         <Card>
-                            <CardHeader><CardTitle className='text-lg'>Kazanılan Rozetler</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className='text-lg'>Kazanılan & Devam Eden Rozetler</CardTitle></CardHeader>
                             <CardContent>
-                                {badges.length > 0 ? (
+                                {visibleBadges.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-4">
-                                        {badges.slice(0, 6).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
+                                        {visibleBadges.slice(0, 6).map((badge) => <BadgeDisplay key={badge.id} badge={badge} />)}
                                     </div>
                                 ) : (
                                     <EmptyState
