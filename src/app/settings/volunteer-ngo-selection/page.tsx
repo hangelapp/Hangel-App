@@ -40,8 +40,10 @@ export default function VolunteerNgoSelectionPage() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'name', direction: 'asc' });
+    // Kullanıcı talebi: her ziyarette random sıralı; sort dropdown override eder.
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'random', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+    const [randomOrder, setRandomOrder] = useState<string[]>([]);
     // Bu sayfa zorunlu onboarding zincirinin parçası DEĞİL (zincir: ngo-selection → profile → volunteer → market).
     // Yalnızca standalone "gönüllü STK'larını değiştir" ekranı olarak kullanılır; isOnboarding daima false.
     const [isOnboarding] = useState(false);
@@ -55,6 +57,21 @@ export default function VolunteerNgoSelectionPage() {
         () => (ngosData ?? []).filter(n => (n as NGO & { status?: string }).status !== 'Pasif'),
         [ngosData]
     );
+
+    useEffect(() => {
+        if (activeNgos.length === 0) return;
+        const ids = activeNgos.map(n => n.id);
+        for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+        }
+        setRandomOrder(ids);
+    }, [activeNgos.length]);
+    const randomIndexMap = useMemo(() => {
+        const m = new Map<string, number>();
+        randomOrder.forEach((id, i) => m.set(id, i));
+        return m;
+    }, [randomOrder]);
 
     const allCategories = useMemo(() => Array.from(new Set(activeNgos.map(n => n.category))), [activeNgos]);
 
@@ -74,6 +91,12 @@ export default function VolunteerNgoSelectionPage() {
 
         filtered.sort((a, b) => {
             switch (sortConfig.key) {
+                case 'random': {
+                    const ai = randomIndexMap.get(a.id);
+                    const bi = randomIndexMap.get(b.id);
+                    if (ai === undefined || bi === undefined) return 0;
+                    return ai - bi;
+                }
                 case 'volunteers': return sortConfig.direction === 'asc' ? a.stats.volunteers - b.stats.volunteers : b.stats.volunteers - a.stats.volunteers;
                 case 'transparencyScore': return sortConfig.direction === 'asc' ? a.transparencyScore - b.transparencyScore : b.transparencyScore - a.transparencyScore;
                 default: return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
@@ -81,7 +104,7 @@ export default function VolunteerNgoSelectionPage() {
         });
 
         return filtered;
-    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter]);
+    }, [activeNgos, typeFilter, searchTerm, sortConfig, categoryFilter, randomIndexMap]);
 
     const handleSelectNgo = (ngoId: string) => {
         setSelectedNgos(prev => prev.includes(ngoId) ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
@@ -148,6 +171,7 @@ export default function VolunteerNgoSelectionPage() {
                         <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'random', direction: 'asc' })}>Karışık (varsayılan)</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>İsme Göre (Z-A)</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>Gönüllü Sayısı</DropdownMenuItem>

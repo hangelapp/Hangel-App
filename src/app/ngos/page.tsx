@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,14 +14,17 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 
 type NgoType = NGO['type'] | 'Tümü';
-type SortKey = 'viewCount' | 'name-asc' | 'name-desc' | 'transparency-desc' | 'donors-desc' | 'volunteers-desc';
+type SortKey = 'random' | 'viewCount' | 'name-asc' | 'name-desc' | 'transparency-desc' | 'donors-desc' | 'volunteers-desc';
 
 export default function NgosPage() {
     const db = useFirestore();
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortKey, setSortKey] = useState<SortKey>('viewCount');
+    // Kullanıcı talebi: her sayfa yüklemesinde STK listesi rastgele sıralı gelsin.
+    const [sortKey, setSortKey] = useState<SortKey>('random');
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+    // Random shuffle id sırası — useEffect içinde set edilir (hydration güvenli).
+    const [randomOrder, setRandomOrder] = useState<string[]>([]);
 
     const ngosQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -29,6 +32,22 @@ export default function NgosPage() {
     }, [db]);
 
     const { data: ngosData, isLoading } = useCollection<NGO>(ngosQuery);
+
+    useEffect(() => {
+        if (!ngosData || ngosData.length === 0) return;
+        const ids = ngosData.map(n => n.id);
+        // Fisher-Yates shuffle (mount + ngo set değişimi sonrası tetiklenir).
+        for (let i = ids.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [ids[i], ids[j]] = [ids[j], ids[i]];
+        }
+        setRandomOrder(ids);
+    }, [ngosData?.length]);
+    const randomIndexMap = useMemo(() => {
+        const m = new Map<string, number>();
+        randomOrder.forEach((id, i) => m.set(id, i));
+        return m;
+    }, [randomOrder]);
 
     const allCategories = useMemo(() => {
         if (!ngosData) return [];
@@ -72,6 +91,12 @@ export default function NgosPage() {
 
         filtered.sort((a, b) => {
             switch (sortKey) {
+                case 'random': {
+                    const ai = randomIndexMap.get(a.id);
+                    const bi = randomIndexMap.get(b.id);
+                    if (ai === undefined || bi === undefined) return 0;
+                    return ai - bi;
+                }
                 case 'name-asc': return a.name.localeCompare(b.name);
                 case 'name-desc': return b.name.localeCompare(a.name);
                 case 'transparency-desc': return (b.transparencyScore ?? 0) - (a.transparencyScore ?? 0);
@@ -149,6 +174,7 @@ export default function NgosPage() {
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Sırala</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSortKey('random')}>Karışık (varsayılan)</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('viewCount')}>En Çok Görüntülenen</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('transparency-desc')}>En Yüksek Şeffaflık</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setSortKey('donors-desc')}>En Çok Bağışçı</DropdownMenuItem>
