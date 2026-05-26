@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, type ConfirmationResult } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, signInWithCustomToken, type ConfirmationResult } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -25,7 +25,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     const { toast } = useToast();
     const searchParams = useSearchParams();
 
-    type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp';
+    type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp' | 'whatsapp-code-input';
     const [step, setStep] = useState<IndividualStep>('email');
     const [authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('mail');
     const [email, setEmail] = useState('');
@@ -415,17 +415,22 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     );
 
     // WhatsApp Magic Link handler (kod yerine link)
-    const handleSendWhatsAppOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const validateWhatsAppInput = (): boolean => {
         if (!allIndividualAgreementsAccepted) {
             toast({ variant: 'destructive', title: 'Sözleşmeler', description: 'Devam etmek için sözleşmeleri kabul edin.' });
-            return;
+            return false;
         }
         const cleanPhone = phone.replace(/\D/g, '');
         if (!name.trim() || cleanPhone.length < 7) {
             toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Ad soyad ve geçerli telefon gerekli.' });
-            return;
+            return false;
         }
+        return true;
+    };
+
+    const handleSendWhatsAppLink = async () => {
+        if (!validateWhatsAppInput()) return;
+        const cleanPhone = phone.replace(/\D/g, '');
         setIsLoading(true);
         try {
             const res = await fetch('/api/auth/whatsapp/send-link', {
@@ -440,10 +445,9 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.ok) {
-                toast({ variant: 'destructive', title: 'WhatsApp ile gönderilemedi', description: data.message || 'E-posta seçeneğini deneyin.' });
+                toast({ variant: 'destructive', title: 'Link gönderilemedi', description: data.message || 'Kod seçeneğini dene.' });
                 return;
             }
-            // Kod sayfası yerine "link gönderildi" bekleme sayfası
             setStep('whatsapp-otp');
             toast({ title: 'WhatsApp\'a link gönderildi', description: 'Mesajdaki butona tıklayarak girişini tamamla.' });
         } catch (err) {
@@ -454,8 +458,70 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         }
     };
 
-    // Note: WhatsApp magic link flow → kullanıcı /auth/wa sayfasında signInWithCustomToken alır,
-    // bu form'da verify-code adımı YOK (önce vardı, kaldırıldı).
+    const handleSendWhatsAppCode = async () => {
+        if (!validateWhatsAppInput()) return;
+        const cleanPhone = phone.replace(/\D/g, '');
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/auth/whatsapp/send-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: cleanPhone,
+                    phoneCountryCode,
+                    name: name.trim(),
+                    lang: getLanguageFromPhoneCode(phoneCountryCode),
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                toast({ variant: 'destructive', title: 'Kod gönderilemedi', description: data.message || 'Link seçeneğini dene.' });
+                return;
+            }
+            setOtpCode('');
+            setStep('whatsapp-code-input');
+            toast({ title: 'WhatsApp\'a kod gönderildi', description: '6 haneli kodu aşağıya gir.' });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Kod gönderilemedi.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyWhatsAppCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const cleanPhone = phone.replace(/\D/g, '');
+        if (!/^\d{6}$/.test(otpCode)) {
+            toast({ variant: 'destructive', title: 'Geçersiz kod', description: '6 haneli kodu doğru gir.' });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/auth/whatsapp/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: cleanPhone,
+                    phoneCountryCode,
+                    code: otpCode,
+                    name: name.trim(),
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok || !data.customToken) {
+                toast({ variant: 'destructive', title: 'Doğrulanamadı', description: data.message || 'Kod yanlış veya süresi dolmuş.' });
+                return;
+            }
+            await signInWithCustomToken(getAuth(), data.customToken);
+            onComplete(Boolean(data.isNewUser));
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Doğrulama hatası.';
+            toast({ variant: 'destructive', title: 'Hata', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // PHONE STEPS
     if (step === 'phone-enter') {
@@ -568,7 +634,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 <div className="rounded-2xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] text-emerald-800 leading-snug">
                     📱 Doğrulama kodu hangel resmi WhatsApp numarasından gönderilir. Mesaj WhatsApp dilinde gelir.
                 </div>
-                <form onSubmit={handleSendWhatsAppOtp} className="space-y-4">
+                <form onSubmit={(e) => { e.preventDefault(); handleSendWhatsAppLink(); }} className="space-y-4">
                     <div className="space-y-2">
                         <FormLabel required>Ad Soyad</FormLabel>
                         <FormInput placeholder="Adınız Soyadınız" required value={name} onChange={e => setName(e.target.value)} />
@@ -621,9 +687,24 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             </span>
                         </label>
                     </div>
-                    <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700" disabled={isLoading || !allIndividualAgreementsAccepted}>
-                        {isLoading ? <Loader2 className="animate-spin" /> : <><MessageCircle className="mr-2 h-4 w-4" /> {'WhatsApp\'tan Kod Gönder'}</>}
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="h-12 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                            disabled={isLoading || !allIndividualAgreementsAccepted}
+                            onClick={handleSendWhatsAppCode}
+                        >
+                            {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex flex-col items-center leading-tight"><span className="text-base">🔢 Kod</span><span className="text-[10px] font-normal">6 hane yaz</span></span>}
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700"
+                            disabled={isLoading || !allIndividualAgreementsAccepted}
+                        >
+                            {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex flex-col items-center leading-tight"><span className="text-base">🔗 Link</span><span className="text-[10px] font-normal">1 tıkla aç</span></span>}
+                        </Button>
+                    </div>
                 </form>
             </div>
         );
@@ -651,6 +732,41 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     Numarayı değiştir / Tekrar gönder
                 </Button>
             </div>
+        );
+    }
+
+    if (step === 'whatsapp-code-input') {
+        return (
+            <form onSubmit={handleVerifyWhatsAppCode} className="space-y-4">
+                <div className="text-center space-y-3 py-4">
+                    <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <ShieldCheck className="h-8 w-8 text-emerald-600" />
+                    </div>
+                    <p className="font-bold text-base">WhatsApp&apos;a 6 haneli kod gönderildi 📲</p>
+                    <p className="text-sm text-muted-foreground leading-snug">
+                        <span className="font-bold text-foreground">{phoneCountryCode}{phone.replace(/\D/g, '').replace(/^0+/, '')}</span> numaralı WhatsApp&apos;ı kontrol et.
+                    </p>
+                </div>
+                <div className="space-y-2">
+                    <FormLabel required>Doğrulama Kodu</FormLabel>
+                    <FormInput
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="\d{6}"
+                        maxLength={6}
+                        placeholder="6 haneli kod"
+                        required
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    />
+                </div>
+                <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700" disabled={isLoading || otpCode.length !== 6}>
+                    {isLoading ? <Loader2 className="animate-spin" /> : 'Doğrula ve Devam Et'}
+                </Button>
+                <Button type="button" variant="outline" className="w-full h-12 rounded-xl font-bold" onClick={() => setStep('whatsapp-enter')}>
+                    Numarayı değiştir / Yeniden gönder
+                </Button>
+            </form>
         );
     }
 

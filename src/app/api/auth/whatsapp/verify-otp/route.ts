@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
         // Doğru — kullanıcıyı oluştur/getir
         const adminAuth = getAdminAuth();
         let userRecord;
+        let isNewUser = false;
         try {
             userRecord = await adminAuth.getUserByPhoneNumber(fullPhone);
         } catch {
@@ -76,6 +77,7 @@ export async function POST(req: NextRequest) {
                 phoneNumber: fullPhone,
                 displayName: name || undefined,
             });
+            isNewUser = true;
         }
         const uid = userRecord.uid;
 
@@ -100,7 +102,7 @@ export async function POST(req: NextRequest) {
         // OTP doc'unu sil (kullanıldı)
         await ref.delete();
 
-        return NextResponse.json({ ok: true, customToken });
+        return NextResponse.json({ ok: true, customToken, isNewUser });
     } catch (e) {
         console.error('[whatsapp-otp/verify] internal error', e);
         return NextResponse.json({ ok: false, errorCode: 'INTERNAL_ERROR', message: 'Sunucu hatası.' }, { status: 500 });
