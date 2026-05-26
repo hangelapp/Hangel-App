@@ -20,6 +20,8 @@ import { Progress } from '@/components/ui/progress';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
+import { isNativeApp } from '@/lib/capacitor';
+import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
   'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800' },
@@ -298,21 +300,61 @@ export default function MyBadgesPage() {
         return pdf;
     };
 
+    const certFileName = (cert: { title: string }) =>
+        `sertifika-${cert.title.replace(/[^\w-]+/g, '-').toLowerCase()}.pdf`;
+
+    // Native: write to Documents/ + share; Web: pdf.save().
     const handleDownloadCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
             const pdf = await buildCertificatePdf(cert);
-            const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+            const filename = certFileName(cert);
+            if (isNativeApp()) {
+                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                const { Share } = await import('@capacitor/share');
+                const base64 = pdf.output('datauristring').split(',')[1];
+                const written = await Filesystem.writeFile({
+                    path: filename,
+                    data: base64,
+                    directory: Directory.Documents,
+                });
+                try {
+                    await Share.share({
+                        title: cert.title,
+                        text: `${cert.title} sertifikam`,
+                        url: written.uri,
+                        dialogTitle: 'Sertifikayı kaydet veya paylaş',
+                    });
+                } catch {
+                    // user dismissed share — file is already saved
+                }
+                toast({ title: 'Sertifika Kaydedildi', description: `${filename} dosyanıza eklendi.` });
+                return;
+            }
             pdf.save(filename);
             toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
         } catch (error) {
-            console.error('Certificate PDF generation failed:', error);
+            console.error('Certificate PDF download failed:', error);
             toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
         }
     };
 
+    // Native: write temp + open via Browser; Web: bloburl + window.open.
     const handleViewCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
             const pdf = await buildCertificatePdf(cert);
+            if (isNativeApp()) {
+                const { Filesystem, Directory } = await import('@capacitor/filesystem');
+                const { Browser } = await import('@capacitor/browser');
+                const filename = certFileName(cert);
+                const base64 = pdf.output('datauristring').split(',')[1];
+                const written = await Filesystem.writeFile({
+                    path: filename,
+                    data: base64,
+                    directory: Directory.Cache,
+                });
+                await Browser.open({ url: written.uri });
+                return;
+            }
             const blobUrl = pdf.output('bloburl');
             const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
             if (!opened) {
@@ -327,19 +369,40 @@ export default function MyBadgesPage() {
     const buildShareText = (certTitle: string) => `${certTitle} sertifikamı Hangel'de kazandım! `;
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
 
-    const shareWhatsApp = (certTitle: string) => {
+    // Native: iOS/Android share sheet (Capacitor Share). Web: deep link to platform.
+    const nativeShare = async (certTitle: string): Promise<boolean> => {
+        if (!isNativeApp()) return false;
+        try {
+            const { Share } = await import('@capacitor/share');
+            await Share.share({
+                title: certTitle,
+                text: buildShareText(certTitle),
+                url: shareUrl,
+                dialogTitle: 'Sertifikayı paylaş',
+            });
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const shareWhatsApp = async (certTitle: string) => {
+        if (await nativeShare(certTitle)) return;
         const text = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
         window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
     };
-    const shareLinkedIn = () => {
+    const shareLinkedIn = async (certTitle: string) => {
+        if (await nativeShare(certTitle)) return;
         window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
     };
-    const shareEmail = (certTitle: string) => {
+    const shareEmail = async (certTitle: string) => {
+        if (await nativeShare(certTitle)) return;
         const subject = encodeURIComponent(`${certTitle} sertifikam`);
         const bodyText = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
         window.open(`mailto:?subject=${subject}&body=${bodyText}`, '_blank', 'noopener,noreferrer');
     };
     const shareInstagram = async (certTitle: string) => {
+        if (await nativeShare(certTitle)) return;
         try {
             if (typeof navigator !== 'undefined' && navigator.clipboard) {
                 await navigator.clipboard.writeText(`${buildShareText(certTitle)}${shareUrl}`);
@@ -521,16 +584,19 @@ export default function MyBadgesPage() {
                 </TabsList>
 
                 <TabsContent value="impact-score" className="mt-8 space-y-6">
-                    <Card className="text-center rounded-[3rem] border-none shadow-2xl bg-black text-white p-12 overflow-hidden relative">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                        <div className="relative z-10 space-y-2">
-                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">{t('dashboard.badges.impactTotalLabel')}</p>
-                            <p className="text-8xl font-black tracking-tighter text-primary drop-shadow-2xl">{impactScore.toLocaleString('tr-TR')}</p>
-                            <p className="text-xs font-black uppercase tracking-widest opacity-60 pt-4">
-                                {earnedCount} / {enrichedBadges.length} ROZET KAZANILDI
-                            </p>
-                        </div>
-                    </Card>
+                    <EtkiTabContent
+                        user={{
+                            impactScore,
+                            stats: ((userData as { stats?: Parameters<typeof EtkiTabContent>[0]['user']['stats'] } | undefined)?.stats) || {
+                                totalDonation: 0, donationCount: 0, highestSingleDonation: 0, mostSupportedNgo: '-',
+                                avgDonation: 0, volunteerHours: 0, completedProjects: 0, mostActiveVolunteerArea: '-',
+                                totalImpactValue: 0, volunteerRank: {},
+                            },
+                        }}
+                        earnedBadgeCount={earnedCount}
+                        certificateCount={certificates.length}
+                        impactCardTitle={t('dashboard.badges.impactTotalLabel')}
+                    />
                 </TabsContent>
 
                 <TabsContent value="badges" className="mt-8 space-y-12">
@@ -620,7 +686,7 @@ export default function MyBadgesPage() {
                                                 <DropdownMenuItem onClick={() => shareInstagram(cert.title)}>
                                                     <Instagram className="mr-2 h-4 w-4" /> Instagram
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={shareLinkedIn}>
+                                                <DropdownMenuItem onClick={() => shareLinkedIn(cert.title)}>
                                                     <Linkedin className="mr-2 h-4 w-4" /> LinkedIn
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => shareEmail(cert.title)}>

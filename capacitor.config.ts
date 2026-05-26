@@ -10,8 +10,9 @@ const config: CapacitorConfig = {
     cleartext: false,
   },
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     preferredContentMode: 'mobile',
+    scrollEnabled: true,
   },
   android: {
     allowMixedContent: false,

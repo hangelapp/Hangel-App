@@ -207,7 +207,7 @@ export default function NotificationsPage() {
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   return (
-    <div className="p-4 space-y-4 animate-in fade-in-0 max-w-2xl mx-auto">
+    <div className="p-4 space-y-3 animate-in fade-in-0 max-w-2xl mx-auto">
       <div className="flex items-center gap-2">
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('aria.back')}>
           <ArrowLeft className="h-6 w-6" />
@@ -239,7 +239,7 @@ export default function NotificationsPage() {
           description={t('dashboard.notifications.emptyDesc')}
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {notifications.map(n => {
             const Icon = (n.type ? typeIcon[n.type] : undefined) || Bell;
             const colorClass = (n.type ? typeColor[n.type] : undefined) || 'text-gray-600 bg-gray-100';
@@ -253,17 +253,17 @@ export default function NotificationsPage() {
                 )}
                 onClick={() => handleNotificationClick(n, href)}
               >
-                <CardContent className="p-4 flex items-start gap-3">
-                  <div className={cn('p-2.5 rounded-full shrink-0', colorClass)}>
-                    <Icon className="h-5 w-5" />
+                <CardContent className="p-3 flex items-start gap-3">
+                  <div className={cn('p-2 rounded-full shrink-0', colorClass)}>
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex-1 min-w-0 space-y-0.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={cn('text-sm', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
+                      <p className={cn('text-sm leading-tight', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
                       {!n.read && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
-                    <p className={cn('text-sm leading-relaxed', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
-                    <div className="flex items-center justify-between gap-2 pt-1 flex-wrap">
+                    <p className={cn('text-[13px] leading-snug', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
+                    <div className="flex items-center justify-between gap-2 pt-0.5 flex-wrap">
                       <p className="text-[10px] text-muted-foreground/70">{formatTime(n.createdAt)}</p>
                       <div className="flex items-center gap-2 flex-wrap">
                         {/* Acil kan talebi yanıt butonları (henüz cevap verilmediyse) */}

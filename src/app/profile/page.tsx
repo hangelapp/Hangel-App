@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 import {
     Star, Briefcase, School, FileText, Languages,
-    HandCoins, Hourglass, ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Handshake, Brain, Globe, HeartPulse, BarChart3, TrendingUp, Target, DollarSign, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut, Store, HeartHandshake,
+    ChevronRight, Mail, Phone, Cake, User as UserIcon, MapPin, Sparkles, Brain, Globe, HeartPulse, Users, Plane, Landmark, Cpu, Edit, Share2, Linkedin, Github, Palette, Instagram, Twitter, Download, Eye, Award, ArrowLeft, ArrowDownUp, Filter, CheckCircle, Leaf, X, Loader2, LogOut, Store, HeartHandshake,
 } from 'lucide-react';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useCollection } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
@@ -532,48 +533,12 @@ export default function ProfilePage() {
                     </div>
                     
                     <TabsContent value="impact" className="p-4 space-y-4">
-                        <Card className="text-center">
-                            <CardHeader>
-                                <CardTitle>{t('dashboard.profile.impactCardTitle')}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <p className="text-6xl font-bold text-primary">{currentUser.impactScore.toLocaleString('tr-TR')}</p>
-                            </CardContent>
-                        </Card>
-                        
-                        <Card>
-                            <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
-                            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <StatCard icon={HandCoins} value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
-                                <StatCard icon={Sparkles} value={`${currentUser.stats.totalImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
-                                <StatCard icon={Handshake} value={`${currentUser.stats.volunteerHours} Saat`} label="Gönüllülük" />
-                                <StatCard icon={Award} value={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length} label="Kazanılan Rozet" />
-                                <StatCard icon={FileText} value={certificates.length} label="Sertifika" />
-                                <StatCard icon={BarChart3} value={currentUser.stats.volunteerRank.country} label="Türkiye Sıralaması" />
-                            </CardContent>
-                        </Card>
-                        
-                        <Card>
-                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><BarChart3 className='h-5 w-5 text-primary' />Gönüllülük İstatistikleri</CardTitle></CardHeader>
-                            <CardContent className="divide-y">
-                                <InfoRow icon={Hourglass} label="Toplam Gönüllülük Saati" value={`${currentUser.stats.volunteerHours} Saat`} />
-                                <InfoRow icon={Handshake} label="Tamamlanan Proje Sayısı" value={`${currentUser.stats.completedProjects} Proje`} />
-                                <InfoRow icon={Sparkles} label="En Aktif Gönüllülük Alanı" value={currentUser.stats.mostActiveVolunteerArea} />
-                                <InfoRow icon={TrendingUp} label="Türkiye Gönüllü Sıralaması" value={currentUser.stats.volunteerRank.country} href="/leaderboard" />
-                                 <InfoRow icon={TrendingUp} label="Şehir Gönüllü Sıralaması" value={currentUser.stats.volunteerRank.city} href="/leaderboard" />
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader><CardTitle className='text-lg flex items-center gap-2'><HandCoins className='h-5 w-5 text-primary' />Bağış İstatistikleri</CardTitle></CardHeader>
-                            <CardContent className="divide-y">
-                                <InfoRow icon={DollarSign} label="Toplam Bağış Tutarı" value={`${currentUser.stats.totalDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={FileText} label="Toplam İşlem Adedi" value={`${currentUser.stats.donationCount} İşlem`} />
-                                <InfoRow icon={Target} label="En Çok Desteklenen STK" value={currentUser.stats.mostSupportedNgo} />
-                                <InfoRow icon={TrendingUp} label="Tek Seferde En Yüksek Bağış" value={`${currentUser.stats.highestSingleDonation.toLocaleString('tr-TR')} ₺`} />
-                                <InfoRow icon={BarChart3} label="Ortalama Bağış Tutarı" value={`${currentUser.stats.avgDonation.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`} />
-                            </CardContent>
-                        </Card>
+                        <EtkiTabContent
+                            user={{ impactScore: currentUser.impactScore, stats: currentUser.stats }}
+                            earnedBadgeCount={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length}
+                            certificateCount={certificates.length}
+                            impactCardTitle={t('dashboard.profile.impactCardTitle')}
+                        />
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>Son Puan İşlemleri</CardTitle>
