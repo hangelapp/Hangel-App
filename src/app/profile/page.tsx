@@ -31,7 +31,7 @@ import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
-import { StoryDesigns, type StoryInput } from './_components/story-designs';
+import { UnifiedStoryCard, type UnifiedStoryData } from './_components/unified-story-card';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -896,27 +896,35 @@ export default function ProfilePage() {
                                     </Button>
                                 ) : (
                                     <>
-                                        <StoryDesigns
-                                            data={{
-                                                name: currentUser.name || 'Hangel Üyesi',
-                                                avatarUrl: currentUser.avatarUrl,
-                                                impactScore: Number(currentUser.impactScore) || 0,
-                                                totalDonation: Number(currentUser.stats.totalDonation) || 0,
-                                                donationCount: Number(currentUser.stats.donationCount) || 0,
-                                                supportedNgosCount: Number(currentUser.stats.supportedNgosCount) || (supportedNgosData?.length || 0),
-                                                mostSupportedNgo: currentUser.stats.mostSupportedNgo || (supportedNgosData?.[0]?.name) || undefined,
-                                                volunteerHours: Number(currentUser.stats.volunteerHours) || 0,
-                                                completedProjects: Number(currentUser.stats.completedProjects) || 0,
-                                                mostActiveVolunteerArea: currentUser.stats.mostActiveVolunteerArea || undefined,
-                                                totalImpactValue: Number(currentUser.stats.totalImpactValue) || 0,
-                                                badgeCount: badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length,
-                                                supportedNgos: (supportedNgosData || []).map(n => ({ name: n.name, avatarUrl: n.avatarUrl })),
-                                                volunteerNgos: (volunteerNgosData || []).map(n => ({ name: n.name, avatarUrl: n.avatarUrl })),
-                                                joinedClubs: (joinedClubsData || []).map(c => ({ name: c.name, avatarUrl: c.avatarUrl })),
-                                            } as StoryInput}
-                                        />
+                                        {(() => {
+                                            // En yüksek kazanılan rozet seviyesi (Bakır < Bronz < Gümüş < Altın < Platin)
+                                            const LEVEL_ORDER = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Platin'] as const;
+                                            const earned = badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0));
+                                            const highestBadgeLevel = earned
+                                                .map(b => b.level as string)
+                                                .sort((a, b) => LEVEL_ORDER.indexOf(b as typeof LEVEL_ORDER[number]) - LEVEL_ORDER.indexOf(a as typeof LEVEL_ORDER[number]))[0];
+                                            const countryRank = (currentUser.stats.volunteerRank as { country?: string | number } | undefined)?.country;
+                                            return (
+                                                <UnifiedStoryCard
+                                                    data={{
+                                                        name: currentUser.name || 'Hangel Üyesi',
+                                                        avatarUrl: currentUser.avatarUrl,
+                                                        impactScore: Number(currentUser.impactScore) || 0,
+                                                        totalDonation: Number(currentUser.stats.totalDonation) || 0,
+                                                        volunteerHours: Number(currentUser.stats.volunteerHours) || 0,
+                                                        totalImpactValue: Number(currentUser.stats.totalImpactValue) || 0,
+                                                        highestBadgeLevel,
+                                                        certificateCount: certificates.length,
+                                                        countryRank,
+                                                        supportedNgos: (supportedNgosData || []).map(n => ({ id: n.id, name: n.name, avatarUrl: n.avatarUrl })),
+                                                        volunteerNgos: (volunteerNgosData || []).map(n => ({ id: n.id, name: n.name, avatarUrl: n.avatarUrl })),
+                                                        joinedClubs: (joinedClubsData || []).map(c => ({ id: c.id, name: c.name, avatarUrl: c.avatarUrl })),
+                                                    } as UnifiedStoryData}
+                                                />
+                                            );
+                                        })()}
                                         <Button variant="outline" onClick={() => setShowStoryDesigns(false)} className="w-full">
-                                            Hikayeleri Gizle
+                                            Hikayeyi Gizle
                                         </Button>
                                     </>
                                 )}

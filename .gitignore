@@ -68,3 +68,4 @@ android/build/
 .check-*.mjs
 .wait-*.mjs
 .enable-*.mjs
+.set-*.mjs
