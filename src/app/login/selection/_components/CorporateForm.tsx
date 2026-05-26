@@ -738,8 +738,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Faydalanıcılar — Özel İzinli için gizli */}
-                    {!isOzelIzinli && (
+                    {/* Faydalanıcılar — Özel İzinli + Spor Kulübü için gizli */}
+                    {!isOzelIzinli && !isSpor && (
                         <div className="space-y-6">
                             <SectionTitle icon={Target}>FAYDALANICILARINIZ</SectionTitle>
                             <div className="space-y-3">
@@ -756,8 +756,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* SKA — Özel İzinli için gizli */}
-                    {!isOzelIzinli && (
+                    {/* SKA — Özel İzinli + Spor Kulübü için gizli */}
+                    {!isOzelIzinli && !isSpor && (
                         <div className="space-y-6">
                             <SectionTitle icon={Target}>Sürdürülebilir Kalkınma Amaçlarını kapsamaktadır? (Birden fazla seçebilirsiniz)</SectionTitle>
                             <div className="grid grid-cols-1 gap-2 p-4 border rounded-2xl bg-card">
@@ -806,28 +806,70 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             <p className="text-[11px] text-muted-foreground -mt-2">Birden fazla seçebilirsiniz.</p>
                             <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
                                 {[
-                                    'Türkiye Futbol Federasyonu (TFF)',
-                                    'Türkiye Basketbol Federasyonu (TBF)',
-                                    'Türkiye Voleybol Federasyonu (TVF)',
-                                    'Türkiye Tenis Federasyonu (TTF)',
-                                    'Türkiye Atletizm Federasyonu (TAF)',
-                                    'Türkiye Yüzme Federasyonu (TYF)',
-                                    'Türkiye Hentbol Federasyonu (THF)',
-                                    'Türkiye Satranç Federasyonu (TSF)',
-                                    'Türkiye Güreş Federasyonu (TGF)',
-                                    'Türkiye Judo Federasyonu (TJF)',
-                                    'Türkiye Boks Federasyonu (TBoF)',
-                                    'Türkiye Bisiklet Federasyonu (TBiF)',
-                                    'Türkiye Dağcılık Federasyonu (TDF)',
-                                    'Türkiye Yelken Federasyonu (TYelF)',
-                                    'Türkiye Binicilik Federasyonu (TBinF)',
-                                    'Türkiye Okçuluk Federasyonu (TOF)',
-                                    'Türkiye Karate Federasyonu (TKF)',
-                                    'Türkiye Taekwondo Federasyonu (TTaeF)',
-                                    'Türkiye Halter Federasyonu (THaF)',
-                                    'Türkiye Eskrim Federasyonu (TEF)',
-                                    'TÜFAD (Türkiye Faal Futbol Hakemleri)',
-                                    'TMOK (Türkiye Milli Olimpiyat Komitesi)',
+                                    'Türkiye Futbol Federasyonu',
+                                    'Türkiye Okçuluk Federasyonu Başkanlığı',
+                                    'Türkiye Oryantiring Federasyonu',
+                                    'Türkiye Otomobil Sporları Federasyonu Başkanlığı',
+                                    'Türkiye Özel Sporcular Spor Federasyonu Başkanlığı',
+                                    'Türkiye Satranç Federasyonu',
+                                    'Türkiye Sualtı Sporları Federasyonu Başkanlığı',
+                                    'Türkiye Sutopu Federasyonu Başkanlığı',
+                                    'Türkiye Taekwondo Federasyonu Başkanlığı',
+                                    'Türkiye Tenis Federasyonu Başkanlığı',
+                                    'Türkiye Triatlon Federasyonu Başkanlığı',
+                                    'Türkiye Üniversite Sporları Federasyonu Başkanlığı',
+                                    'Türkiye Voleybol Federasyonu Başkanlığı',
+                                    'Türkiye Vücut Geliştirme Fitness Federasyonu',
+                                    'Türkiye Wushu KungFu Federasyonu Başkanlığı',
+                                    'Türkiye Yelken Federasyonu Başkanlığı',
+                                    'Türkiye Yüzme Federasyonu Başkanlığı',
+                                    'Türkiye Atıcılık Federasyonu Başkanlığı',
+                                    'Türkiye Atletizm Federasyonu',
+                                    'Türkiye Badminton Federasyonu Başkanlığı',
+                                    'Türkiye Basketbol Federasyonu Başkanlığı',
+                                    'Türkiye Bedensel Engelliler Spor Federasyonu Başkanlığı',
+                                    'Türkiye Ragbi Federasyonu Başkanlığı',
+                                    'Türkiye Bilardo Federasyonu Başkanlığı',
+                                    'Türkiye Binicilik Federasyonu Başkanlığı',
+                                    'Türkiye Bisiklet Federasyonu Başkanlığı',
+                                    'Türkiye Bocce Bowling Dart Federasyonu Başkanlığı',
+                                    'Türkiye Boks Federasyonu Başkanlığı',
+                                    'Türkiye Briç Federasyonu Başkanlığı',
+                                    'Türkiye Buz Hokeyi Federasyon Başkanlığı',
+                                    'Türkiye Buz Pateni Federasyonu Başkanlığı',
+                                    'Türkiye Cimnastik Federasyonu Başkanlığı',
+                                    'Türkiye Dağcılık Federasyonu Başkanlığı',
+                                    'Türkiye Dans Sporları Federasyonu Başkanlığı',
+                                    'Türkiye Eskrim Federasyonu Başkanlığı',
+                                    'Türkiye Geleneksel Spor Dalları Federasyonu Başkanlığı',
+                                    'Türkiye Gelişmekte Olan Spor Branşları Federasyonu Bşk.',
+                                    'Türkiye Golf Federasyonu Başkanlığı',
+                                    'Türkiye Görme Engelliler Spor Federasyonu Başkanlığı',
+                                    'Türkiye Güreş Federasyonu Başkanlığı',
+                                    'Türkiye Halk Oyunları Federasyonu Başkanlığı',
+                                    'Türkiye Halter Federasyonu Başkanlığı',
+                                    'Türkiye Hentbol Federasyonu Başkanlığı',
+                                    'Türkiye Herkes İçin Spor Federasyonu Başkanlığı',
+                                    'Türkiye Hokey Federasyonu Başkanlığı',
+                                    'Türkiye İşitme Engelliler Spor Federasyonu Başkanlığı',
+                                    'Türkiye İzcilik Federasyonu Başkanlığı',
+                                    'Türkiye Judo Federasyonu Başkanlığı',
+                                    'Türkiye Kano Federasyonu Başkanlığı',
+                                    'Türkiye Karate Federasyonu Başkanlığı',
+                                    'Türkiye Kayak Federasyonu Başkanlığı',
+                                    'Türkiye Kick Boks Federasyonu Başkanlığı',
+                                    'Türkiye Kürek Federasyonu Başkanlığı',
+                                    'Türkiye Masa Tenisi Federasyonu Başkanlığı',
+                                    'Türkiye Modern Pentatlon Federasyonu Başkanlığı',
+                                    'Türkiye Motosiklet Federasyonu Başkanlığı',
+                                    'Türkiye Muay Thai Federasyonu Başkanlığı',
+                                    'Türkiye Curling Federasyonu',
+                                    'Türkiye Hava Sporları Federasyonu',
+                                    'Türkiye Kaykay Federasyonu',
+                                    'Türkiye ESpor Federasyonu',
+                                    'Türkiye Geleneksel Türk Okçuluk Federasyonu',
+                                    'Türkiye Geleneksel Atlı Spor Dalları Federasyonu',
+                                    'Türkiye Geleneksel Güreşler Federasyonu',
                                     'Diğer',
                                 ].map(fed => (
                                     <label key={fed} className="flex items-center gap-2 cursor-pointer group">
