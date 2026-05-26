@@ -4,7 +4,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp } from 'lucide-react';
+import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon } from 'lucide-react';
+import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
 import { ngos } from '@/lib/data';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
@@ -249,6 +250,7 @@ export default function VolunteeringPage() {
     const [cityFilter, setCityFilter] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<'points' | 'deadline'>('points');
     const [recsOpen, setRecsOpen] = useState(false);
+    const [mapOpen, setMapOpen] = useState(false);
 
     const oppsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.volunteering), [db]);
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
@@ -399,6 +401,17 @@ export default function VolunteeringPage() {
               <FilterButton title="Hassasiyet" options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
               <FilterButton title="Yetkinlikler" options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
               <FilterButton title="Konum" options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 gap-1.5 rounded-full shrink-0"
+                onClick={() => setMapOpen(true)}
+                aria-label="Haritada Göster"
+                title="Haritada Göster"
+              >
+                <MapIcon className="h-4 w-4" />
+                <span className="text-xs font-medium">Harita</span>
+              </Button>
               {(interestFilter.length + skillFilter.length + cityFilter.length) > 0 && (
                   <Button
                       variant="ghost"
@@ -501,6 +514,7 @@ export default function VolunteeringPage() {
           )}
         </div>
       </div>
+      <VolunteeringMapDialog open={mapOpen} onOpenChange={setMapOpen} items={filteredOpps} />
     </div>
   );
 }

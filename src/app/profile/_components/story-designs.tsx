@@ -44,7 +44,8 @@ const DESIGNS: Design[] = [
   {
     id: 'impact',
     title: 'Etki Özeti',
-    gradient: 'from-violet-600 via-fuchsia-600 to-pink-500',
+    // Hangel marka kimliği: nar çiçeği / sıcak turuncu paleti
+    gradient: 'from-[#f34723] via-orange-500 to-rose-500',
     textColor: 'text-white',
     render: (d) => (
       <div className="flex flex-col items-center justify-between h-full text-white text-center p-6">
@@ -73,7 +74,7 @@ const DESIGNS: Design[] = [
   {
     id: 'donation',
     title: 'Bağış Hikayem',
-    gradient: 'from-rose-500 via-orange-500 to-amber-500',
+    gradient: 'from-rose-500 via-[#f34723] to-amber-500',
     textColor: 'text-white',
     render: (d) => (
       <div className="flex flex-col items-center justify-between h-full text-white p-6">
@@ -112,7 +113,7 @@ const DESIGNS: Design[] = [
   {
     id: 'volunteer',
     title: 'Gönüllülük Hikayem',
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
+    gradient: 'from-amber-500 via-[#f34723] to-rose-600',
     textColor: 'text-white',
     render: (d) => (
       <div className="flex flex-col items-center justify-between h-full text-white p-6">
@@ -145,7 +146,7 @@ const DESIGNS: Design[] = [
   {
     id: 'community',
     title: 'Topluluğum',
-    gradient: 'from-sky-600 via-blue-600 to-indigo-700',
+    gradient: 'from-[#f34723] via-orange-600 to-amber-700',
     textColor: 'text-white',
     render: (d) => {
       const items = [...d.supportedNgos, ...d.volunteerNgos, ...d.joinedClubs].slice(0, 9);
@@ -181,7 +182,7 @@ const DESIGNS: Design[] = [
   {
     id: 'achievements',
     title: 'Başarılarım',
-    gradient: 'from-amber-500 via-rose-500 to-purple-600',
+    gradient: 'from-yellow-500 via-[#f34723] to-rose-600',
     textColor: 'text-white',
     render: (d) => (
       <div className="flex flex-col items-center justify-between h-full text-white p-6">
