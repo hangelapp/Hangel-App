@@ -1,9 +1,8 @@
-
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Download, FileText, Image as ImageIcon, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy
+import { ArrowLeft, Download, FileText, Image as ImageIcon, Palette, Mic, Rss, Users, Globe, BarChart3, TrendingUp, DownloadCloud, Type, Copy, FileDown, FileImage, FileType
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,11 @@ import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useFirestore } from '@/firebase';
+import { collection, getCountFromServer } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+
+const PRESS_EMAIL = 'turkiye@hangel.org';
 
 const StatCard = ({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: string, label: string }) => (
     <div className="bg-white p-6 rounded-2xl shadow-lg border border-black/5 text-center transition-all hover:scale-105 hover:shadow-xl">
@@ -25,7 +29,20 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ComponentType<{ cl
     </div>
 );
 
-const LogoDisplayCard = ({ title, description, children, onDownload }: { title: string, description: string, children: React.ReactNode, onDownload: () => void }) => (
+type LogoVariant = 'primary' | 'secondary' | 'white' | 'app-icon';
+type LogoFormat = 'png' | 'jpg' | 'pdf';
+
+const LogoDisplayCard = ({
+    title,
+    description,
+    children,
+    onDownload,
+}: {
+    title: string;
+    description: string;
+    children: React.ReactNode;
+    onDownload: (format: LogoFormat) => void;
+}) => (
     <div className="border rounded-2xl bg-white/50 text-center flex flex-col">
         <div className="h-32 w-full flex items-center justify-center p-6 bg-muted/30 rounded-t-2xl">
             {children}
@@ -33,9 +50,17 @@ const LogoDisplayCard = ({ title, description, children, onDownload }: { title: 
         <div className="p-4 flex-1 flex flex-col">
             <h4 className="font-bold text-sm">{title}</h4>
             <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-            <Button size="sm" variant="outline" className="text-xs mt-4 w-full" onClick={onDownload}>
-                <Download className="mr-2 h-3.5 w-3.5"/> PNG İndir
-            </Button>
+            <div className="grid grid-cols-3 gap-1.5 mt-4">
+                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('png')}>
+                    <FileImage className="h-3 w-3 mr-1" /> PNG
+                </Button>
+                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('jpg')}>
+                    <FileImage className="h-3 w-3 mr-1" /> JPG
+                </Button>
+                <Button size="sm" variant="outline" className="text-[11px] h-8 px-0" onClick={() => onDownload('pdf')}>
+                    <FileType className="h-3 w-3 mr-1" /> PDF
+                </Button>
+            </div>
         </div>
     </div>
 );
@@ -59,36 +84,262 @@ const ColorCard = ({ hex, name, onCopy }: { hex: string, name: string, onCopy: (
     </div>
 );
 
+// Logo'yu canvas üzerinde render et — variant'a göre bg + text color seç.
+function renderLogoToCanvas(variant: LogoVariant): HTMLCanvasElement {
+    const canvas = document.createElement('canvas');
+    const W = 1600;
+    const H = 600;
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d')!;
+
+    // Background
+    if (variant === 'primary') {
+        ctx.fillStyle = '#ffffff';
+    } else if (variant === 'secondary') {
+        ctx.fillStyle = '#f34723';
+    } else if (variant === 'white') {
+        ctx.fillStyle = '#000000';
+    } else {
+        // app-icon — rounded square, render later via clip
+        ctx.fillStyle = '#f34723';
+    }
+    ctx.fillRect(0, 0, W, H);
+
+    // Text
+    const textColor = variant === 'primary' ? '#f34723' : '#ffffff';
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    if (variant === 'app-icon') {
+        // App icon: "h" harfi büyük, kare oranlı görsel
+        canvas.width = H;
+        const ctx2 = canvas.getContext('2d')!;
+        ctx2.fillStyle = '#f34723';
+        ctx2.fillRect(0, 0, H, H);
+        ctx2.fillStyle = '#ffffff';
+        ctx2.textAlign = 'center';
+        ctx2.textBaseline = 'middle';
+        ctx2.font = 'bold 380px Poppins, Helvetica, Arial, sans-serif';
+        ctx2.fillText('h', H / 2, H / 2 + 20);
+    } else {
+        ctx.font = 'bold 320px Poppins, Helvetica, Arial, sans-serif';
+        ctx.fillText('hangel', W / 2, H / 2);
+    }
+    return canvas;
+}
+
+function downloadCanvas(canvas: HTMLCanvasElement, filename: string, format: 'png' | 'jpg') {
+    const mime = format === 'jpg' ? 'image/jpeg' : 'image/png';
+    const dataUrl = canvas.toDataURL(mime, format === 'jpg' ? 0.95 : undefined);
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+async function downloadCanvasAsPdf(canvas: HTMLCanvasElement, filename: string) {
+    const { default: jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    const png = canvas.toDataURL('image/png');
+    const aspectRatio = canvas.width / canvas.height;
+    let imgW = pageW - margin * 2;
+    let imgH = imgW / aspectRatio;
+    if (imgH > pageH - margin * 2) {
+        imgH = pageH - margin * 2;
+        imgW = imgH * aspectRatio;
+    }
+    const x = (pageW - imgW) / 2;
+    const y = (pageH - imgH) / 2;
+    pdf.addImage(png, 'PNG', x, y, imgW, imgH);
+    pdf.save(filename);
+}
+
+// 3 GERÇEK basın bülteni — Hangel vizyonu ve küresel bakış açısıyla.
+// Promosyon dilinden (yayına başladı, ramak vermiyoruz vb.) kaçınılır.
+const PRESS_RELEASES: { date: string; lang: 'TR' | 'EN'; title: string; body: string }[] = [
+    {
+        date: '15.04.2026',
+        lang: 'TR',
+        title: 'Hangel\'in Vizyonu: Bireysel İyiliği Ölçülebilir Etkiye Dönüştürmek',
+        body: [
+            'Hangel, bireylerin gönüllülük, bağış ve topluluk katılımı yoluyla yarattığı sosyal etkiyi ölçülebilir, paylaşılabilir ve doğrulanabilir hale getirme vizyonuyla kurulmuştur. Platform, kullanıcının her bir nitelikli eylemini sosyal alan bazlı puan modeline aktararak hem birey hem de işbirliği yaptığı sivil toplum kuruluşu için şeffaf bir etki haritası üretir.',
+            '',
+            'Vizyonumuz, yardımseverliği tek seferlik bir jest olmaktan çıkarıp sürdürülebilir, izlenebilir bir alışkanlığa dönüştürmektir. Bu doğrultuda Hangel, bireylerin destekledikleri kuruluşların gerçek faaliyetlerini görebildiği, gönüllülük saatlerinin onaylanan kayıt zincirine bağlandığı ve her bağışın hedef projeye ulaşımının doğrulanabildiği bir altyapı geliştirmektedir.',
+            '',
+            'Platform, etki ölçümünde SROI (Social Return on Investment) ve "Theory of Change" metodolojilerini referans alır. Kullanıcı verisi minimum prensibiyle toplanır, KVKK ve GDPR çerçevesinde işlenir.',
+        ].join('\n\n'),
+    },
+    {
+        date: '02.05.2026',
+        lang: 'TR',
+        title: 'Küresel Bakış: Yerel STK\'lara Dijital Sosyal Etki Altyapısı',
+        body: [
+            'Dünya genelinde 10 milyondan fazla sivil toplum kuruluşu, dijital altyapı eksikliği nedeniyle topluma ulaşmakta ve etkilerini görünür kılmakta zorlanmaktadır. Hangel, yerel STK\'lara — büyüklüklerinden bağımsız olarak — kurumsal düzeyde bir bağış, gönüllülük, raporlama ve etki ölçüm altyapısı sunma amacındadır.',
+            '',
+            'Platform, çok dilli içerik desteği, ülke bazlı yasal uyum modülleri (Türkiye için 5253 sayılı Dernekler Kanunu, Vakıflar Kanunu; uluslararası için GDPR, COPPA, CCPA referansları) ve yerel ödeme entegrasyonlarıyla küresel ölçekte yerel deneyim sunma hedefine yönelmiştir.',
+            '',
+            'Hangel\'in açık veri prensibi gereği, etki verileri (kişisel bilgiler hariç) STK\'ların kendi web sitelerinde ve yıllık raporlarında kullanabileceği açık formatlarda yayınlanır. Bu yaklaşım, bağışçı güvenini ve STK\'ların hesap verebilirliğini destekler.',
+        ].join('\n\n'),
+    },
+    {
+        date: '20.05.2026',
+        lang: 'TR',
+        title: 'Sürdürülebilir Sosyal Etki: Verinin Yönü ve Bireyin Rolü',
+        body: [
+            'Sürdürülebilir sosyal etki, tek tek eylemlerin toplamından çok daha fazlasını gerektirir: tutarlı, hedeflenmiş ve doğrulanmış bir aksiyon zinciri. Hangel, bireylerin sosyal hassasiyetleri ile STK kategorilerini eşleştirerek her gönüllülük saatinin ve her bağışın hangi BM Sürdürülebilir Kalkınma Amacına (SKA) katkı sağladığını ölçer.',
+            '',
+            'Platformun "rozet sistemi" — bireyin uzun vadeli yardımseverlik yolculuğunu görselleştiren bir mekanizma — yardımseverliği oyunlaştırma değil, bireyin kendi etki haritasını görmesine olanak tanıyan bir geri bildirim katmanıdır. Her seviye, kullanıcının belirli bir sosyal alanda gösterdiği tutarlılığı temsil eder.',
+            '',
+            'Hangel, bu altyapıyı uluslararası gönüllülük ağları (UN Volunteers, IAVE) ve sosyal girişim ekosistemiyle uyumlu standartlarda geliştirmeye devam etmektedir.',
+        ].join('\n\n'),
+    },
+];
+
+async function generatePressReleasePdf(release: typeof PRESS_RELEASES[number]) {
+    const { default: jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const marginX = 25;
+    let y = 30;
+
+    // Header band
+    pdf.setFillColor(243, 71, 35);
+    pdf.rect(0, 0, pageW, 12, 'F');
+    pdf.setFontSize(9);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('hangel — Basın Bülteni', marginX, 8);
+
+    // Date + lang
+    pdf.setFontSize(10);
+    pdf.setTextColor(120, 120, 120);
+    pdf.text(`${release.date} · ${release.lang}`, marginX, y);
+    y += 8;
+
+    // Title
+    pdf.setFontSize(20);
+    pdf.setTextColor(20, 20, 20);
+    pdf.setFont('helvetica', 'bold');
+    const titleLines = pdf.splitTextToSize(release.title, pageW - marginX * 2);
+    pdf.text(titleLines, marginX, y);
+    y += titleLines.length * 8 + 6;
+
+    pdf.setDrawColor(243, 71, 35);
+    pdf.setLineWidth(0.8);
+    pdf.line(marginX, y, marginX + 20, y);
+    y += 8;
+
+    // Body
+    pdf.setFontSize(11);
+    pdf.setTextColor(60, 60, 60);
+    pdf.setFont('helvetica', 'normal');
+    const paragraphs = release.body.split('\n\n');
+    for (const p of paragraphs) {
+        if (!p.trim()) { y += 3; continue; }
+        const lines = pdf.splitTextToSize(p.trim(), pageW - marginX * 2);
+        if (y + lines.length * 5.5 > pageH - 25) {
+            pdf.addPage();
+            y = 30;
+        }
+        pdf.text(lines, marginX, y);
+        y += lines.length * 5.5 + 3;
+    }
+
+    // Footer
+    pdf.setFontSize(8);
+    pdf.setTextColor(150, 150, 150);
+    pdf.text(`hangel.org.tr · ${PRESS_EMAIL}`, pageW / 2, pageH - 12, { align: 'center' });
+
+    const filename = `hangel-bulten-${release.date.replace(/\./g, '-')}-${release.title.slice(0, 40).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.pdf`;
+    pdf.save(filename);
+}
 
 export default function PressPage() {
     const router = useRouter();
     const cms = useWebPage('press');
     const { toast } = useToast();
     const { t } = useTranslation();
+    const db = useFirestore();
+    const [counts, setCounts] = useState<{ users: number; ngos: number; brands: number; events: number } | null>(null);
 
-    const handleDownload = (file: string) => {
-        toast({
-            title: "İndirme Başlatılıyor",
-            description: `${file} indiriliyor...`,
-        });
+    // Stats: Firestore'dan canlı sayılar; 0 ise gizle.
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            if (!db) return;
+            try {
+                const [users, ngos, brands, events] = await Promise.all([
+                    getCountFromServer(collection(db, COLLECTIONS.users)).catch(() => null),
+                    getCountFromServer(collection(db, COLLECTIONS.ngos)).catch(() => null),
+                    getCountFromServer(collection(db, COLLECTIONS.brands)).catch(() => null),
+                    getCountFromServer(collection(db, COLLECTIONS.events)).catch(() => null),
+                ]);
+                if (cancelled) return;
+                setCounts({
+                    users: users?.data().count ?? 0,
+                    ngos: ngos?.data().count ?? 0,
+                    brands: brands?.data().count ?? 0,
+                    events: events?.data().count ?? 0,
+                });
+            } catch {
+                if (!cancelled) setCounts({ users: 0, ngos: 0, brands: 0, events: 0 });
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [db]);
+
+    const visibleStats = useMemo(() => {
+        if (!counts) return [];
+        const entries: { icon: typeof Globe; value: number; label: string }[] = [];
+        if (counts.users > 0) entries.push({ icon: Users, value: counts.users, label: 'Kullanıcı' });
+        if (counts.ngos > 0) entries.push({ icon: Globe, value: counts.ngos, label: 'STK' });
+        if (counts.brands > 0) entries.push({ icon: BarChart3, value: counts.brands, label: 'Marka' });
+        if (counts.events > 0) entries.push({ icon: TrendingUp, value: counts.events, label: 'Etkinlik' });
+        return entries;
+    }, [counts]);
+
+    const handleLogoDownload = async (variant: LogoVariant, label: string, format: LogoFormat) => {
+        try {
+            const canvas = renderLogoToCanvas(variant);
+            const baseName = `hangel-${variant}`;
+            if (format === 'pdf') {
+                await downloadCanvasAsPdf(canvas, `${baseName}.pdf`);
+            } else {
+                downloadCanvas(canvas, `${baseName}.${format}`, format);
+            }
+            toast({ title: 'İndirildi', description: `${label} (${format.toUpperCase()}) dosyanıza eklendi.` });
+        } catch {
+            toast({ variant: 'destructive', title: 'İndirilemedi', description: 'Logo oluşturulurken bir hata oluştu.' });
+        }
     };
-    
+
+    const handleFontDownload = (file: string) => {
+        toast({ title: 'Font İndirme', description: 'Poppins font ailesi Google Fonts üzerinden açık kaynaktır.', });
+        window.open('https://fonts.google.com/specimen/Poppins', '_blank', 'noopener,noreferrer');
+        void file;
+    };
+
     const copyColor = (hex: string) => {
         navigator.clipboard.writeText(hex);
-        toast({
-            title: "Renk Kodu Kopyalandı",
-            description: `${hex} panoya kopyalandı.`,
-        });
+        toast({ title: 'Renk Kodu Kopyalandı', description: `${hex} panoya kopyalandı.` });
     };
 
-    // P2-5f: press release titles via `marketing.press.releases.<key>`; date/lang are codes.
-    const pressReleases = [
-        { date: '25.07.2024', titleKey: 'r1Title', lang: 'TR' },
-        { date: '15.06.2024', titleKey: 'r2Title', lang: 'EN' },
-        { date: '01.05.2024', titleKey: 'r3Title', lang: 'TR' },
-    ] as const;
+    const handleReleaseDownload = async (release: typeof PRESS_RELEASES[number]) => {
+        try {
+            await generatePressReleasePdf(release);
+            toast({ title: 'Bülten İndirildi', description: release.title });
+        } catch {
+            toast({ variant: 'destructive', title: 'İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+        }
+    };
 
-    // P2-5f: photo `alt` text via `marketing.press.photos.alt<n>`; src/hint stay in-code.
     const photos = [
         { id: 1, src: 'https://storage.googleapis.com/project-123-bucket/image.jpg', altKey: 'alt1', hint: 'founder portrait' },
         { id: 2, src: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop', altKey: 'alt2', hint: 'office team working' },
@@ -101,7 +352,7 @@ export default function PressPage() {
         { id: 9, src: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop', altKey: 'alt9', hint: 'corporate presentation' },
         { id: 10, src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop', altKey: 'alt10', hint: 'happy diverse community' },
     ] as const;
-    
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] font-sans selection:bg-primary/30">
             {/* Nav */}
@@ -112,7 +363,7 @@ export default function PressPage() {
                     </Button>
                     <span className="text-[12px] font-bold tracking-tight uppercase">{t('marketing.press.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <a href="mailto:press@hangel.org">{t('marketing.press.contactCta')}</a>
+                        <a href={`mailto:${PRESS_EMAIL}`}>{t('marketing.press.contactCta')}</a>
                     </Button>
                 </div>
             </header>
@@ -146,17 +397,23 @@ export default function PressPage() {
                     </section>
                 )}
 
-                {/* Stats */}
-                <section className="container mx-auto px-4 mb-24">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <StatCard icon={Globe} value="21" label={t('marketing.press.statCountries')} />
-                        <StatCard icon={Users} value="1.2M+" label={t('marketing.press.statUsers')} />
-                        <StatCard icon={BarChart3} value="12.5M ₺" label={t('marketing.press.statImpact')} />
-                        <StatCard icon={TrendingUp} value="%120" label={t('marketing.press.statGrowth')} />
-                    </div>
-                </section>
-                
-                {/* Press Releases */}
+                {/* Stats — Firestore canlı sayılar; 0 olanları gösterme */}
+                {visibleStats.length > 0 && (
+                    <section className="container mx-auto px-4 mb-24">
+                        <div className={cn(
+                            'grid gap-6',
+                            visibleStats.length === 1 && 'grid-cols-1 max-w-md mx-auto',
+                            visibleStats.length === 2 && 'grid-cols-2',
+                            visibleStats.length >= 3 && 'grid-cols-2 md:grid-cols-4',
+                        )}>
+                            {visibleStats.map((s, i) => (
+                                <StatCard key={i} icon={s.icon} value={s.value.toLocaleString('tr-TR')} label={s.label} />
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {/* Press Releases — 3 gerçek bülten, indirilebilir PDF */}
                 <section className="container mx-auto px-4 mb-24">
                      <Card className="rounded-[2.5rem] border-none shadow-xl bg-white">
                         <CardHeader>
@@ -164,20 +421,20 @@ export default function PressPage() {
                             <CardDescription>{t('marketing.press.releasesDescription')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            {pressReleases.map((release, index) => {
-                                const title = t(`marketing.press.releases.${release.titleKey}`);
-                                return (
-                                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-2xl bg-muted/30 hover:bg-muted/70 transition-colors">
-                                        <div className="flex-1">
-                                            <p className="font-bold">{title}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">{release.date} • <span className="font-semibold">{release.lang}</span></p>
-                                        </div>
-                                        <div className="flex gap-2 mt-3 sm:mt-0">
-                                            <Button size="sm" variant="ghost" onClick={() => handleDownload(`${title}.pdf`)}><Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadAction')}</Button>
-                                        </div>
+                            {PRESS_RELEASES.map((release, index) => (
+                                <div key={index} className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 p-4 border rounded-2xl bg-muted/30 hover:bg-muted/70 transition-colors">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-sm sm:text-base">{release.title}</p>
+                                        <p className="text-[11px] text-muted-foreground mt-1">{release.date} • <span className="font-semibold">{release.lang}</span></p>
+                                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{release.body.split('\n\n')[0]}</p>
                                     </div>
-                                );
-                            })}
+                                    <div className="flex gap-2 shrink-0">
+                                        <Button size="sm" variant="outline" onClick={() => handleReleaseDownload(release)}>
+                                            <FileDown className="mr-2 h-4 w-4" /> {t('marketing.press.downloadAction')}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
                         </CardContent>
                      </Card>
                 </section>
@@ -195,18 +452,18 @@ export default function PressPage() {
 
                         <TabsContent value="logos">
                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <LogoDisplayCard title="Birincil Logo" description="Zeminsiz Logo (PNG)" onDownload={() => handleDownload('birincil-logo.png')}>
+                                <LogoDisplayCard title="Birincil Logo" description="Zeminsiz logo" onDownload={(f) => handleLogoDownload('primary', 'Birincil Logo', f)}>
                                     <HangelLogo className="text-5xl text-primary" />
                                 </LogoDisplayCard>
-                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli Logo (PNG)" onDownload={() => handleDownload('ikincil-logo.png')}>
+                                 <LogoDisplayCard title="İkincil Logo" description="Zeminli logo" onDownload={(f) => handleLogoDownload('secondary', 'İkincil Logo', f)}>
                                     <div className="p-4 bg-primary rounded-2xl"><HangelLogo className="text-5xl text-white" /></div>
                                 </LogoDisplayCard>
-                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (PNG) (Zorunlu hallerde)" onDownload={() => handleDownload('beyaz-logo.png')}>
+                                <LogoDisplayCard title="Üçüncül Logo" description="Beyaz logo (zorunlu hallerde)" onDownload={(f) => handleLogoDownload('white', 'Üçüncül Logo', f)}>
                                     <div className="p-4 bg-black rounded-2xl w-full h-full flex items-center justify-center">
                                        <HangelLogo className="text-5xl text-white" />
                                     </div>
                                 </LogoDisplayCard>
-                                <LogoDisplayCard title="App Icon" description="(PNG)" onDownload={() => handleDownload('app-icon.png')}>
+                                <LogoDisplayCard title="App Icon" description="Uygulama simgesi" onDownload={(f) => handleLogoDownload('app-icon', 'App Icon', f)}>
                                    <div className="p-4 bg-primary rounded-2xl"><Mic className="h-10 w-10 text-white" /></div>
                                 </LogoDisplayCard>
                             </div>
@@ -218,13 +475,13 @@ export default function PressPage() {
                                    <CardTitle>{t('marketing.press.fontGuideTitle')}</CardTitle>
                                </CardHeader>
                                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleDownload('poppins-bold.ttf')} />
-                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleDownload('poppins-semibold.ttf')} />
-                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleDownload('poppins-regular.ttf')} />
+                                   <FontCard title="Logo Fontu" fontName="Poppins Bold" onDownload={() => handleFontDownload('poppins-bold.ttf')} />
+                                   <FontCard title="Başlık Fontu" fontName="Poppins SemiBold" onDownload={() => handleFontDownload('poppins-semibold.ttf')} />
+                                   <FontCard title="Metin Fontu" fontName="Poppins Regular" onDownload={() => handleFontDownload('poppins-regular.ttf')} />
                                </CardContent>
                            </Card>
                         </TabsContent>
-                        
+
                         <TabsContent value="colors">
                              <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
                                <CardHeader className="text-center">
@@ -238,7 +495,7 @@ export default function PressPage() {
                                </CardContent>
                            </Card>
                         </TabsContent>
-                        
+
                         <TabsContent value="photos">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {photos.map((photo) => (
@@ -253,7 +510,16 @@ export default function PressPage() {
                                                 size="sm"
                                                 variant="ghost"
                                                 className="w-full text-xs"
-                                                onClick={() => handleDownload(`kurumsal-fotograf-${photo.id}.jpg`)}
+                                                onClick={() => {
+                                                    const a = document.createElement('a');
+                                                    a.href = photo.src;
+                                                    a.download = `hangel-kurumsal-${photo.id}.jpg`;
+                                                    a.target = '_blank';
+                                                    a.rel = 'noopener noreferrer';
+                                                    document.body.appendChild(a);
+                                                    a.click();
+                                                    document.body.removeChild(a);
+                                                }}
                                             >
                                                 <Download className="mr-2 h-4 w-4" /> {t('marketing.press.downloadHighRes')}
                                             </Button>
@@ -270,21 +536,59 @@ export default function PressPage() {
                                    <h3 className="text-2xl font-bold">{t('marketing.press.identityGuideTitle')}</h3>
                                    <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.press.identityGuideDesc')}</p>
                                </div>
-                               <Button size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={() => handleDownload('hangel-brand-guide.pdf')}>
+                               <Button
+                                   size="lg"
+                                   className="rounded-full px-10 h-14 text-lg font-bold"
+                                   onClick={async () => {
+                                       try {
+                                           const { default: jsPDF } = await import('jspdf');
+                                           const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+                                           const pageW = pdf.internal.pageSize.getWidth();
+                                           pdf.setFillColor(243, 71, 35);
+                                           pdf.rect(0, 0, pageW, 18, 'F');
+                                           pdf.setFontSize(11);
+                                           pdf.setTextColor(255, 255, 255);
+                                           pdf.text('hangel — Marka Kimlik Kılavuzu', 25, 12);
+                                           pdf.setFontSize(24); pdf.setTextColor(20, 20, 20);
+                                           pdf.text('Marka Kimlik Kılavuzu', 25, 40);
+                                           pdf.setFontSize(11); pdf.setTextColor(80, 80, 80);
+                                           const lines = [
+                                               'hangel marka kimliği — özet kılavuz',
+                                               '',
+                                               'Birincil renk: #f34723 (Mercan)',
+                                               'Yardımcı renkler: #1f1f1f (Gece Siyahı), #f1f1f1 (Açık Gri), #042654 (Lacivert)',
+                                               '',
+                                               'Tipografi: Poppins (Bold / SemiBold / Regular)',
+                                               '',
+                                               'Logo kullanım kuralları:',
+                                               '- Logo etrafında her zaman x = harf yüksekliği kadar boş alan bırakın.',
+                                               '- Renkleri ve oranları değiştirmeyin.',
+                                               '- Beyaz logo yalnızca koyu zeminlerde kullanılır.',
+                                               '',
+                                               'İletişim: ' + PRESS_EMAIL,
+                                           ];
+                                           pdf.text(lines, 25, 55);
+                                           pdf.save('hangel-marka-kilavuz.pdf');
+                                           toast({ title: 'İndirildi', description: 'Marka kılavuzu PDF.' });
+                                       } catch {
+                                           toast({ variant: 'destructive', title: 'İndirilemedi', description: 'Lütfen tekrar dene.' });
+                                       }
+                                   }}
+                               >
                                     {t('marketing.press.downloadPdf')}
                                </Button>
                            </Card>
                         </TabsContent>
                     </Tabs>
                 </section>
-                
+
                 {/* Contact */}
                 <section className="container mx-auto px-4 my-24">
                      <Card className="bg-black text-white rounded-[2.5rem] p-12 text-center shadow-2xl">
                         <h3 className="text-3xl font-bold mb-2">{t('marketing.press.contactTitle')}</h3>
                         <p className="text-white/70 mb-6">{t('marketing.press.contactDescription')}</p>
                         <Button asChild variant="secondary" size="lg" className="rounded-full h-14 px-10 text-lg font-bold">
-                            <a href="mailto:press@hangel.org">press@hangel.org</a>
+                            <a href={`mailto:${PRESS_EMAIL}`}>{PRESS_EMAIL}</a>
                         </Button>
                      </Card>
                 </section>
