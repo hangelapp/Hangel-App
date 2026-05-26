@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, type ConfirmationResult } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -318,7 +318,10 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             const fullPhone = `${phoneCountryCode}${cleanPhone.replace(/^0+/, '')}`;
             // Telefon ülke kodundan dilini türet — Firebase SMS template'i o dilde gönderilir.
             // Ör. +90 → tr, +49 → de, +33 → fr, varsayılan en.
-            auth.languageCode = getLanguageFromPhoneCode(phoneCountryCode);
+            // getAuth() singleton'a doğrudan ulaş (useAuth() hook return mutation'una React 19
+            // lint izin vermiyor; aynı Firebase Auth instance'ı, kontrollü mutation güvenli).
+            const sharedAuth = getAuth();
+            sharedAuth.languageCode = getLanguageFromPhoneCode(phoneCountryCode);
             const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
             confirmationResultRef.current = confirmation;
             setStep('phone-otp');
