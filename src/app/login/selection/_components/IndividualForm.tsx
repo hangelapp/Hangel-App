@@ -15,6 +15,7 @@ import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/fi
 import { COLLECTIONS } from '@/firebase/collections';
 import { FormLabel, FormInput } from './shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -315,6 +316,9 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             const verifier = recaptchaVerifierRef.current;
             if (!verifier) throw new Error('reCAPTCHA verifier hazırlanamadı.');
             const fullPhone = `${phoneCountryCode}${cleanPhone.replace(/^0+/, '')}`;
+            // Telefon ülke kodundan dilini türet — Firebase SMS template'i o dilde gönderilir.
+            // Ör. +90 → tr, +49 → de, +33 → fr, varsayılan en.
+            auth.languageCode = getLanguageFromPhoneCode(phoneCountryCode);
             const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
             confirmationResultRef.current = confirmation;
             setStep('phone-otp');
