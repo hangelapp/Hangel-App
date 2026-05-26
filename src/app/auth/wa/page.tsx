@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithCustomToken } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -8,16 +8,7 @@ import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-/**
- * /auth/wa?t=TOKEN
- *
- * WhatsApp magic link landing page:
- * 1. Token'ı /api/auth/whatsapp/verify-link'e gönder
- * 2. customToken dönerse signInWithCustomToken
- * 3. Başarılı → / (timeline) yönlendir
- * 4. Hata → mesaj göster + tekrar dene butonu
- */
-export default function WhatsAppLinkAuth() {
+function WhatsAppLinkAuthInner() {
     const router = useRouter();
     const params = useSearchParams();
     const auth = useAuth();
@@ -46,7 +37,6 @@ export default function WhatsAppLinkAuth() {
                 await signInWithCustomToken(auth, data.customToken);
                 if (cancelled) return;
                 setStatus('success');
-                // Kısa bekleme + yönlendir
                 setTimeout(() => router.push('/timeline'), 1200);
             } catch (e) {
                 if (cancelled) return;
@@ -92,5 +82,17 @@ export default function WhatsAppLinkAuth() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function WhatsAppLinkAuth() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-background p-6">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        }>
+            <WhatsAppLinkAuthInner />
+        </Suspense>
     );
 }
