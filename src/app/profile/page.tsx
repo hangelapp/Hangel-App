@@ -45,10 +45,10 @@ const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.Ele
     );
 
     return (
-        <div className="flex justify-between items-start py-3 text-sm">
+        <div className="flex justify-between items-start py-2 text-sm">
             <div className='flex items-start'>
-                <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <p className="font-medium ml-4">{label}</p>
+                <Icon className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <p className="font-medium ml-3">{label}</p>
             </div>
             <div className="flex items-center gap-2 text-right">
                 {ValueComponent}
@@ -593,7 +593,7 @@ export default function ProfilePage() {
                         </TabsList>
                     </div>
                     
-                    <TabsContent value="impact" className="p-4 space-y-4">
+                    <TabsContent value="impact" className="p-3 space-y-3">
                         <EtkiTabContent
                             user={{ impactScore: currentUser.impactScore, stats: currentUser.stats }}
                             earnedBadgeCount={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length}
@@ -667,7 +667,7 @@ export default function ProfilePage() {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="about" className="p-4 space-y-4">
+                    <TabsContent value="about" className="p-3 space-y-3">
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle>

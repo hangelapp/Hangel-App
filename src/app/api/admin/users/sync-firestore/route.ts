@@ -98,7 +98,9 @@ export async function POST(req: Request) {
         await adminDb.collection(COLLECTIONS.users).doc(u.uid).set(payload, { merge: true });
         created.push(u.uid);
       } catch (e) {
-        errors.push({ uid: u.uid, message: e instanceof Error ? e.message : String(e) });
+        // CLAUDE.md kuralı: raw error.message istemciye sızdırılmaz; sadece uid + generic code.
+        console.error('[sync-firestore] backfill failed', { uid: u.uid, error: e });
+        errors.push({ uid: u.uid, message: 'backfill_failed' });
       }
     }
 
@@ -110,7 +112,7 @@ export async function POST(req: Request) {
       errors,
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : 'Sunucu hatası.';
-    return jsonError(500, 'server_error', message);
+    console.error('[sync-firestore] internal failure', e);
+    return jsonError(500, 'server_error', 'Sunucu hatası.');
   }
 }

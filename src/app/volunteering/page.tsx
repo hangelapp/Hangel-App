@@ -179,19 +179,19 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
     return (
         <Card className="overflow-hidden shadow-sm transition-all hover:shadow-md hover:border-primary/20 h-full">
             <Link href={`/volunteering/${opp.id}`} className="block group h-full">
-                <CardContent className="p-4 flex flex-col justify-between h-full">
+                <CardContent className="p-3 flex flex-col justify-between h-full">
                     <div>
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 flex-1 min-w-0">
                                 {ngo && (
-                                    <Avatar className="h-10 w-10 border">
+                                    <Avatar className="h-9 w-9 border shrink-0">
                                         <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
                                         <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-medium text-muted-foreground truncate">{opp.organization}</p>
-                                    <h3 className="font-semibold text-base leading-tight mt-1 group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
+                                    <p className="text-[11px] font-medium text-muted-foreground truncate leading-tight">{opp.organization}</p>
+                                    <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
                                 </div>
                             </div>
                             {/* Sağ üst köşe: İncele butonu (kibar tasarım) */}
@@ -203,13 +203,13 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                             </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-muted-foreground mt-3 flex-wrap gap-2">
-                            <div className="flex items-center gap-3 flex-wrap">
-                                <span className="flex items-center gap-1.5"><MapPin size={14} /> {opp.location.city} ({opp.location.type})</span>
-                                <span className="flex items-center gap-1.5"><Calendar size={14} /> {opp.commitment}</span>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground mt-2 flex-wrap gap-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="flex items-center gap-1"><MapPin size={12} /> {opp.location.city} ({opp.location.type})</span>
+                                <span className="flex items-center gap-1"><Calendar size={12} /> {opp.commitment}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-primary text-xs">{opp.points} Puan</span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-primary text-[11px]">{opp.points} Puan</span>
                                 <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
                                     {countdownText}
                                 </Badge>
@@ -218,14 +218,14 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
 
                         {hasProfile && (
                             <div
-                                className="mt-3 space-y-1.5"
+                                className="mt-2 space-y-1"
                                 title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
                             >
                                 <div className="flex justify-between text-[10px] uppercase tracking-wider">
                                     <span className="font-bold text-muted-foreground">Profil Uygunluğu</span>
                                     <span className="font-black" style={{ color: matchAccent }}>%{matchPercentage}</span>
                                 </div>
-                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full transition-all duration-500 ease-out"
                                         style={{ width: `${matchPercentage}%`, backgroundColor: matchAccent }}
@@ -484,7 +484,7 @@ export default function VolunteeringPage() {
           </section>
         )}
 
-        <div id="imece-all-listings" className="space-y-3 scroll-mt-32">
+        <div id="imece-all-listings" className="space-y-2 scroll-mt-32">
           {isLoading ? (
               [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
           ) : filteredOpps.length > 0 ? (

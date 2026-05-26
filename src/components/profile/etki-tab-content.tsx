@@ -44,7 +44,7 @@ const InfoRow = ({ icon: Icon, label, value, href }: { icon: React.ElementType; 
     );
 
     return (
-        <div className="flex justify-between items-start py-3 text-sm">
+        <div className="flex justify-between items-start py-2 text-sm">
             <div className="flex items-start">
                 <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <p className="font-medium ml-4">{label}</p>
@@ -67,7 +67,7 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType; value
 export function EtkiTabContent({ user, earnedBadgeCount, certificateCount, impactCardTitle }: EtkiTabContentProps) {
     const stats = user.stats;
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <Card className="text-center">
                 <CardHeader>
                     <CardTitle>{impactCardTitle}</CardTitle>

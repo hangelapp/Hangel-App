@@ -572,12 +572,12 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
     <Card key={section.slug} className="overflow-hidden">
       <Accordion type="single" collapsible>
         <AccordionItem value={section.slug} className="border-b-0">
-          <AccordionTrigger className="p-4 hover:no-underline">
-            <div className="flex items-center gap-4">
-              <Icon className="h-6 w-6 text-primary" />
+          <AccordionTrigger className="p-3 hover:no-underline">
+            <div className="flex items-center gap-3">
+              <Icon className="h-5 w-5 text-primary shrink-0" />
               <div className="text-left">
-                <p className="font-semibold">{section.title}</p>
-                <p className="text-sm text-muted-foreground">{section.description}</p>
+                <p className="font-semibold text-sm leading-tight">{section.title}</p>
+                <p className="text-[12px] text-muted-foreground leading-snug">{section.description}</p>
               </div>
             </div>
           </AccordionTrigger>
@@ -600,7 +600,7 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
                 <Link
                   href={`/library/${item.slug}`}
                   key={item.slug}
-                  className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/50"
+                  className="flex items-center justify-between px-3 py-2.5 border-b last:border-b-0 hover:bg-muted/50"
                 >
                   <span className="text-sm font-medium">{item.title}</span>
                   <ChevronRight className="h-4 w-4 text-muted-foreground" />

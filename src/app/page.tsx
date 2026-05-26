@@ -251,10 +251,18 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
 
 const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
     const { t } = useTranslation();
-    const daysRemaining = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
-    const countdownText = daysRemaining > 0
-        ? `${t('landing.volunteeringCard.daysLeftPrefix')} ${daysRemaining} ${t('landing.volunteeringCard.daysLeftSuffix')}`
-        : (daysRemaining === 0 ? t('landing.volunteeringCard.lastDay') : t('landing.volunteeringCard.expired'));
+    // Hydration uyumu: SSR'da daysRemaining gizli kalır, mount sonrası hesaplanır.
+    const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
+    useEffect(() => {
+        try {
+            const d = differenceInDays(parse(opportunity.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
+            setDaysRemaining(d);
+        } catch { /* invalid date */ }
+    }, [opportunity.dates.applicationEnd]);
+    const countdownText = daysRemaining === null ? ''
+        : daysRemaining > 0
+            ? `${t('landing.volunteeringCard.daysLeftPrefix')} ${daysRemaining} ${t('landing.volunteeringCard.daysLeftSuffix')}`
+            : (daysRemaining === 0 ? t('landing.volunteeringCard.lastDay') : t('landing.volunteeringCard.expired'));
 
     return (
         <Link href={`/volunteering/${opportunity.id}`} className="block h-full">
@@ -276,7 +284,7 @@ const VolunteeringCard = ({ opportunity }: { opportunity: Volunteering }) => {
                     <div className="flex justify-center mt-2">
                         <span className={cn(
                             "text-[10px] font-bold uppercase tracking-[0.1em]",
-                            daysRemaining < 3 ? "text-primary" : "text-white/60"
+                            daysRemaining !== null && daysRemaining < 3 ? "text-primary" : "text-white/60"
                         )}>
                             {countdownText}
                         </span>
@@ -407,26 +415,29 @@ export default function LoginPage() {
 
     // "mavi zemin" gönüllülük alanı: Firestore'dan aktif ilanları rastgele sıralıyoruz.
     // Yayında / Aktif olmayan ilanlar veya status alanı olmayan eski kayıtlar da gösterilir.
-    const randomActiveVolunteering = useMemo<Volunteering[]>(() => {
+    // Hydration uyumu: SSR + client'ın ilk render'ında DETERMİNİSTİK sıra (Math.random
+    // render içinde değil); mount sonrası useEffect içinde karıştırma yapılır.
+    const activeVolunteeringSorted = useMemo<Volunteering[]>(() => {
         const source: Volunteering[] = (Array.isArray(fsVolunteering) && fsVolunteering.length > 0)
             ? fsVolunteering as Volunteering[]
             : volunteeringOpportunities;
         const active = source.filter((opp) => {
             const status = (opp as Volunteering & { status?: string }).status;
-            // status alanı yoksa "yayında" varsay; varsa yalnızca Yayında/Aktif olanları kabul et
             if (!status) return true;
             const normalized = String(status).toLowerCase();
             return normalized === 'yayında' || normalized === 'yayinda' || normalized === 'aktif' || normalized === 'active';
         });
-        // Fisher-Yates karıştırma (her sayfa yüklemesinde farklı sıralama — kullanıcıya çeşitlilik göstermek için kasıtlı).
-        const arr = [...active];
+        return active.slice(0, 15);
+    }, [fsVolunteering]);
+    const [randomActiveVolunteering, setRandomActiveVolunteering] = useState<Volunteering[]>(activeVolunteeringSorted);
+    useEffect(() => {
+        const arr = [...activeVolunteeringSorted];
         for (let i = arr.length - 1; i > 0; i--) {
-            // eslint-disable-next-line react-hooks/purity -- intentional shuffle on mount/data-change
             const j = Math.floor(Math.random() * (i + 1));
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-        return arr.slice(0, 15);
-    }, [fsVolunteering]);
+        setRandomActiveVolunteering(arr);
+    }, [activeVolunteeringSorted]);
 
     const publicNavItems = [
       { href: '#bagis', label: t('landing.nav.donate') },
