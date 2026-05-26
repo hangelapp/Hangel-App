@@ -755,6 +755,8 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         pattern="\d{6}"
                         maxLength={6}
                         placeholder="6 haneli kod"
+                        autoComplete="one-time-code"
+                        autoFocus
                         required
                         value={otpCode}
                         onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
