@@ -307,8 +307,18 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         if (!auth) return;
         setIsLoading(true);
         try {
-            // Mevcut verifier varsa yeniden kullan, yoksa oluştur
-            if (!recaptchaVerifierRef.current && recaptchaContainerRef.current) {
+            // ÖNCE dili set et (verifier ve signInWithPhoneNumber'dan önce). Verifier dili
+            // yaratılırken yakaladığı için her seferinde dil değişebilecek diye eski verifier'ı
+            // temizleyip yeniden oluştur.
+            const sharedAuth = getAuth();
+            sharedAuth.languageCode = getLanguageFromPhoneCode(phoneCountryCode);
+
+            // Eski verifier varsa temizle (dil değişmiş olabilir; reCAPTCHA fresh kurulsun)
+            if (recaptchaVerifierRef.current) {
+                try { recaptchaVerifierRef.current.clear(); } catch { /* ignore */ }
+                recaptchaVerifierRef.current = null;
+            }
+            if (recaptchaContainerRef.current) {
                 recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
                     size: 'invisible',
                 });
@@ -316,12 +326,6 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             const verifier = recaptchaVerifierRef.current;
             if (!verifier) throw new Error('reCAPTCHA verifier hazırlanamadı.');
             const fullPhone = `${phoneCountryCode}${cleanPhone.replace(/^0+/, '')}`;
-            // Telefon ülke kodundan dilini türet — Firebase SMS template'i o dilde gönderilir.
-            // Ör. +90 → tr, +49 → de, +33 → fr, varsayılan en.
-            // getAuth() singleton'a doğrudan ulaş (useAuth() hook return mutation'una React 19
-            // lint izin vermiyor; aynı Firebase Auth instance'ı, kontrollü mutation güvenli).
-            const sharedAuth = getAuth();
-            sharedAuth.languageCode = getLanguageFromPhoneCode(phoneCountryCode);
             const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
             confirmationResultRef.current = confirmation;
             setStep('phone-otp');
