@@ -46,6 +46,8 @@ export const COLLECTIONS = {
   postReports: 'postReports',
   // Genel kullanıcı geri bildirim formu (/feedback). Super-admin inceleme.
   userFeedback: 'userFeedback',
+  // OTP kodları (WhatsApp / SMS doğrulama) — server-only (firestore.rules:19).
+  otpCodes: 'otp_codes',
   events: 'events',
   // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
   // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.
