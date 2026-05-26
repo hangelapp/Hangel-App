@@ -49,5 +49,15 @@
 	<true/>
 	<key>NSContactsUsageDescription</key>
 	<string>Rehberinizdeki arkadaşlarınızın hangel'da olup olmadığını görmek ve onları davet etmek için kişilere erişim gerekmektedir.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Yakınınızdaki etkinlikleri, STK'ları ve gönüllü ihtiyaçlarını gösterebilmek için konum bilginize ihtiyaç var.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Profil fotoğrafı çekmek ve etkinlik / proje görselleri paylaşmak için kameraya erişim gerekiyor.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Yeni etkinlikler, mesajlar ve kampanya güncellemeleri için bildirim göndereceğiz.</string>
 </dict>
 </plist>
