@@ -131,7 +131,12 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         authorizedRelation: '', // 'görevi' yerine 'yakınlığı'
         // Marka iktisadi işletme için bağlı STK
         iktisadiBagliStk: '',
+        // E-ticaret sitesi linki (Kooperatif/Sosyal/İktisadi için)
+        ecommerceUrl: '',
     });
+    // Marka E-ticaret: ürün kategorileri (max 5)
+    const [selectedProductCategories, setSelectedProductCategories] = useState<string[]>([]);
+    const MAX_PRODUCT_CATEGORIES = 5;
     // Diğer sosyal medya platformları (+Ekle ile)
     const [otherSocials, setOtherSocials] = useState<{ platform: string; url: string }[]>([]);
     const ABOUT_MAX = 1000;
@@ -233,6 +238,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 otherSocials,
                 selectedIzinAmaclari,
                 selectedSporFederasyonlari,
+                selectedProductCategories,
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
@@ -1396,8 +1402,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Kooperatif & İktisadi İşletme → Faydalanıcılar (STK formundaki gibi) */}
-                    {(isKoop || isIktisadi) && (
+                    {/* Kooperatif & Sosyal İşletme & İktisadi İşletme → Faydalanıcılar (STK formundaki gibi) */}
+                    {(isKoop || isSosyal || isIktisadi) && (
                         <div className="space-y-6">
                             <SectionTitle icon={Target}>FAYDALANICILARINIZ</SectionTitle>
                             <div className="space-y-3">
@@ -1455,6 +1461,60 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                         </div>
                     </div>
+
+                    {/* E-TİCARET / SHOP — sadece Kooperatif, Sosyal İşletme, İktisadi İşletme */}
+                    {(isKoop || isSosyal || isIktisadi) && (
+                        <div className="space-y-6">
+                            <SectionTitle icon={Store}>E-TİCARET SİTENİZ / SHOP</SectionTitle>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <FormLabel>E-Ticaret Site Linki</FormLabel>
+                                    <IconInput
+                                        icon={Globe}
+                                        type="url"
+                                        placeholder="https://shop.markaniz.com"
+                                        value={(formData as { ecommerceUrl?: string }).ecommerceUrl || ''}
+                                        onChange={e => setFormData(p => ({ ...p, ecommerceUrl: e.target.value } as typeof p))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel>Ürünlerinizin Kategorileri</FormLabel>
+                                        <span className="text-[10px] font-mono text-muted-foreground">
+                                            {selectedProductCategories.length} / {MAX_PRODUCT_CATEGORIES}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground -mt-1">En fazla {MAX_PRODUCT_CATEGORIES} kategori seçebilirsiniz.</p>
+                                    <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card max-h-72 overflow-y-auto">
+                                        {brandSectorOptions.map(item => {
+                                            const checked = selectedProductCategories.includes(item);
+                                            const disabled = !checked && selectedProductCategories.length >= MAX_PRODUCT_CATEGORIES;
+                                            return (
+                                                <label
+                                                    key={item}
+                                                    className={cn(
+                                                        'flex items-center gap-2 group',
+                                                        disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+                                                    )}
+                                                >
+                                                    <Checkbox
+                                                        checked={checked}
+                                                        disabled={disabled}
+                                                        onCheckedChange={(c) => setSelectedProductCategories(prev =>
+                                                            c
+                                                                ? (prev.length < MAX_PRODUCT_CATEGORIES ? [...prev, item] : prev)
+                                                                : prev.filter(i => i !== item),
+                                                        )}
+                                                    />
+                                                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* MARKA: İletişim & Sosyal Medya — her biri tek satır */}
                     <div className="space-y-6">
@@ -1619,6 +1679,75 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
                     )}
+
+                    {/* YETKİLİ KİŞİ — sözleşmelerin hemen üstünde (4 alt kategori için) */}
+                    <div className="space-y-6">
+                        <SectionTitle icon={UserCircle}>YETKİLİ KİŞİ</SectionTitle>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <FormLabel required>Ad Soyad</FormLabel>
+                                <FormInput
+                                    placeholder="Yetkili kişinin ad soyadı"
+                                    required
+                                    value={formData.authorized.name}
+                                    onChange={e => setFormData({...formData, authorized: {...formData.authorized, name: e.target.value}})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>Görevi</FormLabel>
+                                <FormInput
+                                    placeholder="Örn. Genel Müdür, Yönetim Kurulu Üyesi"
+                                    required
+                                    value={formData.authorized.role}
+                                    onChange={e => setFormData({...formData, authorized: {...formData.authorized, role: e.target.value}})}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>Telefon</FormLabel>
+                                <div className="grid grid-cols-[140px_1fr] gap-2">
+                                    <Select
+                                        value={formData.authorized.phoneCountryCode}
+                                        onValueChange={v => setFormData({...formData, authorized: {...formData.authorized, phoneCountryCode: v}})}
+                                    >
+                                        <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
+                                            <SelectValue>
+                                                {(() => {
+                                                    const c = COUNTRY_PHONE_CODES.find(c => c.code === formData.authorized.phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
+                                                    return <><span className="text-base">{c.flag}</span><span className="ml-1">{c.code}</span></>;
+                                                })()}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {COUNTRY_PHONE_CODES.map((c) => (
+                                                <SelectItem key={`auth-${c.iso}-${c.code}`} value={c.code}>
+                                                    <span className="text-base mr-2">{c.flag}</span>
+                                                    {c.country} ({c.code})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormInput
+                                        type="tel"
+                                        placeholder="5XXXXXXXXX"
+                                        required
+                                        value={formData.authorized.phone}
+                                        onChange={e => setFormData({...formData, authorized: {...formData.authorized, phone: e.target.value}})}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <FormLabel required>E-posta</FormLabel>
+                                <IconInput
+                                    icon={Mail}
+                                    type="email"
+                                    placeholder="yetkili@marka.com"
+                                    required
+                                    value={formData.authorized.email}
+                                    onChange={e => setFormData({...formData, authorized: {...formData.authorized, email: e.target.value}})}
+                                />
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="space-y-2 pt-6 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
