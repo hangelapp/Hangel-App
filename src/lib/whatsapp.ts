@@ -2,17 +2,21 @@
  * WhatsApp Cloud API client (Meta Graph API).
  *
  * Env vars (App Hosting secrets):
- *   WHATSAPP_ACCESS_TOKEN  — Meta Business permanent access token (System User)
+ *   WHATSAPP_ACCESS_TOKEN  — Meta Business permanent access token
+ *   WHATSAPP_APP_SECRET    — Meta App secret (server-side appsecret_proof için)
  *   WHATSAPP_PHONE_NUMBER_ID — WABA phone number ID (15 digits)
  *   WHATSAPP_OTP_TEMPLATE_NAME — Approved template name (e.g. "otp_hangel")
  *   WHATSAPP_OTP_TEMPLATE_LANG — Template default lang (e.g. "tr")
- *
- * Template structure (Meta'da approved olmalı):
- *   Body: "{{1}} — hangel doğrulama kodun. 10 dk geçerli."
- *   (1 variable: OTP code)
  */
 
+import crypto from 'crypto';
+
 const GRAPH_API_VERSION = 'v18.0';
+
+/** HMAC-SHA256(access_token, app_secret) — Meta'nın server-side proof'u. */
+function computeAppsecretProof(token: string, appSecret: string): string {
+    return crypto.createHmac('sha256', appSecret).update(token).digest('hex');
+}
 
 export interface WhatsAppSendResult {
     ok: boolean;
@@ -39,6 +43,7 @@ export async function sendWhatsAppOtp(
     lang?: string,
 ): Promise<WhatsAppSendResult> {
     const token = process.env.WHATSAPP_ACCESS_TOKEN;
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const templateName = process.env.WHATSAPP_OTP_TEMPLATE_NAME || 'otp_hangel';
     const templateLang = lang || process.env.WHATSAPP_OTP_TEMPLATE_LANG || 'tr';
@@ -47,7 +52,10 @@ export async function sendWhatsAppOtp(
         return { ok: false, errorCode: 'WA_CONFIG_MISSING', errorMessage: 'WhatsApp env değişkenleri eksik (WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID).' };
     }
 
-    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages`;
+    // Server-side calls require appsecret_proof (Meta security policy)
+    const proof = appSecret ? computeAppsecretProof(token, appSecret) : null;
+    const proofQuery = proof ? `?appsecret_proof=${proof}` : '';
+    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages${proofQuery}`;
     const body = {
         messaging_product: 'whatsapp',
         to: normalizePhoneForWhatsApp(phoneE164),

@@ -25,6 +25,10 @@ env:
     secret: WHATSAPP_ACCESS_TOKEN
     availability:
       - RUNTIME
+  - variable: WHATSAPP_APP_SECRET
+    secret: WHATSAPP_APP_SECRET
+    availability:
+      - RUNTIME
   - variable: WHATSAPP_PHONE_NUMBER_ID
     value: "1011367262068325"
     availability:
