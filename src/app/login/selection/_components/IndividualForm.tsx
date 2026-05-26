@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSearchParams } from 'next/navigation';
-import { Mail, Loader2 } from 'lucide-react';
+import { Mail, Loader2, Phone, ShieldCheck } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, type ConfirmationResult } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FormLabel, FormInput } from './shared';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -23,8 +24,9 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     const { toast } = useToast();
     const searchParams = useSearchParams();
 
-    type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent';
+    type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp';
     const [step, setStep] = useState<IndividualStep>('email');
+    const [authMode, setAuthMode] = useState<'mail' | 'phone'>('mail');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [phoneCountryCode, setPhoneCountryCode] = useState('+90');
@@ -32,6 +34,11 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    // Phone OTP state
+    const [otpCode, setOtpCode] = useState('');
+    const confirmationResultRef = useRef<ConfirmationResult | null>(null);
+    const recaptchaContainerRef = useRef<HTMLDivElement | null>(null);
+    const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
     const [agreements, setAgreements] = useState({
         userAgreement: false,
         kvkk: false,
@@ -284,17 +291,219 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     const selectedIndividualPhone = COUNTRY_PHONE_CODES.find(c => c.code === phoneCountryCode) ?? COUNTRY_PHONE_CODES[0];
 
-    if (step === 'email') {
+    // PHONE FLOW — SMS OTP ile parolasız kayıt (Firebase Phone Auth)
+    const handleSendOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!allIndividualAgreementsAccepted) {
+            toast({ variant: 'destructive', title: 'Sözleşmeler', description: 'Devam etmek için sözleşmeleri kabul edin.' });
+            return;
+        }
+        const cleanPhone = phone.replace(/\D/g, '');
+        if (!name.trim() || cleanPhone.length < 7) {
+            toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Ad soyad ve geçerli telefon gerekli.' });
+            return;
+        }
+        if (!auth) return;
+        setIsLoading(true);
+        try {
+            // Mevcut verifier varsa yeniden kullan, yoksa oluştur
+            if (!recaptchaVerifierRef.current && recaptchaContainerRef.current) {
+                recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+                    size: 'invisible',
+                });
+            }
+            const verifier = recaptchaVerifierRef.current;
+            if (!verifier) throw new Error('reCAPTCHA verifier hazırlanamadı.');
+            const fullPhone = `${phoneCountryCode}${cleanPhone.replace(/^0+/, '')}`;
+            const confirmation = await signInWithPhoneNumber(auth, fullPhone, verifier);
+            confirmationResultRef.current = confirmation;
+            setStep('phone-otp');
+            toast({ title: 'Kod gönderildi', description: `${fullPhone} numarasına 6 haneli doğrulama kodu gönderildi.` });
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Kod gönderilemedi.';
+            toast({ variant: 'destructive', title: 'SMS gönderilemedi', description: msg });
+            // Verifier'ı sıfırla (sonraki deneme için)
+            try { recaptchaVerifierRef.current?.clear(); } catch { /* ignore */ }
+            recaptchaVerifierRef.current = null;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const code = otpCode.trim();
+        if (code.length < 6) {
+            toast({ variant: 'destructive', title: 'Kod eksik', description: '6 haneli kodu girin.' });
+            return;
+        }
+        const confirmation = confirmationResultRef.current;
+        if (!confirmation) {
+            toast({ variant: 'destructive', title: 'Oturum geçersiz', description: 'Kod yeniden istenmeli.' });
+            setStep('phone-enter');
+            return;
+        }
+        if (!auth || !db) return;
+        setIsLoading(true);
+        try {
+            const cred = await confirmation.confirm(code);
+            await updateProfile(cred.user, { displayName: name.trim() });
+            const userId = cred.user.uid;
+            const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
+            setDocumentNonBlocking(doc(db, COLLECTIONS.users, userId), {
+                id: userId,
+                name: name.trim(),
+                avatarUrl: '',
+                personalInfo: {
+                    email: '',
+                    phone: cleanPhone,
+                    phoneCountryCode,
+                },
+                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                createdAt: serverTimestamp(),
+                joinDate: new Date().toISOString().split('T')[0],
+                signupMethod: 'phone',
+            }, { merge: true });
+            toast({ title: 'Hoş geldin', description: `${name.trim()}, hesabın oluşturuldu.` });
+            onComplete(true);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Kod hatalı.';
+            toast({ variant: 'destructive', title: 'Doğrulanamadı', description: msg });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const renderAuthModeTabs = () => (
+        <Tabs value={authMode} onValueChange={(v) => {
+            const m = v as 'mail' | 'phone';
+            setAuthMode(m);
+            setStep(m === 'mail' ? 'email' : 'phone-enter');
+        }} className="w-full mb-2">
+            <TabsList className="grid grid-cols-2 w-full h-11 p-1 rounded-2xl">
+                <TabsTrigger value="mail" className="rounded-xl text-sm font-bold gap-2"><Mail className="h-4 w-4" /> E-posta</TabsTrigger>
+                <TabsTrigger value="phone" className="rounded-xl text-sm font-bold gap-2"><Phone className="h-4 w-4" /> Telefon</TabsTrigger>
+            </TabsList>
+        </Tabs>
+    );
+
+    // PHONE STEPS
+    if (step === 'phone-enter') {
         return (
-            <form onSubmit={handleCheckEmail} className="space-y-4">
-                <div className="space-y-2">
-                    <FormLabel required>E-posta</FormLabel>
-                    <FormInput type="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
+            <div className="space-y-4">
+                {renderAuthModeTabs()}
+                <form onSubmit={handleSendOtp} className="space-y-4">
+                    <div className="space-y-2">
+                        <FormLabel required>Ad Soyad</FormLabel>
+                        <FormInput placeholder="Adınız Soyadınız" required value={name} onChange={e => setName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                        <FormLabel required>Telefon</FormLabel>
+                        <div className="grid grid-cols-[140px_1fr] gap-2">
+                            <Select value={phoneCountryCode} onValueChange={setPhoneCountryCode}>
+                                <SelectTrigger className="h-12 rounded-xl bg-card border-none shadow-sm font-bold">
+                                    <SelectValue>
+                                        <span className="text-base">{selectedIndividualPhone.flag}</span>
+                                        <span className="ml-1">{selectedIndividualPhone.code}</span>
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {COUNTRY_PHONE_CODES.map((c) => (
+                                        <SelectItem key={`${c.iso}-${c.code}`} value={c.code}>
+                                            <span className="text-base mr-2">{c.flag}</span>
+                                            {c.country} ({c.code})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormInput type="tel" placeholder="5XXXXXXXXX" required value={phone} onChange={e => setPhone(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="space-y-2 pt-4 border-t border-dashed">
+                        <label className="flex items-start gap-2 cursor-pointer">
+                            <Checkbox checked={agreements.userAgreement} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, userAgreement: !!c }))} />
+                            <span className="text-[10px] text-muted-foreground leading-snug">
+                                <a href="/settings/contracts/kullanici-sozlesmesi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Kullanıcı Sözleşmesi</a>&apos;ni okudum ve kabul ediyorum
+                            </span>
+                        </label>
+                        <label className="flex items-start gap-2 cursor-pointer">
+                            <Checkbox checked={agreements.kvkk} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, kvkk: !!c }))} />
+                            <span className="text-[10px] text-muted-foreground leading-snug">
+                                <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
+                            </span>
+                        </label>
+                        <label className="flex items-start gap-2 cursor-pointer">
+                            <Checkbox checked={agreements.privacy} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, privacy: !!c }))} />
+                            <span className="text-[10px] text-muted-foreground leading-snug">
+                                <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
+                            </span>
+                        </label>
+                        <label className="flex items-start gap-2 cursor-pointer">
+                            <Checkbox checked={agreements.cookies} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, cookies: !!c }))} />
+                            <span className="text-[10px] text-muted-foreground leading-snug">
+                                <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
+                            </span>
+                        </label>
+                    </div>
+                    <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading || !allIndividualAgreementsAccepted}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : 'Doğrulama Kodu Gönder'}
+                    </Button>
+                    {/* Invisible reCAPTCHA için container */}
+                    <div ref={recaptchaContainerRef} />
+                </form>
+            </div>
+        );
+    }
+
+    if (step === 'phone-otp') {
+        return (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="text-center space-y-2">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <ShieldCheck className="h-6 w-6 text-primary" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        {phoneCountryCode}{phone.replace(/\D/g, '').replace(/^0+/, '')} numarasına gönderilen <span className="font-bold text-foreground">6 haneli kodu</span> girin.
+                    </p>
                 </div>
-                <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : "Devam Et"}
+                <div className="space-y-2">
+                    <FormLabel required>Doğrulama Kodu</FormLabel>
+                    <FormInput
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        placeholder="123456"
+                        required
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                        className="text-center text-2xl tracking-[0.5em] font-bold"
+                    />
+                </div>
+                <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading || otpCode.length < 6}>
+                    {isLoading ? <Loader2 className="animate-spin" /> : 'Kayıt Ol'}
+                </Button>
+                <Button type="button" variant="link" className="w-full text-xs" onClick={() => setStep('phone-enter')}>
+                    Numarayı değiştir / Tekrar gönder
                 </Button>
             </form>
+        );
+    }
+
+    if (step === 'email') {
+        return (
+            <div className="space-y-4">
+                {renderAuthModeTabs()}
+                <form onSubmit={handleCheckEmail} className="space-y-4">
+                    <div className="space-y-2">
+                        <FormLabel required>E-posta</FormLabel>
+                        <FormInput type="email" placeholder="ornek@mail.com" required value={email} onChange={e => setEmail(e.target.value)} />
+                    </div>
+                    <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : "Devam Et"}
+                    </Button>
+                </form>
+            </div>
         );
     }
 
