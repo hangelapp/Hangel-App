@@ -49,8 +49,8 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
         className,
       )}
     >
-      {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot */}
-      <div className="flex items-start justify-between gap-3 mb-2">
+      {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot. Alt bilgilere boşluksuz. */}
+      <div className="flex items-start justify-between gap-3">
         <div className="flex items-baseline flex-wrap gap-1.5 min-w-0">
           <p className="font-bold text-sm leading-tight">{ngo.name}</p>
           {shortName && <span className="text-xs text-muted-foreground font-medium">({shortName})</span>}

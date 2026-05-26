@@ -123,6 +123,8 @@ export default function NgosPage() {
                             <DropdownMenuCheckboxItem
                                 key={cat}
                                 checked={categoryFilter.includes(cat)}
+                                // Çoklu seçim için menüyü açık tut (varsayılan: seçince kapanır)
+                                onSelect={(e) => e.preventDefault()}
                                 onCheckedChange={(checked) => setCategoryFilter(prev =>
                                     checked ? [...prev, cat] : prev.filter(c => c !== cat)
                                 )}
