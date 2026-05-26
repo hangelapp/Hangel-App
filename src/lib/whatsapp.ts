@@ -68,12 +68,12 @@ export async function sendWhatsAppOtp(
                     type: 'body',
                     parameters: [{ type: 'text', text: otpCode }],
                 },
-                // OTP-specific: button component for "copy code" (Meta authentication category)
+                // OTP Authentication template — copy_code button (Meta v18+ format)
                 {
                     type: 'button',
-                    sub_type: 'url',
+                    sub_type: 'copy_code',
                     index: '0',
-                    parameters: [{ type: 'text', text: otpCode }],
+                    parameters: [{ type: 'coupon_code', coupon_code: otpCode }],
                 },
             ],
         },
