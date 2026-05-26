@@ -11,7 +11,14 @@ interface FirebaseClientProviderProps {
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const firebaseServices = useMemo(() => {
     // Initialize Firebase on the client side, once per component mount.
-    return initializeFirebase();
+    const services = initializeFirebase();
+    // Default Firebase Auth dilini Türkçe yap — kullanıcı telefon ülke kodu girince
+    // IndividualForm bu değeri override eder (ör. +49 → de). Default 'tr' olduğu için
+    // device locale İngilizce de olsa kayıt SMS'leri Türkçe gelir.
+    try {
+      services.auth.languageCode = 'tr';
+    } catch { /* readonly veya init henüz tamamlanmadı */ }
+    return services;
   }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
