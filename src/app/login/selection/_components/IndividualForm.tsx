@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSearchParams } from 'next/navigation';
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, type ConfirmationResult } from 'firebase/auth';
+import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber, getAuth, onAuthStateChanged, type ConfirmationResult } from 'firebase/auth';
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -48,6 +48,21 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     });
     const allIndividualAgreementsAccepted =
         agreements.userAgreement && agreements.kvkk && agreements.privacy && agreements.cookies;
+
+    // WhatsApp magic link akışı: kullanıcı whatsapp-otp ekranında beklerken
+    // başka bir sekmede /auth/wa linki tıklayıp signIn olursa, Firebase Auth
+    // localStorage ile aynı browser'a yayar → bu sekme de auth state'i alır
+    // ve kayıt akışını "kaldığı yerden" devam ettiririz (onboarding → ngo-selection).
+    useEffect(() => {
+        if (step !== 'whatsapp-otp') return;
+        const authInstance = getAuth();
+        const unsub = onAuthStateChanged(authInstance, (user) => {
+            if (user && user.phoneNumber) {
+                onComplete(true);
+            }
+        });
+        return () => unsub();
+    }, [step, onComplete]);
 
     const handleCheckEmail = async (e: React.FormEvent) => {
         e.preventDefault();

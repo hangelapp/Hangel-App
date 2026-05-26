@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
 
         const adminAuth = getAdminAuth();
         let userRecord;
+        let isNewUser = false;
         try {
             userRecord = await adminAuth.getUserByPhoneNumber(data.phone);
         } catch {
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
                 phoneNumber: data.phone,
                 displayName: data.name || undefined,
             });
+            isNewUser = true;
         }
         const uid = userRecord.uid;
 
@@ -80,7 +82,7 @@ export async function GET(req: NextRequest) {
         // Mark used + cleanup
         await ref.update({ used: true, usedAt: FieldValue.serverTimestamp() });
 
-        return NextResponse.json({ ok: true, customToken });
+        return NextResponse.json({ ok: true, customToken, isNewUser });
     } catch (e) {
         console.error('[whatsapp-link/verify] internal error', e);
         return NextResponse.json({ ok: false, errorCode: 'INTERNAL_ERROR', message: 'Sunucu hatası.' }, { status: 500 });

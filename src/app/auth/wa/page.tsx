@@ -37,7 +37,14 @@ function WhatsAppLinkAuthInner() {
                 await signInWithCustomToken(auth, data.customToken);
                 if (cancelled) return;
                 setStatus('success');
-                setTimeout(() => router.push('/timeline'), 1200);
+                // Yeni kullanıcı → onboarding zinciri (NGO seçimi, profil, vb.)
+                // Mevcut kullanıcı → /timeline
+                const isNewUser = Boolean(data.isNewUser);
+                if (isNewUser && typeof window !== 'undefined') {
+                    localStorage.setItem('onboardingStep', 'ngo-selection');
+                }
+                const target = isNewUser ? '/settings/ngo-selection' : '/timeline';
+                setTimeout(() => router.push(target), 1200);
             } catch (e) {
                 if (cancelled) return;
                 setStatus('error');
