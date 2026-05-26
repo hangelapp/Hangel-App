@@ -68,12 +68,14 @@ export async function sendWhatsAppOtp(
                     type: 'body',
                     parameters: [{ type: 'text', text: otpCode }],
                 },
-                // OTP Authentication template — copy_code button (Meta v18+ format)
+                // OTP Authentication template — Meta button type URL (COPY_CODE special URL)
+                // Template button URL: https://www.whatsapp.com/otp/code/?...&code=otp{{1}}
+                // Variable {{1}} CODE ile doldurulur.
                 {
                     type: 'button',
-                    sub_type: 'copy_code',
+                    sub_type: 'url',
                     index: '0',
-                    parameters: [{ type: 'coupon_code', coupon_code: otpCode }],
+                    parameters: [{ type: 'text', text: otpCode }],
                 },
             ],
         },
