@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Cookie, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { contractsData } from '@/lib/contracts';
+import { useUser } from '@/firebase';
 
 const STORAGE_KEY = 'hangel.cookie-consent';
 
@@ -12,15 +13,18 @@ type Consent = 'accepted' | 'rejected';
 
 export function CookieBanner() {
     const [visible, setVisible] = useState(false);
+    const { user, isUserLoading } = useUser();
 
     useEffect(() => {
+        if (isUserLoading) return;
+        if (user) { setVisible(false); return; }
         try {
             const stored = window.localStorage.getItem(STORAGE_KEY);
             if (!stored) setVisible(true);
         } catch {
             setVisible(true);
         }
-    }, []);
+    }, [user, isUserLoading]);
 
     const handleConsent = (consent: Consent) => {
         try {
