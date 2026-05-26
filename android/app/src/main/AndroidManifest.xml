@@ -18,6 +18,16 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- App Links: hangel.org.tr links open Hangel app directly (Android verifies
+                 via .well-known/assetlinks.json on the domain at install time). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="hangel.org.tr" />
+                <data android:scheme="https" android:host="www.hangel.org.tr" />
+            </intent-filter>
         </activity>
 
         <provider
