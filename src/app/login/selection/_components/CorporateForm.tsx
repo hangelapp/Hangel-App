@@ -272,6 +272,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [vakifSearchText, setVakifSearchText] = useState('');
     const [vakifSearchStatus, setVakifSearchStatus] = useState<'idle' | 'loading' | 'empty' | 'error'>('idle');
     const [vakifResults, setVakifResults] = useState<VakifResult[]>([]);
+    // İktisadi İşletme → Bağlı STK arama (Dernek kütük no veya Vakıf adı ile)
+    const [iktisadiSearchStatus, setIktisadiSearchStatus] = useState<'idle' | 'loading' | 'empty' | 'error' | 'found'>('idle');
+    const [iktisadiResults, setIktisadiResults] = useState<VakifResult[]>([]);
+    const [iktisadiSelectedStk, setIktisadiSelectedStk] = useState<RegistryMatch | null>(null);
 
     const handleDernekLookup = async () => {
         const key = formData.registryNo.trim();
@@ -419,6 +423,99 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         setRegistryLookupStatus('found');
         setVakifResults([]);
         setVakifSearchStatus('idle');
+    };
+
+    // İktisadi İşletme: Bağlı STK arama (Dernek kütük no formatındaysa direkt dernek lookup, değilse vakıf isim araması)
+    const handleIktisadiStkSearch = async () => {
+        const raw = ((formData as { iktisadiBagliStk?: string }).iktisadiBagliStk || '').trim();
+        if (!raw) return;
+        setIktisadiSearchStatus('loading');
+        setIktisadiResults([]);
+        setIktisadiSelectedStk(null);
+        const looksLikeKutuk = /^[\d-]+$/.test(raw.replace(/\s/g, ''));
+        try {
+            if (looksLikeKutuk) {
+                const key = formatKutukNo(raw);
+                const snap = await getDoc(doc(db, COLLECTIONS.registryDernekler, key));
+                if (snap.exists()) {
+                    const r = snap.data() as Record<string, unknown>;
+                    const platePrefix = key.split('-')[0]?.padStart(2, '0') || '';
+                    const result: VakifResult = {
+                        id: key,
+                        name: typeof r.name === 'string' ? r.name : '',
+                        adres: typeof r.adres === 'string' ? r.adres : undefined,
+                        il: TR_IL_PLATES[platePrefix] || undefined,
+                    };
+                    setIktisadiResults([result]);
+                    setIktisadiSearchStatus('idle');
+                    return;
+                }
+                setIktisadiSearchStatus('empty');
+                return;
+            }
+            const q = raw.toLocaleLowerCase('tr');
+            if (q.length < 3) { setIktisadiSearchStatus('empty'); return; }
+            const snap = await getDocs(query(
+                collection(db, COLLECTIONS.registryVakiflar),
+                where('nameLower', '>=', q),
+                where('nameLower', '<=', q + ''),
+                orderBy('nameLower'),
+                limit(8),
+            ));
+            const results: VakifResult[] = snap.docs.map(d => {
+                const r = d.data() as Record<string, unknown>;
+                return {
+                    id: d.id,
+                    name: typeof r.name === 'string' ? r.name : '',
+                    adres: typeof r.adres === 'string' ? r.adres : undefined,
+                    il: typeof r.il === 'string' ? r.il : undefined,
+                    ilce: typeof r.ilce === 'string' ? r.ilce : undefined,
+                    ePosta: typeof r.ePosta === 'string' ? r.ePosta : undefined,
+                    telefon1: typeof r.telefon1 === 'string' ? r.telefon1 : undefined,
+                };
+            });
+            setIktisadiResults(results);
+            setIktisadiSearchStatus(results.length === 0 ? 'empty' : 'idle');
+        } catch {
+            setIktisadiSearchStatus('error');
+        }
+    };
+
+    const handleSelectIktisadiStk = (v: VakifResult) => {
+        const cleanEmail = v.ePosta && v.ePosta !== '-' ? v.ePosta : '';
+        const localPhone = v.telefon1 ? v.telefon1.replace(/\D/g, '').replace(/^90/, '').replace(/^0/, '') : '';
+        let mahalleParsed = '';
+        let doorNoParsed = '';
+        const cleanedAddr = v.adres || '';
+        if (v.adres) {
+            const mahMatch = v.adres.match(/([\wÇĞİÖŞÜçğıöşü]+)\s+(?:Mah(?:allesi)?|Mh)\.?/i);
+            if (mahMatch) mahalleParsed = mahMatch[1];
+            const noMatch = v.adres.match(/No\s*:?\s*([\d/-]+)/i);
+            if (noMatch) doorNoParsed = noMatch[1];
+        }
+        setFormData(prev => ({
+            ...prev,
+            iktisadiBagliStk: v.name || (prev as { iktisadiBagliStk?: string }).iktisadiBagliStk || '',
+            city: v.il || prev.city,
+            district: v.ilce || prev.district,
+            neighborhood: !prev.neighborhood && mahalleParsed ? mahalleParsed : prev.neighborhood,
+            addressLine: !prev.addressLine && cleanedAddr ? cleanedAddr : prev.addressLine,
+            doorNo: !prev.doorNo && doorNoParsed ? doorNoParsed : prev.doorNo,
+            email: !prev.email && cleanEmail ? cleanEmail : prev.email,
+            phone: !prev.phone && localPhone ? localPhone : prev.phone,
+        } as typeof prev));
+        const newFilled = new Set(autoFilled);
+        if (v.il) newFilled.add('city');
+        if (v.ilce) newFilled.add('district');
+        if (mahalleParsed) newFilled.add('neighborhood');
+        if (cleanedAddr) newFilled.add('addressLine');
+        if (doorNoParsed) newFilled.add('doorNo');
+        if (cleanEmail) newFilled.add('email');
+        if (localPhone) newFilled.add('phone');
+        setAutoFilled(newFilled);
+        setIktisadiSelectedStk({ name: v.name, adres: v.adres, il: v.il, ilce: v.ilce });
+        setIktisadiSearchStatus('found');
+        setIktisadiResults([]);
     };
 
     return (
@@ -1167,7 +1264,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             {entityType === 'BRAND' && (() => {
                 const allProvinces = Object.values(TR_IL_PLATES).sort((a, b) => a.localeCompare(b, 'tr'));
                 const isKoop = formData.brandStatus === 'cooperative';
+                const isSosyal = formData.brandStatus === 'social-enterprise';
                 const isIktisadi = formData.brandStatus === 'economic-enterprise';
+                const hideAffiliateAndDonationSections = isKoop || isSosyal || isIktisadi;
                 return (
                 <div className="space-y-12">
                     {/* İşletme Statüsü EN ÜSTTE (kullanıcı talebi) — alt kısımlar buna göre değişir */}
@@ -1192,16 +1291,70 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="space-y-6">
                             <SectionTitle icon={Building2}>BAĞLI OLDUĞU SİVİL TOPLUM KURULUŞU</SectionTitle>
                             <p className="text-xs text-muted-foreground -mt-2">
-                                Kütük numarası (örn. <code className="font-mono">34-262-102</code>) veya STK adının ilk 4 harfini yazın.
+                                Kütük numarası (örn. <code className="font-mono">34-262-102</code>) veya STK adının ilk 3 harfini yazıp <span className="font-bold text-foreground">Bilgileri Getir</span>&apos;e basın.
                             </p>
                             <div className="space-y-2">
                                 <FormLabel>Bağlı STK Sorgusu</FormLabel>
-                                <FormInput
-                                    placeholder="Örn. 34-262-102 veya 'Akut'"
-                                    value={(formData as { iktisadiBagliStk?: string }).iktisadiBagliStk || ''}
-                                    onChange={e => setFormData(p => ({ ...p, iktisadiBagliStk: e.target.value } as typeof p))}
-                                />
-                                <p className="text-[10px] text-muted-foreground">Bilgileri otomatik getirme şu an manuel — onay aşamasında super-admin doğrular.</p>
+                                <div className="grid grid-cols-[1fr_auto] gap-2">
+                                    <FormInput
+                                        placeholder="Örn. 34-262-102 veya 'Akut'"
+                                        value={(formData as { iktisadiBagliStk?: string }).iktisadiBagliStk || ''}
+                                        onChange={e => {
+                                            setFormData(p => ({ ...p, iktisadiBagliStk: e.target.value } as typeof p));
+                                            setIktisadiSearchStatus('idle');
+                                            setIktisadiSelectedStk(null);
+                                        }}
+                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); void handleIktisadiStkSearch(); } }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-12 rounded-xl px-4 font-bold border-primary/30"
+                                        disabled={iktisadiSearchStatus === 'loading' || !((formData as { iktisadiBagliStk?: string }).iktisadiBagliStk || '').trim()}
+                                        onClick={() => void handleIktisadiStkSearch()}
+                                    >
+                                        {iktisadiSearchStatus === 'loading'
+                                            ? <Loader2 className="h-4 w-4 animate-spin" />
+                                            : <><Search className="mr-2 h-4 w-4" />Bilgileri Getir</>}
+                                    </Button>
+                                </div>
+                                {iktisadiResults.length > 0 && (
+                                    <div className="rounded-2xl border bg-card divide-y overflow-hidden">
+                                        {iktisadiResults.map(v => (
+                                            <button
+                                                key={v.id}
+                                                type="button"
+                                                onClick={() => handleSelectIktisadiStk(v)}
+                                                className="w-full text-left px-4 py-3 hover:bg-primary/5 transition-colors"
+                                            >
+                                                <p className="text-[13px] font-bold leading-tight">{v.name}</p>
+                                                {(v.il || v.ilce) && (
+                                                    <p className="text-[11px] text-muted-foreground">{[v.ilce, v.il].filter(Boolean).join(' / ')}</p>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                                {iktisadiSearchStatus === 'empty' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Bu sorguyla kayıt bulunamadı. Bilgileri elle girebilirsiniz.</p>
+                                )}
+                                {iktisadiSearchStatus === 'error' && (
+                                    <p className="text-[11px] text-muted-foreground ml-1">Arama şu anda kullanılamıyor, bilgileri elle girin.</p>
+                                )}
+                                {iktisadiSearchStatus === 'found' && iktisadiSelectedStk && (
+                                    <div className="rounded-2xl border border-green-400 bg-green-50 dark:bg-green-900/20 dark:border-green-600 p-4 flex items-start gap-3">
+                                        <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[13px] font-black text-green-800 dark:text-green-300 leading-tight">{iktisadiSelectedStk.name}</p>
+                                            {iktisadiSelectedStk.adres && (
+                                                <p className="text-[11px] text-muted-foreground">{iktisadiSelectedStk.adres}</p>
+                                            )}
+                                            {(iktisadiSelectedStk.il || iktisadiSelectedStk.ilce) && (
+                                                <p className="text-[11px] text-muted-foreground">{[iktisadiSelectedStk.ilce, iktisadiSelectedStk.il].filter(Boolean).join(' / ')}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -1243,8 +1396,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
-                    {/* Kooperatif → Faydalanıcılar (STK formundaki gibi) */}
-                    {isKoop && (
+                    {/* Kooperatif & İktisadi İşletme → Faydalanıcılar (STK formundaki gibi) */}
+                    {(isKoop || isIktisadi) && (
                         <div className="space-y-6">
                             <SectionTitle icon={Target}>FAYDALANICILARINIZ</SectionTitle>
                             <div className="space-y-3">
@@ -1375,6 +1528,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
+                    {!hideAffiliateAndDonationSections && (
                     <div className="space-y-6">
                         <SectionTitle icon={Target}>AFFILIATE & TEKNİK TAKİP</SectionTitle>
                         <div className="space-y-4">
@@ -1392,8 +1546,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                         </div>
                     </div>
+                    )}
 
                     {/* Kategori Bazlı Bağış Oranları — kategori select + oran input + ekle */}
+                    {!hideAffiliateAndDonationSections && (
                     <div className="space-y-6">
                         <SectionTitle icon={Target}>KATEGORİ BAZLI BAĞIŞ ORANLARI</SectionTitle>
                         <p className="text-[11px] text-muted-foreground -mt-2">
@@ -1462,6 +1618,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </label>
                         </div>
                     </div>
+                    )}
 
                     <div className="space-y-2 pt-6 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
