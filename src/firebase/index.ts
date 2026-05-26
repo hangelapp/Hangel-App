@@ -19,9 +19,17 @@ export function initializeFirebase() {
 }
 
 export function getSdks(firebaseApp: FirebaseApp) {
+  const auth = getAuth(firebaseApp);
+  // Default Firebase Auth dilini TR yap — cihaz English bile olsa SMS TR template kullanır.
+  // Phone form çağrısı sırasında IndividualForm ülke koduna göre override eder.
+  try {
+    auth.languageCode = 'tr';
+  } catch {
+    /* readonly veya init incomplete */
+  }
   return {
     firebaseApp,
-    auth: getAuth(firebaseApp),
+    auth,
     firestore: getFirestore(firebaseApp)
   };
 }
