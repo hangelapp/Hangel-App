@@ -139,35 +139,31 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                     </Button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                    {items.map(item => (
-                        <div
-                            key={item.id}
-                            className="relative flex items-center gap-3 p-3 rounded-2xl border border-black/5 bg-muted/20 hover:bg-accent/40 transition-colors"
-                        >
-                            <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0 pr-9">
+                <div className="space-y-2 pt-1">
+                    <div className="flex justify-end">
+                        <Button asChild variant="outline" size="sm" className="h-7 rounded-xl text-xs">
+                            <Link href={editHref}>
+                                <Edit className="mr-1.5 h-3 w-3" /> Düzenle
+                            </Link>
+                        </Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {items.map(item => (
+                            <Link
+                                key={item.id}
+                                href={item.href}
+                                className="flex items-center gap-3 p-3 rounded-2xl border border-black/5 bg-muted/20 hover:bg-accent/40 transition-colors"
+                            >
                                 <Avatar className="h-10 w-10 shrink-0">
                                     <AvatarImage src={item.logoUrl} alt={item.name || ''} />
                                     <AvatarFallback className="text-xs font-bold">
                                         {(item.name || '?').charAt(0).toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
-                                <p className="text-sm font-semibold truncate">{item.name || '—'}</p>
+                                <p className="text-sm font-semibold truncate flex-1 min-w-0">{item.name || '—'}</p>
                             </Link>
-                            <Button
-                                asChild
-                                variant="outline"
-                                size="icon"
-                                className="h-7 w-7 absolute top-1.5 right-1.5 bg-background hover:bg-primary hover:text-primary-foreground border-primary/30"
-                                aria-label={editLabel}
-                                title="Düzenle"
-                            >
-                                <Link href={editHref}>
-                                    <Edit className="h-3.5 w-3.5" />
-                                </Link>
-                            </Button>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             )}
         </AccordionContent>
@@ -683,7 +679,12 @@ export default function ProfilePage() {
                                 <InfoRow icon={Cake} label="Doğum Tarihi" value={currentUser.personalInfo.birthDate ? format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr }) : '-'} />
                                  <InfoRow icon={Globe} label="Uyruk" value={currentUser.personalInfo.nationality} />
                                 <InfoRow icon={UserIcon} label="Cinsiyet" value={currentUser.personalInfo.gender} />
-                                <InfoRow icon={MapPin} label="Adres" value={`${currentUser.personalInfo.address.district}, ${currentUser.personalInfo.address.city}`} />
+                                <InfoRow icon={MapPin} label="İl" value={currentUser.personalInfo.address.city || '-'} />
+                                <InfoRow icon={MapPin} label="İlçe" value={currentUser.personalInfo.address.district || '-'} />
+                                <InfoRow icon={MapPin} label="Mahalle" value={(currentUser.personalInfo.address as { neighborhood?: string }).neighborhood || '-'} />
+                                {(currentUser.personalInfo.address as { fullAddress?: string }).fullAddress && (
+                                    <InfoRow icon={MapPin} label="Açık Adres" value={(currentUser.personalInfo.address as { fullAddress?: string }).fullAddress} />
+                                )}
                                 <InfoRow icon={Globe} label="Web Sitesi" value={currentUser.personalInfo.website} />
                                 <InfoRow icon={Linkedin} label="LinkedIn" value={currentUser.personalInfo.social?.linkedin} />
                                 <InfoRow icon={Github} label="GitHub" value={currentUser.personalInfo.social?.github} />
