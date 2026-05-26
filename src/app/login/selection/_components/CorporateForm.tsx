@@ -719,13 +719,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         )}
                     </div>
 
-                    {/* Form alt kısımları — alt tür seçilmeden gözükmesin */}
-                    {!ngoSub && (
-                        <div className="rounded-2xl border-2 border-dashed border-muted bg-muted/20 p-8 text-center">
-                            <p className="text-sm font-medium text-muted-foreground">Devam etmek için yukarıdan <strong>Kuruluş Alt Türü</strong> seçin.</p>
-                        </div>
-                    )}
-                    {ngoSub && (<>
+                    {/* Form alt kısımları — Kuruluş Türü seçildiği anda görünür. Alt türe özel alanlar
+                        kendi isXyz koşullarıyla gösterilir / gizlenir. */}
+                    {(<>
                     {/* Kimlik — başlık alt türe göre değişir */}
                     <div className="space-y-6">
                         <SectionTitle icon={Building2}>{identityTitle}</SectionTitle>
@@ -1201,7 +1197,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     </div>
                     </>)}
 
-                    {ngoSub && (<>
+                    {(<>
                     <div className="space-y-2 pt-6 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
                             <Checkbox

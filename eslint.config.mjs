@@ -27,6 +27,7 @@ export default tseslint.config(
       '.list-*.mjs',
       '.check-*.mjs',
       '.wait-*.mjs',
+      '.enable-*.mjs',
     ],
   },
   js.configs.recommended,
