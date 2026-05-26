@@ -291,7 +291,37 @@ export default function ProfilePage() {
     const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
     const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
 
-    const certificates = useMemo(() => certificatesData ?? [], [certificatesData]);
+    // Sertifika kaynağı: kullanıcının manuel girdiği sertifikalar (users/{uid}/certificates)
+    // + STK yetkilisi tarafından ONAYLANMIŞ gönüllülük başvurularından oluşan sertifikalar.
+    // my-badges sayfası ile birebir aynı kaynak — dedupe (title|organization) ile.
+    type ApprovedApp = { id?: string; type?: string; status?: string; title?: string; org?: string; date?: string };
+    const approvedAppsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.applications), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: approvedAppsData } = useCollection<ApprovedApp>(approvedAppsQuery);
+    const approvedCertificates = useMemo<CertificateDoc[]>(() => {
+        return (approvedAppsData ?? [])
+            .filter(app => app.type === 'Gönüllülük' && app.status === 'Onaylandı')
+            .map(app => ({
+                id: `app-${app.id}`,
+                title: app.title || 'Gönüllülük Sertifikası',
+                organization: app.org || '',
+                date: app.date || '',
+            }));
+    }, [approvedAppsData]);
+    const certificates = useMemo<CertificateDoc[]>(() => {
+        const manual = certificatesData ?? [];
+        const seen = new Set(manual.map(c => `${c.title}|${c.organization}`));
+        const merged: CertificateDoc[] = [...manual];
+        for (const c of approvedCertificates) {
+            const key = `${c.title}|${c.organization}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            merged.push(c);
+        }
+        return merged;
+    }, [certificatesData, approvedCertificates]);
     const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
 
     // PRD/Sync: my-badges sayfası ile aynı kaynaktan rozet listesi türet.
@@ -492,23 +522,38 @@ export default function ProfilePage() {
     const BadgeDisplay = ({ badge }: { badge: (typeof badges)[0] }) => {
         const currentPoints = badge.currentPoints ?? 0;
         const pointsRequired = badge.pointsRequired ?? 0;
+        // Tier-bazlı ilerleme: 0'dan başlat (prevTierRequired enrichBadges'ten geliyor).
+        const prev = (badge as { prevTierRequired?: number }).prevTierRequired ?? 0;
+        const tierDelta = Math.max(1, pointsRequired - prev);
+        const tierCurrent = Math.max(0, Math.min(tierDelta, currentPoints - prev));
+        const tierProgress = Math.min((tierCurrent / tierDelta) * 100, 100);
         const isEarned = currentPoints >= pointsRequired;
-        const pointsNeeded = pointsRequired - currentPoints;
+        const pointsRemaining = Math.max(tierDelta - tierCurrent, 0);
         const IconName = badge.iconName ?? Award;
         return (
-             <div className="flex flex-col items-center text-center">
+             <div className="flex flex-col items-center text-center w-full">
                  <div className={`p-3 rounded-full ${isEarned ? 'bg-amber-100' : 'bg-muted'}`}>
                     <IconName className={`h-8 w-8 ${isEarned ? 'text-amber-500' : 'text-muted-foreground'}`} />
                  </div>
                  <p className="text-xs font-semibold mt-2">{badge.level}</p>
                  <p className="text-xs text-muted-foreground">{badge.name}</p>
-                 {isEarned ? (
-                    <p className="text-xs font-semibold text-green-600 mt-1">Kazanıldı!</p>
-                ) : (
-                    <p className="text-xs text-muted-foreground mt-1">
-                        {pointsNeeded > 0 ? `${pointsNeeded} Puan Kaldı` : `${currentPoints}/${pointsRequired} Puan`}
+                 <div className="w-full mt-2 space-y-1">
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${tierProgress}%`, backgroundColor: '#E34234' }}
+                        />
+                    </div>
+                    <p className="text-[10px] font-bold tracking-wide">
+                        <span className="text-muted-foreground">{tierCurrent.toLocaleString('tr-TR')}/{tierDelta.toLocaleString('tr-TR')}</span>
+                        {' · '}
+                        {isEarned ? (
+                            <span className="text-green-600">Tamamlandı</span>
+                        ) : (
+                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} kaldı</span>
+                        )}
                     </p>
-                )}
+                 </div>
             </div>
         )
     }

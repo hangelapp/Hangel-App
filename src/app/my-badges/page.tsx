@@ -133,7 +133,13 @@ const VectorBadge = ({ badge }: { badge: TierBadge }) => {
                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">{badge.level}</p>
                 <h4 className="font-bold text-sm leading-tight h-10 flex items-center justify-center">{badge.name}</h4>
                 <div className="pt-2">
-                    <Progress value={progress} className="h-1.5" />
+                    {/* Narçiçeği (#E34234) ilerleme çubuğu — profile sayfası ile aynı renk */}
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${progress}%`, backgroundColor: '#E34234' }}
+                        />
+                    </div>
                     <div className="flex justify-between text-[9px] font-black uppercase tracking-widest mt-2">
                         <span className="text-muted-foreground">
                             {tierCurrent.toLocaleString('tr-TR')} / {tierDelta.toLocaleString('tr-TR')}
@@ -141,7 +147,7 @@ const VectorBadge = ({ badge }: { badge: TierBadge }) => {
                         {isEarned ? (
                             <span className="text-green-600">TAMAMLANDI</span>
                         ) : (
-                            <span className="text-primary">{pointsRemaining.toLocaleString('tr-TR')} KALDI</span>
+                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} KALDI</span>
                         )}
                     </div>
                 </div>
