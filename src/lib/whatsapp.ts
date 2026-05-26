@@ -42,9 +42,11 @@ export async function sendWhatsAppOtp(
     otpCode: string,
     lang?: string,
 ): Promise<WhatsAppSendResult> {
-    const token = process.env.WHATSAPP_ACCESS_TOKEN;
-    const appSecret = process.env.WHATSAPP_APP_SECRET;
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    // Trim — Secret Manager values can carry trailing newlines from copy-paste
+    // and break appsecret_proof / Authorization header.
+    const token = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+    const appSecret = process.env.WHATSAPP_APP_SECRET?.trim();
+    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
     const templateName = process.env.WHATSAPP_OTP_TEMPLATE_NAME || 'otp_hangel';
     const templateLang = lang || process.env.WHATSAPP_OTP_TEMPLATE_LANG || 'tr';
 

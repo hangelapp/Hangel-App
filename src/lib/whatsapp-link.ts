@@ -33,9 +33,11 @@ export async function sendWhatsAppLink(
     token: string,
     lang: string = 'tr',
 ): Promise<SendLinkResult> {
-    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
-    const appSecret = process.env.WHATSAPP_APP_SECRET;
-    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    // Trim — Secret Manager values can have trailing newlines from copy-paste
+    // that break appsecret_proof (HMAC mismatch with token bytes).
+    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+    const appSecret = process.env.WHATSAPP_APP_SECRET?.trim();
+    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
     if (!accessToken || !phoneNumberId) {
         return { ok: false, errorCode: 'WA_CONFIG_MISSING', errorMessage: 'WhatsApp env missing.' };
     }
