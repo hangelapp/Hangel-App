@@ -24,6 +24,7 @@ import {
   FileText,
   Award,
   MessageSquare,
+  MessageCircle,
   BarChart,
   Send,
   Shield,
@@ -57,6 +58,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   zap: Zap,
   HeartHandshake: HeartHandshake,
   'circle-help': CircleHelp,
+  'message-circle': MessageCircle,
 };
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
@@ -92,6 +94,7 @@ const group2Items: SideNavItem[] = [
 const group3Items: SideNavItem[] = [
     { href: '/leaderboard', label: 'nav.leaderboard', icon: 'bar-chart' },
     { href: '/invite', label: 'nav.invite', icon: 'send' },
+    { href: '/feedback', label: 'nav.feedback', icon: 'message-circle' },
 ];
 
 const group4Items: SideNavItem[] = [
@@ -125,6 +128,7 @@ const iconColorMap: { [key: string]: string } = {
   zap: 'bg-yellow-500',
   'HeartHandshake': 'bg-rose-500',
   'circle-help': 'bg-teal-500',
+  'message-circle': 'bg-emerald-500',
 };
 
 const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick: () => void }) => {

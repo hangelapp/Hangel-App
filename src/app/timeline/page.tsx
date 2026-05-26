@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { adBanners, ngos, allEntityLists } from '@/lib/data';
-import { Heart, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown } from 'lucide-react';
+import { Heart, Share2, MoreHorizontal, Star, Search, Filter, ArrowDownUp, Leaf, ChevronDown, Flag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Progress } from '@/components/ui/progress';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import {
+  addDoc,
   collection,
   doc,
   getDoc,
@@ -119,6 +120,28 @@ export default function TimelinePage() {
       toast({ title: 'Beğeni kaydedilemedi', variant: 'destructive' });
     } finally {
       setPendingPostId(null);
+    }
+  };
+
+  const handleReport = async (post: Post) => {
+    if (!authUser?.uid) {
+      toast({ title: 'Bildirmek için giriş yapmalısın', variant: 'destructive' });
+      return;
+    }
+    if (!db) return;
+    try {
+      await addDoc(collection(db, COLLECTIONS.postReports), {
+        postId: post.id,
+        postAuthorName: post.author?.name || '',
+        reporterId: authUser.uid,
+        reporterEmail: authUser.email || null,
+        contentPreview: (post.content || '').slice(0, 200),
+        createdAt: serverTimestamp(),
+        status: 'pending',
+      });
+      toast({ title: 'Bildirim alındı', description: 'Hangel ekibi inceleyecek. Teşekkürler.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Bildirim gönderilemedi', description: 'Lütfen tekrar dene.' });
     }
   };
 
@@ -342,34 +365,51 @@ export default function TimelinePage() {
                     return (
                     <React.Fragment key={post.id}>
                         <Card id={`post-${post.id}`} className="overflow-hidden shadow-none rounded-xl scroll-mt-24">
-                            <CardHeader className="flex flex-row items-center justify-between p-3 sm:p-4">
-                                <Link href={getEntityLink(post.author.name)} className="flex items-center gap-3">
-                                    <Avatar>
-                                    <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
-                                    <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                            {/* X.com tarzı yerleşim: avatar sol, ad + zaman + ... butonu aynı satırda */}
+                            <div className="flex items-start gap-3 p-3 sm:p-4">
+                                <Link href={getEntityLink(post.author.name)} className="shrink-0">
+                                    <Avatar className="h-11 w-11">
+                                        <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                                        <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <div>
-                                    <p className="font-semibold">{post.author.name}</p>
-                                    <p className="text-sm text-muted-foreground">{post.timestamp}</p>
-                                    </div>
                                 </Link>
-                                <div className="flex items-center gap-1">
-                                    {post.sponsored && (
-                                    <Badge variant="outline" className="text-xs">
-                                        <Star className="h-3 w-3 mr-1" /> Sponsorlu
-                                    </Badge>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <Link
+                                            href={getEntityLink(post.author.name)}
+                                            className="flex items-baseline gap-1.5 min-w-0 hover:underline"
+                                        >
+                                            <span className="font-bold text-sm truncate">{post.author.name}</span>
+                                            <span className="text-muted-foreground text-xs shrink-0">· {post.timestamp}</span>
+                                        </Link>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            {post.sponsored && (
+                                                <Badge variant="outline" className="text-[10px] h-5">
+                                                    <Star className="h-3 w-3 mr-1" /> Sponsorlu
+                                                </Badge>
+                                            )}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Daha fazla seçenek">
+                                                        <MoreHorizontal className="h-5 w-5" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleReport(post)} className="text-destructive focus:text-destructive">
+                                                        <Flag className="mr-2 h-4 w-4" /> Bildir
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                    <p className="text-[15px] leading-relaxed mt-1 whitespace-pre-wrap break-words">{post.content}</p>
+                                    {post.imageUrl && (
+                                        <div className="relative aspect-video w-full overflow-hidden rounded-xl mt-3 border">
+                                            <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
+                                        </div>
                                     )}
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Daha fazla seçenek"><MoreHorizontal className="h-5 w-5" /></Button>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="space-y-4 px-3 sm:px-4 pb-3">
-                            <p className="text-base">{post.content}</p>
-                            {post.imageUrl && (
-                                <div className="relative aspect-video w-full overflow-hidden rounded-xl">
-                                <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
-                                </div>
-                            )}
-                            </CardContent>
+                            </div>
                             <CardFooter className="flex justify-start gap-0 border-t p-0">
                                 <Button
                                     variant="ghost"

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Lightbulb, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Star, Lightbulb, ShieldCheck, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -13,6 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useWebPage } from '@/hooks/use-site-content';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useFirestore, useUser } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
 
 const FeedbackValueSection = ({ 
     title, 
@@ -65,14 +68,46 @@ export default function FeedbackPage() {
     const router = useRouter();
     const { toast } = useToast();
     const cms = useWebPage('feedback');
+    const db = useFirestore();
+    const { user: authUser } = useUser();
     const [rating, setRating] = useState<number>(0);
+    const [topic, setTopic] = useState<string>('');
+    const [feedbackText, setFeedbackText] = useState<string>('');
+    const [feedbackEmail, setFeedbackEmail] = useState<string>('');
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        toast({
-            title: "Geri Bildiriminiz Alındı",
-            description: "Daha iyi bir deneyim oluşturmamıza yardımcı olduğunuz için teşekkürler.",
-        });
+        if (!feedbackText.trim()) {
+            toast({ variant: 'destructive', title: 'Yazı eksik', description: 'Lütfen düşüncelerinizi yazın.' });
+            return;
+        }
+        if (!db) return;
+        setSubmitting(true);
+        try {
+            await addDoc(collection(db, COLLECTIONS.userFeedback), {
+                rating: rating || null,
+                topic: topic || null,
+                text: feedbackText.trim(),
+                email: feedbackEmail.trim() || authUser?.email || null,
+                userId: authUser?.uid || null,
+                userName: authUser?.displayName || null,
+                createdAt: serverTimestamp(),
+                status: 'new',
+            });
+            toast({
+                title: "Geri Bildiriminiz Alındı",
+                description: "Daha iyi bir deneyim oluşturmamıza yardımcı olduğunuz için teşekkürler.",
+            });
+            setRating(0);
+            setTopic('');
+            setFeedbackText('');
+            setFeedbackEmail('');
+        } catch {
+            toast({ variant: 'destructive', title: 'Gönderilemedi', description: 'Lütfen tekrar dene.' });
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -148,13 +183,18 @@ export default function FeedbackPage() {
                                 <div className="space-y-4">
                                     <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Konu Seçin</Label>
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {['Genel Deneyim', 'Bağış Süreçleri', 'Gönüllülük', 'Hata Bildirimi', 'Öneri', 'Diğer'].map((topic) => (
-                                            <button 
-                                                key={topic}
+                                        {['Genel Deneyim', 'Bağış Süreçleri', 'Gönüllülük', 'Hata Bildirimi', 'Öneri', 'Diğer'].map((t) => (
+                                            <button
+                                                key={t}
                                                 type="button"
-                                                className="px-4 py-3 rounded-xl border text-xs font-bold hover:border-primary hover:text-primary transition-all bg-white"
+                                                onClick={() => setTopic(prev => prev === t ? '' : t)}
+                                                aria-pressed={topic === t}
+                                                className={cn(
+                                                    "px-4 py-3 rounded-xl border text-xs font-bold transition-all bg-white",
+                                                    topic === t ? "border-primary text-primary bg-primary/5" : "hover:border-primary hover:text-primary",
+                                                )}
                                             >
-                                                {topic}
+                                                {t}
                                             </button>
                                         ))}
                                     </div>
@@ -162,26 +202,30 @@ export default function FeedbackPage() {
 
                                 <div className="space-y-4">
                                     <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1" htmlFor="feedback-text">Düşüncelerinizi Paylaşın</Label>
-                                    <Textarea 
+                                    <Textarea
                                         id="feedback-text"
                                         className="min-h-[200px] rounded-[2rem] border-none bg-[#f5f5f7] p-6 focus-visible:ring-primary text-lg leading-relaxed"
                                         placeholder="Neyi çok sevdiniz? Neyi geliştirmeliyiz?"
                                         required
+                                        value={feedbackText}
+                                        onChange={(e) => setFeedbackText(e.target.value)}
                                     />
                                 </div>
 
                                 <div className="space-y-4">
                                     <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1" htmlFor="feedback-email">E-posta Adresiniz (İsteğe Bağlı)</Label>
-                                    <Input 
+                                    <Input
                                         id="feedback-email"
                                         type="email"
                                         className="h-14 rounded-2xl border-none bg-[#f5f5f7] px-6 focus-visible:ring-primary"
                                         placeholder="Gerekirse size dönüş yapabilmemiz için"
+                                        value={feedbackEmail}
+                                        onChange={(e) => setFeedbackEmail(e.target.value)}
                                     />
                                 </div>
 
-                                <Button type="submit" size="lg" className="w-full h-16 rounded-[2rem] text-xl font-bold bg-primary hover:bg-primary/90 shadow-2xl shadow-primary/20 transition-all active:scale-[0.98]">
-                                    Geri Bildirimi Gönder
+                                <Button type="submit" size="lg" disabled={submitting} className="w-full h-16 rounded-[2rem] text-xl font-bold bg-primary hover:bg-primary/90 shadow-2xl shadow-primary/20 transition-all active:scale-[0.98]">
+                                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Geri Bildirimi Gönder'}
                                 </Button>
                             </form>
                         </div>

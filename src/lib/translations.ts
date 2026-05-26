@@ -25,6 +25,7 @@ export const translations: Record<Language, any> = {
       messages: 'Mesajlarım',
       leaderboard: 'Liderlik Tablosu',
       invite: 'Arkadaş Davet Et',
+      feedback: 'Geri Bildirim',
       impactStory: 'Etki Story',
       library: 'Kütüphane',
       admin: 'Yönetim Paneli',
