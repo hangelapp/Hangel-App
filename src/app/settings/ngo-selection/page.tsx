@@ -292,11 +292,14 @@ export default function NgoSelectionPage() {
                 return;
             }
         }
+        // Radikal onboarding kısaltma: ngo-selection ZORUNLU adım. Sonrası
+        // opsiyonel. Direkt /timeline'a yönlendiriyoruz — kullanıcı orada
+        // banner ile profil tamamlama daveti görür.
         if (isOnboarding) {
-            localStorage.setItem('onboardingStep', 'profile');
-            router.push('/settings/profile');
+            try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
+            router.push('/timeline');
         } else {
-            router.push('/settings/profile');
+            router.push('/settings');
         }
     };
 

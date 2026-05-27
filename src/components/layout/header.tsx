@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  Menu, Siren, Bell, Globe,
+  Menu, Siren, Bell, Globe, Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserNav } from '@/components/layout/user-nav';
@@ -70,6 +70,15 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                     </SelectContent>
                 </Select>
             </div>
+            {/* Global search — giriş yapmış kullanıcılar görür */}
+            {user && (
+              <Button asChild variant="ghost" size="icon" aria-label="Ara">
+                <Link href="/search">
+                  <Search className="h-5 w-5" />
+                </Link>
+              </Button>
+            )}
+
             {/* Acil ikonu — giriş yapmamış kullanıcı /emergency/about tanıtım sayfasına,
                 giriş yapmış kullanıcı /emergency aksiyon sayfasına gider. */}
             <Button asChild variant="ghost" size="icon" aria-label={t('a11y.emergency')}>
