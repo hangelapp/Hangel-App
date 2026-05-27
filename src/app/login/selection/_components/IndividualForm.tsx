@@ -296,6 +296,17 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             }
 
             await initiateEmailVerification(userCredential.user);
+            // Yeni kullanıcıya welcome mesajı + notification + push (best-effort)
+            try {
+                const idToken = await userCredential.user.getIdToken();
+                await fetch('/api/notifications/welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify({ uid: userId, isCorporate: false }),
+                });
+            } catch (e) {
+                console.warn('welcome msg failed', e);
+            }
             setStep('verify-sent');
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Bir hata oluştu.';
@@ -390,6 +401,17 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 joinDate: new Date().toISOString().split('T')[0],
                 signupMethod: 'phone',
             }, { merge: true });
+            // Yeni kullanıcıya welcome (best-effort)
+            try {
+                const idToken = await cred.user.getIdToken();
+                await fetch('/api/notifications/welcome', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify({ uid: userId, isCorporate: false }),
+                });
+            } catch (e) {
+                console.warn('welcome msg failed', e);
+            }
             toast({ title: 'Hoş geldin', description: `${name.trim()}, hesabın oluşturuldu.` });
             onComplete(true);
         } catch (err) {

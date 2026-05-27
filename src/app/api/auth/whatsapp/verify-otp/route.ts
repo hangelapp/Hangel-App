@@ -134,13 +134,47 @@ export async function POST(req: NextRequest) {
         // OTP doc'unu sil (kullanıldı)
         await ref.delete();
 
-        // Yeni kullanıcıya hoş geldin Utility mesajı (best-effort, fail bloklamaz)
+        // Yeni kullanıcıya welcome zinciri (best-effort, fail bloklamaz)
         if (isNewUser) {
+            // 1) WhatsApp utility mesajı (template approval gerek)
             try {
                 const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
                 await sendWelcomeMessage(fullPhone, name || 'arkadaş', phoneCountryCode === '+90' ? 'tr' : 'en');
             } catch (e) {
-                console.warn('[verify-otp] welcome message failed', e);
+                console.warn('[verify-otp] whatsapp welcome failed', e);
+            }
+            // 2) Inbox mesajı + notifications + push (admin SDK ile direkt)
+            try {
+                const { getAdminFirestore } = await import('@/lib/firebase-admin');
+                const { sendPushToUser } = await import('@/lib/push-notifications');
+                const { FieldValue } = await import('firebase-admin/firestore');
+                const adminDb = getAdminFirestore();
+                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığın için minnettarız. #wearehangel';
+                const subject = 'hangel\'e hoş geldin';
+                await adminDb.collection(COLLECTIONS.messages).add({
+                    sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                    senderId: 'hangel-system',
+                    senderType: 'system',
+                    recipient: { id: uid, name: name || '', avatarUrl: '' },
+                    recipientId: uid,
+                    subject,
+                    content: welcomeText,
+                    timestamp: FieldValue.serverTimestamp(),
+                    status: 'sent',
+                    isWelcome: true,
+                });
+                await adminDb.collection(COLLECTIONS.notifications).add({
+                    userId: uid,
+                    type: 'welcome',
+                    title: subject,
+                    body: welcomeText.slice(0, 120),
+                    read: false,
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdBy: 'hangel-system',
+                });
+                await sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } });
+            } catch (e) {
+                console.warn('[verify-otp] welcome inbox/notif failed', e);
             }
         }
 

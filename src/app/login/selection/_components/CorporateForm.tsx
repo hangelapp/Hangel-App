@@ -242,6 +242,19 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
+            // Auth'lu kullanıcının başvurusu varsa welcome mesajı (kurumsal)
+            if (authUser) {
+                try {
+                    const idToken = await authUser.getIdToken();
+                    await fetch('/api/notifications/welcome', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                        body: JSON.stringify({ uid: authUser.uid, isCorporate: true, entityType }),
+                    });
+                } catch (e) {
+                    console.warn('corporate welcome msg failed', e);
+                }
+            }
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });
             router.push(authUser ? '/my-applications' : '/login');
         } catch (error: unknown) {

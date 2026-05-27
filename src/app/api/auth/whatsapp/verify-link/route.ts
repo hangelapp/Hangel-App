@@ -115,13 +115,44 @@ export async function GET(req: NextRequest) {
         // Mark used + cleanup
         await ref.update({ used: true, usedAt: FieldValue.serverTimestamp() });
 
-        // Yeni kullanıcıya hoş geldin Utility mesajı (best-effort)
-        if (isNewUser && data.phone) {
+        // Yeni kullanıcıya welcome zinciri (best-effort)
+        if (isNewUser) {
+            if (data.phone) {
+                try {
+                    const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
+                    await sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en');
+                } catch (e) {
+                    console.warn('[verify-link] whatsapp welcome failed', e);
+                }
+            }
             try {
-                const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
-                await sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en');
+                const { sendPushToUser } = await import('@/lib/push-notifications');
+                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığın için minnettarız. #wearehangel';
+                const subject = 'hangel\'e hoş geldin';
+                await db.collection(COLLECTIONS.messages).add({
+                    sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                    senderId: 'hangel-system',
+                    senderType: 'system',
+                    recipient: { id: uid, name: data.name || '', avatarUrl: '' },
+                    recipientId: uid,
+                    subject,
+                    content: welcomeText,
+                    timestamp: FieldValue.serverTimestamp(),
+                    status: 'sent',
+                    isWelcome: true,
+                });
+                await db.collection(COLLECTIONS.notifications).add({
+                    userId: uid,
+                    type: 'welcome',
+                    title: subject,
+                    body: welcomeText.slice(0, 120),
+                    read: false,
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdBy: 'hangel-system',
+                });
+                await sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } });
             } catch (e) {
-                console.warn('[verify-link] welcome message failed', e);
+                console.warn('[verify-link] welcome inbox/notif failed', e);
             }
         }
 
