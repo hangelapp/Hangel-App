@@ -12,12 +12,16 @@ export default function SettingsLayout({
     return <>{children}</>;
   }
 
+  // Why: Settings pages farklı genişlikler kullanıyordu (max-w-3xl, max-w-none).
+  // Tek container ile tutarlı + geniş ekran (laptop, tablet) deneyimi iyileştirildi.
+  // Footer pb bottom-nav + safe-area-inset hesabıyla dinamik (mobil bottom-nav
+  // üzerine binmesin diye).
   return (
-    <>
+    <div className="mx-auto w-full max-w-3xl">
       {children}
-      <footer className="pt-8 pb-4 text-center text-[10px] text-muted-foreground space-y-1">
+      <footer className="pt-8 pb-[calc(5rem+env(safe-area-inset-bottom))] text-center text-[10px] text-muted-foreground space-y-1">
         <p>© 2024 hangel teknoloji ve sosyal etki anonim şirketi. Tüm hakları saklıdır.</p>
       </footer>
-    </>
+    </div>
   );
 }

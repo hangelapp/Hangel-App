@@ -263,6 +263,18 @@ export default function MessagesPage() {
                 }
             }
 
+            // Push notification tetikle (best-effort, hata bloklamaz)
+            try {
+                const idToken = await authUser.getIdToken();
+                await fetch('/api/notifications/message-sent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify({ messageId: msgDoc.id }),
+                });
+            } catch (e) {
+                console.warn('message push trigger failed', e);
+            }
+
             toast({ title: t('dashboard.messages.toastSentTitle'), description: `${recipientName}${t('dashboard.messages.toastSentDescSuffix')}` });
             setComposeOpen(false); resetCompose();
         } catch (err) {

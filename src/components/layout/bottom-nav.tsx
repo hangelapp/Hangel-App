@@ -4,20 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Store, Calendar, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "@/components/providers/language-provider";
 import React, { useState, useEffect } from 'react';
 import { useUser } from "@/firebase";
 
+// Why: kısa label'lar (truncate'i önlemek için max 7 char). Translation key'leri
+// karşılığı yoktu, key string'i ham görünüyordu.
 const navItems = [
-  { href: "/volunteering", icon: HeartHandshake, label: "nav.volunteering" },
-  { href: "/events", icon: Calendar, label: "nav.events" },
-  { href: "/market", icon: Store, label: "nav.market" },
-  { href: "/timeline", icon: LayoutGrid, label: "nav.timeline" },
-  { href: "/profile", icon: UserCircle, label: "nav.profile" },
+  { href: "/volunteering", icon: HeartHandshake, label: "İmece" },
+  { href: "/events", icon: Calendar, label: "Etkinlik" },
+  { href: "/market", icon: Store, label: "Market" },
+  { href: "/timeline", icon: LayoutGrid, label: "Akış" },
+  { href: "/profile", icon: UserCircle, label: "Profil" },
 ];
 
 export default function AppBottomNav() {
-  const { t } = useTranslation();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const { user } = useUser();
@@ -58,13 +58,13 @@ export default function AppBottomNav() {
               href={item.href}
               key={item.label}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 p-1 text-center transition-colors",
+                "flex flex-col items-center justify-center gap-0.5 p-1 text-center transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="h-6 w-6" />
-              <span className="text-[10px] font-medium truncate w-full">
-                {t(item.label)}
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-semibold leading-tight">
+                {item.label}
               </span>
             </Link>
           );
