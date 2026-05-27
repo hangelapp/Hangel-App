@@ -122,38 +122,39 @@ const contractGroups = [
 export default function ContractsPage() {
     const router = useRouter();
     const { t } = useTranslation();
+  // Why: önceden min-h-screen bg-white + PublicFooter (marketing sayfası gibi)
+  // kullanıyordu — uygulama içinde tutarsız hissettiriyordu. App settings
+  // sayfalarının (Privacy, Notifications) görünümünü kullanıyoruz: standart
+  // padding + Card list, settings layout zaten footer + max-w sağlıyor.
   return (
-    <div className="min-h-screen bg-white">
-      <main className="p-4 space-y-6 animate-in fade-in-0">
-          <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
-              <ArrowLeft className="h-6 w-6" />
-          </Button>
-        <div>
-          <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsContracts.heading')}</h1>
-          <p className="text-muted-foreground text-sm">{t('dashboard.settingsContracts.subheading')}</p>
-        </div>
+    <div className="p-4 space-y-6 animate-in fade-in-0">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+      <div>
+        <h1 className="text-2xl font-bold font-headline">{t('dashboard.settingsContracts.heading')}</h1>
+        <p className="text-muted-foreground text-sm">{t('dashboard.settingsContracts.subheading')}</p>
+      </div>
 
-        {contractGroups.map(group => (
-          <Card key={group.title} className="rounded-2xl border-black/5 shadow-sm">
-              <CardHeader>
-                  <CardTitle className="text-lg font-bold">{group.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-              <div className="divide-y border-t">
-                  {group.items.map((contract) => (
-                      <Link href={`/settings/contracts/${contract.slug}`} key={contract.title} className="block">
-                          <div className="flex items-center justify-between p-4 hover:bg-accent transition-colors">
-                          <span className="font-medium text-sm">{contract.title}</span>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                      </Link>
-                  ))}
-              </div>
-              </CardContent>
-          </Card>
-        ))}
-      </main>
-      <PublicFooter currentPageLabel="Sözleşmeler, Politikalar ve Beyanlar" />
+      {contractGroups.map(group => (
+        <Card key={group.title}>
+          <CardHeader>
+            <CardTitle className="text-base">{group.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {group.items.map((contract) => (
+                <Link href={`/settings/contracts/${contract.slug}`} key={contract.title} className="block">
+                  <div className="flex items-center justify-between p-3 hover:bg-accent/50 transition-colors">
+                    <span className="font-medium text-sm flex-1 pr-2">{contract.title}</span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

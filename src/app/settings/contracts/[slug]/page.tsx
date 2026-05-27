@@ -4,7 +4,7 @@ import { contractsData } from '@/lib/contracts';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PublicFooter } from '@/components/layout/public-footer';
+import { Card, CardContent } from '@/components/ui/card';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
@@ -30,9 +30,11 @@ export default function ContractDetailPage() {
     return contractsData.find(c => c.slug === slug) || null;
   }, [firestoreContract, slug]);
 
+  // App settings sayfaları tasarımı: standart p-4 + Card. PublicFooter kaldırıldı
+  // (settings layout zaten footer + max-w sağlar).
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center min-h-dvh">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -43,20 +45,21 @@ export default function ContractDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="p-4 space-y-6 animate-in fade-in-0 max-w-3xl mx-auto">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
-          <ArrowLeft className="h-6 w-6" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold font-headline">{contract.title}</h1>
-        </div>
-        <article
-          className="prose prose-sm sm:prose-base dark:prose-invert max-w-none space-y-4"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
-        />
-      </main>
-      <PublicFooter currentPageLabel={contract.title} />
+    <div className="p-4 space-y-6 animate-in fade-in-0">
+      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+        <ArrowLeft className="h-6 w-6" />
+      </Button>
+      <div>
+        <h1 className="text-2xl font-bold font-headline">{contract.title}</h1>
+      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <article
+            className="prose prose-sm sm:prose-base dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
