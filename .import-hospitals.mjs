@@ -33,14 +33,21 @@ area["ISO3166-1"="TR"]->.tr;
   way["amenity"="clinic"](area.tr);
 );
 out center tags;`;
-    const url = 'https://overpass-api.de/api/interpreter';
+    // Why: Overpass API'nin daha az yoğun mirror'ı + zorunlu User-Agent
+    // (overpass-api.de 406 dönüyor agent'sız çağrılarda)
+    const url = 'https://overpass.kumi.systems/api/interpreter';
     const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+            'User-Agent': 'HangelImportBot/1.0 (+https://hangel.org.tr)',
+        },
         body: `data=${encodeURIComponent(query)}`,
     });
     if (!res.ok) {
-        throw new Error(`Overpass HTTP ${res.status}`);
+        const errBody = await res.text().catch(() => '');
+        throw new Error(`Overpass HTTP ${res.status} — ${errBody.slice(0, 200)}`);
     }
     const data = await res.json();
     const elements = data.elements || [];
