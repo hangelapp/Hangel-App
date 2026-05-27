@@ -153,10 +153,12 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="hospital">Hastane Adı</Label>
-                        <Input id="hospital" value={formData.hospital} onChange={e => setFormData({...formData, hospital: e.target.value})} placeholder="Örn: Ankara Şehir Hastanesi" required />
-                    </div>
+                    <HospitalAutocompleteField
+                        value={formData.hospital}
+                        onChange={(name) => {
+                            setFormData(prev => ({ ...prev, hospital: name }));
+                        }}
+                    />
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="blood-type">Kan Grubu</Label>
@@ -450,11 +452,103 @@ export default function EmergencyPage() {
                     <Siren className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="text-[10px] font-medium leading-snug">
-                    <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span> 
+                    <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span>
                     Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
                 </div>
             </div>
         </div>
     </div>
   );
+}
+
+/**
+ * Hastane adı autocomplete — kullanıcı yazınca /api/hospitals/lookup'ı çağırır,
+ * önerilerle dropdown gösterir. Seçim yapılınca onChange tetiklenir + dolu adres
+ * bilgisi parent state'e geçer.
+ */
+interface HospitalHit {
+    id: string;
+    name?: string;
+    city?: string;
+    district?: string;
+    address?: string;
+    phone?: string;
+    website?: string;
+}
+
+function HospitalAutocompleteField({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (name: string, hit?: HospitalHit) => void;
+}) {
+    const [hits, setHits] = useState<HospitalHit[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    const handleLookup = async () => {
+        if (value.trim().length < 2) return;
+        setLoading(true);
+        setOpen(true);
+        try {
+            const res = await fetch(`/api/hospitals/lookup?q=${encodeURIComponent(value.trim())}`);
+            const data = await res.json().catch(() => ({}));
+            setHits(Array.isArray(data.hits) ? data.hits : []);
+        } catch {
+            setHits([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-2">
+            <Label htmlFor="hospital">Hastane Adı</Label>
+            <div className="flex gap-2">
+                <Input
+                    id="hospital"
+                    value={value}
+                    onChange={(e) => { onChange(e.target.value); setOpen(false); }}
+                    placeholder="Örn: Ankara Şehir Hastanesi"
+                    required
+                    className="flex-1"
+                />
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleLookup}
+                    disabled={loading || value.trim().length < 2}
+                    className="shrink-0"
+                >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Bilgileri Getir'}
+                </Button>
+            </div>
+            {open && hits.length > 0 && (
+                <div className="border rounded-lg bg-card divide-y max-h-72 overflow-y-auto">
+                    {hits.map((h) => (
+                        <button
+                            key={h.id}
+                            type="button"
+                            onClick={() => { onChange(h.name || '', h); setOpen(false); }}
+                            className="w-full text-left p-2.5 hover:bg-accent transition-colors"
+                        >
+                            <p className="font-semibold text-sm leading-tight">{h.name}</p>
+                            {(h.city || h.district || h.address) && (
+                                <p className="text-[11px] text-muted-foreground leading-tight">
+                                    {[h.district, h.city, h.address].filter(Boolean).join(' · ').slice(0, 100)}
+                                </p>
+                            )}
+                            {h.phone && (
+                                <p className="text-[11px] text-primary leading-tight">{h.phone}</p>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            )}
+            {open && hits.length === 0 && !loading && (
+                <p className="text-xs text-muted-foreground px-1">Sonuç yok. Yazıyı kontrol et veya elle yaz.</p>
+            )}
+        </div>
+    );
 }

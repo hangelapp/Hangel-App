@@ -108,19 +108,33 @@ const VectorBadge = ({ badge }: { badge: TierBadge }) => {
     const progress = Math.min((tierCurrent / tierDelta) * 100, 100);
     const pointsRemaining = Math.max(tierDelta - tierCurrent, 0);
 
+    // PRD: hak kazanılmadıkça grayscale; 1+ puan alındıysa progress bar narçiçeği
+    // (#E34234) renkli, tamamlandığında rozetin ZEMİNİ ve ikonu da narçiçeği rengini alır.
+    const hasAnyProgress = badge.currentPoints > badge.prevTierRequired;
     return (
         <Card
             className={cn(
                 "rounded-[2rem] border-black/5 flex flex-col items-center text-center p-6 transition-all hover:shadow-xl group",
-                // PRD görsel kuralı: hak kazanılmayan rozetler renksiz/gri,
-                // hak kazanıldığında ikon renkli görünür.
-                !isEarned && "grayscale opacity-50",
+                !isEarned && !hasAnyProgress && "grayscale opacity-50",
+                isEarned && "border-[#E34234]/40 shadow-md",
             )}
+            style={isEarned ? { backgroundColor: '#FFF3F1' } : undefined}
         >
-            <div className={cn('relative w-20 h-20 flex items-center justify-center rounded-3xl transition-all duration-500 mb-4 group-hover:scale-110', isEarned ? colors.bg : 'bg-muted')}>
-                <Icon className={cn('w-10 h-10 transition-colors', isEarned ? colors.text : 'text-muted-foreground/60')} />
+            <div
+                className={cn(
+                    'relative w-20 h-20 flex items-center justify-center rounded-3xl transition-all duration-500 mb-4 group-hover:scale-110',
+                    isEarned ? '' : hasAnyProgress ? colors.bg : 'bg-muted',
+                )}
+                style={isEarned ? { backgroundColor: '#E34234' } : undefined}
+            >
+                <Icon
+                    className={cn(
+                        'w-10 h-10 transition-colors',
+                        isEarned ? 'text-white' : hasAnyProgress ? colors.text : 'text-muted-foreground/60',
+                    )}
+                />
                 {isEarned ? (
-                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1.5 text-white shadow-lg border-2 border-white">
+                    <div className="absolute -top-2 -right-2 rounded-full p-1.5 text-white shadow-lg border-2 border-white" style={{ backgroundColor: '#E34234' }}>
                         <CheckCircle className="h-3 w-3" />
                     </div>
                 ) : (
@@ -145,7 +159,7 @@ const VectorBadge = ({ badge }: { badge: TierBadge }) => {
                             {tierCurrent.toLocaleString('tr-TR')} / {tierDelta.toLocaleString('tr-TR')}
                         </span>
                         {isEarned ? (
-                            <span className="text-green-600">TAMAMLANDI</span>
+                            <span style={{ color: '#E34234' }}>TAMAMLANDI</span>
                         ) : (
                             <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} KALDI</span>
                         )}
