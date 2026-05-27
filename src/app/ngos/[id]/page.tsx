@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import { NgoAnalyticsScripts } from '@/components/shared/ngo-analytics-scripts';
+import { NgoSchema, BreadcrumbSchema } from '@/components/seo/json-ld';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
@@ -319,6 +320,27 @@ export default function NgoProfilePage() {
 
   return (
     <div className="animate-in fade-in-0">
+        {ngo && (
+            <>
+                <NgoSchema
+                    name={ngo.name}
+                    description={ngo.about}
+                    logoUrl={ngo.avatarUrl || ngo.coverPhotoUrl}
+                    url={`https://hangel.org.tr/ngos/${ngo.id}`}
+                    foundedYear={(ngo as { foundedYear?: number | string }).foundedYear}
+                    address={((): { city?: string; country?: string } | undefined => {
+                        const loc = (ngo as { location?: { city?: string; country?: string } }).location;
+                        return loc ? { city: loc.city, country: loc.country } : undefined;
+                    })()}
+                    sameAs={[(ngo as { website?: string }).website].filter(Boolean) as string[]}
+                />
+                <BreadcrumbSchema items={[
+                    { name: 'Hangel', url: 'https://hangel.org.tr' },
+                    { name: 'STK\'lar', url: 'https://hangel.org.tr/ngos' },
+                    { name: ngo.name, url: `https://hangel.org.tr/ngos/${ngo.id}` },
+                ]} />
+            </>
+        )}
         <NgoAnalyticsScripts
             gaId={ngoAnalytics?.gaId}
             gtmId={ngoAnalytics?.gtmId}

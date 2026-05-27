@@ -8,6 +8,7 @@ import AutoTranslate from '@/components/providers/auto-translate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
 import { SessionTrackerProvider } from '@/components/providers/session-tracker-provider';
+import { HangelOrgSchema } from '@/components/seo/json-ld';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { RatingPopup } from '@/components/shared/rating-popup';
 import { OfflineBanner } from '@/components/shared/offline-banner';
@@ -85,6 +86,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${poppins.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
+        <HangelOrgSchema />
         <FirebaseClientProvider>
           <LanguageProvider>
             <AutoTranslate />
