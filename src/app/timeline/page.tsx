@@ -54,7 +54,9 @@ const AdCarousel = () => {
             {adBanners.map((ad) => (
                 <CarouselItem key={ad.id}>
                     <Link href={ad.link} passHref>
-                        <div className="relative h-40">
+                        {/* aspect-video CLS engellemek için (önceden h-40 fixed
+                            yüksekti; geniş ekranda dar görünüyordu). */}
+                        <div className="relative w-full aspect-video sm:aspect-[3/1] sm:h-40">
                             <Image
                             src={ad.imageUrl}
                             alt={ad.title}

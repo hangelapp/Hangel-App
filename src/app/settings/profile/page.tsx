@@ -942,7 +942,23 @@ export default function ProfileSettingsPage() {
             </CardContent>
         </Card>
 
-        <div className="flex justify-end pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end pt-4 pb-2">
+          {isOnboarding && (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="px-8 rounded-2xl font-bold border-2"
+              onClick={() => {
+                // Onboarding'i atla → direkt timeline (kullanıcı profili sonra
+                // doldurabilir; profil tamamlanma bilgi mesajı ana sayfada görünür).
+                localStorage.removeItem('onboardingStep');
+                router.push('/timeline');
+              }}
+            >
+              Şimdi atla, sonra tamamlarım
+            </Button>
+          )}
           <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">
             {isSaving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Kaydediliyor...</> : t('dashboard.settingsProfile.saveCta')}
           </Button>

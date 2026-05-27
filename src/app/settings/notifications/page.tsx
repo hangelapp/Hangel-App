@@ -156,8 +156,37 @@ export default function NotificationSettingsPage() {
  */
 function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
     const { toast } = useToast();
+    const { user: authUser } = useUser();
     const [permission, setPermission] = useState<NotificationPermission | 'unsupported' | 'loading'>('loading');
     const [busy, setBusy] = useState(false);
+    const [testBusy, setTestBusy] = useState(false);
+
+    const handleTestPush = async () => {
+        if (!authUser) return;
+        setTestBusy(true);
+        try {
+            const idToken = await authUser.getIdToken();
+            const res = await fetch('/api/notifications/test-self', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${idToken}` },
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok) {
+                toast({ variant: 'destructive', title: 'Test başarısız', description: data.message || data.errorCode || 'Bilinmeyen hata' });
+                return;
+            }
+            if (data.successCount > 0) {
+                toast({ title: 'Test gönderildi 🔔', description: `${data.successCount} cihazına ulaştı.` });
+            } else {
+                toast({ variant: 'destructive', title: 'Cihaz bulunamadı', description: 'Bu hesap için kayıtlı FCM token yok. Önce "Bildirimleri Aç" diyerek izin verin.' });
+            }
+        } catch (e) {
+            console.error('[push test] failed', e);
+            toast({ variant: 'destructive', title: 'Hata', description: 'Test gönderilemedi.' });
+        } finally {
+            setTestBusy(false);
+        }
+    };
 
     useEffect(() => {
         if (typeof window === 'undefined' || typeof Notification === 'undefined') {
@@ -214,7 +243,13 @@ function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
                         : 'Acil kan ihtiyacı, gönüllülük eşleşmesi ve mesaj bildirimlerini cihazınla anında almak için izin ver.'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-end">
+            <CardContent className="flex flex-wrap gap-2 justify-end">
+                {granted && (
+                    <Button variant="outline" onClick={handleTestPush} disabled={testBusy}>
+                        {testBusy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Test bildirimi gönder
+                    </Button>
+                )}
                 <Button onClick={handleEnable} disabled={busy || granted || denied}>
                     {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {granted ? 'Aktif' : denied ? 'Reddedildi' : 'Bildirimleri Aç'}
