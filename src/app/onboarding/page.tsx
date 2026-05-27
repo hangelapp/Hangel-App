@@ -67,7 +67,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen p-6 bg-background text-center">
+    <div className="flex flex-col min-h-dvh p-6 bg-background text-center">
       <Carousel setApi={setApi} className="w-full h-full flex flex-col">
           <header className="flex items-center justify-end p-2">
             <Button variant="ghost" onClick={handleSkip}>
