@@ -52,6 +52,7 @@ import {
   type EntityKind,
   type ManagedOrg,
 } from './active-entity-context';
+import { EntityRouteGuard } from './_components/entity-route-guard';
 
 type MenuItem = {
   href: string;
@@ -485,7 +486,7 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
           <SideMenu />
           <main className="flex-1 min-w-0">
             <EntityIdentityBanner />
-            {children}
+            <EntityRouteGuard>{children}</EntityRouteGuard>
           </main>
         </div>
       </div>
