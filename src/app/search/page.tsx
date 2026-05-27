@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search as SearchIcon, ArrowLeft, X, HeartHandshake, Store, Calendar, GraduationCap, Users } from 'lucide-react';
+import { Loader2, Search as SearchIcon, ArrowLeft, X, HeartHandshake, Store, Calendar, GraduationCap, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,6 +29,14 @@ interface SearchableEntity {
 const RECENT_KEY = 'hangel-recent-searches';
 
 export default function GlobalSearchPage() {
+    return (
+        <Suspense fallback={<div className="min-h-dvh flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+            <GlobalSearchPageInner />
+        </Suspense>
+    );
+}
+
+function GlobalSearchPageInner() {
     const router = useRouter();
     const params = useSearchParams();
     const initialQ = params.get('q') || '';
