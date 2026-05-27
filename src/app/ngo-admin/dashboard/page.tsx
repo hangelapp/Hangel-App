@@ -170,68 +170,82 @@ const NavLink = ({ href, icon, label, comingSoon }: { href: string, icon: string
   );
 }
 
-const navGroups = [
+// Entity-aware nav items. `kinds` field belirler hangi tip kuruluşta görünür.
+// `labelByKind` per-kind etiket farkı için (örn. "STK Profil QR Kodu" vs "Marka Profil QR Kodu").
+type NavItem = {
+    id: string;
+    href: string;
+    label: string;
+    icon: string;
+    roles: string[];
+    kinds: Array<'ngo' | 'brand' | 'club'>;
+    labelByKind?: Partial<Record<'ngo' | 'brand' | 'club', string>>;
+    comingSoon?: boolean;
+};
+
+const navGroups: { title: string; items: NavItem[] }[] = [
     {
         title: "Görünürlük & Kurumsal Kimlik",
         items: [
-            { id: 'profile', href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'qr', href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
+            { id: 'profile', href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'qr', href: '/ngo-admin/qr', label: 'Profil QR Kodu', icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'], labelByKind: { ngo: 'STK Profil QR Kodu', brand: 'Marka Profil QR Kodu', club: 'Kulüp Profil QR Kodu' } },
         ]
     },
     {
         title: "İletişim & Topluluk",
         items: [
-            { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
-            { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'transparency', href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'transparency', href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
+            { id: 'sustainability', href: '/ngo-admin/sustainability', label: 'Sürdürülebilirlik ve KSS Raporları', icon: 'leaf', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['brand'] },
         ]
     },
     {
         title: "Gönüllü ve Gönüllülük Yönetimi",
         items: [
-            { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
-            { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'] },
+            { id: 'volunteer', href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: 'heart-handshake', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'demographics', href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: 'bar-chart', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
         ]
     },
     {
         title: "Finans & Sosyal Etki",
         items: [
-            { id: 'donations', href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
-            { id: 'funds', href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: 'HandCoins', roles: ['Genel Yönetici', 'Finans Yöneticisi'] },
+            { id: 'donations', href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: 'dollar-sign', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo', 'brand'], labelByKind: { ngo: 'Bağış Takibi', brand: 'Yapılan Bağış Takibi' } },
+            { id: 'funds', href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: 'HandCoins', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
         ]
     },
     {
         title: "Entegrasyon ve Yönetim",
         items: [
-            { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'] },
-            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'mail', href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: 'mail', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'ads', href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
-            { id: 'events', href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: 'video', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'design-tools', href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
-            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
-            { id: 'marketing', href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
-            { id: 'accounting', href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
-            { id: 'crm', href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'virtual-pbx', href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: 'phone-call', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: 'building-2', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'field-team', href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'], comingSoon: true },
-            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: 'briefcase', roles: ['Genel Yönetici'], comingSoon: true },
-            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], comingSoon: true },
-            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], comingSoon: true },
+            { id: 'website', href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
+            { id: 'events', href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'club'], comingSoon: false },
+            { id: 'sms', href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: 'message-square', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'mail', href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'ads', href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: 'video', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'design-tools', href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'marketing', href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'accounting', href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'crm', href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'virtual-pbx', href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: 'building-2', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'field-team', href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'dm', href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: 'briefcase', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
         ]
     },
     {
         title: "Sistem & Destek",
         items: [
-            { id: 'users', href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users', roles: ['Genel Yönetici'] },
-            { id: 'settings', href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings', roles: ['Genel Yönetici'] },
-            { id: 'support', href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'] },
+            { id: 'users', href: '/ngo-admin/users', label: 'Yetkili Yönetimi', icon: 'users', roles: ['Genel Yönetici'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'settings', href: '/ngo-admin/settings', label: 'Panel Ayarları', icon: 'settings', roles: ['Genel Yönetici'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'support', href: '/ngo-admin/support', label: 'Destek', icon: 'help-circle', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
         ]
     }
 ];
@@ -242,6 +256,12 @@ function NgoDashboardPageContent() {
     const entityType = searchParams.get('type');
     const firestore = useFirestore();
     const { user: authUser } = useUser();
+
+    // Active entity kind hesaplama (URL type → 'ngo'/'brand'/'club')
+    const activeKind: 'ngo' | 'brand' | 'club' =
+        entityType === 'Marka' ? 'brand' :
+        entityType === 'Kulüp' || entityType === 'Öğrenci Kulübü' ? 'club' :
+        'ngo';
 
     // Determine the collection to query based on entity type
     const ngoDocRef = useMemoFirebase(() => {
@@ -273,9 +293,16 @@ function NgoDashboardPageContent() {
     const filteredGroups = useMemo(() => {
         return navGroups.map(group => ({
             ...group,
-            items: group.items.filter(item => item.roles.includes(userRole))
+            items: group.items
+                .filter(item => item.roles.includes(userRole))
+                .filter(item => item.kinds.includes(activeKind))
+                .map(item => ({
+                    ...item,
+                    // Per-kind etiket varsa onu kullan (örn. "Marka Profil QR Kodu")
+                    label: item.labelByKind?.[activeKind] || item.label,
+                })),
         })).filter(group => group.items.length > 0);
-    }, [userRole]);
+    }, [userRole, activeKind]);
 
     if (loading) {
         return (

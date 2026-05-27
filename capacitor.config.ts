@@ -25,8 +25,17 @@ const config: CapacitorConfig = {
       showSpinner: false,
     },
     Keyboard: {
-      resize: 'body',
+      // Why: 'body' resize → fixed header viewport ile birlikte kayıyor.
+      // 'native' (iOS) → WebView içinde scroll yapılır, fixed elementler sabit kalır.
+      resize: 'native',
       resizeOnFullScreen: true,
+    },
+    StatusBar: {
+      // Why: WebView altına almak yerine üstte conventional bar → fixed header
+      // safe-area-inset ile düzgün hesaplanır, hareket etmez.
+      overlaysWebView: false,
+      style: 'DARK',
+      backgroundColor: '#ffffff',
     },
   },
 };
