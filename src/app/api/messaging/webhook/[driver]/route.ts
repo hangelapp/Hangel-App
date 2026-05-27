@@ -205,8 +205,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ driver:
 
     return NextResponse.json({ ok: true, processed: events.length });
   } catch (err) {
+    // Why: webhook public-facing — internal stack trace ifşa edilmemeli.
     const message = err instanceof Error ? err.message : String(err);
     console.error('[webhook]', driver, message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Webhook processing failed' }, { status: 500 });
   }
 }

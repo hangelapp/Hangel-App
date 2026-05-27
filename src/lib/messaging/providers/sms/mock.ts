@@ -13,10 +13,15 @@ export class MockSmsProvider implements SmsProvider {
   readonly driver = 'mock';
 
   async send(input: SmsSendInput): Promise<SendResult> {
+    // Why: prod'da yanlışlıkla mock driver set edilirse phone numarası ve mesaj
+    // içeriği console + _devOutbox'a yazılır (PII sızıntısı). Hard fail.
+    if (process.env.NODE_ENV === 'production' && process.env.SMS_DRIVER === 'mock') {
+      throw new Error('MockSmsProvider cannot run in production');
+    }
     const providerMessageId = `mock_sms_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     console.log('[MockSmsProvider] sending', {
-      to: input.to,
+      to: input.to.slice(0, -4).replace(/\d/g, '*') + input.to.slice(-4),
       senderId: input.senderId,
       useCase: input.useCase,
       bodyPreview: input.body.slice(0, 60),

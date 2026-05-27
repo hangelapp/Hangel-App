@@ -16,10 +16,14 @@ export class MockWhatsAppProvider implements WhatsAppProvider {
   readonly driver = 'mock';
 
   async send(input: WhatsAppSendInput): Promise<SendResult> {
+    // Why: prod guard — yanlışlıkla mock driver set edilirse PII sızıntısı olur.
+    if (process.env.NODE_ENV === 'production' && process.env.WHATSAPP_DRIVER === 'mock') {
+      throw new Error('MockWhatsAppProvider cannot run in production');
+    }
     const providerMessageId = `mock_wa_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     console.log('[MockWhatsAppProvider] sending', {
-      to: input.to,
+      to: input.to.slice(0, -4).replace(/\d/g, '*') + input.to.slice(-4),
       template: input.templateName,
       language: input.templateLanguage,
       category: input.conversationCategory,
