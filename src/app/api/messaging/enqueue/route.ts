@@ -25,8 +25,9 @@ export async function POST(req: Request) {
     const result = await enqueueCampaign(campaignId);
     return NextResponse.json(result);
   } catch (err) {
+    // Why: internal stack/message istemciye sızıntısı yerine generic error.
     const message = err instanceof Error ? err.message : String(err);
     console.error('[api/messaging/enqueue]', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Campaign enqueue failed' }, { status: 500 });
   }
 }

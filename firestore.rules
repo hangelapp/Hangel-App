@@ -64,6 +64,15 @@ service cloud.firestore {
       );
       allow delete: if isSuperAdmin();
 
+      // SECURITY FIX 2026-05-27: fcmTokens push notification tokenları içerir
+      // (push token = o cihaza notification gönderme yetkisi). Sadece kullanıcı
+      // kendisi ve super-admin okuyabilmeli. Wide-open subcollection read
+      // bypass için specific match önce.
+      match /fcmTokens/{tokenId} {
+        allow read, list: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+        allow write: if isSignedIn() && (isOwner(userId) || isSuperAdmin());
+      }
+
       match /{allChildren=**} {
         allow read: if isSignedIn();
         allow write: if isSignedIn() && (isOwner(userId) || isSuperAdmin());

@@ -71,23 +71,69 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // SECURITY FIX: dataType artık hedef collection'ı seçmek için kullanılıyor
+    // (önceden parametre alınıp her şey NGO collection'ına yazılıyordu).
+    // Ayrıca attacker payload field whitelist'i ile sınırlandı.
+    const TARGETS: Record<string, { collection: string; allowedFields: Set<string> }> = {
+        ngo: { collection: COLLECTIONS.ngos, allowedFields: new Set([
+            'name', 'shortName', 'slug', 'description', 'mission', 'logoUrl', 'avatarUrl',
+            'website', 'contact', 'category', 'tags', 'city', 'country', 'foundedYear',
+            'registrationNumber', 'transparencyScore', 'status', 'files', 'address',
+        ]) },
+        brand: { collection: COLLECTIONS.brands, allowedFields: new Set([
+            'name', 'shortName', 'slug', 'description', 'logoUrl', 'avatarUrl', 'website',
+            'category', 'tags', 'files',
+        ]) },
+        club: { collection: COLLECTIONS.clubs, allowedFields: new Set([
+            'name', 'shortName', 'slug', 'description', 'university', 'logoUrl', 'avatarUrl',
+            'website', 'category', 'tags', 'memberCount', 'files',
+        ]) },
+    };
+    const target = TARGETS[dataType.toLowerCase()];
+    if (!target) {
+        return NextResponse.json({ errorCode: 'INVALID_DATATYPE', message: `dataType must be one of: ${Object.keys(TARGETS).join(', ')}` }, { status: 400 });
+    }
     const db = getAdminFirestore();
-    const collectionRef = db.collection(COLLECTIONS.ngos);
+    const collectionRef = db.collection(target.collection);
 
     let importedCount = 0;
     for (const record of records) {
       try {
+        // Whitelist: sadece izin verilen field'lar yazılır.
+        const rec = record as Record<string, unknown>;
+        const filtered: Record<string, unknown> = {};
+        for (const key of Object.keys(rec)) {
+            if (target.allowedFields.has(key)) {
+                filtered[key] = rec[key];
+            }
+        }
         await collectionRef.add({
-          ...(record as Record<string, unknown>),
+          ...filtered,
           dataType,
+          source: 'admin-import',
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         });
         importedCount += 1;
       } catch (err) {
-        console.error('[import-data] Failed to import record:', err, record);
+        console.error('[import-data] Failed to import record:', err);
         // Continue with next record
       }
+    }
+
+    // Audit log
+    try {
+        await db.collection('adminAuditLogs').add({
+            action: 'import-data',
+            dataType,
+            target: target.collection,
+            importedCount,
+            totalRecords: records.length,
+            ip,
+            createdAt: FieldValue.serverTimestamp(),
+        });
+    } catch (e) {
+        console.warn('[import-data] audit log failed:', e);
     }
 
     return NextResponse.json({

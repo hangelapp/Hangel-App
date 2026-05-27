@@ -132,9 +132,40 @@ export function levenshtein(a: string, b: string): number {
   return dp[n];
 }
 
-/** Web fetch — 8s timeout + user agent. Hata durumunda null. */
+/**
+ * SSRF guard: localhost, private IP, link-local, metadata IP'lerini engelle.
+ * GCP metadata service (169.254.169.254) ve özel ağ adresleri engellenir.
+ */
+function isPrivateOrInternalHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '0.0.0.0') return true;
+  if (h.endsWith('.local') || h.endsWith('.internal') || h.endsWith('.localhost')) return true;
+  // IPv4: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16 (link-local + GCP metadata)
+  const parts = h.split('.').map(Number);
+  if (parts.length === 4 && parts.every(n => Number.isInteger(n) && n >= 0 && n <= 255)) {
+    if (parts[0] === 10) return true;
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    if (parts[0] === 169 && parts[1] === 254) return true; // GCP metadata + link-local
+    if (parts[0] === 127) return true;
+    if (parts[0] === 0) return true;
+  }
+  return false;
+}
+
+/** Web fetch — 8s timeout + user agent. SSRF guard + http(s) only. Hata: null. */
 export async function safeFetchText(url: string, timeoutMs = 8000): Promise<string | null> {
   try {
+    // SSRF guard: protocol + host kontrolü
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return null;
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    if (isPrivateOrInternalHost(parsed.hostname)) return null;
+
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), timeoutMs);
     const res = await fetch(url, {

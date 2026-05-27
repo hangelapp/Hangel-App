@@ -224,9 +224,11 @@ export async function POST(req: Request) {
         cost,
       });
     } catch (err) {
+      // Why: lastError'a internal message log, ama istemciye generic.
       const message = err instanceof Error ? err.message : String(err);
       await campRef.update({ status: 'failed' as CampaignStatus, lastError: message });
-      return NextResponse.json({ error: message }, { status: 500 });
+      console.error('[api/messaging/campaigns]', message);
+      return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Campaign processing failed' }, { status: 500 });
     }
   }
 

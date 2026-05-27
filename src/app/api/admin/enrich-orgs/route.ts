@@ -213,11 +213,16 @@ Yalnızca geçerli JSON döndür, markdown veya açıklama ekleme.`;
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 20_000);
+    // SECURITY: Gemini API key URL query yerine x-goog-api-key header'da
+    // (Cloud Run access log URL'i loglar → key sızıntısı). Bu header'lar loglanmaz.
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
+        },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.1, maxOutputTokens: 512, responseMimeType: 'application/json' },

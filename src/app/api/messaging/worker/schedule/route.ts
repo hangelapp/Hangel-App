@@ -15,6 +15,6 @@ export async function POST(req: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error('[api/messaging/worker/schedule]', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' }, { status: 500 });
   }
 }

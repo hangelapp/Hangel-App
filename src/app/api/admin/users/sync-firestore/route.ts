@@ -86,6 +86,9 @@ export async function POST(req: Request) {
     const errors: { uid: string; message: string }[] = [];
     for (const u of missing) {
       try {
+        // Why: bu loop sadece "missing" user'lar için (Firestore'da hiç doc yok).
+        // O yüzden personalInfo: { email } ile set güvenli — silinecek mevcut field
+        // yok. Mevcut user update path'i ayrı (orada nested merge sorun olabilirdi).
         const payload: Record<string, unknown> = {
           id: u.uid,
           avatarUrl: '',
