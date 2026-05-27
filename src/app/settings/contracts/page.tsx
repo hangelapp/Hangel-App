@@ -5,7 +5,6 @@ import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PublicFooter } from '@/components/layout/public-footer';
 import { useTranslation } from '@/components/providers/language-provider';
 
 const contractGroups = [

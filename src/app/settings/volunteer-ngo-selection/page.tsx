@@ -244,6 +244,60 @@ export default function VolunteerNgoSelectionPage() {
             <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Kaydediliyor...' : (isOnboarding ? 'Devam Et' : t('dashboard.settingsVolunteerNgo.saveBtn'))}</Button>
             </div>
+
+            {/* Preview Dialog — ngo-selection ile aynı pattern */}
+            <Dialog open={!!previewNgo} onOpenChange={(open) => !open && setPreviewNgo(null)}>
+                <DialogContent className="max-w-md rounded-3xl">
+                    {previewNgo && (
+                        <>
+                            <DialogHeader>
+                                <div className="flex items-start gap-3">
+                                    <Avatar className="h-14 w-14 border-2 border-white shadow">
+                                        <AvatarImage src={previewNgo.avatarUrl} alt={previewNgo.name} />
+                                        <AvatarFallback className="font-black">{previewNgo.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <DialogTitle className="text-lg font-black tracking-tight">{previewNgo.name}</DialogTitle>
+                                        <DialogDescription className="text-xs">{previewNgo.type} · {previewNgo.category}</DialogDescription>
+                                    </div>
+                                </div>
+                            </DialogHeader>
+                            <div className="space-y-3 pt-2 text-sm">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <Badge variant="secondary" className="font-bold">
+                                        <ShieldCheck className="h-3 w-3 mr-1 text-primary" />
+                                        Şeffaflık: {previewNgo.transparencyScore || 0}
+                                    </Badge>
+                                    {previewNgo.stats?.followers != null && (
+                                        <Badge variant="outline" className="font-medium">
+                                            {previewNgo.stats.followers.toLocaleString('tr-TR')} bağışçı
+                                        </Badge>
+                                    )}
+                                    {previewNgo.stats?.volunteers != null && (
+                                        <Badge variant="outline" className="font-medium">
+                                            {previewNgo.stats.volunteers.toLocaleString('tr-TR')} gönüllü
+                                        </Badge>
+                                    )}
+                                </div>
+                                {previewNgo.about && (
+                                    <p className="text-muted-foreground leading-relaxed line-clamp-6">{previewNgo.about}</p>
+                                )}
+                                <div className="flex gap-2 pt-2">
+                                    <Button asChild variant="outline" className="flex-1 rounded-xl">
+                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">Profili Aç</a>
+                                    </Button>
+                                    <Button
+                                        className="flex-1 rounded-xl"
+                                        onClick={() => { handleSelectNgo(previewNgo.id); setPreviewNgo(null); }}
+                                    >
+                                        {selectedNgos.includes(previewNgo.id) ? 'Seçimi Kaldır' : 'Seç'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

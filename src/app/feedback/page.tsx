@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Star, Send, Loader2, MessageSquare, BarChart3, CheckCircle2, Gift, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';

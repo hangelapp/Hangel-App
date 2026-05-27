@@ -77,7 +77,7 @@ export function parseUserAgent(ua: string): ParsedUA {
     else if (/mobile|iphone|android/.test(lower)) deviceType = 'mobile';
 
     // Device name (best-effort)
-    let deviceName = '';
+    let deviceName: string;
     if (/iphone/.test(lower)) deviceName = 'iPhone';
     else if (/ipad/.test(lower)) deviceName = 'iPad';
     else if (/android/.test(lower)) {
