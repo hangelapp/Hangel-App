@@ -41,6 +41,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   onSave: (id: string, patch: Record<string, unknown>) => Promise<void>;
 }) => {
   // Temel
+  // React 19 purity: Date.now() not callable in render path. Snapshot once on mount.
+  const [nowMs] = useState<number>(() => Date.now());
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -484,7 +486,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 {ngoLockSince && (() => {
                   const start = new Date(ngoLockSince + 'T00:00:00');
                   const ends = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
-                  const remaining = Math.max(0, Math.ceil((ends.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+                  // Why: React 19 purity rule — Date.now() impure. nowRef stable per mount.
+                  const remaining = Math.max(0, Math.ceil((ends.getTime() - nowMs) / (24 * 60 * 60 * 1000)));
                   return (
                     <>
                       {' '}Bitiş: <strong>{ends.toLocaleDateString('tr-TR')}</strong> ({remaining > 0 ? `${remaining} gün kaldı` : 'süre doldu'}).

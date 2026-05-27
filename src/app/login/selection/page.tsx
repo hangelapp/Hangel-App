@@ -37,14 +37,14 @@ const FormRenderer = () => {
     // (CorporateForm authUser?.uid'i applications doc'una yazıyor).
 
     return (
-        <div className="min-h-screen bg-secondary flex items-start justify-center p-4 pt-8">
+        <div className="min-h-dvh bg-secondary flex items-start justify-center p-4 pt-8">
             <div className="w-full max-w-sm">
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
                         <HangelLogo className="text-3xl mx-auto mb-2" />
                         <CardTitle className="text-3xl font-black tracking-tighter">Hoş Geldiniz</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6 px-8 pb-10">
+                    <CardContent className="space-y-6 px-6 sm:px-8 pb-10">
                         <Tabs value={tab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${entity}`)}>
                             <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
                                 <TabsTrigger value="individual" className="rounded-lg font-bold">Bireysel</TabsTrigger>

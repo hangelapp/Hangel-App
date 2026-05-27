@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
+import { checkRateLimit } from '@/lib/rate-limit';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -29,8 +30,25 @@ function hashPhone(phone: string): string {
     return crypto.createHash('sha256').update(phone).digest('hex').slice(0, 32);
 }
 
+function getClientIp(req: NextRequest): string {
+    const xff = req.headers.get('x-forwarded-for');
+    if (xff) {
+        const first = xff.split(',')[0]?.trim();
+        if (first) return first;
+    }
+    return req.headers.get('x-real-ip')?.trim() || 'unknown';
+}
+
 export async function POST(req: NextRequest) {
     try {
+        const ip = getClientIp(req);
+        const ipLimit = await checkRateLimit({ bucket: 'wa-otp-verify-ip', key: ip, limit: 20, windowMs: 60_000 });
+        if (!ipLimit.allowed) {
+            return NextResponse.json(
+                { ok: false, errorCode: 'RATE_LIMITED', message: 'Çok fazla istek, lütfen bekleyin.' },
+                { status: 429 }
+            );
+        }
         const body = await req.json().catch(() => null);
         const phone = typeof body?.phone === 'string' ? body.phone : '';
         const phoneCountryCode = typeof body?.phoneCountryCode === 'string' ? body.phoneCountryCode : '+90';

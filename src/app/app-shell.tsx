@@ -555,7 +555,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="lg:pl-64 flex flex-col flex-1">
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <VerifyEmailBanner />
-            <main className="flex-1 pb-24 lg:pb-24" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
+            <main className="flex-1" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
               <AutoBreadcrumb />
               {children}
             </main>

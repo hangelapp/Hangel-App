@@ -753,7 +753,7 @@ export default function WebContentPage() {
                                                 <Card key={p.slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
                                                     <div className="relative h-32 bg-gradient-to-br from-muted to-muted/40 overflow-hidden">
                                                         {stored.heroImageUrl ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
+                                                             
                                                             <img src={stored.heroImageUrl} alt={p.label} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                                                         ) : (
                                                             <div className="h-full w-full flex items-center justify-center">
@@ -828,7 +828,7 @@ export default function WebContentPage() {
                                         <Card key={slug} className="overflow-hidden rounded-2xl border-black/5 shadow-sm hover:shadow-lg transition-all group">
                                             <div className="relative h-32 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
                                                 {p.heroImageUrl ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                     
                                                     <img src={p.heroImageUrl} alt={p.title || slug} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center">

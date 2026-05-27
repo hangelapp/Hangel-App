@@ -437,7 +437,7 @@ function EntityIdentityBanner() {
     <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm">
       <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
         {current.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
+           
           <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
         ) : (
           <Icon className="h-6 w-6 text-primary" />

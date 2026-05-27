@@ -84,7 +84,9 @@ export async function POST(req: NextRequest) {
 
         const sendResult = await sendWhatsAppLink(fullPhone, name, token, lang);
         if (!sendResult.ok) {
-            console.error('[whatsapp-link] send failed', { phone: fullPhone, error: sendResult });
+            // PII: telefon son 4 hane dışı maskelenir.
+            const maskedPhone = fullPhone.slice(0, -4).replace(/\d/g, '*') + fullPhone.slice(-4);
+            console.error('[whatsapp-link] send failed', { phone: maskedPhone, error: sendResult });
             // Kullanılmayan token'ı temizle
             await db.collection(COLLECTIONS.loginLinks).doc(token).delete().catch(() => {});
             return NextResponse.json(

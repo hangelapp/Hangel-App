@@ -14,11 +14,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
+function getClientIp(req: NextRequest): string {
+    const xff = req.headers.get('x-forwarded-for');
+    if (xff) {
+        const first = xff.split(',')[0]?.trim();
+        if (first) return first;
+    }
+    return req.headers.get('x-real-ip')?.trim() || 'unknown';
+}
+
 export async function GET(req: NextRequest) {
     try {
+        const ip = getClientIp(req);
+        const ipLimit = await checkRateLimit({ bucket: 'wa-link-verify-ip', key: ip, limit: 20, windowMs: 60_000 });
+        if (!ipLimit.allowed) {
+            return NextResponse.json(
+                { ok: false, errorCode: 'RATE_LIMITED', message: 'Çok fazla istek, lütfen bekleyin.' },
+                { status: 429 }
+            );
+        }
         const token = req.nextUrl.searchParams.get('t');
         if (!token || token.length < 30) {
             return NextResponse.json({ ok: false, errorCode: 'INVALID_TOKEN', message: 'Geçersiz bağlantı.' }, { status: 400 });

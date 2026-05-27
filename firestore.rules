@@ -329,8 +329,9 @@ service cloud.firestore {
     }
 
     // Bağışlar (kullanıcı kendi alışverişini yazar, kendi bağışlarını okur, super-admin tümünü yönetir)
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı — istemci `where('userId','==',uid)` ile sorgulamalı.
     match /donations/{donationId} {
-      allow list: if isSuperAdmin() || isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow read: if isSignedIn() && (
         resource == null ||
         resource.data.userId == request.auth.uid ||
@@ -345,8 +346,9 @@ service cloud.firestore {
     }
 
     // Destek talepleri (kullanıcı oluşturur ve okur, super-admin tüm talepleri yönetir)
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı — istemci `where('userId','==',uid)` ile sorgulamalı.
     match /supportTickets/{ticketId} {
-      allow list: if isSuperAdmin() || isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow read: if isSignedIn() && (
         resource == null ||
         resource.data.userId == request.auth.uid ||
@@ -383,8 +385,9 @@ service cloud.firestore {
     }
 
     // Acil durum yanıtları (kullanıcılar kendi yanıtını oluşturur, süper admin hepsini görür)
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı.
     match /emergencyResponses/{respId} {
-      allow list: if isSuperAdmin() || isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow read: if isSignedIn() && (
         resource == null ||
         resource.data.userId == request.auth.uid ||
@@ -399,8 +402,9 @@ service cloud.firestore {
     }
 
     // Bildirimler (Süper Admin + NGO admin davetleri yazar; alıcı okur ve okundu işaretler)
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı — istemci `where('userId','==',uid)` ile sorgulamalı.
     match /notifications/{notifId} {
-      allow list: if isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow read: if isSignedIn() && (
         resource == null ||
         resource.data.userId == request.auth.uid ||
@@ -615,8 +619,12 @@ service cloud.firestore {
     }
 
     // Yetkili davetiyeleri (NGO admin → mevcut üyeye rol daveti)
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı — invitedBy/inviteeUserId match veya super-admin.
     match /userInvitations/{inviteId} {
-      allow list: if isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid
+      ));
       allow read: if isSignedIn() && (
         resource == null ||
         resource.data.invitedBy == request.auth.uid ||
@@ -643,8 +651,9 @@ service cloud.firestore {
     }
 
     // Başvuru koleksiyonu
+    // SECURITY FIX 2026-05-27: list per-doc kısıtlı — kullanıcı sadece kendi başvurusunu görür.
     match /applications/{appId} {
-      allow list: if isSignedIn();
+      allow list: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isSuperAdmin());
       // Corporate registrations (BRAND/CLUB/NGO) can be submitted by anonymous users
       // (onboarding flow runs before account creation). All other app types require auth.
@@ -715,11 +724,15 @@ service cloud.firestore {
         recipientIsMyManagedEntity()
       );
 
-      // Liste: imzalı kullanıcı (per-doc gizlilik `read` ile garanti edilir; istemci
-      // sorguları `recipientId == auth.uid` veya `recipientId == <yönetilen entity>` ile
-      // filtrelenir). notifications pattern — query.limit'e bağımlı değil, çünkü mevcut
-      // kullanıcı gelen kutusu sorgusu limit'siz çalışır.
-      allow list: if isSignedIn();
+      // SECURITY FIX 2026-05-27: list per-doc kısıtlı. Önceki "per-doc gizlilik read ile garanti"
+      // yorumu yanlıştı — Firestore list rule per-doc çalışır ama varsa filtreleri devre dışı
+      // bırakırsa tüm collection dökülebilir. Şimdi her doc için recipientId/senderId/managed
+      // entity kontrolü zorunlu.
+      allow list: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.senderId == request.auth.uid ||
+        recipientIsMyManagedEntity()
+      ));
 
       // Oluşturma: senderId mutlaka istek sahibinin uid'i olmalı (spoof engeli) VE
       // alıcı bir kurum (STK/marka/kulüp) ya da bir admin/super-admin kullanıcı olmalı —
@@ -747,6 +760,38 @@ service cloud.firestore {
 
       // Silme: super-admin (global allPaths kapsar) — explicit deny diğer herkese.
       allow delete: if isSuperAdmin();
+    }
+
+    // SECURITY FIX 2026-05-27: Eksik koleksiyon kuralları (önceden global catch-all
+    // tarafından sessizce reddediliyordu → istemci write'ları kırıktı).
+
+    // Timeline post raporları (kullanıcı bildir → super-admin moderasyon)
+    match /postReports/{reportId} {
+      allow create: if isSignedIn() && request.resource.data.reporterId == request.auth.uid;
+      allow read, list: if isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // /feedback formu (kullanıcı geri bildirim → super-admin inceler)
+    match /userFeedback/{feedbackId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, list: if isSuperAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // E-posta kuyruğu (sadece Admin SDK; istemci hiçbir şey yapamaz)
+    match /mailQueue/{mailId} {
+      allow read, write: if false;
+    }
+
+    // Davet sistemi (kullanıcı arkadaşına davet gönderir; super-admin tümünü görür)
+    match /invites/{inviteId} {
+      allow create: if isSignedIn() && request.resource.data.invitedBy == request.auth.uid;
+      allow read, list: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.invitedBy == request.auth.uid ||
+        resource.data.inviteeUserId == request.auth.uid
+      ));
+      allow update, delete: if isSuperAdmin() || (isSignedIn() && resource.data.invitedBy == request.auth.uid);
     }
 
     // Global Yazma Erişimi (Sadece Super Admin)

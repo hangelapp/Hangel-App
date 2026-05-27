@@ -439,7 +439,7 @@ export default function ProfileSettingsPage() {
 
   if (isUserLoading || isUserDataLoading) {
       return (
-          <div className="flex items-center justify-center min-h-screen">
+          <div className="flex items-center justify-center min-h-dvh">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
       );
@@ -850,7 +850,7 @@ export default function ProfileSettingsPage() {
               onPointerCancel={handlePreviewPointerUp}
             >
               {photoEditorSrc && (
-                // eslint-disable-next-line @next/next/no-img-element
+                 
                 <img
                   src={photoEditorSrc}
                   alt="Düzenlenen fotoğraf"

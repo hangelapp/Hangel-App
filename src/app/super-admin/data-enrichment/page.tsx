@@ -70,7 +70,7 @@ export default function DataEnrichmentPage() {
     try {
       const token = await authUser.getIdToken();
       let offset = 0;
-      // eslint-disable-next-line no-constant-condition
+       
       while (true) {
         const res = await fetch('/api/admin/enrich-orgs', {
           method: 'POST',

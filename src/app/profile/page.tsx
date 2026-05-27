@@ -58,14 +58,6 @@ const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.Ele
     );
 };
 
-const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType, value: string | number, label: string }) => (
-    <div className='text-center p-2'>
-        <Icon className="h-7 w-7 text-primary mx-auto mb-2" />
-        <p className="text-xl font-bold">{value}</p>
-        <p className="text-xs text-muted-foreground">{label}</p>
-    </div>
-);
-
 const pointTransactions: { type: string; icon: React.ElementType; description: string; points: number; time: string }[] = [];
 
 const transactionTypes = ['Alışveriş', 'Gönüllülük', 'Davet', 'Rozet'];
@@ -556,7 +548,7 @@ export default function ProfilePage() {
 
     if (isUserLoading || isUserDataLoading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex items-center justify-center min-h-dvh">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );

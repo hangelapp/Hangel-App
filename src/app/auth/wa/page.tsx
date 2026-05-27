@@ -55,7 +55,7 @@ function WhatsAppLinkAuthInner() {
     }, [token, auth, router]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="min-h-dvh flex items-center justify-center bg-background p-6">
             <div className="max-w-sm w-full text-center space-y-6">
                 {status === 'loading' && (
                     <>
@@ -95,7 +95,7 @@ function WhatsAppLinkAuthInner() {
 export default function WhatsAppLinkAuth() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-background p-6">
+            <div className="min-h-dvh flex items-center justify-center bg-background p-6">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
         }>

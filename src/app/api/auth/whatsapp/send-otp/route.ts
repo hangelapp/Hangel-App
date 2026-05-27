@@ -108,7 +108,9 @@ export async function POST(req: NextRequest) {
         const sendResult = await sendWhatsAppOtp(fullPhone, otp, lang);
         if (!sendResult.ok) {
             // Konfigürasyon eksikse veya WhatsApp tarafında hata varsa sessizce log + 503 dön
-            console.error('[whatsapp-otp] send failed', { phone: fullPhone, error: sendResult });
+            // PII: telefon son 4 hane dışı maskelenir.
+            const maskedPhone = fullPhone.slice(0, -4).replace(/\d/g, '*') + fullPhone.slice(-4);
+            console.error('[whatsapp-otp] send failed', { phone: maskedPhone, error: sendResult });
             return NextResponse.json(
                 {
                     ok: false,

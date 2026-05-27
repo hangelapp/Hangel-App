@@ -14,7 +14,7 @@ import { ActiveEntityProvider } from '@/app/ngo-admin/active-entity-context';
 
 export default function ClubAdminPostsPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-dvh"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
       <ActiveEntityProvider>
         <PostsPage />
       </ActiveEntityProvider>

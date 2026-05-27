@@ -21,17 +21,17 @@ type LogArgs = unknown[];
 export const clientLogger = {
   error(...args: LogArgs) {
     if (isProd) return;
-    // eslint-disable-next-line no-console
+     
     console.error(...args);
   },
   warn(...args: LogArgs) {
     if (isProd) return;
-    // eslint-disable-next-line no-console
+     
     console.warn(...args);
   },
   info(...args: LogArgs) {
     if (isProd) return;
-    // eslint-disable-next-line no-console
+     
     console.info(...args);
   },
 };
