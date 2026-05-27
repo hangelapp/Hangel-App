@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search as SearchIcon, ArrowLeft, X, HeartHandshake, Store, Calendar, Newspaper, GraduationCap, Users } from 'lucide-react';
+import { Search as SearchIcon, ArrowLeft, X, HeartHandshake, Store, Calendar, GraduationCap, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

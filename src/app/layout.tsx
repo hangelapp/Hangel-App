@@ -14,6 +14,7 @@ import { AccessibilityApplier } from '@/components/shared/accessibility-applier'
 import { ThemeApplier } from '@/components/shared/theme-applier';
 import { LocationPermissionPrompt } from '@/components/shared/location-permission-prompt';
 import { CookieBanner } from '@/components/shared/cookie-banner';
+import { WebVitalsTracker } from '@/components/shared/web-vitals-tracker';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -97,6 +98,7 @@ export default function RootLayout({
             <AccessibilityApplier />
             <LocationPermissionPrompt />
             <CookieBanner />
+            <WebVitalsTracker />
             <Toaster />
           </LanguageProvider>
         </FirebaseClientProvider>
