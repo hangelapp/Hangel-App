@@ -90,6 +90,20 @@ export async function POST(req: NextRequest) {
         try {
             userRecord = await adminAuth.getUserByPhoneNumber(fullPhone);
         } catch {
+            // Firebase Auth'ta yok. Ama Firestore'da personalInfo.phone'da
+            // bu numara başka kullanıcıda kullanılıyor mu? (Email ile kayıt
+            // olup profile'a telefon eklemiş eski kullanıcı case'i)
+            const dupSnap = await db.collection(COLLECTIONS.users)
+                .where('personalInfo.phone', '==', cleanPhone)
+                .limit(1)
+                .get();
+            if (!dupSnap.empty) {
+                return NextResponse.json({
+                    ok: false,
+                    errorCode: 'PHONE_IN_USE',
+                    message: 'Bu telefon numarası başka bir hesapta kullanılıyor.',
+                }, { status: 409 });
+            }
             // Yoksa yeni oluştur
             userRecord = await adminAuth.createUser({
                 phoneNumber: fullPhone,

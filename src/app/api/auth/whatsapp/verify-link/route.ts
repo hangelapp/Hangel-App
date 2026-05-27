@@ -73,6 +73,21 @@ export async function GET(req: NextRequest) {
         try {
             userRecord = await adminAuth.getUserByPhoneNumber(data.phone);
         } catch {
+            // Firebase Auth'ta yok ama Firestore'da personalInfo.phone'da var mı?
+            const cleanForCheck = (data.cleanPhone || '').toString().replace(/\D/g, '');
+            if (cleanForCheck) {
+                const dupSnap = await db.collection(COLLECTIONS.users)
+                    .where('personalInfo.phone', '==', cleanForCheck)
+                    .limit(1)
+                    .get();
+                if (!dupSnap.empty) {
+                    return NextResponse.json({
+                        ok: false,
+                        errorCode: 'PHONE_IN_USE',
+                        message: 'Bu telefon numarası başka bir hesapta kullanılıyor.',
+                    }, { status: 409 });
+                }
+            }
             userRecord = await adminAuth.createUser({
                 phoneNumber: data.phone,
                 displayName: data.name || undefined,

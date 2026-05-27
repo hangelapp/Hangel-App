@@ -7,6 +7,7 @@ import { LanguageProvider } from '@/components/providers/language-provider';
 import AutoTranslate from '@/components/providers/auto-translate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
+import { SessionTrackerProvider } from '@/components/providers/session-tracker-provider';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { RatingPopup } from '@/components/shared/rating-popup';
 import { OfflineBanner } from '@/components/shared/offline-banner';
@@ -90,6 +91,7 @@ export default function RootLayout({
             <ThemeApplier />
             <OfflineBanner />
             <PushNotificationsProvider />
+            <SessionTrackerProvider />
             <AppShell>
                 {children}
             </AppShell>
