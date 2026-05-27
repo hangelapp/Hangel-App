@@ -59,7 +59,7 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, GraduationCap, UserCircle, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -293,6 +293,41 @@ export default function ProfileSettingsPage() {
     e.preventDefault();
     if (!userDocRef || isSaving) return;
     setIsSaving(true);
+
+    // Uniqueness check: telefon + email bir kullanıcıda sadece 1 kere
+    // bulunabilir. Server-side endpoint duplicate'i kontrol eder.
+    try {
+        const checks: { field: 'phone' | 'email'; value: string; original: string | null | undefined }[] = [
+            { field: 'phone', value: (profile.personalInfo.phone || '').toString(), original: userData?.personalInfo?.phone },
+            { field: 'email', value: (profile.personalInfo.email || '').toString(), original: userData?.personalInfo?.email },
+        ];
+        const idToken = authUser ? await authUser.getIdToken() : '';
+        for (const c of checks) {
+            const cleaned = c.field === 'email' ? c.value.toLowerCase() : c.value.replace(/\D/g, '');
+            const origCleaned = c.field === 'email' ? (c.original || '').toString().toLowerCase() : (c.original || '').toString().replace(/\D/g, '');
+            if (!cleaned || cleaned === origCleaned) continue; // boş veya değişmemiş → skip
+            const res = await fetch('/api/users/check-uniqueness', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                body: JSON.stringify({ field: c.field, value: c.value, excludeUid: authUser?.uid }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.ok || data.available === false) {
+                const label = c.field === 'phone' ? 'telefon numarası' : 'e-posta adresi';
+                toast({
+                    variant: 'destructive',
+                    title: 'Bu ' + label + ' zaten kullanımda',
+                    description: 'Başka bir hesap bu ' + label + 'ni kullanıyor. Lütfen farklı bir ' + label + ' girin.',
+                });
+                setIsSaving(false);
+                return;
+            }
+        }
+    } catch (err) {
+        console.warn('[profile uniqueness check] failed (ignoring):', err);
+        // Soft fail — uniqueness check fail ederse kayıt devam eder.
+        // Server-side enforcement yok şu an (Firestore rules duplicate engellemez).
+    }
 
     // Address normalize: undefined yerine '' (Firestore undefined kabul etmez,
     // empty string ok). Kullanılmayan eski alanlar (street, doorNo) state'te
@@ -610,6 +645,59 @@ export default function ProfileSettingsPage() {
             </CardContent>
         </Card>
 
+        {/* Demografik Bilgiler (önceden Gönüllülük sayfasındaydı, buraya taşındı). */}
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><UserCircle className="h-5 w-5 text-primary" /> Demografik Bilgiler</CardTitle>
+                <CardDescription>Doğum tarihin, uyruğun ve cinsiyetin. Sadece sen ve süper admin görür.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Doğum Tarihi</Label>
+                        <Input
+                            type="date"
+                            value={profile.personalInfo.birthDate || ''}
+                            onChange={(e) => handleChange('personalInfo', 'birthDate', e.target.value)}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Uyruk</Label>
+                        <Select
+                            value={profile.personalInfo.nationality || ''}
+                            onValueChange={(v) => handleChange('personalInfo', 'nationality', v)}
+                        >
+                            <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Uyruk seçin..." /></SelectTrigger>
+                            <SelectContent className="max-h-72">
+                                <SelectItem value="Türkiye">Türkiye</SelectItem>
+                                <SelectItem value="KKTC (Kuzey Kıbrıs)">KKTC (Kuzey Kıbrıs)</SelectItem>
+                                {Country.getAllCountries()
+                                    .map(c => c.name)
+                                    .filter(n => n !== 'Turkey' && n !== 'Cyprus')
+                                    .sort((a, b) => a.localeCompare(b))
+                                    .map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)
+                                }
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><UserCircle className="h-4 w-4" /> Cinsiyet</Label>
+                    <Select
+                        value={profile.personalInfo.gender || ''}
+                        onValueChange={(v) => handleChange('personalInfo', 'gender', v)}
+                    >
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Erkek">Erkek</SelectItem>
+                            <SelectItem value="Kadın">Kadın</SelectItem>
+                            <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+        </Card>
+
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><GraduationCap className="h-5 w-5 text-primary" /> Eğitim Bilgileri</CardTitle>
@@ -779,38 +867,65 @@ export default function ProfileSettingsPage() {
                 {customLinks.length > 0 && (
                     <div className="space-y-3 pt-2 border-t">
                         <Label className="text-xs uppercase tracking-wider text-muted-foreground">Diğer Bağlantılar</Label>
-                        {customLinks.map((link, index) => (
-                            <div key={index} className="flex items-end gap-2">
-                                <div className="space-y-1 flex-1">
-                                    <Label className="text-xs flex items-center gap-1.5"><LinkIcon className="h-3 w-3" /> Platform</Label>
-                                    <Input
-                                        value={link.platform}
-                                        onChange={(e) => updateCustomLink(index, 'platform', e.target.value)}
-                                        placeholder="TikTok, Threads, Mastodon..."
-                                    />
+                        {customLinks.map((link, index) => {
+                            const PLATFORM_OPTIONS = [
+                                'GitHub', 'Behance', 'LinkedIn', 'Instagram', 'X (Twitter)', 'Facebook',
+                                'TikTok', 'YouTube', 'Threads', 'Mastodon', 'Pinterest', 'Snapchat',
+                                'Reddit', 'Twitch', 'Discord', 'Telegram', 'WhatsApp',
+                                'Medium', 'Substack', 'Dev.to', 'Dribbble', 'Figma',
+                                'Spotify', 'SoundCloud', 'Apple Music', 'Bandcamp',
+                                'Patreon', 'Buy Me a Coffee', 'Ko-fi', 'GoFundMe',
+                                'Vimeo', 'Twitch', 'Steam', 'GitLab', 'Stack Overflow',
+                                'Hashnode', 'Notion', 'Personal Website', 'Diğer (manuel)'
+                            ];
+                            const isCustom = link.platform === 'Diğer (manuel)' || (link.platform && !PLATFORM_OPTIONS.includes(link.platform));
+                            return (
+                                <div key={index} className="flex items-end gap-2">
+                                    <div className="space-y-1 flex-1">
+                                        <Label className="text-xs flex items-center gap-1.5"><LinkIcon className="h-3 w-3" /> Platform</Label>
+                                        <Select
+                                            value={isCustom ? 'Diğer (manuel)' : link.platform}
+                                            onValueChange={(v) => updateCustomLink(index, 'platform', v === 'Diğer (manuel)' ? '' : v)}
+                                        >
+                                            <SelectTrigger><SelectValue placeholder="Seç..." /></SelectTrigger>
+                                            <SelectContent className="max-h-60">
+                                                {PLATFORM_OPTIONS.map(p => (
+                                                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {isCustom && (
+                                            <Input
+                                                value={link.platform}
+                                                onChange={(e) => updateCustomLink(index, 'platform', e.target.value)}
+                                                placeholder="Platform adı"
+                                                className="mt-1"
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="space-y-1 flex-[2]">
+                                        <Label className="text-xs">URL</Label>
+                                        <Input
+                                            type="url"
+                                            value={link.url}
+                                            onChange={(e) => updateCustomLink(index, 'url', e.target.value)}
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-10 w-10 text-destructive shrink-0"
+                                        onClick={() => removeCustomLink(index)}
+                                        title="Kaldır"
+                                        aria-label="Kaldır"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
                                 </div>
-                                <div className="space-y-1 flex-[2]">
-                                    <Label className="text-xs">URL</Label>
-                                    <Input
-                                        type="url"
-                                        value={link.url}
-                                        onChange={(e) => updateCustomLink(index, 'url', e.target.value)}
-                                        placeholder="https://..."
-                                    />
-                                </div>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-10 w-10 text-destructive shrink-0"
-                                    onClick={() => removeCustomLink(index)}
-                                    title="Kaldır"
-                                    aria-label="Kaldır"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 

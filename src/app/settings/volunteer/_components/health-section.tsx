@@ -11,8 +11,6 @@ import { HeartPulse, Bell } from 'lucide-react';
 const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'];
 
 export const HealthSection = ({
-  gender,
-  onGenderChange,
   bloodType,
   onBloodTypeChange,
   bloodNotifications,
@@ -24,8 +22,6 @@ export const HealthSection = ({
   usesRegularMedication,
   onUsesRegularMedicationChange,
 }: {
-  gender: string;
-  onGenderChange: (v: string) => void;
   bloodType: string;
   onBloodTypeChange: (v: string) => void;
   bloodNotifications: boolean;
@@ -41,17 +37,7 @@ export const HealthSection = ({
     <Card>
       <CardHeader><CardTitle className="flex items-center gap-2"><HeartPulse className="h-5 w-5 text-primary" /> Sağlık Durumu</CardTitle></CardHeader>
       <CardContent className="space-y-3">
-        <div className="space-y-2 p-4 border rounded-lg">
-          <Label>Cinsiyet</Label>
-          <Select value={gender || ''} onValueChange={onGenderChange}>
-            <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Erkek">Erkek</SelectItem>
-              <SelectItem value="Kadın">Kadın</SelectItem>
-              <SelectItem value="Belirtmek istemiyorum">Belirtmek istemiyorum</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Cinsiyet alanı Kişisel Bilgileri Düzenle sayfasına taşındı. */}
         <div className="space-y-2 p-4 border rounded-lg">
           <Label>Kan Grubu</Label>
           <Select value={bloodType || ''} onValueChange={onBloodTypeChange}>

@@ -39,7 +39,13 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   if (isManagementPage) return null;
 
   return (
-      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64 pt-[env(safe-area-inset-top)]">
+      // GPU acceleration (translateZ + will-change) Capacitor WKWebView'da scroll
+      // sırasında header'ın hafif "atlama"sını engeller. backdrop-blur layer
+      // composite'ini her frame yeniden hesaplamasın diye gerekli.
+      <header
+        className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64 pt-[env(safe-area-inset-top)]"
+        style={{ transform: 'translateZ(0)', willChange: 'transform', WebkitBackfaceVisibility: 'hidden' }}
+      >
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label={t('a11y.openMenu')}>

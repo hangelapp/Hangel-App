@@ -29,7 +29,6 @@ import { MuhtarSection } from './_components/muhtar-section';
 import { EmergencyContactsSection } from './_components/emergency-contacts-section';
 import { AddressSection } from './_components/address-section';
 import { HealthSection } from './_components/health-section';
-import { DemographicsSection } from './_components/demographics-section';
 import { ConsentsSection } from './_components/consents-section';
 import type { VolunteerUserDoc, ConsentsState, NeighborhoodsMap } from './_components/types';
 
@@ -502,17 +501,9 @@ export default function VolunteerSettingsPage() {
           onDoorNoChange={setDoorNo}
         />
 
-        <DemographicsSection
-          title={t('dashboard.settingsProfile.demographicsTitle')}
-          birthDate={birthDate}
-          onBirthDateChange={setBirthDate}
-          nationality={nationality}
-          onNationalityChange={setNationality}
-        />
+        {/* Demografik Bilgiler + Cinsiyet → Kişisel Bilgileri Düzenle sayfasına taşındı. */}
 
         <HealthSection
-          gender={gender}
-          onGenderChange={setGender}
           bloodType={bloodType}
           onBloodTypeChange={setBloodType}
           bloodNotifications={bloodNotifications}
