@@ -59,7 +59,7 @@ const emptyUser: User = {
     supportedNgos: [],
     volunteerNgos: []
 };
-import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Github, Instagram, Twitter, Palette, Plus, Link as LinkIcon, X, GraduationCap, UserCircle, Calendar } from 'lucide-react';
+import { ArrowLeft, Camera, Trash2, Loader2, Globe, Linkedin, Instagram, Twitter, Plus, Link as LinkIcon, X, GraduationCap, UserCircle, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -342,7 +342,11 @@ export default function ProfileSettingsPage() {
         fullAddress: (addr as { fullAddress?: string }).fullAddress ?? '',
     };
 
-    const payload = {
+    // Why: updateDoc nested object'i REPLACE eder (deep merge YOK). Bu
+    // payload personalInfo'yu full spread'le yazıyor → tüm alanlar saved
+    // olur. Ek olarak address için dot-path da kullanıyoruz — defansif
+    // yedek (eski client cache'te eksik field varsa korunsun diye).
+    const payload: Record<string, unknown> = {
         name: profile.name ?? '',
         username: profile.username ?? '',
         avatarUrl: profile.avatarUrl ?? '',
@@ -350,6 +354,12 @@ export default function ProfileSettingsPage() {
             ...profile.personalInfo,
             address: normalizedAddress,
         },
+        // Defansif dot-path yedek (sub-field guarantee):
+        'personalInfo.address.country': normalizedAddress.country,
+        'personalInfo.address.city': normalizedAddress.city,
+        'personalInfo.address.district': normalizedAddress.district,
+        'personalInfo.address.neighborhood': normalizedAddress.neighborhood,
+        'personalInfo.address.fullAddress': normalizedAddress.fullAddress,
         'volunteerInfo.education': educationList,
     };
 
@@ -845,14 +855,6 @@ export default function ProfileSettingsPage() {
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Linkedin className="h-4 w-4" /> LinkedIn</Label>
                     <Input type="text" inputMode="text" value={profile.personalInfo.social?.linkedin || ''} onChange={(e) => handleSocialChange('linkedin', e.target.value)} placeholder="@kullaniciadi" />
-                </div>
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Github className="h-4 w-4" /> GitHub</Label>
-                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.github || ''} onChange={(e) => handleSocialChange('github', e.target.value)} placeholder="@kullaniciadi" />
-                </div>
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Palette className="h-4 w-4" /> Behance</Label>
-                    <Input type="text" inputMode="text" value={profile.personalInfo.social?.behance || ''} onChange={(e) => handleSocialChange('behance', e.target.value)} placeholder="@kullaniciadi" />
                 </div>
                 <div className="space-y-2">
                     <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram</Label>
