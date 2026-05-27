@@ -306,6 +306,42 @@ function NgoDashboardPageContent() {
         </div>
       </div>
 
+      {/* Getting Started: yeni NGO admin'lerine 4 kritik adımı net göster.
+          Her kart bir admin sayfasına link. */}
+      <Card className="shadow-sm overflow-hidden rounded-[2rem] border-primary/20 bg-primary/5">
+        <CardHeader className="p-5 pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Hızlı Başlangıç
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">İlk adımları tamamla — kurumun platforma hızla katılsın.</p>
+        </CardHeader>
+        <CardContent className="p-5 pt-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <Link href="/ngo-admin/profile" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-bold leading-tight">Profili Tamamla</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">Logo, açıklama, iletişim</span>
+                </Link>
+                <Link href="/ngo-admin/events" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                    <Calendar className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-bold leading-tight">İlk Etkinlik</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">Topluluğa duyur</span>
+                </Link>
+                <Link href="/ngo-admin/posts" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                    <Newspaper className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-bold leading-tight">İlk Gönderi</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">Akışta paylaş</span>
+                </Link>
+                <Link href="/ngo-admin/volunteer-portal" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                    <HeartHandshake className="h-5 w-5 text-primary" />
+                    <span className="text-xs font-bold leading-tight">İlk Gönüllülük</span>
+                    <span className="text-[10px] text-muted-foreground leading-tight">İlan aç</span>
+                </Link>
+            </div>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-sm overflow-hidden rounded-[2rem] border-black/5">
         <CardHeader className="border-b border-black/5 bg-muted/30 p-6">
             <CardTitle className="text-lg">Kurumsal Performans Özeti</CardTitle>
