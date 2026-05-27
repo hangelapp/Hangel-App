@@ -35,6 +35,7 @@ import {
 import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
+import { TimelineBanner } from '@/components/shared/timeline-banner';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -285,6 +286,7 @@ export default function TimelinePage() {
 
   return (
     <div className="animate-in fade-in-0 bg-secondary">
+       <TimelineBanner />
        <Tabs defaultValue="special" className="w-full">
             <div className="p-2 sm:p-4 border-b bg-background/80 backdrop-blur-xl sticky top-12 z-10 space-y-4">
                  <div className="flex gap-2 items-center">

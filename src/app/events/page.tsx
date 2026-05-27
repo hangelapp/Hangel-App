@@ -3,7 +3,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Filter, ListFilter, Map, Search, Calendar, MapPin, X, Globe, MapPinned } from 'lucide-react';
+import { Filter, ListFilter, Map, Search, Calendar, Calendar as CalendarIcon, MapPin, X, Globe, MapPinned } from 'lucide-react';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -291,6 +291,24 @@ function EventsPageContent() {
 
       <EventMapDialog open={isMapOpen} onOpenChange={setIsMapOpen} events={sortedEvents} />
 
+      {sortedEvents.length === 0 && (
+        <div className="text-center py-16 px-4 space-y-3">
+          <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+            <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-bold">Henüz etkinlik yok</h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm)
+              ? 'Bu filtrelere uygun etkinlik bulunamadı. Filtreleri değiştir veya temizle.'
+              : 'Yakında etkinlikler eklenecek. STK\'lar yeni etkinlik açtığında burada görünür.'}
+          </p>
+          {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm) && (
+            <Button variant="outline" onClick={() => { setTypeFilter([]); setCityFilter([]); setSearchTerm(''); }}>
+              Filtreleri Temizle
+            </Button>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => {
           const detailHref = `/events/${event.slug || event.id}`;
