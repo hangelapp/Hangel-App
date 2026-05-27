@@ -3,19 +3,22 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, Search, Filter, ArrowDownUp, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Filter, ArrowDownUp, Loader2, CheckCircle, Eye, ShieldCheck } from 'lucide-react';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { cn } from '@/lib/utils';
 
 type NgoType = NGO['type'] | 'Tümü';
 
@@ -44,6 +47,7 @@ export default function VolunteerNgoSelectionPage() {
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'random', direction: 'asc' });
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
     const [randomOrder, setRandomOrder] = useState<string[]>([]);
+    const [previewNgo, setPreviewNgo] = useState<NGO | null>(null);
     // Bu sayfa zorunlu onboarding zincirinin parçası DEĞİL (zincir: ngo-selection → profile → volunteer → market).
     // Yalnızca standalone "gönüllü STK'larını değiştir" ekranı olarak kullanılır; isOnboarding daima false.
     const [isOnboarding] = useState(false);
@@ -207,14 +211,25 @@ export default function VolunteerNgoSelectionPage() {
                                         ngo={ngo}
                                         href={null}
                                         onClick={() => handleSelectNgo(ngo.id)}
-                                        className={isSel ? 'bg-primary/5 border-primary/30' : ''}
+                                        className={cn(isSel && 'bg-primary/5 border-primary/30')}
                                         rightSlot={
-                                            <Checkbox
-                                                id={`ngo-${ngo.id}`}
-                                                checked={isSel}
-                                                onCheckedChange={() => handleSelectNgo(ngo.id)}
-                                                onClick={e => e.stopPropagation()}
-                                            />
+                                            <div className="flex items-center gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                    aria-label="İncele"
+                                                    onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <div className={cn(
+                                                    "h-6 w-6 rounded-full border-2 flex items-center justify-center",
+                                                    isSel ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground'
+                                                )}>
+                                                    {isSel && <CheckCircle className="h-4 w-4 text-white" />}
+                                                </div>
+                                            </div>
                                         }
                                     />
                                 );
