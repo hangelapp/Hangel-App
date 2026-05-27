@@ -728,12 +728,14 @@ export default function InvitePage() {
                     <CardDescription>Telefon rehberin, kişi dosyan, e-posta veya WhatsApp üzerinden arkadaşlarını davet et.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* Hidden file input for direct vCard/CSV upload from main page */}
+                    {/* Why: iOS Safari'de `display: none` (hidden class) bazen file
+                        picker'ı tetiklemez. sr-only (absolute, 1px size) DOM'da kalır
+                        ama görünmez — label htmlFor click'i güvenle iletir. */}
                     <input
                         type="file"
-                        accept=".vcf,.csv,text/vcard,text/csv"
+                        accept=".vcf,.csv,text/vcard,text/csv,text/plain"
                         id="main-vcard-csv-upload"
-                        className="hidden"
+                        className="sr-only"
                         onChange={handleFileImport}
                     />
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -748,18 +750,15 @@ export default function InvitePage() {
                             <span className="text-[10px] text-muted-foreground leading-tight">Mobil / Chrome Android</span>
                         </Button>
 
-                        <Button
-                            asChild
-                            variant="outline"
-                            className="h-auto py-4 flex flex-col items-center gap-2"
-                            disabled={phoneLoading}
+                        <label
+                            htmlFor="main-vcard-csv-upload"
+                            className="h-auto py-4 flex flex-col items-center gap-2 cursor-pointer rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50"
+                            aria-disabled={phoneLoading || undefined}
                         >
-                            <label htmlFor="main-vcard-csv-upload" className="cursor-pointer">
-                                <Upload className="h-6 w-6 text-primary" />
-                                <span className="text-xs font-semibold">vCard / CSV Yükle</span>
-                                <span className="text-[10px] text-muted-foreground leading-tight">Tüm cihazlarda çalışır</span>
-                            </label>
-                        </Button>
+                            <Upload className="h-6 w-6 text-primary" />
+                            <span className="text-xs font-semibold">vCard / CSV Yükle</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Tüm cihazlarda çalışır</span>
+                        </label>
 
                         <Button
                             variant="outline"
