@@ -120,6 +120,16 @@ export async function POST(req: NextRequest) {
         // OTP doc'unu sil (kullanıldı)
         await ref.delete();
 
+        // Yeni kullanıcıya hoş geldin Utility mesajı (best-effort, fail bloklamaz)
+        if (isNewUser) {
+            try {
+                const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
+                await sendWelcomeMessage(fullPhone, name || 'arkadaş', phoneCountryCode === '+90' ? 'tr' : 'en');
+            } catch (e) {
+                console.warn('[verify-otp] welcome message failed', e);
+            }
+        }
+
         return NextResponse.json({ ok: true, customToken, isNewUser });
     } catch (e) {
         console.error('[whatsapp-otp/verify] internal error', e);

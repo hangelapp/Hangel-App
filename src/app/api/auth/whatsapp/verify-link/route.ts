@@ -100,6 +100,16 @@ export async function GET(req: NextRequest) {
         // Mark used + cleanup
         await ref.update({ used: true, usedAt: FieldValue.serverTimestamp() });
 
+        // Yeni kullanıcıya hoş geldin Utility mesajı (best-effort)
+        if (isNewUser && data.phone) {
+            try {
+                const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
+                await sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en');
+            } catch (e) {
+                console.warn('[verify-link] welcome message failed', e);
+            }
+        }
+
         return NextResponse.json({ ok: true, customToken, isNewUser });
     } catch (e) {
         console.error('[whatsapp-link/verify] internal error', e);
