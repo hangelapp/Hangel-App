@@ -45,12 +45,12 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
   const card = (
     <Card
       className={cn(
-        'p-3 transition-colors hover:bg-accent/40 cursor-pointer',
+        'p-2 transition-colors hover:bg-accent/40 cursor-pointer',
         className,
       )}
     >
-      {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot. Alt bilgilere boşluksuz. */}
-      <div className="flex items-start justify-between gap-3">
+      {/* Satır 1: Ad (+kısa ad) — tam genişlik, ortada rightSlot. */}
+      <div className="flex items-start justify-between gap-2 leading-tight">
         <div className="flex items-baseline flex-wrap gap-1.5 min-w-0">
           <p className="font-bold text-sm leading-tight">{ngo.name}</p>
           {shortName && <span className="text-xs text-muted-foreground font-medium">({shortName})</span>}
@@ -59,8 +59,8 @@ export function NgoListItem({ ngo, href, onClick, rightSlot, className }: NgoLis
       </div>
 
       {/* Satır 2: [Logo] Şeffaflık | Bağışçı | Gönüllü | Kategori */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <Avatar className="h-10 w-10 border shrink-0">
+      <div className="flex items-center gap-2 flex-wrap mt-1">
+        <Avatar className="h-9 w-9 border shrink-0">
           <AvatarImage src={ngo.avatarUrl} alt={ngo.name} />
           <AvatarFallback>{ngo.name.charAt(0)}</AvatarFallback>
         </Avatar>

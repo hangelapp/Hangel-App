@@ -288,7 +288,7 @@ export default function TimelinePage() {
     <div className="animate-in fade-in-0 bg-secondary">
        <TimelineBanner />
        <Tabs defaultValue="special" className="w-full">
-            <div className="p-2 sm:p-4 border-b bg-background/80 backdrop-blur-xl sticky top-12 z-10 space-y-4">
+            <div className="p-2 sm:p-4 border-b bg-background sticky top-12 z-10 space-y-4">
                  <div className="flex gap-2 items-center">
                     <div className="relative flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

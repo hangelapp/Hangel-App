@@ -458,7 +458,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }, [authUser, isUserLoading, isMounted, userData, isSuperAdmin, isNgoAdmin, pathname]);
 
     if (!isMounted) {
-        return <div className="min-h-screen bg-background">{children}</div>;
+        return <div className="min-h-dvh bg-background">{children}</div>;
     }
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
@@ -496,14 +496,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
 
     if (isPreviewPage || isSuperAdminPage || isPublicPage) {
-        return <div className="min-h-screen bg-background">{children}</div>;
+        return <div className="min-h-dvh bg-background">{children}</div>;
     }
 
     const currentUserName = authUser?.displayName || authUser?.email?.split('@')[0] || '';
     const currentUserHandle = authUser?.email ? `@${authUser.email.split('@')[0]}` : '';
 
     return (
-        <div className="relative mx-auto flex min-h-screen w-full flex-col bg-background">
+        <div className="relative mx-auto flex min-h-dvh w-full flex-col bg-background">
           <SideNav
             mainItems={translateItems(group1Items)}
             navItems={translateItems(group2Items)}

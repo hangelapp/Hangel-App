@@ -48,7 +48,9 @@ export default function AppBottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/70 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
-      <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-2 pb-2 pt-1 lg:max-w-2xl">
+      {/* Why: h-16 (64px) - pt-1 (4px) - pb-2 (8px) = 52px content area > 44px Apple touch target.
+          Her Link tap area en az 44x44 — accessibility-friendly. */}
+      <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-1 pb-2 pt-1 lg:max-w-2xl">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -58,8 +60,9 @@ export default function AppBottomNav() {
               href={item.href}
               key={item.label}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 p-1 text-center transition-colors",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                // min-h-[48px] = Apple touch target — small icon ile birlikte
+                "flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 px-0.5 text-center transition-colors active:bg-accent/50 rounded-lg",
+                isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
               <Icon className="h-5 w-5" />

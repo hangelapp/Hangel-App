@@ -469,7 +469,7 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const showBackButton = true;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       <div className="p-4 sm:p-6 lg:p-8">
         {showBackButton && (
           <Button
@@ -500,7 +500,7 @@ export default function NgoAdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
+    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}>
       <ActiveEntityProvider>
         <NgoAdminLayoutInner>{children}</NgoAdminLayoutInner>
       </ActiveEntityProvider>
