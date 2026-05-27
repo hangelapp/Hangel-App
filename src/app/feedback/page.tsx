@@ -1,82 +1,108 @@
-
 'use client';
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Star, Lightbulb, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Star, Send, Loader2, MessageSquare, BarChart3, CheckCircle2, Gift } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { useWebPage } from '@/hooks/use-site-content';
-import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useFirestore, useUser } from '@/firebase';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
-const FeedbackValueSection = ({ 
-    title, 
-    subtitle, 
-    description, 
-    icon: Icon,
-    theme = 'light',
-    imageUrl,
-    imageHint
-}: { 
-    title: string, 
-    subtitle?: string, 
-    description?: string, 
-    icon: React.ComponentType<{ className?: string }>,
-    theme?: 'light' | 'dark',
-    imageUrl?: string,
-    imageHint?: string
-}) => (
-    <section className={cn(
-        "relative min-h-[60vh] flex flex-col items-center justify-center py-20 text-center overflow-hidden border-b border-black/5",
-        theme === 'dark' ? "bg-black text-white" : "bg-white text-[#1d1d1f]"
-    )}>
-        <div className="relative z-10 space-y-6 px-6 max-w-4xl">
-            <div className={cn(
-                "w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4",
-                theme === 'dark' ? "bg-white/10" : "bg-primary/10"
-            )}>
-                <Icon className={cn("h-8 w-8", theme === 'dark' ? "text-white" : "text-primary")} />
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{title}</h2>
-            {subtitle && <p className="text-xl md:text-2xl font-medium opacity-90">{subtitle}</p>}
-            {description && <p className="text-sm md:text-lg opacity-70 max-w-2xl mx-auto leading-relaxed">{description}</p>}
-        </div>
-        
-        {imageUrl && (
-            <div className="absolute inset-0 z-0 opacity-20">
-                <Image 
-                    src={imageUrl} 
-                    alt={title} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={imageHint}
-                />
-            </div>
-        )}
-    </section>
-);
+type SurveyModule = {
+    key: string;
+    title: string;
+    icon: string;
+    questions: { id: string; text: string }[];
+};
+
+const SURVEY_MODULES: SurveyModule[] = [
+    {
+        key: 'imece',
+        title: 'Hangel İmece (Gönüllülük) Paneli',
+        icon: '🤝',
+        questions: [
+            { id: 'imece_q1', text: 'Gönüllülük ilanlarını bulmak ne kadar kolay?' },
+            { id: 'imece_q2', text: 'Sana özel önerilerin alaka düzeyi nasıl?' },
+            { id: 'imece_q3', text: 'Başvuru süreci ne kadar pürüzsüz?' },
+        ],
+    },
+    {
+        key: 'donation',
+        title: 'Hangel Bağış Paneli',
+        icon: '💝',
+        questions: [
+            { id: 'don_q1', text: 'STK bilgileri ve şeffaflık verileri yeterli mi?' },
+            { id: 'don_q2', text: 'Bağış akışı ne kadar güvenli hissettiriyor?' },
+            { id: 'don_q3', text: 'Bağış sonrası rapor ve takip yeterli mi?' },
+        ],
+    },
+    {
+        key: 'library',
+        title: 'Hangel Kütüphane',
+        icon: '📚',
+        questions: [
+            { id: 'lib_q1', text: 'İçerikleri keşfetmek ne kadar kolay?' },
+            { id: 'lib_q2', text: 'İçerik çeşitliliği ihtiyacını karşılıyor mu?' },
+            { id: 'lib_q3', text: 'Okuma / izleme deneyimi rahat mı?' },
+        ],
+    },
+    {
+        key: 'impact',
+        title: 'Hangel Sosyal Etki Envanteri',
+        icon: '📊',
+        questions: [
+            { id: 'imp_q1', text: 'Kendi etki skorun sana anlamlı geliyor mu?' },
+            { id: 'imp_q2', text: 'STK etki verileri yeterince detaylı mı?' },
+            { id: 'imp_q3', text: 'Sertifika / rozet sistemi motive ediyor mu?' },
+        ],
+    },
+    {
+        key: 'clubs',
+        title: 'Öğrenci Kulüpleri ve Etkinlikleri',
+        icon: '🎓',
+        questions: [
+            { id: 'club_q1', text: 'Kulüp / üniversite keşfi ne kadar kolay?' },
+            { id: 'club_q2', text: 'Etkinlikleri görüp katılmak rahat mı?' },
+            { id: 'club_q3', text: 'Kulüp profil sayfaları yeterli bilgi veriyor mu?' },
+        ],
+    },
+];
+
+const SURVEY_REWARD = 20;
 
 export default function FeedbackPage() {
     const router = useRouter();
     const { toast } = useToast();
-    const cms = useWebPage('feedback');
     const db = useFirestore();
     const { user: authUser } = useUser();
-    const [rating, setRating] = useState<number>(0);
-    const [topic, setTopic] = useState<string>('');
+
+    // Form state
+    const [feedbackType, setFeedbackType] = useState<'suggestion' | 'complaint' | 'request'>('suggestion');
+    const [feedbackModule, setFeedbackModule] = useState<string>('');
     const [feedbackText, setFeedbackText] = useState<string>('');
     const [feedbackEmail, setFeedbackEmail] = useState<string>('');
     const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Survey state
+    const [surveyAnswers, setSurveyAnswers] = useState<Record<string, number>>({});
+    const [surveyNotes, setSurveyNotes] = useState<Record<string, string>>({});
+    const [surveySubmitting, setSurveySubmitting] = useState(false);
+    const [surveyCompleted, setSurveyCompleted] = useState(false);
+
+    const allQuestions = SURVEY_MODULES.flatMap(m => m.questions);
+    const answeredCount = allQuestions.filter(q => surveyAnswers[q.id] > 0).length;
+    const totalQuestions = allQuestions.length;
+    const progress = Math.round((answeredCount / totalQuestions) * 100);
+
+    const handleSubmitFeedback = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!feedbackText.trim()) {
             toast({ variant: 'destructive', title: 'Yazı eksik', description: 'Lütfen düşüncelerinizi yazın.' });
@@ -86,8 +112,9 @@ export default function FeedbackPage() {
         setSubmitting(true);
         try {
             await addDoc(collection(db, COLLECTIONS.userFeedback), {
-                rating: rating || null,
-                topic: topic || null,
+                kind: 'feedback',
+                type: feedbackType, // suggestion / complaint / request
+                module: feedbackModule || null,
                 text: feedbackText.trim(),
                 email: feedbackEmail.trim() || authUser?.email || null,
                 userId: authUser?.uid || null,
@@ -96,11 +123,11 @@ export default function FeedbackPage() {
                 status: 'new',
             });
             toast({
-                title: "Geri Bildiriminiz Alındı",
-                description: "Daha iyi bir deneyim oluşturmamıza yardımcı olduğunuz için teşekkürler.",
+                title: 'Geri Bildiriminiz Alındı',
+                description: 'Mesajınız ekibimize ulaştı. Teşekkürler!',
             });
-            setRating(0);
-            setTopic('');
+            setFeedbackType('suggestion');
+            setFeedbackModule('');
             setFeedbackText('');
             setFeedbackEmail('');
         } catch {
@@ -110,127 +137,239 @@ export default function FeedbackPage() {
         }
     };
 
+    const handleSubmitSurvey = async () => {
+        if (!authUser) {
+            toast({ variant: 'destructive', title: 'Giriş yapın', description: 'Anketi göndermek için giriş yapmalısınız.' });
+            return;
+        }
+        if (answeredCount < totalQuestions) {
+            toast({ variant: 'destructive', title: 'Eksik yanıt', description: `Lütfen tüm ${totalQuestions} soruyu yanıtlayın.` });
+            return;
+        }
+        if (!db) return;
+        setSurveySubmitting(true);
+        try {
+            // Survey kaydını yaz
+            await addDoc(collection(db, COLLECTIONS.userFeedback), {
+                kind: 'survey',
+                answers: surveyAnswers,
+                notes: surveyNotes,
+                userId: authUser.uid,
+                userName: authUser.displayName || null,
+                email: authUser.email || null,
+                createdAt: serverTimestamp(),
+                status: 'completed',
+                reward: SURVEY_REWARD,
+            });
+            // Kullanıcıya 20 puan ekle (impactScore)
+            await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
+                impactScore: increment(SURVEY_REWARD),
+            });
+            setSurveyCompleted(true);
+            toast({
+                title: `+${SURVEY_REWARD} puan kazandın! 🎉`,
+                description: 'Hangel\'in gelişmesine katkın için teşekkürler.',
+            });
+        } catch (err) {
+            console.error('Survey submit failed:', err);
+            toast({ variant: 'destructive', title: 'Anket gönderilemedi', description: 'Lütfen tekrar dene.' });
+        } finally {
+            setSurveySubmitting(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
-            {/* Header / Nav */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
-                <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
-                    <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+        <div className="min-h-dvh bg-secondary/30">
+            {/* Header */}
+            <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b">
+                <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-3xl">
+                    <Button onClick={() => router.back()} variant="ghost" size="sm" className="h-8 px-2 -ml-2">
+                        <ArrowLeft className="mr-1 h-4 w-4" /> Geri
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">Geri Bildirim</span>
-                    <div className="w-20" />
+                    <span className="text-sm font-bold">Geri Bildirim</span>
+                    <div className="w-12" />
                 </div>
             </header>
 
-            <main>
-                {/* Hero Section */}
-                <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-[#f5f5f7]">
-                    {cms.subtitle && (
-                        <p className="text-sm font-bold uppercase tracking-widest text-primary">{cms.subtitle}</p>
-                    )}
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{cms.title || 'Fikirleriniz Değerli.'}</h1>
-                    <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto">
-                        {cms.description || 'Platformumuzu her geçen gün sizinle birlikte geliştiriyoruz. Deneyimlerinizi bizimle paylaşın.'}
+            <main className="container mx-auto px-4 py-6 max-w-3xl space-y-6">
+                {/* Intro */}
+                <div className="text-center space-y-2 py-2">
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Sesini Duyalım</h1>
+                    <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+                        Önerilerini, şikayetlerini ve taleplerini ekibimize ilet. Hangel&apos;in
+                        her özelliği senin geri bildirimlerinle şekilleniyor.
                     </p>
-                </section>
+                </div>
 
-                {/* Why Feedback Matters Sections */}
-                <FeedbackValueSection 
-                    icon={Lightbulb}
-                    title="İyiliği Birlikte Tasarlıyoruz."
-                    subtitle="Her öneri, yeni bir çözüm demek."
-                    description="Gönderdiğiniz her geri bildirim, Hangel ekibi tarafından dikkatle incelenir. Yazılımsal geliştirmelerden yeni sosyal etki modellerine kadar pek çok özelliği sizden aldığımız ilhamla hayata geçiriyoruz."
-                />
-
-                <FeedbackValueSection 
-                    theme="dark"
-                    icon={ShieldCheck}
-                    title="Şeffaf ve Güvenilir Deneyim."
-                    subtitle="Geri bildirimleriniz denetim mekanizmamızdır."
-                    description="STK başvuruları, bağış süreçleri veya gönüllülük ilanları hakkındaki görüşleriniz, platformumuzun güvenliğini ve şeffaflığını en üst düzeyde tutmamıza yardımcı olur."
-                />
-
-                {/* Interactive Feedback Form Section */}
-                <section className="py-24 px-6 bg-[#fafafa]">
-                    <div className="container mx-auto max-w-3xl">
-                        <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-2xl border border-black/5 space-y-12">
-                            <div className="text-center space-y-2">
-                                <h3 className="text-3xl font-bold tracking-tight">Geri Bildirim Formu</h3>
-                                <p className="text-muted-foreground">Deneyiminizi paylaşmak için aşağıdaki alanları doldurun.</p>
+                {/* Feedback Form */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5 text-primary" />
+                            Öneri / Şikayet / Talep
+                        </CardTitle>
+                        <CardDescription>Mesajını yaz, ekibimize doğrudan ulaşsın.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmitFeedback} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold uppercase tracking-wider">Tür</Label>
+                                    <Select value={feedbackType} onValueChange={(v) => setFeedbackType(v as 'suggestion' | 'complaint' | 'request')}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="suggestion">💡 Öneri</SelectItem>
+                                            <SelectItem value="complaint">⚠️ Şikayet</SelectItem>
+                                            <SelectItem value="request">📋 Talep</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs font-bold uppercase tracking-wider">İlgili Alan (Opsiyonel)</Label>
+                                    <Select value={feedbackModule} onValueChange={setFeedbackModule}>
+                                        <SelectTrigger><SelectValue placeholder="Genel" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="general">Genel</SelectItem>
+                                            {SURVEY_MODULES.map(m => (
+                                                <SelectItem key={m.key} value={m.key}>{m.icon} {m.title}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-
-                            <form onSubmit={handleSubmit} className="space-y-10">
-                                <div className="space-y-6 text-center">
-                                    <Label className="text-lg font-bold">Hangel deneyiminizi puanlayın</Label>
-                                    <div className="flex justify-center gap-3">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <button 
-                                                key={star}
-                                                type="button"
-                                                onClick={() => setRating(star)}
-                                                className={cn(
-                                                    "w-14 h-14 rounded-2xl transition-all duration-300 flex items-center justify-center group",
-                                                    rating >= star ? "bg-primary text-white shadow-lg" : "bg-[#f5f5f7] text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                                                )}
-                                            >
-                                                <Star className={cn("h-7 w-7 transition-transform group-active:scale-90", rating >= star && "fill-current")} />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1">Konu Seçin</Label>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {['Genel Deneyim', 'Bağış Süreçleri', 'Gönüllülük', 'Hata Bildirimi', 'Öneri', 'Diğer'].map((t) => (
-                                            <button
-                                                key={t}
-                                                type="button"
-                                                onClick={() => setTopic(prev => prev === t ? '' : t)}
-                                                aria-pressed={topic === t}
-                                                className={cn(
-                                                    "px-4 py-3 rounded-xl border text-xs font-bold transition-all bg-white",
-                                                    topic === t ? "border-primary text-primary bg-primary/5" : "hover:border-primary hover:text-primary",
-                                                )}
-                                            >
-                                                {t}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1" htmlFor="feedback-text">Düşüncelerinizi Paylaşın</Label>
-                                    <Textarea
-                                        id="feedback-text"
-                                        className="min-h-[200px] rounded-[2rem] border-none bg-[#f5f5f7] p-6 focus-visible:ring-primary text-lg leading-relaxed"
-                                        placeholder="Neyi çok sevdiniz? Neyi geliştirmeliyiz?"
-                                        required
-                                        value={feedbackText}
-                                        onChange={(e) => setFeedbackText(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="space-y-4">
-                                    <Label className="text-sm font-bold uppercase tracking-widest text-muted-foreground ml-1" htmlFor="feedback-email">E-posta Adresiniz (İsteğe Bağlı)</Label>
+                            <div className="space-y-2">
+                                <Label htmlFor="fb-text" className="text-xs font-bold uppercase tracking-wider">Mesajınız</Label>
+                                <Textarea
+                                    id="fb-text"
+                                    placeholder="Düşüncelerini, sorununu veya talebini detaylıca yaz..."
+                                    className="min-h-[120px] resize-none"
+                                    required
+                                    value={feedbackText}
+                                    onChange={(e) => setFeedbackText(e.target.value)}
+                                />
+                            </div>
+                            {!authUser?.email && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="fb-email" className="text-xs font-bold uppercase tracking-wider">E-posta (Opsiyonel)</Label>
                                     <Input
-                                        id="feedback-email"
+                                        id="fb-email"
                                         type="email"
-                                        className="h-14 rounded-2xl border-none bg-[#f5f5f7] px-6 focus-visible:ring-primary"
                                         placeholder="Gerekirse size dönüş yapabilmemiz için"
                                         value={feedbackEmail}
                                         onChange={(e) => setFeedbackEmail(e.target.value)}
                                     />
                                 </div>
+                            )}
+                            <Button type="submit" disabled={submitting} className="w-full h-11 rounded-xl font-bold">
+                                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="mr-2 h-4 w-4" /> Gönder</>}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
 
-                                <Button type="submit" size="lg" disabled={submitting} className="w-full h-16 rounded-[2rem] text-xl font-bold bg-primary hover:bg-primary/90 shadow-2xl shadow-primary/20 transition-all active:scale-[0.98]">
-                                    {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Geri Bildirimi Gönder'}
-                                </Button>
-                            </form>
+                {/* UX Survey */}
+                <Card className="border-primary/30">
+                    <CardHeader>
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                                <CardTitle className="flex items-center gap-2">
+                                    <BarChart3 className="h-5 w-5 text-primary" />
+                                    Kullanıcı Deneyimi Anketi
+                                </CardTitle>
+                                <CardDescription className="mt-1.5">
+                                    5 modül için kısa sorular. Tamamlayınca <strong className="text-primary">+{SURVEY_REWARD} puan</strong> kazanırsın.
+                                </CardDescription>
+                            </div>
+                            <div className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-xs font-bold">
+                                <Gift className="h-3.5 w-3.5" /> +{SURVEY_REWARD}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                        {!surveyCompleted && (
+                            <div className="space-y-1 pt-2">
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">{answeredCount} / {totalQuestions} soru</span>
+                                    <span className="font-bold text-primary">%{progress}</span>
+                                </div>
+                                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }} />
+                                </div>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent>
+                        {surveyCompleted ? (
+                            <div className="text-center py-6 space-y-3">
+                                <div className="mx-auto w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+                                </div>
+                                <p className="font-bold text-lg">Anket tamamlandı 🎉</p>
+                                <p className="text-sm text-muted-foreground">
+                                    +{SURVEY_REWARD} puan etki skoruna eklendi. Teşekkürler!
+                                </p>
+                            </div>
+                        ) : !authUser ? (
+                            <div className="text-center py-8 text-muted-foreground text-sm">
+                                Anketi doldurmak ve puan kazanmak için giriş yapmalısınız.
+                            </div>
+                        ) : (
+                            <div className="space-y-6">
+                                {SURVEY_MODULES.map((module) => (
+                                    <div key={module.key} className="space-y-3 pb-4 border-b last:border-b-0 last:pb-0">
+                                        <h3 className="text-sm font-bold flex items-center gap-2">
+                                            <span className="text-xl">{module.icon}</span>
+                                            <span>{module.title}</span>
+                                        </h3>
+                                        {module.questions.map((q) => (
+                                            <div key={q.id} className="space-y-2 pl-1">
+                                                <p className="text-sm">{q.text}</p>
+                                                <div className="flex gap-1.5">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => setSurveyAnswers(prev => ({ ...prev, [q.id]: star }))}
+                                                            className={cn(
+                                                                'w-9 h-9 rounded-lg transition-all flex items-center justify-center',
+                                                                surveyAnswers[q.id] >= star
+                                                                    ? 'bg-primary text-white'
+                                                                    : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary',
+                                                            )}
+                                                            aria-label={`${star} yıldız`}
+                                                        >
+                                                            <Star className={cn('h-4 w-4', surveyAnswers[q.id] >= star && 'fill-current')} />
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <div className="pl-1">
+                                            <Textarea
+                                                placeholder={`${module.title} hakkında eklemek istediğin not (opsiyonel)`}
+                                                className="text-sm min-h-[60px] resize-none"
+                                                value={surveyNotes[module.key] || ''}
+                                                onChange={(e) => setSurveyNotes(prev => ({ ...prev, [module.key]: e.target.value }))}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    type="button"
+                                    onClick={handleSubmitSurvey}
+                                    disabled={surveySubmitting || answeredCount < totalQuestions}
+                                    className="w-full h-11 rounded-xl font-bold"
+                                >
+                                    {surveySubmitting ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : answeredCount < totalQuestions ? (
+                                        `${totalQuestions - answeredCount} soru daha kaldı`
+                                    ) : (
+                                        <><Gift className="mr-2 h-4 w-4" /> Anketi gönder ve +{SURVEY_REWARD} puan kazan</>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </main>
 
             <PublicFooter currentPageLabel="Geri Bildirim" />

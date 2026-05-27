@@ -426,24 +426,24 @@ export default function VolunteeringPage() {
         </div>
 
         {personalizedRecs.length > 0 && (
-          <section aria-labelledby="imece-recs-heading" className="space-y-3">
+          <Card aria-labelledby="imece-recs-heading" className="overflow-hidden">
             <button
               type="button"
               onClick={() => setRecsOpen(prev => !prev)}
               aria-expanded={recsOpen}
               aria-controls="imece-recs-grid"
-              className="w-full flex items-center justify-between gap-2 py-1 group"
+              className="w-full flex items-center justify-between gap-2 p-3 sm:p-4 group hover:bg-accent/30 transition-colors text-left"
             >
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <h2 id="imece-recs-heading" className="text-base font-bold">Sana Özel Öneriler</h2>
+                <h2 id="imece-recs-heading" className="text-base font-bold">Sana Özel</h2>
                 <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-primary/10 text-primary">
                   {personalizedRecs.length}
                 </span>
               </div>
               <ChevronDown
                 className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:text-foreground',
+                  'h-5 w-5 text-muted-foreground transition-transform duration-200',
                   recsOpen && 'rotate-180',
                 )}
               />
@@ -451,7 +451,7 @@ export default function VolunteeringPage() {
             <div
               id="imece-recs-grid"
               hidden={!recsOpen}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 sm:p-4 pt-0 border-t"
             >
               {personalizedRecs.map(({ opportunity, score, reasons }) => (
                 <Link key={opportunity.id} href={`/volunteering/${opportunity.id}`} className="block group">
@@ -494,7 +494,7 @@ export default function VolunteeringPage() {
                 </Link>
               ))}
             </div>
-          </section>
+          </Card>
         )}
 
         <div id="imece-all-listings" className="space-y-2 scroll-mt-32">

@@ -725,10 +725,18 @@ export default function InvitePage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Hızlı Davet Yolları</CardTitle>
-                    <CardDescription>Telefon rehberin, e-posta kişilerin veya WhatsApp üzerinden arkadaşlarını davet et.</CardDescription>
+                    <CardDescription>Telefon rehberin, kişi dosyan, e-posta veya WhatsApp üzerinden arkadaşlarını davet et.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Hidden file input for direct vCard/CSV upload from main page */}
+                    <input
+                        type="file"
+                        accept=".vcf,.csv,text/vcard,text/csv"
+                        id="main-vcard-csv-upload"
+                        className="hidden"
+                        onChange={handleFileImport}
+                    />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <Button
                             variant="outline"
                             className="h-auto py-4 flex flex-col items-center gap-2"
@@ -736,8 +744,21 @@ export default function InvitePage() {
                             disabled={phoneLoading}
                         >
                             <Smartphone className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">Telefon Rehberini Bağla</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Web Contacts API / Mobil</span>
+                            <span className="text-xs font-semibold">Telefon Rehberi</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Mobil / Chrome Android</span>
+                        </Button>
+
+                        <Button
+                            asChild
+                            variant="outline"
+                            className="h-auto py-4 flex flex-col items-center gap-2"
+                            disabled={phoneLoading}
+                        >
+                            <label htmlFor="main-vcard-csv-upload" className="cursor-pointer">
+                                <Upload className="h-6 w-6 text-primary" />
+                                <span className="text-xs font-semibold">vCard / CSV Yükle</span>
+                                <span className="text-[10px] text-muted-foreground leading-tight">Tüm cihazlarda çalışır</span>
+                            </label>
                         </Button>
 
                         <Button
@@ -746,8 +767,8 @@ export default function InvitePage() {
                             onClick={() => setEmailProviderDialogOpen(true)}
                         >
                             <Mail className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">E-posta Kişilerini İçe Aktar</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Gmail / Outlook / IMAP</span>
+                            <span className="text-xs font-semibold">E-posta Kişileri</span>
+                            <span className="text-[10px] text-muted-foreground leading-tight">Gmail / Outlook</span>
                         </Button>
 
                         <Button
@@ -756,10 +777,16 @@ export default function InvitePage() {
                             onClick={() => setWhatsappDialogOpen(true)}
                         >
                             <MessageSquare className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">WhatsApp ile Davet</span>
+                            <span className="text-xs font-semibold">WhatsApp Davet</span>
                             <span className="text-[10px] text-muted-foreground leading-tight">Kopyala veya paylaş</span>
                         </Button>
                     </div>
+                    <p className="text-[11px] text-muted-foreground mt-3 leading-snug">
+                        💡 <strong>iPhone / Safari kullanıcıları:</strong> Telefon Rehberini bağlamak için
+                        Hangel mobil uygulamasını kullanın. Veya rehberinizi dışa aktarıp
+                        <strong className="text-foreground"> vCard / CSV </strong>
+                        ile yükleyin.
+                    </p>
                 </CardContent>
             </Card>
 

@@ -264,6 +264,23 @@ export default function TimelinePage() {
     return '#';
   }
 
+  // Why: bazı eski gönderilerde post.author.avatarUrl yazıma sırasında boş kaydedilmiş
+  // (entity henüz logo yüklememişti veya files.logo path'i farklı). Render anında
+  // entity adından ngo/brand listesinde lookup ile en güncel logoyu döndür.
+  const getEntityLogo = (authorName: string): string | undefined => {
+    const ngo = ngos.find(n => n.name === authorName);
+    if (ngo) {
+      const ngoData = ngo as typeof ngo & { files?: { logo?: string }; logoUrl?: string; avatarUrl?: string };
+      return ngoData.files?.logo || ngoData.logoUrl || ngoData.avatarUrl;
+    }
+    const brand = allEntityLists.find(b => b.name === authorName);
+    if (brand) {
+      const brandData = brand as typeof brand & { files?: { logo?: string }; logoUrl?: string; avatarUrl?: string };
+      return brandData.files?.logo || brandData.logoUrl || brandData.avatarUrl;
+    }
+    return undefined;
+  }
+
   return (
     <div className="animate-in fade-in-0 bg-secondary">
        <Tabs defaultValue="special" className="w-full">
@@ -369,7 +386,7 @@ export default function TimelinePage() {
                             <div className="flex items-start gap-3 p-3 sm:p-4">
                                 <Link href={getEntityLink(post.author.name)} className="shrink-0">
                                     <Avatar className="h-11 w-11">
-                                        <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
+                                        <AvatarImage src={post.author.avatarUrl || getEntityLogo(post.author.name)} alt={post.author.name} />
                                         <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 </Link>

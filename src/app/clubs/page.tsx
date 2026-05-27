@@ -29,15 +29,15 @@ const ClubCard = ({
     return (
         <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
             <Card className="hover:bg-accent transition-colors">
-                <CardContent className="p-2.5 flex gap-2.5 items-center">
-                    <Avatar className="h-10 w-10">
+                <CardContent className="p-2 flex gap-2 items-center">
+                    <Avatar className="h-9 w-9">
                         <AvatarImage src={club?.avatarUrl} alt={name} />
                         <AvatarFallback>{name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden leading-tight">
                         <p className="font-semibold text-sm truncate leading-tight">{name}</p>
-                        <p className="text-[11px] text-muted-foreground truncate">{university}</p>
-                        <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground">
+                        <p className="text-[11px] text-muted-foreground truncate leading-tight">{university}</p>
+                        <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground leading-tight">
                             <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {actualMembers.toLocaleString('tr-TR')} Üye</span>
                             <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {actualPoints.toLocaleString('tr-TR')} Puan</span>
                         </div>
@@ -454,8 +454,8 @@ export default function ClubsPage() {
         ) : universitiesGrouped.length === 0 ? (
           <div className="text-center text-muted-foreground p-12">Bu filtreyle eşleşen üniversite bulunamadı.</div>
         ) : (
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1 mb-1">
               Üniversite Listesi ({universitiesGrouped.length})
             </p>
             {universitiesGrouped.map(({ university, clubs: uClubs, memberTotal }) => {
@@ -476,14 +476,14 @@ export default function ClubsPage() {
                   <button
                     type="button"
                     onClick={() => setExpandedUniversity(isOpen ? null : university)}
-                    className="w-full p-3 flex items-center gap-2.5 hover:bg-accent/40 transition-colors text-left"
+                    className="w-full p-2 flex items-center gap-2 hover:bg-accent/40 transition-colors text-left"
                   >
-                    <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                    <div className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
                       <GraduationCap className="h-4 w-4" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{university}</p>
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap">
+                    <div className="flex-1 min-w-0 leading-tight">
+                      <p className="font-bold text-sm truncate leading-tight">{university}</p>
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap leading-tight">
                         <Badge variant="secondary" className="text-[10px] font-bold">{uClubs.length} kulüp</Badge>
                         <span className="flex items-center gap-1 font-medium">
                           <Users className="h-3 w-3" /> {totalClubMembers.toLocaleString('tr-TR')} kulüp üyesi
@@ -505,7 +505,7 @@ export default function ClubsPage() {
                     <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isOpen && (
-                    <div className="border-t bg-muted/20 p-2 space-y-1.5">
+                    <div className="border-t bg-muted/20 p-1.5 space-y-1">
                       {uClubs.map(club => {
                         const stats = clubStats.get(club.id);
                         return (
