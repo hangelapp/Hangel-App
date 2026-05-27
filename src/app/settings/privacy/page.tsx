@@ -1,17 +1,45 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, Lock, Shield, Loader2 } from 'lucide-react';
+import { ArrowLeft, Lock, Shield, Loader2, Laptop, Smartphone, Tablet, LogOut, Trash2, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useCollection, updateDocumentNonBlocking, useAuth } from '@/firebase';
+import { collection, deleteDoc, doc, orderBy, query, type Timestamp } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { getSessionId } from '@/lib/session-tracker';
+
+interface SessionDoc {
+    id: string;
+    sessionId?: string;
+    deviceName?: string;
+    browserName?: string;
+    osName?: string;
+    deviceType?: 'mobile' | 'tablet' | 'desktop';
+    lastActiveAt?: Timestamp;
+    createdAt?: Timestamp;
+}
+
+function formatRelative(ts?: Timestamp): string {
+    if (!ts) return '—';
+    const d = ts.toDate();
+    const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (diffMin < 1) return 'Şu an';
+    if (diffMin < 60) return `${diffMin} dakika önce`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH} saat önce`;
+    const diffD = Math.floor(diffH / 24);
+    if (diffD < 30) return `${diffD} gün önce`;
+    return d.toLocaleDateString('tr-TR');
+}
 
 const SettingsItem = ({ children, icon: Icon, label, iconColor, description }: { children: React.ReactNode, icon: React.ElementType, label: string, iconColor: string, description?: string }) => (
     <div className="flex items-center p-4 text-sm sm:text-base border-b last:border-b-0">
@@ -32,7 +60,55 @@ export default function PrivacySettingsPage() {
     const { toast } = useToast();
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
+    const auth = useAuth();
     const [saving, setSaving] = useState(false);
+    const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+    const [closingSessionId, setClosingSessionId] = useState<string | null>(null);
+    const [closingAll, setClosingAll] = useState(false);
+    const currentSessionId = useMemo(() => (typeof window !== 'undefined' ? getSessionId() : null), []);
+
+    const sessionsRef = useMemoFirebase(() => {
+        if (!db || !authUser?.uid) return null;
+        return query(collection(db, COLLECTIONS.users, authUser.uid, 'sessions'), orderBy('lastActiveAt', 'desc'));
+    }, [db, authUser?.uid]);
+    const { data: sessions, isLoading: sessionsLoading } = useCollection<SessionDoc>(sessionsRef);
+
+    const handleCloseSession = async (s: SessionDoc) => {
+        if (!db || !authUser?.uid) return;
+        setClosingSessionId(s.id);
+        try {
+            await deleteDoc(doc(db, COLLECTIONS.users, authUser.uid, 'sessions', s.id));
+            const isCurrent = s.sessionId === currentSessionId;
+            if (isCurrent) {
+                toast({ title: 'Bu oturum kapatılıyor' });
+                if (typeof window !== 'undefined') localStorage.removeItem('hangel-session-id');
+                await signOut(auth).catch(() => {});
+                router.push('/login/selection?action=login');
+            } else {
+                toast({ title: 'Oturum kapatıldı', description: 'Diğer cihazda 1 saat içinde otomatik çıkış olur.' });
+            }
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Hata', description: err instanceof Error ? err.message.slice(0, 200) : 'Oturum kapatılamadı.' });
+        } finally {
+            setClosingSessionId(null);
+        }
+    };
+
+    const handleCloseAllOthers = async () => {
+        if (!db || !authUser?.uid || !sessions) return;
+        setClosingAll(true);
+        try {
+            const others = sessions.filter(s => s.sessionId !== currentSessionId);
+            await Promise.all(others.map(s => deleteDoc(doc(db, COLLECTIONS.users, authUser.uid, 'sessions', s.id))));
+            toast({ title: 'Diğer oturumlar kapatıldı', description: `${others.length} oturum kapatıldı.` });
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Hata', description: err instanceof Error ? err.message.slice(0, 200) : '' });
+        } finally {
+            setClosingAll(false);
+        }
+    };
+
+    const getDeviceIcon = (type: SessionDoc['deviceType']) => type === 'tablet' ? Tablet : type === 'mobile' ? Smartphone : Laptop;
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -140,6 +216,83 @@ export default function PrivacySettingsPage() {
                     <SettingsItem label="Bağış Aktivitelerimi Gizle" description="Bağış ve işlem geçmişiniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideDonations} onCheckedChange={setHideDonations} />
                     </SettingsItem>
+                </CardContent>
+            </Card>
+
+            {/* GÜVENLİK BÖLÜMÜ — eski /settings/security içeriği buraya taşındı. */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>İki Faktörlü Doğrulama</CardTitle>
+                    <CardDescription>Hesabınızı korumak için ek güvenlik katmanı.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                            <Label htmlFor="2fa-switch">Telefon Numarası ile Doğrulama</Label>
+                            <p className="text-xs text-muted-foreground">Giriş yaparken telefonunuza bir kod gönderilir.</p>
+                        </div>
+                        <Switch
+                            id="2fa-switch"
+                            checked={twoFactorEnabled}
+                            onCheckedChange={(c) => {
+                                setTwoFactorEnabled(c);
+                                toast({ title: '2FA güncellendi', description: c ? 'Açıldı.' : 'Kapatıldı.' });
+                            }}
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Açık Oturumlar</CardTitle>
+                    <CardDescription>Bu hesaba bağlı cihaz ve tarayıcılar. Aynı cihazda farklı tarayıcılar ayrı oturum olarak listelenir.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {sessionsLoading ? (
+                        <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                    ) : !sessions || sessions.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-6">Henüz oturum kaydı yok.</p>
+                    ) : (
+                        sessions.map((s) => {
+                            const Icon = getDeviceIcon(s.deviceType);
+                            const isCurrent = s.sessionId === currentSessionId;
+                            const deviceLabel = `${s.deviceName || 'Cihaz'} · ${s.browserName || ''}`.trim();
+                            return (
+                                <div key={s.id} className={`flex items-start gap-3 p-3 border rounded-lg ${isCurrent ? 'border-primary/40 bg-primary/5' : ''}`}>
+                                    <Icon className="h-6 w-6 text-muted-foreground shrink-0 mt-0.5" />
+                                    <div className="flex-1 min-w-0 space-y-0.5">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="font-bold text-sm truncate">{deviceLabel}</p>
+                                            {isCurrent && <Badge variant="default" className="text-[10px] bg-primary/15 text-primary border-primary/30">Bu cihaz</Badge>}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">{s.osName || '—'} · Son aktif: {formatRelative(s.lastActiveAt)}</p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => handleCloseSession(s)}
+                                        disabled={closingSessionId === s.id}
+                                        aria-label="Oturum kapat"
+                                        title="Oturumu kapat"
+                                    >
+                                        {closingSessionId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : isCurrent ? <LogOut className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+                                    </Button>
+                                </div>
+                            );
+                        })
+                    )}
+                    {sessions && sessions.length > 1 && (
+                        <Button type="button" variant="outline" className="w-full" onClick={handleCloseAllOthers} disabled={closingAll}>
+                            {closingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Diğer Tüm Oturumları Kapat
+                        </Button>
+                    )}
+                    <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t">
+                        ⓘ Diğer cihazda oturum kapatıldıktan sonra etki gösterme süresi: en geç <strong>1 saat</strong>.
+                    </p>
                 </CardContent>
             </Card>
 

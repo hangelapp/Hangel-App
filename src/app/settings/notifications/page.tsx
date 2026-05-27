@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Bell, Mail, MessageSquare, Loader2, BellRing, BellOff } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { ArrowLeft, Bell, Mail, MessageSquare, Loader2, BellRing, BellOff, Shield, Megaphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { requestPushPermission, registerForPushToken } from '@/lib/fcm';
@@ -140,6 +141,9 @@ export default function NotificationSettingsPage() {
                     </Card>
                 ))}
             </div>
+            {/* Pazarlama İzinleri — eski /settings/marketing-consent içeriği buraya taşındı. */}
+            <MarketingConsentCard />
+
             <div className="flex justify-end">
                 <Button onClick={handleSave} disabled={saving}>
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -147,6 +151,111 @@ export default function NotificationSettingsPage() {
                 </Button>
             </div>
         </div>
+    );
+}
+
+/**
+ * KVKK + İYS uyumlu pazarlama izinleri. Önceden /settings/marketing-consent
+ * ayrı sayfaydı; tek "Bildirim Ayarları" altında topluyoruz.
+ */
+function MarketingConsentCard() {
+    const { user } = useUser();
+    const db = useFirestore();
+    const { toast } = useToast();
+    const [emailEnabled, setEmailEnabled] = useState(false);
+    const [smsEnabled, setSmsEnabled] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if (!user || !db) return;
+        (async () => {
+            try {
+                const snap = await getDoc(doc(db, COLLECTIONS.userMarketingConsent, user.uid));
+                if (snap.exists()) {
+                    const d = snap.data() as { email?: { enabled?: boolean }; sms?: { enabled?: boolean } };
+                    setEmailEnabled(d.email?.enabled ?? false);
+                    setSmsEnabled(d.sms?.enabled ?? false);
+                }
+            } catch { /* noop */ } finally {
+                setLoading(false);
+            }
+        })();
+    }, [user, db]);
+
+    const handleSave = async () => {
+        if (!user) return;
+        setSaving(true);
+        try {
+            await setDoc(doc(db, COLLECTIONS.userMarketingConsent, user.uid), {
+                email: { enabled: emailEnabled, source: 'user', updatedAt: serverTimestamp() },
+                sms: { enabled: smsEnabled, source: 'user', updatedAt: serverTimestamp() },
+                channelAddresses: { email: user.email ?? null },
+                updatedAt: serverTimestamp(),
+            }, { merge: true });
+            toast({ title: 'Pazarlama izinleri kaydedildi' });
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: err instanceof Error ? err.message.slice(0, 200) : '' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (!user) return null;
+    if (loading) {
+        return (
+            <Card>
+                <CardContent className="flex justify-center py-6">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary" /> Pazarlama İzinleri (SMS & E-Posta)</CardTitle>
+                <CardDescription>Hangel duyuru, kampanya ve özel teklif iletilerini almak ister misin? İstediğin zaman değiştirebilirsin.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-md bg-blue-100 flex items-center justify-center">
+                            <Mail className="h-4 w-4 text-blue-700" />
+                        </div>
+                        <div>
+                            <Label className="text-sm font-medium">E-posta ile Pazarlama</Label>
+                            <p className="text-xs text-muted-foreground">Kampanya, etkinlik, blog güncellemeleri.</p>
+                        </div>
+                    </div>
+                    <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-md bg-emerald-100 flex items-center justify-center">
+                            <MessageSquare className="h-4 w-4 text-emerald-700" />
+                        </div>
+                        <div>
+                            <Label className="text-sm font-medium">SMS ile Pazarlama</Label>
+                            <p className="text-xs text-muted-foreground">Acil durum & özel teklif bildirimleri.</p>
+                        </div>
+                    </div>
+                    <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
+                </div>
+                <Button onClick={handleSave} disabled={saving} className="w-full" variant="outline">
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Pazarlama İzinlerini Kaydet
+                </Button>
+                <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t flex items-start gap-1.5">
+                    <Shield className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                    <span>
+                        <strong>KVKK ve İYS:</strong> İzinlerini istediğin zaman buradan veya gelen mesajdaki
+                        &quot;Aboneliği iptal et&quot; bağlantısıyla geri çekebilirsin. İzinler İleti Yönetim Sistemi (İYS) ile senkron tutulur.
+                    </span>
+                </p>
+            </CardContent>
+        </Card>
     );
 }
 
