@@ -39,23 +39,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   if (isManagementPage) return null;
 
   return (
-      // Why: Capacitor WKWebView'da scroll sırasında header atlamasın diye:
-      // 1. backdrop-blur kaldırıldı (WebView'da expensive, jank yaratır)
-      // 2. Solid background (bg-card)
-      // 3. translate3d GPU layer + will-change tüm transform alanları
-      // 4. position:fixed yetersizse iOS'ta -webkit-sticky de eklenir
-      <header
-        className="fixed top-0 left-0 right-0 z-50 mx-auto border-b bg-card lg:left-64 pt-[env(safe-area-inset-top)]"
-        style={{
-          transform: 'translate3d(0, 0, 0)',
-          willChange: 'transform',
-          WebkitBackfaceVisibility: 'hidden',
-          backfaceVisibility: 'hidden',
-          WebkitTransform: 'translate3d(0, 0, 0)',
-          // iOS WKWebView için ek sıkıştırma
-          contain: 'layout style',
-        }}
-      >
+      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64 pt-[env(safe-area-inset-top)]">
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label={t('a11y.openMenu')}>
