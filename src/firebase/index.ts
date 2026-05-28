@@ -3,7 +3,20 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore'
+
+// WebChannel/QUIC taşıma katmanı kısıtlı ağlar, VPN ve proxy arkasında sık sık
+// "WebChannelConnection RPC 'Listen' stream transport errored" + ERR_QUIC_PROTOCOL_ERROR
+// üretir. Auto-detect long-polling, WebChannel başarısız olduğunda long-polling'e
+// düşerek bu konsol hatalarını azaltır. İlk init ayarı uygular; tekrar çağrıda
+// (zaten başlatılmışsa) initializeFirestore fırlatır → mevcut örneği döndürürüz.
+function getFirestoreWithLongPolling(app: FirebaseApp): Firestore {
+  try {
+    return initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+  } catch {
+    return getFirestore(app);
+  }
+}
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -30,7 +43,7 @@ export function getSdks(firebaseApp: FirebaseApp) {
   return {
     firebaseApp,
     auth,
-    firestore: getFirestore(firebaseApp)
+    firestore: getFirestoreWithLongPolling(firebaseApp)
   };
 }
 
