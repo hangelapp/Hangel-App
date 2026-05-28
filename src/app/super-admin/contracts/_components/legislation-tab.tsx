@@ -30,6 +30,7 @@ interface Legislation {
   id: string;
   name: string;
   number?: string;
+  country?: string;
   category?: string;
   riskLevel?: RiskLevel;
   complianceStatus?: ComplianceStatus;
@@ -60,6 +61,19 @@ const COMPLIANCE_META: Record<ComplianceStatus, { label: string; cls: string }> 
 const MODULES = ['Bağış', 'Gönüllülük', 'Etkinlik', 'AI Araçları', 'Mesajlaşma', 'Kan İlanı', 'Üyelik', 'Ödeme'];
 const CATEGORIES = ['KVKK', 'Dernekler Kanunu', 'Yardım Toplama', 'Elektronik Ticaret', 'Vergi', 'İş Hukuku', 'Çocuk Koruma', 'Diğer'];
 
+// Çok yargılı: AB ve her ülke için ayrı yapılandırma. Liste gerektikçe genişletilir.
+const COUNTRIES: { code: string; label: string }[] = [
+  { code: 'TR', label: '🇹🇷 Türkiye' },
+  { code: 'EU', label: '🇪🇺 Avrupa Birliği' },
+  { code: 'INT', label: '🌍 Uluslararası' },
+  { code: 'DE', label: '🇩🇪 Almanya' },
+  { code: 'FR', label: '🇫🇷 Fransa' },
+  { code: 'NL', label: '🇳🇱 Hollanda' },
+  { code: 'GB', label: '🇬🇧 Birleşik Krallık' },
+  { code: 'US', label: '🇺🇸 ABD' },
+];
+const countryLabel = (code?: string) => COUNTRIES.find(c => c.code === code)?.label || code || '🇹🇷 Türkiye';
+
 const slugify = (s: string) =>
   s.toLowerCase().replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -69,6 +83,7 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
   const isNew = !item;
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const [country, setCountry] = useState('TR');
   const [category, setCategory] = useState('');
   const [riskLevel, setRiskLevel] = useState<RiskLevel>('orta');
   const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus>('inceleniyor');
@@ -82,7 +97,7 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
   const handleOpen = (o: boolean) => {
     setOpen(o);
     if (o) {
-      setName(item?.name || ''); setNumber(item?.number || ''); setCategory(item?.category || '');
+      setName(item?.name || ''); setNumber(item?.number || ''); setCountry(item?.country || 'TR'); setCategory(item?.category || '');
       setRiskLevel(item?.riskLevel || 'orta'); setComplianceStatus(item?.complianceStatus || 'inceleniyor');
       setHangelSubject(item?.hangelSubject || ''); setAffectedModules(item?.affectedModules || []);
       setArticleText(item?.articleText || ''); setInterpretation(item?.interpretation || ''); setLinks(item?.links || '');
@@ -95,7 +110,7 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
     setSaving(true);
     try {
       const id = item?.id || slugify(name);
-      await onSave({ id, name: name.trim(), number: number.trim(), category, riskLevel, complianceStatus, hangelSubject: hangelSubject.trim(), affectedModules, articleText: articleText.trim(), interpretation: interpretation.trim(), links: links.trim() });
+      await onSave({ id, name: name.trim(), number: number.trim(), country, category, riskLevel, complianceStatus, hangelSubject: hangelSubject.trim(), affectedModules, articleText: articleText.trim(), interpretation: interpretation.trim(), links: links.trim() });
       setOpen(false);
     } finally { setSaving(false); }
   };
@@ -116,7 +131,10 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
             <div className="space-y-2"><Label>Kanun Adı *</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="Yardım Toplama Kanunu" /></div>
             <div className="space-y-2"><Label>Kanun No</Label><Input value={number} onChange={e => setNumber(e.target.value)} placeholder="2860" /></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="space-y-2"><Label className="text-xs">Ülke / Yargı Bölgesi</Label>
+              <Select value={country} onValueChange={setCountry}><SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{COUNTRIES.map(c => <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label className="text-xs">Kategori</Label>
               <Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue placeholder="Seç" /></SelectTrigger>
                 <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></div>
@@ -160,6 +178,7 @@ export function LegislationTab() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [countryFilter, setCountryFilter] = useState<string>('all');
   const [seeding, setSeeding] = useState(false);
 
   const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
@@ -167,13 +186,21 @@ export function LegislationTab() {
 
   const filtered = useMemo(() => {
     let list = legislations || [];
+    if (countryFilter !== 'all') list = list.filter(l => (l.country || 'TR') === countryFilter);
     if (riskFilter !== 'all') list = list.filter(l => l.riskLevel === riskFilter);
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       list = list.filter(l => l.name.toLowerCase().includes(q) || (l.number || '').includes(q) || (l.category || '').toLowerCase().includes(q));
     }
     return list;
-  }, [legislations, searchTerm, riskFilter]);
+  }, [legislations, searchTerm, riskFilter, countryFilter]);
+
+  // Ülke bazlı sayımlar — "her AB ve ülke için ayrı yapılandırma" görünürlüğü.
+  const countryCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    (legislations || []).forEach(l => { const c = l.country || 'TR'; m.set(c, (m.get(c) || 0) + 1); });
+    return m;
+  }, [legislations]);
 
   const handleSave = async (l: Legislation) => {
     try {
@@ -219,6 +246,15 @@ export function LegislationTab() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Kanun adı, no, kategori ara..." className="pl-10 h-10" />
           </div>
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
+            <SelectTrigger className="w-44 h-10"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm Ülkeler</SelectItem>
+              {COUNTRIES.filter(c => (countryCounts.get(c.code) || 0) > 0 || c.code === 'TR' || c.code === 'EU').map(c => (
+                <SelectItem key={c.code} value={c.code}>{c.label}{countryCounts.get(c.code) ? ` (${countryCounts.get(c.code)})` : ''}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={riskFilter} onValueChange={setRiskFilter}>
             <SelectTrigger className="w-40 h-10"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -251,6 +287,7 @@ export function LegislationTab() {
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-bold">{l.name}</p>
+                        <Badge variant="secondary" className="text-[9px]">{countryLabel(l.country)}</Badge>
                         {l.number && <Badge variant="outline" className="text-[9px]">No: {l.number}</Badge>}
                         {l.category && <Badge variant="secondary" className="text-[9px]">{l.category}</Badge>}
                         {l.riskLevel && <Badge className={cn('text-[9px]', RISK_META[l.riskLevel].cls)}>{RISK_META[l.riskLevel].label} Risk</Badge>}
