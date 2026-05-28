@@ -128,30 +128,48 @@ export default function NotificationsPage() {
       if (status === 'positive') {
         const hospital = notif.data?.hospitalName || '';
         const address = notif.data?.hospitalAddress || '';
+        const hospitalPhone = (notif.data as { hospitalPhone?: string })?.hospitalPhone || '';
+        const city = (notif.data as { city?: string })?.city || '';
+        const district = (notif.data as { district?: string })?.district || '';
+        const patientName = (notif.data as { patientName?: string })?.patientName || '';
+        const units = (notif.data as { units?: number })?.units;
+        const bloodType = notif.data?.bloodType || '';
         const contactName = notif.data?.contactName || '';
         const contactPhone = notif.data?.contactPhone || '';
+        const location = [district, city].filter(Boolean).join(', ');
         const bodyParts: string[] = [];
-        if (hospital) bodyParts.push(`Hastane: ${hospital}`);
+        if (hospital) bodyParts.push(`🏥 Hastane: ${hospital}`);
+        if (location) bodyParts.push(`📍 Konum: ${location}`);
         if (address) bodyParts.push(`Adres: ${address}`);
-        if (contactName) bodyParts.push(`Yetkili: ${contactName}`);
-        if (contactPhone) bodyParts.push(`Telefon: ${contactPhone}`);
+        if (hospitalPhone) bodyParts.push(`☎ Hastane Tel: ${hospitalPhone}`);
+        if (bloodType) bodyParts.push(`🩸 Kan Grubu: ${bloodType}`);
+        if (units) bodyParts.push(`Ünite: ${units}`);
+        if (patientName) bodyParts.push(`Hasta: ${patientName}`);
+        if (contactName) bodyParts.push(`İrtibat: ${contactName}`);
+        if (contactPhone) bodyParts.push(`📞 İrtibat Tel: ${contactPhone}`);
         // Hiç iletişim verisi yoksa sessizce geç — sadece toast yeterli olur.
         if (bodyParts.length > 0) {
           try {
             await addDoc(collection(db, COLLECTIONS.notifications), {
               userId: authUser.uid,
               type: 'emergency-blood-contact',
-              title: '🩸 Kan Talebi İletişim Bilgileri',
-              body: bodyParts.join(' · '),
+              title: '🩸 Kan Talebi Detayları',
+              body: bodyParts.join('\n'),
               data: {
                 requestId: notif.data?.requestId || notif.id,
                 hospitalName: hospital,
                 hospitalAddress: address,
+                hospitalPhone,
+                city,
+                district,
+                patientName,
+                units: units ?? null,
                 contactName,
                 contactPhone,
-                bloodType: notif.data?.bloodType || null,
+                bloodType,
               },
               read: false,
+              pushSent: true, // detay bildirimi push'a gerek yok (zaten kullanıcı uygulamada)
               createdAt: serverTimestamp(),
               createdBy: 'emergency-system',
             });
@@ -269,7 +287,7 @@ export default function NotificationsPage() {
                       <p className={cn('text-sm leading-tight', !n.read ? 'font-bold text-foreground' : 'font-medium text-muted-foreground')}>{n.title}</p>
                       {!n.read && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
-                    <p className={cn('text-[13px] leading-snug', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
+                    <p className={cn('text-[13px] leading-snug whitespace-pre-line', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
                     <div className="flex items-center justify-between gap-2 pt-0.5 flex-wrap">
                       <p className="text-[10px] text-muted-foreground/70">{formatTime(n.createdAt)}</p>
                       <div className="flex items-center gap-2 flex-wrap">

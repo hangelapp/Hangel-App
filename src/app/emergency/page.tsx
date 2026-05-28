@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
-import { countryPhoneCodes } from '@/lib/data';
+import { countryPhoneCodes, allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, doc, serverTimestamp } from 'firebase/firestore';
 import {
@@ -54,6 +54,9 @@ interface BloodNeedFormData {
     hospitalDistrict?: string;
     hospitalAddress?: string;
     hospitalPhone?: string;
+    city: string; // il (çoktan seçmeli — hastaneden otomatik dolar)
+    district: string; // ilçe
+    neighborhood: string; // mahalle
     bloodType: string;
     units: number; // kaç ünite kan
     patientName: string; // hasta adı soyadı
@@ -137,6 +140,9 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
         hospitalDistrict: '',
         hospitalAddress: '',
         hospitalPhone: '',
+        city: '',
+        district: '',
+        neighborhood: '',
         bloodType: '',
         units: 1,
         patientName: '',
@@ -145,6 +151,20 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
         contactPhone: '',
         notes: '',
     });
+
+    // il/ilçe/mahalle cascading options
+    const districtOptions = formData.city ? (districtsData[formData.city] ?? []) : [];
+    const neighborhoodOptions = (formData.city && formData.district)
+        ? ((neighborhoodsData as Record<string, Record<string, string[]>>)[formData.city]?.[formData.district] ?? [])
+        : [];
+
+    // Hastane şehir adını allProvinces ile normalize et (büyük/küçük harf + İ/ı farkı).
+    const normalizeProvince = (raw?: string): string => {
+        if (!raw) return '';
+        const lower = raw.toLocaleLowerCase('tr-TR').trim();
+        const match = allProvinces.find(p => p.toLocaleLowerCase('tr-TR') === lower);
+        return match || '';
+    };
 
     const bloodTypes = ["A Rh+", "A Rh-", "B Rh+", "B Rh-", "AB Rh+", "AB Rh-", "0 Rh+", "0 Rh-", "Bilinmiyor"];
 
@@ -170,14 +190,29 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     <HospitalAutocompleteField
                         value={formData.hospital}
                         onChange={(name, hit) => {
-                            setFormData(prev => ({
-                                ...prev,
-                                hospital: name,
-                                hospitalCity: hit?.city ?? prev.hospitalCity,
-                                hospitalDistrict: hit?.district ?? prev.hospitalDistrict,
-                                hospitalAddress: hit?.address ?? prev.hospitalAddress,
-                                hospitalPhone: hit?.phone ?? prev.hospitalPhone,
-                            }));
+                            setFormData(prev => {
+                                // Hastane seçilince il/ilçe çoktan seçmeli menüde otomatik seçilsin.
+                                const matchedProvince = hit?.city ? normalizeProvince(hit.city) : '';
+                                // İlçe: hastane district'i o ildeki ilçe listesinde varsa otomatik seç.
+                                let matchedDistrict = '';
+                                if (matchedProvince && hit?.district) {
+                                    const opts = districtsData[matchedProvince] ?? [];
+                                    const dLower = hit.district.toLocaleLowerCase('tr-TR').trim();
+                                    matchedDistrict = opts.find(d => d.toLocaleLowerCase('tr-TR') === dLower) || '';
+                                }
+                                return {
+                                    ...prev,
+                                    hospital: name,
+                                    hospitalCity: hit?.city ?? prev.hospitalCity,
+                                    hospitalDistrict: hit?.district ?? prev.hospitalDistrict,
+                                    hospitalAddress: hit?.address ?? prev.hospitalAddress,
+                                    hospitalPhone: hit?.phone ?? prev.hospitalPhone,
+                                    // Çoktan seçmeli menüler otomatik dolsun (kullanıcı düzenleyebilir)
+                                    city: matchedProvince || prev.city,
+                                    district: matchedDistrict || (matchedProvince ? '' : prev.district),
+                                    neighborhood: '',
+                                };
+                            });
                         }}
                     />
                     {/* Seçilen hastanenin detayları (Bilgileri Getir sonrası seçim yapılırsa görünür) */}
@@ -195,6 +230,37 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                             )}
                         </div>
                     )}
+                    {/* İl / İlçe / Mahalle — hastaneden otomatik dolar, kullanıcı düzenleyebilir.
+                        Kan ihtiyacı bu konumdaki uygun bağışçılara iletilir. */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-city">İl</Label>
+                            <Select value={formData.city} onValueChange={(v) => setFormData({ ...formData, city: v, district: '', neighborhood: '' })}>
+                                <SelectTrigger id="ev-city"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {allProvinces.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-district">İlçe</Label>
+                            <Select value={formData.district} onValueChange={(v) => setFormData({ ...formData, district: v, neighborhood: '' })} disabled={!formData.city}>
+                                <SelectTrigger id="ev-district"><SelectValue placeholder={formData.city ? 'Seçiniz' : 'Önce il'} /></SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {districtOptions.map((d: string) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ev-neighborhood">Mahalle</Label>
+                            <Select value={formData.neighborhood} onValueChange={(v) => setFormData({ ...formData, neighborhood: v })} disabled={!formData.district}>
+                                <SelectTrigger id="ev-neighborhood"><SelectValue placeholder={formData.district ? 'Seçiniz' : 'Önce ilçe'} /></SelectTrigger>
+                                <SelectContent className="max-h-60">
+                                    {neighborhoodOptions.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                     {/* Hasta bilgileri */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -361,6 +427,11 @@ export default function EmergencyPage() {
         }
         try {
             const addr = userDoc?.personalInfo?.address;
+            // Konum önceliği: kullanıcının formda seçtiği (hastaneden otomatik dolan) il/ilçe/mahalle;
+            // boşsa profil adresine düş.
+            const finalCity = data.city || addr?.city || null;
+            const finalDistrict = data.district || addr?.district || null;
+            const finalNeighborhood = data.neighborhood || addr?.neighborhood || null;
             await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
                 type: 'blood',
                 hospitalName: data.hospital || '',
@@ -376,11 +447,11 @@ export default function EmergencyPage() {
                 contactPhone: data.contactPhone || '',
                 message: data.notes || '',
                 status: 'pending', // süper admin onayı bekleniyor
-                // Talep edenin profil konumu — süper admin formu ön-doldurma için.
-                scope: addr?.city ? 'city' : 'all',
-                city: addr?.city || null,
-                district: addr?.district || null,
-                neighborhood: addr?.neighborhood || null,
+                // Formda seçilen (hastaneden otomatik) konum — süper admin ön-doldurma + hedefleme için.
+                scope: finalCity ? 'city' : 'all',
+                city: finalCity,
+                district: finalDistrict,
+                neighborhood: finalNeighborhood,
                 requestedBy: authUser.uid,
                 requestedByName: authUser.displayName || authUser.email || '',
                 requestedByEmail: authUser.email || '',

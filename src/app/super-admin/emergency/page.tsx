@@ -158,6 +158,8 @@ export default function EmergencyManagementPage() {
   const pendingApprovalIdRef = useRef<string | null>(null);
   // Onaylanırken başvurana mesaj göndermek için uid + ad sakla
   const requesterRef = useRef<{ uid: string | null; name: string | null }>({ uid: null, name: null });
+  // Talepten yüklenen ek alanlar (fan-out bildiriminde responder'a gösterilecek)
+  const extraReqRef = useRef<{ patientName: string; hospitalPhone: string; units: number | null }>({ patientName: '', hospitalPhone: '', units: null });
 
   // Hedef kitle önizlemesi — tüm kullanıcılar tek seferde yüklenir; sayım ve
   // fan-out (handleSendRequest) aynı client-side predicate'i kullanır. Bu
@@ -307,6 +309,11 @@ export default function EmergencyManagementPage() {
     requesterRef.current = {
       uid: (req as EmergencyDoc & { requestedBy?: string }).requestedBy || null,
       name: req.requestedByName || null,
+    };
+    extraReqRef.current = {
+      patientName: (req as EmergencyDoc & { patientName?: string }).patientName || '',
+      hospitalPhone: (req as EmergencyDoc & { hospitalPhone?: string }).hospitalPhone || '',
+      units: typeof req.units === 'number' ? req.units : (req.unitsNeeded ? Number(req.unitsNeeded) : null),
     };
     setActiveTab('blood');
     toast({ title: 'Talep yüklendi', description: 'İl/ilçe/mahalle seçip "Acil Talep Gönder"e basarak yayınlayabilirsiniz.' });
@@ -502,7 +509,12 @@ export default function EmergencyManagementPage() {
               requestId,
               hospitalName,
               hospitalAddress,
+              hospitalPhone: extraReqRef.current.hospitalPhone || null,
+              city: city || null,
+              district: district || null,
               bloodType,
+              units: (Number(unitsNeeded) || extraReqRef.current.units) ?? null,
+              patientName: extraReqRef.current.patientName || null,
               contactName: contactName || null,
               contactPhone: contactPhone || null,
             },
