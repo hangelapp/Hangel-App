@@ -15,12 +15,11 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, ScanSearch, Sparkles, Info, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { legislationsData } from '@/lib/legislations';
 import { cn } from '@/lib/utils';
 
 type RiskLevel = 'dusuk' | 'orta' | 'yuksek' | 'kritik';
@@ -41,6 +40,24 @@ interface Legislation {
   relatedPolicies?: string;
   links?: string;             // Resmi Gazete / Danıştay / içtihat linkleri (satır satır)
   updatedAt?: unknown;
+}
+
+interface ScanCandidate {
+  source: 'baseline' | 'ai';
+  status: 'new' | 'updated';
+  id: string;
+  name: string;
+  number?: string;
+  country?: string;
+  category?: string;
+  riskLevel?: RiskLevel;
+  complianceStatus?: ComplianceStatus;
+  hangelSubject?: string;
+  affectedModules?: string[];
+  articleText?: string;
+  interpretation?: string;
+  links?: string;
+  reason?: string;
 }
 
 const RISK_META: Record<RiskLevel, { label: string; cls: string }> = {
@@ -176,10 +193,18 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
 export function LegislationTab() {
   const { toast } = useToast();
   const db = useFirestore();
+  const { user: authUser } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [seeding, setSeeding] = useState(false);
+
+  // Tarama (AI + baseline) durumu
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [candidates, setCandidates] = useState<ScanCandidate[]>([]);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [addingIds, setAddingIds] = useState<Set<string>>(new Set());
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
 
   const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
   const { data: legislations, isLoading } = useCollection<Legislation>(legQuery);
@@ -221,24 +246,64 @@ export function LegislationTab() {
     }
   };
 
-  const handleSeedAll = async () => {
-    setSeeding(true);
+  const handleScan = async () => {
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Oturum bulunamadı', description: 'Lütfen yeniden giriş yapın.' });
+      return;
+    }
+    setScanning(true);
+    setScanOpen(true);
+    setCandidates([]);
+    setAiError(null);
+    setAddedIds(new Set());
     try {
-      let count = 0;
-      for (const s of legislationsData) {
-        await setDoc(doc(db, COLLECTIONS.legislations, s.id), { ...s, updatedAt: serverTimestamp() }, { merge: true });
-        count += 1;
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/legal/scan', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast({ variant: 'destructive', title: 'Tarama başarısız', description: json?.message || 'İşlem tamamlanamadı.' });
+        setScanOpen(false);
+        return;
       }
-      toast({ title: 'İçe Aktarıldı', description: `${count} mevzuat (kanun + Resmi Gazete + karar kaynağı) eklendi.` });
+      setCandidates(Array.isArray(json.candidates) ? json.candidates : []);
+      setAiError(json.aiError || null);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Tarama başarısız', description: e instanceof Error ? e.message : 'Hata' });
+      setScanOpen(false);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const addCandidate = async (c: ScanCandidate) => {
+    setAddingIds(prev => new Set(prev).add(c.id));
+    try {
+      const wasExisting = (legislations || []).some(l => l.id === c.id);
+      await setDoc(doc(db, COLLECTIONS.legislations, c.id), {
+        name: c.name, number: c.number || '', country: c.country || 'TR', category: c.category || 'Diğer',
+        riskLevel: c.riskLevel || 'orta', complianceStatus: c.complianceStatus || 'inceleniyor',
+        hangelSubject: c.hangelSubject || '', affectedModules: c.affectedModules || [],
+        articleText: c.articleText || '', interpretation: c.interpretation || '', links: c.links || '',
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+      setAddedIds(prev => new Set(prev).add(c.id));
+      toast({ title: wasExisting ? 'Güncellendi' : 'Eklendi', description: `"${c.name}" sisteme ${wasExisting ? 'güncellendi' : 'eklendi'}.` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
-      toast({ variant: 'destructive', title: 'Aktarma başarısız', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+      toast({ variant: 'destructive', title: 'Eklenemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
     } finally {
-      setSeeding(false);
+      setAddingIds(prev => { const n = new Set(prev); n.delete(c.id); return n; });
+    }
+  };
+
+  const addAllCandidates = async () => {
+    for (const c of candidates) {
+      if (!addedIds.has(c.id)) await addCandidate(c);
     }
   };
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -262,9 +327,9 @@ export function LegislationTab() {
               {Object.entries(RISK_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={handleSeedAll} disabled={seeding} className="gap-1.5">
-            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-            Varsayılan Mevzuatları İçe Aktar
+          <Button variant="outline" onClick={handleScan} disabled={scanning} className="gap-1.5">
+            {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanSearch className="h-4 w-4" />}
+            Mevzuat & Karar Tara
           </Button>
           <LegislationEditDialog onSave={handleSave} />
         </div>
@@ -338,5 +403,84 @@ export function LegislationTab() {
         )}
       </CardContent>
     </Card>
+
+    <Dialog open={scanOpen} onOpenChange={setScanOpen}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><ScanSearch className="h-5 w-5 text-primary" /> Mevzuat & Karar Tarama</DialogTitle>
+          <DialogDescription>
+            Sistemde olmayan veya değişmiş olabilecek kanun, Resmi Gazete yayını ve mahkeme/Danıştay/KVKK kararı adayları.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs p-2.5 flex items-start gap-2">
+          <Info className="h-4 w-4 mt-0.5 shrink-0" />
+          <span>Bu liste yapay zeka + varsayılan kütüphaneden üretilen <b>adaylardır</b>; canlı resmî kaynak değildir. Eklemeden önce künye ve karar numaralarını resmî kaynaktan / avukatla <b>doğrulayın</b>.</span>
+        </div>
+        {aiError && <p className="text-xs text-muted-foreground italic">{aiError}</p>}
+
+        {scanning ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <p className="text-sm">Mevzuat ve kararlar taranıyor…</p>
+          </div>
+        ) : candidates.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <CheckCircle2 className="h-10 w-10 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">Yeni veya değişmiş aday bulunamadı. Sistem güncel görünüyor.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {candidates.map(c => {
+              const added = addedIds.has(c.id);
+              const adding = addingIds.has(c.id);
+              return (
+                <div key={c.id} className="border rounded-xl p-3 space-y-1.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge className={cn('text-[9px]', c.status === 'updated' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700')}>
+                          {c.status === 'updated' ? 'Güncellenebilir' : 'Yeni'}
+                        </Badge>
+                        <Badge variant="secondary" className="text-[9px]">{countryLabel(c.country)}</Badge>
+                        {c.source === 'ai' && <Badge variant="outline" className="text-[9px] gap-1"><Sparkles className="h-2.5 w-2.5" /> AI</Badge>}
+                        <span className="font-bold text-sm">{c.name}</span>
+                        {c.number && <Badge variant="outline" className="text-[9px]">No: {c.number}</Badge>}
+                        {c.riskLevel && <Badge className={cn('text-[9px]', RISK_META[c.riskLevel].cls)}>{RISK_META[c.riskLevel].label}</Badge>}
+                      </div>
+                      {c.reason && <p className="text-[11px] text-muted-foreground">{c.reason}</p>}
+                      {c.hangelSubject && <p className="text-[11px] text-muted-foreground italic">💡 {c.hangelSubject}</p>}
+                      {c.links && (
+                        <div className="flex flex-wrap gap-2 pt-0.5">
+                          {c.links.split('\n').filter(Boolean).slice(0, 3).map((url, i) => (
+                            <a key={i} href={url.trim()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline">
+                              <Link2 className="h-3 w-3" /> Kaynak {i + 1} <ExternalLink className="h-2.5 w-2.5" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Button size="sm" variant={added ? 'ghost' : 'default'} disabled={adding || added} onClick={() => addCandidate(c)} className="shrink-0 gap-1.5">
+                      {adding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : added ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Plus className="h-3.5 w-3.5" />}
+                      {added ? 'Eklendi' : 'Sisteme Ekle'}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {!scanning && candidates.length > 0 && (
+          <DialogFooter className="flex-row justify-between sm:justify-between">
+            <span className="text-xs text-muted-foreground self-center">{candidates.length} aday · {addedIds.size} eklendi</span>
+            <Button onClick={addAllCandidates} disabled={addedIds.size === candidates.length} className="gap-1.5">
+              <Plus className="h-4 w-4" /> Tümünü Ekle
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
