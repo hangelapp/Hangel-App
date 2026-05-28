@@ -47,3 +47,12 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # Google OAuth (Gmail kişi içe aktarma — /api/contacts/google/*)
+  - variable: GOOGLE_CONTACTS_CLIENT_ID
+    secret: GOOGLE_CONTACTS_CLIENT_ID
+    availability:
+      - RUNTIME
+  - variable: GOOGLE_CONTACTS_CLIENT_SECRET
+    secret: GOOGLE_CONTACTS_CLIENT_SECRET
+    availability:
+      - RUNTIME

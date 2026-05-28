@@ -50,7 +50,14 @@ const initialPastApplications: Array<{ id: number; type: string; details: string
 
 interface BloodNeedFormData {
     hospital: string;
+    hospitalCity?: string;
+    hospitalDistrict?: string;
+    hospitalAddress?: string;
+    hospitalPhone?: string;
     bloodType: string;
+    units: number; // kaç ünite kan
+    patientName: string; // hasta adı soyadı
+    patientBirthYear: string; // hastanın doğum yılı
     contactName: string;
     contactPhone: string;
     notes: string;
@@ -124,12 +131,19 @@ const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: Rep
 );
 
 const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOpenChange: (open: boolean) => void, onSubmit: (data: BloodNeedFormData) => void }) => {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<BloodNeedFormData>({
         hospital: '',
+        hospitalCity: '',
+        hospitalDistrict: '',
+        hospitalAddress: '',
+        hospitalPhone: '',
         bloodType: '',
+        units: 1,
+        patientName: '',
+        patientBirthYear: '',
         contactName: '',
         contactPhone: '',
-        notes: ''
+        notes: '',
     });
 
     const bloodTypes = ["A Rh+", "A Rh-", "B Rh+", "B Rh-", "AB Rh+", "AB Rh-", "0 Rh+", "0 Rh-", "Bilinmiyor"];
@@ -155,12 +169,61 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                 <form onSubmit={handleSubmit} className="space-y-4 pt-4">
                     <HospitalAutocompleteField
                         value={formData.hospital}
-                        onChange={(name) => {
-                            setFormData(prev => ({ ...prev, hospital: name }));
+                        onChange={(name, hit) => {
+                            setFormData(prev => ({
+                                ...prev,
+                                hospital: name,
+                                hospitalCity: hit?.city ?? prev.hospitalCity,
+                                hospitalDistrict: hit?.district ?? prev.hospitalDistrict,
+                                hospitalAddress: hit?.address ?? prev.hospitalAddress,
+                                hospitalPhone: hit?.phone ?? prev.hospitalPhone,
+                            }));
                         }}
                     />
+                    {/* Seçilen hastanenin detayları (Bilgileri Getir sonrası seçim yapılırsa görünür) */}
+                    {(formData.hospitalCity || formData.hospitalAddress || formData.hospitalPhone) && (
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1">
+                            <p className="font-bold text-emerald-900">✓ Hastane bilgileri</p>
+                            {(formData.hospitalDistrict || formData.hospitalCity) && (
+                                <p className="text-emerald-800">📍 {[formData.hospitalDistrict, formData.hospitalCity].filter(Boolean).join(', ')}</p>
+                            )}
+                            {formData.hospitalAddress && (
+                                <p className="text-emerald-800 leading-snug">{formData.hospitalAddress}</p>
+                            )}
+                            {formData.hospitalPhone && (
+                                <p className="text-emerald-800">☎ {formData.hospitalPhone}</p>
+                            )}
+                        </div>
+                    )}
+                    {/* Hasta bilgileri */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
+                            <Label htmlFor="patient-name">Hasta Adı Soyadı</Label>
+                            <Input
+                                id="patient-name"
+                                value={formData.patientName}
+                                onChange={e => setFormData({ ...formData, patientName: e.target.value })}
+                                placeholder="Ad Soyad"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="patient-birth-year">Doğum Yılı</Label>
+                            <Input
+                                id="patient-birth-year"
+                                type="number"
+                                inputMode="numeric"
+                                min={1900}
+                                max={new Date().getFullYear()}
+                                value={formData.patientBirthYear}
+                                onChange={e => setFormData({ ...formData, patientBirthYear: e.target.value })}
+                                placeholder="1985"
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-2 col-span-2">
                             <Label htmlFor="blood-type">Kan Grubu</Label>
                             <Select required onValueChange={value => setFormData({...formData, bloodType: value})}>
                                 <SelectTrigger id="blood-type">
@@ -171,6 +234,21 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                                 </SelectContent>
                             </Select>
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="units">Ünite</Label>
+                            <Input
+                                id="units"
+                                type="number"
+                                inputMode="numeric"
+                                min={1}
+                                max={50}
+                                value={formData.units}
+                                onChange={e => setFormData({ ...formData, units: Math.max(1, parseInt(e.target.value || '1', 10)) })}
+                                required
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
                              <Label htmlFor="contact-phone">İrtibat Telefon</Label>
                              <div className="flex gap-1">
@@ -286,7 +364,14 @@ export default function EmergencyPage() {
             await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
                 type: 'blood',
                 hospitalName: data.hospital || '',
+                hospitalCity: data.hospitalCity || '',
+                hospitalDistrict: data.hospitalDistrict || '',
+                hospitalAddress: data.hospitalAddress || '',
+                hospitalPhone: data.hospitalPhone || '',
                 bloodType: data.bloodType || '',
+                units: data.units || 1,
+                patientName: data.patientName || '',
+                patientBirthYear: data.patientBirthYear || '',
                 contactName: data.contactName || '',
                 contactPhone: data.contactPhone || '',
                 message: data.notes || '',

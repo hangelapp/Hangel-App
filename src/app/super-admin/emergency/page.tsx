@@ -38,9 +38,13 @@ interface EmergencyDoc {
   contactPhone?: string;
   contactName?: string;
   unitsNeeded?: number | string;
+  units?: number;
+  patientName?: string;
+  patientBirthYear?: string;
   targetCount?: number;
   status?: string;
   requestId?: string;
+  requestedBy?: string; // uid — onay sonrası kullanıcıya mesaj göndermek için
   requestedByName?: string;
   requestedByEmail?: string;
   userName?: string;
@@ -152,6 +156,8 @@ export default function EmergencyManagementPage() {
   const [unitsNeeded, setUnitsNeeded] = useState('');
   const [isSending, setIsSending] = useState(false);
   const pendingApprovalIdRef = useRef<string | null>(null);
+  // Onaylanırken başvurana mesaj göndermek için uid + ad sakla
+  const requesterRef = useRef<{ uid: string | null; name: string | null }>({ uid: null, name: null });
 
   // Hedef kitle önizlemesi — tüm kullanıcılar tek seferde yüklenir; sayım ve
   // fan-out (handleSendRequest) aynı client-side predicate'i kullanır. Bu
@@ -298,6 +304,10 @@ export default function EmergencyManagementPage() {
     setGender(((req as EmergencyDoc & { gender?: 'all' | 'Erkek' | 'Kadın' }).gender) || 'all');
     // Forma gönderilen kullanıcı talebinin id'sini sakla — onay sonrası güncellenecek
     pendingApprovalIdRef.current = req.id;
+    requesterRef.current = {
+      uid: (req as EmergencyDoc & { requestedBy?: string }).requestedBy || null,
+      name: req.requestedByName || null,
+    };
     setActiveTab('blood');
     toast({ title: 'Talep yüklendi', description: 'İl/ilçe/mahalle seçip "Acil Talep Gönder"e basarak yayınlayabilirsiniz.' });
     // Form bölümüne kaydır
@@ -510,11 +520,46 @@ export default function EmergencyManagementPage() {
         await Promise.all(batches.map(b => b.commit()));
       }
 
+      // 4. Başvurana inbox mesajı + notifications dokümanı (best-effort, fail bloklamaz)
+      const requesterUid = requesterRef.current.uid;
+      if (requesterUid) {
+        try {
+          const civar = scope === 'city' ? `${city}` : scope === 'district' ? `${district}, ${city}` : scope === 'neighborhood' ? `${neighborhood}, ${district}, ${city}` : 'tüm Türkiye';
+          const msgContent = `İlanınız ${hospitalName} hastanesinin civarındaki (${civar}) ${bloodType} kan grubuna sahip kullanıcılarımıza iletilmek üzere paylaşılmıştır. Yalnız değilsiniz, 6 saat içerisinde sonuç almazsanız formu yeniden doldurun. Geçmiş olsun.`;
+          const subject = '🩸 Acil kan talebiniz iletildi';
+          await addDoc(collection(db, COLLECTIONS.messages), {
+            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+            senderId: 'hangel-system',
+            senderType: 'system',
+            recipient: { id: requesterUid, name: requesterRef.current.name || '', avatarUrl: '' },
+            recipientId: requesterUid,
+            subject,
+            content: msgContent,
+            timestamp: serverTimestamp(),
+            status: 'sent',
+            relatedRequestId: requestId,
+          });
+          await addDoc(collection(db, COLLECTIONS.notifications), {
+            userId: requesterUid,
+            type: 'emergency-confirmation',
+            title: subject,
+            body: msgContent.slice(0, 120),
+            data: { requestId, hospitalName, bloodType, link: '/messages' },
+            read: false,
+            createdAt: serverTimestamp(),
+            createdBy: 'hangel-system',
+          });
+        } catch (e) {
+          console.warn('[emergency approve] requester notification failed', e);
+        }
+      }
+
       pendingApprovalIdRef.current = null;
+      requesterRef.current = { uid: null, name: null };
 
       toast({
         title: '✅ Acil Talep Gönderildi',
-        description: `${targetUserIds.length} kullanıcıya bildirim ulaştırıldı.`,
+        description: `${targetUserIds.length} kullanıcıya bildirim ulaştırıldı. Başvuran bilgilendirildi.`,
       });
 
       // Formu temizle
