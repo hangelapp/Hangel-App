@@ -41,3 +41,9 @@ env:
     value: "tr"
     availability:
       - RUNTIME
+  # Web Push (FCM) — VAPID public key. Build-time'da gerek (client SDK init).
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: "BJZWx1kaojA33YT-KwIZpqwAucW604dBxVoPPOAYd3aMHpxsxtpLKwA6dJ5UZBB-Qs8YqZaivgI9b9uuJF5jp7U"
+    availability:
+      - BUILD
+      - RUNTIME

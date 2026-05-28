@@ -9,6 +9,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
 import { SessionTrackerProvider } from '@/components/providers/session-tracker-provider';
 import { HangelOrgSchema } from '@/components/seo/json-ld';
+import { OpenInAppBanner } from '@/components/shared/open-in-app-banner';
 import AppBottomNav from '@/components/layout/bottom-nav';
 import { RatingPopup } from '@/components/shared/rating-popup';
 import { OfflineBanner } from '@/components/shared/offline-banner';
@@ -39,6 +40,13 @@ export const metadata: Metadata = {
   authors: [{ name: 'hangel' }],
   keywords: ['STK', 'gönüllülük', 'bağış', 'sosyal etki', 'öğrenci kulüpleri', 'hangel'],
   formatDetection: { email: false, address: false, telephone: false },
+  // Apple Smart App Banner — Safari iOS'ta üstte "Open in App" bandı gösterir.
+  // App ID: 6664058822 (https://apps.apple.com/in/app/hangel-app/id6664058822)
+  appleWebApp: {
+    title: 'hangel',
+    capable: true,
+    statusBarStyle: 'default',
+  },
   openGraph: {
     type: 'website',
     locale: 'tr_TR',
@@ -65,6 +73,8 @@ export const metadata: Metadata = {
   },
   other: {
     'facebook-domain-verification': '0kyl1g9when1n8e7ua1stqwe1n2hyg',
+    // Apple Smart App Banner — Safari iOS'ta üstte "Open in App" bandı.
+    'apple-itunes-app': 'app-id=6664058822',
   },
 };
 
@@ -87,6 +97,7 @@ export default function RootLayout({
     <html lang="tr" className={`${poppins.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased" suppressHydrationWarning>
         <HangelOrgSchema />
+        <OpenInAppBanner />
         <FirebaseClientProvider>
           <LanguageProvider>
             <AutoTranslate />
