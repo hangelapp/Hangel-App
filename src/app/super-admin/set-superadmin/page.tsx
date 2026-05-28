@@ -8,11 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle, Users, Pencil, ShieldOff } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { cn } from '@/lib/utils';
 
 const SUPER_ADMIN_PAGES: { slug: string; label: string }[] = [
   { slug: 'web-content', label: 'WEB İçerik Yönetimi' },
@@ -95,6 +100,13 @@ export default function SetSuperAdminPage() {
     [usersData, selectedUserId],
   );
 
+  // Mevcut süper adminler (rol = super-admin)
+  const superAdmins = useMemo(
+    () => (usersData || []).filter(u => u.role === 'super-admin'),
+    [usersData],
+  );
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+
   React.useEffect(() => {
     if (selectedUser) {
       setPermissions(selectedUser.superAdminPermissions || SUPER_ADMIN_PAGES.map(p => p.slug));
@@ -136,6 +148,39 @@ export default function SetSuperAdminPage() {
     } finally {
       setAssigning(false);
     }
+  };
+
+  const handleRevoke = async (u: AdminCandidateUser) => {
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Oturum bulunamadı', description: 'Lütfen yeniden giriş yapın.' });
+      return;
+    }
+    setRevokingId(u.id);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/admin/users/set-super-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid: u.id, revoke: true }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast({ variant: 'destructive', title: 'Kaldırılamadı', description: json?.message || 'İşlem tamamlanamadı.' });
+        return;
+      }
+      toast({ title: 'Yetki Kaldırıldı', description: `${u.name || u.displayName || u.id} artık süper admin değil.` });
+      if (selectedUserId === u.id) setSelectedUserId(null);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Kaldırılamadı', description: e instanceof Error ? e.message : 'Bilinmeyen hata' });
+    } finally {
+      setRevokingId(null);
+    }
+  };
+
+  const startEditPermissions = (u: AdminCandidateUser) => {
+    setSelectedUserId(u.id);
+    setSearchTerm('');
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSetSuperAdmin = async () => {
@@ -289,8 +334,77 @@ export default function SetSuperAdminPage() {
               >
                 {assigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <ShieldCheck className="mr-2 h-4 w-4" />
-                Süper Admin Olarak Ata
+                {selectedUser.role === 'super-admin' ? 'Yetkileri Güncelle' : 'Süper Admin Olarak Ata'}
               </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Mevcut süper adminler */}
+      <Card className="rounded-2xl border-black/5 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            Mevcut Süper Adminler
+            <Badge variant="secondary" className="ml-1 text-[10px]">{superAdmins.length}</Badge>
+          </CardTitle>
+          <CardDescription>
+            Yetkilendirilmiş kullanıcılar. Yetkilerini düzenle veya süper admin yetkisini tamamen kaldır.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {superAdmins.length === 0 ? (
+            <p className="text-center text-sm text-muted-foreground italic py-10">Henüz süper admin yok.</p>
+          ) : (
+            <div className="divide-y border-t">
+              {superAdmins.map(u => {
+                const isSelf = u.id === authUser?.uid;
+                const permCount = u.superAdminPermissions?.length ?? SUPER_ADMIN_PAGES.length;
+                return (
+                  <div key={u.id} className="p-3 flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={u.avatarUrl} alt={u.name || ''} />
+                      <AvatarFallback className="font-black">{(u.name || u.displayName || 'U').charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-bold truncate">{u.name || u.displayName || 'İsimsiz'}</p>
+                        <Badge variant="outline" className="text-[9px]">{permCount}/{SUPER_ADMIN_PAGES.length} yetki</Badge>
+                        {isSelf && <Badge className="text-[9px] bg-primary/10 text-primary">Sen</Badge>}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {u.personalInfo?.phone || u.phoneNumber || u.personalInfo?.email || u.email || u.id}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={() => startEditPermissions(u)}>
+                      <Pencil className="h-3.5 w-3.5" /> Yetkileri Düzenle
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" disabled={isSelf || revokingId === u.id} title={isSelf ? 'Kendi yetkini kaldıramazsın' : 'Yetkiyi kaldır'}
+                          className="h-9 w-9 text-destructive hover:bg-destructive/10 shrink-0">
+                          {revokingId === u.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldOff className="h-4 w-4" />}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Süper admin yetkisi kaldırılsın mı?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            &quot;{u.name || u.displayName || u.id}&quot; kullanıcısının tüm süper admin yetkileri kaldırılacak ve rolü normal kullanıcıya düşürülecek. Kişi panele erişimini kaybeder.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                          <AlertDialogAction className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')} onClick={() => handleRevoke(u)}>
+                            Yetkiyi Kaldır
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
