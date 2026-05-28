@@ -19,7 +19,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import {
-  Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, Upload as UploadIcon,
+  Plus, Pencil, Trash2, Loader2, Search, Eye, FileText, CalendarDays,
   LayoutDashboard, Scale, Shield, BookText, GitCompare, Send, ClipboardCheck,
   MessagesSquare, Archive, Clock, AlertTriangle, FileSignature,
 } from 'lucide-react';
@@ -59,6 +59,7 @@ type Contract = {
   language?: string;
   country?: string;
   updatedAt?: unknown;
+  publishedAt?: string;
   updatedByName?: string;
   source?: 'firestore' | 'seed';
 };
@@ -97,6 +98,11 @@ const POLICY_TEMPLATES = [
   'Gönüllülük Politikası', 'Topluluk Kuralları', 'Çocuk Güvenliği Politikası',
   'Kan İlanı Politikası', 'Yapay Zeka Kullanım Politikası', 'İçerik Moderasyon Politikası',
 ];
+
+const fmtDateShort = (iso?: string): string => {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }); } catch { return ''; }
+};
 
 const slugify = (s: string) =>
   s.toLowerCase()
@@ -155,6 +161,7 @@ const ContractEditDialog = ({ contract, defaultKind, onSave }: {
         group: group.trim(), kind: contract?.kind || defaultKind,
         version: version.trim() || '1.0', status, targetGroups,
         approvalType, riskLevel, language, country,
+        publishedAt: contract?.publishedAt,
       });
       setOpen(false);
     } finally {
@@ -331,6 +338,12 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
                       {c.targetGroups && c.targetGroups.length > 0 && (
                         <span className="truncate">🎯 {c.targetGroups.slice(0, 3).join(', ')}{c.targetGroups.length > 3 ? ` +${c.targetGroups.length - 3}` : ''}</span>
                       )}
+                      {c.publishedAt && (
+                        <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Yayın: {fmtDateShort(c.publishedAt)}</span>
+                      )}
+                      {!c.publishedAt && typeof c.updatedAt === 'string' && (
+                        <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Güncelleme: {fmtDateShort(c.updatedAt as string)}</span>
+                      )}
                       {c.group && <Badge variant="secondary" className="text-[9px]">{c.group}</Badge>}
                     </div>
                   </div>
@@ -371,7 +384,6 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
 export default function ContractsAdminPage() {
   const { toast } = useToast();
   const db = useFirestore();
-  const [seeding, setSeeding] = useState(false);
 
   const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
   const { data: firestoreContracts, isLoading } = useCollection<Contract>(contractsQuery);
@@ -410,13 +422,17 @@ export default function ContractsAdminPage() {
 
   const handleSave = async (c: Contract) => {
     try {
-      await setDoc(doc(db, COLLECTIONS.contracts, c.slug), {
+      const now = new Date().toISOString();
+      const payload: Record<string, unknown> = {
         slug: c.slug, title: c.title, content: c.content, group: c.group || '',
         kind: c.kind || 'contract', version: c.version || '1.0', status: c.status || 'taslak',
         targetGroups: c.targetGroups || [], approvalType: c.approvalType || 'bilgilendirme',
         riskLevel: c.riskLevel || 'dusuk', language: c.language || 'tr', country: c.country || 'TR',
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
+        updatedAt: now,
+      };
+      // Yayınlanma tarihi: durum "yayınlandı" ise (ilk kez) publishedAt yaz.
+      if (c.status === 'yayinlandi' && !c.publishedAt) payload.publishedAt = now;
+      await setDoc(doc(db, COLLECTIONS.contracts, c.slug), payload, { merge: true });
       toast({ title: 'Kaydedildi', description: `"${c.title}" güncellendi.` });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
@@ -432,25 +448,6 @@ export default function ContractsAdminPage() {
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
       toast({ variant: 'destructive', title: 'Silinemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata.') });
-    }
-  };
-
-  const handleSeedAll = async () => {
-    setSeeding(true);
-    try {
-      let count = 0;
-      for (const s of seedContracts) {
-        await setDoc(doc(db, COLLECTIONS.contracts, s.slug), {
-          slug: s.slug, title: s.title, content: s.content, updatedAt: new Date().toISOString(),
-        }, { merge: true });
-        count += 1;
-      }
-      toast({ title: 'İçe Aktarıldı', description: `${count} şablon Firestore'a aktarıldı.` });
-    } catch (e) {
-      const code = (e as { code?: string } | null)?.code;
-      toast({ variant: 'destructive', title: 'Aktarma başarısız', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata.') });
-    } finally {
-      setSeeding(false);
     }
   };
 
@@ -488,10 +485,6 @@ export default function ContractsAdminPage() {
             <CardContent className="flex flex-wrap gap-2">
               <ContractEditDialog defaultKind="contract" onSave={handleSave} />
               <ContractEditDialog defaultKind="policy" onSave={handleSave} />
-              <Button variant="outline" onClick={handleSeedAll} disabled={seeding} className="gap-1.5">
-                {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4" />}
-                Varsayılan Şablonları İçe Aktar
-              </Button>
             </CardContent>
           </Card>
         </TabsContent>

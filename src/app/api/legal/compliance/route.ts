@@ -116,6 +116,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ errorCode: 'QUOTA_EXCEEDED', message: 'Günlük AI limiti doldu. Yarın tekrar deneyin.' }, { status: 429 });
     }
     console.error('legal/compliance POST error', err);
+    const raw = (err instanceof Error ? err.message : String(err)).toLowerCase();
+    // En sık neden: GEMINI_API_KEY Secret Manager'da ayarlı değil/geçersiz.
+    if (raw.includes('api key') || raw.includes('api_key') || raw.includes('permission_denied') || raw.includes('invalid') && raw.includes('key')) {
+      return NextResponse.json({ errorCode: 'AI_KEY_MISSING', message: 'Yapay zeka anahtarı (GEMINI_API_KEY) ayarlı değil veya geçersiz. Secret Manager\'da kontrol edin.' }, { status: 500 });
+    }
+    if (raw.includes('model') && (raw.includes('not found') || raw.includes('404'))) {
+      return NextResponse.json({ errorCode: 'AI_MODEL', message: 'Yapay zeka modeli bulunamadı (Gemini sürümü). Lütfen bildirin.' }, { status: 500 });
+    }
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'AI analizi yapılamadı. Lütfen tekrar deneyin.' }, { status: 500 });
   }
 }

@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, Bell, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Send, Bell, Users, Search, Phone, X, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
 import { collection, getDocs, query, where, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
@@ -23,7 +24,11 @@ const TARGET_QUERIES: Record<string, { field: string; op: '==' | 'array-contains
   'Gönüllüler': { field: 'role', op: '==', value: 'volunteer' },
 };
 
-const PUBLISHABLE_GROUPS = Object.keys(TARGET_QUERIES);
+const TEST_GROUP = 'Test (tek kullanıcı)';
+const PUBLISHABLE_GROUPS = [...Object.keys(TARGET_QUERIES), TEST_GROUP];
+
+interface UserLite { id: string; name?: string; displayName?: string; phoneNumber?: string; personalInfo?: { phone?: string; email?: string } }
+const onlyDigits = (s?: string) => (s || '').replace(/\D/g, '');
 
 export function PublishTab() {
   const { toast } = useToast();
@@ -38,6 +43,21 @@ export function PublishTab() {
   const [channel, setChannel] = useState<'notification' | 'silent'>('notification');
   const [sending, setSending] = useState(false);
 
+  // Test modu: telefonla tek kullanıcı bul + seç
+  const [testSearch, setTestSearch] = useState('');
+  const [testUser, setTestUser] = useState<UserLite | null>(null);
+  const testMode = targetGroups.includes(TEST_GROUP);
+  const usersQuery = useMemoFirebase(() => (testMode ? collection(db, COLLECTIONS.users) : null), [db, testMode]);
+  const { data: usersData } = useCollection<UserLite>(usersQuery);
+  const matchedTestUsers = useMemo(() => {
+    const q = onlyDigits(testSearch);
+    if (q.length < 4) return [];
+    return (usersData || []).filter(u => {
+      const phones = [onlyDigits(u.personalInfo?.phone), onlyDigits(u.phoneNumber)];
+      return phones.some(p => p && p.includes(q));
+    }).slice(0, 6);
+  }, [usersData, testSearch]);
+
   const contract = useMemo(() => (contracts || []).find(c => (c.slug || c.id) === selectedContract), [contracts, selectedContract]);
   const toggleGroup = (g: string) => setTargetGroups(prev => prev.includes(g) ? prev.filter(x => x !== g) : [...prev, g]);
 
@@ -50,20 +70,29 @@ export function PublishTab() {
       toast({ variant: 'destructive', title: 'Hedef kitle seç', description: 'En az bir kullanıcı grubu seçin.' });
       return;
     }
+    if (testMode && !testUser) {
+      toast({ variant: 'destructive', title: 'Test kullanıcısı seç', description: 'Telefonla arayıp bir kullanıcı seçin.' });
+      return;
+    }
     setSending(true);
     try {
       // Hedef kullanıcıları topla
       const targetUids = new Set<string>();
-      const usesAll = targetGroups.some(g => TARGET_QUERIES[g] === 'all');
-      if (usesAll) {
-        const snap = await getDocs(collection(db, COLLECTIONS.users));
-        snap.forEach(d => targetUids.add(d.id));
+      if (testMode && testUser) {
+        // Test modu: yalnızca seçilen tek kullanıcıya gönder (diğer gruplar yok sayılır)
+        targetUids.add(testUser.id);
       } else {
-        for (const g of targetGroups) {
-          const qDef = TARGET_QUERIES[g];
-          if (!qDef || qDef === 'all') continue;
-          const snap = await getDocs(query(collection(db, COLLECTIONS.users), where(qDef.field, qDef.op, qDef.value)));
+        const usesAll = targetGroups.some(g => TARGET_QUERIES[g] === 'all');
+        if (usesAll) {
+          const snap = await getDocs(collection(db, COLLECTIONS.users));
           snap.forEach(d => targetUids.add(d.id));
+        } else {
+          for (const g of targetGroups) {
+            const qDef = TARGET_QUERIES[g];
+            if (!qDef || qDef === 'all') continue;
+            const snap = await getDocs(query(collection(db, COLLECTIONS.users), where(qDef.field, qDef.op, qDef.value)));
+            snap.forEach(d => targetUids.add(d.id));
+          }
         }
       }
 
@@ -143,6 +172,44 @@ export function PublishTab() {
             ))}
           </div>
           <p className="text-[11px] text-muted-foreground">Not: STK üyeleri, marka, kulüp gibi gruplar için faz 2'de eşleştirme genişletilecek.</p>
+
+          {testMode && (
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+              <Label className="text-xs flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> Test kullanıcısını telefonla ara</Label>
+              {testUser ? (
+                <div className="flex items-center justify-between gap-2 rounded-lg border bg-background px-3 py-2">
+                  <div className="min-w-0 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold truncate">{testUser.name || testUser.displayName || 'Kullanıcı'}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{testUser.personalInfo?.phone || testUser.phoneNumber || testUser.id}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => { setTestUser(null); setTestSearch(''); }}><X className="h-4 w-4" /></Button>
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input value={testSearch} onChange={e => setTestSearch(e.target.value)} placeholder="Telefon numarası (en az 4 hane)" className="pl-10 h-10" />
+                  </div>
+                  {testSearch.replace(/\D/g, '').length >= 4 && (
+                    <div className="rounded-lg border divide-y max-h-52 overflow-y-auto">
+                      {matchedTestUsers.length === 0 ? (
+                        <p className="text-xs text-muted-foreground italic p-3">Eşleşen kullanıcı bulunamadı.</p>
+                      ) : matchedTestUsers.map(u => (
+                        <button key={u.id} type="button" onClick={() => setTestUser(u)} className="w-full text-left p-2.5 hover:bg-accent flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium truncate">{u.name || u.displayName || 'Kullanıcı'}</span>
+                          <span className="text-[11px] text-muted-foreground shrink-0">{u.personalInfo?.phone || u.phoneNumber}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+              <p className="text-[10px] text-muted-foreground">Test seçiliyken bildirim yalnızca bu kullanıcıya gider.</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">

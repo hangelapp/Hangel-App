@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -15,11 +16,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, ScanSearch, Sparkles, Info, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, ScanSearch, Sparkles, Info, CheckCircle2, BookOpen, FileText, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { contractsData as seedContracts } from '@/lib/contracts';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 type RiskLevel = 'dusuk' | 'orta' | 'yuksek' | 'kritik';
@@ -38,6 +41,7 @@ interface Legislation {
   articleText?: string;       // resmi madde metni
   interpretation?: string;    // hukuki yorum / risk analizi / operasyon önerisi
   relatedPolicies?: string;
+  relatedContracts?: string[]; // ilişkili sözleşme/politika slug'ları
   links?: string;             // Resmi Gazete / Danıştay / içtihat linkleri (satır satır)
   updatedAt?: unknown;
 }
@@ -190,6 +194,86 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
   );
 }
 
+// Madde detayı: orijinal metni oku + ilgili sözleşme/politikaları ilişkilendir.
+function LegislationDetailDialog({ item, contractOptions, onSaveRelated }: {
+  item: Legislation;
+  contractOptions: { slug: string; title: string }[];
+  onSaveRelated: (legId: string, slugs: string[]) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [related, setRelated] = useState<string[]>(item.relatedContracts || []);
+  const [saving, setSaving] = useState(false);
+  const [q, setQ] = useState('');
+
+  const handleOpen = (o: boolean) => { setOpen(o); if (o) { setRelated(item.relatedContracts || []); setQ(''); } };
+  const toggle = (slug: string) => setRelated(prev => prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]);
+  const save = async () => { setSaving(true); try { await onSaveRelated(item.id, related); setOpen(false); } finally { setSaving(false); } };
+  const visible = q.trim() ? contractOptions.filter(c => c.title.toLowerCase().includes(q.toLowerCase())) : contractOptions;
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1.5"><BookOpen className="h-4 w-4" /> Maddeyi Oku</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><Scale className="h-5 w-5 text-primary" /> {item.name}{item.number ? ` (No: ${item.number})` : ''}</DialogTitle>
+          <DialogDescription>Resmî madde metni, hukuki yorum ve ilişkili sözleşme/politikalar.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Resmî Madde Metni</p>
+            {item.articleText ? (
+              <p className="text-sm whitespace-pre-wrap leading-relaxed bg-muted/30 border rounded-lg p-3">{item.articleText}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">Bu mevzuat için madde metni henüz girilmemiş. &quot;Düzenle&quot; ile ekleyebilirsiniz.</p>
+            )}
+          </div>
+          {item.interpretation && (
+            <div>
+              <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Hukuki Yorum / Risk</p>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{item.interpretation}</p>
+            </div>
+          )}
+          {item.links && (
+            <div>
+              <p className="text-xs font-bold text-muted-foreground uppercase mb-1">Resmî Kaynaklar</p>
+              <div className="flex flex-col gap-1">
+                {item.links.split('\n').filter(Boolean).map((url, i) => (
+                  <a key={i} href={url.trim()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline break-all">
+                    <Link2 className="h-3 w-3 shrink-0" /> {url.trim()} <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="border-t pt-3">
+            <p className="text-xs font-bold text-muted-foreground uppercase mb-1.5 flex items-center gap-1.5"><FileText className="h-3.5 w-3.5" /> İlişkili Sözleşme / Politikalar</p>
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={q} onChange={e => setQ(e.target.value)} placeholder="Sözleşme/politika ara..." className="pl-9 h-9" />
+            </div>
+            <div className="rounded-lg border divide-y max-h-56 overflow-y-auto">
+              {visible.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic p-3">Sözleşme/politika bulunamadı.</p>
+              ) : visible.map(c => (
+                <label key={c.slug} className="flex items-center gap-2 p-2.5 hover:bg-accent cursor-pointer">
+                  <Checkbox checked={related.includes(c.slug)} onCheckedChange={() => toggle(c.slug)} />
+                  <span className="text-sm truncate">{c.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Kapat</Button>
+          <Button onClick={save} disabled={saving}>{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}İlişkileri Kaydet</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function LegislationTab() {
   const { toast } = useToast();
   const db = useFirestore();
@@ -208,6 +292,26 @@ export function LegislationTab() {
 
   const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
   const { data: legislations, isLoading } = useCollection<Legislation>(legQuery);
+
+  // İlişkilendirme için sözleşme/politika listesi (firestore + varsayılan seed birleşik)
+  const contractsRef = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
+  const { data: fsContracts } = useCollection<{ id: string; slug?: string; title?: string }>(contractsRef);
+  const contractOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    seedContracts.forEach(s => map.set(s.slug, s.title));
+    (fsContracts || []).forEach(c => { const slug = c.slug || c.id; if (slug) map.set(slug, c.title || slug); });
+    return Array.from(map.entries()).map(([slug, title]) => ({ slug, title }));
+  }, [fsContracts]);
+
+  const handleSaveRelated = async (legId: string, slugs: string[]) => {
+    try {
+      await setDoc(doc(db, COLLECTIONS.legislations, legId), { relatedContracts: slugs, updatedAt: serverTimestamp() }, { merge: true });
+      toast({ title: 'Kaydedildi', description: 'İlişkili sözleşme/politikalar güncellendi.' });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+    }
+  };
 
   const filtered = useMemo(() => {
     let list = legislations || [];
@@ -374,6 +478,7 @@ export function LegislationTab() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <LegislationDetailDialog item={l} contractOptions={contractOptions} onSaveRelated={handleSaveRelated} />
                     <LegislationEditDialog item={l} onSave={handleSave} />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -390,6 +495,19 @@ export function LegislationTab() {
                     </AlertDialog>
                   </div>
                 </div>
+                {l.relatedContracts && l.relatedContracts.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap pl-8">
+                    <span className="text-[10px] text-muted-foreground inline-flex items-center gap-1"><FileText className="h-3 w-3" /> İlişkili:</span>
+                    {l.relatedContracts.map(slug => {
+                      const title = contractOptions.find(c => c.slug === slug)?.title || slug;
+                      return (
+                        <Link key={slug} href={`/settings/contracts/${slug}`} target="_blank" rel="noopener noreferrer">
+                          <Badge variant="secondary" className="text-[9px] gap-1 hover:bg-secondary/70"><Eye className="h-2.5 w-2.5" /> {title}</Badge>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
                 {(l.articleText || l.interpretation) && (
                   <details className="text-xs text-muted-foreground pl-8">
                     <summary className="cursor-pointer hover:text-foreground font-medium">Detay (madde + yorum)</summary>
