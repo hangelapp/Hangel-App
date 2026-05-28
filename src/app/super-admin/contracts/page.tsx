@@ -33,6 +33,8 @@ import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
 import { LegislationTab } from './_components/legislation-tab';
 import { ArchiveTab } from './_components/archive-tab';
+import { ApprovalsTab } from './_components/approvals-tab';
+import { PublishTab } from './_components/publish-tab';
 
 // ---- Tipler ----
 type DocStatus = 'taslak' | 'incelemede' | 'yayinlandi' | 'arsivlendi';
@@ -537,26 +539,14 @@ export default function ContractsAdminPage() {
           ]} />
         </TabsContent>
 
-        {/* 6. YAYIN & BİLDİRİM */}
+        {/* 6. YAYIN & BİLDİRİM — fonksiyonel */}
         <TabsContent value="yayin" className="mt-4">
-          <ComingSoon icon={Send} title="Yayın & Bildirim Gönderimi" items={[
-            'Taslak → İnceleme → Hukuk Onayı → Yayınlandı → Arşiv akışı',
-            'Bildirim kanalları: uygulama içi, e-posta, SMS, push, STK paneli',
-            'Hemen / zamanlanmış / kademeli / sessiz / kritik yayın',
-            'Yayın öncesi kontroller (eksik alan, hedef kitle, uyum riski)',
-            'Kabul edilmediğinde kısıtlama kuralları (kullanıcı/STK/marka)',
-          ]} />
+          <PublishTab />
         </TabsContent>
 
-        {/* 7. ONAY KAYITLARI */}
+        {/* 7. ONAY KAYITLARI — fonksiyonel */}
         <TabsContent value="onay" className="mt-4">
-          <ComingSoon icon={ClipboardCheck} title="Kullanıcı Onay Kayıtları" items={[
-            'Kim okudu / okumadı / onayladı / onaylamadı (kullanıcı + STK/marka/kulüp)',
-            'Onaylanan sürüm, tarih, IP, cihaz, OS, tarayıcı, dil, ülke',
-            'Sözleşme okuma analizi: scroll yaptı mı, kaç saniyede onayladı',
-            'Değiştirilemez hash + snapshot ID log',
-            'Export sistemi',
-          ]} />
+          <ApprovalsTab />
         </TabsContent>
 
         {/* 8. HUKUK CHAT */}
