@@ -15,11 +15,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Search, BookText, Scale, Link2, ExternalLink, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { legislationsData } from '@/lib/legislations';
 import { cn } from '@/lib/utils';
 
 type RiskLevel = 'dusuk' | 'orta' | 'yuksek' | 'kritik';
@@ -159,6 +160,7 @@ export function LegislationTab() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [seeding, setSeeding] = useState(false);
 
   const legQuery = useMemoFirebase(() => collection(db, COLLECTIONS.legislations), [db]);
   const { data: legislations, isLoading } = useCollection<Legislation>(legQuery);
@@ -192,6 +194,23 @@ export function LegislationTab() {
     }
   };
 
+  const handleSeedAll = async () => {
+    setSeeding(true);
+    try {
+      let count = 0;
+      for (const s of legislationsData) {
+        await setDoc(doc(db, COLLECTIONS.legislations, s.id), { ...s, updatedAt: serverTimestamp() }, { merge: true });
+        count += 1;
+      }
+      toast({ title: 'İçe Aktarıldı', description: `${count} mevzuat (kanun + Resmi Gazete + karar kaynağı) eklendi.` });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      toast({ variant: 'destructive', title: 'Aktarma başarısız', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -207,6 +226,10 @@ export function LegislationTab() {
               {Object.entries(RISK_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Button variant="outline" onClick={handleSeedAll} disabled={seeding} className="gap-1.5">
+            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            Varsayılan Mevzuatları İçe Aktar
+          </Button>
           <LegislationEditDialog onSave={handleSave} />
         </div>
       </CardHeader>
