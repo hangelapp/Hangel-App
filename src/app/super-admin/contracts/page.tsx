@@ -32,6 +32,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
 import { LegislationTab } from './_components/legislation-tab';
+import { ArchiveTab } from './_components/archive-tab';
 
 // ---- Tipler ----
 type DocStatus = 'taslak' | 'incelemede' | 'yayinlandi' | 'arsivlendi';
@@ -568,14 +569,9 @@ export default function ContractsAdminPage() {
           ]} />
         </TabsContent>
 
-        {/* 9. ARŞİV */}
+        {/* 9. ARŞİV — fonksiyonel */}
         <TabsContent value="arsiv" className="mt-4">
-          <ComingSoon icon={Archive} title="Evrak Arşivi (Kurum Bazlı)" items={[
-            'STK / spor kulübü / özel izinli / marka / kulüp yüklediği evraklar',
-            'Tüzük, faaliyet belgesi, izin belgesi vb. kurum kurum listelenir',
-            'Yıl bazlı listeleme (2026, 2027 — yıllık güncelleme takibi)',
-            'Evrak takip sistemi (eksik / güncel / süresi dolmuş)',
-          ]} />
+          <ArchiveTab />
         </TabsContent>
       </Tabs>
     </div>
