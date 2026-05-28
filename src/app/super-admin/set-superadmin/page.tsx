@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -57,6 +57,7 @@ const normalize = (s: string) => s.replace(/[^0-9a-zA-Z@._-]/g, '').toLowerCase(
 
 export default function SetSuperAdminPage() {
   const db = useFirestore();
+  const { user: authUser } = useUser();
   const { toast } = useToast();
 
   // Eski 5384009090 hızlı atama
@@ -104,27 +105,34 @@ export default function SetSuperAdminPage() {
     setPermissions(prev => (prev.includes(slug) ? prev.filter(s => s !== slug) : [...prev, slug]));
 
   const handleAssignSuperAdmin = async () => {
-    if (!db || !selectedUser) return;
+    if (!selectedUser) return;
+    if (!authUser) {
+      toast({ variant: 'destructive', title: 'Oturum bulunamadı', description: 'Lütfen yeniden giriş yapın.' });
+      return;
+    }
     setAssigning(true);
     try {
-      await updateDoc(doc(db, COLLECTIONS.users, selectedUser.id), {
-        role: 'super-admin',
-        superAdminPermissions: permissions,
+      // Custom claim yalnızca Admin SDK ile set edilebilir → server route üzerinden.
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/admin/users/set-super-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ uid: selectedUser.id, permissions }),
       });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast({ variant: 'destructive', title: 'Atama başarısız', description: json?.message || 'İşlem tamamlanamadı.' });
+        return;
+      }
       toast({
         title: 'Süper Admin Atandı',
-        description: `${selectedUser.name || selectedUser.displayName || selectedUser.id} ${permissions.length} sayfa yetkisiyle süper admin olarak ayarlandı.`,
+        description: `${selectedUser.name || selectedUser.displayName || selectedUser.id} ${permissions.length} sayfa yetkisiyle süper admin yapıldı. Kişi bir kez çıkış yapıp tekrar giriş yaptığında panel açılır.`,
       });
       setSelectedUserId(null);
       setSearchTerm('');
     } catch (e) {
-      const code = (e as { code?: string } | null)?.code;
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
-      toast({
-        variant: 'destructive',
-        title: 'Atama başarısız',
-        description: code === 'permission-denied' ? 'Bu işlem için süper admin yetkisi gerekli.' : message,
-      });
+      toast({ variant: 'destructive', title: 'Atama başarısız', description: message });
     } finally {
       setAssigning(false);
     }
