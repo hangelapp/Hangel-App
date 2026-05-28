@@ -42,6 +42,9 @@ import {
   updateDoc,
   deleteDoc,
   query,
+  where,
+  getDocs,
+  writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -424,7 +427,44 @@ export default function SuperAdminEventsPage() {
         approvedAt: serverTimestamp(),
         approvedBy: authUser?.uid || null,
       });
-      toast({ title: 'Etkinlik Onaylandı', description: 'Etkinlik artık yayında.' });
+
+      // Etkinlik onaylandı → kulüp üyelerine bildirim (Cloud Function otomatik push atar).
+      // Best-effort: hata olsa bile onay başarılı sayılır.
+      try {
+        const ev = (events || []).find((e) => e.id === id);
+        const clubId = ev?.organizerId;
+        if (clubId) {
+          const membersSnap = await getDocs(
+            query(collection(db, COLLECTIONS.users), where('joinedClubs', 'array-contains', clubId)),
+          );
+          if (!membersSnap.empty) {
+            const evName = ev?.name || 'Yeni etkinlik';
+            const evDate = (ev as { date?: string })?.date || '';
+            let batch = writeBatch(db);
+            let count = 0;
+            for (const m of membersSnap.docs) {
+              const notifRef = doc(collection(db, COLLECTIONS.notifications));
+              batch.set(notifRef, {
+                userId: m.id,
+                type: 'event_created',
+                title: '📅 Yeni etkinlik',
+                body: `${ev?.organizer || 'Kulübün'}: "${evName}"${evDate ? ` — ${evDate}` : ''}`,
+                data: { eventId: id, link: `/events/${id}` },
+                read: false,
+                createdAt: serverTimestamp(),
+                createdBy: authUser?.uid || 'super-admin',
+              });
+              count += 1;
+              if (count >= 450) { await batch.commit(); batch = writeBatch(db); count = 0; }
+            }
+            if (count > 0) await batch.commit();
+          }
+        }
+      } catch (notifErr) {
+        console.warn('[event approve] member notification failed', notifErr);
+      }
+
+      toast({ title: 'Etkinlik Onaylandı', description: 'Etkinlik yayında. Kulüp üyelerine bildirim gönderildi.' });
     } catch (e) {
       const code = (e as { code?: string } | null)?.code;
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';

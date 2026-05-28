@@ -191,6 +191,11 @@ export default function NotificationsPage() {
       case 'welcome':
       case 'emergency-confirmation':
         return '/messages';
+      case 'badge':
+      case 'badge_earned':
+        return '/my-badges';
+      case 'event_created':
+        return n.data?.link || '/events';
       case 'broadcast':
       case 'dm':
         return n.data?.link || null;

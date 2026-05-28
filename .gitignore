@@ -78,3 +78,7 @@ android/build/
 .upgrade-*.mjs
 .try-*.mjs
 .override-*.mjs
+
+# Cloud Functions
+functions/node_modules/
+functions/lib/

@@ -10,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { computeAreaPoints, mapCategoryToBadgeArea, enrichBadges, type TierEnrichedBadge } from '@/lib/badge-points';
 import type { Application } from '@/lib/types';
 import { useUser, useFirestore, useMemoFirebase, useDoc, useCollection } from '@/firebase';
-import { doc, collection, query, where, updateDoc } from 'firebase/firestore';
+import { doc, collection, query, where, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Badge as BadgeType, BadgeLevel } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -570,6 +570,57 @@ export default function MyBadgesPage() {
     }, [enrichedBadges]);
 
     const earnedCount = enrichedBadges.filter(b => b.currentPoints >= b.pointsRequired).length;
+
+    // Yeni rozet tespiti: kazanılmış rozet id'lerini localStorage'daki son görülen
+    // listeyle karşılaştır. Yeni kazanılan(lar) için bildirim doc'u yaz (Cloud
+    // Function otomatik push atar). Client-side çünkü rozet puanı client'ta hesaplanıyor.
+    useEffect(() => {
+        if (!authUser?.uid || !db) return;
+        if (enrichedBadges.length === 0) return;
+        const earnedIds = enrichedBadges
+            .filter(b => b.currentPoints >= b.pointsRequired)
+            .map(b => `${b.id}:${b.level}`);
+        if (earnedIds.length === 0) return;
+
+        const storageKey = `hangel-seen-badges-${authUser.uid}`;
+        let seen: string[] = [];
+        try {
+            const raw = localStorage.getItem(storageKey);
+            if (raw) seen = JSON.parse(raw);
+        } catch { /* noop */ }
+
+        // İlk ziyaret (seen boş) → bildirim atma, sadece baseline kaydet (spam önleme)
+        if (seen.length === 0) {
+            try { localStorage.setItem(storageKey, JSON.stringify(earnedIds)); } catch { /* noop */ }
+            return;
+        }
+
+        const newlyEarned = enrichedBadges.filter(
+            b => b.currentPoints >= b.pointsRequired && !seen.includes(`${b.id}:${b.level}`),
+        );
+        if (newlyEarned.length === 0) return;
+
+        // Yeni rozet(ler) için bildirim yaz
+        (async () => {
+            for (const badge of newlyEarned) {
+                try {
+                    await addDoc(collection(db, COLLECTIONS.notifications), {
+                        userId: authUser.uid,
+                        type: 'badge',
+                        title: `🏆 Yeni rozet: ${badge.name} (${badge.level})`,
+                        body: `${badge.socialArea} alanında ${badge.level} rozetini kazandın! Tebrikler.`,
+                        data: { link: '/my-badges', badgeId: badge.id, level: badge.level },
+                        read: false,
+                        createdAt: serverTimestamp(),
+                        createdBy: 'hangel-system',
+                    });
+                } catch (e) {
+                    console.warn('[badge] notification failed', e);
+                }
+            }
+            try { localStorage.setItem(storageKey, JSON.stringify(earnedIds)); } catch { /* noop */ }
+        })();
+    }, [enrichedBadges, authUser?.uid, db]);
 
     return (
         <div className="p-4 space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-32">
