@@ -28,10 +28,10 @@ const HANGEL_SYSTEM_NAME = 'Hangel Resmi';
 const HANGEL_SYSTEM_AVATAR = ''; // Logo URL eklenebilir (apphosting public dosyası)
 
 const WELCOME_MESSAGE_TR =
-    'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığın için minnettarız. #wearehangel';
+    'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
 
 const WELCOME_MESSAGE_CORPORATE_TR =
-    'Merhaba, hangel ailesine hoş geldiniz. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığınız için minnettarız. Birlikte daha güçlü bir topluluk oluşturuyoruz. #wearehangel';
+    'Merhaba, hangel ailesine hoş geldiniz. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığınız için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
 
 export async function POST(req: NextRequest) {
     try {

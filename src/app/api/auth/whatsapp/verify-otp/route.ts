@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
                 const { sendPushToUser } = await import('@/lib/push-notifications');
                 const { FieldValue } = await import('firebase-admin/firestore');
                 const adminDb = getAdminFirestore();
-                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığın için minnettarız. #wearehangel';
+                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
                 const subject = 'hangel\'e hoş geldin';
                 await adminDb.collection(COLLECTIONS.messages).add({
                     sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },

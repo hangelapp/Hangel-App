@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
             }
             try {
                 const { sendPushToUser } = await import('@/lib/push-notifications');
-                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmadığın için minnettarız. #wearehangel';
+                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
                 const subject = 'hangel\'e hoş geldin';
                 await db.collection(COLLECTIONS.messages).add({
                     sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
