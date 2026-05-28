@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Phone, Mail, Inbox, XCircle, User as UserIcon, Pencil, RefreshCw } from 'lucide-react';
+import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Mail, Inbox, XCircle, Pencil, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, documentId } from 'firebase/firestore';
@@ -29,7 +29,11 @@ interface EmergencyDoc {
   type?: string;
   hospitalName?: string;
   hospitalAddress?: string;
+  hospitalCity?: string;
+  hospitalDistrict?: string;
+  hospitalPhone?: string;
   bloodType?: string;
+  needType?: string;
   scope?: string;
   city?: string;
   district?: string;
@@ -83,6 +87,30 @@ function canonBlood(s: string | undefined | null): string {
   return t; // örn: 'a+', '0-', 'ab+'
 }
 
+// Kırmızı kan hücresi uyumluluğu: HASTANIN kan grubu → bu hastaya kan
+// BAĞIŞLAYABİLECEK (uyumlu) bağışçı grupları. Akıllı eşleşme motoru bunu kullanır:
+// kullanıcı sadece hastanın grubunu girer, bildirim tüm uyumlu gruplara gider.
+const RBC_DONOR_COMPAT: Record<string, string[]> = {
+  'o-': ['O-'],
+  'o+': ['O+', 'O-'],
+  'a-': ['A-', 'O-'],
+  'a+': ['A+', 'A-', 'O+', 'O-'],
+  'b-': ['B-', 'O-'],
+  'b+': ['B+', 'B-', 'O+', 'O-'],
+  'ab-': ['AB-', 'A-', 'B-', 'O-'],
+  'ab+': ['AB+', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB-'],
+};
+
+// Hasta kan grubu → uyumlu bağışçı gruplarının display listesi (örn 'A+' → [A+,A-,O+,O-]).
+// Bilinmeyen/boş grup → boş liste (çağıran exact-match'e düşer).
+function compatibleDonors(patientBlood: string | undefined | null): string[] {
+  const key = canonBlood(patientBlood).replace(/0/g, 'o');
+  return RBC_DONOR_COMPAT[key] ? [...RBC_DONOR_COMPAT[key]] : [];
+}
+function compatibleDonorSet(patientBlood: string): Set<string> {
+  return new Set(compatibleDonors(patientBlood).map(b => canonBlood(b).replace(/0/g, 'o')));
+}
+
 // Bir kullanıcı verilen filtre kriterlerini karşılıyor mu? Hem sayım hem
 // fan-out aynı bu predicate'i kullanır → ekrandaki sayı her zaman gerçek
 // bildirim alacak kitle sayısına eşit.
@@ -90,7 +118,14 @@ function matchesScope(u: UserDoc, sel: ScopeSelection): boolean {
   const pi = u.personalInfo;
   if (!pi) return false;
   if (sel.bloodType) {
-    if (canonBlood(pi.bloodType) !== canonBlood(sel.bloodType)) return false;
+    // Akıllı eşleşme: hastanın grubuna uyumlu TÜM bağışçı gruplarını hedefle.
+    const donorSet = compatibleDonorSet(sel.bloodType);
+    const userBlood = canonBlood(pi.bloodType).replace(/0/g, 'o');
+    if (donorSet.size > 0) {
+      if (!userBlood || !donorSet.has(userBlood)) return false;
+    } else if (canonBlood(pi.bloodType) !== canonBlood(sel.bloodType)) {
+      return false; // bilinmeyen grup → birebir eşleşme (defansif)
+    }
   }
   if (sel.gender && sel.gender !== 'all') {
     if (norm(pi.gender) !== norm(sel.gender)) return false;
@@ -123,6 +158,9 @@ const scopeLabel: Record<ScopeLevel, string> = {
   neighborhood: 'Mahalle',
 };
 
+// İhtiyaç türleri — varsayılan "Kan" (en sık talep).
+const NEED_TYPES = ['Kan', 'Trombosit', 'Aferez', 'Plazma Aferezi', 'Kök Hücre (TÜRKÖK)', 'Kordon Kanı'];
+
 interface ScopeSelection {
   scope: ScopeLevel;
   city: string;
@@ -144,7 +182,13 @@ export default function EmergencyManagementPage() {
   // Form state
   const [hospitalName, setHospitalName] = useState('');
   const [hospitalAddress, setHospitalAddress] = useState('');
+  const [hospitalPhone, setHospitalPhone] = useState('');
+  const [hospitalCity, setHospitalCity] = useState('');
+  const [hospitalDistrict, setHospitalDistrict] = useState('');
   const [bloodType, setBloodType] = useState('');
+  const [needType, setNeedType] = useState('Kan');
+  const [patientName, setPatientName] = useState('');
+  const [patientBirthYear, setPatientBirthYear] = useState('');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -310,13 +354,19 @@ export default function EmergencyManagementPage() {
   const loadIntoForm = (req: EmergencyDoc) => {
     setHospitalName(req.hospitalName || '');
     setHospitalAddress(req.hospitalAddress || '');
+    setHospitalPhone(req.hospitalPhone || '');
+    setHospitalCity(req.hospitalCity || '');
+    setHospitalDistrict(req.hospitalDistrict || '');
     setBloodType(req.bloodType || '');
+    setNeedType(req.needType || 'Kan');
+    setPatientName(req.patientName || '');
+    setPatientBirthYear(req.patientBirthYear || '');
     setMessage(req.message || '');
     setContactPhone(req.contactPhone || '');
     // Yanıtlayan kullanıcının ulaşacağı isim — kullanıcı talebinden contactName,
     // yoksa requestedByName ile pre-fill.
     setContactName((req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || '');
-    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
+    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : (typeof req.units === 'number' ? String(req.units) : ''));
     setScope((req.scope as ScopeLevel) || 'city');
     setCity(req.city || '');
     setDistrict(req.district || '');
@@ -345,11 +395,17 @@ export default function EmergencyManagementPage() {
   const loadIntoFormForEdit = (req: EmergencyDoc) => {
     setHospitalName(req.hospitalName || '');
     setHospitalAddress(req.hospitalAddress || '');
+    setHospitalPhone(req.hospitalPhone || '');
+    setHospitalCity(req.hospitalCity || '');
+    setHospitalDistrict(req.hospitalDistrict || '');
     setBloodType(req.bloodType || '');
+    setNeedType(req.needType || 'Kan');
+    setPatientName(req.patientName || '');
+    setPatientBirthYear(req.patientBirthYear || '');
     setMessage(req.message || '');
     setContactPhone(req.contactPhone || '');
     setContactName((req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || '');
-    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : '');
+    setUnitsNeeded(req.unitsNeeded ? String(req.unitsNeeded) : (typeof req.units === 'number' ? String(req.units) : ''));
     setScope((req.scope as ScopeLevel) || 'city');
     setCity(req.city || '');
     setDistrict(req.district || '');
@@ -479,7 +535,13 @@ export default function EmergencyManagementPage() {
         type: 'blood',
         hospitalName: hospitalName.trim(),
         hospitalAddress: hospitalAddress.trim(),
+        hospitalPhone: hospitalPhone.trim(),
+        hospitalCity: hospitalCity.trim(),
+        hospitalDistrict: hospitalDistrict.trim(),
         bloodType,
+        needType,
+        patientName: patientName.trim(),
+        patientBirthYear: patientBirthYear.trim(),
         scope,
         city: city || null,
         district: district || null,
@@ -489,6 +551,7 @@ export default function EmergencyManagementPage() {
         contactName: contactName.trim(),
         contactPhone: contactPhone.trim(),
         unitsNeeded: Number(unitsNeeded) || null,
+        compatibleDonorGroups: compatibleDonors(bloodType),
         targetCount: targetUserIds.length,
       };
 
@@ -521,18 +584,22 @@ export default function EmergencyManagementPage() {
           current.set(notifRef, {
             userId: uid,
             type: 'emergency-blood',
-            title: `🩸 Acil Kan Talebi — ${bloodType}`,
-            body: `${hospitalName} hastanesi için ${bloodType} kan grubuna acil ihtiyaç var.${message ? ` ${message.slice(0, 100)}` : ''}`,
+            title: `🩸 Acil ${needType} İhtiyacı — ${bloodType}`,
+            body: `${hospitalName} için ${bloodType} (${needType}) acil ihtiyacı var. Kan grubunuz uyumlu.${message ? ` ${message.slice(0, 80)}` : ''}`,
             data: {
               requestId,
               hospitalName,
               hospitalAddress,
-              hospitalPhone: extraReqRef.current.hospitalPhone || null,
+              hospitalPhone: hospitalPhone.trim() || extraReqRef.current.hospitalPhone || null,
+              hospitalCity: hospitalCity.trim() || null,
+              hospitalDistrict: hospitalDistrict.trim() || null,
               city: city || null,
               district: district || null,
               bloodType,
+              needType,
               units: (Number(unitsNeeded) || extraReqRef.current.units) ?? null,
-              patientName: extraReqRef.current.patientName || null,
+              patientName: patientName.trim() || extraReqRef.current.patientName || null,
+              patientBirthYear: patientBirthYear.trim() || null,
               contactName: contactName || null,
               contactPhone: contactPhone || null,
             },
@@ -690,31 +757,45 @@ export default function EmergencyManagementPage() {
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-red-600 text-[11px]">{req.bloodType || '?'}</Badge>
+                          {req.needType && req.needType !== 'Kan' && <Badge variant="secondary" className="text-[10px]">{req.needType}</Badge>}
                           <p className="font-bold text-sm">{req.hospitalName || 'Hastane'}</p>
+                          {(req.unitsNeeded || req.units) ? <Badge variant="outline" className="text-[10px]">{req.unitsNeeded || req.units} ünite</Badge> : null}
                           <Badge variant="outline" className="text-[10px]">Onay Bekliyor</Badge>
                         </div>
                         <div className="text-[10px] text-muted-foreground">{formatDate(req.createdAt)}</div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <UserIcon className="h-3 w-3" />
-                          <span>{req.requestedByName || req.contactName || 'Kullanıcı'}</span>
+                      {/* Uyumlu bağışçı grupları (akıllı eşleşme önizleme) */}
+                      {req.bloodType && compatibleDonors(req.bloodType).length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
+                          <span className="text-muted-foreground">Uyumlu bağışçı:</span>
+                          {compatibleDonors(req.bloodType).map(g => <Badge key={g} className="bg-red-600/90 text-[10px]">{g}</Badge>)}
                         </div>
-                        {req.contactPhone && (
-                          <a href={`tel:${req.contactPhone}`} className="flex items-center gap-1 text-muted-foreground hover:text-primary">
-                            <Phone className="h-3 w-3" /> {req.contactPhone}
-                          </a>
-                        )}
-                        {req.requestedByEmail && (
-                          <a href={`mailto:${req.requestedByEmail}`} className="flex items-center gap-1 text-muted-foreground hover:text-primary">
-                            <Mail className="h-3 w-3" /> {req.requestedByEmail}
-                          </a>
-                        )}
+                      )}
+
+                      {/* TÜM FORM BİLGİLERİ */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs rounded-lg border bg-muted/20 p-3">
+                        <InfoRow label="Hasta" value={req.patientName} />
+                        <InfoRow label="Doğum Yılı" value={req.patientBirthYear} />
+                        <InfoRow label="Kan Grubu" value={req.bloodType} />
+                        <InfoRow label="İhtiyaç Türü" value={req.needType || 'Kan'} />
+                        <InfoRow label="Ünite" value={req.unitsNeeded || req.units} />
+                        <InfoRow label="Hastane" value={req.hospitalName} />
+                        <InfoRow label="Hastane Adresi" value={req.hospitalAddress} />
+                        <InfoRow label="Hastane Tel" value={req.hospitalPhone} isPhone />
+                        <InfoRow label="Hastane İl/İlçe" value={[req.hospitalCity, req.hospitalDistrict].filter(Boolean).join(' / ')} />
+                        <InfoRow label="Hedef Konum" value={[req.neighborhood, req.district, req.city].filter(Boolean).join(', ')} />
+                        <InfoRow label="İletişim Kişisi" value={req.contactName || req.requestedByName} />
+                        <InfoRow label="İletişim Tel" value={req.contactPhone} isPhone />
+                        <InfoRow label="Talep Eden" value={req.requestedByName} />
+                        <InfoRow label="E-posta" value={req.requestedByEmail} isEmail />
                       </div>
 
                       {req.message && (
-                        <p className="text-sm bg-muted/40 p-3 rounded-lg border whitespace-pre-wrap">{req.message}</p>
+                        <div className="text-sm bg-muted/40 p-3 rounded-lg border">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase">Açıklama</span>
+                          <p className="whitespace-pre-wrap mt-0.5">{req.message}</p>
+                        </div>
                       )}
 
                       <div className="flex items-center gap-2 flex-wrap pt-1">
@@ -754,13 +835,13 @@ export default function EmergencyManagementPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Hastane Adı *</Label>
                   <Input value={hospitalName} onChange={e => setHospitalName(e.target.value)} placeholder="Ör: İstanbul Tıp Fakültesi" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Kan Grubu *</Label>
+                  <Label>Hastanın Kan Grubu *</Label>
                   <Select value={bloodType} onValueChange={setBloodType}>
                     <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
                     <SelectContent>
@@ -768,11 +849,69 @@ export default function EmergencyManagementPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label>İhtiyaç Türü</Label>
+                  <Select value={needType} onValueChange={setNeedType}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {NEED_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Hastane Adresi</Label>
-                <Input value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} placeholder="Tam adres bilgisi" />
+              {/* Akıllı eşleşme: hastanın grubuna uyumlu bağışçı grupları otomatik hedeflenir */}
+              {bloodType && (
+                <div className="rounded-xl border border-red-200 bg-red-50/60 p-3">
+                  <p className="text-xs font-bold text-red-800 flex items-center gap-1.5">
+                    <Droplet className="h-3.5 w-3.5" /> Otomatik hedeflenen uyumlu bağışçı grupları
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {compatibleDonors(bloodType).length > 0 ? (
+                      compatibleDonors(bloodType).map(g => (
+                        <Badge key={g} className="bg-red-600 text-[11px]">{g}</Badge>
+                      ))
+                    ) : (
+                      <Badge variant="outline" className="text-[11px]">{bloodType}</Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-red-700/80 mt-1.5">
+                    Hasta {bloodType} grubu olduğundan, bu gruplardan kan alabilir. Bildirim yalnızca uyumlu gruplara gider.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Hasta Adı Soyadı</Label>
+                  <Input value={patientName} onChange={e => setPatientName(e.target.value)} placeholder="Hasta adı" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Hasta Doğum Yılı</Label>
+                  <Input type="number" value={patientBirthYear} onChange={e => setPatientBirthYear(e.target.value)} placeholder="Ör: 1985" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Hastane Adresi</Label>
+                  <Input value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} placeholder="Tam adres bilgisi" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Hastane Telefonu</Label>
+                  <Input type="tel" value={hospitalPhone} onChange={e => setHospitalPhone(e.target.value)} placeholder="0212 xxx xx xx" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Hastane İl</Label>
+                  <Input value={hospitalCity} onChange={e => setHospitalCity(e.target.value)} placeholder="Hastanenin bulunduğu il" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Hastane İlçe</Label>
+                  <Input value={hospitalDistrict} onChange={e => setHospitalDistrict(e.target.value)} placeholder="Hastanenin bulunduğu ilçe" />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -884,12 +1023,12 @@ export default function EmergencyManagementPage() {
                       {' '}/{' '}
                       <span className="text-sm">{(totalUsers ?? 0).toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
                       <span className="text-xs block mt-1">
-                        Filtre: {bloodType ? `${bloodType} kan grubu` : 'tüm kan grupları'} • {scopeLabel[scope]}
+                        Filtre: {bloodType ? `Hasta ${bloodType} → uyumlu: ${compatibleDonors(bloodType).join(', ') || bloodType}` : 'tüm kan grupları'} • {needType} • {scopeLabel[scope]}
                         {city && ` • ${city}`}{district && ` / ${district}`}{neighborhood && ` / ${neighborhood}`}
                       </span>
                       {!bloodType && (
                         <span className="text-[11px] block mt-1 italic text-amber-700">
-                          İpucu: kan grubu seçerek hedef kitleyi daraltabilirsiniz.
+                          İpucu: hastanın kan grubunu seçince uyumlu bağışçı grupları otomatik hedeflenir.
                         </span>
                       )}
                     </span>
@@ -1097,6 +1236,24 @@ export default function EmergencyManagementPage() {
           </Card>
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+// Onay-bekleyen kartında tek bir etiket/değer satırı. Değer boşsa hiç render edilmez.
+function InfoRow({ label, value, isPhone, isEmail }: { label: string; value?: string | number | null; isPhone?: boolean; isEmail?: boolean }) {
+  if (value === undefined || value === null || value === '') return null;
+  const v = String(value);
+  return (
+    <div className="flex items-baseline gap-1.5 min-w-0">
+      <span className="text-muted-foreground shrink-0">{label}:</span>
+      {isPhone ? (
+        <a href={`tel:${v}`} className="font-medium text-primary hover:underline truncate">{v}</a>
+      ) : isEmail ? (
+        <a href={`mailto:${v}`} className="font-medium text-primary hover:underline truncate">{v}</a>
+      ) : (
+        <span className="font-medium truncate">{v}</span>
+      )}
     </div>
   );
 }

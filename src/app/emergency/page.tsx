@@ -58,6 +58,7 @@ interface BloodNeedFormData {
     district: string; // ilçe
     neighborhood: string; // mahalle
     bloodType: string;
+    needType: string; // Kan | Trombosit | Aferez | Plazma Aferezi | Kök Hücre (TÜRKÖK) | Kordon Kanı
     units: number; // kaç ünite kan
     patientName: string; // hasta adı soyadı
     patientBirthYear: string; // hastanın doğum yılı
@@ -144,6 +145,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
         district: '',
         neighborhood: '',
         bloodType: '',
+        needType: 'Kan',
         units: 1,
         patientName: '',
         patientBirthYear: '',
@@ -167,6 +169,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
     };
 
     const bloodTypes = ["A Rh+", "A Rh-", "B Rh+", "B Rh-", "AB Rh+", "AB Rh-", "0 Rh+", "0 Rh-", "Bilinmiyor"];
+    const needTypes = ["Kan", "Trombosit", "Aferez", "Plazma Aferezi", "Kök Hücre (TÜRKÖK)", "Kordon Kanı"];
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -288,9 +291,20 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                             />
                         </div>
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="need-type">İhtiyaç Türü</Label>
+                        <Select value={formData.needType} onValueChange={value => setFormData({ ...formData, needType: value })}>
+                            <SelectTrigger id="need-type">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {needTypes.map(nt => <SelectItem key={nt} value={nt}>{nt}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-2 col-span-2">
-                            <Label htmlFor="blood-type">Kan Grubu</Label>
+                            <Label htmlFor="blood-type">Hastanın Kan Grubu</Label>
                             <Select required onValueChange={value => setFormData({...formData, bloodType: value})}>
                                 <SelectTrigger id="blood-type">
                                     <SelectValue placeholder="Seçiniz" />
@@ -440,6 +454,7 @@ export default function EmergencyPage() {
                 hospitalAddress: data.hospitalAddress || '',
                 hospitalPhone: data.hospitalPhone || '',
                 bloodType: data.bloodType || '',
+                needType: data.needType || 'Kan',
                 units: data.units || 1,
                 patientName: data.patientName || '',
                 patientBirthYear: data.patientBirthYear || '',
