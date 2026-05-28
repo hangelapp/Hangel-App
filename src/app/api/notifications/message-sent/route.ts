@@ -19,6 +19,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { FieldValue } from 'firebase-admin/firestore';
 import { sendPushToUser } from '@/lib/push-notifications';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -109,6 +110,21 @@ export async function POST(req: NextRequest) {
 
         const senderName = msg.sender?.name || 'Bir kullanıcı';
         const preview = (msg.content || '').slice(0, 100);
+
+        // Gelen mesaj → notifications koleksiyonuna düşsün (bildirim sayfasında görünür,
+        // tıklayınca /messages'a yönlendirir). pushSent: true → Cloud Function tekrar
+        // push göndermesin (inline push aşağıda).
+        await db.collection(COLLECTIONS.notifications).add({
+            userId: targetUid,
+            type: 'message',
+            title: `💬 ${senderName}`,
+            body: msg.subject ? `${msg.subject}: ${preview}` : preview,
+            data: { messageId, senderId: callerUid, link: '/messages' },
+            read: false,
+            pushSent: true,
+            createdAt: FieldValue.serverTimestamp(),
+            createdBy: callerUid,
+        }).catch((e) => { console.warn('[message-sent] notif doc failed', e); });
 
         const pushResult = await sendPushToUser(targetUid, {
             title: `💬 ${senderName}`,

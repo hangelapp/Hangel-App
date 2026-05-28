@@ -188,6 +188,8 @@ export default function NotificationsPage() {
       case 'donation':
         return '/my-donations';
       case 'message':
+      case 'welcome':
+      case 'emergency-confirmation':
         return '/messages';
       case 'broadcast':
       case 'dm':

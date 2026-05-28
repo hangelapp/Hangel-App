@@ -169,6 +169,7 @@ export async function POST(req: NextRequest) {
                     title: subject,
                     body: welcomeText.slice(0, 120),
                     read: false,
+                    pushSent: true, // inline push aşağıda — Cloud Function tekrar göndermesin
                     createdAt: FieldValue.serverTimestamp(),
                     createdBy: 'hangel-system',
                 });

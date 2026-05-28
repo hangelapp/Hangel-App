@@ -186,6 +186,7 @@ export async function POST(req: NextRequest) {
                 userId: recipientUid,
                 ...built.notifData,
                 read: false,
+                pushSent: true, // inline push paralelde — Cloud Function tekrar göndermesin
                 createdAt: FieldValue.serverTimestamp(),
                 createdBy: caller.uid,
             }).catch(e => {
