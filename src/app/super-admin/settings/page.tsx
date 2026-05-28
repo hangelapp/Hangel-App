@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import Link from "next/link"
-import { Handshake, ChevronRight } from "lucide-react"
+import { Handshake, ChevronRight, ShieldCheck } from "lucide-react"
 
 export default function SettingsPage() {
     return (
@@ -23,7 +23,23 @@ export default function SettingsPage() {
                     <CardTitle>Alt Modüller</CardTitle>
                     <CardDescription>Belirli alanlara özel ayar sayfaları.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
+                    <Link
+                        href="/super-admin/set-superadmin"
+                        className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-semibold">Yetkili & Rol Yönetimi</p>
+                            <p className="text-xs text-muted-foreground">
+                                Kullanıcı adı veya telefon ile kişi bul, süper admin yetkilerini sayfa sayfa
+                                işaretleyerek ata. Ekip kurarken herkese tüm yetkiyi vermeden delege et.
+                            </p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    </Link>
                     <Link
                         href="/super-admin/settings/volunteer-scoring"
                         className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
