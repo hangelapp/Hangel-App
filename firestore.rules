@@ -270,6 +270,32 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Hukuk yönetim sistemi (super-admin/contracts) — yeni koleksiyonlar
+    // Mevzuatlar: imzalı kullanıcı okuyabilir (uyum bilgisi şeffaf), super-admin yazar.
+    match /legislations/{legId} {
+      allow read, list: if isSignedIn();
+      allow create, update, delete: if isSuperAdmin();
+    }
+    // Kullanıcı onay kayıtları: kullanıcı kendi onayını yazar (immutable — update/delete yok),
+    // super-admin tümünü okur. KVKK ispat kaydı.
+    match /contractApprovals/{approvalId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, list: if isSuperAdmin();
+      allow update, delete: if false; // değiştirilemez log
+    }
+    // Evrak arşivi: kurum admin kendi evrakını yükler, super-admin tümünü görür.
+    match /documentArchive/{docId} {
+      allow read, list: if isSuperAdmin() || (isSignedIn() && resource.data.uploadedBy == request.auth.uid);
+      allow create: if isSignedIn() && request.resource.data.uploadedBy == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+    // Hukuk chat: sadece super-admin (hukuk görevlileri). Mesaj silinemez.
+    match /legalChat/{msgId} {
+      allow read, list, create: if isSuperAdmin();
+      allow delete: if false;
+      allow update: if isSuperAdmin(); // düzenleme loglu (içerik koru, edited flag)
+    }
+
     // Hibe programları ve fonlar (super-admin yönetir, herkes okur)
     match /funds/{fundId} {
       allow read, list: if true;

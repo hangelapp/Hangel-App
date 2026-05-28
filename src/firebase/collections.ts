@@ -65,6 +65,11 @@ export const COLLECTIONS = {
   sitePages: 'sitePages',
   siteSettings: 'siteSettings',
   contracts: 'contracts',
+  // Hukuk yönetim sistemi (super-admin/contracts)
+  legislations: 'legislations',           // Mevzuatlar — kanun + risk + uyum
+  contractApprovals: 'contractApprovals',  // Kullanıcı onay kayıtları (immutable log)
+  documentArchive: 'documentArchive',      // Kurum evrak arşivi (tüzük, faaliyet belgesi)
+  legalChat: 'legalChat',                  // Hukuk görevlileri chat
   aiAssistantConfig: 'aiAssistantConfig',
   // PDF #3: per-institution "proje çağrı esasları" (project call criteria) that the
   // project-writer AI flow uses to tailor proposals to each org's talep ve esasları.

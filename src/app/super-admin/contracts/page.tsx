@@ -31,6 +31,7 @@ import { contractsData as seedContracts } from '@/lib/contracts';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
+import { LegislationTab } from './_components/legislation-tab';
 
 // ---- Tipler ----
 type DocStatus = 'taslak' | 'incelemede' | 'yayinlandi' | 'arsivlendi';
@@ -519,15 +520,9 @@ export default function ContractsAdminPage() {
           <DocList kind="policy" docs={policies} isLoading={isLoading} onSave={handleSave} onDelete={handleDelete} />
         </TabsContent>
 
-        {/* 4. MEVZUATLAR */}
+        {/* 4. MEVZUATLAR — fonksiyonel */}
         <TabsContent value="mevzuatlar" className="mt-4">
-          <ComingSoon icon={BookText} title="Mevzuatlar" items={[
-            'Kanun adı, numarası, kategori, risk seviyesi, uyum durumu kart yapısı',
-            'Mevzuat detay: hangel konusu, kanun maddesi, hukuki yorum, risk analizi',
-            'Dosya ekleri (Kanun PDF, Resmi Gazete, Danıştay kararı, içtihatlar)',
-            'Mevzuat ilişki haritası (node graph)',
-            'Resmi Gazete entegrasyonu + değişiklik bildirimi',
-          ]} />
+          <LegislationTab />
         </TabsContent>
 
         {/* 5. UYUM ANALİZİ */}
