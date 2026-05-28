@@ -183,40 +183,58 @@ export default function EmergencyManagementPage() {
   }, [db]);
   const { data: responses, isLoading: responsesLoading } = useCollection<EmergencyDoc>(responsesQuery);
 
-  // Kullanıcı tarafından gönderilmiş, super-admin onayı bekleyen talepler
+  // Kullanıcı tarafından gönderilmiş, super-admin onayı bekleyen talepler.
+  // NOT: orderBy KULLANILMIYOR — where+orderBy composite index gerektirir ve index
+  // tanımlı değilse sorgu sessizce hata verip liste boş kalır. Tek alanlı eşitlik
+  // sorgusu (otomatik index) + client-side sıralama ile index'siz güvenli çalışır.
   const pendingRequestsQuery = useMemoFirebase(() => {
-    return query(collection(db, COLLECTIONS.emergencyRequests), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+    return query(collection(db, COLLECTIONS.emergencyRequests), where('status', '==', 'pending'));
   }, [db]);
   const { data: pendingRequestsPrimary } = useCollection<EmergencyDoc>(pendingRequestsQuery);
 
   // Geriye dönük uyumluluk: bloodRequests / userRequests koleksiyonları varsa onlardan da oku
   const bloodRequestsQuery = useMemoFirebase(() => {
     try {
-      return query(collection(db, COLLECTIONS.bloodRequests), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+      return query(collection(db, COLLECTIONS.bloodRequests), where('status', '==', 'pending'));
     } catch { return null; }
   }, [db]);
   const { data: bloodRequestsFallback } = useCollection<EmergencyDoc>(bloodRequestsQuery);
 
   const userRequestsQuery = useMemoFirebase(() => {
     try {
-      return query(collection(db, COLLECTIONS.userRequests), where('type', '==', 'blood'), orderBy('createdAt', 'desc'));
+      return query(collection(db, COLLECTIONS.userRequests), where('type', '==', 'blood'));
     } catch { return null; }
   }, [db]);
   const { data: userRequestsFallback } = useCollection<EmergencyDoc>(userRequestsQuery);
 
-  // Birleştirilmiş "onay bekleyen" liste (id bazlı tekilleştirme)
+  // Birleştirilmiş "onay bekleyen" liste (id bazlı tekilleştirme + en yeni önce)
   const pendingRequests = useMemo(() => {
+    const toMillis = (v: unknown): number => {
+      if (!v) return 0;
+      if (typeof v === 'object') {
+        const o = v as { toMillis?: () => number; seconds?: number };
+        if (typeof o.toMillis === 'function') return o.toMillis();
+        if (typeof o.seconds === 'number') return o.seconds * 1000;
+      }
+      if (typeof v === 'string' || typeof v === 'number') {
+        const t = new Date(v).getTime();
+        return Number.isNaN(t) ? 0 : t;
+      }
+      return 0;
+    };
     const all: EmergencyDoc[] = [
       ...(pendingRequestsPrimary ?? []),
       ...(bloodRequestsFallback ?? []),
       ...((userRequestsFallback ?? []).filter(r => !r.status || r.status === 'pending')),
     ];
     const seen = new Set<string>();
-    return all.filter(r => {
-      if (!r.id || seen.has(r.id)) return false;
-      seen.add(r.id);
-      return true;
-    });
+    return all
+      .filter(r => {
+        if (!r.id || seen.has(r.id)) return false;
+        seen.add(r.id);
+        return true;
+      })
+      .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt));
   }, [pendingRequestsPrimary, bloodRequestsFallback, userRequestsFallback]);
 
   // Yanıt veren kullanıcıların id listesi (Yanıtlar sekmesi avatar/ad araması için).
