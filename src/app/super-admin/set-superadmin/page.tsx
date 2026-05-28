@@ -12,10 +12,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking, useUser } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, query, orderBy, limit, type Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { AlertTriangle, CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle, Users, Pencil, ShieldOff } from 'lucide-react';
+import { CheckCircle, Loader2, Search, ShieldCheck, UserPlus, XCircle, Users, Pencil, ShieldOff, CalendarClock, Clock, ChevronDown, Activity } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
 import { cn } from '@/lib/utils';
 
@@ -65,10 +65,8 @@ export default function SetSuperAdminPage() {
   const { user: authUser } = useUser();
   const { toast } = useToast();
 
-  // Eski 5384009090 hızlı atama
-  const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<string>('');
-  const [isComplete, setIsComplete] = useState(false);
+  // Çalışma çizelgesi açık olan yönetici
+  const [scheduleUserId, setScheduleUserId] = useState<string | null>(null);
 
   // Yeni kullanıcı yetkilendirme
   const [searchTerm, setSearchTerm] = useState('');
@@ -181,40 +179,6 @@ export default function SetSuperAdminPage() {
     setSelectedUserId(u.id);
     setSearchTerm('');
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleSetSuperAdmin = async () => {
-    if (!db) {
-      toast({ variant: 'destructive', title: 'Hata', description: 'Veritabanı bağlantısı hazır değil.' });
-      return;
-    }
-    setIsLoading(true);
-    setStatus('');
-    try {
-      const phoneNumber = '5384009090';
-      const newUserId = 'superadmin-5384009090';
-      setStatus('SUPERADMIN kullanıcısı oluşturuluyor...');
-      const superAdminUser = {
-        id: newUserId,
-        name: 'Super Admin',
-        username: '@superadmin',
-        personalInfo: { phone: phoneNumber, email: 'superadmin@hangel.com' },
-        role: 'super-admin',
-        superAdminPermissions: SUPER_ADMIN_PAGES.map(p => p.slug),
-        createdAt: new Date().toISOString(),
-      };
-      setDocumentNonBlocking(doc(db, COLLECTIONS.users, newUserId), superAdminUser, { merge: true });
-      setStatus(`✓ SUPERADMIN ayarlandı!\nTelefon: ${phoneNumber}\nKullanıcı ID: ${newUserId}`);
-      toast({ title: 'Başarılı', description: 'SUPERADMIN ayarı tamamlandı.' });
-      setIsComplete(true);
-      await new Promise(r => setTimeout(r, 800));
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Bilinmeyen hata';
-      setStatus(`Hata: ${message}`);
-      toast({ variant: 'destructive', title: 'Hata', description: message });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -362,46 +326,58 @@ export default function SetSuperAdminPage() {
                 const isSelf = u.id === authUser?.uid;
                 const permCount = u.superAdminPermissions?.length ?? SUPER_ADMIN_PAGES.length;
                 return (
-                  <div key={u.id} className="p-3 flex items-center gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={u.avatarUrl} alt={u.name || ''} />
-                      <AvatarFallback className="font-black">{(u.name || u.displayName || 'U').charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-bold truncate">{u.name || u.displayName || 'İsimsiz'}</p>
-                        <Badge variant="outline" className="text-[9px]">{permCount}/{SUPER_ADMIN_PAGES.length} yetki</Badge>
-                        {isSelf && <Badge className="text-[9px] bg-primary/10 text-primary">Sen</Badge>}
+                  <div key={u.id} className="p-3 space-y-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={u.avatarUrl} alt={u.name || ''} />
+                        <AvatarFallback className="font-black">{(u.name || u.displayName || 'U').charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-bold truncate">{u.name || u.displayName || 'İsimsiz'}</p>
+                          <Badge variant="outline" className="text-[9px]">{permCount}/{SUPER_ADMIN_PAGES.length} yetki</Badge>
+                          {isSelf && <Badge className="text-[9px] bg-primary/10 text-primary">Sen</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {u.personalInfo?.phone || u.phoneNumber || u.personalInfo?.email || u.email || u.id}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {u.personalInfo?.phone || u.phoneNumber || u.personalInfo?.email || u.email || u.id}
-                      </p>
+                      <Button
+                        variant={scheduleUserId === u.id ? 'secondary' : 'outline'}
+                        size="sm"
+                        className="gap-1.5 shrink-0"
+                        onClick={() => setScheduleUserId(scheduleUserId === u.id ? null : u.id)}
+                      >
+                        <CalendarClock className="h-3.5 w-3.5" /> Çalışma Çizelgesi
+                        <ChevronDown className={cn('h-3 w-3 transition-transform', scheduleUserId === u.id && 'rotate-180')} />
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={() => startEditPermissions(u)}>
+                        <Pencil className="h-3.5 w-3.5" /> Yetkileri Düzenle
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" disabled={isSelf || revokingId === u.id} title={isSelf ? 'Kendi yetkini kaldıramazsın' : 'Yetkiyi kaldır'}
+                            className="h-9 w-9 text-destructive hover:bg-destructive/10 shrink-0">
+                            {revokingId === u.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldOff className="h-4 w-4" />}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Süper admin yetkisi kaldırılsın mı?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              &quot;{u.name || u.displayName || u.id}&quot; kullanıcısının tüm süper admin yetkileri kaldırılacak ve rolü normal kullanıcıya düşürülecek. Kişi panele erişimini kaybeder.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                            <AlertDialogAction className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')} onClick={() => handleRevoke(u)}>
+                              Yetkiyi Kaldır
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
-                    <Button variant="outline" size="sm" className="gap-1.5 shrink-0" onClick={() => startEditPermissions(u)}>
-                      <Pencil className="h-3.5 w-3.5" /> Yetkileri Düzenle
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" disabled={isSelf || revokingId === u.id} title={isSelf ? 'Kendi yetkini kaldıramazsın' : 'Yetkiyi kaldır'}
-                          className="h-9 w-9 text-destructive hover:bg-destructive/10 shrink-0">
-                          {revokingId === u.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldOff className="h-4 w-4" />}
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Süper admin yetkisi kaldırılsın mı?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            &quot;{u.name || u.displayName || u.id}&quot; kullanıcısının tüm süper admin yetkileri kaldırılacak ve rolü normal kullanıcıya düşürülecek. Kişi panele erişimini kaybeder.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                          <AlertDialogAction className={cn('bg-destructive text-destructive-foreground hover:bg-destructive/90')} onClick={() => handleRevoke(u)}>
-                            Yetkiyi Kaldır
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    {scheduleUserId === u.id && <AdminSchedule uid={u.id} />}
                   </div>
                 );
               })}
@@ -410,32 +386,86 @@ export default function SetSuperAdminPage() {
         </CardContent>
       </Card>
 
-      {/* Eski hızlı atama */}
-      <Card className="rounded-2xl border-orange-200 bg-orange-50/40">
-        <CardHeader>
-          <CardTitle className="text-orange-800 flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4" /> Hızlı Ayar: 5384009090
-          </CardTitle>
-          <CardDescription className="text-orange-700">
-            Telefon 5384009090 numaralı varsayılan SUPERADMIN kullanıcısını oluşturur (tüm sayfa yetkileri açık).
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button
-            onClick={handleSetSuperAdmin}
-            disabled={isLoading || isComplete}
-            className="w-full bg-orange-600 hover:bg-orange-700 h-12 rounded-xl text-white font-bold"
-          >
-            {isLoading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
-            {isComplete ? '✓ Tamamlandı' : 'Varsayılan SUPERADMIN\'i Oluştur'}
-          </Button>
-          {status && (
-            <div className={`mt-3 rounded-xl p-3 text-xs whitespace-pre-line ${isComplete ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-blue-50 text-blue-800 border border-blue-200'}`}>
-              {status}
+    </div>
+  );
+}
+
+interface ActivityEvent {
+  id: string;
+  type?: 'open' | 'close';
+  at?: Timestamp;
+  deviceName?: string;
+  browserName?: string;
+  sessionId?: string;
+}
+
+// Bir yöneticinin giriş/çıkış olaylarını (users/{uid}/activity) gün gün gruplayıp
+// "kaçta açtı → son aktivite" çalışma çizelgesi olarak gösterir.
+function AdminSchedule({ uid }: { uid: string }) {
+  const db = useFirestore();
+  const activityQuery = useMemoFirebase(
+    () => query(collection(db, COLLECTIONS.users, uid, 'activity'), orderBy('at', 'desc'), limit(500)),
+    [db, uid],
+  );
+  const { data: events, isLoading } = useCollection<ActivityEvent>(activityQuery);
+
+  const days = useMemo(() => {
+    const map = new Map<string, { dateKey: string; label: string; first: number; last: number; count: number; sessions: Set<string>; devices: Set<string> }>();
+    for (const e of events || []) {
+      const d = e.at?.toDate?.();
+      if (!d) continue;
+      const ms = d.getTime();
+      const dateKey = d.toLocaleDateString('tr-TR');
+      const label = d.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      let g = map.get(dateKey);
+      if (!g) { g = { dateKey, label, first: ms, last: ms, count: 0, sessions: new Set(), devices: new Set() }; map.set(dateKey, g); }
+      g.first = Math.min(g.first, ms);
+      g.last = Math.max(g.last, ms);
+      g.count += 1;
+      if (e.sessionId) g.sessions.add(e.sessionId);
+      if (e.deviceName) g.devices.add(e.deviceName);
+    }
+    return Array.from(map.values()).sort((a, b) => b.last - a.last);
+  }, [events]);
+
+  const fmtTime = (ms: number) => new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const fmtDur = (ms: number) => {
+    const min = Math.max(0, Math.round(ms / 60000));
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    return h > 0 ? `${h}s ${m}dk` : `${m}dk`;
+  };
+
+  return (
+    <div className="rounded-xl border bg-muted/20 p-3">
+      {isLoading ? (
+        <div className="flex justify-center py-6"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
+      ) : days.length === 0 ? (
+        <div className="text-center py-6 text-xs text-muted-foreground">
+          <Activity className="h-6 w-6 mx-auto mb-1 opacity-30" />
+          Henüz giriş/çıkış kaydı yok. Bu özellik yeni — kişi giriş yaptıkça çizelge buradan dolacak.
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
+            <CalendarClock className="h-3.5 w-3.5" /> Çalışma Çizelgesi · giriş → son aktivite ({days.length} gün)
+          </p>
+          {days.map(d => (
+            <div key={d.dateKey} className="flex items-center justify-between gap-2 rounded-lg bg-background border px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold capitalize">{d.label}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{Array.from(d.devices).join(', ') || '—'}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-xs font-mono inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-emerald-600" /> {fmtTime(d.first)} <span className="text-muted-foreground">→</span> {fmtTime(d.last)}
+                </p>
+                <p className="text-[10px] text-muted-foreground">{fmtDur(d.last - d.first)} · {d.sessions.size || 1} oturum</p>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

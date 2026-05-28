@@ -14,7 +14,7 @@
  * - Aynı cihazda aynı browser'da farklı sekmeler aynı sessionId paylaşır
  *   (localStorage shared). Farklı browser/cihaz = farklı sessionId.
  */
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -128,6 +128,34 @@ export async function trackSession(uid: string): Promise<void> {
         // Sessize al — security/rules etkisi olsa bile login akışını kırma
         if (typeof console !== 'undefined') {
             console.warn('[session-tracker] failed to register session', err);
+        }
+    }
+}
+
+/**
+ * Yönetici çalışma çizelgesi için giriş/çıkış olayı loglar.
+ * users/{uid}/activity/{auto} — { type:'open'|'close', at, sessionId, cihaz bilgisi }.
+ * Yalnızca admin kullanıcılar için çağrılır (yazma hacmini sınırlamak için).
+ * Süper-admin/contracts → set-superadmin sayfasında gün gün gruplanıp gösterilir.
+ */
+export async function logAdminActivity(uid: string, type: 'open' | 'close'): Promise<void> {
+    if (!uid || typeof window === 'undefined') return;
+    const sessionId = getSessionId();
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const parsed = parseUserAgent(ua);
+    try {
+        const { firestore } = initializeFirebase();
+        await addDoc(collection(firestore, COLLECTIONS.users, uid, 'activity'), {
+            type,
+            at: serverTimestamp(),
+            sessionId: sessionId || null,
+            deviceName: parsed.deviceName,
+            browserName: parsed.browserName,
+            deviceType: parsed.deviceType,
+        });
+    } catch (err) {
+        if (typeof console !== 'undefined') {
+            console.warn('[activity] log failed', err);
         }
     }
 }
