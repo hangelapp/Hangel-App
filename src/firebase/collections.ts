@@ -70,6 +70,7 @@ export const COLLECTIONS = {
   contractApprovals: 'contractApprovals',  // Kullanıcı onay kayıtları (immutable log)
   documentArchive: 'documentArchive',      // Kurum evrak arşivi (tüzük, faaliyet belgesi)
   legalChat: 'legalChat',                  // Hukuk görevlileri chat
+  complianceAnalyses: 'complianceAnalyses', // Sözleşme↔mevzuat AI uyum analizi (yalnızca admin-SDK erişir)
   aiAssistantConfig: 'aiAssistantConfig',
   // PDF #3: per-institution "proje çağrı esasları" (project call criteria) that the
   // project-writer AI flow uses to tailor proposals to each org's talep ve esasları.

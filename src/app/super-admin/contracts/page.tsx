@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,6 +35,8 @@ import { LegislationTab } from './_components/legislation-tab';
 import { ArchiveTab } from './_components/archive-tab';
 import { ApprovalsTab } from './_components/approvals-tab';
 import { PublishTab } from './_components/publish-tab';
+import { ComplianceTab } from './_components/compliance-tab';
+import { LegalChatTab } from './_components/legal-chat-tab';
 
 // ---- Tipler ----
 type DocStatus = 'taslak' | 'incelemede' | 'yayinlandi' | 'arsivlendi';
@@ -366,25 +368,6 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
   );
 }
 
-// ---- "Yakında" placeholder ----
-function ComingSoon({ icon: Icon, title, items }: { icon: React.ElementType; title: string; items: string[] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Icon className="h-5 w-5 text-primary" /> {title}
-          <Badge variant="secondary" className="ml-2 gap-1 text-[10px]"><Clock className="h-3 w-3" /> Yakında</Badge>
-        </CardTitle>
-        <CardDescription>Bu modül faz planında. Aşağıdaki özellikler gelecek:</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-1.5 text-sm text-muted-foreground">
-          {items.map((it, i) => <li key={i} className="flex items-start gap-2"><span className="text-primary mt-0.5">›</span> {it}</li>)}
-        </ul>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function ContractsAdminPage() {
   const { toast } = useToast();
   const db = useFirestore();
@@ -528,15 +511,9 @@ export default function ContractsAdminPage() {
           <LegislationTab />
         </TabsContent>
 
-        {/* 5. UYUM ANALİZİ */}
+        {/* 5. UYUM ANALİZİ — fonksiyonel (Gemini AI) */}
         <TabsContent value="uyum" className="mt-4">
-          <ComingSoon icon={GitCompare} title="Sözleşme ↔ Mevzuat Uyum Analizi" items={[
-            'Her sözleşme/politika ilgili mevzuatla eşleştirilir',
-            'Yüzde uyum oranı (örn: KVKK Politikası → KVKK %82 uyumlu)',
-            'Uyumlu / eksik / riskli maddeler modal görünümü',
-            'Önerilen güncellemeler',
-            '"Bu madde hangi modülleri etkiliyor?" (bağış, gönüllülük, AI, vb.)',
-          ]} />
+          <ComplianceTab contracts={allContracts} />
         </TabsContent>
 
         {/* 6. YAYIN & BİLDİRİM — fonksiyonel */}
@@ -549,14 +526,9 @@ export default function ContractsAdminPage() {
           <ApprovalsTab />
         </TabsContent>
 
-        {/* 8. HUKUK CHAT */}
+        {/* 8. HUKUK CHAT — fonksiyonel */}
         <TabsContent value="chat" className="mt-4">
-          <ComingSoon icon={MessagesSquare} title="Hukuk Görevlileri Chat Sistemi" items={[
-            'Silinemez yazışmalar + loglu mesaj düzenleme',
-            'Dosya paylaşımı + mevzuat linkleme + sözleşme referanslama',
-            'Odalar: genel hukuk, mevzuat bazlı, acil risk, STK inceleme',
-            'Hukuki görev atama + deadline + durum takibi',
-          ]} />
+          <LegalChatTab contracts={allContracts} />
         </TabsContent>
 
         {/* 9. ARŞİV — fonksiyonel */}
