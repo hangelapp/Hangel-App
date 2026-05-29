@@ -70,7 +70,9 @@ export async function analyzeCompliance(
   const { output } = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
     prompt,
-    config: { temperature: 0.2, maxOutputTokens: 1536 },
+    // thinkingBudget:0 → 2.5-flash'ın "düşünme" tokenları çıktı bütçesini yemesin
+    // (yoksa structured JSON truncate olup parse patlıyordu).
+    config: { temperature: 0.2, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
     output: { schema: ComplianceOutputSchema },
   });
 

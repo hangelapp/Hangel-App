@@ -108,6 +108,6 @@ export async function POST(req: NextRequest) {
     if (raw.includes('model') && (raw.includes('not found') || raw.includes('404'))) {
       return NextResponse.json({ errorCode: 'AI_MODEL', message: 'Yapay zeka modeli bulunamadı (Gemini sürümü).' }, { status: 500 });
     }
-    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Tarama yapılamadı. Lütfen tekrar deneyin.' }, { status: 500 });
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: `Tarama yapılamadı. (Teknik: ${raw.slice(0, 180)})` }, { status: 500 });
   }
 }

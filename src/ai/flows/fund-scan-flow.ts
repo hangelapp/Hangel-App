@@ -73,7 +73,8 @@ export async function scanFunds(input: FundScanInput, idToken?: string): Promise
   const { output } = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
     prompt,
-    config: { temperature: 0.4, maxOutputTokens: 2048 },
+    // thinkingBudget:0 → 2.5-flash düşünme tokenları structured JSON'u truncate etmesin.
+    config: { temperature: 0.4, maxOutputTokens: 4096, thinkingConfig: { thinkingBudget: 0 } },
     output: { schema: ScanOutputSchema },
   });
 
