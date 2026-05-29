@@ -125,8 +125,11 @@ export async function POST(req: NextRequest) {
             );
         }
         console.error('library/chat error', err);
+        // GEÇİCİ TEŞHİS: gerçek hata client'a (kısaltılmış) döndürülür — kök
+        // neden bulununca kaldırılacak.
+        const raw = err instanceof Error ? err.message : String(err);
         return NextResponse.json(
-            { errorCode: 'INTERNAL_ERROR', message: 'AI servisi geçici olarak yanıt vermiyor.' },
+            { errorCode: 'INTERNAL_ERROR', message: `AI servisi geçici olarak yanıt vermiyor. (Teknik: ${raw.slice(0, 220)})` },
             { status: 500 },
         );
     }
