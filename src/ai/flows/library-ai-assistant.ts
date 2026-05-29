@@ -93,6 +93,11 @@ function clampTokens(n: number | undefined): number {
 }
 function normalizeModel(m: string | undefined): string | null {
   if (!m) return null;
+  const bare = m.replace(/^googleai\//, '');
+  // Kullanımdan kalkmış modeller (gemini-1.5*/1.0*/-pro) Google API'de 404 veriyor.
+  // null döndür ki çağıran güncel default'a (gemini-2.5-flash) düşsün — süper-admin
+  // config'inde eski model kalmış olsa bile AI çalışmaya devam etsin.
+  if (/^gemini-1\./.test(bare) || /^gemini-pro/.test(bare)) return null;
   // Sade `gemini-*` adları geliyorsa Genkit prefix'i ekle.
   if (m.startsWith('googleai/')) return m;
   if (m.startsWith('gemini-')) return `googleai/${m}`;
