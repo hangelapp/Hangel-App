@@ -16,13 +16,21 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 export const runtime = 'nodejs';
 
-async function verifyCaller(req: NextRequest): Promise<{ uid: string } | null> {
+async function verifyCaller(req: NextRequest): Promise<{ uid: string; isSuperAdmin: boolean } | null> {
   const authHeader = req.headers.get('authorization') || '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
   if (!idToken) return null;
   try {
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
-    return { uid: decoded.uid };
+    const decoded = await getAdminAuth().verifyIdToken(idToken) as { uid: string; role?: string; superAdminPermissions?: unknown };
+    let isSuperAdmin = decoded.role === 'super-admin' || !!decoded.superAdminPermissions;
+    if (!isSuperAdmin) {
+      try {
+        const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
+        const d = snap.data();
+        if (d?.role === 'super-admin' || (Array.isArray(d?.superAdminPermissions) && d.superAdminPermissions.length > 0)) isSuperAdmin = true;
+      } catch { /* claim/doc okunamadı → super-admin değil say */ }
+    }
+    return { uid: decoded.uid, isSuperAdmin };
   } catch {
     return null;
   }
@@ -61,6 +69,8 @@ export async function POST(req: NextRequest) {
   const fileUrl = typeof body?.fileUrl === 'string' ? body.fileUrl.trim() : '';
   const year = typeof body?.year === 'string' && body.year.trim() ? body.year.trim() : String(new Date().getFullYear());
   const entityType = ['ngo', 'club', 'brand'].includes(body?.entityType) ? body.entityType : 'ngo';
+  const requestedEntityId = typeof body?.entityId === 'string' ? body.entityId.trim() : '';
+  const providedEntityName = typeof body?.entityName === 'string' ? body.entityName.trim() : '';
 
   if (!docType || !fileUrl) {
     return NextResponse.json({ errorCode: 'INVALID_BODY', message: 'Evrak türü ve dosya bağlantısı zorunlu.' }, { status: 400 });
@@ -69,17 +79,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'INVALID_URL', message: 'Geçersiz dosya bağlantısı.' }, { status: 400 });
   }
 
+  // Kendi adına yükleme → entityId = caller. Başka kurum adına (ör. super-admin
+  // bir kulübün evrakını yüklüyor) → yalnızca super-admin'e izin verilir.
+  let entityId = caller.uid;
+  if (requestedEntityId && requestedEntityId !== caller.uid) {
+    if (!caller.isSuperAdmin) {
+      return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Başka kurum adına evrak yükleme yetkisi yok.' }, { status: 403 });
+    }
+    entityId = requestedEntityId;
+  }
+
   try {
-    const entityName = await resolveEntityName(caller.uid);
-    const docId = `${caller.uid}__${slugifyDocType(docType)}`;
+    const entityName = providedEntityName || await resolveEntityName(entityId);
+    const docId = `${entityId}__${slugifyDocType(docType)}`;
     await getAdminFirestore().collection(COLLECTIONS.documentArchive).doc(docId).set({
-      entityId: caller.uid,
+      entityId,
       entityName,
       entityType,
       docType,
       fileUrl,
       year,
-      uploadedBy: caller.uid,
+      uploadedBy: entityId,
       uploadedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
     return NextResponse.json({ ok: true, id: docId });

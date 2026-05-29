@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Mail, Inbox, XCircle, Pencil, RefreshCw } from 'lucide-react';
+import { Siren, Droplet, Users, Send, MapPin, Loader2, Clock, CheckCircle, AlertCircle, Info, MessageCircle, ThumbsUp, ThumbsDown, Mail, Inbox, XCircle, Pencil, RefreshCw, Building2, Phone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, writeBatch, query, orderBy, limit, where, updateDoc, getDocs, documentId } from 'firebase/firestore';
@@ -834,207 +834,220 @@ export default function EmergencyManagementPage() {
                 Eşleşen kan grubu ve seçili konumdaki kullanıcılara anında bildirim gönderilir.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Hastane Adı *</Label>
-                  <Input value={hospitalName} onChange={e => setHospitalName(e.target.value)} placeholder="Ör: İstanbul Tıp Fakültesi" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hastanın Kan Grubu *</Label>
-                  <Select value={bloodType} onValueChange={setBloodType}>
-                    <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
-                    <SelectContent>
-                      {BLOOD_TYPES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>İhtiyaç Türü</Label>
-                  <Select value={needType} onValueChange={setNeedType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {NEED_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Akıllı eşleşme: hastanın grubuna uyumlu bağışçı grupları otomatik hedeflenir */}
-              {bloodType && (
-                <div className="rounded-xl border border-red-200 bg-red-50/60 p-3">
-                  <p className="text-xs font-bold text-red-800 flex items-center gap-1.5">
-                    <Droplet className="h-3.5 w-3.5" /> Otomatik hedeflenen uyumlu bağışçı grupları
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {compatibleDonors(bloodType).length > 0 ? (
-                      compatibleDonors(bloodType).map(g => (
-                        <Badge key={g} className="bg-red-600 text-[11px]">{g}</Badge>
-                      ))
-                    ) : (
-                      <Badge variant="outline" className="text-[11px]">{bloodType}</Badge>
-                    )}
+            <CardContent className="space-y-4">
+              {/* BÖLÜM 1 — Hasta & İhtiyaç */}
+              <FormSection n={1} icon={Droplet} title="Hasta & İhtiyaç Bilgileri" description="Hastanın kan grubu, ihtiyaç türü ve miktarı.">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>Hastanın Kan Grubu *</Label>
+                    <Select value={bloodType} onValueChange={setBloodType}>
+                      <SelectTrigger><SelectValue placeholder="Seçiniz..." /></SelectTrigger>
+                      <SelectContent>
+                        {BLOOD_TYPES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-[10px] text-red-700/80 mt-1.5">
-                    Hasta {bloodType} grubu olduğundan, bu gruplardan kan alabilir. Bildirim yalnızca uyumlu gruplara gider.
-                  </p>
+                  <div className="space-y-2">
+                    <Label>İhtiyaç Türü</Label>
+                    <Select value={needType} onValueChange={setNeedType}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {NEED_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>İhtiyaç Birimi (kan torbası)</Label>
+                    <Input type="number" value={unitsNeeded} onChange={e => setUnitsNeeded(e.target.value)} placeholder="Ör: 5" />
+                  </div>
                 </div>
-              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Hasta Adı Soyadı</Label>
-                  <Input value={patientName} onChange={e => setPatientName(e.target.value)} placeholder="Hasta adı" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hasta Doğum Yılı</Label>
-                  <Input type="number" value={patientBirthYear} onChange={e => setPatientBirthYear(e.target.value)} placeholder="Ör: 1985" />
-                </div>
-              </div>
+                {/* Akıllı eşleşme: hastanın grubuna uyumlu bağışçı grupları otomatik hedeflenir */}
+                {bloodType && (
+                  <div className="rounded-xl border border-red-200 bg-red-50/60 p-3">
+                    <p className="text-xs font-bold text-red-800 flex items-center gap-1.5">
+                      <Droplet className="h-3.5 w-3.5" /> Otomatik hedeflenen uyumlu bağışçı grupları
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {compatibleDonors(bloodType).length > 0 ? (
+                        compatibleDonors(bloodType).map(g => (
+                          <Badge key={g} className="bg-red-600 text-[11px]">{g}</Badge>
+                        ))
+                      ) : (
+                        <Badge variant="outline" className="text-[11px]">{bloodType}</Badge>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-red-700/80 mt-1.5">
+                      Hasta {bloodType} grubu olduğundan, bu gruplardan kan alabilir. Bildirim yalnızca uyumlu gruplara gider.
+                    </p>
+                  </div>
+                )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Hasta Adı Soyadı</Label>
+                    <Input value={patientName} onChange={e => setPatientName(e.target.value)} placeholder="Hasta adı" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hasta Doğum Yılı</Label>
+                    <Input type="number" value={patientBirthYear} onChange={e => setPatientBirthYear(e.target.value)} placeholder="Ör: 1985" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Açıklama / Notlar</Label>
+                  <Textarea
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    placeholder="Acil ihtiyaç, hasta bilgisi, ulaşım detayı vb."
+                    rows={3}
+                  />
+                </div>
+              </FormSection>
+
+              {/* BÖLÜM 2 — Hastane */}
+              <FormSection n={2} icon={Building2} title="Hastane Bilgileri" description="Hastanın yattığı hastane ve konumu.">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Hastane Adı *</Label>
+                    <Input value={hospitalName} onChange={e => setHospitalName(e.target.value)} placeholder="Ör: İstanbul Tıp Fakültesi" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hastane Telefonu</Label>
+                    <Input type="tel" value={hospitalPhone} onChange={e => setHospitalPhone(e.target.value)} placeholder="0212 xxx xx xx" />
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label>Hastane Adresi</Label>
                   <Input value={hospitalAddress} onChange={e => setHospitalAddress(e.target.value)} placeholder="Tam adres bilgisi" />
                 </div>
-                <div className="space-y-2">
-                  <Label>Hastane Telefonu</Label>
-                  <Input type="tel" value={hospitalPhone} onChange={e => setHospitalPhone(e.target.value)} placeholder="0212 xxx xx xx" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Hastane İl</Label>
-                  <Input value={hospitalCity} onChange={e => setHospitalCity(e.target.value)} placeholder="Hastanenin bulunduğu il" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Hastane İlçe</Label>
-                  <Input value={hospitalDistrict} onChange={e => setHospitalDistrict(e.target.value)} placeholder="Hastanenin bulunduğu ilçe" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <Label>Kapsam *</Label>
-                  <Select value={scope} onValueChange={(v: ScopeLevel) => setScope(v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tüm Türkiye</SelectItem>
-                      <SelectItem value="city">İl Geneli</SelectItem>
-                      <SelectItem value="district">İlçe Geneli</SelectItem>
-                      <SelectItem value="neighborhood">Mahalle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Cinsiyet</Label>
-                  <Select value={gender} onValueChange={(v: 'all' | 'Erkek' | 'Kadın') => setGender(v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Tümü</SelectItem>
-                      <SelectItem value="Erkek">Erkek</SelectItem>
-                      <SelectItem value="Kadın">Kadın</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>İhtiyaç Birimi (kan torbası)</Label>
-                  <Input type="number" value={unitsNeeded} onChange={e => setUnitsNeeded(e.target.value)} placeholder="Ör: 5" />
-                </div>
-                <div className="space-y-2">
-                  <Label>İletişim Telefonu</Label>
-                  <Input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="0212 xxx xx xx" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>İletişim Kişisi (Ad Soyad)</Label>
-                <Input
-                  value={contactName}
-                  onChange={e => setContactName(e.target.value)}
-                  placeholder="Yanıtlayan kullanıcıya iletilecek isim"
-                />
-                <p className="text-[10px] text-muted-foreground">
-                  Bu isim ve telefon, "Yardım edebilirim" diyen kullanıcıya otomatik bildirim olarak gönderilir.
-                </p>
-              </div>
-
-              {scope !== 'all' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>İl</Label>
-                    <Select value={city} onValueChange={(v) => { setCity(v); setDistrict(''); setNeighborhood(''); }}>
-                      <SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger>
-                      <SelectContent className="max-h-60">
-                        {(allProvinces || []).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    <Label>Hastane İl</Label>
+                    <Input value={hospitalCity} onChange={e => setHospitalCity(e.target.value)} placeholder="Hastanenin bulunduğu il" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Hastane İlçe</Label>
+                    <Input value={hospitalDistrict} onChange={e => setHospitalDistrict(e.target.value)} placeholder="Hastanenin bulunduğu ilçe" />
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* BÖLÜM 3 — İletişim */}
+              <FormSection n={3} icon={Phone} title="İletişim Bilgileri" description="Yardım etmek isteyen kullanıcıya iletilecek kişi.">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>İletişim Kişisi (Ad Soyad)</Label>
+                    <Input
+                      value={contactName}
+                      onChange={e => setContactName(e.target.value)}
+                      placeholder="Yanıtlayan kullanıcıya iletilecek isim"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>İletişim Telefonu</Label>
+                    <Input type="tel" value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="0212 xxx xx xx" />
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Bu isim ve telefon, &quot;Yardım edebilirim&quot; diyen kullanıcıya otomatik bildirim olarak gönderilir.
+                </p>
+              </FormSection>
+
+              {/* BÖLÜM 4 — Bildirim Hedefi */}
+              <FormSection n={4} icon={Users} title="Bildirim Hedefi" description="Bildirimin gideceği kapsam, cinsiyet ve konum.">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Kapsam *</Label>
+                    <Select value={scope} onValueChange={(v: ScopeLevel) => setScope(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tüm Türkiye</SelectItem>
+                        <SelectItem value="city">İl Geneli</SelectItem>
+                        <SelectItem value="district">İlçe Geneli</SelectItem>
+                        <SelectItem value="neighborhood">Mahalle</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  {(scope === 'district' || scope === 'neighborhood') && (
-                    <div className="space-y-2">
-                      <Label>İlçe</Label>
-                      <Select value={district} onValueChange={(v) => { setDistrict(v); setNeighborhood(''); }} disabled={!city}>
-                        <SelectTrigger><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {districtOptions.map((d: string) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                  {scope === 'neighborhood' && (
-                    <div className="space-y-2">
-                      <Label>Mahalle</Label>
-                      <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
-                        <SelectTrigger><SelectValue placeholder="Mahalle seçin..." /></SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {neighborhoodOptions.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label>Cinsiyet</Label>
+                    <Select value={gender} onValueChange={(v: 'all' | 'Erkek' | 'Kadın') => setGender(v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tümü</SelectItem>
+                        <SelectItem value="Erkek">Erkek</SelectItem>
+                        <SelectItem value="Kadın">Kadın</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <Label>Açıklama / Notlar</Label>
-                <Textarea
-                  value={message}
-                  onChange={e => setMessage(e.target.value)}
-                  placeholder="Acil ihtiyaç, hasta bilgisi, ulaşım detayı vb."
-                  rows={3}
-                />
-              </div>
+                {scope !== 'all' && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label>İl</Label>
+                      <Select value={city} onValueChange={(v) => { setCity(v); setDistrict(''); setNeighborhood(''); }}>
+                        <SelectTrigger><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {(allProvinces || []).map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {(scope === 'district' || scope === 'neighborhood') && (
+                      <div className="space-y-2">
+                        <Label>İlçe</Label>
+                        <Select value={district} onValueChange={(v) => { setDistrict(v); setNeighborhood(''); }} disabled={!city}>
+                          <SelectTrigger><SelectValue placeholder="İlçe seçin..." /></SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {districtOptions.map((d: string) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    {scope === 'neighborhood' && (
+                      <div className="space-y-2">
+                        <Label>Mahalle</Label>
+                        <Select value={neighborhood} onValueChange={setNeighborhood} disabled={!district}>
+                          <SelectTrigger><SelectValue placeholder="Mahalle seçin..." /></SelectTrigger>
+                          <SelectContent className="max-h-60">
+                            {neighborhoodOptions.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              {/* Eşleşme önizlemesi */}
-              <Alert className="border-amber-300 bg-amber-50 rounded-2xl">
-                <Users className="h-4 w-4 text-amber-700" />
-                <AlertTitle className="text-amber-900">Hedef Kitle Önizlemesi</AlertTitle>
-                <AlertDescription className="text-amber-800">
-                  {countLoading ? (
-                    <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Hedef kitle hesaplanıyor...</span>
-                  ) : countError ? (
-                    <span className="text-sm text-red-700">{countError}</span>
-                  ) : matchCount === null ? (
-                    <span className="text-sm">Kapsam (il/ilçe/mahalle) seçtikçe hedef kitle sayısı burada görünür.</span>
-                  ) : (
-                    <span>
-                      <strong className="text-2xl text-amber-900">{matchCount.toLocaleString('tr-TR')}</strong>
-                      {' '}/{' '}
-                      <span className="text-sm">{(totalUsers ?? 0).toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
-                      <span className="text-xs block mt-1">
-                        Filtre: {bloodType ? `Hasta ${bloodType} → uyumlu: ${compatibleDonors(bloodType).join(', ') || bloodType}` : 'tüm kan grupları'} • {needType} • {scopeLabel[scope]}
-                        {city && ` • ${city}`}{district && ` / ${district}`}{neighborhood && ` / ${neighborhood}`}
-                      </span>
-                      {!bloodType && (
-                        <span className="text-[11px] block mt-1 italic text-amber-700">
-                          İpucu: hastanın kan grubunu seçince uyumlu bağışçı grupları otomatik hedeflenir.
+                {/* Eşleşme önizlemesi */}
+                <Alert className="border-amber-300 bg-amber-50 rounded-2xl">
+                  <Users className="h-4 w-4 text-amber-700" />
+                  <AlertTitle className="text-amber-900">Hedef Kitle Önizlemesi</AlertTitle>
+                  <AlertDescription className="text-amber-800">
+                    {countLoading ? (
+                      <span className="flex items-center gap-2"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Hedef kitle hesaplanıyor...</span>
+                    ) : countError ? (
+                      <span className="text-sm text-red-700">{countError}</span>
+                    ) : matchCount === null ? (
+                      <span className="text-sm">Kapsam (il/ilçe/mahalle) seçtikçe hedef kitle sayısı burada görünür.</span>
+                    ) : (
+                      <span>
+                        <strong className="text-2xl text-amber-900">{matchCount.toLocaleString('tr-TR')}</strong>
+                        {' '}/{' '}
+                        <span className="text-sm">{(totalUsers ?? 0).toLocaleString('tr-TR')} kullanıcıya bildirim gönderilecek</span>
+                        <span className="text-xs block mt-1">
+                          Filtre: {bloodType ? `Hasta ${bloodType} → uyumlu: ${compatibleDonors(bloodType).join(', ') || bloodType}` : 'tüm kan grupları'} • {needType} • {scopeLabel[scope]}
+                          {city && ` • ${city}`}{district && ` / ${district}`}{neighborhood && ` / ${neighborhood}`}
                         </span>
-                      )}
-                    </span>
-                  )}
-                </AlertDescription>
-              </Alert>
+                        {!bloodType && (
+                          <span className="text-[11px] block mt-1 italic text-amber-700">
+                            İpucu: hastanın kan grubunu seçince uyumlu bağışçı grupları otomatik hedeflenir.
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              </FormSection>
 
               <Button
                 size="lg"
@@ -1237,6 +1250,25 @@ export default function EmergencyManagementPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+// Acil kan talebi formunu numaralı, başlıklı bölümlere ayıran sarmalayıcı.
+function FormSection({ n, icon: Icon, title, description, children }: {
+  n: number; icon: React.ElementType; title: string; description?: string; children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border bg-background/70 p-4 space-y-4">
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700 text-xs font-black">{n}</span>
+        <Icon className="h-4 w-4 text-red-600 shrink-0" />
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold leading-tight">{title}</h3>
+          {description && <p className="text-[11px] text-muted-foreground leading-tight">{description}</p>}
+        </div>
+      </div>
+      {children}
+    </section>
   );
 }
 

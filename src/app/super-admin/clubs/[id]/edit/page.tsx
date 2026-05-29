@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Save, ShieldCheck, Flame, Award } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, ShieldCheck, Flame, Award, Upload, FileText, ExternalLink } from 'lucide-react';
 import type { StudentClub } from '@/lib/types';
 import { clubCategoryGroups } from '@/app/login/selection/_components/shared';
 
@@ -24,6 +25,7 @@ type ClubDoc = StudentClub & {
   description?: string;
   vision?: string;
   shortName?: string;
+  activityCertificateUrl?: string;
 };
 
 const FREQUENCY_OPTIONS = ['Haftalık', 'Aylık', 'Dönemsel', 'Düzensiz'];
@@ -34,6 +36,7 @@ export default function SuperAdminClubEditPage() {
   const router = useRouter();
   const db = useFirestore();
   const { toast } = useToast();
+  const { user: authUser } = useUser();
 
   const docRef = useMemoFirebase(() => (db && id ? doc(db, COLLECTIONS.clubs, id) : null), [db, id]);
   const { data: club, isLoading } = useDoc<ClubDoc>(docRef);
@@ -41,6 +44,8 @@ export default function SuperAdminClubEditPage() {
   const [form, setForm] = useState<Partial<ClubDoc>>({});
   const [categoriesSel, setCategoriesSel] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCert, setUploadingCert] = useState(false);
 
   useEffect(() => {
     if (club) {
@@ -65,6 +70,7 @@ export default function SuperAdminClubEditPage() {
         verified: club.verified,
         activeClub: club.activeClub,
         campusAmbassador: club.campusAmbassador,
+        activityCertificateUrl: club.activityCertificateUrl,
       });
       setCategoriesSel(Array.isArray(club.categories) ? club.categories : club.category ? [club.category] : []);
     }
@@ -79,6 +85,50 @@ export default function SuperAdminClubEditPage() {
 
   const toggleCategory = (cat: string) => {
     setCategoriesSel(prev => (prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]));
+  };
+
+  const handleFileUpload = async (file: File, kind: 'logo' | 'cert') => {
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 10MB yükleyebilirsiniz.' });
+      return;
+    }
+    const setUploading = kind === 'logo' ? setUploadingLogo : setUploadingCert;
+    setUploading(true);
+    try {
+      const storage = getStorage();
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `clubs/${id}/${kind}-${Date.now()}-${safeName}`;
+      const sref = ref(storage, path);
+      await uploadBytes(sref, file);
+      const url = await getDownloadURL(sref);
+
+      if (kind === 'logo') setForm(p => ({ ...p, avatarUrl: url }));
+      else setForm(p => ({ ...p, activityCertificateUrl: url }));
+
+      // Super-admin "Arşiv" sekmesinde kulüp evrakı olarak görünsün (best-effort).
+      try {
+        const token = await authUser?.getIdToken();
+        if (token) {
+          await fetch('/api/ngo/archive', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              docType: kind === 'logo' ? 'Logo' : 'Faaliyet Belgesi',
+              fileUrl: url,
+              entityType: 'club',
+              entityId: id,
+              entityName: form.name || club?.name || '',
+            }),
+          });
+        }
+      } catch { /* arşiv aynası başarısız olsa da yükleme tamam */ }
+
+      toast({ title: kind === 'logo' ? 'Logo yüklendi' : 'Faaliyet belgesi yüklendi', description: 'Kaydet\'e basınca kulüp profiline işlenir.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Yükleme hatası', description: e instanceof Error ? e.message.slice(0, 200) : 'Bilinmeyen hata' });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -254,20 +304,59 @@ export default function SuperAdminClubEditPage() {
         </CardContent>
       </Card>
 
-      {/* Görseller */}
+      {/* Logo, Kapak & Belgeler */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Görseller (URL)</CardTitle>
-          <CardDescription>Logo ve kapak görseli URL'leri.</CardDescription>
+          <CardTitle className="text-base">Logo, Kapak & Belgeler</CardTitle>
+          <CardDescription>Logoyu ve okuldan alınan faaliyet belgesini yükleyebilir ya da URL girebilirsiniz.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
+          {/* Logo — yükle veya URL */}
           <div className="space-y-2">
-            <Label>Logo URL</Label>
-            <Input type="url" value={form.avatarUrl || ''} onChange={e => setForm(p => ({ ...p, avatarUrl: e.target.value }))} />
+            <Label>Kulüp Logosu</Label>
+            <div className="flex items-center gap-3">
+              {form.avatarUrl ? (
+                <img src={form.avatarUrl} alt="Logo" className="h-14 w-14 rounded-xl object-cover border shrink-0" />
+              ) : (
+                <div className="h-14 w-14 rounded-xl border bg-muted flex items-center justify-center shrink-0 text-muted-foreground text-[10px]">Logo</div>
+              )}
+              <Button asChild variant="secondary" size="sm" disabled={uploadingLogo}>
+                <label htmlFor="club-logo-upload" className="cursor-pointer">
+                  {uploadingLogo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                  {form.avatarUrl ? 'Logoyu Değiştir' : 'Logo Yükle'}
+                  <input id="club-logo-upload" type="file" className="hidden" accept="image/*"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, 'logo'); e.target.value = ''; }} />
+                </label>
+              </Button>
+            </div>
+            <Input type="url" value={form.avatarUrl || ''} onChange={e => setForm(p => ({ ...p, avatarUrl: e.target.value }))} placeholder="veya logo URL'si yapıştır" />
           </div>
+
+          {/* Kapak */}
           <div className="space-y-2">
             <Label>Kapak Fotoğrafı URL</Label>
             <Input type="url" value={form.coverPhotoUrl || ''} onChange={e => setForm(p => ({ ...p, coverPhotoUrl: e.target.value }))} />
+          </div>
+
+          {/* Faaliyet Belgesi — yükle + görüntüle */}
+          <div className="space-y-2">
+            <Label>Faaliyet Belgesi (okuldan alınan)</Label>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button asChild variant="secondary" size="sm" disabled={uploadingCert}>
+                <label htmlFor="club-cert-upload" className="cursor-pointer">
+                  {uploadingCert ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                  {form.activityCertificateUrl ? 'Belgeyi Değiştir' : 'Belge Yükle'}
+                  <input id="club-cert-upload" type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleFileUpload(f, 'cert'); e.target.value = ''; }} />
+                </label>
+              </Button>
+              {form.activityCertificateUrl && (
+                <a href={form.activityCertificateUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                  <FileText className="h-4 w-4" /> Belgeyi Görüntüle <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+            <p className="text-[11px] text-muted-foreground">PDF veya görsel (en fazla 10MB). Yüklenen belge super-admin &quot;Arşiv&quot; sekmesinde kulüp bazlı listelenir.</p>
           </div>
         </CardContent>
       </Card>
