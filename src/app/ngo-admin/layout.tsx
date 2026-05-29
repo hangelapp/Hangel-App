@@ -363,6 +363,18 @@ function MenuItemLink({
         },
       };
     }
+    if (item.href === '/ngo-admin/notifications') {
+      return {
+        kind: 'custom',
+        build: (lastSeen) => {
+          if (!db) return null;
+          // Bu kuruma düşen yeni bildirimler (son görülmeden sonra). Girince sıfırlanır.
+          const filters = [where('userId', '==', entityId)];
+          if (lastSeen) filters.push(where('createdAt', '>', Timestamp.fromDate(lastSeen)));
+          return query(collection(db, COLLECTIONS.notifications), ...filters) as Query<DocumentData>;
+        },
+      };
+    }
     return { kind: 'custom', build: () => null };
   }, [db, entityId, item.href]);
   const badgeKey = `${entityId || 'none'}:${item.href}`;
