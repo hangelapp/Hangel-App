@@ -126,17 +126,30 @@ export default function NotificationsPage() {
       //    bildirimi yaz (hastane, ad-soyad, telefon). Böylece kullanıcı /messages
       //    yerine /notifications akışında bu bilgiyi her zaman geri okuyabilir.
       if (status === 'positive') {
+        // Kan Talebi Detayları'nı /messages gelen kutusuna mesaj olarak ilet (hastane konumu dahil).
+        try {
+          const token = await authUser.getIdToken();
+          await fetch('/api/emergency/respond', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ requestId: notif.data?.requestId || notif.id, data: notif.data }),
+          });
+        } catch { /* mesaj iletilemese de yanıt kaydı oluştu */ }
+
         const hospital = notif.data?.hospitalName || '';
         const address = notif.data?.hospitalAddress || '';
         const hospitalPhone = (notif.data as { hospitalPhone?: string })?.hospitalPhone || '';
         const city = (notif.data as { city?: string })?.city || '';
         const district = (notif.data as { district?: string })?.district || '';
+        const hospitalCity = (notif.data as { hospitalCity?: string })?.hospitalCity || '';
+        const hospitalDistrict = (notif.data as { hospitalDistrict?: string })?.hospitalDistrict || '';
         const patientName = (notif.data as { patientName?: string })?.patientName || '';
         const units = (notif.data as { units?: number })?.units;
         const bloodType = notif.data?.bloodType || '';
         const contactName = notif.data?.contactName || '';
         const contactPhone = notif.data?.contactPhone || '';
-        const location = [district, city].filter(Boolean).join(', ');
+        // Hastane konumunu öne al; yoksa hedef konuma düş.
+        const location = [hospitalDistrict, hospitalCity].filter(Boolean).join(', ') || [district, city].filter(Boolean).join(', ');
         const bodyParts: string[] = [];
         if (hospital) bodyParts.push(`🏥 Hastane: ${hospital}`);
         if (location) bodyParts.push(`📍 Konum: ${location}`);
