@@ -90,7 +90,7 @@ export async function writeProjectProposal(
   }
 
   const systemPrompt = (runtimeConfig?.systemPrompt?.trim()) || DEFAULT_PROJECT_SYSTEM;
-  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-1.5-flash-latest';
+  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-2.5-flash';
   const temperature = clampTemp(runtimeConfig?.temperature);
   const maxOutputTokens = clampTokens(runtimeConfig?.maxTokens);
 

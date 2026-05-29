@@ -57,7 +57,7 @@ export async function getImpactStory(input: ImpactStoryInput, idToken?: string):
 
 const prompt = ai.definePrompt({
   name: 'generateImpactStoryPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   // P2-9: hard-cap Gemini output tokens as defense-in-depth against runaway cost.
   config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: ImpactStoryInputSchema},

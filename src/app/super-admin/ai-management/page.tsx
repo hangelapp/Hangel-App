@@ -65,7 +65,7 @@ const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
       'Sen Hangel Kütüphane Asistanısın. SADECE kütüphanedeki seçili dokümanları kullanarak cevap ver. ' +
       'Dokümanlarda olmayan bilgileri uydurma; bilmiyorsan "Bu konuda kütüphanede içerik bulamadım." de.',
     knowledgeSourceSlugs: [],
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.5-pro',
     temperature: 0.3,
     maxTokens: 1024,
   },
@@ -75,16 +75,16 @@ const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
       'süper admin tarafından sağlanan şablonlarla birlikte yapılandırılmış bir proje dokümanı taslağı oluşturursun. ' +
       'Başlık, özet, hedefler, paydaşlar, faaliyet planı, bütçe ve etki ölçümü bölümleri içersin.',
     knowledgeSourceSlugs: [],
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.5-pro',
     temperature: 0.7,
     maxTokens: 2048,
   },
 };
 
 const MODELS = [
-  { value: 'gemini-1.5-flash-latest', label: 'Gemini 1.5 Flash (hızlı, ucuz)' },
-  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (kapsamlı)' },
-  { value: 'gemini-pro', label: 'Gemini Pro' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (hızlı, ucuz)' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (kapsamlı)' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite (en ucuz)' },
   { value: 'gpt-4o', label: 'GPT-4o (henüz aktif değil)' },
 ];
 

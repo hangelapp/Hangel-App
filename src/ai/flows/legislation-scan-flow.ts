@@ -71,7 +71,7 @@ export async function scanLegislation(input: ScanInput, idToken?: string): Promi
     `--- Listede olmayan/değişmiş adayları JSON şemasına uygun döndür.`;
 
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash-latest',
+    model: 'googleai/gemini-2.5-flash',
     prompt,
     config: { temperature: 0.3, maxOutputTokens: 2048 },
     output: { schema: ScanOutputSchema },

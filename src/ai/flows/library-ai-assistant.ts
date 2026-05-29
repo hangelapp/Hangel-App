@@ -63,7 +63,7 @@ export async function askLibraryAssistant(
 
   // Super-admin tarafından kaydedilen sistem prompt ve model parametreleri uygulanır.
   const systemPrompt = (runtimeConfig?.systemPrompt?.trim()) || DEFAULT_SYSTEM_PROMPT;
-  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-1.5-flash-latest';
+  const modelId = normalizeModel(runtimeConfig?.model) || 'googleai/gemini-2.5-flash';
   const temperature = clampTemp(runtimeConfig?.temperature);
   const maxOutputTokens = clampTokens(runtimeConfig?.maxTokens);
 

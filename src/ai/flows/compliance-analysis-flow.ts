@@ -68,7 +68,7 @@ export async function analyzeCompliance(
     `--- Yukarıdaki sözleşmeyi bu mevzuata karşı değerlendir ve JSON şemasına uygun yanıt ver.`;
 
   const { output } = await ai.generate({
-    model: 'googleai/gemini-1.5-flash-latest',
+    model: 'googleai/gemini-2.5-flash',
     prompt,
     config: { temperature: 0.2, maxOutputTokens: 1536 },
     output: { schema: ComplianceOutputSchema },
