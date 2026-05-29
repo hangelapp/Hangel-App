@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import {
   Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2, Download,
@@ -1228,14 +1229,52 @@ export default function LibraryPage() {
         <p className="mt-2 text-muted-foreground">Sosyal etki kaynaklarını veritabanından anlık keşfedin.</p>
       </div>
 
-      <div className="relative max-w-lg mx-auto">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <Input
-          placeholder="Tüm kategorilerde ara..."
-          className="pl-10 h-11"
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
+      <div className="max-w-lg mx-auto flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Tüm kategorilerde ara..."
+            className="pl-10 h-11"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+        </div>
+        {personal && (personal.savedItems.length > 0 || personal.recs.length > 0) && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Kaydettiklerin ve öneriler">
+                <Bookmark className="h-5 w-5" />
+                {personal.savedItems.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {personal.savedItems.length}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto space-y-3">
+              {personal.savedItems.length > 0 && (
+                <div>
+                  <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {personal.savedItems.map(i => (
+                      <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {personal.recs.length > 0 && (
+                <div>
+                  <p className="font-semibold text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-amber-500" /> Profilin için öneriler</p>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {personal.recs.map(i => (
+                      <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
 
       {/* AI asistanlarını öne çıkaran CTA */}
@@ -1263,32 +1302,6 @@ export default function LibraryPage() {
           </span>
         </button>
       </div>
-
-      {/* Kişisel: kaydettiklerin + ilgine göre öneriler */}
-      {personal && (personal.savedItems.length > 0 || personal.recs.length > 0) && (
-        <Card className="max-w-3xl mx-auto p-4 space-y-3">
-          {personal.savedItems.length > 0 && (
-            <div>
-              <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {personal.savedItems.map(i => (
-                  <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
-                ))}
-              </div>
-            </div>
-          )}
-          {personal.recs.length > 0 && (
-            <div>
-              <p className="font-semibold text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-amber-500" /> Senin için öneriler</p>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {personal.recs.map(i => (
-                  <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
 
       <div className="space-y-4">
         {isLoading ? (
