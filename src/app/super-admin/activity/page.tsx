@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, Clock, Loader2 } from 'lucide-react';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import Link from 'next/link';
 import { COLLECTIONS } from '@/firebase/collections';
+import { cn } from '@/lib/utils';
 
 type RoleCategory = 'admin' | 'user' | 'super-admin';
 
@@ -148,7 +149,7 @@ export default function SuperAdminActivityPage() {
     return list.slice(0, 200);
   }, [donations, applications, invitations, notifications]);
 
-  const [activeTab, setActiveTab] = useState<'all' | RoleCategory>('all');
+  const [activeTab, setActiveTab] = useState<'all' | RoleCategory | 'oturum'>('all');
 
   const counts = useMemo(() => {
     const c: Record<'all' | RoleCategory, number> = { all: entries.length, admin: 0, user: 0, 'super-admin': 0 };
@@ -178,13 +179,14 @@ export default function SuperAdminActivityPage() {
           <CardDescription>En yeni işlemler üstte. Tıklayarak ilgili yönetim sayfasına gidebilirsin.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'all' | RoleCategory)}>
+          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'all' | RoleCategory | 'oturum')}>
             <TabsList className="mb-4 flex flex-wrap h-auto">
               {ROLE_TABS.map(t => (
                 <TabsTrigger key={t.value} value={t.value}>
                   {t.label} ({counts[t.value]})
                 </TabsTrigger>
               ))}
+              <TabsTrigger value="oturum" className="gap-1.5"><LogIn className="h-3.5 w-3.5" /> Giriş / Çıkış</TabsTrigger>
             </TabsList>
             {ROLE_TABS.map(t => (
               <TabsContent key={t.value} value={t.value}>
@@ -228,9 +230,102 @@ export default function SuperAdminActivityPage() {
                 )}
               </TabsContent>
             ))}
+            <TabsContent value="oturum">
+              <SessionsPanel />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+interface SessionRow {
+  sessionId: string;
+  userId: string;
+  userName: string;
+  role: 'super-admin' | 'admin' | 'user';
+  roleLabel: string;
+  loginAt: string | null;
+  lastActiveAt: string | null;
+  deviceName: string;
+  browserName: string;
+  deviceType: string;
+}
+
+// Giriş/Çıkış tabı — /api/admin/sessions (collectionGroup sessions + kullanıcı rolü).
+function SessionsPanel() {
+  const { user: authUser } = useUser();
+  const [items, setItems] = useState<SessionRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [roleFilter, setRoleFilter] = useState<'all' | 'super-admin' | 'admin' | 'user'>('all');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!authUser) return;
+      setLoading(true);
+      setError(null);
+      try {
+        const token = await authUser.getIdToken();
+        const res = await fetch('/api/admin/sessions', { headers: { Authorization: `Bearer ${token}` } });
+        const json = await res.json().catch(() => null);
+        if (!res.ok) { if (!cancelled) { setError(json?.message || 'Yüklenemedi.'); setItems([]); } }
+        else if (!cancelled) setItems(Array.isArray(json.items) ? json.items : []);
+      } catch {
+        if (!cancelled) setError('Bağlantı hatası.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [authUser]);
+
+  const filtered = roleFilter === 'all' ? items : items.filter(i => i.role === roleFilter);
+  const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+  const roleBadge = (role: string) => role === 'super-admin' ? 'bg-purple-100 text-purple-700' : role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-muted text-muted-foreground';
+
+  if (loading) return <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+  if (error) return <div className="py-12 text-center text-sm text-destructive">{error}</div>;
+  if (items.length === 0) return (
+    <div className="py-16 flex flex-col items-center text-center gap-2">
+      <LogIn className="h-12 w-12 text-muted-foreground/30" />
+      <p className="text-muted-foreground text-sm italic">Henüz oturum kaydı yok.</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        {(['all', 'super-admin', 'admin', 'user'] as const).map(r => (
+          <button
+            key={r}
+            onClick={() => setRoleFilter(r)}
+            className={cn('text-xs rounded-full px-3 py-1 border transition-colors', roleFilter === r ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-accent')}
+          >
+            {r === 'all' ? 'Tümü' : r === 'super-admin' ? 'Süper Admin' : r === 'admin' ? 'Yönetici' : 'Kullanıcı'}
+          </button>
+        ))}
+        <span className="text-xs text-muted-foreground ml-auto">{filtered.length} oturum</span>
+      </div>
+      <div className="divide-y">
+        {filtered.map(s => (
+          <div key={s.sessionId} className="flex items-center gap-3 py-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-bold text-sm truncate">{s.userName}</p>
+                <Badge variant="outline" className={cn('text-[9px] font-black uppercase border-0', roleBadge(s.role))}>{s.roleLabel}</Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground truncate">{[s.deviceName, s.browserName].filter(Boolean).join(' · ') || 'Cihaz bilinmiyor'}</p>
+            </div>
+            <div className="text-right text-[11px] text-muted-foreground whitespace-nowrap">
+              <p className="inline-flex items-center gap-1"><LogIn className="h-3 w-3 text-green-600" /> Giriş: {fmt(s.loginAt)}</p>
+              <p className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> Son: {fmt(s.lastActiveAt)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
