@@ -1148,14 +1148,23 @@ export default function LibraryPage() {
     return [...merged, ...extraSections, ...toAppend];
   }, [libData]);
 
+  // Tam metin arama için bölüm bazında haystack'i bir kez hesapla (her tuş
+  // vuruşunda tüm içeriği yeniden stripHtml etmemek için memoize).
+  const sectionHaystacks = useMemo(() => {
+    const m = new Map<string, string>();
+    sections.forEach(s => {
+      const itemsText = (s.items ?? []).map(i => `${i.title} ${stripHtml(i.content || '')}`).join(' ');
+      m.set(s.slug, `${s.title} ${s.description ?? ''} ${itemsText}`.toLowerCase());
+    });
+    return m;
+  }, [sections]);
+
   const filteredSections = useMemo(() => {
     if (!searchTerm.trim()) return sections;
     const lower = searchTerm.toLowerCase();
-    return sections.filter(s =>
-      s.title.toLowerCase().includes(lower) ||
-      s.items?.some(i => i.title.toLowerCase().includes(lower))
-    );
-  }, [sections, searchTerm]);
+    // Başlık + açıklama + içerik (tam metin) içinde ara.
+    return sections.filter(s => (sectionHaystacks.get(s.slug) ?? '').includes(lower));
+  }, [sections, searchTerm, sectionHaystacks]);
 
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen">
