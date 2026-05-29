@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import {
     Users, Cake, Heart, MapPin, Building, Loader2, Globe, GraduationCap, Sparkles, Target, ArrowRight,
+    UserCheck, HandHeart, Activity,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -53,6 +54,12 @@ interface DemoUser {
     [key: string]: unknown;
 }
 
+const ROLE_LABELS: Record<string, string> = {
+    user: 'Kullanıcı', volunteer: 'Gönüllü', donor: 'Bağışçı', student: 'Öğrenci', individual: 'Bireysel',
+    'ngo-admin': 'STK Yöneticisi', 'brand-admin': 'Marka Yöneticisi', 'club-admin': 'Kulüp Yöneticisi',
+    admin: 'Yönetici', 'super-admin': 'Süper Admin',
+};
+
 const computeStats = (users: DemoUser[]) => {
     const ageBuckets: Record<string, number> = { '<18': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
     const gender: Record<string, number> = {};
@@ -66,13 +73,21 @@ const computeStats = (users: DemoUser[]) => {
     const skills: Record<string, number> = {};
     const educationLevel: Record<string, number> = {};
     const languages: Record<string, number> = {};
+    const role: Record<string, number> = {};
+    let ageSum = 0, ageCount = 0, withVolunteer = 0, withBlood = 0, supporters = 0, volunteers = 0, withCity = 0;
 
     users.forEach(u => {
         const pi = u?.personalInfo || {};
         const vi = u?.volunteerInfo || {};
 
         const age = ageFromBirthDate(pi.birthDate);
-        if (age != null) ageBuckets[ageBucket(age)]++;
+        if (age != null) { ageBuckets[ageBucket(age)]++; ageSum += age; ageCount++; }
+        if (pi.bloodType) withBlood++;
+        if (pi.address?.city) withCity++;
+        if (vi && Object.keys(vi).length > 0) withVolunteer++;
+        if ((u.supportedNgos || []).length > 0) supporters++;
+        if ((u.volunteeredNgos || []).length > 0) volunteers++;
+        { const r = (u.role as string) || 'user'; role[r] = (role[r] || 0) + 1; }
 
         if (pi.gender) gender[pi.gender] = (gender[pi.gender] || 0) + 1;
         if (pi.bloodType) blood[pi.bloodType] = (blood[pi.bloodType] || 0) + 1;
@@ -110,6 +125,9 @@ const computeStats = (users: DemoUser[]) => {
         skills: toArr(skills, 12),
         educationLevel: toArr(educationLevel, 6),
         languages: toArr(languages, 10),
+        avgAge: ageCount ? Math.round(ageSum / ageCount) : 0,
+        withVolunteer, withBlood, withCity, supporters, volunteers,
+        roleDist: toArr(role, 8).map(r => ({ name: ROLE_LABELS[r.name] || r.name, value: r.value })),
     };
 };
 
@@ -287,11 +305,35 @@ export default function DemographicsPage() {
                 </Card>
             )}
 
+            {/* Özet KPI şeridi */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                {[
+                    { label: 'Toplam Kullanıcı', value: stats.total.toLocaleString('tr-TR'), icon: Users },
+                    { label: 'Ortalama Yaş', value: stats.avgAge || '—', icon: Cake },
+                    { label: 'Gönüllü Profili', value: stats.withVolunteer.toLocaleString('tr-TR'), icon: UserCheck },
+                    { label: 'STK Destekçisi', value: stats.supporters.toLocaleString('tr-TR'), icon: HandHeart },
+                    { label: 'Kan Grubu Beyanı', value: stats.withBlood.toLocaleString('tr-TR'), icon: Heart },
+                    { label: 'Konum Beyanı', value: stats.withCity.toLocaleString('tr-TR'), icon: MapPin },
+                ].map(kpi => {
+                    const Icon = kpi.icon;
+                    return (
+                        <Card key={kpi.label} className="rounded-2xl">
+                            <CardContent className="p-4">
+                                <Icon className="h-4 w-4 text-primary mb-1" />
+                                <p className="text-2xl font-black leading-none">{kpi.value}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1.5 leading-tight">{kpi.label}</p>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
+            </div>
+
             <Tabs defaultValue="basic">
-                <TabsList className="grid w-full grid-cols-3 max-w-2xl">
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 max-w-3xl h-auto">
                     <TabsTrigger value="basic"><Cake className="mr-1 h-4 w-4" /> Demografi</TabsTrigger>
                     <TabsTrigger value="location"><MapPin className="mr-1 h-4 w-4" /> Konum</TabsTrigger>
                     <TabsTrigger value="profile"><Sparkles className="mr-1 h-4 w-4" /> Profil &amp; İlgi</TabsTrigger>
+                    <TabsTrigger value="engagement"><Activity className="mr-1 h-4 w-4" /> Etkileşim</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="basic" className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -313,6 +355,21 @@ export default function DemographicsPage() {
                     <StatChartCard title="İlgi Alanları (Top 12)" icon={Heart} data={stats.interests} type="horizontal" color="#ec4899" />
                     <StatChartCard title="Yetkinlikler (Top 12)" icon={Target} data={stats.skills} type="horizontal" color="#f59e0b" />
                     <StatChartCard title="Diller" icon={Globe} data={stats.languages} type="horizontal" color="#6366f1" />
+                </TabsContent>
+
+                <TabsContent value="engagement" className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <StatChartCard title="Rol Dağılımı" icon={UserCheck} data={stats.roleDist} type="pie" color="#6366f1" />
+                    <StatChartCard
+                        title="Bağış & Gönüllülük"
+                        icon={HandHeart}
+                        data={[
+                            { name: 'STK Destekçisi', value: stats.supporters },
+                            { name: 'Gönüllü', value: stats.volunteers },
+                            { name: 'Gönüllü Profili', value: stats.withVolunteer },
+                        ]}
+                        type="bar"
+                        color="#10b981"
+                    />
                 </TabsContent>
             </Tabs>
         </div>
