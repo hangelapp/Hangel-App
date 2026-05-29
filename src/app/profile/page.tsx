@@ -240,10 +240,10 @@ export default function ProfilePage() {
         return query(collection(db, COLLECTIONS.clubs), where(documentId(), 'in', joinedClubIds.slice(0, 10)));
     }, [db, joinedClubIds.join(',')]);
 
-    const { data: supportedNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(supportedNgosQuery);
-    const { data: volunteerNgosData } = useCollection<{ name?: string; avatarUrl?: string }>(volunteerNgosQuery);
+    const { data: supportedNgosData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(supportedNgosQuery);
+    const { data: volunteerNgosData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(volunteerNgosQuery);
     const { data: followedBrandsData } = useCollection<{ name?: string; logoUrl?: string; slug?: string }>(followedBrandsQuery);
-    const { data: joinedClubsData } = useCollection<{ name?: string; avatarUrl?: string }>(joinedClubsQuery);
+    const { data: joinedClubsData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(joinedClubsQuery);
 
     // P1-10: badges / certificates / pastVolunteering were hardcoded empty
     // arrays. Now fetched from Firestore sub-collections under
@@ -392,6 +392,41 @@ export default function ProfilePage() {
         }
     };
 
+    // JPG indirme — sertifikayı canvas'a çizip image/jpeg olarak indirir (ek bağımlılık yok).
+    const handleDownloadCertificateImage = (cert: { title: string; organization: string; date: string }) => {
+        try {
+            const W = 1240, H = 877;
+            const canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('canvas yok');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 8; ctx.strokeRect(30, 30, W - 60, H - 60);
+            ctx.lineWidth = 2; ctx.strokeRect(50, 50, W - 100, H - 100);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ea580c'; ctx.font = 'bold 66px Arial'; ctx.fillText('SERTİFİKA', W / 2, 180);
+            ctx.fillStyle = '#505050'; ctx.font = '22px Arial'; ctx.fillText('Bu sertifika hangel platformu aracılığıyla verilmiştir.', W / 2, 230);
+            ctx.fillStyle = '#3c3c3c'; ctx.font = '26px Arial'; ctx.fillText('Sayın', W / 2, 320);
+            ctx.fillStyle = '#141414'; ctx.font = 'bold 46px Arial'; ctx.fillText(currentUser.name || 'Gönüllü', W / 2, 385);
+            ctx.fillStyle = '#3c3c3c'; ctx.font = '24px Arial';
+            ctx.fillText(`${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı`, W / 2, 460);
+            ctx.fillText('başarıyla tamamladığını belgeler:', W / 2, 495);
+            ctx.fillStyle = '#141414'; ctx.font = 'bold 40px Arial'; ctx.fillText(cert.title, W / 2, 580);
+            ctx.fillStyle = '#505050'; ctx.font = '20px Arial';
+            ctx.fillText(`Veren Kuruluş: ${cert.organization}`, W / 2, 680);
+            ctx.fillText(`Tarih: ${cert.date}`, W / 2, 715);
+            ctx.fillStyle = '#787878'; ctx.font = '16px Arial'; ctx.fillText('hangel.org', W / 2, H - 60);
+            const a = document.createElement('a');
+            a.href = canvas.toDataURL('image/jpeg', 0.95);
+            a.download = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+            a.click();
+            toast({ title: 'Sertifika İndirildi', description: `${cert.title} (JPG) indirildi.` });
+        } catch (error) {
+            console.error('Certificate JPG generation failed:', error);
+            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'JPG oluşturulurken bir hata oluştu.' });
+        }
+    };
+
     const handleGenerateStories = async () => {
         setIsStoryLoading(true);
         setStories([]);
@@ -440,31 +475,32 @@ export default function ProfilePage() {
     }
     
     const sortedAndFilteredTransactions = useMemo(() => {
-        let transactions = [...pointTransactions];
+        // Ayrı puan-işlem logu yok; kullanıcının alan bazlı kazandığı puanlardan (areaPoints) türet.
+        const base = pointTransactions.length > 0
+            ? [...pointTransactions]
+            : Object.entries(userAreaPoints)
+                .filter(([, v]) => Number(v) > 0)
+                .map(([area, pts]) => ({ type: 'Rozet', icon: Award, description: `${area} alanında kazanılan puan`, points: Number(pts), time: '' }));
+        let transactions = base;
 
         if (filters.length > 0) {
             transactions = transactions.filter(tx => filters.includes(tx.type));
         }
 
-        transactions.sort((a, b) => {
-            let valA, valB;
+        transactions = [...transactions].sort((a, b) => {
+            let valA: number, valB: number;
             if (sortConfig.key === 'date') {
-                valA = parseISO(a.time).getTime();
-                valB = parseISO(b.time).getTime();
+                valA = a.time ? parseISO(a.time).getTime() : 0;
+                valB = b.time ? parseISO(b.time).getTime() : 0;
             } else { // points
                 valA = a.points;
                 valB = b.points;
             }
-
-            if (sortConfig.direction === 'desc') {
-                return valB - valA;
-            } else {
-                return valA - valA;
-            }
+            return sortConfig.direction === 'desc' ? valB - valA : valA - valB;
         });
 
         return transactions;
-    }, [sortConfig, filters]);
+    }, [sortConfig, filters, userAreaPoints]);
 
 
     useEffect(() => {
@@ -640,7 +676,7 @@ export default function ProfilePage() {
                                             <Icon className="h-5 w-5 text-muted-foreground" />
                                             <div>
                                                 <p>{tx.description}</p>
-                                                <p className="text-xs text-muted-foreground">{format(parseISO(tx.time), 'dd MMMM yyyy, HH:mm', { locale: tr })}</p>
+                                                {tx.time && <p className="text-xs text-muted-foreground">{format(parseISO(tx.time), 'dd MMMM yyyy, HH:mm', { locale: tr })}</p>}
                                             </div>
                                         </div>
                                         <p className="font-bold text-green-600">+{tx.points} Puan</p>
@@ -758,7 +794,7 @@ export default function ProfilePage() {
                                         items={(supportedNgosData || []).map(ngo => ({
                                             id: ngo.id,
                                             name: ngo.name,
-                                            logoUrl: ngo.avatarUrl,
+                                            logoUrl: ngo.avatarUrl || ngo.logoUrl || ngo.files?.logo,
                                             href: `/ngos/${ngo.id}`,
                                         }))}
                                     />
@@ -773,7 +809,7 @@ export default function ProfilePage() {
                                         items={(volunteerNgosData || []).map(ngo => ({
                                             id: ngo.id,
                                             name: ngo.name,
-                                            logoUrl: ngo.avatarUrl,
+                                            logoUrl: ngo.avatarUrl || ngo.logoUrl || ngo.files?.logo,
                                             href: `/ngos/${ngo.id}`,
                                         }))}
                                     />
@@ -803,7 +839,7 @@ export default function ProfilePage() {
                                         items={(joinedClubsData || []).map(club => ({
                                             id: club.id,
                                             name: club.name,
-                                            logoUrl: club.avatarUrl,
+                                            logoUrl: club.avatarUrl || club.logoUrl || club.files?.logo,
                                             href: `/clubs/profile/${club.id}`,
                                         }))}
                                     />
@@ -972,9 +1008,14 @@ export default function ProfilePage() {
                     <DialogFooter className="gap-2 sm:gap-2">
                         <Button variant="secondary" onClick={() => setViewingCert(null)}>Kapat</Button>
                         {viewingCert && (
-                            <Button onClick={() => handleDownloadCertificate({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
-                                <Download className="mr-2 h-4 w-4" /> PDF İndir
-                            </Button>
+                            <>
+                                <Button variant="outline" onClick={() => handleDownloadCertificateImage({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
+                                    <Download className="mr-2 h-4 w-4" /> JPG İndir
+                                </Button>
+                                <Button onClick={() => handleDownloadCertificate({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
+                                    <Download className="mr-2 h-4 w-4" /> PDF İndir
+                                </Button>
+                            </>
                         )}
                     </DialogFooter>
                 </DialogContent>

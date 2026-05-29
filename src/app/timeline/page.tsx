@@ -211,13 +211,13 @@ export default function TimelinePage() {
     [db, authUser?.uid],
   );
   const { data: userRel } = useDoc<{
-    supportedNgos?: string[]; volunteeredNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[];
+    supportedNgos?: string[]; volunteerNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[];
     personalInfo?: { address?: { country?: string; city?: string } };
     volunteerInfo?: { education?: Array<{ school?: string }> };
   }>(userRelRef);
   const relSets = useMemo(() => ({
     supported: new Set(userRel?.supportedNgos || []),
-    volunteered: new Set(userRel?.volunteeredNgos || []),
+    volunteered: new Set(userRel?.volunteerNgos || []),
     followed: new Set(userRel?.followedBrands || []),
     joined: new Set(userRel?.joinedClubs || []),
   }), [userRel]);

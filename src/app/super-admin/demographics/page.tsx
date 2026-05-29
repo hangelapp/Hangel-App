@@ -49,7 +49,7 @@ interface DemoUser {
     personalInfo?: { birthDate?: unknown; gender?: string; bloodType?: string; nationality?: string; address?: { country?: string; city?: string; district?: string; neighborhood?: string } };
     volunteerInfo?: { profession?: string; sector?: string; interests?: string[]; skills?: string[]; languages?: string[]; education?: Array<{ level?: string; school?: string; department?: string }> };
     supportedNgos?: string[];
-    volunteeredNgos?: string[];
+    volunteerNgos?: string[];
     followedBrands?: string[];
     joinedClubs?: string[];
     managedNgoId?: string;
@@ -98,7 +98,7 @@ const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
         if (pi.address?.city) withCity++;
         if (vi && Object.keys(vi).length > 0) withVolunteer++;
         if ((u.supportedNgos || []).length > 0) supporters++;
-        if ((u.volunteeredNgos || []).length > 0) volunteers++;
+        if ((u.volunteerNgos || []).length > 0) volunteers++;
         { const r = (u.role as string) || 'user'; role[r] = (role[r] || 0) + 1; }
 
         if (pi.gender) gender[pi.gender] = (gender[pi.gender] || 0) + 1;
@@ -120,7 +120,7 @@ const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
         if (pi.address?.district) district[pi.address.district] = (district[pi.address.district] || 0) + 1;
         if (pi.address?.neighborhood) neighborhood[pi.address.neighborhood] = (neighborhood[pi.address.neighborhood] || 0) + 1;
         (u.joinedClubs || []).forEach(id => { const n = nameMaps.club.get(id); if (n) clubs[n] = (clubs[n] || 0) + 1; });
-        (u.volunteeredNgos || []).forEach(id => { const n = nameMaps.ngo.get(id); if (n) volunteeredNgoNames[n] = (volunteeredNgoNames[n] || 0) + 1; });
+        (u.volunteerNgos || []).forEach(id => { const n = nameMaps.ngo.get(id); if (n) volunteeredNgoNames[n] = (volunteeredNgoNames[n] || 0) + 1; });
         (u.followedBrands || []).forEach(id => { const n = nameMaps.brand.get(id); if (n) followedBrandNames[n] = (followedBrandNames[n] || 0) + 1; });
         const sec = (u.supportedNgos || [])[1];
         if (sec) { const n = nameMaps.ngo.get(sec); if (n) secondaryNgo[n] = (secondaryNgo[n] || 0) + 1; }
@@ -262,7 +262,7 @@ export default function DemographicsPage() {
         if (selectedNgoId === 'all') return users;
         return users.filter(u => {
             const supported = u.supportedNgos || [];
-            const volunteered = u.volunteeredNgos || [];
+            const volunteered = u.volunteerNgos || [];
             return (
                 supported.includes(selectedNgoId) ||
                 volunteered.includes(selectedNgoId) ||
