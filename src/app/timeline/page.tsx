@@ -174,6 +174,32 @@ export default function TimelinePage() {
   const postsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.posts), [db]);
   const { data: postsData, isLoading } = useCollection<Post>(postsQuery);
 
+  // Canlı kurum logoları + profil linkleri — statik @/lib/data'da logolar boş/eski
+  // olabildiğinden gönderi yazarını Firestore'daki ngo/marka/kulüp ile eşleştir.
+  type LiveEntity = { id: string; name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } };
+  const ngosLiveQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
+  const { data: ngosLive } = useCollection<LiveEntity>(ngosLiveQuery);
+  const brandsLiveQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
+  const { data: brandsLive } = useCollection<LiveEntity>(brandsLiveQuery);
+  const clubsLiveQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.clubs) : null), [db]);
+  const { data: clubsLive } = useCollection<LiveEntity>(clubsLiveQuery);
+
+  const entityResolver = useMemo(() => {
+    const norm = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
+    const map = new Map<string, { link: string; logo?: string }>();
+    const add = (list: LiveEntity[] | null | undefined, linkFor: (e: LiveEntity) => string) => {
+      (list || []).forEach(e => {
+        if (!e.name) return;
+        const logo = e.files?.logo || e.logoUrl || e.avatarUrl;
+        map.set(norm(e.name), { link: linkFor(e), logo });
+      });
+    };
+    add(ngosLive, e => `/ngos/${e.id}`);
+    add(brandsLive, e => `/market/${e.id}`);
+    add(clubsLive, e => `/clubs/profile/${e.id}`);
+    return map;
+  }, [ngosLive, brandsLive, clubsLive]);
+
   // Prime likeState once per (postsData, authUser) using one-shot reads.
   // Avoids N+1 listeners; counts refresh only on mount + optimistic toggle.
   useEffect(() => {
@@ -259,7 +285,10 @@ export default function TimelinePage() {
     return posts;
   }, [postsData, sortKey, sortDir, filterSponsored, searchTerm]);
 
+  const normName = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
   const getEntityLink = (authorName: string) => {
+    const live = entityResolver.get(normName(authorName));
+    if (live) return live.link;
     const ngo = ngos.find(n => n.name === authorName);
     if (ngo) return `/ngos/${ngo.id}`;
     const brand = allEntityLists.find(b => b.name === authorName);
@@ -271,6 +300,8 @@ export default function TimelinePage() {
   // (entity henüz logo yüklememişti veya files.logo path'i farklı). Render anında
   // entity adından ngo/brand listesinde lookup ile en güncel logoyu döndür.
   const getEntityLogo = (authorName: string): string | undefined => {
+    const live = entityResolver.get(normName(authorName));
+    if (live?.logo) return live.logo;
     const ngo = ngos.find(n => n.name === authorName);
     if (ngo) {
       const ngoData = ngo as typeof ngo & { files?: { logo?: string }; logoUrl?: string; avatarUrl?: string };
@@ -283,6 +314,93 @@ export default function TimelinePage() {
     }
     return undefined;
   }
+
+  const postFeed = (
+                <div className="p-2 sm:p-4 space-y-4">
+                    {isLoading ? (
+                        [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
+                    ) : sortedAndFilteredPosts.map((post, index) => {
+                    const cached = likeState[post.id];
+                    const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
+                    const isLiked = cached ? cached.isLikedByMe : fallbackMine;
+                    return (
+                    <React.Fragment key={post.id}>
+                        <Card id={`post-${post.id}`} className="overflow-hidden shadow-none rounded-xl scroll-mt-24">
+                            {/* X.com tarzı yerleşim: avatar sol, ad + zaman + ... butonu aynı satırda */}
+                            <div className="flex items-start gap-3 p-3 sm:p-4">
+                                <Link href={getEntityLink(post.author.name)} className="shrink-0">
+                                    <Avatar className="h-11 w-11">
+                                        <AvatarImage src={post.author.avatarUrl || getEntityLogo(post.author.name)} alt={post.author.name} />
+                                        <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <Link
+                                            href={getEntityLink(post.author.name)}
+                                            className="flex items-baseline gap-1.5 min-w-0 hover:underline"
+                                        >
+                                            <span className="font-bold text-sm truncate">{post.author.name}</span>
+                                            <span className="text-muted-foreground text-xs shrink-0">· {post.timestamp}</span>
+                                        </Link>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            {post.sponsored && (
+                                                <Badge variant="outline" className="text-[10px] h-5">
+                                                    <Star className="h-3 w-3 mr-1" /> Sponsorlu
+                                                </Badge>
+                                            )}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Daha fazla seçenek">
+                                                        <MoreHorizontal className="h-5 w-5" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleReport(post)} className="text-destructive focus:text-destructive">
+                                                        <Flag className="mr-2 h-4 w-4" /> Bildir
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                    <p className="text-[15px] leading-relaxed mt-1 whitespace-pre-wrap break-words">{post.content}</p>
+                                    {post.imageUrl && (
+                                        <div className="relative aspect-video w-full overflow-hidden rounded-xl mt-3 border">
+                                            <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <CardFooter className="flex justify-start gap-0 border-t p-0">
+                                <Button
+                                    variant="ghost"
+                                    className={cn(
+                                        "flex-1 flex items-center gap-2 h-12 text-base",
+                                        isLiked ? "text-red-500" : "text-muted-foreground"
+                                    )}
+                                    onClick={() => handleLike(post)}
+                                    disabled={pendingPostId === post.id}
+                                    aria-pressed={isLiked}
+                                >
+                                    <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
+                                    <span>Beğen</span>
+                                </Button>
+                                <div className="w-[1px] h-6 bg-border self-center" />
+                                <Button
+                                    variant="ghost"
+                                    className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base"
+                                    onClick={() => handleShare(post)}
+                                >
+                                    <Share2 className="h-5 w-5" /> <span>Paylaş</span>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                        {(index + 1) % 5 === 0 && <AdCarousel />}
+                     </React.Fragment>
+                    );
+                    })}
+                </div>
+  );
 
   return (
     <div className="animate-in fade-in-0 bg-secondary">
@@ -376,91 +494,11 @@ export default function TimelinePage() {
                         )}
                     </Card>
                 </div>
-                <div className="p-2 sm:p-4 space-y-4">
-                    {isLoading ? (
-                        [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
-                    ) : sortedAndFilteredPosts.map((post, index) => {
-                    const cached = likeState[post.id];
-                    const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
-                    const isLiked = cached ? cached.isLikedByMe : fallbackMine;
-                    return (
-                    <React.Fragment key={post.id}>
-                        <Card id={`post-${post.id}`} className="overflow-hidden shadow-none rounded-xl scroll-mt-24">
-                            {/* X.com tarzı yerleşim: avatar sol, ad + zaman + ... butonu aynı satırda */}
-                            <div className="flex items-start gap-3 p-3 sm:p-4">
-                                <Link href={getEntityLink(post.author.name)} className="shrink-0">
-                                    <Avatar className="h-11 w-11">
-                                        <AvatarImage src={post.author.avatarUrl || getEntityLogo(post.author.name)} alt={post.author.name} />
-                                        <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                </Link>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <Link
-                                            href={getEntityLink(post.author.name)}
-                                            className="flex items-baseline gap-1.5 min-w-0 hover:underline"
-                                        >
-                                            <span className="font-bold text-sm truncate">{post.author.name}</span>
-                                            <span className="text-muted-foreground text-xs shrink-0">· {post.timestamp}</span>
-                                        </Link>
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            {post.sponsored && (
-                                                <Badge variant="outline" className="text-[10px] h-5">
-                                                    <Star className="h-3 w-3 mr-1" /> Sponsorlu
-                                                </Badge>
-                                            )}
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Daha fazla seçenek">
-                                                        <MoreHorizontal className="h-5 w-5" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => handleReport(post)} className="text-destructive focus:text-destructive">
-                                                        <Flag className="mr-2 h-4 w-4" /> Bildir
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </div>
-                                    <p className="text-[15px] leading-relaxed mt-1 whitespace-pre-wrap break-words">{post.content}</p>
-                                    {post.imageUrl && (
-                                        <div className="relative aspect-video w-full overflow-hidden rounded-xl mt-3 border">
-                                            <Image src={post.imageUrl} alt="Post image" fill className="object-cover" />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <CardFooter className="flex justify-start gap-0 border-t p-0">
-                                <Button
-                                    variant="ghost"
-                                    className={cn(
-                                        "flex-1 flex items-center gap-2 h-12 text-base",
-                                        isLiked ? "text-red-500" : "text-muted-foreground"
-                                    )}
-                                    onClick={() => handleLike(post)}
-                                    disabled={pendingPostId === post.id}
-                                    aria-pressed={isLiked}
-                                >
-                                    <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
-                                    <span>Beğen</span>
-                                </Button>
-                                <div className="w-[1px] h-6 bg-border self-center" />
-                                <Button
-                                    variant="ghost"
-                                    className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base"
-                                    onClick={() => handleShare(post)}
-                                >
-                                    <Share2 className="h-5 w-5" /> <span>Paylaş</span>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                        {(index + 1) % 5 === 0 && <AdCarousel />}
-                     </React.Fragment>
-                    );
-                    })}
-                </div>
+                {postFeed}
             </TabsContent>
+            <TabsContent value="country" className="mt-0">{postFeed}</TabsContent>
+            <TabsContent value="city" className="mt-0">{postFeed}</TabsContent>
+            <TabsContent value="school" className="mt-0">{postFeed}</TabsContent>
         </Tabs>
     </div>
   );
