@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getApp } from 'firebase/app';
@@ -31,6 +31,7 @@ import {
 export default function BrandsPage() {
     const { toast } = useToast();
     const db = useFirestore();
+    const { user: authUser } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [sortBy, setSortBy] = useState<SortOption>('default');
@@ -535,6 +536,19 @@ export default function BrandsPage() {
             await uploadBytes(ref, file, { contentType: file.type });
             const url = await getDownloadURL(ref);
             setEditFormData(prev => ({ ...prev, [field]: url }));
+            // Logo → super-admin "Arşiv" sekmesine marka evrakı olarak ayna (best-effort).
+            if (kind === 'logo') {
+                try {
+                    const token = await authUser?.getIdToken();
+                    if (token) {
+                        await fetch('/api/ngo/archive', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({ docType: 'Logo', fileUrl: url, entityType: 'brand', entityId: editingBrand.id, entityName: editingBrand.name || '' }),
+                        });
+                    }
+                } catch { /* arşiv aynası best-effort */ }
+            }
             toast({ title: 'Yüklendi', description: 'Görsel Firebase Storage\'a yüklendi. Kaydet butonuna basmayı unutmayın.' });
         } catch (err) {
             console.warn('Storage upload failed, falling back to Base64:', err);

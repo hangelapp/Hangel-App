@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, Archive, FileText, ExternalLink, Building2, ShoppingBag, GraduationCap } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { Loader2, Search, Archive, FileText, ExternalLink, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle } from 'lucide-react';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, updateDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface ArchiveDoc {
@@ -21,6 +22,9 @@ interface ArchiveDoc {
   year?: string;
   uploadedBy?: string;
   uploadedAt?: unknown;
+  reviewed?: boolean;       // hukukçu "incelendi" tiki
+  reviewedByName?: string;
+  reviewedAt?: Timestamp;
 }
 
 const ENTITY_META: Record<string, { label: string; icon: React.ElementType; cls: string }> = {
@@ -34,18 +38,50 @@ const YEARS = Array.from({ length: 5 }, (_, i) => String(currentYear - i));
 
 export function ArchiveTab() {
   const db = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [reviewFilter, setReviewFilter] = useState<string>('all');
+  const [markingId, setMarkingId] = useState<string | null>(null);
 
   const archiveQuery = useMemoFirebase(() => collection(db, COLLECTIONS.documentArchive), [db]);
   const { data: docs, isLoading } = useCollection<ArchiveDoc>(archiveQuery);
+
+  const reviewStats = useMemo(() => {
+    const all = docs || [];
+    return { total: all.length, reviewed: all.filter(d => d.reviewed).length };
+  }, [docs]);
+
+  // Hukukçu "incelendi" tikini aç/kapat (documentArchive update yalnız super-admin'e açık).
+  const toggleReview = async (d: ArchiveDoc) => {
+    setMarkingId(d.id);
+    try {
+      const next = !d.reviewed;
+      await updateDoc(doc(db, COLLECTIONS.documentArchive, d.id), next ? {
+        reviewed: true,
+        reviewedBy: user?.uid || null,
+        reviewedByName: user?.displayName || user?.email?.split('@')[0] || 'Hukuk Görevlisi',
+        reviewedAt: serverTimestamp(),
+      } : {
+        reviewed: false, reviewedBy: null, reviewedByName: null, reviewedAt: null,
+      });
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      toast({ variant: 'destructive', title: 'İşaretlenemedi', description: code === 'permission-denied' ? 'Super-admin yetkisi gerekli.' : (e instanceof Error ? e.message : 'Hata') });
+    } finally {
+      setMarkingId(null);
+    }
+  };
 
   // Kuruma göre grupla
   const grouped = useMemo(() => {
     let list = docs || [];
     if (yearFilter !== 'all') list = list.filter(d => d.year === yearFilter);
     if (typeFilter !== 'all') list = list.filter(d => d.entityType === typeFilter);
+    if (reviewFilter === 'reviewed') list = list.filter(d => d.reviewed);
+    else if (reviewFilter === 'unreviewed') list = list.filter(d => !d.reviewed);
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       list = list.filter(d => (d.entityName || '').toLowerCase().includes(q) || (d.docType || '').toLowerCase().includes(q));
@@ -57,12 +93,19 @@ export function ArchiveTab() {
       byEntity.get(key)!.docs.push(d);
     });
     return Array.from(byEntity.values());
-  }, [docs, searchTerm, yearFilter, typeFilter]);
+  }, [docs, searchTerm, yearFilter, typeFilter, reviewFilter]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Archive className="h-5 w-5 text-primary" /> Evrak Arşivi (Kurum Bazlı)</CardTitle>
+        <CardTitle className="flex items-center gap-2 flex-wrap">
+          <Archive className="h-5 w-5 text-primary" /> Evrak Arşivi (Kurum Bazlı)
+          {reviewStats.total > 0 && (
+            <Badge variant="outline" className={cn('text-[10px] gap-1', reviewStats.reviewed === reviewStats.total ? 'border-green-500 text-green-700' : 'text-muted-foreground')}>
+              <CheckCircle2 className="h-3 w-3" /> {reviewStats.reviewed}/{reviewStats.total} incelendi
+            </Badge>
+          )}
+        </CardTitle>
         <div className="flex items-center gap-3 flex-wrap pt-2">
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -82,6 +125,14 @@ export function ArchiveTab() {
             <SelectContent>
               <SelectItem value="all">Tüm Yıllar</SelectItem>
               {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={reviewFilter} onValueChange={setReviewFilter}>
+            <SelectTrigger className="w-40 h-10"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">İnceleme: Tümü</SelectItem>
+              <SelectItem value="unreviewed">İncelenmemiş</SelectItem>
+              <SelectItem value="reviewed">İncelendi</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -113,7 +164,12 @@ export function ArchiveTab() {
                     <Icon className={cn('h-5 w-5', meta?.cls || 'text-muted-foreground')} />
                     <span className="font-bold text-sm">{entity.name}</span>
                     {meta && <Badge variant="outline" className="text-[9px]">{meta.label}</Badge>}
-                    <Badge variant="secondary" className="text-[9px] ml-auto">{entity.docs.length} evrak</Badge>
+                    {(() => { const rv = entity.docs.filter(d => d.reviewed).length; return (
+                      <Badge variant="outline" className={cn('text-[9px] ml-auto gap-1', rv === entity.docs.length ? 'border-green-500 text-green-700' : 'text-muted-foreground')}>
+                        <CheckCircle2 className="h-2.5 w-2.5" /> {rv}/{entity.docs.length} incelendi
+                      </Badge>
+                    ); })()}
+                    <Badge variant="secondary" className="text-[9px]">{entity.docs.length} evrak</Badge>
                   </div>
                   <div className="p-2 space-y-2">
                     {Array.from(byYear.entries()).sort((a, b) => b[0].localeCompare(a[0])).map(([year, yearDocs]) => (
@@ -121,14 +177,27 @@ export function ArchiveTab() {
                         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-2 py-1">{year}</p>
                         <div className="space-y-1">
                           {yearDocs.map(d => (
-                            <div key={d.id} className="flex items-center gap-2 p-2 rounded hover:bg-accent/40">
+                            <div key={d.id} className={cn('flex items-center gap-2 p-2 rounded hover:bg-accent/40', d.reviewed && 'bg-green-50/60')}>
                               <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                               <span className="text-sm flex-1 truncate">{d.docType || 'Evrak'}</span>
+                              {d.reviewed && d.reviewedByName && (
+                                <span className="text-[10px] text-green-700 hidden sm:inline shrink-0" title="İnceleyen">{d.reviewedByName}</span>
+                              )}
                               {d.fileUrl && (
                                 <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
                                   Aç <ExternalLink className="h-3 w-3" />
                                 </a>
                               )}
+                              <button
+                                onClick={() => toggleReview(d)}
+                                disabled={markingId === d.id}
+                                title={d.reviewed ? 'İncelendi — geri almak için tıkla' : 'İncelendi olarak işaretle'}
+                                className={cn('inline-flex items-center gap-1 text-[11px] rounded-full px-2 py-0.5 border shrink-0 transition-colors',
+                                  d.reviewed ? 'bg-green-600 text-white border-green-600 hover:bg-green-700' : 'text-muted-foreground hover:bg-accent')}
+                              >
+                                {markingId === d.id ? <Loader2 className="h-3 w-3 animate-spin" /> : d.reviewed ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+                                {d.reviewed ? 'İncelendi' : 'İncele'}
+                              </button>
                             </div>
                           ))}
                         </div>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Country, State, City } from 'country-state-city';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -105,6 +105,7 @@ export default function NgoEditPage() {
     const router = useRouter();
     const { toast } = useToast();
     const db = useFirestore();
+    const { user: authUser } = useUser();
     const id = params.id as string;
 
     const ngoDocRef = useMemoFirebase(() => (db && id ? doc(db, COLLECTIONS.ngos, id) : null), [db, id]);
@@ -204,6 +205,19 @@ export default function NgoEditPage() {
             await uploadBytes(r, file, { contentType: file.type });
             const url = await getDownloadURL(r);
             set(field, url);
+            // Logo → super-admin "Arşiv" sekmesine kurum evrakı olarak ayna (best-effort).
+            if (kind === 'logo') {
+                try {
+                    const token = await authUser?.getIdToken();
+                    if (token) {
+                        await fetch('/api/ngo/archive', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({ docType: 'Logo', fileUrl: url, entityType: 'ngo', entityId: id, entityName: (form.name as string) || ngo?.name || '' }),
+                        });
+                    }
+                } catch { /* arşiv aynası best-effort */ }
+            }
             toast({ title: kind === 'logo' ? 'Logo yüklendi' : 'Kapak fotoğrafı yüklendi', description: 'Kaydete bastığınızda kalıcı olarak kaydedilecek.' });
         } catch (e) {
             console.warn('Storage upload failed, falling back to Base64:', e);
