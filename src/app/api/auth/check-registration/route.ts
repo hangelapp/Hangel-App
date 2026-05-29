@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { phoneMatchCandidates, toE164 } from '@/lib/phone-normalize';
 
 export const runtime = 'nodejs';
 
@@ -64,8 +65,8 @@ export async function POST(req: NextRequest) {
         const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : '';
         const rawPhone = typeof body?.phone === 'string' ? body.phone : '';
         const phoneCountryCode = typeof body?.phoneCountryCode === 'string' ? body.phoneCountryCode : '+90';
-        const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0+/, '');
-        const fullPhone = cleanPhone ? `${phoneCountryCode}${cleanPhone}` : '';
+        const phoneCandidates = phoneMatchCandidates(rawPhone, phoneCountryCode);
+        const fullPhone = toE164(rawPhone, phoneCountryCode);
 
         const adminAuth = getAdminAuth();
         const db = getAdminFirestore();
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        if (cleanPhone) {
+        if (phoneCandidates.length > 0) {
             if (fullPhone) {
                 try {
                     await adminAuth.getUserByPhoneNumber(fullPhone);
@@ -95,8 +96,9 @@ export async function POST(req: NextRequest) {
                 } catch { /* auth'ta yok — Firestore'a bak */ }
             }
             if (!phoneExists) {
+                // Olası tüm yazımları (kanonik / baştaki 0 / ülke kodlu) tek sorguda ara.
                 const snap = await db.collection(COLLECTIONS.users)
-                    .where('personalInfo.phone', '==', cleanPhone)
+                    .where('personalInfo.phone', 'in', phoneCandidates)
                     .limit(1)
                     .get();
                 phoneExists = !snap.empty;

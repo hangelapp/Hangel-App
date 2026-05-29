@@ -20,6 +20,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { phoneMatchCandidates } from '@/lib/phone-normalize';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
             // ile kayıt olup profiline telefon eklemiş kullanıcı.) Varsa MÜKERRER
             // hesap açma — OTP telefon sahipliğini kanıtladı, o mevcut hesaba giriş yap.
             const dupSnap = await db.collection(COLLECTIONS.users)
-                .where('personalInfo.phone', '==', cleanPhone)
+                .where('personalInfo.phone', 'in', phoneMatchCandidates(phone, phoneCountryCode))
                 .limit(1)
                 .get();
             if (!dupSnap.empty) {

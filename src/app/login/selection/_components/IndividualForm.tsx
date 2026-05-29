@@ -13,6 +13,7 @@ import { updateProfile, createUserWithEmailAndPassword, signInWithEmailAndPasswo
 import { initiateEmailVerification } from '@/firebase/non-blocking-login';
 import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { canonicalPhone } from '@/lib/phone-normalize';
 import { FormLabel, FormInput } from './shared';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
@@ -289,7 +290,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 avatarUrl: '',
                 personalInfo: {
                     email: email.trim().toLowerCase(),
-                    phone: phone.replace(/\D/g, ''),
+                    phone: canonicalPhone(phone, phoneCountryCode),
                     phoneCountryCode,
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },

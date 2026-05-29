@@ -15,6 +15,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { phoneMatchCandidates } from '@/lib/phone-normalize';
 
 export const runtime = 'nodejs';
 
@@ -80,7 +81,7 @@ export async function GET(req: NextRequest) {
             // sahipliğini kanıtladı, o mevcut hesaba giriş yap.
             if (cleanForCheck) {
                 const dupSnap = await db.collection(COLLECTIONS.users)
-                    .where('personalInfo.phone', '==', cleanForCheck)
+                    .where('personalInfo.phone', 'in', phoneMatchCandidates(data.cleanPhone || data.phone, data.phoneCountryCode))
                     .limit(1)
                     .get();
                 if (!dupSnap.empty) {
