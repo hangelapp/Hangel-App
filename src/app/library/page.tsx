@@ -24,7 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import {
   Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2, Download,
-  Bookmark, Lightbulb,
+  Bookmark, Compass,
   // LIBRARY_ICONS allow-list — bu map'e yeni icon eklerken hem import hem `LIBRARY_ICONS` entry'si gerekir.
   Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle,
 } from 'lucide-react';
@@ -1203,23 +1203,21 @@ export default function LibraryPage() {
     return sections.filter(s => (sectionHaystacks.get(s.slug) ?? '').includes(lower));
   }, [sections, searchTerm, sectionHaystacks]);
 
-  // Kişisel: kaydettiklerin + ilgine göre öneriler (etkileşimde olduğun bölümlerden).
+  // Kişisel: kaydettiklerin + profilin için öneriler (3 kitap + 3 film + 3 envanter örneği).
   type FlatItem = LibraryItem & { sectionSlug: string };
   const personal = useMemo(() => {
     if (!user) return null;
     const saved = Array.isArray(userData?.savedLibraryItems) ? userData!.savedLibraryItems! : [];
-    const read = Array.isArray(userData?.readLibraryItems) ? userData!.readLibraryItems! : [];
     const allItems: FlatItem[] = sections.flatMap(s => (s.items ?? []).map(i => ({ ...i, sectionSlug: s.slug })));
     const bySlug = new Map(allItems.map(i => [i.slug, i]));
     const savedItems = saved.map(sl => bySlug.get(sl)).filter((x): x is FlatItem => Boolean(x));
-    const engaged = new Set<string>([...saved, ...read]);
-    const engagedSections = new Set(allItems.filter(i => engaged.has(i.slug)).map(i => i.sectionSlug));
-    let recs = allItems.filter(i => engagedSections.has(i.sectionSlug) && !engaged.has(i.slug)).slice(0, 6);
-    if (recs.length === 0) {
-      // Henüz etkileşim yoksa "öne çıkanlar": Kitaplar bölümünden birkaç içerik.
-      recs = allItems.filter(i => i.sectionSlug === 'kitaplar').slice(0, 6);
-    }
-    return { savedItems, recs };
+    const pick = (slug: string, n: number) => allItems.filter(i => i.sectionSlug === slug).slice(0, n);
+    const recGroups = [
+      { title: 'Kitaplar', items: pick('kitaplar', 3) },
+      { title: 'Filmler', items: pick('filmler', 3) },
+      { title: 'Sosyal Etki Envanteri', items: pick('hangel-sosyal-etki-envanteri', 3) },
+    ].filter(g => g.items.length > 0);
+    return { savedItems, recGroups };
   }, [user, userData, sections]);
 
   return (
@@ -1239,39 +1237,45 @@ export default function LibraryPage() {
             onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
-        {personal && (personal.savedItems.length > 0 || personal.recs.length > 0) && (
+        {personal && personal.savedItems.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Kaydettiklerin ve öneriler">
+              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Kaydettiklerin">
                 <Bookmark className="h-5 w-5" />
-                {personal.savedItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                    {personal.savedItems.length}
-                  </span>
-                )}
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                  {personal.savedItems.length}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto">
+              <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {personal.savedItems.map(i => (
+                  <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+        {personal && personal.recGroups.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Profilin için öneriler">
+                <Compass className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto space-y-3">
-              {personal.savedItems.length > 0 && (
-                <div>
-                  <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {personal.savedItems.map(i => (
+              <p className="font-semibold text-sm flex items-center gap-2"><Compass className="h-4 w-4 text-primary" /> Profilin için öneriler</p>
+              {personal.recGroups.map(g => (
+                <div key={g.title}>
+                  <p className="text-xs font-semibold text-muted-foreground">{g.title}</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {g.items.map(i => (
                       <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
                     ))}
                   </div>
                 </div>
-              )}
-              {personal.recs.length > 0 && (
-                <div>
-                  <p className="font-semibold text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-amber-500" /> Profilin için öneriler</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {personal.recs.map(i => (
-                      <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </PopoverContent>
           </Popover>
         )}
