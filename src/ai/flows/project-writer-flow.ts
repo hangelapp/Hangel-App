@@ -127,7 +127,8 @@ export async function writeProjectProposal(
   const { output } = await ai.generate({
     model: modelId,
     prompt: userPrompt,
-    config: { temperature, maxOutputTokens },
+    // thinkingBudget:0 → 2.5-flash düşünme tokenları uzun proje önerisini truncate etmesin.
+    config: { temperature, maxOutputTokens, thinkingConfig: { thinkingBudget: 0 } },
     output: { schema: ProjectWriterOutputSchema },
   });
   const safe = (output ?? { fullProposal: '' }) as ProjectWriterOutput;

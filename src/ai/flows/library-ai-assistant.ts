@@ -74,7 +74,9 @@ export async function askLibraryAssistant(
   const { output } = await ai.generate({
     model: modelId,
     prompt: userPrompt,
-    config: { temperature, maxOutputTokens },
+    // thinkingBudget:0 → gemini-2.5-flash'ın "düşünme" tokenları çıktı bütçesini
+    // yiyip structured output'u truncate etmesin (boş output → 500'e sebep oluyordu).
+    config: { temperature, maxOutputTokens, thinkingConfig: { thinkingBudget: 0 } },
     output: { schema: AskLibraryAssistantOutputSchema },
   });
   const safe = (output ?? { answer: '' }) as AskLibraryAssistantOutput;

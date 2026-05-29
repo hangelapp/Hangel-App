@@ -71,7 +71,7 @@ export const MAX_PROMPT_INPUT_CHARS = 4000;
  * calls. Defense-in-depth against runaway Gemini cost. Applied per-flow via
  * the `config` field on `ai.definePrompt(...)`.
  */
-export const MAX_OUTPUT_TOKENS = 1024;
+export const MAX_OUTPUT_TOKENS = 4096;
 
 /**
  * Last-resort post-processing clamp applied to model output strings before
