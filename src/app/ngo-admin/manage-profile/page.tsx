@@ -184,6 +184,7 @@ export default function ManageProfilePage() {
   // -------- Form state (initialized empty; hydrated from Firestore) --------
   const [name, setName] = useState('');
   const [shortName, setShortName] = useState('');
+  const [shortLink, setShortLink] = useState('');
   const [ngoType, setNgoType] = useState('dernek');
   const [foundedYear, setFoundedYear] = useState('');
   const [economicEntity, setEconomicEntity] = useState('yok');
@@ -249,6 +250,7 @@ export default function ManageProfilePage() {
     const d = activeEntity.data;
     setName(d.name || '');
     setShortName(d.shortName || '');
+    setShortLink(((d as { shortLink?: string }).shortLink) || '');
     setNgoType(d.ngoType || 'dernek');
     setFoundedYear(d.foundedYear || '');
     setEconomicEntity(d.economicEntity || 'yok');
@@ -334,6 +336,7 @@ export default function ManageProfilePage() {
         await updateDoc(doc(firestore, collectionName, activeEntity.data.id), {
           name,
           shortName,
+          shortLink: shortLink.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/(^-|-$)/g, ''),
           ngoType,
           foundedYear,
           economicEntity,
@@ -456,6 +459,20 @@ export default function ManageProfilePage() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Tam Adı</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" required />
+            </div>
+
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kısa Link (Profil Bağlantısı)</Label>
+                <div className="flex items-center rounded-xl border h-11 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
+                    <span className="px-3 text-sm text-muted-foreground bg-muted/50 h-full flex items-center select-none whitespace-nowrap">hangel.org.tr/s/</span>
+                    <Input
+                        value={shortLink}
+                        onChange={(e) => setShortLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
+                        placeholder="kurumunuz"
+                        className="h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
+                    />
+                </div>
+                <p className="text-[10px] text-muted-foreground ml-1">Kurumunuzun kısa profil bağlantısı — QR koduna da işlenir. Kaydet&apos;e basın.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

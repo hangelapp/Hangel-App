@@ -71,6 +71,7 @@ type ManagedEntity = { kind: EntityKind; id: string; name: string };
 interface EntityDoc {
   id: string;
   name?: string;
+  shortLink?: string;
 }
 
 export default function QrPage() {
@@ -103,7 +104,10 @@ export default function QrPage() {
     return `/clubs/profile/${activeEntity.id}`;
   }, [activeEntity]);
 
-  const profileUrl = origin && profilePath ? `${origin}${profilePath}` : '';
+  // Kısa link tanımlıysa profil bağlantısı odur (hangel.org.tr/s/{code}); değilse uzun yol.
+  const profileUrl = origin
+    ? (activeDoc?.shortLink ? `${origin}/s/${activeDoc.shortLink}` : (profilePath ? `${origin}${profilePath}` : ''))
+    : '';
   // Davet URL'i: yeni kullanıcı kayıt akışına otomatik aksiyon için ref param ekliyoruz.
   // Örn: https://hangel.org.tr/login/selection?action=register&ref=ngo:abc123
   // login/selection sayfası bu paramı okuyup yeni kullanıcı dokümanına supportedNgos/joinedClubs/followedBrands yazar.
@@ -111,9 +115,9 @@ export default function QrPage() {
   const inviteUrl = origin && refParam
     ? `${origin}/login/selection?action=register&ref=${encodeURIComponent(refParam)}`
     : '';
-  // QR ve paylaşım butonları davet URL'ini kullanır (yeni kullanıcı için auto-action tetiklensin).
-  const qrCodeUrl = inviteUrl
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(inviteUrl)}`
+  // QR kodu profil (kısa) bağlantısını taşır — tarayan kişi doğrudan kurum profiline gider.
+  const qrCodeUrl = profileUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}`
     : '';
   const shareUrl = inviteUrl;
   const entityName = activeEntity?.name ?? '';
