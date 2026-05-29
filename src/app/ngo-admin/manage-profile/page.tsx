@@ -16,7 +16,7 @@ import { countryPhoneCodes, sportsFederations, neighborhoodsData } from '@/lib/d
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser } from '@/firebase';
-import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { useActiveEntity, useActiveEntityDoc, entityPossessive } from '@/app/ngo-admin/active-entity-context';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -171,7 +171,7 @@ export default function ManageProfilePage() {
   // Eski adminUserId / managedNgoId / selfNgo zinciri çoklu-kurum adminlerde
   // hep ilk STK'yı seçiyordu; artık layout banner'ı hangi kurumu gösteriyorsa
   // form da o kurumun verisini yükler.
-  const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
+  const { id: activeIdFromCtx, kind: activeKind, subType: activeSubType, isLoading: activeLoading } = useActiveEntity();
   const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
 
   const activeEntity = useMemo<{ kind: EntityKind; data: EntityDoc } | null>(() => {
@@ -411,8 +411,6 @@ export default function ManageProfilePage() {
     );
   }
 
-  const entityKindLabel = activeEntity.kind === 'ngo' ? 'STK' : activeEntity.kind === 'brand' ? 'Marka' : 'Kulüp';
-
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
@@ -421,7 +419,7 @@ export default function ManageProfilePage() {
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">{entityKindLabel} Profili Güncelle</h1>
+                <h1 className="text-2xl font-bold font-headline">{entityPossessive(activeEntity.kind, activeSubType)} Profilini Güncelle</h1>
                 <p className="text-muted-foreground text-sm">
                   <span className="font-semibold text-foreground">{name || activeEntity.data.name || activeEntity.data.id}</span>
                   <span className="mx-2 text-muted-foreground/40">·</span>
@@ -679,15 +677,21 @@ export default function ManageProfilePage() {
             <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Yasal Belgeler</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile={logoFile} required={true}
+             <FileUpload label={activeEntity.kind === 'brand' ? 'Marka Logosu (PNG/JPG)' : 'Kuruluş Logosu (PNG/JPG)'} currentFile={logoFile} required={true}
                 accept="image/png,image/jpeg,image/webp" uploading={uploadingKind === 'logo'}
                 onSelect={(f) => handleFileUpload(f, 'logo')} />
-             <FileUpload label="Faaliyet Belgesi (PNG/JPG/PDF)" currentFile={activityCertificate} required={true}
-                accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'activityCertificate'}
-                onSelect={(f) => handleFileUpload(f, 'activityCertificate')} />
-             <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF/JPG)' : 'Tüzük (PDF/JPG)'} currentFile={charterFile} required={true}
-                accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'charter'}
-                onSelect={(f) => handleFileUpload(f, 'charter')} />
+             {/* Faaliyet Belgesi: STK + Öğrenci Kulübü (kulüpte okuldan alınır). Markaya sorulmaz. */}
+             {activeEntity.kind !== 'brand' && (
+               <FileUpload label={activeEntity.kind === 'club' ? 'Faaliyet Belgesi — Okuldan (PNG/JPG/PDF)' : 'Faaliyet Belgesi (PNG/JPG/PDF)'} currentFile={activityCertificate} required={true}
+                  accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'activityCertificate'}
+                  onSelect={(f) => handleFileUpload(f, 'activityCertificate')} />
+             )}
+             {/* Tüzük / Vakıf Senedi: yalnızca STK. */}
+             {activeEntity.kind === 'ngo' && (
+               <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF/JPG)' : 'Tüzük (PDF/JPG)'} currentFile={charterFile} required={true}
+                  accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'charter'}
+                  onSelect={(f) => handleFileUpload(f, 'charter')} />
+             )}
           </CardContent>
         </Card>
 
