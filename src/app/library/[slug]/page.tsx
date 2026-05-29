@@ -4,15 +4,19 @@ import { librarySections } from '@/lib/library';
 import type { LibrarySection } from '@/lib/library';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { COLLECTIONS } from '@/firebase/collections';
+
+// Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
+// engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
+const LIBRARY_READ_POINTS = 5;
 
 export default function LibraryItemPage() {
   const router = useRouter();
@@ -20,6 +24,11 @@ export default function LibraryItemPage() {
   const slug = params.slug as string;
   const { toast } = useToast();
   const db = useFirestore();
+  const { user } = useUser();
+
+  // Kullanıcının kaydet/okudu durumu (persist) — users/{uid} doc'undan.
+  const userRef = useMemoFirebase(() => (user ? doc(db, COLLECTIONS.users, user.uid) : null), [db, user]);
+  const { data: userData } = useDoc<{ readLibraryItems?: string[]; savedLibraryItems?: string[]; awardedLibraryItems?: string[] }>(userRef);
 
   // Statik + Firestore section'ları birleştir, slug'ı her iki kaynakta ara
   const libQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.library) : null), [db]);
@@ -46,8 +55,10 @@ export default function LibraryItemPage() {
     return null;
   }, [fsSections, slug]);
 
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [recommendation, setRecommendation] = useState<'up' | 'down' | null>(null);
+  const isRead = Array.isArray(userData?.readLibraryItems) && userData!.readLibraryItems!.includes(slug);
+  const isSaved = Array.isArray(userData?.savedLibraryItems) && userData!.savedLibraryItems!.includes(slug);
 
   // Firestore yüklenirken bekleyen ekran (statik section'da yoksa fs gelene kadar 404 gösterme)
   if (fsLoading && !itemWithSection) {
@@ -97,13 +108,51 @@ export default function LibraryItemPage() {
   const completionText = isViewable ? 'İzledim' : 'Okudum';
   const CompletionIcon = isViewable ? Film : Book;
 
-  const handleToggleComplete = () => {
-    const newStatus = !isCompleted;
-    setIsCompleted(newStatus);
-    toast({
-        title: newStatus ? "İçerik Tamamlandı Olarak İşaretlendi" : "Tamamlandı İşareti Kaldırıldı",
-        description: `"${item.title}"`,
-    });
+  const handleToggleComplete = async () => {
+    if (!user || !userRef) {
+      toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Okuduğunu işaretlemek için giriş yapmalısın.' });
+      return;
+    }
+    setBusy(true);
+    try {
+      if (isRead) {
+        await updateDoc(userRef, { readLibraryItems: arrayRemove(slug) });
+        toast({ title: 'Tamamlandı işareti kaldırıldı', description: `"${item.title}"` });
+      } else {
+        // Puan yalnızca daha önce ödüllenmemiş içerikte verilir (remove→re-add ile farm engellenir).
+        const alreadyAwarded = Array.isArray(userData?.awardedLibraryItems) && userData!.awardedLibraryItems!.includes(slug);
+        const update: Record<string, unknown> = { readLibraryItems: arrayUnion(slug) };
+        if (!alreadyAwarded) {
+          update.awardedLibraryItems = arrayUnion(slug);
+          update.impactScore = increment(LIBRARY_READ_POINTS);
+        }
+        await updateDoc(userRef, update);
+        toast({
+          title: alreadyAwarded ? `"${item.title}" işaretlendi` : `Tebrikler! +${LIBRARY_READ_POINTS} etki puanı 🎉`,
+          description: `"${item.title}" ${completionText.toLowerCase()} olarak işaretlendi.`,
+        });
+      }
+    } catch {
+      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: 'Lütfen tekrar deneyin.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleToggleSave = async () => {
+    if (!user || !userRef) {
+      toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Kaydetmek için giriş yapmalısın.' });
+      return;
+    }
+    setBusy(true);
+    try {
+      await updateDoc(userRef, { savedLibraryItems: isSaved ? arrayRemove(slug) : arrayUnion(slug) });
+      toast({ title: isSaved ? 'Kayıtlardan çıkarıldı' : 'Kaydedildi 📑', description: `"${item.title}"` });
+    } catch {
+      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: 'Lütfen tekrar deneyin.' });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleRecommend = (rec: 'up' | 'down') => {
@@ -117,9 +166,21 @@ export default function LibraryItemPage() {
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
-        <ArrowLeft className="h-6 w-6" />
-      </Button>
+      <div className="flex items-center justify-between mb-2">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <Button
+          onClick={handleToggleSave}
+          variant={isSaved ? 'default' : 'outline'}
+          size="sm"
+          disabled={busy}
+          className="gap-2"
+        >
+          {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+          {isSaved ? 'Kaydedildi' : 'Kaydet'}
+        </Button>
+      </div>
       <div>
         <h1 className="text-2xl font-bold font-headline">{item.title}</h1>
       </div>
@@ -138,11 +199,12 @@ export default function LibraryItemPage() {
                 Bu içeriği tamamladın mı?
             </p>
             <Button
-              variant={isCompleted ? 'default' : 'outline'}
+              variant={isRead ? 'default' : 'outline'}
               onClick={handleToggleComplete}
+              disabled={busy}
               className="w-28"
             >
-              {isCompleted && <Check className="mr-2 h-4 w-4" />}
+              {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isRead && <Check className="mr-2 h-4 w-4" />)}
               {completionText}
             </Button>
           </div>
