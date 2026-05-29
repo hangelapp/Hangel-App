@@ -46,13 +46,17 @@ function ageBucket(age: number): string {
 
 interface DemoUser {
     id: string;
-    personalInfo?: { birthDate?: unknown; gender?: string; bloodType?: string; nationality?: string; address?: { country?: string; city?: string } };
-    volunteerInfo?: { profession?: string; sector?: string; interests?: string[]; skills?: string[]; languages?: string[]; education?: Array<{ level?: string }> };
+    personalInfo?: { birthDate?: unknown; gender?: string; bloodType?: string; nationality?: string; address?: { country?: string; city?: string; district?: string; neighborhood?: string } };
+    volunteerInfo?: { profession?: string; sector?: string; interests?: string[]; skills?: string[]; languages?: string[]; education?: Array<{ level?: string; school?: string; department?: string }> };
     supportedNgos?: string[];
     volunteeredNgos?: string[];
+    followedBrands?: string[];
+    joinedClubs?: string[];
     managedNgoId?: string;
     [key: string]: unknown;
 }
+
+type NameMaps = { ngo: Map<string, string>; brand: Map<string, string>; club: Map<string, string> };
 
 const ROLE_LABELS: Record<string, string> = {
     user: 'Kullanıcı', volunteer: 'Gönüllü', donor: 'Bağışçı', student: 'Öğrenci', individual: 'Bireysel',
@@ -60,7 +64,7 @@ const ROLE_LABELS: Record<string, string> = {
     admin: 'Yönetici', 'super-admin': 'Süper Admin',
 };
 
-const computeStats = (users: DemoUser[]) => {
+const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
     const ageBuckets: Record<string, number> = { '<18': 0, '18-24': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
     const gender: Record<string, number> = {};
     const blood: Record<string, number> = {};
@@ -74,6 +78,14 @@ const computeStats = (users: DemoUser[]) => {
     const educationLevel: Record<string, number> = {};
     const languages: Record<string, number> = {};
     const role: Record<string, number> = {};
+    const district: Record<string, number> = {};
+    const neighborhood: Record<string, number> = {};
+    const department: Record<string, number> = {};
+    const school: Record<string, number> = {};
+    const clubs: Record<string, number> = {};
+    const volunteeredNgoNames: Record<string, number> = {};
+    const followedBrandNames: Record<string, number> = {};
+    const secondaryNgo: Record<string, number> = {};
     let ageSum = 0, ageCount = 0, withVolunteer = 0, withBlood = 0, supporters = 0, volunteers = 0, withCity = 0;
 
     users.forEach(u => {
@@ -101,8 +113,17 @@ const computeStats = (users: DemoUser[]) => {
         (vi.skills || []).forEach((s: string) => { skills[s] = (skills[s] || 0) + 1; });
         (vi.languages || []).forEach((l: string) => { languages[l] = (languages[l] || 0) + 1; });
 
-        const eduLvl = vi.education?.[0]?.level;
-        if (eduLvl) educationLevel[eduLvl] = (educationLevel[eduLvl] || 0) + 1;
+        const edu0 = vi.education?.[0];
+        if (edu0?.level) educationLevel[edu0.level] = (educationLevel[edu0.level] || 0) + 1;
+        if (edu0?.school) school[edu0.school] = (school[edu0.school] || 0) + 1;
+        if (edu0?.department) department[edu0.department] = (department[edu0.department] || 0) + 1;
+        if (pi.address?.district) district[pi.address.district] = (district[pi.address.district] || 0) + 1;
+        if (pi.address?.neighborhood) neighborhood[pi.address.neighborhood] = (neighborhood[pi.address.neighborhood] || 0) + 1;
+        (u.joinedClubs || []).forEach(id => { const n = nameMaps.club.get(id); if (n) clubs[n] = (clubs[n] || 0) + 1; });
+        (u.volunteeredNgos || []).forEach(id => { const n = nameMaps.ngo.get(id); if (n) volunteeredNgoNames[n] = (volunteeredNgoNames[n] || 0) + 1; });
+        (u.followedBrands || []).forEach(id => { const n = nameMaps.brand.get(id); if (n) followedBrandNames[n] = (followedBrandNames[n] || 0) + 1; });
+        const sec = (u.supportedNgos || [])[1];
+        if (sec) { const n = nameMaps.ngo.get(sec); if (n) secondaryNgo[n] = (secondaryNgo[n] || 0) + 1; }
     });
 
     const toArr = (obj: Record<string, number>, max = 12) =>
@@ -128,6 +149,14 @@ const computeStats = (users: DemoUser[]) => {
         avgAge: ageCount ? Math.round(ageSum / ageCount) : 0,
         withVolunteer, withBlood, withCity, supporters, volunteers,
         roleDist: toArr(role, 8).map(r => ({ name: ROLE_LABELS[r.name] || r.name, value: r.value })),
+        district: toArr(district, 12),
+        neighborhood: toArr(neighborhood, 12),
+        department: toArr(department, 12),
+        school: toArr(school, 12),
+        clubs: toArr(clubs, 12),
+        volunteeredNgoNames: toArr(volunteeredNgoNames, 12),
+        followedBrandNames: toArr(followedBrandNames, 12),
+        secondaryNgo: toArr(secondaryNgo, 10),
     };
 };
 
@@ -212,8 +241,18 @@ export default function DemographicsPage() {
     const usersQ = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const ngosQ = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
 
+    const brandsQ = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
+    const clubsQ = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
+
     const { data: users, isLoading } = useCollection<DemoUser>(usersQ);
     const { data: ngos } = useCollection<{ id: string; name?: string }>(ngosQ);
+    const { data: brands } = useCollection<{ id: string; name?: string }>(brandsQ);
+    const { data: clubs } = useCollection<{ id: string; name?: string }>(clubsQ);
+    const nameMaps = useMemo<NameMaps>(() => ({
+        ngo: new Map((ngos || []).map(n => [n.id, n.name || ''])),
+        brand: new Map((brands || []).map(b => [b.id, b.name || ''])),
+        club: new Map((clubs || []).map(c => [c.id, c.name || ''])),
+    }), [ngos, brands, clubs]);
 
     const [selectedNgoId, setSelectedNgoId] = useState<string>('all');
 
@@ -232,7 +271,7 @@ export default function DemographicsPage() {
         });
     }, [users, selectedNgoId]);
 
-    const stats = useMemo(() => computeStats(filteredUsers), [filteredUsers]);
+    const stats = useMemo(() => computeStats(filteredUsers, nameMaps), [filteredUsers, nameMaps]);
     const selectedNgoName = useMemo(() => {
         if (selectedNgoId === 'all') return 'Tüm Platform';
         return (ngos || []).find((n) => n.id === selectedNgoId)?.name || 'STK';
@@ -340,24 +379,32 @@ export default function DemographicsPage() {
                     <StatChartCard title="Yaş Dağılımı" icon={Cake} data={stats.ageBuckets} type="pie" />
                     <StatChartCard title="Cinsiyet Dağılımı" icon={Users} data={stats.gender} type="pie" color="#0ea5e9" />
                     <StatChartCard title="Kan Grubu" icon={Heart} data={stats.blood} type="bar" color="#dc2626" />
-                    <StatChartCard title="Eğitim Seviyesi" icon={GraduationCap} data={stats.educationLevel} type="bar" color="#10b981" />
                 </TabsContent>
 
                 <TabsContent value="location" className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <StatChartCard title="Ülke" icon={Globe} data={stats.country} type="horizontal" color="#042654" />
-                    <StatChartCard title="Şehir (Top 12)" icon={MapPin} data={stats.city} type="horizontal" color="#f34723" />
+                    <StatChartCard title="İl (Top 12)" icon={MapPin} data={stats.city} type="horizontal" color="#f34723" />
+                    <StatChartCard title="İlçe (Top 12)" icon={MapPin} data={stats.district} type="horizontal" color="#0ea5e9" />
+                    <StatChartCard title="Mahalle (Top 12)" icon={MapPin} data={stats.neighborhood} type="horizontal" color="#10b981" />
                     <StatChartCard title="Uyruk" icon={Globe} data={stats.nationality} type="horizontal" color="#a855f7" />
                 </TabsContent>
 
                 <TabsContent value="profile" className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <StatChartCard title="Eğitim Seviyesi" icon={GraduationCap} data={stats.educationLevel} type="bar" color="#10b981" />
+                    <StatChartCard title="Okul (Top 12)" icon={GraduationCap} data={stats.school} type="horizontal" color="#0ea5e9" />
+                    <StatChartCard title="Bölüm / Fakülte (Top 12)" icon={GraduationCap} data={stats.department} type="horizontal" color="#6366f1" />
                     <StatChartCard title="Meslek (Top 12)" icon={Sparkles} data={stats.profession} type="horizontal" color="#10b981" />
                     <StatChartCard title="Sektör" icon={Building} data={stats.sector} type="horizontal" color="#0ea5e9" />
-                    <StatChartCard title="İlgi Alanları (Top 12)" icon={Heart} data={stats.interests} type="horizontal" color="#ec4899" />
-                    <StatChartCard title="Yetkinlikler (Top 12)" icon={Target} data={stats.skills} type="horizontal" color="#f59e0b" />
+                    <StatChartCard title="Sosyal Hassasiyetler / İlgi Alanları" icon={Heart} data={stats.interests} type="horizontal" color="#ec4899" />
+                    <StatChartCard title="Yetkinlikler (Profesyonel & Sosyal)" icon={Target} data={stats.skills} type="horizontal" color="#f59e0b" />
                     <StatChartCard title="Diller" icon={Globe} data={stats.languages} type="horizontal" color="#6366f1" />
                 </TabsContent>
 
                 <TabsContent value="engagement" className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <StatChartCard title="Üye Olunan Kulüpler (Top 12)" icon={GraduationCap} data={stats.clubs} type="horizontal" color="#0ea5e9" />
+                    <StatChartCard title="Gönüllü Olunan STK'lar (Top 12)" icon={HandHeart} data={stats.volunteeredNgoNames} type="horizontal" color="#10b981" />
+                    <StatChartCard title="Takip Edilen Markalar (Top 12)" icon={Building} data={stats.followedBrandNames} type="horizontal" color="#f59e0b" />
+                    <StatChartCard title="2. Tercih STK'lar (Top 10)" icon={Heart} data={stats.secondaryNgo} type="horizontal" color="#ec4899" />
                     <StatChartCard title="Rol Dağılımı" icon={UserCheck} data={stats.roleDist} type="pie" color="#6366f1" />
                     <StatChartCard
                         title="Bağış & Gönüllülük"
