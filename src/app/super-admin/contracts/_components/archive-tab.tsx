@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, Archive, FileText, ExternalLink, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle } from 'lucide-react';
+import { Loader2, Search, Archive, FileText, ExternalLink, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, updateDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -45,6 +46,24 @@ export function ArchiveTab() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [reviewFilter, setReviewFilter] = useState<string>('all');
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
+
+  // Ayna eklenmeden önce yüklenmiş belgeleri (logo, faaliyet belgesi, tüzük, şeffaflık) içe aktar.
+  const handleBackfill = async () => {
+    if (!user) return;
+    setBackfilling(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/admin/archive-backfill', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) { toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: json?.message || 'Hata' }); return; }
+      toast({ title: 'Geçmiş belgeler tarandı', description: `${json.imported || 0} belge arşive işlendi.` });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: e instanceof Error ? e.message : 'Hata' });
+    } finally {
+      setBackfilling(false);
+    }
+  };
 
   const archiveQuery = useMemoFirebase(() => collection(db, COLLECTIONS.documentArchive), [db]);
   const { data: docs, isLoading } = useCollection<ArchiveDoc>(archiveQuery);
@@ -135,6 +154,10 @@ export function ArchiveTab() {
               <SelectItem value="reviewed">İncelendi</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm" className="h-10 gap-1.5" onClick={handleBackfill} disabled={backfilling} title="Daha önce yüklenmiş logo/belge/şeffaflık dosyalarını arşive aktar">
+            {backfilling ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            Geçmiş Belgeleri Tara
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
