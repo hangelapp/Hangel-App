@@ -2,13 +2,14 @@
 
 import { contractsData } from '@/lib/contracts';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle2, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 
 export default function ContractDetailPage() {
@@ -29,6 +30,66 @@ export default function ContractDetailPage() {
     if (firestoreContract && firestoreContract.content) return firestoreContract;
     return contractsData.find(c => c.slug === slug) || null;
   }, [firestoreContract, slug]);
+
+  // --- "Okudum, Onaylıyorum" (KVKK ispat kaydı → super-admin Onay Kayıtları) ---
+  const { user: authUser } = useUser();
+  const { toast } = useToast();
+  const version = (firestoreContract as { version?: string } | null)?.version || '1.0';
+  const [approving, setApproving] = useState(false);
+  const [approved, setApproved] = useState(false);
+  const [readSeconds, setReadSeconds] = useState(0);
+  const scrolledRef = useRef(false);
+
+  useEffect(() => {
+    const t = setInterval(() => setReadSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (window.scrollY + window.innerHeight >= document.body.scrollHeight - 120) scrolledRef.current = true;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (slug && typeof window !== 'undefined') {
+      try { if (localStorage.getItem(`contract-approved-${slug}-v${version}`)) setApproved(true); } catch { /* noop */ }
+    }
+  }, [slug, version]);
+
+  const handleApprove = async () => {
+    if (!authUser) { toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Onaylamak için giriş yapın.' }); return; }
+    setApproving(true);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/contracts/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          contractSlug: slug,
+          contractTitle: contract?.title || slug,
+          version,
+          scrollCompleted: scrolledRef.current,
+          readSeconds,
+          method: 'button',
+        }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        toast({ variant: 'destructive', title: 'Onaylanamadı', description: 'Lütfen tekrar deneyin.' });
+        return;
+      }
+      setApproved(true);
+      try { localStorage.setItem(`contract-approved-${slug}-v${version}`, new Date().toISOString()); } catch { /* noop */ }
+      toast({ title: '✅ Onaylandı', description: 'Okuduğunuz ve onayladığınız kaydedildi.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Onaylanamadı', description: 'Bağlantı hatası.' });
+    } finally {
+      setApproving(false);
+    }
+  };
 
   // App settings sayfaları tasarımı: standart p-4 + Card. PublicFooter kaldırıldı
   // (settings layout zaten footer + max-w sağlar).
@@ -58,6 +119,28 @@ export default function ContractDetailPage() {
             className="prose prose-sm sm:prose-base dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
           />
+        </CardContent>
+      </Card>
+
+      {/* Okudum, Onaylıyorum — KVKK ispat kaydı (super-admin Onay Kayıtları'na düşer) */}
+      <Card className={approved ? 'border-green-500/50 bg-green-50/40' : 'border-primary/30'}>
+        <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          {approved ? (
+            <div className="flex items-center gap-2 text-green-700 font-medium text-sm">
+              <CheckCircle2 className="h-5 w-5 shrink-0" /> Bu metni okudunuz ve onayladınız. Teşekkürler.
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 text-sm text-muted-foreground inline-flex items-center gap-2">
+                <ScrollText className="h-4 w-4 shrink-0" />
+                Metni okuduysanız onaylayın. (Onay; tarih, cihaz ve okuma süresiyle birlikte kayıt altına alınır.)
+              </div>
+              <Button onClick={handleApprove} disabled={approving} className="shrink-0">
+                {approving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                Okudum, Onaylıyorum
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
