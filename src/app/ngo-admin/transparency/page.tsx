@@ -138,6 +138,16 @@ export default function TransparencyPage() {
       );
       persistCriteria(next);
 
+      // Super-admin "Arşiv" sekmesinde görünsün diye merkezi arşive ayna kaydı (best-effort).
+      try {
+        const token = await authUser.getIdToken();
+        await fetch('/api/ngo/archive', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ docType: existing?.name || `Evrak ${itemId}`, fileUrl, entityType: 'ngo' }),
+        });
+      } catch { /* arşiv aynası başarısız olsa da yükleme tamam */ }
+
       toast({ title: 'Belge yüklendi', description: `"${file.name}" kaydedildi.` });
     } catch (err) {
       console.error('Upload failed', err);
@@ -146,7 +156,7 @@ export default function TransparencyPage() {
     } finally {
       setUploadingId(null);
     }
-  }, [activeCriteria, authUser?.uid, persistCriteria, toast]);
+  }, [activeCriteria, authUser, persistCriteria, toast]);
 
   const handleRemove = useCallback(async (itemId: number) => {
     if (!authUser?.uid) return;
@@ -157,6 +167,18 @@ export default function TransparencyPage() {
       try { await deleteObject(ref(getStorage(), target.storagePath)); } catch {}
     }
 
+    // Merkezi arşivdeki ayna kaydını da kaldır (yalnızca belge türleri arşive yazılır).
+    if (target.type === 'document' || target.type === 'document-link') {
+      try {
+        const token = await authUser.getIdToken();
+        await fetch('/api/ngo/archive', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ docType: target.name }),
+        });
+      } catch { /* arşiv ayna silme best-effort */ }
+    }
+
     const next = activeCriteria.map(item =>
       item.id === itemId
         ? { ...item, isCompleted: false, fileName: undefined, fileUrl: undefined, storagePath: undefined, linkUrl: undefined, textValue: undefined, selectedOptions: [], updatedAt: new Date().toISOString() }
@@ -164,7 +186,7 @@ export default function TransparencyPage() {
     );
     persistCriteria(next);
     toast({ title: 'Kaldırıldı', description: `"${target.name}" kriteri sıfırlandı.` });
-  }, [activeCriteria, authUser?.uid, persistCriteria, toast]);
+  }, [activeCriteria, authUser, persistCriteria, toast]);
 
   const openEditor = (item: CriteriaItem) => {
     setEditingId(item.id);
