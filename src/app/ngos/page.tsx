@@ -25,6 +25,8 @@ export default function NgosPage() {
     const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
     // Random shuffle id sırası — useEffect içinde set edilir (hydration güvenli).
     const [randomOrder, setRandomOrder] = useState<string[]>([]);
+    // Gerçek (ilişki bazlı) bağışçı/gönüllü sayıları — /api/ngos/engagement.
+    const [realCounts, setRealCounts] = useState<Record<string, { donors: number; volunteers: number }>>({});
 
     const ngosQuery = useMemoFirebase(() => {
         if (!db) return null;
@@ -32,6 +34,26 @@ export default function NgosPage() {
     }, [db]);
 
     const { data: ngosData, isLoading } = useCollection<NGO>(ngosQuery);
+
+    // Kartlardaki Bağışçı/Gönüllü için gerçek (kullanıcı ilişkisi bazlı) sayıları çek.
+    useEffect(() => {
+        let active = true;
+        fetch('/api/ngos/engagement')
+            .then(r => r.json())
+            .then(d => { if (active && d?.ok && d.counts) setRealCounts(d.counts); })
+            .catch(() => {});
+        return () => { active = false; };
+    }, []);
+
+    // ngosData'yı gerçek sayılarla zenginleştir → hem sıralama hem görüntüleme tutarlı.
+    const enrichedNgos = useMemo(() => {
+        if (!ngosData) return [] as NGO[];
+        return ngosData.map(n => {
+            const rc = realCounts[n.id];
+            if (!rc) return n;
+            return { ...n, stats: { ...(n.stats ?? {}), donors: rc.donors, volunteers: rc.volunteers } } as NGO;
+        });
+    }, [ngosData, realCounts]);
 
     useEffect(() => {
         if (!ngosData || ngosData.length === 0) return;
@@ -55,13 +77,13 @@ export default function NgosPage() {
     }, [ngosData]);
 
     const filteredNgos = useMemo(() => {
-        if (!ngosData) return [];
+        if (!enrichedNgos.length) return [];
         // Demo / seed temizliği (PDF audit #1):
         //  - 'Pasif' statüsündeki kuruluşları gizle
         //  - isDemo=true ile işaretlenmiş kuruluşları gizle (backfill: runbook)
         //  - Adı "Demo"/"Test"/"Örnek" ile başlayan seed kayıtlarını gizle
         //  - joinDate yok ve tüm istatistikler 0 ise placeholder kabul et
-        let filtered = ngosData.filter((raw) => {
+        let filtered = enrichedNgos.filter((raw) => {
             const ngo = raw as NGO & { status?: string; isDemo?: boolean };
             if (ngo.status === 'Pasif') return false;
             if (ngo.isDemo === true) return false;
@@ -108,7 +130,7 @@ export default function NgosPage() {
         });
 
         return filtered;
-    }, [ngosData, typeFilter, searchTerm, sortKey, categoryFilter]);
+    }, [enrichedNgos, typeFilter, searchTerm, sortKey, categoryFilter]);
 
     return (
         <div className="p-4 space-y-4 animate-in fade-in-0">

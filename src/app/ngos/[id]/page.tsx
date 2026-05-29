@@ -129,6 +129,17 @@ export default function NgoProfilePage() {
   const [isPosInfoOpen, setIsPosInfoOpen] = useState(false);
   const [donorBusy, setDonorBusy] = useState(false);
   const [volunteerBusy, setVolunteerBusy] = useState(false);
+  // Gerçek (kullanıcı ilişkisi bazlı) bağışçı/gönüllü sayıları — /api/ngos/engagement.
+  const [realStats, setRealStats] = useState<{ donors: number; volunteers: number } | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+    fetch('/api/ngos/engagement')
+      .then(r => r.json())
+      .then(d => { if (active && d?.ok && d.counts?.[id]) setRealStats(d.counts[id]); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [id]);
 
   const handleToggleDonor = async () => {
     if (!authUser || !userDocRef) {
@@ -290,6 +301,8 @@ export default function NgoProfilePage() {
   };
   
   const transparencyScore = ngo.transparencyScore ?? 0;
+  const donorsCount = realStats?.donors ?? ngo.stats?.donors ?? 0;
+  const volunteersCount = realStats?.volunteers ?? ngo.stats?.volunteers ?? 0;
   const transparencyCriteria = [
     { name: 'Faaliyet Belgesi', completed: true },
     { name: 'Tüzük / Vakıf Senedi', completed: true },
@@ -389,11 +402,11 @@ export default function NgoProfilePage() {
         <div className="mt-4 space-y-2">
             <div className="grid grid-cols-2">
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{(ngo.stats?.donors ?? 0).toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{donorsCount.toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Bağışçı</p>
                 </div>
                 <div className="p-3 text-center">
-                    <p className="font-bold text-lg">{(ngo.stats?.volunteers ?? 0).toLocaleString('tr-TR')}</p>
+                    <p className="font-bold text-lg">{volunteersCount.toLocaleString('tr-TR')}</p>
                     <p className="text-xs text-muted-foreground">Gönüllü</p>
                 </div>
             </div>
