@@ -176,7 +176,7 @@ export default function TimelinePage() {
 
   // Canlı kurum logoları + profil linkleri — statik @/lib/data'da logolar boş/eski
   // olabildiğinden gönderi yazarını Firestore'daki ngo/marka/kulüp ile eşleştir.
-  type LiveEntity = { id: string; name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } };
+  type LiveEntity = { id: string; name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string }; address?: { country?: string; city?: string }; city?: string; country?: string; university?: string };
   const ngosLiveQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
   const { data: ngosLive } = useCollection<LiveEntity>(ngosLiveQuery);
   const brandsLiveQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
@@ -186,12 +186,17 @@ export default function TimelinePage() {
 
   const entityResolver = useMemo(() => {
     const norm = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
-    const map = new Map<string, { link: string; logo?: string; id: string; type: 'ngo' | 'brand' | 'club' }>();
+    const map = new Map<string, { link: string; logo?: string; id: string; type: 'ngo' | 'brand' | 'club'; country: string; city: string; university: string }>();
     const add = (list: LiveEntity[] | null | undefined, type: 'ngo' | 'brand' | 'club', linkFor: (e: LiveEntity) => string) => {
       (list || []).forEach(e => {
         if (!e.name) return;
         const logo = e.files?.logo || e.logoUrl || e.avatarUrl;
-        map.set(norm(e.name), { link: linkFor(e), logo, id: e.id, type });
+        map.set(norm(e.name), {
+          link: linkFor(e), logo, id: e.id, type,
+          country: norm(e.address?.country || e.country || (type === 'club' ? 'Türkiye' : '')),
+          city: norm(e.address?.city || e.city || ''),
+          university: norm(e.university || ''),
+        });
       });
     };
     add(ngosLive, 'ngo', e => `/ngos/${e.id}`);
@@ -205,13 +210,27 @@ export default function TimelinePage() {
     () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
     [db, authUser?.uid],
   );
-  const { data: userRel } = useDoc<{ supportedNgos?: string[]; volunteeredNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[] }>(userRelRef);
+  const { data: userRel } = useDoc<{
+    supportedNgos?: string[]; volunteeredNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[];
+    personalInfo?: { address?: { country?: string; city?: string } };
+    volunteerInfo?: { education?: Array<{ school?: string }> };
+  }>(userRelRef);
   const relSets = useMemo(() => ({
     supported: new Set(userRel?.supportedNgos || []),
     volunteered: new Set(userRel?.volunteeredNgos || []),
     followed: new Set(userRel?.followedBrands || []),
     joined: new Set(userRel?.joinedClubs || []),
   }), [userRel]);
+  // Sekme filtreleri için kullanıcının konumu + okulu (kurum adresiyle eşleştirilir).
+  const userLoc = useMemo(() => {
+    const norm = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
+    const normCountry = (s: string) => { const n = norm(s); return (n === 'turkey' || n === 'tr' || n === 'türkiye cumhuriyeti' || n === '') ? 'türkiye' : n; };
+    return {
+      country: normCountry(userRel?.personalInfo?.address?.country || ''),
+      city: norm(userRel?.personalInfo?.address?.city || ''),
+      schools: new Set((userRel?.volunteerInfo?.education || []).map(e => norm(e.school || '')).filter(Boolean)),
+    };
+  }, [userRel]);
   const [relFilter, setRelFilter] = useState<'all' | 'supported' | 'volunteered' | 'followed' | 'joined'>('all');
 
   // Prime likeState once per (postsData, authUser) using one-shot reads.
@@ -312,6 +331,24 @@ export default function TimelinePage() {
     return posts;
   }, [postsData, sortKey, sortDir, filterSponsored, searchTerm, relFilter, entityResolver, relSets]);
 
+  // Sekme filtreleri — gönderi yazarının (kurum) adresine göre. Konum/okul yoksa
+  // kısıtlama yapmaz (boş sekme yerine akışı gösterir).
+  const tabPosts = useMemo(() => {
+    const ent = (name: string) => entityResolver.get((name || '').trim().toLocaleLowerCase('tr'));
+    const country = sortedAndFilteredPosts.filter(p => {
+      const e = ent(p.author?.name || '');
+      if (!e) return false;
+      return !e.country || e.country === userLoc.country;
+    });
+    const city = userLoc.city
+      ? sortedAndFilteredPosts.filter(p => ent(p.author?.name || '')?.city === userLoc.city)
+      : sortedAndFilteredPosts;
+    const school = userLoc.schools.size > 0
+      ? sortedAndFilteredPosts.filter(p => { const e = ent(p.author?.name || ''); return e?.type === 'club' && (userLoc.schools.has(e.university) || (!!e.city && e.city === userLoc.city)); })
+      : sortedAndFilteredPosts.filter(p => ent(p.author?.name || '')?.type === 'club');
+    return { country, city, school };
+  }, [sortedAndFilteredPosts, entityResolver, userLoc]);
+
   const normName = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
   const getEntityLink = (authorName: string) => {
     const live = entityResolver.get(normName(authorName));
@@ -342,11 +379,13 @@ export default function TimelinePage() {
     return undefined;
   }
 
-  const postFeed = (
+  const renderFeed = (list: Post[]) => (
                 <div className="p-2 sm:p-4 space-y-4">
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
-                    ) : sortedAndFilteredPosts.map((post, index) => {
+                    ) : list.length === 0 ? (
+                        <div className="py-16 text-center text-muted-foreground text-sm">Bu sekmede gösterilecek gönderi yok.</div>
+                    ) : list.map((post, index) => {
                     const cached = likeState[post.id];
                     const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
                     const isLiked = cached ? cached.isLikedByMe : fallbackMine;
@@ -538,11 +577,11 @@ export default function TimelinePage() {
                         )}
                     </Card>
                 </div>
-                {postFeed}
+                {renderFeed(sortedAndFilteredPosts)}
             </TabsContent>
-            <TabsContent value="country" className="mt-0">{postFeed}</TabsContent>
-            <TabsContent value="city" className="mt-0">{postFeed}</TabsContent>
-            <TabsContent value="school" className="mt-0">{postFeed}</TabsContent>
+            <TabsContent value="country" className="mt-0">{renderFeed(tabPosts.country)}</TabsContent>
+            <TabsContent value="city" className="mt-0">{renderFeed(tabPosts.city)}</TabsContent>
+            <TabsContent value="school" className="mt-0">{renderFeed(tabPosts.school)}</TabsContent>
         </Tabs>
     </div>
   );
