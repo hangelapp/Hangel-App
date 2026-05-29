@@ -195,6 +195,8 @@ export default function ManageProfilePage() {
   const [beneficiaries, setBeneficiaries] = useState<string[]>([]);
   const [sdgs, setSdgs] = useState<string[]>([]);
   const [memberships, setMemberships] = useState<string[]>([]);
+  const [sector, setSector] = useState(''); // Marka: faaliyet sektörü
+  const [university, setUniversity] = useState(''); // Kulüp: üniversite/bağlı okul
   const [country, setCountry] = useState('Türkiye');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
@@ -260,6 +262,8 @@ export default function ManageProfilePage() {
     setBeneficiaries(d.beneficiaries || []);
     setSdgs(d.sdgs || []);
     setMemberships(d.memberships || []);
+    setSector((d as { sector?: string }).sector || '');
+    setUniversity((d as { university?: string; clubAffiliation?: string }).university || (d as { clubAffiliation?: string }).clubAffiliation || '');
     setCountry(d.address?.country || 'Türkiye');
     setCity(d.address?.city || '');
     setDistrict(d.address?.district || '');
@@ -346,6 +350,8 @@ export default function ManageProfilePage() {
           beneficiaries,
           sdgs,
           memberships,
+          ...(activeEntity.kind === 'brand' ? { sector } : {}),
+          ...(activeEntity.kind === 'club' ? { university, clubAffiliation: university } : {}),
           address: { country, city, district, neighborhood, street },
           contact: { email, phoneCountryCode: phoneCode, phone },
           socialMedia: { instagram, twitter, linkedin, youtube },
@@ -488,6 +494,20 @@ export default function ManageProfilePage() {
                     </Select>
                 </div>
             </div>
+
+            {activeEntity.kind === 'brand' && (
+              <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Faaliyet Sektörü</Label>
+                  <Input value={sector} onChange={(e) => setSector(e.target.value)} placeholder="Örn: Gıda, Teknoloji, Tekstil, Finans..." className="h-11 rounded-xl" />
+              </div>
+            )}
+
+            {activeEntity.kind === 'club' && (
+              <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Üniversite / Bağlı Olunan Okul</Label>
+                  <Input value={university} onChange={(e) => setUniversity(e.target.value)} placeholder="Üniversite / okul adı" className="h-11 rounded-xl" />
+              </div>
+            )}
 
             {activeEntity.kind === 'ngo' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
