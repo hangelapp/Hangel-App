@@ -51,7 +51,7 @@ export async function askLibraryAssistant(
 ): Promise<AskLibraryAssistantOutput> {
   const safeInput: AskLibraryAssistantInput = {
     userQuestion: sanitizeUserInput(input.userQuestion, 2000),
-    libraryContext: sanitizeUserInput(input.libraryContext, 8000),
+    libraryContext: sanitizeUserInput(input.libraryContext, 24000), // tüm bölümler sığsın (tek dev bölüm bütçeyi yemesin diye route'ta da madde başına cap var)
   };
   const userId = await verifyAIFlowUserId(idToken);
   if (userId) {

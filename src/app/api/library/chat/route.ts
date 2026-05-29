@@ -46,16 +46,26 @@ function getClientIp(request: NextRequest): string {
     return 'unknown';
 }
 
+// Her bölümden context'e en çok bu kadar madde başlığı koyulur. Devasa "Sosyal
+// Etki Envanteri" bölümü tüm karakter bütçesini yiyip diğer bölümleri (kitaplar
+// vb.) kırptırmasın diye bölüm başına sınır + "(+N daha)" notu.
+const MAX_ITEMS_PER_SECTION = 20;
+
 function buildLibraryContext(allowedSlugs: string[]): string {
     const sections: LibrarySection[] = allowedSlugs.length > 0
         ? librarySections.filter(s => allowedSlugs.includes(s.slug))
         : librarySections;
-    // Keep the projection cheap — title + description per section, plus the
-    // child item titles so the assistant can name resources without hallucinating.
+    // Keep the projection cheap — title + description per section, plus a CAPPED
+    // sample of child item titles so the assistant can name resources from EVERY
+    // section without one huge section monopolising the context budget.
     return sections
         .map(s => {
-            const itemTitles = (s.items ?? []).map(i => `- ${i.title}`).join('\n');
-            return `## ${s.title}\n${s.description}\n${itemTitles}`;
+            const items = s.items ?? [];
+            const shown = items.slice(0, MAX_ITEMS_PER_SECTION).map(i => `- ${i.title}`).join('\n');
+            const more = items.length > MAX_ITEMS_PER_SECTION
+                ? `\n- ...(+${items.length - MAX_ITEMS_PER_SECTION} içerik daha)`
+                : '';
+            return `## ${s.title}\n${s.description}\n${shown}${more}`;
         })
         .join('\n\n');
 }
