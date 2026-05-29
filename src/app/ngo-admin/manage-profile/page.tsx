@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Instagram, Linkedin, Youtube, ArrowLeft, MapPin, Palette, FileText, X, Save, Building2, Users, Loader2, ShieldAlert } from 'lucide-react';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { useFirestore, useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { doc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
@@ -101,16 +102,33 @@ interface EntityDoc {
     };
 }
 
-const FileUpload = ({label, currentFile, required}: {label: string, currentFile?: string, required?: boolean}) => (
+const FileUpload = ({ label, currentFile, required, accept, uploading, onSelect }: {
+    label: string; currentFile?: string; required?: boolean; accept?: string; uploading?: boolean; onSelect: (file: File) => void;
+}) => (
     <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
-            <input id={`${label}-upload`} type="file" className="hidden" required={required && !currentFile} />
-            <Button asChild variant="outline" size="sm" className="rounded-xl border-primary/20 hover:bg-primary/5">
-                <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold"><Upload className="mr-2 h-4 w-4" />{currentFile ? 'Değiştir' : 'Belge Seç'}</label>
+            <input
+                id={`${label}-upload`}
+                type="file"
+                className="hidden"
+                accept={accept}
+                onChange={e => { const f = e.target.files?.[0]; if (f) onSelect(f); e.target.value = ''; }}
+            />
+            <Button asChild variant="outline" size="sm" disabled={uploading} className="rounded-xl border-primary/20 hover:bg-primary/5">
+                <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold">
+                    {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    {currentFile ? 'Değiştir' : 'Belge Seç'}
+                </label>
             </Button>
-            <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground leading-tight">{currentFile ? `Mevcut: ${currentFile}` : "Henüz dosya yüklenmedi."}</p>
+            <div className="flex-1 min-w-0">
+                {currentFile ? (
+                    <a href={currentFile} target="_blank" rel="noopener noreferrer" className="text-[11px] text-green-700 font-bold inline-flex items-center gap-1 hover:underline">
+                        <FileText className="h-3.5 w-3.5" /> Yüklendi — Görüntüle
+                    </a>
+                ) : (
+                    <p className="text-[10px] text-muted-foreground leading-tight">{required ? 'Zorunlu — henüz yüklenmedi.' : 'Henüz dosya yüklenmedi.'}</p>
+                )}
             </div>
         </div>
     </div>
@@ -195,6 +213,10 @@ export default function ManageProfilePage() {
   const [repTitle, setRepTitle] = useState('');
   const [repEmail, setRepEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [uploadingKind, setUploadingKind] = useState<string | null>(null);
+  // Formu kurum başına BİR kez doldur — canlı doc her snapshot'ta güncellenince
+  // effect yeniden çalışıp kullanıcının girdiği değerleri ezmesin (adres bug'ı).
+  const hydratedIdRef = useRef<string | null>(null);
 
   const isTurkey = country === 'Türkiye';
 
@@ -221,6 +243,9 @@ export default function ManageProfilePage() {
   // Hydrate form state when entity loads
   useEffect(() => {
     if (!activeEntity) return;
+    // Aynı kurum için tekrar doldurma → kullanıcı düzenlemeleri korunur.
+    if (hydratedIdRef.current === activeEntity.data.id) return;
+    hydratedIdRef.current = activeEntity.data.id;
     const d = activeEntity.data;
     setName(d.name || '');
     setShortName(d.shortName || '');
@@ -253,6 +278,50 @@ export default function ManageProfilePage() {
     setRepEmail(d.representative?.email || '');
   }, [activeEntity]);
 
+  const handleFileUpload = async (file: File, kind: 'logo' | 'activityCertificate' | 'charter') => {
+      if (!activeEntity) {
+        toast({ variant: 'destructive', title: 'Varlık bulunamadı' });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 10MB yükleyebilirsiniz.' });
+        return;
+      }
+      setUploadingKind(kind);
+      try {
+        const storage = getStorage();
+        const folder = activeEntity.kind === 'ngo' ? 'ngos' : activeEntity.kind === 'brand' ? 'brands' : 'clubs';
+        const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const path = `${folder}/${activeEntity.data.id}/${kind}-${Date.now()}-${safe}`;
+        const r = storageRef(storage, path);
+        await uploadBytes(r, file);
+        const url = await getDownloadURL(r);
+        if (kind === 'logo') setLogoFile(url);
+        else if (kind === 'activityCertificate') setActivityCertificate(url);
+        else setCharterFile(url);
+
+        // Super-admin "Arşiv" sekmesine kurum evrakı olarak ayna (best-effort).
+        const docType = kind === 'logo' ? 'Logo' : kind === 'activityCertificate' ? 'Faaliyet Belgesi' : (ngoType === 'vakif' ? 'Vakıf Senedi' : 'Tüzük');
+        try {
+          const token = await authUser?.getIdToken();
+          if (token) {
+            await fetch('/api/ngo/archive', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ docType, fileUrl: url, entityType: activeEntity.kind, entityId: activeEntity.data.id, entityName: name || activeEntity.data.name || '' }),
+            });
+          }
+        } catch { /* arşiv aynası best-effort */ }
+
+        toast({ title: 'Belge yüklendi', description: 'Kaydet butonuna basınca profilinize işlenir.' });
+      } catch (err) {
+        const e2 = err as { message?: string };
+        toast({ variant: 'destructive', title: 'Yükleme hatası', description: e2?.message?.slice(0, 160) || 'Bilinmeyen hata.' });
+      } finally {
+        setUploadingKind(null);
+      }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!activeEntity) {
@@ -278,6 +347,9 @@ export default function ManageProfilePage() {
           contact: { email, phoneCountryCode: phoneCode, phone },
           socialMedia: { instagram, twitter, linkedin, youtube },
           representative: { fullName: repFullName, title: repTitle, email: repEmail },
+          'files.logo': logoFile ?? null,
+          'files.activityCertificate': activityCertificate ?? null,
+          'files.charter': charterFile ?? null,
           updatedAt: new Date().toISOString(),
         });
         toast({ title: 'Değişiklikler Kaydedildi', description: 'Kuruluş profiliniz başarıyla güncellendi.' });
@@ -590,9 +662,15 @@ export default function ManageProfilePage() {
             <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Yasal Belgeler</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile={logoFile} required={true} />
-             <FileUpload label="Faaliyet Belgesi (PNG/PDF)" currentFile={activityCertificate} required={true} />
-             <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF)' : 'Tüzük (PDF)'} currentFile={charterFile} required={true} />
+             <FileUpload label="Kuruluş Logosu (PNG/JPG)" currentFile={logoFile} required={true}
+                accept="image/png,image/jpeg,image/webp" uploading={uploadingKind === 'logo'}
+                onSelect={(f) => handleFileUpload(f, 'logo')} />
+             <FileUpload label="Faaliyet Belgesi (PNG/JPG/PDF)" currentFile={activityCertificate} required={true}
+                accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'activityCertificate'}
+                onSelect={(f) => handleFileUpload(f, 'activityCertificate')} />
+             <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF/JPG)' : 'Tüzük (PDF/JPG)'} currentFile={charterFile} required={true}
+                accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'charter'}
+                onSelect={(f) => handleFileUpload(f, 'charter')} />
           </CardContent>
         </Card>
 

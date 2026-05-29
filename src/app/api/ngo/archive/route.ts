@@ -79,12 +79,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'INVALID_URL', message: 'Geçersiz dosya bağlantısı.' }, { status: 400 });
   }
 
-  // Kendi adına yükleme → entityId = caller. Başka kurum adına (ör. super-admin
-  // bir kulübün evrakını yüklüyor) → yalnızca super-admin'e izin verilir.
+  // Kendi adına yükleme → entityId = caller. Başka kurum adına → yalnızca super-admin
+  // VEYA o kurumu yöneten (managed{Ngo,Brand,Club}Id) entity-admin yazabilir.
   let entityId = caller.uid;
   if (requestedEntityId && requestedEntityId !== caller.uid) {
-    if (!caller.isSuperAdmin) {
-      return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Başka kurum adına evrak yükleme yetkisi yok.' }, { status: 403 });
+    let allowed = caller.isSuperAdmin;
+    if (!allowed) {
+      try {
+        const us = await getAdminFirestore().collection(COLLECTIONS.users).doc(caller.uid).get();
+        const ud = us.data() || {};
+        allowed = ud.managedNgoId === requestedEntityId || ud.managedBrandId === requestedEntityId || ud.managedClubId === requestedEntityId;
+      } catch { /* okunamazsa yetkisiz say */ }
+    }
+    if (!allowed) {
+      return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Bu kurum adına evrak yükleme yetkisi yok.' }, { status: 403 });
     }
     entityId = requestedEntityId;
   }
