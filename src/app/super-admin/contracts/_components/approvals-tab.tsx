@@ -30,6 +30,7 @@ interface ApprovalRecord {
   lang?: string;
   country?: string | null;
   method?: string;
+  decision?: 'approved' | 'rejected';
   scrollCompleted?: boolean;
   readSeconds?: number;
   hash?: string;
@@ -129,6 +130,9 @@ export function ApprovalsTab() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-bold text-sm">{r.userName || 'Kullanıcı'}</span>
                         <Badge variant="outline" className="text-[9px]">{r.userType || 'user'}</Badge>
+                        <Badge className={`text-[9px] border-none ${r.decision === 'rejected' ? 'bg-red-600' : 'bg-green-600'}`}>
+                          {r.decision === 'rejected' ? 'Reddetti / Kapattı' : 'Onayladı'}
+                        </Badge>
                         <span className="text-xs text-muted-foreground">→ {r.contractTitle}</span>
                         {r.version && <Badge variant="secondary" className="text-[9px]">v{r.version}</Badge>}
                       </div>

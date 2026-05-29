@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
         const scrollCompleted = Boolean(body?.scrollCompleted);
         const readSeconds = Number(body?.readSeconds) || 0;
         const method = typeof body?.method === 'string' ? body.method : 'button'; // button / popup / checkbox
+        const decision = body?.decision === 'rejected' ? 'rejected' : 'approved'; // popup'ta X = rejected
         if (!contractSlug) return NextResponse.json({ ok: false, errorCode: 'INVALID_INPUT' }, { status: 400 });
 
         const ip = getClientIp(req);
@@ -108,13 +109,14 @@ export async function POST(req: NextRequest) {
             lang,
             country,
             method,
+            decision,
             scrollCompleted,
             readSeconds,
             hash,
             snapshotId,
         });
 
-        return NextResponse.json({ ok: true, hash, snapshotId });
+        return NextResponse.json({ ok: true, hash, snapshotId, decision });
     } catch (e) {
         console.error('[contracts/approve] internal error', e);
         return NextResponse.json({ ok: false, errorCode: 'INTERNAL_ERROR' }, { status: 500 });

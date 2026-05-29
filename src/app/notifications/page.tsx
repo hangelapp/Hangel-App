@@ -1,13 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck, MessageSquare } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useRouter } from 'next/navigation';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -16,6 +17,8 @@ import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { COLLECTIONS } from '@/firebase/collections';
+import { contractsData } from '@/lib/contracts';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'invitation': UserPlus,
@@ -71,6 +74,8 @@ export default function NotificationsPage() {
       contactPhone?: string;
       link?: string;
       href?: string;
+      contractSlug?: string;
+      version?: string;
     };
   }
   const { data: notifications, isLoading, error: notifError } = useCollection<NotifItem>(notifQuery);
@@ -237,8 +242,16 @@ export default function NotificationsPage() {
     }
   };
 
+  const [contractDialog, setContractDialog] = useState<{ slug: string; title: string; version: string } | null>(null);
+
+  const openContract = (n: NotifItem) => {
+    const slug = n.data?.contractSlug || (n.data?.link || '').split('/').filter(Boolean).pop() || '';
+    if (slug) setContractDialog({ slug, title: n.title || 'Sözleşme / Politika', version: n.data?.version || '1.0' });
+  };
+
   const handleNotificationClick = (n: NotifItem, href: string | null) => {
     if (!n.read) handleMarkRead(n.id);
+    if (n.type === 'contract-update') { openContract(n); return; }
     if (href) router.push(href);
   };
 
@@ -334,7 +347,11 @@ export default function NotificationsPage() {
                             {t('dashboard.notifications.emergencyHelpNo')}
                           </Badge>
                         )}
-                        {href && (
+                        {n.type === 'contract-update' ? (
+                          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); openContract(n); }}>
+                            {t('dashboard.notifications.detailCta')}
+                          </Button>
+                        ) : href && (
                           <Button asChild variant="outline" size="sm" className="h-7 text-xs" onClick={(e) => e.stopPropagation()}>
                             <Link href={href}>{t('dashboard.notifications.detailCta')}</Link>
                           </Button>
@@ -358,6 +375,98 @@ export default function NotificationsPage() {
           })}
         </div>
       )}
+      {contractDialog && (
+        <ContractApprovalDialog
+          slug={contractDialog.slug}
+          title={contractDialog.title}
+          version={contractDialog.version}
+          onClose={() => setContractDialog(null)}
+        />
+      )}
     </div>
+  );
+}
+
+// Sözleşme/politika onay popup'ı — bildirim "Detay" tıklanınca açılır.
+// Üst ve alttaki "Okudum, Kabul Ettim" → onaylandı; X / dışarı tıklama → reddedildi.
+// Her iki sonuç da /api/contracts/approve ile Kullanıcı Onay Kayıtları'na düşer.
+function ContractApprovalDialog({ slug, title, version, onClose }: { slug: string; title: string; version: string; onClose: () => void }) {
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+  const docRef = useMemoFirebase(() => (db && slug ? doc(db, COLLECTIONS.contracts, slug) : null), [db, slug]);
+  const { data: fsContract, isLoading } = useDoc<{ title?: string; content?: string; version?: string }>(docRef);
+  const content = useMemo(() => {
+    if (fsContract?.content) return fsContract.content;
+    return contractsData.find(c => c.slug === slug)?.content || '';
+  }, [fsContract, slug]);
+  const effectiveVersion = fsContract?.version || version || '1.0';
+  const [submitting, setSubmitting] = useState(false);
+  const decidedRef = useRef(false);
+  const startRef = useRef(0);
+  const scrolledRef = useRef(false);
+  useEffect(() => { startRef.current = Date.now(); }, []);
+
+  const record = async (decision: 'approved' | 'rejected') => {
+    if (decidedRef.current || !authUser) return;
+    decidedRef.current = true;
+    try {
+      const token = await authUser.getIdToken();
+      await fetch('/api/contracts/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          contractSlug: slug, contractTitle: fsContract?.title || title, version: effectiveVersion,
+          decision, method: 'popup',
+          scrollCompleted: scrolledRef.current,
+          readSeconds: Math.round((Date.now() - startRef.current) / 1000),
+        }),
+      });
+    } catch { /* sessiz — kayıt başarısız olsa da popup kapanır */ }
+  };
+
+  const approve = async () => {
+    setSubmitting(true);
+    await record('approved');
+    setSubmitting(false);
+    onClose();
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      if (!decidedRef.current) record('rejected'); // X / Esc / dışarı tıklama → reddedildi
+      onClose();
+    }
+  };
+
+  const ApproveBtn = (
+    <Button onClick={approve} disabled={submitting || isLoading} className="w-full bg-green-600 hover:bg-green-700">
+      {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+      Okudum, Kabul Ettim
+    </Button>
+  );
+
+  return (
+    <Dialog open onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-4 border-b shrink-0">
+          <DialogTitle className="pr-8">{fsContract?.title || title}</DialogTitle>
+        </DialogHeader>
+        <div className="px-4 py-3 border-b shrink-0">{ApproveBtn}</div>
+        <div
+          className="flex-1 overflow-y-auto p-4 prose prose-sm dark:prose-invert max-w-none"
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 40) scrolledRef.current = true;
+          }}
+        >
+          {isLoading ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          ) : (
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+          )}
+        </div>
+        <div className="p-4 border-t shrink-0">{ApproveBtn}</div>
+      </DialogContent>
+    </Dialog>
   );
 }
