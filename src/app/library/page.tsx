@@ -1250,12 +1250,13 @@ export default function LibraryPage() {
       return top.length > 0 ? top : items.slice(0, n); // eşleşme yoksa ilk n'e düş
     };
 
-    const recGroups = [
+    const hasProfile = kw.length > 0; // Hakkında/Gönüllülük bilgisi doldurulmuş mu
+    const recGroups = hasProfile ? [
       { title: 'Kitaplar', items: pickMatched('kitaplar', 3) },
       { title: 'Filmler', items: pickMatched('filmler', 3) },
       { title: 'Sosyal Etki Envanteri', items: pickMatched('hangel-sosyal-etki-envanteri', 3) },
-    ].filter(g => g.items.length > 0);
-    return { savedItems, recGroups };
+    ].filter(g => g.items.length > 0) : [];
+    return { savedItems, recGroups, hasProfile };
   }, [user, userData, sections]);
 
   return (
@@ -1295,7 +1296,7 @@ export default function LibraryPage() {
             </PopoverContent>
           </Popover>
         )}
-        {personal && personal.recGroups.length > 0 && (
+        {personal && (
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Profilin için öneriler">
@@ -1304,16 +1305,37 @@ export default function LibraryPage() {
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto space-y-3">
               <p className="font-semibold text-sm flex items-center gap-2"><Compass className="h-4 w-4 text-primary" /> Profilin için öneriler</p>
-              {personal.recGroups.map(g => (
-                <div key={g.title}>
-                  <p className="text-xs font-semibold text-muted-foreground">{g.title}</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {g.items.map(i => (
-                      <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
-                    ))}
+              {personal.hasProfile && personal.recGroups.length > 0 ? (
+                <>
+                  {personal.recGroups.map(g => (
+                    <div key={g.title}>
+                      <p className="text-xs font-semibold text-muted-foreground">{g.title}</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {g.items.map(i => (
+                          <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-muted-foreground leading-snug pt-2 border-t">
+                    Bu öneriler profilindeki <strong>Hakkında</strong> ve <strong>Gönüllülük</strong> bilgileri baz alınarak hazırlanmıştır.
+                  </p>
+                </>
+              ) : (
+                <div className="space-y-3 pt-1">
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    Sana öneride bulunabilmem için profilindeki <strong>Hakkında</strong> ve <strong>Gönüllülük</strong> bilgilerini doldurman gerekiyor.
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild size="sm" variant="outline" className="w-full justify-between">
+                      <Link href="/settings/profile">Hakkında bilgilerim <ChevronRight className="h-4 w-4" /></Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="w-full justify-between">
+                      <Link href="/settings/volunteer">Gönüllülük bilgilerim <ChevronRight className="h-4 w-4" /></Link>
+                    </Button>
                   </div>
                 </div>
-              ))}
+              )}
             </PopoverContent>
           </Popover>
         )}
