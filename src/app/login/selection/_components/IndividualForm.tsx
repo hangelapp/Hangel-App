@@ -207,6 +207,31 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         }
         setIsLoading(true);
         try {
+            // MÜKERRER kayıt guard: telefon ya da e-posta zaten kayıtlıysa yeni
+            // hesap AÇMA — mevcut hesaba giriş yaptır (telefon → WhatsApp doğrulama
+            // kodu ile o hesaba giriş; e-posta → şifreyle giriş adımı).
+            const cleanPhoneForCheck = phone.replace(/\D/g, '').replace(/^0+/, '');
+            try {
+                const chkRes = await fetch('/api/auth/check-registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email.trim().toLowerCase(), phone: cleanPhoneForCheck, phoneCountryCode }),
+                });
+                const chk = await chkRes.json().catch(() => ({}));
+                if (chk?.phoneExists) {
+                    toast({ title: 'Bu telefon zaten kayıtlı', description: 'Hesabına girmek için WhatsApp\'a doğrulama kodu gönderiyoruz.' });
+                    setAuthMode('whatsapp');
+                    setIsLoading(false);
+                    await handleSendWhatsAppCode();
+                    return;
+                }
+                if (chk?.emailExists) {
+                    toast({ title: 'Bu e-posta zaten kayıtlı', description: 'Şifrenle giriş yapabilirsin.' });
+                    setStep('login');
+                    return;
+                }
+            } catch { /* fail-open: kontrol hata verirse kayda devam et */ }
+
             const userCredential = await createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
             const userId = userCredential.user.uid;
             if (name) {
@@ -333,6 +358,24 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         if (!auth) return;
         setIsLoading(true);
         try {
+            // MÜKERRER kayıt guard: numara zaten kayıtlıysa SMS ile yeni hesap
+            // riski yerine WhatsApp doğrulama koduyla mevcut hesaba giriş yaptır.
+            const cleanForCheck = cleanPhone.replace(/^0+/, '');
+            try {
+                const chkRes = await fetch('/api/auth/check-registration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: cleanForCheck, phoneCountryCode }),
+                });
+                const chk = await chkRes.json().catch(() => ({}));
+                if (chk?.phoneExists) {
+                    toast({ title: 'Bu numara zaten kayıtlı', description: 'Hesabına girmek için doğrulama kodu gönderiyoruz.' });
+                    setIsLoading(false);
+                    await handleSendWhatsAppCode();
+                    return;
+                }
+            } catch { /* fail-open: kontrol hata verirse SMS akışına devam et */ }
+
             // ÖNCE dili set et (verifier ve signInWithPhoneNumber'dan önce). Verifier dili
             // yaratılırken yakaladığı için her seferinde dil değişebilecek diye eski verifier'ı
             // temizleyip yeniden oluştur.
@@ -384,36 +427,50 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         setIsLoading(true);
         try {
             const cred = await confirmation.confirm(code);
-            await updateProfile(cred.user, { displayName: name.trim() });
             const userId = cred.user.uid;
             const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
-            setDocumentNonBlocking(doc(db, COLLECTIONS.users, userId), {
-                id: userId,
-                name: name.trim(),
-                avatarUrl: '',
-                personalInfo: {
-                    email: '',
-                    phone: cleanPhone,
-                    phoneCountryCode,
-                },
-                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
-                createdAt: serverTimestamp(),
-                joinDate: new Date().toISOString().split('T')[0],
-                signupMethod: 'phone',
-            }, { merge: true });
-            // Yeni kullanıcıya welcome (best-effort)
-            try {
-                const idToken = await cred.user.getIdToken();
-                await fetch('/api/notifications/welcome', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-                    body: JSON.stringify({ uid: userId, isCorporate: false }),
-                });
-            } catch (e) {
-                console.warn('welcome msg failed', e);
+            // Mevcut hesabı koru: doc zaten varsa stats/avatar/createdAt'i SIFIRLAMA,
+            // sadece mevcut hesaba giriş yap (Firebase phone-auth aynı uid'i döndürür).
+            const userRef = doc(db, COLLECTIONS.users, userId);
+            const existingSnap = await getDoc(userRef);
+            const isNew = !existingSnap.exists();
+            if (isNew) {
+                await updateProfile(cred.user, { displayName: name.trim() });
+                setDocumentNonBlocking(userRef, {
+                    id: userId,
+                    name: name.trim(),
+                    avatarUrl: '',
+                    personalInfo: {
+                        email: '',
+                        phone: cleanPhone,
+                        phoneCountryCode,
+                    },
+                    stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                    createdAt: serverTimestamp(),
+                    joinDate: new Date().toISOString().split('T')[0],
+                    signupMethod: 'phone',
+                }, { merge: true });
+                // Yeni kullanıcıya welcome (best-effort)
+                try {
+                    const idToken = await cred.user.getIdToken();
+                    await fetch('/api/notifications/welcome', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                        body: JSON.stringify({ uid: userId, isCorporate: false }),
+                    });
+                } catch (e) {
+                    console.warn('welcome msg failed', e);
+                }
+            } else {
+                setDocumentNonBlocking(userRef, {
+                    personalInfo: { phone: cleanPhone, phoneCountryCode },
+                }, { merge: true });
             }
-            toast({ title: 'Hoş geldin', description: `${name.trim()}, hesabın oluşturuldu.` });
-            onComplete(true);
+            toast({
+                title: isNew ? 'Hoş geldin' : 'Tekrar hoş geldin',
+                description: isNew ? `${name.trim()}, hesabın oluşturuldu.` : 'Mevcut hesabına giriş yapıldı.',
+            });
+            onComplete(isNew);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Kod hatalı.';
             toast({ variant: 'destructive', title: 'Doğrulanamadı', description: msg });

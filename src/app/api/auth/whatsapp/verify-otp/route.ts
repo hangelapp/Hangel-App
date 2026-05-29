@@ -85,48 +85,62 @@ export async function POST(req: NextRequest) {
 
         // Doğru — kullanıcıyı oluştur/getir
         const adminAuth = getAdminAuth();
-        let userRecord;
+        let uid: string;
         let isNewUser = false;
         try {
-            userRecord = await adminAuth.getUserByPhoneNumber(fullPhone);
+            const existing = await adminAuth.getUserByPhoneNumber(fullPhone);
+            uid = existing.uid;
         } catch {
-            // Firebase Auth'ta yok. Ama Firestore'da personalInfo.phone'da
-            // bu numara başka kullanıcıda kullanılıyor mu? (Email ile kayıt
-            // olup profile'a telefon eklemiş eski kullanıcı case'i)
+            // Firebase Auth'ta bu telefonla kullanıcı yok. Ama Firestore'da
+            // personalInfo.phone'da bu numara mevcut bir hesapta var mı? (E-posta
+            // ile kayıt olup profiline telefon eklemiş kullanıcı.) Varsa MÜKERRER
+            // hesap açma — OTP telefon sahipliğini kanıtladı, o mevcut hesaba giriş yap.
             const dupSnap = await db.collection(COLLECTIONS.users)
                 .where('personalInfo.phone', '==', cleanPhone)
                 .limit(1)
                 .get();
             if (!dupSnap.empty) {
-                return NextResponse.json({
-                    ok: false,
-                    errorCode: 'PHONE_IN_USE',
-                    message: 'Bu telefon numarası başka bir hesapta kullanılıyor.',
-                }, { status: 409 });
+                const existingUid = dupSnap.docs[0].id;
+                // Sonraki girişlerde getUserByPhoneNumber doğrudan bulsun diye
+                // telefonu mevcut hesaba bağla (best-effort).
+                try { await adminAuth.updateUser(existingUid, { phoneNumber: fullPhone }); } catch { /* link best-effort */ }
+                const token = await adminAuth.createCustomToken(existingUid);
+                await ref.delete();
+                return NextResponse.json({ ok: true, customToken: token, isNewUser: false });
             }
             // Yoksa yeni oluştur
-            userRecord = await adminAuth.createUser({
+            const created = await adminAuth.createUser({
                 phoneNumber: fullPhone,
                 displayName: name || undefined,
             });
+            uid = created.uid;
             isNewUser = true;
         }
-        const uid = userRecord.uid;
 
-        // Firestore users/{uid} doc'unu yarat veya güncelle
-        await db.collection(COLLECTIONS.users).doc(uid).set({
-            id: uid,
-            name: name || userRecord.displayName || '',
-            avatarUrl: '',
-            personalInfo: {
-                phone: cleanPhone,
-                phoneCountryCode,
-            },
-            stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
-            signupMethod: 'whatsapp',
-            createdAt: FieldValue.serverTimestamp(),
-            joinDate: new Date().toISOString().split('T')[0],
-        }, { merge: true });
+        // Firestore users/{uid}: yalnızca doc yoksa tam profil yaz — mevcut
+        // kullanıcının stats/avatar/createdAt alanlarını re-login'de SIFIRLAMA.
+        const userDocRef = db.collection(COLLECTIONS.users).doc(uid);
+        const existingDoc = await userDocRef.get();
+        if (!existingDoc.exists) {
+            await userDocRef.set({
+                id: uid,
+                name: name || '',
+                avatarUrl: '',
+                personalInfo: {
+                    phone: cleanPhone,
+                    phoneCountryCode,
+                },
+                stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
+                signupMethod: 'whatsapp',
+                createdAt: FieldValue.serverTimestamp(),
+                joinDate: new Date().toISOString().split('T')[0],
+            }, { merge: true });
+            isNewUser = true;
+        } else {
+            await userDocRef.set({
+                personalInfo: { phone: cleanPhone, phoneCountryCode },
+            }, { merge: true });
+        }
 
         // Custom token üret
         const customToken = await adminAuth.createCustomToken(uid);
