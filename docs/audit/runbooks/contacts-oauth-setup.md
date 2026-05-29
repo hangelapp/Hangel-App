@@ -49,8 +49,8 @@ Kullanıcı "Gmail/Outlook ile bağlan" tıklar
      `https://hangel.org.tr/api/contacts/google/callback`
    - **Create** → açılan diyalogdan **Client ID** ve **Client secret**'i kopyala.
 5. Env var'lara yaz:
-   - `GOOGLE_OAUTH_CLIENT_ID` = Client ID
-   - `GOOGLE_OAUTH_CLIENT_SECRET` = Client secret
+   - `GOOGLE_CONTACTS_CLIENT_ID` = Client ID
+   - `GOOGLE_CONTACTS_CLIENT_SECRET` = Client secret
 
 ---
 
@@ -69,8 +69,8 @@ Kullanıcı "Gmail/Outlook ile bağlan" tıklar
 4. **Certificates & secrets → Client secrets → New client secret** → açıklama + süre
    seç → **Add** → **Value** sütunundaki secret'i hemen kopyala (bir daha gösterilmez).
 5. Env var'lara yaz:
-   - `MICROSOFT_OAUTH_CLIENT_ID` = Application (client) ID
-   - `MICROSOFT_OAUTH_CLIENT_SECRET` = client secret **Value**
+   - `MICROSOFT_CONTACTS_CLIENT_ID` = Application (client) ID
+   - `MICROSOFT_CONTACTS_CLIENT_SECRET` = client secret **Value**
    - `MICROSOFT_TENANT` = `common` (personal + work/school) ya da tek-tenant ID'si
 
 ---
@@ -92,10 +92,10 @@ Bu secret olmadan `start` route 503 `OAUTH_NOT_CONFIGURED` döner.
 
 | Var | Kaynak |
 |---|---|
-| `GOOGLE_OAUTH_CLIENT_ID` | GCP OAuth client ID |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | GCP OAuth client secret |
-| `MICROSOFT_OAUTH_CLIENT_ID` | Azure Application (client) ID |
-| `MICROSOFT_OAUTH_CLIENT_SECRET` | Azure client secret Value |
+| `GOOGLE_CONTACTS_CLIENT_ID` | GCP OAuth client ID |
+| `GOOGLE_CONTACTS_CLIENT_SECRET` | GCP OAuth client secret |
+| `MICROSOFT_CONTACTS_CLIENT_ID` | Azure Application (client) ID |
+| `MICROSOFT_CONTACTS_CLIENT_SECRET` | Azure client secret Value |
 | `MICROSOFT_TENANT` | `common` (default) veya tenant ID |
 | `OAUTH_STATE_SECRET` | `openssl rand -hex 32` |
 

@@ -148,8 +148,8 @@ export interface ProviderConfig {
  */
 export function getProviderConfig(provider: ContactProvider): ProviderConfig | null {
   if (provider === 'google') {
-    const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+    const clientId = process.env.GOOGLE_CONTACTS_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CONTACTS_CLIENT_SECRET;
     if (!clientId || !clientSecret) return null;
     return {
       clientId,
@@ -160,8 +160,8 @@ export function getProviderConfig(provider: ContactProvider): ProviderConfig | n
     };
   }
   // microsoft
-  const clientId = process.env.MICROSOFT_OAUTH_CLIENT_ID;
-  const clientSecret = process.env.MICROSOFT_OAUTH_CLIENT_SECRET;
+  const clientId = process.env.MICROSOFT_CONTACTS_CLIENT_ID;
+  const clientSecret = process.env.MICROSOFT_CONTACTS_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
   const tenant = process.env.MICROSOFT_TENANT || 'common';
   return {
