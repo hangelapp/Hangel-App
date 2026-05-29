@@ -1126,7 +1126,11 @@ export default function LibraryPage() {
   // Kişiselleştirme için kullanıcının kaydet/okudu listesi (users/{uid}).
   const { user } = useUser();
   const userRef = useMemoFirebase(() => (user ? doc(db, COLLECTIONS.users, user.uid) : null), [db, user]);
-  const { data: userData } = useDoc<{ savedLibraryItems?: string[]; readLibraryItems?: string[] }>(userRef);
+  const { data: userData } = useDoc<{
+    savedLibraryItems?: string[];
+    readLibraryItems?: string[];
+    volunteerInfo?: { interests?: string[]; profession?: string; skills?: string[]; dailySkills?: string[] };
+  }>(userRef);
 
   const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
@@ -1203,7 +1207,9 @@ export default function LibraryPage() {
     return sections.filter(s => (sectionHaystacks.get(s.slug) ?? '').includes(lower));
   }, [sections, searchTerm, sectionHaystacks]);
 
-  // Kişisel: kaydettiklerin + profilin için öneriler (3 kitap + 3 film + 3 envanter örneği).
+  // Kişisel: kaydettiklerin + profilin için öneriler.
+  // Öneriler kullanıcının Gönüllülük profilini (hassasiyet=interests, meslek,
+  // yetkinlik) baz alır; her bölümden (kitap/film/envanter) en uyumlu 3 içerik.
   type FlatItem = LibraryItem & { sectionSlug: string };
   const personal = useMemo(() => {
     if (!user) return null;
@@ -1211,11 +1217,43 @@ export default function LibraryPage() {
     const allItems: FlatItem[] = sections.flatMap(s => (s.items ?? []).map(i => ({ ...i, sectionSlug: s.slug })));
     const bySlug = new Map(allItems.map(i => [i.slug, i]));
     const savedItems = saved.map(sl => bySlug.get(sl)).filter((x): x is FlatItem => Boolean(x));
-    const pick = (slug: string, n: number) => allItems.filter(i => i.sectionSlug === slug).slice(0, n);
+
+    // Profil ilgi anahtar kelimeleri (hassasiyet + meslek + yetkinlik).
+    const vi = userData?.volunteerInfo ?? {};
+    const interestStrings = [
+      ...(Array.isArray(vi.interests) ? vi.interests : []),
+      ...(Array.isArray(vi.skills) ? vi.skills : []),
+      ...(Array.isArray(vi.dailySkills) ? vi.dailySkills : []),
+      ...(vi.profession ? [vi.profession] : []),
+    ];
+    const STOP = new Set(['ve', 'ile', 'için', 'bir', 'the', 'of', 'and', 'çalışmalar']);
+    const keywords = new Set<string>();
+    interestStrings.forEach(s => (s || '').toLowerCase().split(/[\s&/,()._-]+/).forEach(w => {
+      const t = w.trim();
+      if (t.length >= 3 && !STOP.has(t)) keywords.add(t);
+    }));
+    const kw = Array.from(keywords);
+
+    // İçeriğin başlık+metnini bir kez hesapla, anahtar kelime kesişimine göre puanla.
+    const hayCache = new Map<string, string>();
+    const hay = (it: FlatItem) => {
+      let h = hayCache.get(it.slug);
+      if (h === undefined) { h = `${it.title} ${stripHtml(it.content || '')}`.toLowerCase(); hayCache.set(it.slug, h); }
+      return h;
+    };
+    const pickMatched = (slug: string, n: number) => {
+      const items = allItems.filter(i => i.sectionSlug === slug);
+      if (kw.length === 0) return items.slice(0, n);
+      const scored = items.map(it => ({ it, s: kw.reduce((acc, k) => acc + (hay(it).includes(k) ? 1 : 0), 0) }))
+        .sort((a, b) => b.s - a.s);
+      const top = scored.filter(x => x.s > 0).slice(0, n).map(x => x.it);
+      return top.length > 0 ? top : items.slice(0, n); // eşleşme yoksa ilk n'e düş
+    };
+
     const recGroups = [
-      { title: 'Kitaplar', items: pick('kitaplar', 3) },
-      { title: 'Filmler', items: pick('filmler', 3) },
-      { title: 'Sosyal Etki Envanteri', items: pick('hangel-sosyal-etki-envanteri', 3) },
+      { title: 'Kitaplar', items: pickMatched('kitaplar', 3) },
+      { title: 'Filmler', items: pickMatched('filmler', 3) },
+      { title: 'Sosyal Etki Envanteri', items: pickMatched('hangel-sosyal-etki-envanteri', 3) },
     ].filter(g => g.items.length > 0);
     return { savedItems, recGroups };
   }, [user, userData, sections]);
