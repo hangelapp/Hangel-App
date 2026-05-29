@@ -23,12 +23,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/hooks/use-toast';
 import {
   Search, ChevronRight, BookOpen, X, Filter, ChevronDown, ChevronUp, Bot, Sparkles, Send, Loader2, Trash2, Download,
+  Bookmark, Lightbulb,
   // LIBRARY_ICONS allow-list — bu map'e yeni icon eklerken hem import hem `LIBRARY_ICONS` entry'si gerekir.
   Library, GraduationCap, BookMarked, FileText, BookA, Globe, Database, Film, HelpCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
@@ -633,6 +634,21 @@ const ASSISTANT_META: Record<AssistantKind, { title: string; description: string
   project: { title: 'Proje Yazma Asistanı', description: 'Projenizi anlatın, kütüphane ve yönetim şablonlarıyla proje dokümanı oluştursun.', placeholder: 'Projenizi birkaç cümleyle anlatın...', endpoint: '/api/library/project', storageKey: 'hangel.assistant.project.history', icon: Sparkles, accent: 'bg-fuchsia-600 text-white' },
 };
 
+// Boş sohbet ekranında gösterilen tıklanabilir örnek sorular (kullanıcıyı başlatır).
+const SUGGESTED_QUESTIONS: Record<AssistantKind, string[]> = {
+  library: [
+    'Liderlik üzerine hangi kitaplar var?',
+    'Gönüllü yönetimi için kaynak öner',
+    'Sosyal girişimcilik nedir?',
+    'STK şeffaflığı hakkında ne var?',
+  ],
+  project: [
+    'Çocuklara yönelik eğitim projesi taslağı çıkar',
+    'Çevre temizliği projesi için hedefler öner',
+    'Bağışçılara sunulacak kısa proje özeti yaz',
+  ],
+};
+
 // PDF #3: kullanıcı projesini hangi kuruma sunacağını seçer, AI o kurumun esaslarına
 // uygun proje üretir. Liste süper-admin tarafında genişletilebilir; client tarafında
 // sabit tutuyoruz (Firestore'da `aiAssistantConfig/project.institutions` opsiyonel).
@@ -678,8 +694,8 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [messages, open]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleSend = async (textArg?: string) => {
+    const text = (textArg ?? input).trim();
     if (!text || sending) return;
     setMessages(prev => [...prev, { role: 'user', content: text, ts: Date.now() }]);
     setInput('');
@@ -714,9 +730,21 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
         </DialogHeader>
         <div ref={listRef} className="px-5 py-4 h-[60vh] max-h-[420px] overflow-y-auto space-y-3 bg-muted/30">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-              <Icon className="h-8 w-8 mb-2 opacity-50" />
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground gap-3">
+              <Icon className="h-8 w-8 opacity-50" />
               <p className="text-sm">{meta.placeholder}</p>
+              <div className="flex flex-wrap gap-2 justify-center pt-1">
+                {SUGGESTED_QUESTIONS[kind].map(q => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => void handleSend(q)}
+                    className="text-xs rounded-full border bg-background px-3 py-1.5 text-foreground hover:bg-accent transition-colors"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           {messages.map((m, idx) => (
@@ -1055,9 +1083,10 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   );
 }
 
-function LibraryAssistantsFab() {
-  const [openLibrary, setOpenLibrary] = useState(false);
-  const [openProject, setOpenProject] = useState(false);
+function LibraryAssistantsFab({ openLibrary, setOpenLibrary, openProject, setOpenProject }: {
+  openLibrary: boolean; setOpenLibrary: (o: boolean) => void;
+  openProject: boolean; setOpenProject: (o: boolean) => void;
+}) {
   return (
     <>
       {/* PDF #1: sağ kenarın ortasında 2 yapay zeka ikonu (sticky vertical-center). */}
@@ -1090,6 +1119,13 @@ function LibraryAssistantsFab() {
 export default function LibraryPage() {
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
+  const [openLibrary, setOpenLibrary] = useState(false);
+  const [openProject, setOpenProject] = useState(false);
+
+  // Kişiselleştirme için kullanıcının kaydet/okudu listesi (users/{uid}).
+  const { user } = useUser();
+  const userRef = useMemoFirebase(() => (user ? doc(db, COLLECTIONS.users, user.uid) : null), [db, user]);
+  const { data: userData } = useDoc<{ savedLibraryItems?: string[]; readLibraryItems?: string[] }>(userRef);
 
   const libQuery = useMemoFirebase(() => collection(db, COLLECTIONS.library), [db]);
   const { data: libData, isLoading } = useCollection<LibrarySection>(libQuery);
@@ -1166,6 +1202,25 @@ export default function LibraryPage() {
     return sections.filter(s => (sectionHaystacks.get(s.slug) ?? '').includes(lower));
   }, [sections, searchTerm, sectionHaystacks]);
 
+  // Kişisel: kaydettiklerin + ilgine göre öneriler (etkileşimde olduğun bölümlerden).
+  type FlatItem = LibraryItem & { sectionSlug: string };
+  const personal = useMemo(() => {
+    if (!user) return null;
+    const saved = Array.isArray(userData?.savedLibraryItems) ? userData!.savedLibraryItems! : [];
+    const read = Array.isArray(userData?.readLibraryItems) ? userData!.readLibraryItems! : [];
+    const allItems: FlatItem[] = sections.flatMap(s => (s.items ?? []).map(i => ({ ...i, sectionSlug: s.slug })));
+    const bySlug = new Map(allItems.map(i => [i.slug, i]));
+    const savedItems = saved.map(sl => bySlug.get(sl)).filter((x): x is FlatItem => Boolean(x));
+    const engaged = new Set<string>([...saved, ...read]);
+    const engagedSections = new Set(allItems.filter(i => engaged.has(i.slug)).map(i => i.sectionSlug));
+    let recs = allItems.filter(i => engagedSections.has(i.sectionSlug) && !engaged.has(i.slug)).slice(0, 6);
+    if (recs.length === 0) {
+      // Henüz etkileşim yoksa "öne çıkanlar": Kitaplar bölümünden birkaç içerik.
+      recs = allItems.filter(i => i.sectionSlug === 'kitaplar').slice(0, 6);
+    }
+    return { savedItems, recs };
+  }, [user, userData, sections]);
+
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen">
       <div className="text-center">
@@ -1183,6 +1238,58 @@ export default function LibraryPage() {
         />
       </div>
 
+      {/* AI asistanlarını öne çıkaran CTA */}
+      <div className="max-w-lg mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setOpenLibrary(true)}
+          className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm hover:bg-accent transition-colors"
+        >
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></span>
+          <span>
+            <span className="block font-semibold text-sm">Kütüphane Asistanı</span>
+            <span className="block text-xs text-muted-foreground">Kaynaklar hakkında soru sor</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpenProject(true)}
+          className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-left shadow-sm hover:bg-accent transition-colors"
+        >
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fuchsia-600 text-white"><Sparkles className="h-5 w-5" /></span>
+          <span>
+            <span className="block font-semibold text-sm">STK&apos;na Proje Yaz</span>
+            <span className="block text-xs text-muted-foreground">AI ile proje dokümanı oluştur</span>
+          </span>
+        </button>
+      </div>
+
+      {/* Kişisel: kaydettiklerin + ilgine göre öneriler */}
+      {personal && (personal.savedItems.length > 0 || personal.recs.length > 0) && (
+        <Card className="max-w-3xl mx-auto p-4 space-y-3">
+          {personal.savedItems.length > 0 && (
+            <div>
+              <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {personal.savedItems.map(i => (
+                  <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                ))}
+              </div>
+            </div>
+          )}
+          {personal.recs.length > 0 && (
+            <div>
+              <p className="font-semibold text-sm flex items-center gap-2"><Lightbulb className="h-4 w-4 text-amber-500" /> Senin için öneriler</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {personal.recs.map(i => (
+                  <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
       <div className="space-y-4">
         {isLoading ? (
           [...Array(3)].map((_, i) => <Card key={i} className="h-20 animate-pulse bg-muted" />)
@@ -1196,7 +1303,12 @@ export default function LibraryPage() {
         ))}
       </div>
 
-      <LibraryAssistantsFab />
+      <LibraryAssistantsFab
+        openLibrary={openLibrary}
+        setOpenLibrary={setOpenLibrary}
+        openProject={openProject}
+        setOpenProject={setOpenProject}
+      />
     </div>
   );
 }

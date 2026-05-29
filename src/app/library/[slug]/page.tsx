@@ -4,7 +4,7 @@ import { librarySections } from '@/lib/library';
 import type { LibrarySection } from '@/lib/library';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useMemo, useState } from 'react';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, updateDoc, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { TEMPLATES_SECTION_SLUG } from '@/lib/library-templates';
 import { COLLECTIONS } from '@/firebase/collections';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
@@ -107,6 +108,7 @@ export default function LibraryItemPage() {
   const isViewable = sectionSlugLower.includes('film') || sectionSlugLower.includes('belges') || sectionSlugLower.includes('sinema');
   const completionText = isViewable ? 'İzledim' : 'Okudum';
   const CompletionIcon = isViewable ? Film : Book;
+  const isTemplate = (item.sectionSlug || '') === TEMPLATES_SECTION_SLUG;
 
   const handleToggleComplete = async () => {
     if (!user || !userRef) {
@@ -155,6 +157,22 @@ export default function LibraryItemPage() {
     }
   };
 
+  // Şablonu Word (.doc) olarak indir — içerik HTML'i Word uyumlu blob'a sarılır.
+  const handleDownloadWord = () => {
+    const safe = sanitizeHtml(item.content);
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${item.title}</title></head><body><h1>${item.title}</h1>${safe}</body></html>`;
+    const blob = new Blob(['﻿', html], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast({ title: 'İndiriliyor', description: `"${item.title}" Word belgesi olarak indirildi.` });
+  };
+
   const handleRecommend = (rec: 'up' | 'down') => {
       const newRecommendation = recommendation === rec ? null : rec;
       setRecommendation(newRecommendation);
@@ -170,16 +188,23 @@ export default function LibraryItemPage() {
         <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
           <ArrowLeft className="h-6 w-6" />
         </Button>
-        <Button
-          onClick={handleToggleSave}
-          variant={isSaved ? 'default' : 'outline'}
-          size="sm"
-          disabled={busy}
-          className="gap-2"
-        >
-          {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-          {isSaved ? 'Kaydedildi' : 'Kaydet'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {isTemplate && (
+            <Button onClick={handleDownloadWord} variant="outline" size="sm" className="gap-2">
+              <Download className="h-4 w-4" /> Word indir
+            </Button>
+          )}
+          <Button
+            onClick={handleToggleSave}
+            variant={isSaved ? 'default' : 'outline'}
+            size="sm"
+            disabled={busy}
+            className="gap-2"
+          >
+            {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            {isSaved ? 'Kaydedildi' : 'Kaydet'}
+          </Button>
+        </div>
       </div>
       <div>
         <h1 className="text-2xl font-bold font-headline">{item.title}</h1>

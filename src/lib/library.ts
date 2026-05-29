@@ -1,4 +1,5 @@
 import hangelImpactInventory from './hangel-impact-inventory.json';
+import { templatesSection } from './library-templates';
 
 export interface LibraryItem {
   slug: string;
@@ -16,6 +17,7 @@ export interface LibrarySection {
 
 export const librarySections: LibrarySection[] = [
     hangelImpactInventory as LibrarySection,
+    templatesSection,
     {
         slug: 'kitaplar',
         title: "Kitaplar",
