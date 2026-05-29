@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc, entityPossessive } from '@/app/ngo-admin/active-entity-context';
+import { brandSectorOptions } from '@/app/login/selection/_components/shared';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -197,6 +198,8 @@ export default function ManageProfilePage() {
   const [memberships, setMemberships] = useState<string[]>([]);
   const [sector, setSector] = useState(''); // Marka: faaliyet sektörü
   const [university, setUniversity] = useState(''); // Kulüp: üniversite/bağlı okul
+  // Marka: bağış kategorileri ve oranları (kayıt formuyla aynı yapı).
+  const [donationCategories, setDonationCategories] = useState<{ id: string; category: string; rate: string }[]>([{ id: '1', category: '', rate: '' }]);
   const [country, setCountry] = useState('Türkiye');
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
@@ -264,6 +267,10 @@ export default function ManageProfilePage() {
     setMemberships(d.memberships || []);
     setSector((d as { sector?: string }).sector || '');
     setUniversity((d as { university?: string; clubAffiliation?: string }).university || (d as { clubAffiliation?: string }).clubAffiliation || '');
+    const dcs = (d as { donationCategories?: { id?: string; category?: string; rate?: string }[] }).donationCategories;
+    setDonationCategories(Array.isArray(dcs) && dcs.length > 0
+      ? dcs.map((x, i) => ({ id: x.id || String(i + 1), category: x.category || '', rate: x.rate || '' }))
+      : [{ id: '1', category: '', rate: '' }]);
     setCountry(d.address?.country || 'Türkiye');
     setCity(d.address?.city || '');
     setDistrict(d.address?.district || '');
@@ -350,7 +357,7 @@ export default function ManageProfilePage() {
           beneficiaries,
           sdgs,
           memberships,
-          ...(activeEntity.kind === 'brand' ? { sector } : {}),
+          ...(activeEntity.kind === 'brand' ? { sector, donationCategories: donationCategories.filter(d => d.category.trim()) } : {}),
           ...(activeEntity.kind === 'club' ? { university, clubAffiliation: university } : {}),
           address: { country, city, district, neighborhood, street },
           contact: { email, phoneCountryCode: phoneCode, phone },
@@ -570,6 +577,38 @@ export default function ManageProfilePage() {
             </div>
           </CardContent>
         </Card>
+
+        {activeEntity.kind === 'brand' && (
+          <Card className="rounded-[2rem] overflow-hidden shadow-sm">
+            <CardHeader className="bg-muted/30 border-b">
+              <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Bağış Kategorileri & Oranları</CardTitle>
+              <CardDescription>Hangi kategoride ne oranda sosyal etkiye katkı yapılacağını belirleyin.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-6">
+              {donationCategories.map((dc, idx) => (
+                <div key={dc.id} className="flex items-end gap-2">
+                  <div className="flex-1 space-y-1 min-w-0">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kategori</Label>
+                    <Select value={dc.category} onValueChange={(v) => setDonationCategories(prev => prev.map((p, i) => i === idx ? { ...p, category: v } : p))}>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Kategori seç..." /></SelectTrigger>
+                      <SelectContent className="max-h-60">{brandSectorOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-24 space-y-1 shrink-0">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Oran (%)</Label>
+                    <Input type="number" min="0" max="100" value={dc.rate} onChange={(e) => setDonationCategories(prev => prev.map((p, i) => i === idx ? { ...p, rate: e.target.value } : p))} placeholder="%" className="h-11 rounded-xl" />
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-destructive" disabled={donationCategories.length <= 1} onClick={() => setDonationCategories(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev)} aria-label="Kaldır">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={() => setDonationCategories(prev => [...prev, { id: String(Date.now()), category: '', rate: '' }])}>
+                + Kategori Ekle
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 gap-8">
             <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} values={beneficiaries} onChange={setBeneficiaries} />
