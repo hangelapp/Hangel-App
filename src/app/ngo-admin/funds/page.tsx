@@ -324,11 +324,11 @@ export default function FundsPage() {
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-[11px] font-bold text-muted-foreground">
                                     <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
                                         <Calendar className="h-3.5 w-3.5" />
-                                        <span>Son Başvuru: {fund.deadline}</span>
+                                        <span>Son Başvuru: {fund.deadline || 'Belirtilmemiş'}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 bg-primary/5 text-primary px-3 py-1.5 rounded-full">
                                         <DollarSign className="h-3.5 w-3.5" />
-                                        <span>{fund.budget}</span>
+                                        <span>{fund.budget || 'Bütçe belirtilmemiş'}</span>
                                     </div>
                                 </div>
                             </CardContent>

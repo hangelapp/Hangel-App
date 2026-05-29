@@ -604,7 +604,11 @@ export default function FundsAdminPage() {
                                                             <p className="font-bold text-sm">{c.name}</p>
                                                             {c.status === 'updated' && <Badge variant="outline" className="text-[9px] bg-amber-50 border-amber-300 text-amber-700">güncelleme</Badge>}
                                                         </div>
-                                                        <p className="text-xs text-muted-foreground">{c.provider}{c.budget ? ` · ${c.budget}` : ''}{c.deadline ? ` · Son: ${c.deadline}` : ''}</p>
+                                                        <p className="text-xs text-muted-foreground">{c.provider}</p>
+                                                        <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                                                            <Badge variant="outline" className="text-[10px] gap-1"><Calendar className="h-3 w-3" /> {c.deadline ? `Son: ${c.deadline}` : 'Tarih belirtilmemiş'}</Badge>
+                                                            <Badge variant="outline" className="text-[10px] gap-1"><HandCoins className="h-3 w-3" /> {c.budget || 'Bütçe belirtilmemiş'}</Badge>
+                                                        </div>
                                                     </div>
                                                     <Button size="sm" variant={added ? 'outline' : 'default'} disabled={added || addingId === c.id} onClick={() => addCandidate(c)} className="shrink-0">
                                                         {addingId === c.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : added ? <><CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Eklendi</> : <><Plus className="h-3.5 w-3.5 mr-1" /> Sisteme Ekle</>}
