@@ -18,6 +18,7 @@ import {
   buildAuthorizeUrl,
   getProviderConfig,
   isContactProvider,
+  publicOrigin,
   signState,
   OAUTH_STATE_COOKIE,
   OAUTH_STATE_COOKIE_MAX_AGE,
@@ -83,7 +84,12 @@ export async function POST(
     );
   }
 
-  const redirectUri = `${req.nextUrl.origin}/api/contacts/${provider}/callback`;
+  const origin = publicOrigin(
+    req.headers.get('x-forwarded-host'),
+    req.headers.get('host'),
+    req.headers.get('x-forwarded-proto'),
+  ) ?? req.nextUrl.origin;
+  const redirectUri = `${origin}/api/contacts/${provider}/callback`;
   const authorizeUrl = buildAuthorizeUrl(provider, config, redirectUri, state);
 
   const res = NextResponse.json({ authorizeUrl });

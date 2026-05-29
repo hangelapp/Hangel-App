@@ -198,6 +198,26 @@ export function buildAuthorizeUrl(
   return `${config.authorizeBase}?${params.toString()}`;
 }
 
+/**
+ * Public-facing origin for building the OAuth redirect URI. Behind Firebase App
+ * Hosting / Cloud Run, `req.nextUrl.origin` is the internal bind address
+ * (`https://0.0.0.0:8080`) — NOT the public domain — which makes the
+ * authorize-request `redirect_uri` unregistered → Google `invalid_request`.
+ * The real host arrives in `x-forwarded-host` (fallback `host`); the scheme in
+ * `x-forwarded-proto` (default https). Proxy chains may comma-join values, so
+ * the first entry is taken. Returns null when no host header is present.
+ */
+export function publicOrigin(
+  xForwardedHost: string | null,
+  host: string | null,
+  xForwardedProto: string | null,
+): string | null {
+  const h = (xForwardedHost || host || '').split(',')[0]?.trim();
+  if (!h) return null;
+  const proto = (xForwardedProto || 'https').split(',')[0]?.trim() || 'https';
+  return `${proto}://${h}`;
+}
+
 // ---- Provider response shapes (only the fields we read) ----
 
 interface GooglePerson {

@@ -25,6 +25,7 @@ import {
   mapGooglePerson,
   mapGraphContact,
   normalizeContacts,
+  publicOrigin,
   statesMatch,
   verifyState,
   OAUTH_STATE_COOKIE,
@@ -212,7 +213,12 @@ export async function GET(
   }
 
   try {
-    const redirectUri = `${req.nextUrl.origin}/api/contacts/${provider}/callback`;
+    const origin = publicOrigin(
+      req.headers.get('x-forwarded-host'),
+      req.headers.get('host'),
+      req.headers.get('x-forwarded-proto'),
+    ) ?? req.nextUrl.origin;
+    const redirectUri = `${origin}/api/contacts/${provider}/callback`;
     const accessToken = await exchangeCodeForToken(config, code, redirectUri);
     if (!accessToken) {
       return htmlResponse(errorPage('token_exchange_failed'), { status: 502, clearCookie: true });
