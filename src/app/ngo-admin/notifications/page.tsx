@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, updateDoc, writeBatch } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
@@ -66,11 +67,18 @@ export default function NgoNotificationsPage() {
     const { user: authUser } = useUser();
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Yöneticiye düşen gerçek bildirimler (userId == oturum). orderBy yok →
-    // where+orderBy composite index gerekmesin; client-side sıralanır.
+    // Bildirim Merkezi: AKTİF KURUMA + yöneticiye düşen bildirimler.
+    // userId in [entityId, adminUid] → kuruma ait bildirimler (kullanıcıda olduğu
+    // gibi) + yöneticinin kişisel bildirimleri birlikte. orderBy yok → composite
+    // index gerekmesin; client-side sıralanır.
+    const { id: entityId } = useActiveEntity();
+    const recipientIds = useMemo(
+        () => Array.from(new Set([authUser?.uid, entityId].filter(Boolean))) as string[],
+        [authUser?.uid, entityId],
+    );
     const notifQuery = useMemoFirebase(
-        () => (db && authUser?.uid ? query(collection(db, COLLECTIONS.notifications), where('userId', '==', authUser.uid)) : null),
-        [db, authUser?.uid],
+        () => (db && recipientIds.length > 0 ? query(collection(db, COLLECTIONS.notifications), where('userId', 'in', recipientIds)) : null),
+        [db, recipientIds],
     );
     const { data: notifs, isLoading } = useCollection<NotifItem>(notifQuery);
 
