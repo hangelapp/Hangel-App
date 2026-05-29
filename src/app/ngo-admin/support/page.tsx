@@ -54,7 +54,7 @@ const sections: Section[] = [
     topics: [
       { id: 'notifications', href: '/ngo-admin/notifications', icon: Bell, label: 'Gelen Kutusu', description: 'Sistem bildirimleri, başvuru bildirimleri ve takipçi mesajlarını takip edin.', hint: 'Bildirimleri okundu işaretlediğinizde geçmişte aratılabilir kalır.' },
       { id: 'posts', href: '/ngo-admin/posts', icon: Newspaper, label: 'Gönderiler', description: 'Zaman tüneline gönderi paylaşın, mevcut paylaşımlarınızı düzenleyin/silin.', hint: 'Görsel önerisi yakında eklenecek; şu an metin paylaşımları desteklenir.' },
-      { id: 'impact-story', href: '/ngo-admin/impact-story', icon: Sparkles, label: 'Etki Hikayem', description: 'Kuruluşunuzun verilerinden otomatik üretilen instagram-tarzı etki hikayeleri.', hint: 'Hikayeler, bağış / gönüllü / ilan / paylaşım sayılarınız üzerinden otomatik üretilir.' },
+      { id: 'impact-story', href: '/ngo-admin/impact-story', icon: Sparkles, label: 'Etki Hikayemiz', description: 'Kuruluşunuzun verilerinden otomatik üretilen instagram-tarzı etki hikayeleri.', hint: 'Hikayeler, bağış / gönüllü / ilan / paylaşım sayılarınız üzerinden otomatik üretilir.' },
     ],
   },
   {

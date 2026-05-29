@@ -193,7 +193,7 @@ export default function SitemapPage() {
                 { label: "2.7.3 STK Profil QR Kodu", href: "/ngo-admin/qr", indent: 1 },
                 { label: "2.7.4 Gelen Kutusu", href: "/ngo-admin/notifications", indent: 1 },
                 { label: "2.7.5 Gönderiler", href: "/ngo-admin/posts", indent: 1 },
-                { label: "2.7.6 Etki Hikayem", href: "/ngo-admin/impact-story", indent: 1 },
+                { label: "2.7.6 Etki Hikayemiz", href: "/ngo-admin/impact-story", indent: 1 },
                 { label: "2.7.7 Şeffaflık Endeksi", href: "/ngo-admin/transparency", indent: 1 },
                 { label: "2.7.8 Gönüllülük Yönetimi", href: "/ngo-admin/volunteer", indent: 1 },
                 { label: "2.7.9 Demografi Analizi", href: "/ngo-admin/demographics", indent: 1 },

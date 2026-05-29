@@ -196,7 +196,7 @@ const navGroups: { title: string; items: NavItem[] }[] = [
         items: [
             { id: 'notifications', href: '/ngo-admin/notifications', label: 'Gelen Kutusu', icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'posts', href: '/ngo-admin/posts', label: 'Gönderiler', icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
-            { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayem', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
+            { id: 'impact-story', href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'transparency', href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: 'shield-check', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
             { id: 'sustainability', href: '/ngo-admin/sustainability', label: 'Sürdürülebilirlik ve KSS Raporları', icon: 'leaf', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['brand'] },
         ]
