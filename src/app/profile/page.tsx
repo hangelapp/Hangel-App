@@ -321,6 +321,12 @@ export default function ProfilePage() {
         [userData]
     );
     const badges = useMemo(() => enrichBadges(userAreaPoints), [userAreaPoints]);
+    // Toplam Sosyal Etki Puanı = alan bazlı kazanılan puanların gerçek toplamı
+    // (Son Puan İşlemleri ile aynı kaynak). areaPoints boşsa userData.impactScore'a düş.
+    const realImpactScore = useMemo(() => {
+        const sum = Object.values(userAreaPoints).reduce((s, v) => s + (Number(v) || 0), 0);
+        return sum > 0 ? sum : (Number(currentUser.impactScore) || 0);
+    }, [userAreaPoints, currentUser.impactScore]);
     // Profile tab'ında yarım rozetler dahil 1+ puanlı tüm rozetler gösterilir.
     const visibleBadges = useMemo(
         () => badges.filter(b => (b.currentPoints ?? 0) > 0),
@@ -619,7 +625,7 @@ export default function ProfilePage() {
                     
                     <TabsContent value="impact" className="p-3 space-y-3">
                         <EtkiTabContent
-                            user={{ impactScore: currentUser.impactScore, stats: currentUser.stats }}
+                            user={{ impactScore: realImpactScore, stats: currentUser.stats }}
                             earnedBadgeCount={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length}
                             certificateCount={certificates.length}
                             impactCardTitle={t('dashboard.profile.impactCardTitle')}

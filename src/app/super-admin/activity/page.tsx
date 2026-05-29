@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, Clock, Loader2 } from 'lucide-react';
+import { Activity, HandCoins, FileText, UserPlus, Bell, Inbox, LogIn, Clock, Loader2, Timer } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, orderBy, query, limit } from 'firebase/firestore';
 import Link from 'next/link';
@@ -22,13 +22,14 @@ interface ActivityEntry {
   subtitle: string;
   timestamp: Date | null;
   userId?: string;
+  actor?: string;
   href?: string;
 }
 
 interface DonationRow { id: string; status?: string; brandName?: string; brand?: string; userName?: string; userId?: string; donationAmount?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
 interface ApplicationRow { id: string; name?: string; entityType?: string; status?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
-interface InvitationRow { id: string; inviteeName?: string; role?: string; ngoId?: string; brandId?: string; invitedAt?: { toDate?: () => Date; seconds?: number } | string; }
-interface NotificationRow { id: string; title?: string; body?: string; userId?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
+interface InvitationRow { id: string; inviteeName?: string; role?: string; ngoId?: string; brandId?: string; invitedBy?: string; invitedByName?: string; invitedAt?: { toDate?: () => Date; seconds?: number } | string; }
+interface NotificationRow { id: string; title?: string; body?: string; userId?: string; createdBy?: string; createdByName?: string; createdAt?: { toDate?: () => Date; seconds?: number } | string; }
 
 const toDate = (val: unknown): Date | null => {
   if (!val) return null;
@@ -88,7 +89,18 @@ export default function SuperAdminActivityPage() {
   const { data: invitations } = useCollection<InvitationRow>(invitationsQuery);
   const { data: notifications } = useCollection<NotificationRow>(notificationsQuery);
 
+  // İşlemi yapan kullanıcının adını çözmek için uid→ad haritası.
+  const usersQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
+  const { data: usersData } = useCollection<{ id: string; name?: string; displayName?: string; email?: string }>(usersQuery);
+  const userNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    (usersData || []).forEach(u => m.set(u.id, u.name || u.displayName || u.email || ''));
+    return m;
+  }, [usersData]);
   const entries: ActivityEntry[] = useMemo(() => {
+    const SYSTEM_ACTORS: Record<string, string> = { 'hangel-system': 'Sistem', 'emergency-system': 'Acil Sistemi', 'affiliate-webhook': 'Affiliate Webhook' };
+    const resolveActor = (uid?: string, name?: string): string | undefined =>
+      name || (uid ? (SYSTEM_ACTORS[uid] || userNameById.get(uid) || undefined) : undefined);
     const list: ActivityEntry[] = [];
 
     (donations || []).forEach(d => {
@@ -124,6 +136,7 @@ export default function SuperAdminActivityPage() {
         title: `${i.inviteeName || 'Kullanıcı'} ${i.role || 'rol'} olarak atandı`,
         subtitle: i.ngoId ? `STK: ${i.ngoId}` : i.brandId ? `Marka: ${i.brandId}` : '—',
         timestamp: toDate(i.invitedAt),
+        actor: resolveActor(i.invitedBy, i.invitedByName),
         href: i.ngoId ? '/super-admin/ngos' : '/super-admin/brands',
       });
     });
@@ -137,6 +150,7 @@ export default function SuperAdminActivityPage() {
         subtitle: n.body || '—',
         timestamp: toDate(n.createdAt),
         userId: n.userId,
+        actor: resolveActor(n.createdBy, n.createdByName),
       });
     });
 
@@ -147,7 +161,7 @@ export default function SuperAdminActivityPage() {
     });
 
     return list.slice(0, 200);
-  }, [donations, applications, invitations, notifications]);
+  }, [donations, applications, invitations, notifications, userNameById]);
 
   const [activeTab, setActiveTab] = useState<'all' | RoleCategory | 'oturum'>('all');
 
@@ -216,6 +230,7 @@ export default function SuperAdminActivityPage() {
                               <p className="font-bold text-sm truncate">{e.title}</p>
                             </div>
                             <p className="text-xs text-muted-foreground truncate">{e.subtitle}</p>
+                            {e.actor && <p className="text-[10px] text-muted-foreground/80 truncate mt-0.5">👤 {e.actor} tarafından</p>}
                           </div>
                           <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap">{formatTs(e.timestamp)}</span>
                         </div>
@@ -284,6 +299,15 @@ function SessionsPanel() {
 
   const filtered = roleFilter === 'all' ? items : items.filter(i => i.role === roleFilter);
   const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+  const fmtDuration = (a: string | null, b: string | null): string | null => {
+    if (!a || !b) return null;
+    const ms = new Date(b).getTime() - new Date(a).getTime();
+    if (!Number.isFinite(ms) || ms < 0) return null;
+    const mins = Math.round(ms / 60000);
+    if (mins < 1) return '1 dk\'dan az';
+    const h = Math.floor(mins / 60), m = mins % 60;
+    return h > 0 ? `${h} sa ${m} dk` : `${m} dk`;
+  };
   const roleBadge = (role: string) => role === 'super-admin' ? 'bg-purple-100 text-purple-700' : role === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-muted text-muted-foreground';
 
   if (loading) return <div className="py-12 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
@@ -322,6 +346,9 @@ function SessionsPanel() {
             <div className="text-right text-[11px] text-muted-foreground whitespace-nowrap">
               <p className="inline-flex items-center gap-1"><LogIn className="h-3 w-3 text-green-600" /> Giriş: {fmt(s.loginAt)}</p>
               <p className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> Son: {fmt(s.lastActiveAt)}</p>
+              {fmtDuration(s.loginAt, s.lastActiveAt) && (
+                <p className="inline-flex items-center gap-1 font-semibold text-foreground/70"><Timer className="h-3 w-3" /> {fmtDuration(s.loginAt, s.lastActiveAt)} online</p>
+              )}
             </div>
           </div>
         ))}
