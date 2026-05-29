@@ -65,6 +65,8 @@ import { useMenuBadge, type BadgeConfig } from '@/components/shared/use-menu-bad
 import {
   ActiveEntityProvider,
   useActiveEntity,
+  entityTypeLabel,
+  entityPossessive,
   type EntityKind,
   type ManagedOrg,
 } from './active-entity-context';
@@ -384,7 +386,7 @@ function MenuItemLink({
 
 function SideMenu() {
   const pathname = usePathname();
-  const { kind: entityKind, withEntityParams, id: entityId } = useActiveEntity();
+  const { kind: entityKind, subType, withEntityParams, id: entityId } = useActiveEntity();
   // Default to NGO menu while resolving or if undetermined
   const groups = entityKind === 'brand' ? BRAND_MENU : entityKind === 'club' ? CLUB_MENU : NGO_MENU;
 
@@ -406,6 +408,10 @@ function SideMenu() {
                   return null;
                 }
                 const Icon = item.icon;
+                // QR etiketi tipe göre: "Dernek/Vakıf/Spor Kulübü/Marka/Öğrenci Kulübü Profil QR Kodu".
+                const displayLabel = item.href === '/ngo-admin/qr'
+                  ? `${entityTypeLabel(entityKind, subType)} Profil QR Kodu`
+                  : item.label;
                 const active = pathname === item.href || pathname?.startsWith(item.href + '/');
                 const baseClasses = cn(
                   'flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-bold transition-colors',
@@ -417,7 +423,7 @@ function SideMenu() {
                 const content = (
                   <>
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className="flex-1 truncate">{item.label}</span>
+                    <span className="flex-1 truncate">{displayLabel}</span>
                     {item.comingSoon && (
                       <Badge
                         variant="secondary"
@@ -454,7 +460,7 @@ function SideMenu() {
 // Avatar + isim + tür rozeti + kamu profili linki. Henüz çözülmediyse
 // skeleton placeholder, hiç entity yoksa hiç gösterilmez.
 function EntityIdentityBanner() {
-  const { id, kind, type, managedList, isLoading } = useActiveEntity();
+  const { id, kind, managedList, isLoading } = useActiveEntity();
 
   if (isLoading) {
     return (
@@ -493,10 +499,10 @@ function EntityIdentityBanner() {
         <div className="flex items-center gap-2 flex-wrap">
           <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
           <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold">
-            {type}
+            {entityTypeLabel(current.kind, current.subType)}
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground truncate">Yönetim Paneli</p>
+        <p className="text-xs text-muted-foreground truncate">{entityPossessive(current.kind, current.subType)} Yönetim Paneli</p>
       </div>
       <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
         <Link href={publicHref} target="_blank" rel="noopener noreferrer">

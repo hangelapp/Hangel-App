@@ -50,9 +50,38 @@ export type ManagedOrg = {
   id: string;
   kind: EntityKind;
   type: EntityType;
+  /** Spesifik alt tip (ör. Dernek / Vakıf / Spor Kulübü / Özel İzinli). */
+  subType?: string;
   name: string;
   logoUrl?: string;
 };
+
+/** Türkçe iyelik biçimleri — tipe göre hitap için (Derneğin, Vakfın, ...). */
+const POSSESSIVE: Record<string, string> = {
+  'Dernek': 'Derneğin',
+  'Vakıf': 'Vakfın',
+  'Spor Kulübü': 'Spor Kulübünün',
+  'Özel İzinli': 'Kuruluşun',
+  'Marka': 'Markanın',
+  'Öğrenci Kulübü': 'Öğrenci Kulübünün',
+  'Kulüp': 'Kulübün',
+  'STK': "STK'nın",
+};
+
+/** Aktif kurumun gösterilecek tip etiketi — spesifik alt tip varsa onu, yoksa kind varsayılanı. */
+export function entityTypeLabel(kind: EntityKind | null, subType?: string | null): string {
+  if (subType && subType.trim()) return subType.trim();
+  if (kind === 'brand') return 'Marka';
+  if (kind === 'club') return 'Öğrenci Kulübü';
+  if (kind === 'ngo') return 'STK';
+  return 'Kurum';
+}
+
+/** Tipe göre Türkçe iyelik (ör. "Derneğin", "Spor Kulübünün", "Markanın"). */
+export function entityPossessive(kind: EntityKind | null, subType?: string | null): string {
+  const label = entityTypeLabel(kind, subType);
+  return POSSESSIVE[label] || `${label}'nın`;
+}
 
 type ActiveEntityValue = {
   /** Currently active org id, or null while unresolved. */
@@ -61,6 +90,8 @@ type ActiveEntityValue = {
   kind: EntityKind | null;
   /** Display type string ('STK' | 'Marka' | 'Kulüp'). */
   type: EntityType | null;
+  /** Spesifik alt tip (Dernek/Vakıf/Spor Kulübü/Özel İzinli/Marka/Öğrenci Kulübü). */
+  subType: string | null;
   /** All orgs the user manages (for the switcher). */
   managedList: ManagedOrg[];
   isLoading: boolean;
@@ -101,6 +132,7 @@ type EntityDoc = {
   avatarUrl?: string;
   logoUrl?: string;
   adminUserId?: string;
+  type?: string; // spesifik alt tip (Dernek/Vakıf/Spor Kulübü/Özel İzinli)
 };
 
 export function ActiveEntityProvider({ children }: { children: React.ReactNode }) {
@@ -211,6 +243,7 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
         id: e.id,
         kind,
         type: KIND_TO_TYPE[kind],
+        subType: e.type,
         name: e.name || KIND_TO_TYPE[kind],
         logoUrl: e.avatarUrl || e.logoUrl,
       });
@@ -306,17 +339,24 @@ export function ActiveEntityProvider({ children }: { children: React.ReactNode }
     [active.id, active.type],
   );
 
+  // Aktif kurumun spesifik alt tipi (managedList'ten; yoksa null → kind varsayılanı kullanılır).
+  const activeSubType = useMemo<string | null>(() => {
+    if (!active.id || !active.kind) return null;
+    return managedList.find((o) => o.id === active.id && o.kind === active.kind)?.subType ?? null;
+  }, [active.id, active.kind, managedList]);
+
   const value = useMemo<ActiveEntityValue>(
     () => ({
       id: active.id,
       kind: active.kind,
       type: active.type,
+      subType: activeSubType,
       managedList,
       isLoading,
       setActive,
       withEntityParams,
     }),
-    [active.id, active.kind, active.type, managedList, isLoading, setActive, withEntityParams],
+    [active.id, active.kind, active.type, activeSubType, managedList, isLoading, setActive, withEntityParams],
   );
 
   return <ActiveEntityContext.Provider value={value}>{children}</ActiveEntityContext.Provider>;
