@@ -293,20 +293,56 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
   onDelete: (c: Contract) => Promise<void>;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [sortKey, setSortKey] = useState<string>('title');
   const filtered = useMemo(() => {
-    if (!searchTerm.trim()) return docs;
-    const q = searchTerm.toLowerCase();
-    return docs.filter(c => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q) || (c.group || '').toLowerCase().includes(q));
-  }, [docs, searchTerm]);
+    let list = docs;
+    if (statusFilter !== 'all') list = list.filter(c => c.status === statusFilter);
+    if (riskFilter !== 'all') list = list.filter(c => (c.riskLevel || 'dusuk') === riskFilter);
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      list = list.filter(c => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q) || (c.group || '').toLowerCase().includes(q));
+    }
+    const riskOrder: Record<string, number> = { kritik: 4, yuksek: 3, orta: 2, dusuk: 1 };
+    const dateVal = (c: Contract) => { const d = (c.publishedAt || c.updatedAt) as string | undefined; return d ? (new Date(d).getTime() || 0) : 0; };
+    return [...list].sort((a, b) => {
+      if (sortKey === 'date') return dateVal(b) - dateVal(a);
+      if (sortKey === 'risk') return (riskOrder[b.riskLevel || 'dusuk'] || 0) - (riskOrder[a.riskLevel || 'dusuk'] || 0);
+      return a.title.localeCompare(b.title, 'tr');
+    });
+  }, [docs, searchTerm, statusFilter, riskFilter, sortKey]);
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="relative flex-1 min-w-[200px] max-w-md">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[180px] max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Ara..." className="pl-10 h-10" />
+            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Başlık / slug / grup ara..." className="pl-10 h-10" />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Durum" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm Durumlar</SelectItem>
+              {Object.entries(STATUS_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={riskFilter} onValueChange={setRiskFilter}>
+            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Risk" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm Riskler</SelectItem>
+              {Object.entries(RISK_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={sortKey} onValueChange={setSortKey}>
+            <SelectTrigger className="w-40 h-10"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="title">Ada Göre (A-Z)</SelectItem>
+              <SelectItem value="date">Tarihe Göre (Yeni)</SelectItem>
+              <SelectItem value="risk">Riske Göre (Yüksek)</SelectItem>
+            </SelectContent>
+          </Select>
           <ContractEditDialog defaultKind={kind} onSave={onSave} />
         </div>
         {kind === 'policy' && (
@@ -384,6 +420,7 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
 export default function ContractsAdminPage() {
   const { toast } = useToast();
   const db = useFirestore();
+  const [activeTab, setActiveTab] = useState('genel');
 
   const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
   const { data: firestoreContracts, isLoading } = useCollection<Contract>(contractsQuery);
@@ -458,7 +495,7 @@ export default function ContractsAdminPage() {
         <p className="text-muted-foreground text-sm">Hukuk ve uyumluluk merkezi — sözleşmeler, politikalar, mevzuatlar, onay süreçleri.</p>
       </div>
 
-      <Tabs defaultValue="genel" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="flex w-full overflow-x-auto justify-start h-auto p-1 gap-1">
           <TabsTrigger value="genel" className="gap-1.5 shrink-0"><LayoutDashboard className="h-4 w-4" /> Genel</TabsTrigger>
           <TabsTrigger value="sozlesmeler" className="gap-1.5 shrink-0"><Scale className="h-4 w-4" /> Sözleşmeler</TabsTrigger>
@@ -485,6 +522,29 @@ export default function ContractsAdminPage() {
             <CardContent className="flex flex-wrap gap-2">
               <ContractEditDialog defaultKind="contract" onSave={handleSave} />
               <ContractEditDialog defaultKind="policy" onSave={handleSave} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle className="text-base">Hızlı Erişim</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {([
+                { v: 'sozlesmeler', label: 'Sözleşmeler', icon: Scale },
+                { v: 'politikalar', label: 'Politikalar', icon: Shield },
+                { v: 'mevzuatlar', label: 'Mevzuatlar', icon: BookText },
+                { v: 'uyum', label: 'Uyum Analizi', icon: GitCompare },
+                { v: 'yayin', label: 'Yayın & Bildirim', icon: Send },
+                { v: 'onay', label: 'Onay Kayıtları', icon: ClipboardCheck },
+                { v: 'chat', label: 'Hukuk Chat', icon: MessagesSquare },
+                { v: 'arsiv', label: 'Arşiv', icon: Archive },
+              ] as const).map(item => {
+                const Icon = item.icon;
+                return (
+                  <button key={item.v} onClick={() => setActiveTab(item.v)} className="flex items-center gap-2 rounded-xl border p-3 text-left hover:bg-accent transition-colors">
+                    <span className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><Icon className="h-4 w-4 text-primary" /></span>
+                    <span className="text-sm font-medium leading-tight">{item.label}</span>
+                  </button>
+                );
+              })}
             </CardContent>
           </Card>
         </TabsContent>

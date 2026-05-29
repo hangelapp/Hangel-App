@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Search, Archive, FileText, ExternalLink, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, RefreshCw } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Loader2, Search, Archive, FileText, Building2, ShoppingBag, GraduationCap, CheckCircle2, Circle, Eye, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, doc, updateDoc, serverTimestamp, type Timestamp } from 'firebase/firestore';
@@ -46,24 +47,22 @@ export function ArchiveTab() {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [reviewFilter, setReviewFilter] = useState<string>('all');
   const [markingId, setMarkingId] = useState<string | null>(null);
-  const [backfilling, setBackfilling] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<ArchiveDoc | null>(null);
 
-  // Ayna eklenmeden önce yüklenmiş belgeleri (logo, faaliyet belgesi, tüzük, şeffaflık) içe aktar.
-  const handleBackfill = async () => {
+  // Geçmiş belgeleri OTOMATİK tara — oturum başına bir kez (buton yok).
+  useEffect(() => {
     if (!user) return;
-    setBackfilling(true);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/admin/archive-backfill', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) { toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: json?.message || 'Hata' }); return; }
-      toast({ title: 'Geçmiş belgeler tarandı', description: `${json.imported || 0} belge arşive işlendi.` });
-    } catch (e) {
-      toast({ variant: 'destructive', title: 'İçe aktarılamadı', description: e instanceof Error ? e.message : 'Hata' });
-    } finally {
-      setBackfilling(false);
-    }
-  };
+    if (typeof window !== 'undefined' && sessionStorage.getItem('archive-backfilled')) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        await fetch('/api/admin/archive-backfill', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+        if (!cancelled && typeof window !== 'undefined') sessionStorage.setItem('archive-backfilled', '1');
+      } catch { /* sessiz — sonraki açılışta tekrar denenir */ }
+    })();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const archiveQuery = useMemoFirebase(() => collection(db, COLLECTIONS.documentArchive), [db]);
   const { data: docs, isLoading } = useCollection<ArchiveDoc>(archiveQuery);
@@ -114,7 +113,10 @@ export function ArchiveTab() {
     return Array.from(byEntity.values());
   }, [docs, searchTerm, yearFilter, typeFilter, reviewFilter]);
 
+  const isImg = (u?: string) => !!u && /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(u);
+
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 flex-wrap">
@@ -154,10 +156,6 @@ export function ArchiveTab() {
               <SelectItem value="reviewed">İncelendi</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" className="h-10 gap-1.5" onClick={handleBackfill} disabled={backfilling} title="Daha önce yüklenmiş logo/belge/şeffaflık dosyalarını arşive aktar">
-            {backfilling ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            Geçmiş Belgeleri Tara
-          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -207,9 +205,9 @@ export function ArchiveTab() {
                                 <span className="text-[10px] text-green-700 hidden sm:inline shrink-0" title="İnceleyen">{d.reviewedByName}</span>
                               )}
                               {d.fileUrl && (
-                                <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
-                                  Aç <ExternalLink className="h-3 w-3" />
-                                </a>
+                                <button onClick={() => setPreviewDoc(d)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0">
+                                  <Eye className="h-3 w-3" /> Önizle
+                                </button>
                               )}
                               <button
                                 onClick={() => toggleReview(d)}
@@ -234,5 +232,32 @@ export function ArchiveTab() {
         )}
       </CardContent>
     </Card>
+
+    {/* Önizleme popup (yeni sekme yerine) */}
+    <Dialog open={!!previewDoc} onOpenChange={(o) => { if (!o) setPreviewDoc(null); }}>
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="p-4 border-b shrink-0">
+          <DialogTitle className="truncate pr-8">{previewDoc?.docType || 'Evrak'}{previewDoc?.entityName ? ` — ${previewDoc.entityName}` : ''}</DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-auto bg-muted/30">
+          {previewDoc?.fileUrl && (isImg(previewDoc.fileUrl) ? (
+            <div className="w-full h-full flex items-center justify-center p-4">
+              <img src={previewDoc.fileUrl} alt={previewDoc.docType || 'Evrak'} className="max-w-full max-h-full object-contain rounded shadow" />
+            </div>
+          ) : (
+            <iframe src={previewDoc.fileUrl} className="w-full h-full border-0" title="Belge önizleme" />
+          ))}
+        </div>
+        <DialogFooter className="p-3 border-t shrink-0 gap-2">
+          {previewDoc?.fileUrl && (
+            <Button asChild variant="outline">
+              <a href={previewDoc.fileUrl} target="_blank" rel="noopener noreferrer"><Download className="h-4 w-4 mr-2" /> İndir / Yeni Sekme</a>
+            </Button>
+          )}
+          <Button variant="secondary" onClick={() => setPreviewDoc(null)}>Kapat</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
