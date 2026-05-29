@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { collection, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -125,6 +126,21 @@ export default function FundsPage() {
         () => Array.from(new Set(funds.flatMap((f) => f.areas || []))).sort(),
         [funds],
     );
+
+    // STK uyumluluk yüzdesi: fonun faaliyet alanları ile STK'nın kategori/faydalanıcı/SKA
+    // alanlarının örtüşmesi. Farklı taksonomiler için normalize + iki yönlü substring eşleşmesi.
+    const { data: myEntity } = useActiveEntityDoc<{ categories?: string[]; beneficiaries?: string[]; sdgs?: string[] }>();
+    const ngoAreas = useMemo(() => {
+        const norm = (s: string) => (s || '').toLocaleLowerCase('tr').trim();
+        return [...(myEntity?.categories || []), ...(myEntity?.beneficiaries || []), ...(myEntity?.sdgs || [])]
+            .map(norm).filter(Boolean);
+    }, [myEntity]);
+    const compatScore = (fund: Fund): number | null => {
+        const areas = (fund.areas || []).map(a => (a || '').toLocaleLowerCase('tr').trim()).filter(Boolean);
+        if (areas.length === 0 || ngoAreas.length === 0) return null;
+        const matched = areas.filter(a => ngoAreas.some(na => na === a || na.includes(a) || a.includes(na))).length;
+        return Math.round((matched / areas.length) * 100);
+    };
 
     const filteredAndSortedFunds = useMemo(() => {
         let result = [...funds];
@@ -304,6 +320,14 @@ export default function FundsPage() {
                                     <div className="space-y-1">
                                         <CardTitle className="text-lg font-bold leading-tight group-hover:text-primary transition-colors">{fund.name}</CardTitle>
                                         <p className="text-sm font-semibold text-primary">{fund.provider}</p>
+                                        {(() => {
+                                            const sc = compatScore(fund);
+                                            return sc !== null ? (
+                                                <Badge className={cn('text-[10px] font-black border-none mt-0.5', sc >= 60 ? 'bg-green-600 text-white' : sc >= 30 ? 'bg-amber-500 text-white' : 'bg-muted text-muted-foreground')}>
+                                                    Kurumunuza %{sc} uyumlu
+                                                </Badge>
+                                            ) : null;
+                                        })()}
                                     </div>
                                     <Badge variant={fund.status === 'Açık' ? 'default' : 'secondary'} className={cn(
                                         "font-black text-[9px] tracking-widest px-3 py-1 uppercase rounded-lg border-none",
