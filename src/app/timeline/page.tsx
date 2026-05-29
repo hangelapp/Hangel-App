@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Progress } from '@/components/ui/progress';
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import {
   addDoc,
   collection,
@@ -186,19 +186,33 @@ export default function TimelinePage() {
 
   const entityResolver = useMemo(() => {
     const norm = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
-    const map = new Map<string, { link: string; logo?: string }>();
-    const add = (list: LiveEntity[] | null | undefined, linkFor: (e: LiveEntity) => string) => {
+    const map = new Map<string, { link: string; logo?: string; id: string; type: 'ngo' | 'brand' | 'club' }>();
+    const add = (list: LiveEntity[] | null | undefined, type: 'ngo' | 'brand' | 'club', linkFor: (e: LiveEntity) => string) => {
       (list || []).forEach(e => {
         if (!e.name) return;
         const logo = e.files?.logo || e.logoUrl || e.avatarUrl;
-        map.set(norm(e.name), { link: linkFor(e), logo });
+        map.set(norm(e.name), { link: linkFor(e), logo, id: e.id, type });
       });
     };
-    add(ngosLive, e => `/ngos/${e.id}`);
-    add(brandsLive, e => `/market/${e.id}`);
-    add(clubsLive, e => `/clubs/profile/${e.id}`);
+    add(ngosLive, 'ngo', e => `/ngos/${e.id}`);
+    add(brandsLive, 'brand', e => `/market/${e.id}`);
+    add(clubsLive, 'club', e => `/clubs/profile/${e.id}`);
     return map;
   }, [ngosLive, brandsLive, clubsLive]);
+
+  // Akış filtresi için kullanıcının ilişki verisi (bağış/gönüllü/takip/üyelik).
+  const userRelRef = useMemoFirebase(
+    () => (db && authUser?.uid ? doc(db, COLLECTIONS.users, authUser.uid) : null),
+    [db, authUser?.uid],
+  );
+  const { data: userRel } = useDoc<{ supportedNgos?: string[]; volunteeredNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[] }>(userRelRef);
+  const relSets = useMemo(() => ({
+    supported: new Set(userRel?.supportedNgos || []),
+    volunteered: new Set(userRel?.volunteeredNgos || []),
+    followed: new Set(userRel?.followedBrands || []),
+    joined: new Set(userRel?.joinedClubs || []),
+  }), [userRel]);
+  const [relFilter, setRelFilter] = useState<'all' | 'supported' | 'volunteered' | 'followed' | 'joined'>('all');
 
   // Prime likeState once per (postsData, authUser) using one-shot reads.
   // Avoids N+1 listeners; counts refresh only on mount + optimistic toggle.
@@ -242,6 +256,19 @@ export default function TimelinePage() {
         posts = posts.filter(p => p.sponsored);
     }
 
+    if (relFilter !== 'all') {
+        const norm = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
+        posts = posts.filter(p => {
+            const ent = entityResolver.get(norm(p.author?.name || ''));
+            if (!ent) return false;
+            if (relFilter === 'supported') return relSets.supported.has(ent.id);
+            if (relFilter === 'volunteered') return relSets.volunteered.has(ent.id);
+            if (relFilter === 'followed') return relSets.followed.has(ent.id);
+            if (relFilter === 'joined') return relSets.joined.has(ent.id);
+            return true;
+        });
+    }
+
     if (searchTerm.trim()) {
         const lowercased = searchTerm.toLowerCase();
         posts = posts.filter(post => 
@@ -283,7 +310,7 @@ export default function TimelinePage() {
     });
 
     return posts;
-  }, [postsData, sortKey, sortDir, filterSponsored, searchTerm]);
+  }, [postsData, sortKey, sortDir, filterSponsored, searchTerm, relFilter, entityResolver, relSets]);
 
   const normName = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
   const getEntityLink = (authorName: string) => {
@@ -423,12 +450,29 @@ export default function TimelinePage() {
                                 <Filter className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-56">
                             <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuCheckboxItem checked={filterSponsored} onCheckedChange={setFilterSponsored}>
                                 Sadece Sponsorlu
                             </DropdownMenuCheckboxItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>İlişkiye Göre</DropdownMenuLabel>
+                            {([
+                                { key: 'all', label: 'Tümü' },
+                                { key: 'supported', label: 'Bağış yaptığım STK\'lar' },
+                                { key: 'volunteered', label: 'Gönüllüsü olduğum STK\'lar' },
+                                { key: 'followed', label: 'Takip ettiğim markalar' },
+                                { key: 'joined', label: 'Üyesi olduğum kulüpler' },
+                            ] as const).map(opt => (
+                                <DropdownMenuCheckboxItem
+                                    key={opt.key}
+                                    checked={relFilter === opt.key}
+                                    onCheckedChange={() => setRelFilter(opt.key)}
+                                >
+                                    {opt.label}
+                                </DropdownMenuCheckboxItem>
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <DropdownMenu>
