@@ -71,11 +71,13 @@ workflows:
 
       - name: Set up code signing
         script: |
-          # ios_signing block (environment) ile Codemagic otomatik:
-          # - Distribution cert oluşturur/fetch eder (private key dahil)
-          # - Provisioning profile oluşturur (capabilities ile)
-          # - Keychain'e ekler
-          # Bizim sadece xcode-project use-profiles çağırmamız gerek.
+          keychain initialize
+          # Fetch + create cert AND profile via App Store Connect API.
+          # Bundle ID'deki tüm capabilities otomatik dahil edilir.
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
           xcode-project use-profiles
 
       - name: Build IPA
