@@ -27,6 +27,16 @@ const nextConfig: NextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
         ],
       },
+      {
+        // iOS Universal Links — Apple bu dosyayı uzantısız ister, application/json bekler.
+        source: '/.well-known/apple-app-site-association',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
+      },
+      {
+        // Android App Links — Digital Asset Links protocol.
+        source: '/.well-known/assetlinks.json',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
+      },
     ];
   },
   images: {

@@ -57,7 +57,27 @@
 	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
-	<key>NSUserNotificationUsageDescription</key>
-	<string>Yeni etkinlikler, mesajlar ve kampanya güncellemeleri için bildirim göndereceğiz.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Etkinliğe katıldığınızda otomatik check-out yapabilmemiz için arka planda konum gerekir. Bu izin sadece kayıtlı olduğunuz etkinliğin konumu için kullanılır.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Reklamları size kişiselleştirmek ve hangel deneyimini iyileştirmek için izniniz gerekir. Reddederseniz hangel tüm özellikleriyle çalışmaya devam eder.</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Etkinlik check-in, gönüllülük görev doğrulama ve STK masası bağış sayfalarını açmak için NFC etiketlerini okutmamız gerekiyor.</string>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>NDEF</string>
+		<string>TAG</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.hangel.ios.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hangel</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -3,37 +3,61 @@
 /**
  * Mounts FCM push token registration once the user is signed in.
  *
- * Part of FEAT-FCM-PUSH-NOTIF scaffolding. The actual delivery / click
- * navigation pipeline is a separate task (P-FCM-DELIVERY). This provider
- * intentionally renders nothing — it only triggers a side effect that:
- *   1. Waits for an authenticated user.
- *   2. Skips silently if notification permission is denied or default.
- *   3. Registers the SW + persists the FCM token to Firestore.
+ * Native (Capacitor) iOS/Android: @capacitor-firebase/messaging plugin'i ile
+ * sistem push permission dialog'unu açar, token alır, Firestore'a yazar.
+ * Listener'lar da kurulur (tokenReceived refresh, notification tap → deep link).
  *
- * SSR-safe: the underlying helpers are no-ops on the server, and the effect
- * only runs in the browser.
+ * Web: mevcut FCM web push akışı korunur — Notification.permission === 'granted'
+ * ise re-register, değilse no-op (kullanıcı izin verene kadar prompt edilmez).
+ *
+ * Crashlytics user identifier de native'de set edilir — auth değiştikçe
+ * crash report'larında uid görünür.
+ *
+ * SSR-safe.
  */
 
 import { useEffect, useRef } from 'react';
 
+import { Capacitor } from '@capacitor/core';
+
 import { useUser } from '@/firebase';
 import { registerForPushToken } from '@/lib/fcm';
+import { attachNativePushListeners, registerNativePushToken } from '@/lib/native-push';
+import { setCrashlyticsUser } from '@/lib/native-crashlytics';
 
 export function PushNotificationsProvider() {
   const { user, isUserLoading } = useUser();
   const attemptedRef = useRef<string | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (isUserLoading || !user?.uid) return;
+    if (isUserLoading) return;
     if (typeof window === 'undefined') return;
-    if (typeof Notification === 'undefined') return;
-    // Only proceed if the user has already granted permission. We do NOT
-    // prompt on mount — that would be hostile UX. A dedicated CTA elsewhere
-    // (settings / first-run flow) will call `requestPushPermission()` directly.
-    if (Notification.permission !== 'granted') return;
-    // Guard against re-registering on the same uid within a single session.
+
+    if (!user?.uid) {
+      // Logout: Crashlytics user'ı temizle, native listener'ı kaldır.
+      void setCrashlyticsUser(null);
+      if (cleanupRef.current) { cleanupRef.current(); cleanupRef.current = null; }
+      attemptedRef.current = null;
+      return;
+    }
+
+    // Aynı uid için tekrar denenmesin
     if (attemptedRef.current === user.uid) return;
     attemptedRef.current = user.uid;
+
+    void setCrashlyticsUser(user.uid);
+
+    if (Capacitor.isNativePlatform()) {
+      void registerNativePushToken(user.uid);
+      cleanupRef.current = attachNativePushListeners(user.uid);
+      return;
+    }
+
+    if (typeof Notification === 'undefined') return;
+    // Web: only proceed if permission was previously granted. A dedicated CTA
+    // (settings / first-run flow) is responsible for the initial prompt.
+    if (Notification.permission !== 'granted') return;
     void registerForPushToken(user.uid);
   }, [user?.uid, isUserLoading]);
 

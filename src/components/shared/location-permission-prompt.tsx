@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
@@ -23,7 +25,19 @@ export function LocationPermissionPrompt() {
     const status = localStorage.getItem(LOCATION_PROMPT_KEY);
     if (status) return; // Daha önce sorulmuş, tekrar gösterme
 
-    // Server-side rendering yapmayan, gerçek tarayıcı API'sini kontrol et
+    // Native (Capacitor): sistem permission API'sini kontrol et
+    if (Capacitor.isNativePlatform()) {
+      Geolocation.checkPermissions().then(perm => {
+        if (perm.location === 'granted' || perm.location === 'denied') {
+          localStorage.setItem(LOCATION_PROMPT_KEY, perm.location);
+          return;
+        }
+        checkVisitCount();
+      }).catch(() => checkVisitCount());
+      return;
+    }
+
+    // Web fallback
     if (!('geolocation' in navigator)) {
       localStorage.setItem(LOCATION_PROMPT_KEY, 'unsupported');
       return;
@@ -56,7 +70,42 @@ export function LocationPermissionPrompt() {
     }
   }, []);
 
-  const handleAllow = () => {
+  const reverseGeocode = async (lat: number, lon: number): Promise<void> => {
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=tr`,
+        { headers: { 'User-Agent': 'hangel-web' } }
+      );
+      if (r.ok) {
+        const data = await r.json();
+        const addr = data?.address ?? {};
+        const city = addr.province || addr.state || addr.city || addr.town || addr.county || '';
+        if (city) localStorage.setItem(USER_CITY_KEY, city);
+      }
+    } catch (_e) {
+      // sessizce yok say — izin verildi yeterli
+    }
+  };
+
+  const handleAllow = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const perm = await Geolocation.requestPermissions({ permissions: ['location'] });
+        if (perm.location !== 'granted') {
+          localStorage.setItem(LOCATION_PROMPT_KEY, 'denied');
+          setOpen(false);
+          return;
+        }
+        const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: false, timeout: 8000 });
+        localStorage.setItem(LOCATION_PROMPT_KEY, 'granted');
+        await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+      } catch {
+        localStorage.setItem(LOCATION_PROMPT_KEY, 'denied');
+      }
+      setOpen(false);
+      return;
+    }
+
     if (!('geolocation' in navigator)) {
       localStorage.setItem(LOCATION_PROMPT_KEY, 'unsupported');
       setOpen(false);
@@ -65,21 +114,7 @@ export function LocationPermissionPrompt() {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         localStorage.setItem(LOCATION_PROMPT_KEY, 'granted');
-        try {
-          // Basit reverse geocode — Nominatim (OpenStreetMap). Cors-friendly.
-          const r = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&accept-language=tr`,
-            { headers: { 'User-Agent': 'hangel-web' } }
-          );
-          if (r.ok) {
-            const data = await r.json();
-            const addr = data?.address ?? {};
-            const city = addr.province || addr.state || addr.city || addr.town || addr.county || '';
-            if (city) localStorage.setItem(USER_CITY_KEY, city);
-          }
-        } catch (_e) {
-          // sessizce yok say — izin verildi yeterli
-        }
+        await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         setOpen(false);
       },
       (_err) => {

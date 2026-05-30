@@ -7,6 +7,7 @@ import { LanguageProvider } from '@/components/providers/language-provider';
 import AutoTranslate from '@/components/providers/auto-translate';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
+import { NativeBridgeProvider } from '@/components/providers/native-bridge-provider';
 import { SessionTrackerProvider } from '@/components/providers/session-tracker-provider';
 import { HangelOrgSchema } from '@/components/seo/json-ld';
 import { OpenInAppBanner } from '@/components/shared/open-in-app-banner';
@@ -104,6 +105,7 @@ export default function RootLayout({
             <ThemeApplier />
             <OfflineBanner />
             <PushNotificationsProvider />
+            <NativeBridgeProvider />
             <SessionTrackerProvider />
             <AppShell>
                 {children}

@@ -1,0 +1,28 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "NKZNY8NU8S.com.hangel.ios.app",
+          "NKZNY8NU8S.com.hangel.ios.app.Clip"
+        ],
+        "components": [
+          { "/": "/checkin/*", "comment": "Etkinlik check-in" },
+          { "/": "/event/*", "comment": "Etkinlik detayı" },
+          { "/": "/ngo/*", "comment": "STK profili" },
+          { "/": "/u/*", "comment": "Kullanıcı magic link" },
+          { "/": "/library/*", "comment": "Kütüphane içeriği" },
+          { "/": "/donate/*", "comment": "Bağış sayfası" },
+          { "/": "/clip/*", "comment": "App Clip experience" },
+          { "/": "/share/*", "comment": "Paylaşılan içerik" },
+          { "/": "/qr/*", "comment": "QR kod hedefleri" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "NKZNY8NU8S.com.hangel.ios.app"
+    ]
+  }
+}
