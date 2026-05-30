@@ -82,7 +82,7 @@ export function LocationPermissionPrompt() {
         const city = addr.province || addr.state || addr.city || addr.town || addr.county || '';
         if (city) localStorage.setItem(USER_CITY_KEY, city);
       }
-    } catch (_e) {
+    } catch {
       // sessizce yok say — izin verildi yeterli
     }
   };
