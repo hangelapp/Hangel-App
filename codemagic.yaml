@@ -93,7 +93,7 @@ workflows:
 
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
+          xcode-project --verbose build-ipa \
             --project "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME"
 
