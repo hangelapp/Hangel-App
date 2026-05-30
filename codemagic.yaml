@@ -69,6 +69,12 @@ workflows:
       - name: Fetch App Store Connect signing files
         script: |
           keychain initialize
+          # Mevcut profile'lar capability eksik olabilir; sil + yeniden oluştur.
+          # Bundle ID'ye yeni capability eklenince Apple eski profile'ı invalid yapar
+          # ama otomatik temizleyemez — biz cleanup ile yeniden generate ediyoruz.
+          app-store-connect provisioning-profiles delete \
+            --bundle-id-identifier "$BUNDLE_ID" \
+            --profile-type IOS_APP_STORE || true
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
