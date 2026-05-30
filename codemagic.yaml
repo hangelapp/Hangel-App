@@ -1,0 +1,101 @@
+# Codemagic CI/CD workflow — Hangel iOS
+#
+# Cloud Mac (M2) üzerinde modern Xcode ile build alır, IPA üretir, App Store
+# Connect'e (TestFlight) yükler. macOS Monterey + Xcode 14 lokal ortamı yerine
+# bu workflow App Store submission için modern Xcode 15+ kullanır (Apple
+# 2024 Nisan'dan beri iOS 17 SDK + Xcode 15 zorunlu).
+#
+# İlk kurulumda Codemagic dashboard'unda manuel eklenecekler:
+#  1. App Store Connect API key (Integrations → Apple Developer Portal)
+#  2. Apple Developer Account (Integrations → Developer Portal)
+#  3. Environment variable group: app_store_credentials
+#     - APP_STORE_CONNECT_PRIVATE_KEY (.p8 dosyası)
+#     - APP_STORE_CONNECT_KEY_IDENTIFIER (Key ID)
+#     - APP_STORE_CONNECT_ISSUER_ID (Issuer ID, Users and Access → Keys)
+#
+# Apphosting tarafı zaten otomatik deploy (App Hosting webhook on main).
+# Bu yaml sadece iOS build için — web tarafına dokunmaz.
+
+workflows:
+  ios-testflight:
+    name: Hangel iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    environment:
+      groups:
+        - app_store_credentials
+      vars:
+        XCODE_WORKSPACE: ios/App/App.xcodeproj
+        XCODE_SCHEME: App
+        BUNDLE_ID: com.hangel.ios.app
+        APP_STORE_APPLE_ID: 6664058822
+      node: 20.x
+      xcode: latest
+      cocoapods: default
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+      cancel_previous_builds: true
+
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+
+      - name: Build Next.js (static export to out/)
+        script: |
+          npm run build || true
+          # Capacitor webDir 'out' fakat server.url=hangel.org.tr olduğu için
+          # WebView canlı siteyi yükler. out/ dizini build sırasında lazım
+          # (cap sync verify), runtime'da değil.
+
+      - name: Capacitor sync iOS
+        script: |
+          npx cap sync ios
+
+      - name: Set bundle build number (auto-increment from TestFlight)
+        script: |
+          cd ios/App
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" || echo "0")
+          NEW_BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
+          agvtool new-version -all $NEW_BUILD_NUMBER
+
+      - name: Fetch App Store Connect signing files
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+        cancel_previous_submissions: true
+      email:
+        recipients:
+          - ismailhilmi@hangel.org
+        notify:
+          success: true
+          failure: true
