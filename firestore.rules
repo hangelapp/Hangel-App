@@ -829,6 +829,59 @@ service cloud.firestore {
       allow update, delete: if isSuperAdmin() || (isSignedIn() && resource.data.invitedBy == request.auth.uid);
     }
 
+    // iOS Live Activity push token kayıtları — Faz 1
+    // Kullanıcının cihazından native ActivityKit aktivite başlattığında oluşturulan
+    // APNs push token'ı. Backend Cloud Function (Faz 1) burayı dinleyip update'leri
+    // APNs HTTP/2'ye doğrudan POST eder (FCM Live Activity desteklemiyor).
+    match /liveActivityTokens/{tokenId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Apple Wallet (PassKit) cihaz kayıtları — Faz 1
+    // Apple zorunlu update web service'i bu kayıtlardan push token'lara update
+    // tetikler. Yalnız backend (Admin SDK) yazar; istemci okuyup yazamaz.
+    match /passkitRegistrations/{regId} {
+      allow read, list, write: if false;
+    }
+
+    // NFC etiket tanımları — Faz 1/2
+    // STK adminleri kendi ngoId'sine ait etiket oluşturur; gönüllüler etiket
+    // okuma sonucu URL'den ulaşır, doc okumaya gerek yok.
+    match /nfcTags/{tagId} {
+      allow read: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && (
+        isSuperAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.ownerNgoId)
+      );
+      allow update, delete: if isSuperAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ownerNgoId
+      );
+    }
+
+    // Etkinlik check-in sub-collection — Faz 1
+    // Path: events/{eventId}/checkins/{uid}. Akıllı check-in (QR/NFC/konum) ile
+    // yazılır; geofence exit ile otomatik check-out. Server write (Admin SDK)
+    // tercihli — client kendi check-in'ini görebilir.
+    match /events/{eventId}/checkins/{uid} {
+      allow read: if isSignedIn() && (request.auth.uid == uid || isSuperAdmin());
+      allow list: if isSuperAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/events/$(eventId)) &&
+        get(/databases/$(database)/documents/events/$(eventId)).data.organizerId == request.auth.uid
+      );
+      allow create: if isSignedIn() && request.auth.uid == uid &&
+        request.resource.data.uid == request.auth.uid;
+      allow update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin();
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

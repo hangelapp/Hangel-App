@@ -132,6 +132,27 @@ export const COLLECTIONS = {
   // QR card activation requests (öğrenci / ticari)
   qrCardActivations: 'qrCardActivations',
 
+  // iOS Apple Wallet (PassKit) — Faz 1
+  // Pass'i Wallet'a ekleyen her cihaz için kayıt; Apple zorunlu update web
+  // service'i bu doc'lardan push token'lara güncelleme gönderir.
+  passkitRegistrations: 'passkitRegistrations',
+
+  // iOS Live Activity (ActivityKit) — Faz 1
+  // Acil kan / görev / etkinlik / kampanya Live Activity'leri için APNs
+  // push token kaydı. Activity bittiğinde doc silinir.
+  liveActivityTokens: 'liveActivityTokens',
+
+  // iOS NFC tag definitions — Faz 1/2
+  // STK admin tarafından oluşturulan etkinlik check-in / bağış / görev
+  // doğrulama NFC etiketleri. Etiket fiziksel olarak yazıldıktan sonra
+  // writtenAt + writtenBy alanları doldurulur.
+  nfcTags: 'nfcTags',
+
+  // Etkinlik check-in sub-collection — Faz 1
+  // events/{eventId}/checkins/{uid} — gönüllünün etkinliğe katılım kaydı.
+  // method: 'qr' | 'nfc' | 'manual', checkedOutAt: geofence exit ile dolar.
+  eventCheckins: 'checkins',
+
   // Government registry (kütük) reference data — imported via
   // scripts/import-registry.mjs. Public-read, Admin-SDK-only write.
   // Used by the corporate registration form to auto-fill org info.
