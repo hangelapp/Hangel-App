@@ -30,7 +30,7 @@ workflows:
         XCODE_SCHEME: App
         BUNDLE_ID: com.hangel.ios.app
         APP_STORE_APPLE_ID: 6664058822
-      node: 20.x
+      node: lts
       xcode: latest
       cocoapods: default
 
