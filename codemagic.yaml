@@ -69,10 +69,24 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
-          # Fetch + create cert AND profile via App Store Connect API.
-          # Bundle ID'deki tüm capabilities otomatik dahil edilir.
+          # Generate fresh RSA private key for distribution cert.
+          # Bu key olmadan fetch-signing-files mevcut (revoked) cert'i bulup
+          # 'Cannot save Signing Certificates without certificate private key'
+          # hatası veriyor. Explicit key ile yeni cert + key pair oluşur.
+          CERT_KEY_PATH=/tmp/distribution_cert_key.pem
+          openssl genrsa -out "$CERT_KEY_PATH" 2048
+          # Eski cert'leri revoke et (varsa) — Apple max 2 dist cert limit
+          CERTS=$(app-store-connect list-certificates \
+            --type IOS_DISTRIBUTION \
+            --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || echo "")
+          for cert_id in $CERTS; do
+            echo "Revoking stale distribution cert: $cert_id"
+            app-store-connect delete-certificate "$cert_id" || true
+          done
+          # Fresh cert + profile oluştur
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key-path "$CERT_KEY_PATH" \
             --create
           keychain add-certificates
           xcode-project use-profiles
