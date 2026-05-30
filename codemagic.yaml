@@ -23,6 +23,9 @@ workflows:
     max_build_duration: 60
 
     environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.hangel.ios.app
       groups:
         - app_store_credentials
       vars:
@@ -66,24 +69,13 @@ workflows:
           NEW_BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
           agvtool new-version -all $NEW_BUILD_NUMBER
 
-      - name: Fetch App Store Connect signing files
+      - name: Set up code signing
         script: |
-          keychain initialize
-          # `provisioning-profiles delete` profile ID ister, bundle ID değil.
-          # Önce list ile ID'leri çek, sonra her birini sil. Yeni capability
-          # eklenince eski profile invalid olur — cleanup şart.
-          PROFILES=$(app-store-connect list-profiles \
-            --bundle-id-identifier "$BUNDLE_ID" \
-            --profile-type IOS_APP_STORE \
-            --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || echo "")
-          for profile_id in $PROFILES; do
-            echo "Deleting stale profile: $profile_id"
-            app-store-connect delete-profile "$profile_id" || true
-          done
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-          keychain add-certificates
+          # ios_signing block (environment) ile Codemagic otomatik:
+          # - Distribution cert oluşturur/fetch eder (private key dahil)
+          # - Provisioning profile oluşturur (capabilities ile)
+          # - Keychain'e ekler
+          # Bizim sadece xcode-project use-profiles çağırmamız gerek.
           xcode-project use-profiles
 
       - name: Build IPA
