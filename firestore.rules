@@ -882,6 +882,30 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Mikro Gönüllülük — Faz 3
+    // Görevler: STK admin (managedNgoId) veya super-admin oluşturur; herkes
+    // listeyi okur. Tamamlama: kullanıcı kendi kaydını yazar.
+    match /microTasks/{taskId} {
+      allow read, list: if true;
+      allow create: if isSuperAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == request.resource.data.ngoId
+      );
+      allow update, delete: if isSuperAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId
+      );
+    }
+    match /microTaskCompletions/{compId} {
+      allow read: if isSignedIn() && (request.auth.uid == resource.data.uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

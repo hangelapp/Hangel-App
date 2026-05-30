@@ -153,6 +153,12 @@ export const COLLECTIONS = {
   // method: 'qr' | 'nfc' | 'manual', checkedOutAt: geofence exit ile dolar.
   eventCheckins: 'checkins',
 
+  // Mikro Gönüllülük — Faz 3
+  // 5-30 dk kısa görevler. STK admin oluşturur, kullanıcı konuma göre
+  // listede görür + tamamlar (foto + opsiyonel verification).
+  microTasks: 'microTasks',
+  microTaskCompletions: 'microTaskCompletions',
+
   // Government registry (kütük) reference data — imported via
   // scripts/import-registry.mjs. Public-read, Admin-SDK-only write.
   // Used by the corporate registration form to auto-fill org info.
