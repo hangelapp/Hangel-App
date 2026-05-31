@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Filter, Search, MapPin, Calendar, ChevronDown, ArrowDownUp, Map as MapIcon } from 'lucide-react';
 import { VolunteeringMapDialog } from '@/components/volunteering/volunteering-map-dialog';
+import { useTranslation } from '@/components/providers/language-provider';
 import { ngos } from '@/lib/data';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
@@ -244,6 +245,7 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
 export default function VolunteeringPage() {
     const db = useFirestore();
     const { user: authUser } = useUser();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [interestFilter, setInterestFilter] = useState<string[]>([]);
     const [skillFilter, setSkillFilter] = useState<string[]>([]);
@@ -384,13 +386,13 @@ export default function VolunteeringPage() {
     <div className="space-y-4 animate-in fade-in-0">
       <div className="p-4 space-y-4">
         <div className="space-y-3 sticky top-12 bg-background/80 backdrop-blur-xl z-10 py-2">
-          <h1 className="text-2xl font-bold font-headline">Gönüllülük</h1>
+          <h1 className="text-2xl font-bold font-headline">{t('volunteeringPage.title')}</h1>
           <div className="flex gap-2">
               <div className="relative flex-grow">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input placeholder="İlan ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                  <Input placeholder={t('volunteeringPage.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
-              <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Filtrele" title="Filtrele"><Filter size={20} /></Button>
+              <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('volunteeringPage.filterAria')} title={t('volunteeringPage.filterAria')}><Filter size={20} /></Button>
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala" title="Sırala"><ArrowDownUp size={20} /></Button>
