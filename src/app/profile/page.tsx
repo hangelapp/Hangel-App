@@ -20,7 +20,9 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getImpactStory } from '@/ai/flows/impact-story-flow';
+// PERF: getImpactStory dynamic import (AI flow ~50KB, sadece kullanıcı
+// "Etki hikayemi oluştur" butonuna basınca yüklenir).
+// Eski sync import: import { getImpactStory } from '@/ai/flows/impact-story-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
@@ -442,6 +444,7 @@ export default function ProfilePage() {
             // per-user daily AI quota. We NEVER pass a bare uid — the server
             // wouldn't trust it anyway.
             const idToken = authUser ? await authUser.getIdToken() : undefined;
+            const { getImpactStory } = await import('@/ai/flows/impact-story-flow');
             const storyPromises = Array(5).fill(0).map(() =>
                 getImpactStory({
                     userName: currentUser.name.split(' ')[0],
