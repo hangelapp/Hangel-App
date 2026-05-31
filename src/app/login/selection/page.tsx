@@ -53,8 +53,8 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                {/* <AppleSignInButton onComplete={(isNewUser) => router.push(isNewUser ? '/settings/ngo-selection' : nextPath)} /> */}
-                                <IndividualForm onComplete={(isNewUser) => router.push(isNewUser ? '/settings/ngo-selection' : nextPath)} />
+                                {/* <AppleSignInButton onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} /> */}
+                                <IndividualForm onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">
                                 <CorporateForm initialEntity={entity} />
