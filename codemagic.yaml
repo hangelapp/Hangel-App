@@ -61,17 +61,14 @@ workflows:
 
       - name: Resolve Swift Package Manager dependencies (CapApp-SPM)
         script: |
-          # Capacitor 8.x SPM kullanır. Xcode 26 IDESwiftPackageCore bazen
-          # stale Package.resolved + cache combo'sunda crash veriyor. Fresh
-          # cloned-source-packages directory + force resolution.
+          # Capacitor 8.x SPM warm-up. Fresh resolve, default DerivedData
+          # cache'ine yaz (archive bunu kullanır). Xcode 26'da stale
+          # Package.resolved git'ten silindi, fresh regenerate olur.
           cd ios/App
-          rm -rf ~/Library/Developer/Xcode/DerivedData/App-*/SourcePackages 2>/dev/null || true
-          rm -rf .build 2>/dev/null || true
+          rm -rf ~/Library/Developer/Xcode/DerivedData/App-* 2>/dev/null || true
           xcodebuild -resolvePackageDependencies \
             -project App.xcodeproj \
-            -scheme App \
-            -clonedSourcePackagesDirPath /tmp/spm-cache \
-            -disablePackageRepositoryCache
+            -scheme App
 
       - name: Set bundle build number (auto-increment from TestFlight)
         script: |
@@ -107,12 +104,9 @@ workflows:
 
       - name: Build IPA
         script: |
-          # SPM cache'i tutarlı tutmak için resolve step'te kullanılan path
-          # ile archive'da da aynı path kullan.
           xcode-project --verbose build-ipa \
             --project "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags="-clonedSourcePackagesDirPath /tmp/spm-cache"
+            --scheme "$XCODE_SCHEME"
 
     artifacts:
       - build/ios/ipa/*.ipa
