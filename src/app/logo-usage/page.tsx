@@ -564,7 +564,7 @@ export default function LogoUsagePage() {
                                      </Button>
                                  </Card>
                                  <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
-                                     <Image src="https://logo.clearbit.com/canva.com" alt="Canva Logo" width={64} height={64} className="mx-auto h-16 w-16" />
+                                     <Image src="https://www.google.com/s2/favicons?domain=canva.com&sz=128" alt="Canva Logo" width={64} height={64} className="mx-auto h-16 w-16" />
                                      <div className="space-y-1">
                                          <h3 className="text-2xl font-bold">{t('marketing.logo.canvaTitle')}</h3>
                                          <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.logo.canvaDesc')}</p>

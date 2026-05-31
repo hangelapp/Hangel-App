@@ -72,7 +72,7 @@ const organizations = [
         id: 'org1',
         name: 'Kadıköy Belediyesi',
         type: 'Belediye',
-        logo: 'https://logo.clearbit.com/kadikoy.bel.tr',
+        logo: 'https://www.google.com/s2/favicons?domain=kadikoy.bel.tr&sz=128',
         venues: [
             { id: 'v1', name: 'Barış Manço Kültür Merkezi', type: 'Konferans Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 250 },
             { id: 'v4', name: 'Kozyatağı Kültür Merkezi', type: 'Tiyatro Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 400 },
@@ -93,7 +93,7 @@ const organizations = [
         id: 'org3',
         name: 'X Teknoloji Şirketi',
         type: 'Kurumsal Destekçi',
-        logo: 'https://logo.clearbit.com/google.com',
+        logo: 'https://www.google.com/s2/favicons?domain=google.com&sz=128',
         venues: [
             { id: 'v3', name: 'Maslak Oditoryum', type: 'Seminer Salonu', fee: 'İndirimli', icon: Store, capacity: 150 },
         ]

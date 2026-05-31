@@ -16,20 +16,30 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
-  const [imgSrc, setImgSrc] = useState(brand.logoUrl || '');
-  const [hasError, setHasError] = useState(false);
-  const [fallbackIndex, setFallbackIndex] = useState(0);
-
   const domain = (() => {
     try { if (brand.link) return new URL(brand.link).hostname; } catch {}
     return `${brand.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com.tr`;
   })();
 
-  // NOT: Clearbit logo API kapatıldı (DNS resolve etmiyor). Sadece Google
-  // favicon fallback'i kaldı; o da yetersizse harf placeholder gösterilir.
+  // FIX: Firestore brands collection'da hala logo.clearbit.com URL'leri var.
+  // Render etmeden önce auto-replace — Google favicon'a çevir. Clearbit
+  // servisi kapandı (DNS resolve etmiyor), her render console error spam.
+  const sanitizedLogoUrl = (() => {
+    const url = brand.logoUrl || '';
+    if (url.includes('logo.clearbit.com/')) {
+      const cbDomain = url.split('logo.clearbit.com/')[1]?.split(/[?#]/)[0] || domain;
+      return `https://www.google.com/s2/favicons?domain=${cbDomain}&sz=128`;
+    }
+    return url;
+  })();
+
+  const [imgSrc, setImgSrc] = useState(sanitizedLogoUrl);
+  const [hasError, setHasError] = useState(false);
+  const [fallbackIndex, setFallbackIndex] = useState(0);
+
   const fallbacks = [
     `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-  ].filter(url => url !== brand.logoUrl);
+  ].filter(url => url !== sanitizedLogoUrl);
 
   if (hasError || !imgSrc) {
     return (
