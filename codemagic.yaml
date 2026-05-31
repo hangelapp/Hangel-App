@@ -86,10 +86,11 @@ workflows:
           # hatası veriyor. Explicit key ile yeni cert + key pair oluşur.
           CERT_KEY_PATH=/tmp/distribution_cert_key.pem
           openssl genrsa -out "$CERT_KEY_PATH" 2048
-          # Eski cert'leri revoke et (varsa) — Apple max 2 dist cert limit
-          CERTS=$(app-store-connect list-certificates \
-            --type IOS_DISTRIBUTION \
-            --json 2>/dev/null | jq -r '.[].id' 2>/dev/null || echo "")
+          # Eski cert'leri revoke et — Apple max 2 dist cert limit, fresh cert
+          # oluşturulamazsa 409 hatası. Filtre type-agnostic: hem IOS_DISTRIBUTION
+          # hem DISTRIBUTION (yeni Apple managed type) yakalanır.
+          CERTS=$(app-store-connect list-certificates --json 2>/dev/null \
+            | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' 2>/dev/null || echo "")
           for cert_id in $CERTS; do
             echo "Revoking stale distribution cert: $cert_id"
             app-store-connect delete-certificate "$cert_id" || true
