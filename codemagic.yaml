@@ -59,6 +59,16 @@ workflows:
         script: |
           npx cap sync ios
 
+      - name: Resolve Swift Package Manager dependencies (CapApp-SPM)
+        script: |
+          # Capacitor 8.x SPM kullanır — local CapApp-SPM paketi var ama
+          # xcodebuild archive zamanı 'Missing package product CapApp-SPM'
+          # hatası veriyor. Açıkça resolve etmek gerek.
+          cd ios/App
+          xcodebuild -resolvePackageDependencies \
+            -project App.xcodeproj \
+            -scheme App
+
       - name: Set bundle build number (auto-increment from TestFlight)
         script: |
           cd ios/App
