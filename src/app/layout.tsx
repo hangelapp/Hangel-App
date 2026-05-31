@@ -4,7 +4,8 @@ import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
-import AutoTranslate from '@/components/providers/auto-translate';
+// AutoTranslate (Google Translate widget) kaldırıldı — performans + DOM patches.
+// Native i18n için src/lib/translations.ts + useTranslation() kullanılır.
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
 import { NativeBridgeProvider } from '@/components/providers/native-bridge-provider';
@@ -101,7 +102,6 @@ export default function RootLayout({
         <OpenInAppBanner />
         <FirebaseClientProvider>
           <LanguageProvider>
-            <AutoTranslate />
             <ThemeApplier />
             <OfflineBanner />
             <PushNotificationsProvider />
