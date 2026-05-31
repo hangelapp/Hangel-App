@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 import { enrichBadges } from '@/lib/badge-points';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth, useCollection } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -242,10 +242,43 @@ export default function ProfilePage() {
         return query(collection(db, COLLECTIONS.clubs), where(documentId(), 'in', joinedClubIds.slice(0, 10)));
     }, [db, joinedClubIds.join(',')]);
 
-    const { data: supportedNgosData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(supportedNgosQuery);
-    const { data: volunteerNgosData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(volunteerNgosQuery);
-    const { data: followedBrandsData } = useCollection<{ name?: string; logoUrl?: string; slug?: string }>(followedBrandsQuery);
-    const { data: joinedClubsData } = useCollection<{ name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string } }>(joinedClubsQuery);
+    // PERF (B): /api/users/me/profile-bundle ile 7 useCollection sorgusu yerine
+    // tek HTTP request. Real-time updates kaybedilir (kullanıcı follow/unfollow
+    // sonrası refresh gerek) — profile sayfası için kabul edilebilir trade-off.
+    // useUser + useDoc(userRef) hala mevcut — user stats real-time kalır.
+    type BundleEntity = { id: string; name?: string; avatarUrl?: string; logoUrl?: string; files?: { logo?: string }; slug?: string };
+    interface ProfileBundle {
+        supportedNgos: BundleEntity[];
+        volunteerNgos: BundleEntity[];
+        followedBrands: BundleEntity[];
+        joinedClubs: BundleEntity[];
+        badges: Array<Record<string, unknown>>;
+        certificates: Array<Record<string, unknown>>;
+        pastVolunteering: Array<Record<string, unknown>>;
+        approvedApplications: Array<Record<string, unknown>>;
+    }
+    const [bundle, setBundle] = useState<ProfileBundle | null>(null);
+    useEffect(() => {
+        if (!authUser?.uid) return;
+        let active = true;
+        (async () => {
+            try {
+                const idToken = await authUser.getIdToken();
+                const res = await fetch('/api/users/me/profile-bundle', {
+                    headers: { authorization: `Bearer ${idToken}` },
+                });
+                const data = await res.json();
+                if (active && data?.ok && data.bundle) setBundle(data.bundle as ProfileBundle);
+            } catch { /* graceful */ }
+        })();
+        return () => { active = false; };
+    }, [authUser?.uid]);
+
+    const supportedNgosData = bundle?.supportedNgos;
+    const volunteerNgosData = bundle?.volunteerNgos;
+    const followedBrandsData = bundle?.followedBrands;
+    const joinedClubsData = bundle?.joinedClubs;
+    void supportedNgosQuery; void volunteerNgosQuery; void followedBrandsQuery; void joinedClubsQuery;
 
     // P1-10: badges / certificates / pastVolunteering were hardcoded empty
     // arrays. Now fetched from Firestore sub-collections under
@@ -277,9 +310,11 @@ export default function ProfilePage() {
         [db, authUser?.uid],
     );
 
-    const { data: badgesData } = useCollection<BadgeDoc>(badgesRef);
-    const { data: certificatesData } = useCollection<CertificateDoc>(certificatesRef);
-    const { data: pastVolunteeringData } = useCollection<PastVolunteeringDoc>(pastVolunteeringRef);
+    // PERF: sub-collection queries kullanılmıyor — bundle endpoint döner
+    void badgesRef; void certificatesRef; void pastVolunteeringRef;
+    const badgesData = bundle?.badges as BadgeDoc[] | undefined;
+    const certificatesData = bundle?.certificates as CertificateDoc[] | undefined;
+    const pastVolunteeringData = bundle?.pastVolunteering as PastVolunteeringDoc[] | undefined;
 
     // Sertifika kaynağı: kullanıcının manuel girdiği sertifikalar (users/{uid}/certificates)
     // + STK yetkilisi tarafından ONAYLANMIŞ gönüllülük başvurularından oluşan sertifikalar.
@@ -289,7 +324,8 @@ export default function ProfilePage() {
         () => (db && authUser ? query(collection(db, COLLECTIONS.applications), where('userId', '==', authUser.uid)) : null),
         [db, authUser?.uid],
     );
-    const { data: approvedAppsData } = useCollection<ApprovedApp>(approvedAppsQuery);
+    void approvedAppsQuery;
+    const approvedAppsData = bundle?.approvedApplications as ApprovedApp[] | undefined;
     const approvedCertificates = useMemo<CertificateDoc[]>(() => {
         return (approvedAppsData ?? [])
             .filter(app => app.type === 'Gönüllülük' && app.status === 'Onaylandı')

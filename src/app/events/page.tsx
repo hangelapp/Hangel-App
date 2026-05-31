@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Filter, ListFilter, Map, Search, Calendar, Calendar as CalendarIcon, MapPin, X, Globe, MapPinned } from 'lucide-react';
+import { useTranslation } from '@/components/providers/language-provider';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ const HIDDEN_EVENT_STATUSES = new Set(['Beklemede', 'Reddedildi', 'Pasif']);
 function EventsPageContent() {
   const searchParams = useSearchParams();
   const db = useFirestore();
+  const { t } = useTranslation();
   const [sortKey, setSortKey] = useState('date');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -159,14 +161,14 @@ function EventsPageContent() {
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold font-headline">Etkinlikler</h1>
+        <h1 className="text-2xl font-bold font-headline">{t('eventsPage.title')}</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Etkinlik ara..." className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+          <Input placeholder={t('eventsPage.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="flex-1 relative" onClick={() => setIsFilterOpen(true)}>
-            <Filter className="mr-2 h-4 w-4" /> Filtrele
+            <Filter className="mr-2 h-4 w-4" /> {t('eventsPage.filterButton')}
             {activeFilterCount > 0 && (
               <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px] rounded-full">{activeFilterCount}</Badge>
             )}
