@@ -126,9 +126,9 @@ export default function AssociationWorkshopPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { name: "İTO BTM", desc: "İstanbul Ticaret Odası Bilgiyi Ticarileştirme Merkezi bünyesinde.", logo: "https://logo.clearbit.com/btm.istanbul" },
+                            { name: "İTO BTM", desc: "İstanbul Ticaret Odası Bilgiyi Ticarileştirme Merkezi bünyesinde.", logo: "https://www.google.com/s2/favicons?domain=btm.istanbul&sz=128" },
                             { name: "Girişim360", desc: "Batman İl Milli Eğitim Müdürlüğü Sosyal Girişimcilik Merkezi'nde.", logo: "https://picsum.photos/seed/batman360/200/200" },
-                            { name: "Denizakvaryum", desc: "Denizbank inovasyon merkezi işbirliği ile girişimcilere açık.", logo: "https://logo.clearbit.com/denizbank.com" }
+                            { name: "Denizakvaryum", desc: "Denizbank inovasyon merkezi işbirliği ile girişimcilere açık.", logo: "https://www.google.com/s2/favicons?domain=denizbank.com&sz=128" }
                         ].map((partner, i) => (
                             <button key={i} onClick={() => toast({ title: partner.name, description: "Kütüphane kayıt ve kitap paylaşım modülü yükleniyor." })} className="p-10 bg-[#f5f5f7] rounded-[3rem] text-left space-y-6 hover:bg-white hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-black/5 group">
                                 <Avatar className="h-16 w-16 bg-white p-2 border shadow-sm group-hover:scale-110 transition-transform">

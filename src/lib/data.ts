@@ -231,7 +231,7 @@ export const ngos: NGO[] = [
         name: 'Ahbap Derneği',
         type: 'Dernek',
         category: 'Yardımlaşma',
-        avatarUrl: 'https://logo.clearbit.com/ahbap.org',
+        avatarUrl: 'https://www.google.com/s2/favicons?domain=ahbap.org&sz=128',
         coverPhotoUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=1200',
         about: 'Dayanışma ve yardımlaşma kuruluşu.',
         transparencyScore: 98,
@@ -257,7 +257,7 @@ export const studentClubs: StudentClub[] = [
 export const events: Event[] = [];
 
 export const allEntityLists: Brand[] = [
-    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://logo.clearbit.com/trip.com', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' }
+    { id: 'brand-1', slug: 'tripcom', name: 'Trip.com', donationRate: 2, logoUrl: 'https://www.google.com/s2/favicons?domain=trip.com&sz=128', type: 'brand', category: 'Seyahat', about: 'Global seyahat platformu.' }
 ];
 
 export const marketCategories: MarketCategory[] = [
@@ -335,7 +335,7 @@ export const adBanners: AdBanner[] = [
 ];
 
 export const timelinePosts: Post[] = [
-    { id: '1', author: { name: 'Ahbap Derneği', avatarUrl: 'https://logo.clearbit.com/ahbap.org' }, content: 'Birlikte daha güçlüyüz!', timestamp: '2 saat önce', likes: 1250, comments: 45 }
+    { id: '1', author: { name: 'Ahbap Derneği', avatarUrl: 'https://www.google.com/s2/favicons?domain=ahbap.org&sz=128' }, content: 'Birlikte daha güçlüyüz!', timestamp: '2 saat önce', likes: 1250, comments: 45 }
 ];
 
 export const sportsFederations = ["TFF", "TBF", "TVF"];

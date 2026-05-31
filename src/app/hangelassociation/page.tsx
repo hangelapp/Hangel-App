@@ -145,13 +145,13 @@ const PressSection = () => {
         <div className="relative h-20">
             <div className="absolute inset-0 flex items-center animate-scroll">
                 {[...Array(2)].flatMap(() => [
-                    { name: 'Anadolu Ajansı', logo: 'https://logo.clearbit.com/aa.com.tr' },
-                    { name: 'TRT Haber', logo: 'https://logo.clearbit.com/trthaber.com' },
-                    { name: 'Hürriyet', logo: 'https://logo.clearbit.com/hurriyet.com.tr' },
-                    { name: 'NTV', logo: 'https://logo.clearbit.com/ntv.com.tr' },
-                    { name: 'Sözcü', logo: 'https://logo.clearbit.com/sozcu.com.tr' },
-                    { name: 'Webrazzi', logo: 'https://logo.clearbit.com/webrazzi.com' },
-                    { name: 'Marketing Türkiye', logo: 'https://logo.clearbit.com/marketingturkiye.com.tr' }
+                    { name: 'Anadolu Ajansı', logo: 'https://www.google.com/s2/favicons?domain=aa.com.tr&sz=128' },
+                    { name: 'TRT Haber', logo: 'https://www.google.com/s2/favicons?domain=trthaber.com&sz=128' },
+                    { name: 'Hürriyet', logo: 'https://www.google.com/s2/favicons?domain=hurriyet.com.tr&sz=128' },
+                    { name: 'NTV', logo: 'https://www.google.com/s2/favicons?domain=ntv.com.tr&sz=128' },
+                    { name: 'Sözcü', logo: 'https://www.google.com/s2/favicons?domain=sozcu.com.tr&sz=128' },
+                    { name: 'Webrazzi', logo: 'https://www.google.com/s2/favicons?domain=webrazzi.com&sz=128' },
+                    { name: 'Marketing Türkiye', logo: 'https://www.google.com/s2/favicons?domain=marketingturkiye.com.tr&sz=128' }
                 ]).map((item, index) => (
                     <div key={index} className="w-64 h-16 flex items-center justify-center flex-shrink-0 px-8">
                         <div className="relative h-full w-full">

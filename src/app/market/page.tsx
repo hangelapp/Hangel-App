@@ -25,8 +25,9 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
     return `${brand.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.com.tr`;
   })();
 
+  // NOT: Clearbit logo API kapatıldı (DNS resolve etmiyor). Sadece Google
+  // favicon fallback'i kaldı; o da yetersizse harf placeholder gösterilir.
   const fallbacks = [
-    `https://logo.clearbit.com/${domain}`,
     `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
   ].filter(url => url !== brand.logoUrl);
 
