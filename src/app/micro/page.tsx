@@ -44,11 +44,6 @@ export default function MicroVolunteeringPage() {
   const [hasLocation, setHasLocation] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
-
   const load = async () => {
     setLoading(true);
     try {
@@ -68,6 +63,11 @@ export default function MicroVolunteeringPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
 
   return (
     <div className="min-h-dvh bg-secondary/40 pb-24">

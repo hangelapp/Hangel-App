@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSearchParams } from 'next/navigation';
-import { Mail, Loader2, Phone, ShieldCheck, MessageCircle } from 'lucide-react';
+import { Mail, Loader2, ShieldCheck, MessageCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
 import { useToast } from '@/hooks/use-toast';
@@ -15,7 +15,8 @@ import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/fi
 import { COLLECTIONS } from '@/firebase/collections';
 import { canonicalPhone } from '@/lib/phone-normalize';
 import { FormLabel, FormInput } from './shared';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Tabs imports — geçici olarak kullanılmıyor (sadece WhatsApp aktif).
+// Mail+SMS geri açıldığında: import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).

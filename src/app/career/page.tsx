@@ -60,12 +60,6 @@ export default function CareerPage() {
   );
   const { data: userDoc } = useDoc<{ displayName?: string; profilePictureUrl?: string; volunteerInfo?: { profession?: string; bio?: string } }>(userDocRef);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
-
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -81,6 +75,12 @@ export default function CareerPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
 
   if (isUserLoading || (loading && !career)) {
     return <div className="min-h-dvh flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

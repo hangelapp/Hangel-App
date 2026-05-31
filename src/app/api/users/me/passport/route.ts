@@ -57,7 +57,6 @@ async function computePassport(uid: string): Promise<PassportData> {
   });
 
   let totalDonationsTry = 0;
-  let totalCampaigns = 0;
   const campaignIds = new Set<string>();
   donationsSnap?.docs.forEach(d => {
     const data = d.data();
@@ -65,7 +64,7 @@ async function computePassport(uid: string): Promise<PassportData> {
     if (!Number.isNaN(amount)) totalDonationsTry += amount;
     if (typeof data.campaignId === 'string' && data.campaignId) campaignIds.add(data.campaignId);
   });
-  totalCampaigns = campaignIds.size;
+  const totalCampaigns = campaignIds.size;
 
   if (rsvpsAgg) {
     totalEvents = Math.max(totalEvents, rsvpsAgg.size);

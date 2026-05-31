@@ -2,12 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CAPACITOR_DEBUG</key>
+	<key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Hangel</string>
+	<string>Hangel</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -20,10 +20,43 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.hangel.ios.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hangel</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NFCReaderUsageDescription</key>
+	<string>Etkinlik check-in, gönüllülük görev doğrulama ve STK masası bağış sayfalarını açmak için NFC etiketlerini okutmamız gerekiyor.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Profil fotoğrafı çekmek ve etkinlik / proje görselleri paylaşmak için kameraya erişim gerekiyor.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Rehberinizdeki arkadaşlarınızın hangel'da olup olmadığını görmek ve onları davet etmek için kişilere erişim gerekmektedir.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Etkinliğe katıldığınızda otomatik check-out yapabilmemiz için arka planda konum gerekir. Bu izin sadece kayıtlı olduğunuz etkinliğin konumu için kullanılır.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Yakınınızdaki etkinlikleri, STK'ları ve gönüllü ihtiyaçlarını gösterebilmek için konum bilginize ihtiyaç var.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Reklamları size kişiselleştirmek ve hangel deneyimini iyileştirmek için izniniz gerekir. Reddederseniz hangel tüm özellikleriyle çalışmaya devam eder.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>location</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -47,37 +80,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>NSContactsUsageDescription</key>
-	<string>Rehberinizdeki arkadaşlarınızın hangel'da olup olmadığını görmek ve onları davet etmek için kişilere erişim gerekmektedir.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Yakınınızdaki etkinlikleri, STK'ları ve gönüllü ihtiyaçlarını gösterebilmek için konum bilginize ihtiyaç var.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Profil fotoğrafı çekmek ve etkinlik / proje görselleri paylaşmak için kameraya erişim gerekiyor.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Etkinliğe katıldığınızda otomatik check-out yapabilmemiz için arka planda konum gerekir. Bu izin sadece kayıtlı olduğunuz etkinliğin konumu için kullanılır.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Reklamları size kişiselleştirmek ve hangel deneyimini iyileştirmek için izniniz gerekir. Reddederseniz hangel tüm özellikleriyle çalışmaya devam eder.</string>
-	<key>NFCReaderUsageDescription</key>
-	<string>Etkinlik check-in, gönüllülük görev doğrulama ve STK masası bağış sayfalarını açmak için NFC etiketlerini okutmamız gerekiyor.</string>
 	<key>com.apple.developer.nfc.readersession.formats</key>
 	<array>
 		<string>NDEF</string>
 		<string>TAG</string>
-	</array>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.hangel.ios.app</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>hangel</string>
-			</array>
-		</dict>
 	</array>
 </dict>
 </plist>

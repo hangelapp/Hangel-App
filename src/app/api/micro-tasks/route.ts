@@ -96,7 +96,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ errorCode: 'NO_AUTH' }, { status: 401 });
   }
   let uid: string;
-  let isSuperAdmin = false;
+  let isSuperAdmin: boolean;
   try {
     const decoded = await getAdminAuth().verifyIdToken(authHeader.slice('Bearer '.length).trim());
     uid = decoded.uid;

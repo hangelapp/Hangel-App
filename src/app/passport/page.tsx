@@ -44,12 +44,6 @@ export default function PassportPage() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    void load(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
-
   const load = async (force: boolean) => {
     if (!user) return;
     if (force) setRefreshing(true); else setLoading(true);
@@ -69,6 +63,12 @@ export default function PassportPage() {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    void load(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
 
   const share = async () => {
     if (!data || !user) return;

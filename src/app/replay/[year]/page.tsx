@@ -14,7 +14,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
-import { Heart, Users, Sparkles, Clock, Award, ChevronRight, Share2, Loader2 } from 'lucide-react';
+import { ChevronRight, Share2, Loader2 } from 'lucide-react';
 
 import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -48,12 +48,6 @@ export default function ReplayPage() {
   const [loading, setLoading] = useState(true);
   const [storyIndex, setStoryIndex] = useState(0);
 
-  useEffect(() => {
-    if (!user || !params?.year) return;
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, params?.year]);
-
   const load = async () => {
     if (!user || !params?.year) return;
     try {
@@ -68,6 +62,12 @@ export default function ReplayPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user || !params?.year) return;
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, params?.year]);
 
   const share = async () => {
     if (!data) return;
