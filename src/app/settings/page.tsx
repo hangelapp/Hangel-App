@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import {
     Bell, ChevronRight, FileText, Globe, LogOut, Palette, Shield, Trash2, User,
-    HeartHandshake, PersonStanding, HandCoins, Store, Megaphone
+    HeartHandshake, PersonStanding, HandCoins, Store, Megaphone, Siren, GraduationCap
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -87,6 +87,8 @@ export default function SettingsPage() {
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/profile" icon={User} label={t('settings.editProfile')} iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/volunteer" icon={HeartHandshake} label={t('settings.editVolunteer')} iconColor="bg-orange-500" />
+                    <SettingsLink href="/settings/emergency" icon={Siren} label="Afet ve Acil Durum" iconColor="bg-red-600" />
+                    <SettingsLink href="/settings/education" icon={GraduationCap} label="Eğitim ve Kulüpler" iconColor="bg-violet-600" />
                     <SettingsLink href="/settings/security" icon={Shield} label={t('settings.security')} iconColor="bg-sky-500" />
                  </div>
             </CardContent>
