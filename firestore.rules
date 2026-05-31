@@ -906,6 +906,38 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // bloodCalls — Acil kan/trombosit/kök hücre ilanları
+    // Read: imzalı kullanıcılar görebilir (yardım çağrısı public)
+    // Write: sadece NGO admin (managedNgoId == ngoId) veya super-admin
+    match /bloodCalls/{callId} {
+      allow read, list: if isSignedIn();
+      allow create: if isSignedIn() && (
+        isSuperAdmin() ||
+        (request.auth.token.managedNgoId != null && request.resource.data.ngoId == request.auth.token.managedNgoId)
+      );
+      allow update: if isSignedIn() && (
+        isSuperAdmin() ||
+        (request.auth.token.managedNgoId != null && resource.data.ngoId == request.auth.token.managedNgoId)
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // disasterAlerts — Afet ve acil durum çağrıları (deprem, sel, yangın)
+    // Read: imzalı kullanıcılar (afet bildirimi public yararına)
+    // Write: sadece super-admin veya verified emergency coordinator role
+    match /disasterAlerts/{alertId} {
+      allow read, list: if isSignedIn();
+      allow create, update: if isSuperAdmin() || (
+        isSignedIn() && request.auth.token.role == 'emergency-coordinator'
+      );
+      allow delete: if isSuperAdmin();
+    }
+
+    // events/{eventId}/checkins/{uid} subcollection için ek auto-checkin
+    // path — eventCheckins COLLECTIONS yapısı zaten yukarıda match var,
+    // bu sadece smart check-in webhook için iddempotency kuralı.
+    // (Mevcut events/{eventId}/checkins kuralı satır 872'de yeterli.)
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

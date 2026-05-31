@@ -98,7 +98,7 @@ export async function POST(
         return NextResponse.json({ errorCode: 'MISSING_TAG_ID' }, { status: 400 });
       }
       // nfc_tags collection'da bu tagId hangi event'e bağlı? Cross-check.
-      const tagSnap = await db.collection('nfc_tags').doc(body.tagId).get();
+      const tagSnap = await db.collection(COLLECTIONS.nfcTags).doc(body.tagId).get();
       if (!tagSnap.exists) {
         return NextResponse.json({ errorCode: 'INVALID_TAG' }, { status: 403 });
       }

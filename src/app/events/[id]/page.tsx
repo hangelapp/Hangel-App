@@ -423,6 +423,7 @@ export default function EventDetailPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg p-3 sm:p-4 border-t z-20">
         <div className="max-w-6xl mx-auto flex gap-2 sm:gap-3">
             {isGoing ? (
+              <>
               <Button
                 size="lg"
                 variant="outline"
@@ -432,6 +433,32 @@ export default function EventDetailPage() {
               >
                 {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıldın ✓ — vazgeç'}
               </Button>
+              <Button
+                size="lg"
+                variant="secondary"
+                onClick={async () => {
+                  if (!authUser) return;
+                  try {
+                    const idToken = await authUser.getIdToken();
+                    const res = await fetch(`/api/passkit/event/${resolvedEventId}`, {
+                      headers: { authorization: `Bearer ${idToken}` },
+                    });
+                    if (!res.ok) throw new Error('PassKit hazır değil');
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    // iOS Safari pkpass'i otomatik Wallet'a ekler
+                    window.location.href = url;
+                  } catch (e) {
+                    alert(e instanceof Error ? e.message : 'Apple Wallet hazırlanamadı');
+                  }
+                }}
+                className="h-14 rounded-2xl font-black px-4 hidden sm:flex items-center gap-2"
+                aria-label="Apple Wallet'a Ekle"
+                title="Apple Wallet'a Ekle"
+              >
+                🎫 Wallet
+              </Button>
+              </>
             ) : (
               <Button
                 size="lg"
