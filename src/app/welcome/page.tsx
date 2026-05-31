@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type IntentKey =
   | 'donate'
@@ -24,21 +25,17 @@ type IntentKey =
   | 'library'
   | 'browse_only';
 
-const INTENTS: Array<{
-  key: IntentKey;
-  label: string;
-  description?: string;
-  nextPath?: string;
-}> = [
-  { key: 'donate', label: 'Bağış yapmak ve sosyal fayda üretmek istiyorum', nextPath: '/settings/ngo-selection' },
-  { key: 'volunteer', label: 'Gönüllülük projelerine katılmak istiyorum', nextPath: '/settings/volunteer' },
-  { key: 'blood', label: 'Kan, trombosit ve kök hücre bağışı ilanlarına yardımcı olmak istiyorum', nextPath: '/settings/emergency' },
-  { key: 'follow_csr', label: 'Sosyal sorumluluk projelerini takip etmek istiyorum' },
-  { key: 'discover_ngos', label: 'STK\'ları keşfetmek ve desteklemek istiyorum', nextPath: '/ngos' },
-  { key: 'emergency', label: 'Afet ve acil durum çağrılarından haberdar olmak istiyorum', nextPath: '/settings/emergency' },
-  { key: 'student_clubs', label: 'Öğrenci kulüplerinin eğitim ve etkinliklerini takip etmek istiyorum', nextPath: '/settings/education' },
-  { key: 'library', label: 'Hangel Kütüphanesi kitap, film, belgesel önerileri istiyorum' },
-  { key: 'browse_only', label: 'Şimdilik sadece keşfetmek istiyorum', description: 'Bağış yapamaz, gönüllülük projelerine başvuramazsınız.' },
+const INTENT_PATHS: Partial<Record<IntentKey, string>> = {
+  donate: '/settings/ngo-selection',
+  volunteer: '/settings/volunteer',
+  blood: '/settings/emergency',
+  discover_ngos: '/ngos',
+  emergency: '/settings/emergency',
+  student_clubs: '/settings/education',
+};
+const INTENT_KEYS: IntentKey[] = [
+  'donate', 'volunteer', 'blood', 'follow_csr', 'discover_ngos',
+  'emergency', 'student_clubs', 'library', 'browse_only',
 ];
 
 export default function WelcomePage() {
@@ -46,6 +43,7 @@ export default function WelcomePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [step, setStep] = useState<'welcome' | 'intents'>('welcome');
   const [selected, setSelected] = useState<Set<IntentKey>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -81,7 +79,7 @@ export default function WelcomePage() {
   const submit = async () => {
     if (!firestore || !user) return;
     if (selected.size === 0) {
-      toast({ variant: 'destructive', title: 'En az 1 seçim', description: 'Devam etmek için en az 1 madde seçin.' });
+      toast({ variant: 'destructive', title: t('welcome.atLeastOne'), description: t('welcome.atLeastOneDesc') });
       return;
     }
     setSaving(true);
@@ -92,10 +90,10 @@ export default function WelcomePage() {
         'preferences.intentsSelectedAt': serverTimestamp(),
       });
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
-      const first = INTENTS.find((i) => selected.has(i.key) && i.nextPath);
-      router.replace(first?.nextPath ?? '/market');
+      const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
+      router.replace((firstWithPath && INTENT_PATHS[firstWithPath]) ?? '/market');
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
     } finally {
       setSaving(false);
     }
@@ -111,19 +109,19 @@ export default function WelcomePage() {
                 <Sparkles className="h-10 w-10 text-primary" />
               </div>
               <HangelLogo className="text-2xl mx-auto" />
-              <h1 className="text-2xl font-black tracking-tight">🎉 Hoş Geldin!</h1>
+              <h1 className="text-2xl font-black tracking-tight">{t('welcome.title')}</h1>
             </div>
             <div className="space-y-3 text-sm leading-relaxed text-foreground/90">
-              <p>Merhaba, ben <span className="font-bold">Hangel Asistanı</span>.</p>
-              <p>Benim görevim Hangel&apos;de sana yol arkadaşlığı yapmak ve ihtiyaçlarına uygun deneyimi oluşturmana yardımcı olmak.</p>
-              <p>Hangel&apos;de insanların, kurumların ve toplulukların toplumsal sorunların çözümüne birlikte katkı sunmasını kolaylaştırıyoruz.</p>
-              <p className="font-bold">Haydi birlikte profilini oluşturalım.</p>
+              <p>{t('welcome.assistantIntro')}</p>
+              <p>{t('welcome.assistantRole')}</p>
+              <p>{t('welcome.assistantDesc')}</p>
+              <p className="font-bold">{t('welcome.assistantInvite')}</p>
             </div>
             <Button
               onClick={() => setStep('intents')}
               className="w-full h-12 rounded-xl font-bold"
             >
-              Başlayalım
+              {t('welcome.startButton')}
             </Button>
           </CardContent>
         </Card>
@@ -136,28 +134,29 @@ export default function WelcomePage() {
       <Card className="w-full max-w-md rounded-[2.5rem] shadow-2xl border-none overflow-hidden">
         <CardContent className="pt-8 pb-8 px-5 sm:px-7 space-y-5">
           <div className="text-center space-y-2">
-            <h2 className="text-xl font-black tracking-tight">Hangel&apos;i hangi amaçlarla kullanmak istiyorsun?</h2>
-            <p className="text-xs text-muted-foreground">Birden fazla seçim yapılabilir.</p>
+            <h2 className="text-xl font-black tracking-tight">{t('welcome.intentTitle')}</h2>
+            <p className="text-xs text-muted-foreground">{t('welcome.intentSubtitle')}</p>
           </div>
           <div className="space-y-2">
-            {INTENTS.map((intent) => {
-              const checked = selected.has(intent.key);
+            {INTENT_KEYS.map((key) => {
+              const checked = selected.has(key);
+              const isBrowse = key === 'browse_only';
               return (
                 <label
-                  key={intent.key}
+                  key={key}
                   className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                     checked ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
                   }`}
                 >
                   <Checkbox
                     checked={checked}
-                    onCheckedChange={() => toggle(intent.key)}
+                    onCheckedChange={() => toggle(key)}
                     className="mt-0.5"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold leading-snug">{intent.label}</p>
-                    {intent.description && (
-                      <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{intent.description}</p>
+                    <p className="text-sm font-semibold leading-snug">{t(`welcome.intents.${key}`)}</p>
+                    {isBrowse && (
+                      <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{t('welcome.intents.browseOnlyNote')}</p>
                     )}
                   </div>
                 </label>
@@ -169,7 +168,7 @@ export default function WelcomePage() {
             disabled={saving || selected.size === 0}
             className="w-full h-12 rounded-xl font-bold"
           >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Devam Et'}
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('welcome.submitButton')}
           </Button>
         </CardContent>
       </Card>
