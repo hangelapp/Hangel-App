@@ -82,15 +82,17 @@ export default function ClubsPage() {
   const clubsRef = useMemoFirebase(() => collection(db, COLLECTIONS.clubs), [db]);
   const { data: clubs, isLoading } = useCollection<StudentClub>(clubsRef);
 
-  // Tüm kullanıcıları yükle — kulüp/üniversite üye sayıları ve puan toplamları
-  // bunların üzerinden hesaplanır. (joinedClubs.includes(clubId) ya da
-  // managedClubId === clubId → kulüp üyesi; volunteerInfo.education[].school
-  // eşleşmesi → üniversite öğrencisi.)
-  const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
+  // PERF: allUsers'ı SADECE bir üniversite expand edildiğinde yükle.
+  // Default'ta kulüp/puan stats /api/clubs/stats endpoint'inden gelir
+  // (server-side aggregation, tüm users collection'ını client'a indirmez).
+  // Üniversite üye sayıları için fallback — sadece expand sonrası lazım.
+  const usersRef = useMemoFirebase(
+    () => (expandedUniversity ? collection(db, COLLECTIONS.users) : null),
+    [db, expandedUniversity],
+  );
   const { data: allUsers } = useCollection<MemberUser>(usersRef);
 
   // Realtime API: /api/clubs/stats (30s cache, server-side count aggregation).
-  // Client-side aggregation (allUsers üzerinden) fallback olarak çalışır.
   const [apiStats, setApiStats] = useState<Record<string, { members: number; points: number }> | null>(null);
   useEffect(() => {
     let active = true;
