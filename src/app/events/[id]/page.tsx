@@ -458,6 +458,39 @@ export default function EventDetailPage() {
               >
                 🎫 Wallet
               </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={async () => {
+                  if (!authUser) return;
+                  try {
+                    const { readNdefUrl } = await import('@/lib/native-nfc');
+                    const result = await readNdefUrl();
+                    if (!result.ok || !result.url) {
+                      alert(result.errorMessage || 'NFC okunamadı.');
+                      return;
+                    }
+                    const tagMatch = result.url.match(/\/tag\/([^/?#]+)/);
+                    const tagId = tagMatch ? tagMatch[1] : null;
+                    const idToken = await authUser.getIdToken();
+                    const res = await fetch(`/api/events/${resolvedEventId}/auto-checkin`, {
+                      method: 'POST',
+                      headers: { 'content-type': 'application/json', authorization: `Bearer ${idToken}` },
+                      body: JSON.stringify({ source: 'nfc', tagId }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) throw new Error(data.message || 'Check-in başarısız');
+                    alert(data.already ? '✓ Zaten check-in yapılmış' : '🎉 Check-in başarılı');
+                  } catch (e) {
+                    alert(e instanceof Error ? e.message : 'NFC hatası');
+                  }
+                }}
+                className="h-14 rounded-2xl font-black px-4 hidden sm:flex items-center gap-2"
+                aria-label="NFC ile Check-in"
+                title="NFC ile Check-in"
+              >
+                📲 NFC
+              </Button>
               </>
             ) : (
               <Button
