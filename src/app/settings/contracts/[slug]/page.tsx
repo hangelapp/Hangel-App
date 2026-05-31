@@ -37,11 +37,14 @@ export default function ContractDetailPage() {
   const version = (firestoreContract as { version?: string } | null)?.version || '1.0';
   const [approving, setApproving] = useState(false);
   const [approved, setApproved] = useState(false);
-  const [readSeconds, setReadSeconds] = useState(0);
+  // PERF: readSeconds ref'te tut, render trigger etme (sadece submit'te okunur).
+  // Önceki setInterval(setReadSeconds, 1000) her saniye re-render ediyordu —
+  // contracts sayfası uzun text ile yavaşlıyordu.
+  const readSecondsRef = useRef(0);
   const scrolledRef = useRef(false);
 
   useEffect(() => {
-    const t = setInterval(() => setReadSeconds(s => s + 1), 1000);
+    const t = setInterval(() => { readSecondsRef.current += 1; }, 1000);
     return () => clearInterval(t);
   }, []);
 
@@ -72,7 +75,7 @@ export default function ContractDetailPage() {
           contractTitle: contract?.title || slug,
           version,
           scrollCompleted: scrolledRef.current,
-          readSeconds,
+          readSeconds: readSecondsRef.current,
           method: 'button',
         }),
       });

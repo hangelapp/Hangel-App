@@ -171,6 +171,13 @@ export const translations: Record<Language, any> = {
         browse_only: 'Şimdilik sadece keşfetmek istiyorum',
         browseOnlyNote: 'Bağış yapamaz, gönüllülük projelerine başvuramazsınız.',
       },
+      intentTimes: {
+        donate: '~3 dk form',
+        volunteer: '~5 dk form',
+        blood: '~2 dk form',
+        emergency: '~1 dk form',
+        student_clubs: '~3 dk form',
+      },
     },
     settings: {
       title: 'Ayarlar',
@@ -1407,6 +1414,13 @@ export const translations: Record<Language, any> = {
         library: 'I want personalised book, film, documentary recommendations',
         browse_only: 'I just want to browse for now',
         browseOnlyNote: 'You cannot donate or apply for volunteer projects.',
+      },
+      intentTimes: {
+        donate: '~3 min form',
+        volunteer: '~5 min form',
+        blood: '~2 min form',
+        emergency: '~1 min form',
+        student_clubs: '~3 min form',
       },
     },
     settings: {

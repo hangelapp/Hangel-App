@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { maybeRequestAttPermission } from '@/lib/native-att';
+import { registerNativePushToken } from '@/lib/native-push';
 
 type IntentKey =
   | 'donate'
@@ -94,11 +95,14 @@ export default function WelcomePage() {
         'preferences.intents': intents,
         'preferences.intentsSelectedAt': serverTimestamp(),
       });
-      // Konum + ATT izinleri paralel iste (her zaman, fail open).
-      // ATT: Firebase Analytics IDFA için Apple zorunlu prompt.
+      // Konum + ATT + Push izinleri paralel iste (her zaman, fail open).
+      // - Konum: yakın etkinlik, kan ilanı, acil çağrı için
+      // - ATT: Firebase Analytics IDFA için Apple zorunlu prompt
+      // - Push: bildirim akışı (FCM token register, kullanıcı reddederse de devam)
       await Promise.all([
         getCurrentPositionUnified().catch(() => null),
         maybeRequestAttPermission().catch(() => null),
+        registerNativePushToken(user.uid).catch(() => null),
       ]);
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
@@ -166,6 +170,10 @@ export default function WelcomePage() {
             {INTENT_KEYS.map((key) => {
               const checked = selected.has(key);
               const isBrowse = key === 'browse_only';
+              // Form süresi label'ı varsa göster (yalnızca form gerektiren intent'ler için)
+              const timeKey = `welcome.intentTimes.${key}`;
+              const timeLabel = t(timeKey);
+              const hasTime = timeLabel !== timeKey;
               return (
                 <label
                   key={key}
@@ -180,6 +188,9 @@ export default function WelcomePage() {
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold leading-snug">{t(`welcome.intents.${key}`)}</p>
+                    {hasTime && (
+                      <p className="text-[10px] text-primary/70 mt-0.5 font-medium">{timeLabel}</p>
+                    )}
                     {isBrowse && (
                       <p className="text-[11px] text-muted-foreground mt-1 leading-snug">{t('welcome.intents.browseOnlyNote')}</p>
                     )}

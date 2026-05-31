@@ -14,7 +14,7 @@ import {
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import Link from 'next/link';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -293,6 +293,21 @@ export default function ClubsAdminPage() {
     // Yetkili atama için tüm kullanıcılar
     const usersQuery = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
     const { data: allUsers } = useCollection<SimpleClubUser>(usersQuery);
+
+    // Realtime kulüp stats — /api/clubs/stats (30s polling)
+    const [clubApiStats, setClubApiStats] = useState<Record<string, { members: number; points: number }> | null>(null);
+    useEffect(() => {
+        let active = true;
+        const fetchStats = () => {
+            fetch('/api/clubs/stats')
+                .then((r) => r.json())
+                .then((d) => { if (active && d?.ok && d.stats) setClubApiStats(d.stats); })
+                .catch(() => {});
+        };
+        fetchStats();
+        const t = setInterval(fetchStats, 30_000);
+        return () => { active = false; clearInterval(t); };
+    }, []);
 
     const items = useMemo<ClubItem[]>(() => {
         const list: ClubItem[] = [];
@@ -667,7 +682,7 @@ export default function ClubsAdminPage() {
                                                 {club.type && <><span>•</span> <span className="capitalize">{club.type === 'university' ? 'Üniversite' : 'Lise'}</span></>}
                                                 {club.category && <><span>•</span> <span>{club.category}</span></>}
                                                 {club.source === 'clubs' && (
-                                                    <><span>•</span> <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> {club.points || 0} Puan</span></>
+                                                    <><span>•</span> <span className="flex items-center gap-1"><ShieldCheck className="h-3 w-3 text-primary" /> {(clubApiStats?.[club.id]?.points ?? club.points ?? 0).toLocaleString('tr-TR')} Puan</span></>
                                                 )}
                                             </div>
                                         </div>
