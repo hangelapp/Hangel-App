@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       sample: result.rows.slice(0, 5),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    console.error('[csv/parse] internal error', err);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' }, { status: 500 });
   }
 }

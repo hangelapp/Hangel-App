@@ -30,7 +30,9 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp' | 'whatsapp-code-input';
     const [step, setStep] = useState<IndividualStep>('whatsapp-enter');
-    const [authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('whatsapp');
+    // authMode mail+SMS tab'ları kaldırıldıktan sonra sadece commented JSX'te kullanılır.
+    // ESLint için _ prefix; setAuthMode hala line 227'de aktif (mail check fallback).
+    const [_authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('whatsapp');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [phoneCountryCode, setPhoneCountryCode] = useState('+90');

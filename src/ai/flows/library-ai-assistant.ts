@@ -13,11 +13,11 @@ import {z} from 'genkit';
 import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
-const AskLibraryAssistantInputSchema = z.object({
+const _AskLibraryAssistantInputSchema = z.object({
   userQuestion: z.string().describe("The user's question about the resources in the library."),
   libraryContext: z.string().describe('A summary of the library sections and items available.'),
 });
-export type AskLibraryAssistantInput = z.infer<typeof AskLibraryAssistantInputSchema>;
+export type AskLibraryAssistantInput = z.infer<typeof _AskLibraryAssistantInputSchema>;
 
 const AskLibraryAssistantOutputSchema = z.object({
   answer: z.string().describe('The helpful and informative answer based ONLY on the provided library context.'),

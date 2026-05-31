@@ -327,7 +327,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             if (adres) {
                 const mahMatch = adres.match(/([\wÇĞİÖŞÜçğıöşü]+)\s+(?:Mah(?:allesi)?|Mh)\.?/i);
                 if (mahMatch) mahalleParsed = mahMatch[1];
-                const noMatch = adres.match(/No\s*:?\s*([\d\/-]+)/i);
+                const noMatch = adres.match(/No\s*:?\s*([\d/-]+)/i);
                 if (noMatch) doorNoParsed = noMatch[1];
             }
             setFormData(prev => ({
@@ -413,7 +413,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         if (v.adres) {
             const mahMatch = v.adres.match(/([\wÇĞİÖŞÜçğıöşü]+)\s+(?:Mah(?:allesi)?|Mh)\.?/i);
             if (mahMatch) mahalleParsed = mahMatch[1];
-            const noMatch = v.adres.match(/No\s*:?\s*([\d\/-]+)/i);
+            const noMatch = v.adres.match(/No\s*:?\s*([\d/-]+)/i);
             if (noMatch) doorNoParsed = noMatch[1];
             cleanedAddr = v.adres;
         }

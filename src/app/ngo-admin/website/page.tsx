@@ -52,7 +52,7 @@ export default function WebsiteBuilderPage() {
     const router = useRouter();
     const { toast } = useToast();
     const db = useFirestore();
-    const { user: authUser } = useUser();
+    useUser();
 
     // Aktif kurum (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
     // Website builder yalnızca NGO için anlamlı; aktif kurum NGO değilse null bırakılır.

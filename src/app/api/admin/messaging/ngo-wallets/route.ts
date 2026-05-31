@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       return NextResponse.json(result);
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    console.error('[ngo-wallets] internal error', err);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -37,7 +37,7 @@ export default function AnalyticsToolsPage() {
     const { toast } = useToast();
     const router = useRouter();
     const db = useFirestore();
-    const { user: authUser } = useUser();
+    useUser();
 
     // Aktif kurum (ActiveEntityProvider) — yalnız NGO için anlamlı.
     const { id: activeIdFromCtx, kind: activeKind } = useActiveEntity();

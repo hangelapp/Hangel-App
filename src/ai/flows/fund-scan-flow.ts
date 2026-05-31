@@ -16,11 +16,11 @@ import { z } from 'genkit';
 import { sanitizeUserInput, checkAndConsumeAIQuota } from '@/ai/guards';
 import { verifyAIFlowUserId, AIQuotaExceededError } from '@/ai/flow-auth';
 
-const ScanInputSchema = z.object({
+const _ScanInputSchema = z.object({
   knownList: z.string().describe('Sistemde halihazırda kayıtlı fonların özet listesi (ad | sağlayıcı).'),
   sources: z.string().describe('Taranacak kaynak portallar (ad — url), satır satır.'),
 });
-export type FundScanInput = z.infer<typeof ScanInputSchema>;
+export type FundScanInput = z.infer<typeof _ScanInputSchema>;
 
 const CandidateSchema = z.object({
   status: z.enum(['new', 'updated']).describe('new = listede yok; updated = listedeki bir kayıt değişmiş (ör. yeni dönem/son tarih).'),

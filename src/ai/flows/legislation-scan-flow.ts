@@ -16,11 +16,11 @@ import { z } from 'genkit';
 import { sanitizeUserInput, checkAndConsumeAIQuota } from '@/ai/guards';
 import { verifyAIFlowUserId, AIQuotaExceededError } from '@/ai/flow-auth';
 
-const ScanInputSchema = z.object({
+const _ScanInputSchema = z.object({
   knownList: z.string().describe('Sistemde halihazırda bulunan mevzuatın özet listesi (id | ülke | ad | no).'),
   scope: z.string().describe('Taranacak yargı bölgeleri, ör: "Türkiye, Avrupa Birliği, uluslararası".'),
 });
-export type ScanInput = z.infer<typeof ScanInputSchema>;
+export type ScanInput = z.infer<typeof _ScanInputSchema>;
 
 const CandidateSchema = z.object({
   status: z.enum(['new', 'updated']).describe('new = listede yok; updated = listedeki bir kayıt değişmiş olabilir.'),

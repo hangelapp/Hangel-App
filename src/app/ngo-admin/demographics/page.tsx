@@ -77,7 +77,7 @@ interface BrandDoc {
 function DemographicsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
-  const { user: authUser } = useUser();
+  useUser();
 
   useEffect(() => { setIsMounted(true); }, []);
 

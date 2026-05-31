@@ -14,13 +14,13 @@ import { z } from 'genkit';
 import { sanitizeUserInput, checkAndConsumeAIQuota } from '@/ai/guards';
 import { verifyAIFlowUserId, AIQuotaExceededError } from '@/ai/flow-auth';
 
-const ComplianceInputSchema = z.object({
+const _ComplianceInputSchema = z.object({
   contractTitle: z.string().describe('Değerlendirilen sözleşme/politika başlığı.'),
   contractText: z.string().describe('Sözleşme/politika tam metni (HTML temizlenmiş).'),
   legislationName: z.string().describe('Karşılaştırılan mevzuat/kanun adı.'),
   legislationText: z.string().describe('Mevzuatın resmi madde metni + hukuki yorum.'),
 });
-export type ComplianceInput = z.infer<typeof ComplianceInputSchema>;
+export type ComplianceInput = z.infer<typeof _ComplianceInputSchema>;
 
 const ComplianceOutputSchema = z.object({
   score: z.number().describe('0-100 arası yüzde uyum oranı.'),

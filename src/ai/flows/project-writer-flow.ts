@@ -13,7 +13,7 @@ import {z} from 'genkit';
 import {checkAndConsumeAIQuota, clampOutputText, MAX_OUTPUT_TOKENS, sanitizeUserInput} from '@/ai/guards';
 import {AIQuotaExceededError, verifyAIFlowUserId} from '@/ai/flow-auth';
 
-const ProjectWriterInputSchema = z.object({
+const _ProjectWriterInputSchema = z.object({
   institution: z.string().describe('The target institution for the project (e.g., EU, UNDP, Ministry).'),
   sections: z.object({
     summary: z.string().optional(),
@@ -29,7 +29,7 @@ const ProjectWriterInputSchema = z.object({
   // behaviour is unchanged. Populated server-side from the projectCallCriteria collection.
   callCriteria: z.string().optional().describe('The target institution\'s project-call criteria (requirements, format, deadlines, keywords, focus areas).'),
 });
-export type ProjectWriterInput = z.infer<typeof ProjectWriterInputSchema>;
+export type ProjectWriterInput = z.infer<typeof _ProjectWriterInputSchema>;
 
 const ProjectWriterOutputSchema = z.object({
   fullProposal: z.string().describe('The complete, professionally written project proposal in Markdown format.'),
