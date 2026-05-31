@@ -64,7 +64,7 @@ export async function PATCH(req: NextRequest): Promise<NextResponse> {
     const intents = raw.filter((i: unknown): i is string => typeof i === 'string' && VALID_INTENTS.includes(i as typeof VALID_INTENTS[number]));
     // browse_only mutex: diğerleriyle birlikte gönderilmişse browse_only'i at
     const final = intents.includes('browse_only') && intents.length > 1
-      ? intents.filter((i) => i !== 'browse_only')
+      ? intents.filter((i: string) => i !== 'browse_only')
       : intents;
 
     const db = getAdminFirestore();

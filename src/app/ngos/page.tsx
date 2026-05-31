@@ -12,12 +12,14 @@ import { collection } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { COLLECTIONS } from '@/firebase/collections';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type NgoType = NGO['type'] | 'Tümü';
 type SortKey = 'random' | 'viewCount' | 'name-asc' | 'name-desc' | 'transparency-desc' | 'donors-desc' | 'volunteers-desc';
 
 export default function NgosPage() {
     const db = useFirestore();
+    const { t } = useTranslation();
     const [typeFilter, setTypeFilter] = useState<NgoType>('Tümü');
     const [searchTerm, setSearchTerm] = useState('');
     // Kullanıcı talebi: her sayfa yüklemesinde STK listesi rastgele sıralı gelsin.
@@ -141,15 +143,15 @@ export default function NgosPage() {
     return (
         <div className="p-4 space-y-4 animate-in fade-in-0">
             <div className="space-y-1">
-                <h1 className="text-2xl font-bold font-headline">Sivil Toplum Kuruluşları</h1>
-                <p className="text-muted-foreground text-sm">Gerçek zamanlı veritabanı üzerinden listeleniyor.</p>
+                <h1 className="text-2xl font-bold font-headline">{t('ngosPage.title')}</h1>
+                <p className="text-muted-foreground text-sm">{t('ngosPage.subtitle')}</p>
             </div>
             
             <div className="flex gap-2 items-center">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
-                        placeholder="STK ara..."
+                        placeholder={t('ngosPage.searchPlaceholder')}
                         className="pl-10 h-11"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -157,7 +159,7 @@ export default function NgosPage() {
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Filtrele">
+                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label={t('ngosPage.filterAria')}>
                             <Filter className="h-5 w-5" />
                             {categoryFilter.length > 0 && (
                                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
@@ -167,10 +169,10 @@ export default function NgosPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
-                        <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('ngosPage.filterByCategory')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {allCategories.length === 0 && (
-                            <div className="px-2 py-1.5 text-xs text-muted-foreground italic">Henüz kategori yok</div>
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground italic">{t('ngosPage.noCategories')}</div>
                         )}
                         {allCategories.map(cat => (
                             <DropdownMenuCheckboxItem
@@ -187,7 +189,7 @@ export default function NgosPage() {
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => setCategoryFilter([])} className="text-destructive">
-                                    Filtreleri Temizle
+                                    {t('ngosPage.clearFilters')}
                                 </DropdownMenuItem>
                             </>
                         )}
