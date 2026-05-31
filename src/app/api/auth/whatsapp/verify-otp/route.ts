@@ -20,7 +20,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { phoneMatchCandidates } from '@/lib/phone-normalize';
+import { phoneMatchCandidates, canonicalPhone } from '@/lib/phone-normalize';
 import crypto from 'crypto';
 
 export const runtime = 'nodejs';
@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
         const phoneCountryCode = typeof body?.phoneCountryCode === 'string' ? body.phoneCountryCode : '+90';
         const code = typeof body?.code === 'string' ? body.code.trim() : '';
         const name = typeof body?.name === 'string' ? body.name.trim() : '';
-        const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
+        // canonicalPhone: ülke kodu + baştaki 0'ı strip eder. Kullanıcı "+90..."
+        // yazarsa double-90 ('+90905384009090') olmaması için kritik.
+        const cleanPhone = canonicalPhone(phone, phoneCountryCode);
         const fullPhone = `${phoneCountryCode}${cleanPhone}`;
 
         if (!cleanPhone || !/^\d{6}$/.test(code)) {
@@ -122,7 +124,20 @@ export async function POST(req: NextRequest) {
         // kullanıcının stats/avatar/createdAt alanlarını re-login'de SIFIRLAMA.
         const userDocRef = db.collection(COLLECTIONS.users).doc(uid);
         const existingDoc = await userDocRef.get();
+        // Auth user var ama bu uid'de Firestore doc yok — başka uid'de aynı
+        // telefonla bir doc var mı kontrol et (orphan Auth + farklı Firestore uid).
         if (!existingDoc.exists) {
+            const dupSnap = await db.collection(COLLECTIONS.users)
+                .where('personalInfo.phone', 'in', phoneMatchCandidates(phone, phoneCountryCode))
+                .limit(1)
+                .get();
+            if (!dupSnap.empty && dupSnap.docs[0].id !== uid) {
+                const existingUid = dupSnap.docs[0].id;
+                try { await adminAuth.updateUser(existingUid, { phoneNumber: fullPhone }); } catch { /* link best-effort */ }
+                const token = await adminAuth.createCustomToken(existingUid);
+                await ref.delete();
+                return NextResponse.json({ ok: true, customToken: token, isNewUser: false });
+            }
             await userDocRef.set({
                 id: uid,
                 name: name || '',

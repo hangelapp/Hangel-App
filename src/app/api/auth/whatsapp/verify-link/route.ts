@@ -15,7 +15,7 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { phoneMatchCandidates } from '@/lib/phone-normalize';
+import { phoneMatchCandidates, canonicalPhone } from '@/lib/phone-normalize';
 
 export const runtime = 'nodejs';
 
@@ -69,7 +69,8 @@ export async function GET(req: NextRequest) {
         }
 
         const adminAuth = getAdminAuth();
-        const cleanForCheck = (data.cleanPhone || '').toString().replace(/\D/g, '');
+        // Normalize: ülke kodu strip et (kullanıcı "+90..." yazmışsa double-90 olmasın)
+        const cleanForCheck = canonicalPhone(data.cleanPhone || data.phone || '', data.phoneCountryCode);
         let uid: string;
         let isNewUser = false;
         try {
@@ -104,13 +105,28 @@ export async function GET(req: NextRequest) {
         // kullanıcının stats/avatar/createdAt alanlarını SIFIRLAMA.
         const userDocRef = db.collection(COLLECTIONS.users).doc(uid);
         const existingDoc = await userDocRef.get();
+        // Orphan Auth + farklı Firestore uid edge case'i: başka uid'de aynı
+        // telefonla bir doc var mı kontrol et.
+        if (!existingDoc.exists && cleanForCheck) {
+            const dupSnap = await db.collection(COLLECTIONS.users)
+                .where('personalInfo.phone', 'in', phoneMatchCandidates(data.cleanPhone || data.phone || '', data.phoneCountryCode))
+                .limit(1)
+                .get();
+            if (!dupSnap.empty && dupSnap.docs[0].id !== uid) {
+                const existingUid = dupSnap.docs[0].id;
+                try { await adminAuth.updateUser(existingUid, { phoneNumber: data.phone }); } catch { /* link best-effort */ }
+                const customToken = await adminAuth.createCustomToken(existingUid);
+                await ref.update({ used: true, usedAt: FieldValue.serverTimestamp() });
+                return NextResponse.json({ ok: true, customToken, isNewUser: false });
+            }
+        }
         if (!existingDoc.exists) {
             await userDocRef.set({
                 id: uid,
                 name: data.name || '',
                 avatarUrl: '',
                 personalInfo: {
-                    phone: data.cleanPhone || '',
+                    phone: cleanForCheck,
                     phoneCountryCode: data.phoneCountryCode || '+90',
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },

@@ -67,7 +67,9 @@ export async function POST(req: NextRequest) {
         const phone = typeof body?.phone === 'string' ? body.phone : '';
         const phoneCountryCode = typeof body?.phoneCountryCode === 'string' ? body.phoneCountryCode : '+90';
         const lang = typeof body?.lang === 'string' ? body.lang : undefined;
-        const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
+        // canonicalPhone: ülke kodu + baştaki 0'ı strip eder (consistent normalization)
+        const { canonicalPhone } = await import('@/lib/phone-normalize');
+        const cleanPhone = canonicalPhone(phone, phoneCountryCode);
 
         if (!cleanPhone || cleanPhone.length < 7) {
             return NextResponse.json({ ok: false, errorCode: 'INVALID_PHONE', message: 'Geçersiz telefon.' }, { status: 400 });

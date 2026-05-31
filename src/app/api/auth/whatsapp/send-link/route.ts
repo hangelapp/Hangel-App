@@ -54,7 +54,9 @@ export async function POST(req: NextRequest) {
         const phoneCountryCode = typeof body?.phoneCountryCode === 'string' ? body.phoneCountryCode : '+90';
         const name = typeof body?.name === 'string' ? body.name.trim() : '';
         const lang = typeof body?.lang === 'string' ? body.lang : 'tr';
-        const cleanPhone = phone.replace(/\D/g, '').replace(/^0+/, '');
+        // canonicalPhone: ülke kodu + baştaki 0'ı strip eder (consistent normalization)
+        const { canonicalPhone } = await import('@/lib/phone-normalize');
+        const cleanPhone = canonicalPhone(phone, phoneCountryCode);
 
         if (!name || !cleanPhone || cleanPhone.length < 7) {
             return NextResponse.json({ ok: false, errorCode: 'INVALID_INPUT', message: 'Ad ve geçerli telefon gerekli.' }, { status: 400 });
