@@ -17,10 +17,11 @@ import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
-import { Bell, MapPin, Settings as SettingsIcon } from 'lucide-react';
+import { Bell, MapPin, Activity, Settings as SettingsIcon } from 'lucide-react';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { isLiveActivitySupported } from '@/lib/native-live-activity';
 
 const PROMPT_COOLDOWN_MS = 7 * 24 * 3600 * 1000; // 7 gün
 
@@ -28,6 +29,7 @@ export function PermissionPrompter() {
   const [open, setOpen] = useState(false);
   const [missingPush, setMissingPush] = useState(false);
   const [missingLocation, setMissingLocation] = useState(false);
+  const [missingLiveActivity, setMissingLiveActivity] = useState(false);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -38,17 +40,23 @@ export function PermissionPrompter() {
         const lastPrompt = typeof localStorage !== 'undefined' ? localStorage.getItem('perm-prompt-shown-at') : null;
         if (lastPrompt && Date.now() - parseInt(lastPrompt) < PROMPT_COOLDOWN_MS) return;
 
-        const [pushPerm, locPerm] = await Promise.all([
+        const [pushPerm, locPerm, liveActSupported] = await Promise.all([
           FirebaseMessaging.checkPermissions().catch(() => ({ receive: 'prompt' as const })),
           Geolocation.checkPermissions().catch(() => ({ location: 'prompt' as const })),
+          // Live Activity: false dönerse ya plugin yok, ya ActivityKit kapalı,
+          // ya da kullanıcı Settings'ten kapatmış. UI'da bilgilendirme prompt'u.
+          isLiveActivitySupported().catch(() => false),
         ]);
 
         const push = pushPerm.receive === 'denied';
         const location = locPerm.location === 'denied';
+        // iOS 16.1+ cihazda destek yoksa muhtemelen kullanıcı kapatmış
+        const liveActivity = !liveActSupported;
 
-        if ((push || location) && active) {
+        if ((push || location || liveActivity) && active) {
           setMissingPush(push);
           setMissingLocation(location);
+          setMissingLiveActivity(liveActivity);
           setOpen(true);
           if (typeof localStorage !== 'undefined') {
             localStorage.setItem('perm-prompt-shown-at', String(Date.now()));
@@ -103,6 +111,15 @@ export function PermissionPrompter() {
               <div className="text-sm leading-snug">
                 <p className="font-bold">Konum</p>
                 <p className="text-xs text-muted-foreground">Yakınınızdaki etkinlikleri, gönüllülük fırsatlarını ve STK&apos;ları göstermek için.</p>
+              </div>
+            </div>
+          )}
+          {missingLiveActivity && (
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-50 border border-violet-200">
+              <Activity className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
+              <div className="text-sm leading-snug">
+                <p className="font-bold">Canlı Etkinlikler</p>
+                <p className="text-xs text-muted-foreground">Kan ilanı, etkinlik geri sayım ve gönüllülük görev durumunu Lock Screen&apos;de canlı takip için.</p>
               </div>
             </div>
           )}

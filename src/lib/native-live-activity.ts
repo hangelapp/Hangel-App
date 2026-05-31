@@ -67,6 +67,20 @@ interface HangelLiveActivityPlugin {
 
 const HangelLiveActivity = registerPlugin<HangelLiveActivityPlugin>('HangelLiveActivity');
 
+/**
+ * Live Activity desteği var mı? (iOS 16.1+ + ActivityKit enabled + user Settings'te kapatmamış)
+ * Web'de veya plugin yoksa false döner.
+ */
+export async function isLiveActivitySupported(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return false;
+  try {
+    const { supported } = await HangelLiveActivity.isSupported();
+    return supported;
+  } catch {
+    return false;
+  }
+}
+
 type ActivityType = 'emergency-blood' | 'volunteer-task' | 'event-countdown' | 'donation-campaign';
 
 async function registerActivityToken(input: { activityId: string; pushToken: string; type: ActivityType; referenceId: string }): Promise<void> {

@@ -84,7 +84,7 @@ export default function EmergencySettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-1">
+      <div className="px-4 sm:px-1">
         <h1 className="text-2xl font-black tracking-tight">{t('emergencyPage.title')}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t('emergencyPage.subtitle')}</p>
       </div>
@@ -129,12 +129,12 @@ export default function EmergencySettingsPage() {
 
 function ToggleRow({ label, checked, onChange, icon }: { label: string; checked: boolean; onChange: (v: boolean) => void; icon?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-3 py-1">
-      <div className="flex items-center gap-2 flex-1">
+    <div className="flex items-center justify-between gap-3 py-2">
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         {icon}
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-medium leading-snug">{label}</span>
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} className="shrink-0" />
     </div>
   );
 }

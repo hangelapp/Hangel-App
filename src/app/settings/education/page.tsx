@@ -127,7 +127,7 @@ export default function EducationSettingsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="px-1">
+      <div className="px-4 sm:px-1">
         <h1 className="text-2xl font-black tracking-tight">{t('educationPage.title')}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t('educationPage.subtitle')}</p>
       </div>
@@ -154,7 +154,7 @@ export default function EducationSettingsPage() {
               {(entry.level === 'Önlisans' || entry.level === 'Lisans' || entry.level === 'Yüksek Lisans' || entry.level === 'Doktora') && (
                 <Input placeholder={t('educationPage.departmentPlaceholder')} value={entry.department ?? ''} onChange={(e) => updateEducation(idx, { department: e.target.value })} className="h-10 rounded-lg" />
               )}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select value={entry.status ?? ''} onValueChange={(v) => updateEducation(idx, { status: v })}>
                   <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.statusPlaceholder')} /></SelectTrigger>
                   <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>

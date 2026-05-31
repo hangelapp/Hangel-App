@@ -112,11 +112,16 @@ export default function WelcomePage() {
 
   if (step === 'welcome') {
     return (
-      <div className="min-h-dvh bg-secondary flex items-center justify-center p-4">
-        <Card className="w-full max-w-sm rounded-[2.5rem] shadow-2xl border-none overflow-hidden">
+      <div className="min-h-dvh bg-secondary flex items-center justify-center p-4 animate-in fade-in duration-500">
+        <Card className="w-full max-w-sm rounded-[2.5rem] shadow-2xl border-none overflow-hidden animate-in zoom-in-95 duration-500">
           <CardContent className="pt-10 pb-8 px-6 sm:px-8 space-y-6">
+            {/* Progress: 1/2 */}
+            <div className="flex items-center gap-1.5 justify-center">
+              <div className="h-1.5 w-12 rounded-full bg-primary" />
+              <div className="h-1.5 w-12 rounded-full bg-muted" />
+            </div>
             <div className="text-center space-y-3">
-              <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="mx-auto w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
                 <Sparkles className="h-10 w-10 text-primary" />
               </div>
               <HangelLogo className="text-2xl mx-auto" />
@@ -141,12 +146,21 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="min-h-dvh bg-secondary flex items-start justify-center p-4 pt-8">
-      <Card className="w-full max-w-md rounded-[2.5rem] shadow-2xl border-none overflow-hidden">
+    <div className="min-h-dvh bg-secondary flex items-start justify-center p-4 pt-8 animate-in fade-in duration-300">
+      <Card className="w-full max-w-md rounded-[2.5rem] shadow-2xl border-none overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
         <CardContent className="pt-8 pb-8 px-5 sm:px-7 space-y-5">
+          {/* Progress: 2/2 */}
+          <div className="flex items-center gap-1.5 justify-center">
+            <div className="h-1.5 w-12 rounded-full bg-primary" />
+            <div className="h-1.5 w-12 rounded-full bg-primary" />
+          </div>
           <div className="text-center space-y-2">
             <h2 className="text-xl font-black tracking-tight">{t('welcome.intentTitle')}</h2>
             <p className="text-xs text-muted-foreground">{t('welcome.intentSubtitle')}</p>
+            {/* Seçim sayacı */}
+            {selected.size > 0 && (
+              <p className="text-[11px] text-primary font-bold">{selected.size} seçim</p>
+            )}
           </div>
           <div className="space-y-2">
             {INTENT_KEYS.map((key) => {
@@ -155,8 +169,8 @@ export default function WelcomePage() {
               return (
                 <label
                   key={key}
-                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
-                    checked ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 active:scale-[0.98] ${
+                    checked ? 'border-primary bg-primary/10 shadow-sm scale-[1.02]' : 'border-border hover:border-primary/40 hover:bg-accent/30'
                   }`}
                 >
                   <Checkbox
