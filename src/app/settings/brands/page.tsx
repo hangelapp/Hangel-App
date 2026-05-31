@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, Loader2, Store } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, query, limit as fsLimit } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +36,12 @@ export default function FollowedBrandsPage() {
   const { user: authUser, isUserLoading } = useUser();
   const db = useFirestore();
 
-  const brandsQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.brands) : null), [db]);
+  // PERF: ilk 200 markayı yükle (varsayılan sıra), tüm collection değil.
+  // Kullanıcı arama yaparsa cap aşılır (rare). 200 marka %95 kullanım için yeter.
+  const brandsQuery = useMemoFirebase(
+    () => (db ? query(collection(db, COLLECTIONS.brands), fsLimit(200)) : null),
+    [db],
+  );
   const { data: firestoreBrands, isLoading: isFirestoreLoading } = useCollection<Brand>(brandsQuery);
 
   const userDocRef = useMemoFirebase(() => {
