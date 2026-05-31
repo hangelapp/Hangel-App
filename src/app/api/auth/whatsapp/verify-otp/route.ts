@@ -139,6 +139,8 @@ export async function POST(req: NextRequest) {
                 await ref.delete();
                 return NextResponse.json({ ok: true, customToken: token, isNewUser: false });
             }
+            // phoneHash: rehber eşleştirme için (privacy-preserving contacts sync)
+            const phoneHash = crypto.createHash('sha256').update(cleanPhone).digest('hex');
             await userDocRef.set({
                 id: uid,
                 name: name || '',
@@ -146,6 +148,7 @@ export async function POST(req: NextRequest) {
                 personalInfo: {
                     phone: cleanPhone,
                     phoneCountryCode,
+                    phoneHash,
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
                 signupMethod: 'whatsapp',
@@ -154,8 +157,9 @@ export async function POST(req: NextRequest) {
             }, { merge: true });
             isNewUser = true;
         } else {
+            const phoneHash = crypto.createHash('sha256').update(cleanPhone).digest('hex');
             await userDocRef.set({
-                personalInfo: { phone: cleanPhone, phoneCountryCode },
+                personalInfo: { phone: cleanPhone, phoneCountryCode, phoneHash },
             }, { merge: true });
         }
 

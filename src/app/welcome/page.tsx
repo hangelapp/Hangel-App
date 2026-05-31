@@ -14,6 +14,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
+import { maybeRequestAttPermission } from '@/lib/native-att';
 
 type IntentKey =
   | 'donate'
@@ -93,9 +94,12 @@ export default function WelcomePage() {
         'preferences.intents': intents,
         'preferences.intentsSelectedAt': serverTimestamp(),
       });
-      // Konum izni her zaman iste — etkinlik/gönüllülük/STK keşif kişisel
-      // konum bazlı çalışır. Reddedilse bile flow devam eder (fail open).
-      await getCurrentPositionUnified().catch(() => null);
+      // Konum + ATT izinleri paralel iste (her zaman, fail open).
+      // ATT: Firebase Analytics IDFA için Apple zorunlu prompt.
+      await Promise.all([
+        getCurrentPositionUnified().catch(() => null),
+        maybeRequestAttPermission().catch(() => null),
+      ]);
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
       router.replace((firstWithPath && INTENT_PATHS[firstWithPath]) ?? '/market');
