@@ -16,6 +16,7 @@
  * 6. { ok: true, customToken } dön
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -158,55 +159,52 @@ export async function POST(req: NextRequest) {
             }, { merge: true });
         }
 
-        // Custom token üret
-        const customToken = await adminAuth.createCustomToken(uid);
+        // Custom token üret + OTP doc'u sil — paralel
+        const [customToken] = await Promise.all([
+            adminAuth.createCustomToken(uid),
+            ref.delete(),
+        ]);
 
-        // OTP doc'unu sil (kullanıldı)
-        await ref.delete();
-
-        // Yeni kullanıcıya welcome zinciri (best-effort, fail bloklamaz)
+        // Welcome chain'i response SONRASI (after) çalıştır.
+        // Response anında döner → kullanıcı 2-4 sn beklemez.
+        // Welcome message + inbox + notification + push arka planda paralel.
         if (isNewUser) {
-            // 1) WhatsApp utility mesajı (template approval gerek)
-            try {
-                const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
-                await sendWelcomeMessage(fullPhone, name || 'arkadaş', phoneCountryCode === '+90' ? 'tr' : 'en');
-            } catch (e) {
-                console.warn('[verify-otp] whatsapp welcome failed', e);
-            }
-            // 2) Inbox mesajı + notifications + push (admin SDK ile direkt)
-            try {
-                const { getAdminFirestore } = await import('@/lib/firebase-admin');
-                const { sendPushToUser } = await import('@/lib/push-notifications');
-                const { FieldValue } = await import('firebase-admin/firestore');
-                const adminDb = getAdminFirestore();
-                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
-                const subject = 'hangel\'e hoş geldin';
-                await adminDb.collection(COLLECTIONS.messages).add({
-                    sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
-                    senderId: 'hangel-system',
-                    senderType: 'system',
-                    recipient: { id: uid, name: name || '', avatarUrl: '' },
-                    recipientId: uid,
-                    subject,
-                    content: welcomeText,
-                    timestamp: FieldValue.serverTimestamp(),
-                    status: 'sent',
-                    isWelcome: true,
-                });
-                await adminDb.collection(COLLECTIONS.notifications).add({
-                    userId: uid,
-                    type: 'welcome',
-                    title: subject,
-                    body: welcomeText.slice(0, 120),
-                    read: false,
-                    pushSent: true, // inline push aşağıda — Cloud Function tekrar göndermesin
-                    createdAt: FieldValue.serverTimestamp(),
-                    createdBy: 'hangel-system',
-                });
-                await sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } });
-            } catch (e) {
-                console.warn('[verify-otp] welcome inbox/notif failed', e);
-            }
+            after(async () => {
+                try {
+                    const { sendPushToUser } = await import('@/lib/push-notifications');
+                    const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
+                    const welcomeText = "Merhaba hangel'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel";
+                    const subject = "hangel'e hoş geldin";
+                    await Promise.all([
+                        sendWelcomeMessage(fullPhone, name || 'arkadaş', phoneCountryCode === '+90' ? 'tr' : 'en').catch((e) => console.warn('[verify-otp] whatsapp welcome failed', e)),
+                        db.collection(COLLECTIONS.messages).add({
+                            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                            senderId: 'hangel-system',
+                            senderType: 'system',
+                            recipient: { id: uid, name: name || '', avatarUrl: '' },
+                            recipientId: uid,
+                            subject,
+                            content: welcomeText,
+                            timestamp: FieldValue.serverTimestamp(),
+                            status: 'sent',
+                            isWelcome: true,
+                        }).catch((e) => console.warn('[verify-otp] welcome message failed', e)),
+                        db.collection(COLLECTIONS.notifications).add({
+                            userId: uid,
+                            type: 'welcome',
+                            title: subject,
+                            body: welcomeText.slice(0, 120),
+                            read: false,
+                            pushSent: true,
+                            createdAt: FieldValue.serverTimestamp(),
+                            createdBy: 'hangel-system',
+                        }).catch((e) => console.warn('[verify-otp] welcome notification failed', e)),
+                        sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } }).catch((e) => console.warn('[verify-otp] welcome push failed', e)),
+                    ]);
+                } catch (e) {
+                    console.warn('[verify-otp] welcome chain failed', e);
+                }
+            });
         }
 
         return NextResponse.json({ ok: true, customToken, isNewUser });

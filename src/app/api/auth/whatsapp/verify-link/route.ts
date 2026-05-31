@@ -11,6 +11,7 @@
  * 7. JSON { ok, customToken } dön — client signInWithCustomToken
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -149,46 +150,46 @@ export async function GET(req: NextRequest) {
         // Mark used + cleanup
         await ref.update({ used: true, usedAt: FieldValue.serverTimestamp() });
 
-        // Yeni kullanıcıya welcome zinciri (best-effort)
+        // Welcome chain response sonrası background (after API).
         if (isNewUser) {
-            if (data.phone) {
+            after(async () => {
                 try {
+                    const { sendPushToUser } = await import('@/lib/push-notifications');
                     const { sendWelcomeMessage } = await import('@/lib/whatsapp-welcome');
-                    await sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en');
+                    const welcomeText = "Merhaba hangel'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel";
+                    const subject = "hangel'e hoş geldin";
+                    await Promise.all([
+                        data.phone
+                            ? sendWelcomeMessage(data.phone, data.name || 'arkadaş', data.phoneCountryCode === '+90' ? 'tr' : 'en').catch((e) => console.warn('[verify-link] whatsapp welcome failed', e))
+                            : Promise.resolve(),
+                        db.collection(COLLECTIONS.messages).add({
+                            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+                            senderId: 'hangel-system',
+                            senderType: 'system',
+                            recipient: { id: uid, name: data.name || '', avatarUrl: '' },
+                            recipientId: uid,
+                            subject,
+                            content: welcomeText,
+                            timestamp: FieldValue.serverTimestamp(),
+                            status: 'sent',
+                            isWelcome: true,
+                        }).catch((e) => console.warn('[verify-link] welcome message failed', e)),
+                        db.collection(COLLECTIONS.notifications).add({
+                            userId: uid,
+                            type: 'welcome',
+                            title: subject,
+                            body: welcomeText.slice(0, 120),
+                            read: false,
+                            pushSent: true,
+                            createdAt: FieldValue.serverTimestamp(),
+                            createdBy: 'hangel-system',
+                        }).catch((e) => console.warn('[verify-link] welcome notification failed', e)),
+                        sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } }).catch((e) => console.warn('[verify-link] welcome push failed', e)),
+                    ]);
                 } catch (e) {
-                    console.warn('[verify-link] whatsapp welcome failed', e);
+                    console.warn('[verify-link] welcome chain failed', e);
                 }
-            }
-            try {
-                const { sendPushToUser } = await import('@/lib/push-notifications');
-                const welcomeText = 'Merhaba hangel\'e hoş geldin. Sosyal sorunlar ile mücadele edenleri yalnız bırakmamak adına hangel\'a katıldığın için minnettarız. Bundan böyle kollektif bilinçle birlikte mücadele edeceğiz. #wearehangel';
-                const subject = 'hangel\'e hoş geldin';
-                await db.collection(COLLECTIONS.messages).add({
-                    sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
-                    senderId: 'hangel-system',
-                    senderType: 'system',
-                    recipient: { id: uid, name: data.name || '', avatarUrl: '' },
-                    recipientId: uid,
-                    subject,
-                    content: welcomeText,
-                    timestamp: FieldValue.serverTimestamp(),
-                    status: 'sent',
-                    isWelcome: true,
-                });
-                await db.collection(COLLECTIONS.notifications).add({
-                    userId: uid,
-                    type: 'welcome',
-                    title: subject,
-                    body: welcomeText.slice(0, 120),
-                    read: false,
-                    pushSent: true, // inline push aşağıda — Cloud Function tekrar göndermesin
-                    createdAt: FieldValue.serverTimestamp(),
-                    createdBy: 'hangel-system',
-                });
-                await sendPushToUser(uid, { title: subject, body: welcomeText.slice(0, 100), clickAction: '/messages', data: { type: 'welcome' } });
-            } catch (e) {
-                console.warn('[verify-link] welcome inbox/notif failed', e);
-            }
+            });
         }
 
         return NextResponse.json({ ok: true, customToken, isNewUser });
