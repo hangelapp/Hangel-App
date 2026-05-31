@@ -27,7 +27,6 @@
     "cap:run:android": "npx cap run android"
   },
   "dependencies": {
-    "@capacitor-community/apple-sign-in": "^7.1.0",
     "@capacitor-community/contacts": "^7.1.0",
     "@capacitor-firebase/crashlytics": "^8.2.0",
     "@capacitor-firebase/messaging": "^8.2.0",
