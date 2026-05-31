@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const EDUCATION_LEVELS = ['Lise', 'Önlisans', 'Lisans', 'Yüksek Lisans', 'Doktora'];
 const STATUS_OPTIONS = ['Devam Ediyor', 'Mezun', 'Terk'];
@@ -30,6 +31,7 @@ export default function EducationSettingsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [education, setEducation] = useState<EducationEntry[]>([]);
   const [clubMemberships, setClubMemberships] = useState<string[]>([]);
   const [availableClubs, setAvailableClubs] = useState<ClubLite[]>([]);
@@ -110,9 +112,9 @@ export default function EducationSettingsPage() {
         'volunteerInfo.clubMemberships': clubMemberships,
         'volunteerInfo.educationUpdatedAt': serverTimestamp(),
       });
-      toast({ title: 'Kaydedildi', description: 'Eğitim ve kulüp bilgilerin güncellendi.' });
+      toast({ title: t('educationPage.saved'), description: t('educationPage.savedDesc') });
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('educationPage.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
     } finally {
       setSaving(false);
     }
@@ -126,14 +128,14 @@ export default function EducationSettingsPage() {
   return (
     <div className="space-y-4">
       <div className="px-1">
-        <h1 className="text-2xl font-black tracking-tight">Eğitim ve Kulüp Bilgileri</h1>
-        <p className="text-sm text-muted-foreground mt-1">Eğitim geçmişin ve üye olduğun öğrenci kulüpleri.</p>
+        <h1 className="text-2xl font-black tracking-tight">{t('educationPage.title')}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('educationPage.subtitle')}</p>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base"><GraduationCap className="h-5 w-5 text-blue-600" /> Eğitim Geçmişi</CardTitle>
-          <CardDescription>Lise, üniversite, yüksek lisans seviyelerinde okul bilgilerin.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><GraduationCap className="h-5 w-5 text-blue-600" /> {t('educationPage.historySection')}</CardTitle>
+          <CardDescription>{t('educationPage.historySectionDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {education.map((entry, idx) => (
@@ -145,20 +147,20 @@ export default function EducationSettingsPage() {
                 </Button>
               </div>
               <Select value={entry.level} onValueChange={(v) => updateEducation(idx, { level: v })}>
-                <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder="Eğitim seviyesi" /></SelectTrigger>
+                <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.levelPlaceholder')} /></SelectTrigger>
                 <SelectContent>{EDUCATION_LEVELS.map((l) => (<SelectItem key={l} value={l}>{l}</SelectItem>))}</SelectContent>
               </Select>
-              <Input placeholder="Okul / Üniversite adı" value={entry.school} onChange={(e) => updateEducation(idx, { school: e.target.value })} className="h-10 rounded-lg" />
+              <Input placeholder={t('educationPage.schoolPlaceholder')} value={entry.school} onChange={(e) => updateEducation(idx, { school: e.target.value })} className="h-10 rounded-lg" />
               {(entry.level === 'Önlisans' || entry.level === 'Lisans' || entry.level === 'Yüksek Lisans' || entry.level === 'Doktora') && (
-                <Input placeholder="Bölüm / Fakülte" value={entry.department ?? ''} onChange={(e) => updateEducation(idx, { department: e.target.value })} className="h-10 rounded-lg" />
+                <Input placeholder={t('educationPage.departmentPlaceholder')} value={entry.department ?? ''} onChange={(e) => updateEducation(idx, { department: e.target.value })} className="h-10 rounded-lg" />
               )}
               <div className="grid grid-cols-2 gap-2">
                 <Select value={entry.status ?? ''} onValueChange={(v) => updateEducation(idx, { status: v })}>
-                  <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder="Durum" /></SelectTrigger>
+                  <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.statusPlaceholder')} /></SelectTrigger>
                   <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
                 </Select>
                 <Input
-                  placeholder={entry.status === 'Mezun' ? 'Mezuniyet yılı' : 'Sınıf'}
+                  placeholder={entry.status === 'Mezun' ? t('educationPage.graduationYearPlaceholder') : t('educationPage.gradePlaceholder')}
                   value={entry.status === 'Mezun' ? (entry.graduationYear ?? '') : (entry.grade ?? '')}
                   onChange={(e) => updateEducation(idx, entry.status === 'Mezun' ? { graduationYear: e.target.value } : { grade: e.target.value })}
                   className="h-10 rounded-lg"
@@ -167,30 +169,30 @@ export default function EducationSettingsPage() {
             </div>
           ))}
           <Button type="button" variant="outline" onClick={addEducation} className="w-full h-10 rounded-lg">
-            <Plus className="h-4 w-4 mr-1" /> Eğitim ekle
+            <Plus className="h-4 w-4 mr-1" /> {t('educationPage.addEducation')}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base"><Users2 className="h-5 w-5 text-violet-600" /> Üyesi Olduğun Kulüpler</CardTitle>
-          <CardDescription>Eklediğin kulüplerin etkinlikleri ve duyuruları sana ulaşır.</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-base"><Users2 className="h-5 w-5 text-violet-600" /> {t('educationPage.clubsSection')}</CardTitle>
+          <CardDescription>{t('educationPage.clubsSectionDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2">
             <Input
-              placeholder="Kulüp ara (isim veya okul)"
+              placeholder={t('educationPage.searchClubs')}
               value={clubSearch}
               onChange={(e) => setClubSearch(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void search(); } }}
               className="h-10 rounded-lg flex-1"
             />
-            <Button type="button" variant="outline" onClick={() => void search()} className="h-10">Ara</Button>
+            <Button type="button" variant="outline" onClick={() => void search()} className="h-10">{t('educationPage.searchButton')}</Button>
           </div>
           <div className="space-y-1.5 max-h-72 overflow-y-auto">
             {filteredClubs.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Kulüp bulunamadı.</p>
+              <p className="text-sm text-muted-foreground text-center py-4">{t('educationPage.noClubsFound')}</p>
             )}
             {filteredClubs.map((club) => {
               const isMember = clubMemberships.includes(club.id);
@@ -209,7 +211,7 @@ export default function EducationSettingsPage() {
                       {club.schoolName && <p className="text-xs text-muted-foreground truncate">{club.schoolName}</p>}
                     </div>
                     {isMember ? (
-                      <span className="text-xs font-bold text-violet-700 shrink-0">✓ Üye</span>
+                      <span className="text-xs font-bold text-violet-700 shrink-0">✓ {t('educationPage.member')}</span>
                     ) : (
                       <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
@@ -222,7 +224,7 @@ export default function EducationSettingsPage() {
       </Card>
 
       <Button onClick={save} disabled={saving} className="w-full h-12 rounded-xl font-bold">
-        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kaydet'}
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('educationPage.save')}
       </Button>
     </div>
   );
