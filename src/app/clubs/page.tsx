@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, Filter, School, BookOpen, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { StudentClub } from '@/lib/types';
@@ -89,9 +89,30 @@ export default function ClubsPage() {
   const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers } = useCollection<MemberUser>(usersRef);
 
-  // Kulüp bazında üye sayısı + etki puanı toplamı (yöneticiler dahil).
+  // Realtime API: /api/clubs/stats (30s cache, server-side count aggregation).
+  // Client-side aggregation (allUsers üzerinden) fallback olarak çalışır.
+  const [apiStats, setApiStats] = useState<Record<string, { members: number; points: number }> | null>(null);
+  useEffect(() => {
+    let active = true;
+    const fetchStats = () => {
+      fetch('/api/clubs/stats')
+        .then((r) => r.json())
+        .then((d) => { if (active && d?.ok && d.stats) setApiStats(d.stats); })
+        .catch(() => {});
+    };
+    fetchStats();
+    const t = setInterval(fetchStats, 30_000);
+    return () => { active = false; clearInterval(t); };
+  }, []);
+
   const clubStats = useMemo(() => {
     const map = new Map<string, { members: number; points: number }>();
+    // API verisi varsa öncelikli (anlık + tüm kullanıcıyı okumadan)
+    if (apiStats) {
+      Object.entries(apiStats).forEach(([cid, s]) => map.set(cid, s));
+      return map;
+    }
+    // Fallback: client-side aggregation
     if (!allUsers) return map;
     for (const u of allUsers) {
       const joined = new Set<string>(u.joinedClubs || []);
@@ -106,7 +127,7 @@ export default function ClubsPage() {
       });
     }
     return map;
-  }, [allUsers]);
+  }, [allUsers, apiStats]);
 
   // Üniversite bazında ayırt edici üye sayısı — eğitiminde o okulu listelemiş
   // kullanıcılar (büyük/küçük harf ve trim normalize).

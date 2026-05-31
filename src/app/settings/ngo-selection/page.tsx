@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network } from 'lucide-react';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
+import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection, serverTimestamp, runTransaction, increment } from 'firebase/firestore';
@@ -38,9 +39,11 @@ export default function NgoSelectionPage() {
     const { user: authUser, isUserLoading } = useUser();
     const db = useFirestore();
 
-    // Firestore NGO listesi
+    // Firestore NGO listesi + realtime donors/volunteers enrichment
     const ngosQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.ngos) : null), [db]);
-    const { data: ngosData, isLoading: isNgosLoading } = useCollection<NGO>(ngosQuery);
+    const { data: rawNgosData, isLoading: isNgosLoading } = useCollection<NGO>(ngosQuery);
+    const { enrich } = useNgoRealtimeStats();
+    const ngosData = useMemo(() => enrich(rawNgosData), [enrich, rawNgosData]);
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;

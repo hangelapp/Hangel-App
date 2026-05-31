@@ -24,6 +24,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDocs, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
+import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
 import {
   Loader2, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
   XCircle, Search, Database, Upload, RefreshCw, X, ArrowDownUp,
@@ -307,7 +308,9 @@ export default function NgosPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'nameAsc'>('newest');
 
   const ngosQuery = useMemoFirebase(() => collection(db, COLLECTIONS.ngos), [db]);
-  const { data: ngos, isLoading: ngosLoading } = useCollection<NGO>(ngosQuery);
+  const { data: rawNgos, isLoading: ngosLoading } = useCollection<NGO>(ngosQuery);
+  const { enrich: enrichNgoStats } = useNgoRealtimeStats();
+  const ngos = useMemo(() => enrichNgoStats(rawNgos), [enrichNgoStats, rawNgos]);
 
   const applicationsQuery = useMemoFirebase(() =>
     query(collection(db, COLLECTIONS.applications), where('entityType', '==', 'NGO')),

@@ -22,7 +22,9 @@ export const runtime = 'nodejs';
 
 type Counts = Record<string, { donors: number; volunteers: number }>;
 
-const TTL_MS = 5 * 60 * 1000;
+// 30s cache: kullanıcı için "anlık" hissi, Firestore count() okuma maliyeti
+// belli aralıkla rate-limit edilir.
+const TTL_MS = 30 * 1000;
 const BATCH = 20;
 let cache: { at: number; data: Counts } | null = null;
 
