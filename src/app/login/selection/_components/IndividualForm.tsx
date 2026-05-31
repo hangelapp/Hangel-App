@@ -27,8 +27,8 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     const searchParams = useSearchParams();
 
     type IndividualStep = 'email' | 'login' | 'register' | 'verify-sent' | 'forgot' | 'forgot-sent' | 'phone-enter' | 'phone-otp' | 'whatsapp-enter' | 'whatsapp-otp' | 'whatsapp-code-input';
-    const [step, setStep] = useState<IndividualStep>('email');
-    const [authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('mail');
+    const [step, setStep] = useState<IndividualStep>('whatsapp-enter');
+    const [authMode, setAuthMode] = useState<'mail' | 'phone' | 'whatsapp'>('whatsapp');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [phoneCountryCode, setPhoneCountryCode] = useState('+90');
@@ -481,6 +481,10 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     };
 
     const renderAuthModeTabs = () => (
+        // Mail + SMS tab'ları geçici olarak gizlendi (sadece WhatsApp aktif).
+        // Geri açmak için aşağıdaki TabsList'i eski haline döndür.
+        null
+        /*
         <Tabs value={authMode} onValueChange={(v) => {
             const m = v as 'mail' | 'phone' | 'whatsapp';
             setAuthMode(m);
@@ -492,6 +496,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 <TabsTrigger value="whatsapp" className="rounded-xl text-[11px] font-bold gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> WhatsApp</TabsTrigger>
             </TabsList>
         </Tabs>
+        */
     );
 
     // WhatsApp Magic Link handler (kod yerine link)
