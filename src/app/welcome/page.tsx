@@ -13,6 +13,7 @@ import { HangelLogo } from '@/components/icons';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
+import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 
 type IntentKey =
   | 'donate'
@@ -33,6 +34,9 @@ const INTENT_PATHS: Partial<Record<IntentKey, string>> = {
   emergency: '/settings/emergency',
   student_clubs: '/settings/education',
 };
+// NOT: Konum izni intent seçimine bakılmaksızın HER welcome submit'te
+// istenir. Etkinlik/gönüllülük aktivitelerini kişisel konum bazlı sunmak
+// için kritik (yakın STK, etkinlik, kan ilanı, acil çağrı).
 const INTENT_KEYS: IntentKey[] = [
   'donate', 'volunteer', 'blood', 'follow_csr', 'discover_ngos',
   'emergency', 'student_clubs', 'library', 'browse_only',
@@ -89,6 +93,9 @@ export default function WelcomePage() {
         'preferences.intents': intents,
         'preferences.intentsSelectedAt': serverTimestamp(),
       });
+      // Konum izni her zaman iste — etkinlik/gönüllülük/STK keşif kişisel
+      // konum bazlı çalışır. Reddedilse bile flow devam eder (fail open).
+      await getCurrentPositionUnified().catch(() => null);
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
       router.replace((firstWithPath && INTENT_PATHS[firstWithPath]) ?? '/market');
