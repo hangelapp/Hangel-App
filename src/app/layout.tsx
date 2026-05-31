@@ -6,6 +6,7 @@ import { AppShell } from './app-shell';
 import { LanguageProvider } from '@/components/providers/language-provider';
 // AutoTranslate (Google Translate widget) kaldırıldı — performans + DOM patches.
 // Native i18n için src/lib/translations.ts + useTranslation() kullanılır.
+import { PermissionPrompter } from '@/components/providers/permission-prompter';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PushNotificationsProvider } from '@/components/providers/push-notifications-provider';
 import { NativeBridgeProvider } from '@/components/providers/native-bridge-provider';
@@ -103,6 +104,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <LanguageProvider>
             <ThemeApplier />
+            <PermissionPrompter />
             <OfflineBanner />
             <PushNotificationsProvider />
             <NativeBridgeProvider />
