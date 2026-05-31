@@ -15,6 +15,7 @@ import { arrayUnion, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/fi
 import { COLLECTIONS } from '@/firebase/collections';
 import { canonicalPhone } from '@/lib/phone-normalize';
 import { FormLabel, FormInput } from './shared';
+import { OtpInput } from '@/components/ui/otp-input';
 // Tabs imports — geçici olarak kullanılmıyor (sadece WhatsApp aktif).
 // Mail+SMS geri açıldığında: import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
@@ -39,6 +40,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
     const [isLoading, setIsLoading] = useState(false);
     // Phone OTP state
     const [otpCode, setOtpCode] = useState('');
+    const [otpError, setOtpError] = useState(false);
     const confirmationResultRef = useRef<ConfirmationResult | null>(null);
     const recaptchaContainerRef = useRef<HTMLDivElement | null>(null);
     const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
@@ -412,13 +414,14 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         }
     };
 
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const code = otpCode.trim();
+    const handleVerifyOtp = async (e?: React.FormEvent, codeOverride?: string) => {
+        if (e) e.preventDefault();
+        const code = (codeOverride ?? otpCode).trim();
         if (code.length < 6) {
             toast({ variant: 'destructive', title: 'Kod eksik', description: '6 haneli kodu girin.' });
             return;
         }
+        setOtpError(false);
         const confirmation = confirmationResultRef.current;
         if (!confirmation) {
             toast({ variant: 'destructive', title: 'Oturum geçersiz', description: 'Kod yeniden istenmeli.' });
@@ -475,6 +478,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             onComplete(isNew);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Kod hatalı.';
+            setOtpError(true);
             toast({ variant: 'destructive', title: 'Doğrulanamadı', description: msg });
         } finally {
             setIsLoading(false);
@@ -575,13 +579,15 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
         }
     };
 
-    const handleVerifyWhatsAppCode = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleVerifyWhatsAppCode = async (e?: React.FormEvent, codeOverride?: string) => {
+        if (e) e.preventDefault();
+        const code = codeOverride ?? otpCode;
         const cleanPhone = phone.replace(/\D/g, '');
-        if (!/^\d{6}$/.test(otpCode)) {
+        if (!/^\d{6}$/.test(code)) {
             toast({ variant: 'destructive', title: 'Geçersiz kod', description: '6 haneli kodu doğru gir.' });
             return;
         }
+        setOtpError(false);
         setIsLoading(true);
         try {
             const res = await fetch('/api/auth/whatsapp/verify-otp', {
@@ -590,12 +596,13 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 body: JSON.stringify({
                     phone: cleanPhone,
                     phoneCountryCode,
-                    code: otpCode,
+                    code,
                     name: name.trim(),
                 }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok || !data.ok || !data.customToken) {
+                setOtpError(true);
                 toast({ variant: 'destructive', title: 'Doğrulanamadı', description: data.message || 'Kod yanlış veya süresi dolmuş.' });
                 return;
             }
@@ -603,6 +610,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             onComplete(Boolean(data.isNewUser));
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Doğrulama hatası.';
+            setOtpError(true);
             toast({ variant: 'destructive', title: 'Hata', description: msg });
         } finally {
             setIsLoading(false);
@@ -679,7 +687,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     if (step === 'phone-otp') {
         return (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <form onSubmit={(e) => handleVerifyOtp(e)} className="space-y-4">
                 <div className="text-center space-y-2">
                     <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                         <ShieldCheck className="h-6 w-6 text-primary" />
@@ -688,24 +696,20 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         {phoneCountryCode}{phone.replace(/\D/g, '').replace(/^0+/, '')} numarasına gönderilen <span className="font-bold text-foreground">6 haneli kodu</span> girin.
                     </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <FormLabel required>Doğrulama Kodu</FormLabel>
-                    <FormInput
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        placeholder="123456"
-                        required
+                    <OtpInput
                         value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                        className="text-center text-2xl tracking-[0.5em] font-bold"
+                        onChange={(v) => { setOtpCode(v); if (otpError) setOtpError(false); }}
+                        onComplete={(v) => { void handleVerifyOtp(undefined, v); }}
+                        disabled={isLoading}
+                        error={otpError}
                     />
+                    {otpError && (
+                        <p className="text-xs text-red-600 text-center font-medium">Kod yanlış. Tekrar dene veya yeni kod iste.</p>
+                    )}
                 </div>
-                <Button type="submit" className="w-full h-12 rounded-xl font-bold" disabled={isLoading || otpCode.length < 6}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : 'Kayıt Ol'}
-                </Button>
-                <Button type="button" variant="link" className="w-full text-xs" onClick={() => setStep('phone-enter')}>
+                <Button type="button" variant="link" className="w-full text-xs" onClick={() => { setOtpCode(''); setOtpError(false); setStep('phone-enter'); }}>
                     Numarayı değiştir / Tekrar gönder
                 </Button>
             </form>
@@ -823,7 +827,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     if (step === 'whatsapp-code-input') {
         return (
-            <form onSubmit={handleVerifyWhatsAppCode} className="space-y-4">
+            <form onSubmit={(e) => handleVerifyWhatsAppCode(e)} className="space-y-4">
                 <div className="text-center space-y-3 py-4">
                     <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
                         <ShieldCheck className="h-8 w-8 text-emerald-600" />
@@ -833,25 +837,20 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         <span className="font-bold text-foreground">{phoneCountryCode}{phone.replace(/\D/g, '').replace(/^0+/, '')}</span> numaralı WhatsApp&apos;ı kontrol et.
                     </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                     <FormLabel required>Doğrulama Kodu</FormLabel>
-                    <FormInput
-                        type="tel"
-                        inputMode="numeric"
-                        pattern="\d{6}"
-                        maxLength={6}
-                        placeholder="6 haneli kod"
-                        autoComplete="one-time-code"
-                        autoFocus
-                        required
+                    <OtpInput
                         value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                        onChange={(v) => { setOtpCode(v); if (otpError) setOtpError(false); }}
+                        onComplete={(v) => { void handleVerifyWhatsAppCode(undefined, v); }}
+                        disabled={isLoading}
+                        error={otpError}
                     />
+                    {otpError && (
+                        <p className="text-xs text-red-600 text-center font-medium">Kod yanlış. Tekrar dene veya yeni kod iste.</p>
+                    )}
                 </div>
-                <Button type="submit" className="w-full h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700" disabled={isLoading || otpCode.length !== 6}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : 'Doğrula ve Devam Et'}
-                </Button>
-                <Button type="button" variant="outline" className="w-full h-12 rounded-xl font-bold" onClick={() => setStep('whatsapp-enter')}>
+                <Button type="button" variant="outline" className="w-full h-12 rounded-xl font-bold" onClick={() => { setOtpCode(''); setOtpError(false); setStep('whatsapp-enter'); }}>
                     Numarayı değiştir / Yeniden gönder
                 </Button>
             </form>
