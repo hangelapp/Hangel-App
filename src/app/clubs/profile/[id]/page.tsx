@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ClubEventsTab } from './_components/club-events-tab';
 import { ArrowLeft, Mail, Phone, Globe, School, Tag, Info, Loader2, CheckCircle, UserCircle2, Sparkles, ShieldCheck, Flame, Award, Instagram, Linkedin, Twitter, Calendar, GraduationCap } from 'lucide-react';
 import type { StudentClub } from '@/lib/types';
 import { notFound, useRouter, useParams } from 'next/navigation';
@@ -290,8 +291,9 @@ export default function ClubProfilePage() {
       </div>
 
       <Tabs defaultValue="about" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 px-2">
+        <TabsList className="grid w-full grid-cols-5 px-2">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
+            <TabsTrigger value="events">Etkinlikler</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
             <TabsTrigger value="management">Yönetim</TabsTrigger>
@@ -407,6 +409,9 @@ export default function ClubProfilePage() {
                     <div className="p-4 bg-accent/50 rounded-lg"><p className="font-bold text-lg">%{club.activeMemberRate || 0}</p><p className="text-sm text-muted-foreground">Aktif Üye Oranı</p></div>
                 </CardContent>
              </Card>
+        </TabsContent>
+        <TabsContent value="events" className="p-4">
+            <ClubEventsTab clubId={String(id)} />
         </TabsContent>
         <TabsContent value="posts" className="p-4">
             <div className="text-center text-muted-foreground py-16">

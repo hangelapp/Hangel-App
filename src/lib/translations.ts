@@ -65,6 +65,16 @@ export const translations: Record<Language, any> = {
       filter: 'Filtrele',
       sort: 'Sırala',
     },
+    emptyStates: {
+      noMessages: 'Henüz mesaj yok',
+      noMessagesSent: 'Henüz mesaj göndermediniz',
+      noVolunteeringDone: 'Henüz tamamlanmış gönüllülük yok',
+      noBadges: 'Henüz rozet yok',
+      noCertificates: 'Henüz sertifika yok',
+      noCampaigns: 'Henüz kampanya yok',
+      noData: 'Henüz veri yok',
+      noResults: 'Sonuç bulunamadı',
+    },
     ngosPage: {
       title: 'Sivil Toplum Kuruluşları',
       subtitle: 'Gerçek zamanlı veritabanı üzerinden listeleniyor.',
@@ -1291,6 +1301,16 @@ export const translations: Record<Language, any> = {
       back: 'Back',
       filter: 'Filter',
       sort: 'Sort',
+    },
+    emptyStates: {
+      noMessages: 'No messages yet',
+      noMessagesSent: 'You have not sent any messages',
+      noVolunteeringDone: 'No completed volunteering yet',
+      noBadges: 'No badges yet',
+      noCertificates: 'No certificates yet',
+      noCampaigns: 'No campaigns yet',
+      noData: 'No data yet',
+      noResults: 'No results found',
     },
     ngosPage: {
       title: 'NGOs',

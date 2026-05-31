@@ -419,7 +419,7 @@ export default function MessagesPage() {
                     ) : (sentMessages || []).length === 0 ? (
                         <EmptyState
                             icon={SendHorizontal}
-                            title="Henüz mesaj göndermediniz"
+                            title={t('emptyStates.noMessagesSent')}
                             description="Gönderdiğiniz mesajlar burada görünecek."
                         />
                     ) : filteredSentMessages.length > 0 ? filteredSentMessages.map((msg) => {

@@ -701,6 +701,29 @@ export default function ProfilePage() {
                     </TabsContent>
 
                     <TabsContent value="about" className="p-3 space-y-3">
+                         {/* FEAT: Welcome'da seçilen intent'ler — kullanım amacı tercihleri */}
+                         {Array.isArray((userData as { preferences?: { intents?: string[] } } | undefined)?.preferences?.intents) &&
+                          ((userData as { preferences?: { intents?: string[] } }).preferences!.intents!.length > 0) && (
+                            <Card>
+                                <CardHeader className="flex flex-row justify-between items-center pb-2">
+                                    <CardTitle className='text-lg flex items-center gap-2'>
+                                        <Sparkles className='h-5 w-5 text-fuchsia-500' /> Kullanım Tercihleri
+                                    </CardTitle>
+                                    <Button asChild variant="ghost" size="icon" aria-label="Düzenle">
+                                        <Link href="/settings/intents">
+                                            <Edit className="h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </CardHeader>
+                                <CardContent className="pt-2 flex flex-wrap gap-1.5">
+                                    {((userData as { preferences?: { intents?: string[] } }).preferences!.intents!).map((intent) => (
+                                        <span key={intent} className="text-[11px] px-2.5 py-1 rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 font-semibold">
+                                            {t(`welcome.intents.${intent}`)}
+                                        </span>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                         )}
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle>
@@ -777,7 +800,7 @@ export default function ProfilePage() {
                                  ) : (
                                      <EmptyState
                                          icon={Handshake}
-                                         title="Henüz tamamlanmış gönüllülük yok"
+                                         title={t('emptyStates.noVolunteeringDone')}
                                          description="Etkinliklere katılınca burada görünecek."
                                          action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
                                      />
@@ -868,7 +891,7 @@ export default function ProfilePage() {
                                 ) : (
                                     <EmptyState
                                         icon={Award}
-                                        title="Henüz rozet yok"
+                                        title={t('emptyStates.noBadges')}
                                         description="Bağış ve gönüllülük yaparak rozet kazanmaya başla."
                                     />
                                 )}
@@ -911,7 +934,7 @@ export default function ProfilePage() {
                             ) : (
                                 <EmptyState
                                     icon={FileText}
-                                    title="Henüz sertifika yok"
+                                    title={t('emptyStates.noCertificates')}
                                     description="Tamamladığın programlardan kazanacağın sertifikalar burada listelenir."
                                 />
                             )}
