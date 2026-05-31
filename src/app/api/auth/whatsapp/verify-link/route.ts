@@ -12,6 +12,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
+import crypto from 'crypto';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -121,6 +122,10 @@ export async function GET(req: NextRequest) {
                 return NextResponse.json({ ok: true, customToken, isNewUser: false });
             }
         }
+        // phoneHash: contacts sync için (SHA-256 of canonical phone)
+        const phoneForHash = cleanForCheck || data.cleanPhone || '';
+        const phoneHash = phoneForHash ? crypto.createHash('sha256').update(phoneForHash).digest('hex') : null;
+
         if (!existingDoc.exists) {
             await userDocRef.set({
                 id: uid,
@@ -129,6 +134,7 @@ export async function GET(req: NextRequest) {
                 personalInfo: {
                     phone: cleanForCheck,
                     phoneCountryCode: data.phoneCountryCode || '+90',
+                    ...(phoneHash ? { phoneHash } : {}),
                 },
                 stats: { totalDonation: 0, volunteerHours: 0, impactScore: 0 },
                 signupMethod: 'whatsapp-link',
@@ -141,6 +147,7 @@ export async function GET(req: NextRequest) {
                 personalInfo: {
                     phone: data.cleanPhone || '',
                     phoneCountryCode: data.phoneCountryCode || '+90',
+                    ...(phoneHash ? { phoneHash } : {}),
                 },
             }, { merge: true });
         }
