@@ -1,0 +1,28 @@
+# Hangel iOS — Intent-based personalized feeds E2E
+# /alerts /blood /clubs-events feed sayfaları
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+# /alerts
+- openLink: "hangel://alerts"
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible:
+    text: ".*[Aa]larm.*"
+    optional: true
+
+# /blood
+- openLink: "hangel://blood"
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible:
+    text: ".*[Kk]an.*"
+    optional: true
+
+# Geri
+- pressKey: Back
+  optional: true

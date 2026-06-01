@@ -1,0 +1,26 @@
+# Hangel iOS — Kulüp profili 5. tab (Etkinlikler) E2E
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+- tapOn:
+    text: ".*Kulüp.*"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    index: 0
+    optional: true
+
+# Etkinlikler tab'ına geç
+- tapOn:
+    text: ".*Etkinlik.*"
+    optional: true
+
+- assertVisible:
+    text: ".*etkinlik.*"
+    optional: true

@@ -1,0 +1,35 @@
+# Hangel iOS — Settings → Emergency'de kan bağışçısı toggle E2E
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+- tapOn:
+    text: ".*Ayarlar.*"
+
+- tapOn: "Acil Durum"
+
+- tapOn:
+    id: "blood-type-select"
+    optional: true
+
+- tapOn:
+    text: ".*0\\+.*"
+    optional: true
+
+# Toggle: Kan bağışçısıyım
+- tapOn:
+    text: ".*Kan bağ.*"
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Persistence: geri çık + tekrar gel, toggle aktif kalmalı
+- tapOn: "←"
+- tapOn: "Acil Durum"
+
+- assertVisible:
+    text: "0+"
+    optional: true

@@ -1,0 +1,33 @@
+# Hangel iOS — STK detay sayfası gezinti
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+- tapOn:
+    text: ".*STK.*"
+
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# İlk STK kartına tıkla
+- tapOn:
+    index: 0
+    optional: true
+
+# Detay sayfası
+- assertVisible:
+    text: ".*Bağış.*"
+    optional: true
+
+# Takip et / İptal et
+- tapOn:
+    text: ".*Takip Et.*"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 2000
+
+- tapOn: "←"

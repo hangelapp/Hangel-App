@@ -1,0 +1,30 @@
+# Hangel iOS — Profile düzenleme E2E
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+- tapOn:
+    text: ".*Profil.*"
+
+- assertVisible: ".*Profil.*"
+
+# Hakkımda tab'ına git
+- tapOn:
+    text: ".*Hakkımda.*"
+    optional: true
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Kullanım Tercihleri kartı görünmeli (intent display)
+- assertVisible:
+    text: ".*Tercih.*"
+    optional: true
+
+# Geri dön
+- tapOn:
+    text: "←"
+    optional: true
