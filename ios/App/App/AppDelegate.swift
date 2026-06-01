@@ -7,10 +7,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // BGTaskScheduler identifier'larını register et. Bu ÇOK ERKEN çağrılmalı
-        // (didFinishLaunching döner dönmez), aksi halde iOS launchOptions yokken
-        // identifier eşleştirmeyi başaramaz.
-        HangelBackgroundTasksPlugin.registerTasks()
+        // BGTaskScheduler register'ı HangelBackgroundTasksPlugin.swift dosyasının
+        // Xcode project target'ına eklenmesini bekliyor. Şu an .swift dosyası
+        // disk'te var ama pbxproj target'a manuel eklemek gerek (Xcode UI'da
+        // File → Add Files to "App" target). Kullanıcı Mac'inde Xcode 26 ile
+        // bu adım manuel yapılınca, aşağıdaki satır uncomment edilir:
+        // HangelBackgroundTasksPlugin.registerTasks()
         return true
     }
 
