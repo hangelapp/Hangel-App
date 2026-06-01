@@ -24,5 +24,10 @@
     "apps": [
       "NKZNY8NU8S.com.hangel.ios.app"
     ]
+  },
+  "appclips": {
+    "apps": [
+      "NKZNY8NU8S.com.hangel.ios.app.Clip"
+    ]
   }
 }

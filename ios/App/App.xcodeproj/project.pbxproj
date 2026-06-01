@@ -9,7 +9,9 @@
 /* Begin PBXBuildFile section */
 		177AB4B09B7DA119A813C050 /* HangelBackgroundTasksPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */; };
 		1B377CB3E853F8FB52D3ABF1 /* HangelWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5E2922F3390B03293575AB /* HangelWatchApp.swift */; };
+		285DDDBB68D9B0D3D3DCE1F2 /* hangel-blood.caf in Resources */ = {isa = PBXBuildFile; fileRef = E0B2E906FB4B13498C7AB6F9 /* hangel-blood.caf */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		3C133BBEF396A43210F27B39 /* hangel-disaster.caf in Resources */ = {isa = PBXBuildFile; fileRef = 5B3494FF82985F9D859D1918 /* hangel-disaster.caf */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -20,16 +22,30 @@
 		573BE32EB0C31FB321E29A8A /* HangelAppleSignInPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */; };
 		5D1083187139087BE6090788 /* EmergencyBloodDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */; };
 		600E2BE4C5D92A0B39E12708 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */; };
+		69B3C75EDABA1D16524C63D1 /* hangel-event.caf in Resources */ = {isa = PBXBuildFile; fileRef = 0E43DB09FAF86FA91565D659 /* hangel-event.caf */; };
 		6D4BDBB3514D12D988510061 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12EFBF34B850E75CF1C82086 /* Foundation.framework */; };
 		7340D25AB18FB68BC5174DEA /* HangelWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 57BBFEC425CB6D475E1BF366 /* HangelWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9CC1E2FEB0FBCBE62420577D /* HangelWatchConnectivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */; };
 		A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */; };
 		A7B6045997B67067DBDCDE40 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B28242FE67D8EFE0A1703A /* ContentView.swift */; };
 		BAC39E9CC36F036729030EA1 /* WatchAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C999C34FA43377AECB2140F /* WatchAppDelegate.swift */; };
+		C11C0A002000000000000001 /* HangelAppClipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000001 /* HangelAppClipApp.swift */; };
+		C11C0A002000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000002 /* ContentView.swift */; };
+		C11C0A002000000000000003 /* ClipState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000003 /* ClipState.swift */; };
+		C11C0A002000000000000004 /* ClipAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000004 /* ClipAPI.swift */; };
+		C11C0A002000000000000005 /* HangelAppClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000007 /* HangelAppClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */ = {isa = PBXBuildFile; fileRef = A2D314B5559DF9C5592F9987 /* hangel-alert.caf */; };
+		F88FD8F6163EAE4939DE3EEF /* hangel-volunteer.caf in Resources */ = {isa = PBXBuildFile; fileRef = ECCA3FFA16A3E96671733288 /* hangel-volunteer.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		C11C0A003000000000000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C11C0A003000000000000006;
+			remoteInfo = HangelAppClip;
+		};
 		E939827D922CA52DC54A0274 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -40,6 +56,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		C11C0A003000000000000005 /* Embed App Clips */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/AppClips";
+			dstSubfolderSpec = 16;
+			files = (
+				C11C0A002000000000000005 /* HangelAppClip.app in Embed App Clips */,
+			);
+			name = "Embed App Clips";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DD4B06DD9D3A57D1E135ABFB /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -54,6 +81,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0E43DB09FAF86FA91565D659 /* hangel-event.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-event.caf"; sourceTree = "<group>"; };
 		12EFBF34B850E75CF1C82086 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelBackgroundTasksPlugin.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -68,6 +96,7 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		57BBFEC425CB6D475E1BF366 /* HangelWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HangelWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5B3494FF82985F9D859D1918 /* hangel-disaster.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-disaster.caf"; sourceTree = "<group>"; };
 		74B28242FE67D8EFE0A1703A /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelWatchConnectivityPlugin.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -75,8 +104,17 @@
 		A2D314B5559DF9C5592F9987 /* hangel-alert.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-alert.caf"; sourceTree = "<group>"; };
 		B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppleSignInPlugin.swift; sourceTree = "<group>"; };
 		BB36A98EDADDAD874D502BC4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C11C0A001000000000000001 /* HangelAppClipApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppClipApp.swift; sourceTree = "<group>"; };
+		C11C0A001000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		C11C0A001000000000000003 /* ClipState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClipState.swift; sourceTree = "<group>"; };
+		C11C0A001000000000000004 /* ClipAPI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClipAPI.swift; sourceTree = "<group>"; };
+		C11C0A001000000000000005 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C11C0A001000000000000006 /* HangelAppClip.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = HangelAppClip.entitlements; sourceTree = "<group>"; };
+		C11C0A001000000000000007 /* HangelAppClip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HangelAppClip.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
 		E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmergencyBloodDetailView.swift; sourceTree = "<group>"; };
+		E0B2E906FB4B13498C7AB6F9 /* hangel-blood.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-blood.caf"; sourceTree = "<group>"; };
+		ECCA3FFA16A3E96671733288 /* hangel-volunteer.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-volunteer.caf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +134,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C11C0A003000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -106,6 +151,7 @@
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
 				AE86B8F9543F8C5330E09C2E /* HangelWatch */,
+				C11C0A003000000000000001 /* HangelAppClip */,
 				A7B521F810BE5E27306552FB /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -115,6 +161,7 @@
 			children = (
 				504EC3041FED79650016851F /* App.app */,
 				57BBFEC425CB6D475E1BF366 /* HangelWatch.app */,
+				C11C0A001000000000000007 /* HangelAppClip.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -135,6 +182,10 @@
 				B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */,
 				9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */,
 				A2D314B5559DF9C5592F9987 /* hangel-alert.caf */,
+				E0B2E906FB4B13498C7AB6F9 /* hangel-blood.caf */,
+				5B3494FF82985F9D859D1918 /* hangel-disaster.caf */,
+				ECCA3FFA16A3E96671733288 /* hangel-volunteer.caf */,
+				0E43DB09FAF86FA91565D659 /* hangel-event.caf */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -169,6 +220,20 @@
 			path = HangelWatch;
 			sourceTree = "<group>";
 		};
+		C11C0A003000000000000001 /* HangelAppClip */ = {
+			isa = PBXGroup;
+			children = (
+				C11C0A001000000000000001 /* HangelAppClipApp.swift */,
+				C11C0A001000000000000002 /* ContentView.swift */,
+				C11C0A001000000000000003 /* ClipState.swift */,
+				C11C0A001000000000000004 /* ClipAPI.swift */,
+				C11C0A001000000000000005 /* Info.plist */,
+				C11C0A001000000000000006 /* HangelAppClip.entitlements */,
+			);
+			name = HangelAppClip;
+			path = HangelAppClip;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -180,11 +245,13 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				DD4B06DD9D3A57D1E135ABFB /* Embed Watch Content */,
+				C11C0A003000000000000005 /* Embed App Clips */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				0D58A2A974D1D67781DAEE6C /* PBXTargetDependency */,
+				C11C0A003000000000000007 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -210,6 +277,23 @@
 			productName = HangelWatch;
 			productReference = 57BBFEC425CB6D475E1BF366 /* HangelWatch.app */;
 			productType = "com.apple.product-type.application";
+		};
+		C11C0A003000000000000006 /* HangelAppClip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C11C0A003000000000000009 /* Build configuration list for PBXNativeTarget "HangelAppClip" */;
+			buildPhases = (
+				C11C0A003000000000000002 /* Sources */,
+				C11C0A003000000000000004 /* Frameworks */,
+				C11C0A003000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HangelAppClip;
+			productName = HangelAppClip;
+			productReference = C11C0A001000000000000007 /* HangelAppClip.app */;
+			productType = "com.apple.product-type.application.on-demand-install-capable";
 		};
 /* End PBXNativeTarget section */
 
@@ -244,6 +328,7 @@
 			targets = (
 				504EC3031FED79650016851F /* App */,
 				5FC82C57944C5B2908026E8C /* HangelWatch */,
+				C11C0A003000000000000006 /* HangelAppClip */,
 			);
 		};
 /* End PBXProject section */
@@ -261,10 +346,21 @@
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */,
 				DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */,
+				285DDDBB68D9B0D3D3DCE1F2 /* hangel-blood.caf in Resources */,
+				3C133BBEF396A43210F27B39 /* hangel-disaster.caf in Resources */,
+				F88FD8F6163EAE4939DE3EEF /* hangel-volunteer.caf in Resources */,
+				69B3C75EDABA1D16524C63D1 /* hangel-event.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		572F7C803BA6F613DC86E173 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C11C0A003000000000000003 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -297,6 +393,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C11C0A003000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C11C0A002000000000000001 /* HangelAppClipApp.swift in Sources */,
+				C11C0A002000000000000002 /* ContentView.swift in Sources */,
+				C11C0A002000000000000003 /* ClipState.swift in Sources */,
+				C11C0A002000000000000004 /* ClipAPI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -305,6 +412,12 @@
 			name = HangelWatch;
 			target = 5FC82C57944C5B2908026E8C /* HangelWatch */;
 			targetProxy = E939827D922CA52DC54A0274 /* PBXContainerItemProxy */;
+		};
+		C11C0A003000000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HangelAppClip;
+			target = C11C0A003000000000000006 /* HangelAppClip */;
+			targetProxy = C11C0A003000000000000008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -527,6 +640,78 @@
 			};
 			name = Release;
 		};
+		C11C0A0030000000000000AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HangelAppClip/HangelAppClip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NKZNY8NU8S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HangelAppClip/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Hangel;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hangel.ios.app.Clip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C11C0A0030000000000000BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = HangelAppClip/HangelAppClip.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NKZNY8NU8S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HangelAppClip/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Hangel;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hangel.ios.app.Clip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		CD330E5459D53F7FAAB2485A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -581,6 +766,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C11C0A003000000000000009 /* Build configuration list for PBXNativeTarget "HangelAppClip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C11C0A0030000000000000AA /* Debug */,
+				C11C0A0030000000000000BB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
