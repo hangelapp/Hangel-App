@@ -454,7 +454,8 @@ service cloud.firestore {
         request.resource.data.type in ['invitation', 'donation']
       );
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['read', 'readAt', 'responseStatus', 'respondedAt']);
       allow delete: if isSuperAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
     }
 
