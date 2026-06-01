@@ -20,6 +20,7 @@ import { tr } from 'date-fns/locale';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { EventMapDialog } from '@/components/events/event-map-dialog';
+import { EmptyState } from '@/components/shared/empty-state';
 import { COLLECTIONS } from '@/firebase/collections';
 
 // Statuses that explicitly hide an event from the public listing.
@@ -298,22 +299,17 @@ function EventsPageContent() {
       <EventMapDialog open={isMapOpen} onOpenChange={setIsMapOpen} events={sortedEvents} />
 
       {sortedEvents.length === 0 && (
-        <div className="text-center py-16 px-4 space-y-3">
-          <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-            <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-bold">{t('eventsPageExtra.noEventsTitle')}</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm)
-              ? t('eventsPageExtra.noEventsFiltered')
-              : t('eventsPageExtra.noEventsDefault')}
-          </p>
-          {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm) && (
-            <Button variant="outline" onClick={() => { setTypeFilter([]); setCityFilter([]); setSearchTerm(''); }}>
-              {t('eventsPageExtra.clearFiltersBtn')}
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={CalendarIcon}
+          title={t('emptyStates.eventsTitle')}
+          description={(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm)
+            ? t('eventsPageExtra.noEventsFiltered')
+            : t('emptyStates.eventsDesc')}
+          action={(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm) ? {
+            label: t('eventsPageExtra.clearFiltersBtn'),
+            onClick: () => { setTypeFilter([]); setCityFilter([]); setSearchTerm(''); },
+          } : { label: t('emptyStates.eventsAction'), href: '/ngos' }}
+        />
       )}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {sortedEvents.map((event: Event) => {

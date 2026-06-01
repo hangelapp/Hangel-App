@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, ArrowDownUp, Users, BrainCircuit, ChevronRight, ChevronDown, Loader2, GraduationCap, Globe, MapPin, Filter, School, BookOpen, type LucideIcon } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -478,7 +479,21 @@ export default function ClubsPage() {
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : universitiesGrouped.length === 0 ? (
-          <div className="text-center text-muted-foreground p-12">{t('clubsPage.noMatch')}</div>
+          <EmptyState
+            icon={GraduationCap}
+            title={t('emptyStates.clubsTitle')}
+            description={(searchTerm || filterCount > 0 || locationFilter !== 'global') ? t('clubsPage.noMatch') : t('emptyStates.clubsDesc')}
+            action={(searchTerm || filterCount > 0 || locationFilter !== 'global') ? {
+              label: t('emptyStates.clubsAction'),
+              onClick: () => {
+                setSearchTerm('');
+                setSelectedCategories([]);
+                setSelectedSkills([]);
+                setSelectedInterests([]);
+                setLocationFilter('global');
+              },
+            } : undefined}
+          />
         ) : (
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1 mb-1">

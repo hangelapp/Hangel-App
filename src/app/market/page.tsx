@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp, HeartHandshake } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, HeartHandshake, ShoppingBag } from 'lucide-react';
+import { EmptyState } from '@/components/shared/empty-state';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -301,9 +302,19 @@ export default function MarketPage() {
               {[...Array(12)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)}
             </div>
           ) : brandsToShow.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground italic">
-              {t('marketPage.noMatch')}
-            </div>
+            <EmptyState
+              icon={ShoppingBag}
+              title={t('emptyStates.marketTitle')}
+              description={searchTerm || activeCategory !== 'Tümü' || brandType !== 'all' ? t('marketPage.noMatch') : t('emptyStates.marketDesc')}
+              action={searchTerm || activeCategory !== 'Tümü' || brandType !== 'all' ? {
+                label: t('emptyStates.marketAction'),
+                onClick: () => {
+                  setSearchTerm('');
+                  setActiveCategory('Tümü');
+                  setBrandType('all');
+                },
+              } : undefined}
+            />
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {brandsToShow.map((brand) => {

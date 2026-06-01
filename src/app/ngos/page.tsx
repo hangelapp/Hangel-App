@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, ArrowDownUp } from 'lucide-react';
+import { Search, Filter, ArrowDownUp, Building2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { NGO } from '@/lib/types';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -12,6 +12,7 @@ import { collection } from 'firebase/firestore';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { COLLECTIONS } from '@/firebase/collections';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
+import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/components/providers/language-provider';
 
 type NgoType = NGO['type'] | 'Tümü';
@@ -229,6 +230,20 @@ export default function NgosPage() {
                 <div className="space-y-2">
                     {[...Array(3)].map((_, i) => <Card key={i} className="h-24 animate-pulse bg-muted" />)}
                 </div>
+            ) : filteredNgos.length === 0 ? (
+                <EmptyState
+                    icon={Building2}
+                    title={t('emptyStates.ngosTitle')}
+                    description={t('emptyStates.ngosDesc')}
+                    action={(searchTerm || typeFilter !== 'Tümü' || categoryFilter.length > 0) ? {
+                        label: t('emptyStates.ngosAction'),
+                        onClick: () => {
+                            setSearchTerm('');
+                            setTypeFilter('Tümü');
+                            setCategoryFilter([]);
+                        },
+                    } : undefined}
+                />
             ) : (
                 <div className="space-y-2">
                     {filteredNgos.map((ngo) => (

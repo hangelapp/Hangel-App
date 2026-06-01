@@ -15,6 +15,7 @@ import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/shared/empty-state';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -123,10 +124,12 @@ export default function DisasterAlertsPage() {
       </div>
 
       {alerts.length === 0 && (
-        <Card><CardContent className="pt-6 text-center text-sm text-muted-foreground">
-          <Siren className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-          <p>{t('alertsPage.noneNearby')}</p>
-        </CardContent></Card>
+        <EmptyState
+          icon={Siren}
+          title={t('emptyStates.alertsTitle')}
+          description={t('emptyStates.alertsDesc')}
+          action={{ label: t('emptyStates.alertsAction'), href: '/settings/emergency' }}
+        />
       )}
 
       {alerts.map((alert) => (

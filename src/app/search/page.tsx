@@ -94,7 +94,7 @@ function GlobalSearchPageInner() {
         <div className="min-h-dvh bg-background">
             <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b">
                 <div className="container mx-auto px-3 h-14 flex items-center gap-2 max-w-3xl">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Geri">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="relative flex-1">

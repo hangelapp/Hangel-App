@@ -261,10 +261,12 @@ export function RatingPopup() {
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
                                             key={star}
+                                            type="button"
                                             onClick={() => setRating(star)}
                                             onMouseEnter={() => setHovered(star)}
                                             onMouseLeave={() => setHovered(0)}
                                             className="transition-transform hover:scale-110"
+                                            aria-label={`${star} yıldız ver`}
                                         >
                                             <Star
                                                 className={`h-9 w-9 ${

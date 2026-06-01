@@ -15,6 +15,7 @@ import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/shared/empty-state';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { useTranslation } from '@/components/providers/language-provider';
 
@@ -100,10 +101,12 @@ export default function BloodFeedPage() {
       )}
 
       {calls.length === 0 && !error && (
-        <Card><CardContent className="pt-6 text-center text-sm text-muted-foreground">
-          <Droplet className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-          <p>{t('bloodPage.noneNearby')}</p>
-        </CardContent></Card>
+        <EmptyState
+          icon={Droplet}
+          title={t('emptyStates.bloodTitle')}
+          description={t('emptyStates.bloodDesc')}
+          action={{ label: t('emptyStates.bloodAction'), href: '/settings/emergency' }}
+        />
       )}
 
       {calls.map((call) => (
