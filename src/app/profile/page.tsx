@@ -603,8 +603,8 @@ export default function ProfilePage() {
         const IconName = badge.iconName ?? Award;
         return (
              <div className="flex flex-col items-center text-center w-full">
-                 <div className={`p-3 rounded-full ${isEarned ? 'bg-amber-100' : 'bg-muted'}`}>
-                    <IconName className={`h-8 w-8 ${isEarned ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                 <div className={`p-3 rounded-full ${isEarned ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted'}`}>
+                    <IconName className={`h-8 w-8 ${isEarned ? 'text-amber-500 dark:text-amber-300' : 'text-muted-foreground'}`} />
                  </div>
                  <p className="text-xs font-semibold mt-2">{badge.level}</p>
                  <p className="text-xs text-muted-foreground">{badge.name}</p>

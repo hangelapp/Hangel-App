@@ -32,12 +32,12 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const typeColor: Record<string, string> = {
-  'invitation': 'text-blue-600 bg-blue-100',
-  'emergency-blood': 'text-red-600 bg-red-100',
-  'emergency-blood-contact': 'text-red-700 bg-red-50',
-  'volunteer': 'text-green-600 bg-green-100',
-  'donation': 'text-amber-600 bg-amber-100',
-  'authorization': 'text-indigo-600 bg-indigo-100',
+  'invitation': 'text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30',
+  'emergency-blood': 'text-red-600 bg-red-100 dark:text-red-300 dark:bg-red-900/30',
+  'emergency-blood-contact': 'text-red-700 bg-red-50 dark:text-red-300 dark:bg-red-900/20',
+  'volunteer': 'text-green-600 bg-green-100 dark:text-green-300 dark:bg-green-900/30',
+  'donation': 'text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30',
+  'authorization': 'text-indigo-600 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30',
   'message': 'text-primary bg-primary/10',
 };
 
@@ -318,7 +318,7 @@ export default function NotificationsPage() {
         <div className="space-y-2">
           {notifications.map(n => {
             const Icon = (n.type ? typeIcon[n.type] : undefined) || Bell;
-            const colorClass = (n.type ? typeColor[n.type] : undefined) || 'text-gray-600 bg-gray-100';
+            const colorClass = (n.type ? typeColor[n.type] : undefined) || 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800';
             const href = resolveNotificationHref(n);
             return (
               <Card

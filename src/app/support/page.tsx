@@ -366,7 +366,7 @@ export default function SupportPage() {
                             />
                         </div>
                         {!authUser && (
-                            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3 dark:text-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
                                 {t('marketing.support.ticketLoginPrompt')}
                                 <Link href="/login/selection?action=login" className="ml-1 underline font-bold">{t('marketing.support.ticketLoginCta')}</Link>
                             </p>

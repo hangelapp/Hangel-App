@@ -126,10 +126,10 @@ export default function ContractDetailPage() {
       </Card>
 
       {/* Okudum, Onaylıyorum — KVKK ispat kaydı (super-admin Onay Kayıtları'na düşer) */}
-      <Card className={approved ? 'border-green-500/50 bg-green-50/40' : 'border-primary/30'}>
+      <Card className={approved ? 'border-green-500/50 bg-green-50/40 dark:bg-green-900/10' : 'border-primary/30'}>
         <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
           {approved ? (
-            <div className="flex items-center gap-2 text-green-700 font-medium text-sm">
+            <div className="flex items-center gap-2 text-green-700 font-medium text-sm dark:text-green-300">
               <CheckCircle2 className="h-5 w-5 shrink-0" /> Bu metni okudunuz ve onayladınız. Teşekkürler.
             </div>
           ) : (

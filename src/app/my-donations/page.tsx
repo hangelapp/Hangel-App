@@ -215,10 +215,10 @@ export default function MyDonationsPage() {
                 const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
                 const isPending = !isPaid && status !== 'Reddedildi';
                 const statusBadge = isPaid
-                  ? { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: t('dashboard.donations.statusDeposited') }
+                  ? { class: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800', icon: CheckCircle2, label: t('dashboard.donations.statusDeposited') }
                   : status === 'Reddedildi'
-                    ? { class: 'bg-red-100 text-red-700 border-red-200', icon: Clock, label: t('dashboard.donations.statusRejected') }
-                    : { class: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: status || t('dashboard.donations.statusProcessing') };
+                    ? { class: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800', icon: Clock, label: t('dashboard.donations.statusRejected') }
+                    : { class: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800', icon: Clock, label: status || t('dashboard.donations.statusProcessing') };
                 const StatusIcon = statusBadge.icon;
                 const rowAccent = isPaid
                   ? 'border-l-4 border-l-green-500'
@@ -230,8 +230,8 @@ export default function MyDonationsPage() {
                   <AccordionItem key={donation.id} value={`item-${donation.id}`} className={`border-b last:border-b-0 ${rowAccent}`}>
                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className={`p-2 rounded-full ${isPaid ? 'bg-green-100' : isPending ? 'bg-orange-100' : 'bg-muted'}`}>
-                          <ShoppingBag className={`h-5 w-5 ${isPaid ? 'text-green-700' : isPending ? 'text-orange-700' : 'text-muted-foreground'}`} />
+                        <div className={`p-2 rounded-full ${isPaid ? 'bg-green-100 dark:bg-green-900/30' : isPending ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-muted'}`}>
+                          <ShoppingBag className={`h-5 w-5 ${isPaid ? 'text-green-700 dark:text-green-300' : isPending ? 'text-orange-700 dark:text-orange-300' : 'text-muted-foreground'}`} />
                         </div>
                         <div className="flex-1 text-left min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">

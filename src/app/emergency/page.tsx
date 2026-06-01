@@ -220,16 +220,16 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     />
                     {/* Seçilen hastanenin detayları (Bilgileri Getir sonrası seçim yapılırsa görünür) */}
                     {(formData.hospitalCity || formData.hospitalAddress || formData.hospitalPhone) && (
-                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1">
-                            <p className="font-bold text-emerald-900">✓ Hastane bilgileri</p>
+                        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1 dark:border-emerald-800 dark:bg-emerald-900/20">
+                            <p className="font-bold text-emerald-900 dark:text-emerald-100">✓ Hastane bilgileri</p>
                             {(formData.hospitalDistrict || formData.hospitalCity) && (
-                                <p className="text-emerald-800">📍 {[formData.hospitalDistrict, formData.hospitalCity].filter(Boolean).join(', ')}</p>
+                                <p className="text-emerald-800 dark:text-emerald-200">📍 {[formData.hospitalDistrict, formData.hospitalCity].filter(Boolean).join(', ')}</p>
                             )}
                             {formData.hospitalAddress && (
-                                <p className="text-emerald-800 leading-snug">{formData.hospitalAddress}</p>
+                                <p className="text-emerald-800 leading-snug dark:text-emerald-200">{formData.hospitalAddress}</p>
                             )}
                             {formData.hospitalPhone && (
-                                <p className="text-emerald-800">☎ {formData.hospitalPhone}</p>
+                                <p className="text-emerald-800 dark:text-emerald-200">☎ {formData.hospitalPhone}</p>
                             )}
                         </div>
                     )}

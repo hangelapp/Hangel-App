@@ -74,14 +74,14 @@ export default function UnsubscribePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded text-sm text-rose-900">
+            <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded text-sm text-rose-900 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-100">
               <AlertTriangle className="h-4 w-4 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {done && (
-            <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded text-sm text-emerald-900">
+            <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded text-sm text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-100">
               <Check className="h-4 w-4 mt-0.5" />
               <span>
                 {done === 'all'

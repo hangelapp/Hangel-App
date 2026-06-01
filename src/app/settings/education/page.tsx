@@ -202,7 +202,7 @@ export default function EducationSettingsPage() {
                   type="button"
                   onClick={() => toggleClub(club.id)}
                   className={`w-full text-left p-3 rounded-xl border-2 transition-all ${
-                    isMember ? 'border-violet-500 bg-violet-50' : 'border-border hover:border-violet-300'
+                    isMember ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20' : 'border-border hover:border-violet-300'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">

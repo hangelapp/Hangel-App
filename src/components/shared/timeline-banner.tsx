@@ -82,13 +82,13 @@ export function TimelineBanner() {
         !dismissed.includes('push')
     ) {
         return (
-            <div className="bg-emerald-50 border-b border-emerald-200 p-3 flex items-center gap-3">
-                <div className="shrink-0 p-2 rounded-full bg-emerald-100">
-                    <Bell className="h-4 w-4 text-emerald-700" />
+            <div className="bg-emerald-50 border-b border-emerald-200 p-3 flex items-center gap-3 dark:bg-emerald-900/20 dark:border-emerald-800">
+                <div className="shrink-0 p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+                    <Bell className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-emerald-900 leading-tight">Bildirimleri aç</p>
-                    <p className="text-xs text-emerald-800 leading-snug mt-0.5">
+                    <p className="text-sm font-bold text-emerald-900 leading-tight dark:text-emerald-100">Bildirimleri aç</p>
+                    <p className="text-xs text-emerald-800 leading-snug mt-0.5 dark:text-emerald-200/80">
                         Yeni mesaj, etkinlik ve gönüllülük eşleşmelerinden anında haberdar ol.
                     </p>
                 </div>
@@ -96,14 +96,14 @@ export function TimelineBanner() {
                     type="button"
                     onClick={handleEnablePush}
                     disabled={pushBusy}
-                    className="shrink-0 px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-60"
+                    className="shrink-0 px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-60 dark:bg-emerald-500 dark:hover:bg-emerald-600"
                 >
                     {pushBusy ? '...' : 'Aç'}
                 </button>
                 <button
                     type="button"
                     onClick={() => dismiss('push')}
-                    className="shrink-0 p-1 rounded-full hover:bg-emerald-100 text-emerald-700"
+                    className="shrink-0 p-1 rounded-full hover:bg-emerald-100 text-emerald-700 dark:hover:bg-emerald-900/40 dark:text-emerald-300"
                     aria-label="Kapat"
                 >
                     <X className="h-3.5 w-3.5" />

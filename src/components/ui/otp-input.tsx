@@ -126,7 +126,7 @@ export function OtpInput({
             'w-11 h-14 sm:w-12 sm:h-14 text-center text-xl font-bold rounded-xl border-2 bg-card shadow-sm transition-all',
             'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary',
             error
-              ? 'border-red-500 text-red-600 bg-red-50'
+              ? 'border-red-500 text-red-600 bg-red-50 dark:text-red-300 dark:bg-red-900/20'
               : 'border-border focus:border-primary',
             disabled && 'opacity-50 cursor-not-allowed',
           )}

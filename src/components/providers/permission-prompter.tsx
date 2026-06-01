@@ -97,8 +97,8 @@ export function PermissionPrompter() {
         </DialogHeader>
         <div className="space-y-3 py-2">
           {missingPush && (
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <Bell className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+              <Bell className="h-5 w-5 text-amber-600 shrink-0 mt-0.5 dark:text-amber-300" />
               <div className="text-sm leading-snug">
                 <p className="font-bold">Bildirimler</p>
                 <p className="text-xs text-muted-foreground">Acil kan ilanları, etkinlik hatırlatmaları ve mesajlar için.</p>
@@ -106,8 +106,8 @@ export function PermissionPrompter() {
             </div>
           )}
           {missingLocation && (
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200">
-              <MapPin className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800">
+              <MapPin className="h-5 w-5 text-blue-600 shrink-0 mt-0.5 dark:text-blue-300" />
               <div className="text-sm leading-snug">
                 <p className="font-bold">Konum</p>
                 <p className="text-xs text-muted-foreground">Yakınınızdaki etkinlikleri, gönüllülük fırsatlarını ve STK&apos;ları göstermek için.</p>
@@ -115,8 +115,8 @@ export function PermissionPrompter() {
             </div>
           )}
           {missingLiveActivity && (
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-50 border border-violet-200">
-              <Activity className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-violet-50 border border-violet-200 dark:bg-violet-900/20 dark:border-violet-800">
+              <Activity className="h-5 w-5 text-violet-600 shrink-0 mt-0.5 dark:text-violet-300" />
               <div className="text-sm leading-snug">
                 <p className="font-bold">Canlı Etkinlikler</p>
                 <p className="text-xs text-muted-foreground">Kan ilanı, etkinlik geri sayım ve gönüllülük görev durumunu Lock Screen&apos;de canlı takip için.</p>

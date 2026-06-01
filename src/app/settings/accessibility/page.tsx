@@ -537,17 +537,17 @@ export default function AccessibilitySettingsPage() {
             <div className="space-y-8 pt-10 border-t">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-2">
-                        <div className="p-3 bg-indigo-50 rounded-2xl w-fit"><Scale className="h-6 w-6 text-indigo-600" /></div>
+                        <div className="p-3 bg-indigo-50 rounded-2xl w-fit dark:bg-indigo-900/30"><Scale className="h-6 w-6 text-indigo-600 dark:text-indigo-300" /></div>
                         <h4 className="font-bold text-sm">Yasal Uyumluluk</h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">Tercihleriniz, EN 301 549 Avrupa standardı ve yerel mevzuatlarla tam uyumlu olacak şekilde işlenir.</p>
                     </div>
                     <div className="space-y-2">
-                        <div className="p-3 bg-orange-50 rounded-2xl w-fit"><Globe className="h-6 w-6 text-orange-600" /></div>
+                        <div className="p-3 bg-orange-50 rounded-2xl w-fit dark:bg-orange-900/30"><Globe className="h-6 w-6 text-orange-600 dark:text-orange-300" /></div>
                         <h4 className="font-bold text-sm">Evrensel Tasarım</h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">Erişilebilirlik bir 'eklenti' değil, hangel'in her hücresine entegre edilmiş bir tasarım felsefesidir.</p>
                     </div>
                     <div className="space-y-2">
-                        <div className="p-3 bg-teal-50 rounded-2xl w-fit"><Target className="h-6 w-6 text-teal-600" /></div>
+                        <div className="p-3 bg-teal-50 rounded-2xl w-fit dark:bg-teal-900/30"><Target className="h-6 w-6 text-teal-600 dark:text-teal-300" /></div>
                         <h4 className="font-bold text-sm">Sürekli İyileştirme</h4>
                         <p className="text-xs text-muted-foreground leading-relaxed">Deneyiminizi geliştirmek için WCAG güncellemelerini ve geri bildirimlerinizi anlık olarak takip ediyoruz.</p>
                     </div>
