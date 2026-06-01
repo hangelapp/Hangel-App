@@ -49,6 +49,10 @@
 	<string>Rehberinizdeki arkadaşlarınızın hangel'da olup olmadığını görmek ve onları davet etmek için kişilere erişim gerekmektedir.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Bağış onayı, gönüllülük başvurusu ve hesap erişimi için Face ID ile kimliğinizi doğrulamamız gerekir.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Kan bağışı uygunluğunuzu değerlendirebilmek için son bağış tarihi, kilo, kan değerleri ve genel sağlık verilerinize erişim gerekiyor.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Yaptığınız kan bağışı kayıtlarını Sağlık uygulamasına eklemek için izin gerekiyor.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Etkinliğe katıldığınızda otomatik check-out yapabilmemiz için arka planda konum gerekir. Bu izin sadece kayıtlı olduğunuz etkinliğin konumu için kullanılır.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
