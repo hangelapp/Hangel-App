@@ -1,13 +1,20 @@
 /**
- * Kan talebine "Yardım Edebilirim" yanıtı → yanıtlayan kullanıcıya "Kan Talebi
- * Detayları" mesajını /messages gelen kutusuna iletir (hastane konumu dahil).
+ * Kan talebine "Yardım Edebilirim" yanıtı.
  *
- * POST { requestId, data? } → oturum doğrula → emergencyRequests'ten yetkili detayı
- *   oku (yoksa client data fallback) → kullanıcıya sistem mesajı yaz (Admin SDK).
+ * Yanıtlayan kullanıcıya 2 farklı kanaldan bilgi iletir:
  *
- * Neden route: messages create kuralı senderId==auth.uid + alıcının kurum/admin
- * olmasını şart koşar; normal kullanıcı kendine sistem mesajı yazamaz. Admin SDK
- * kuralları bypass eder. Hata formatı: { errorCode, message }.
+ * 1. **Notification** (notifications collection) → Cloud Function trigger →
+ *    push bildirim olarak telefon ekranına düşer.
+ *    Başlık: "🩸 Kan Talebi — [Hastane]"
+ *    Body: kısa özet (telefon banner'a sığar)
+ *
+ * 2. **Message** (messages collection) → /messages gelen kutusunda kalıcı.
+ *    Tam template: hoş geldin + detaylar + bağış öncesi talimatlar.
+ *
+ * POST { requestId, data? } → oturum doğrula → emergencyRequests'ten yetkili
+ *   detayı oku → her iki kayıt da Admin SDK ile yazılır (rules bypass).
+ *
+ * Hata formatı: { errorCode, message }.
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
@@ -15,6 +22,38 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export const runtime = 'nodejs';
+
+// ABO/Rh uyumluluk haritası — Patient blood type → Donor blood types that
+// can give to that patient. 0- = universal donor, AB+ = universal receiver.
+const BLOOD_COMPATIBILITY: Record<string, string[]> = {
+  '0-': ['0-'],
+  '0+': ['0-', '0+'],
+  'A-': ['0-', 'A-'],
+  'A+': ['0-', '0+', 'A-', 'A+'],
+  'B-': ['0-', 'B-'],
+  'B+': ['0-', '0+', 'B-', 'B+'],
+  'AB-': ['0-', 'A-', 'B-', 'AB-'],
+  'AB+': ['0-', '0+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
+};
+
+// Map "A Rh+" / "ARH+" / "A+" / "0 Rh-" varyantlarını standartlaştır.
+function normalizeBloodType(raw: string): string {
+  if (!raw) return '';
+  const cleaned = raw
+    .replace(/\s+/g, '')
+    .replace(/RH/gi, '')
+    .replace(/[Oo]/g, '0')
+    .toUpperCase()
+    .replace(/POZITIF|POS|POSITIVE/g, '+')
+    .replace(/NEGATIF|NEG|NEGATIVE/g, '-');
+  if (BLOOD_COMPATIBILITY[cleaned]) return cleaned;
+  return raw; // fallback
+}
+
+function compatibleDonors(patientBloodType: string): string[] {
+  const normalized = normalizeBloodType(patientBloodType);
+  return BLOOD_COMPATIBILITY[normalized] || [];
+}
 
 async function verifyCaller(req: NextRequest): Promise<{ uid: string; name: string } | null> {
   const authHeader = req.headers.get('authorization') || '';
@@ -38,56 +77,93 @@ export async function POST(req: NextRequest) {
 
   const fs = getAdminFirestore();
 
-  // Yetkili talep detayını oku (client'tan gelen veriye değil, kayda güven).
+  // Yetkili talep detayını oku.
   let d: Record<string, unknown> = (body?.data && typeof body.data === 'object') ? body.data : {};
   try {
     const snap = await fs.collection(COLLECTIONS.emergencyRequests).doc(requestId).get();
     if (snap.exists) d = { ...d, ...(snap.data() as Record<string, unknown>) };
-  } catch { /* okunamazsa client data fallback kalır */ }
+  } catch { /* okunamazsa client data fallback */ }
+
+  // Caller'ın gerçek displayName'ini al (Firebase Auth user record)
+  let callerDisplayName = caller.name;
+  try {
+    const userRec = await getAdminAuth().getUser(caller.uid);
+    if (userRec.displayName) callerDisplayName = userRec.displayName.split(' ')[0]; // ilk ad
+  } catch { /* fallback caller.name */ }
 
   const s = (k: string): string => (typeof d[k] === 'string' ? (d[k] as string) : '');
-  const hospital = s('hospitalName');
+  const hospital = s('hospitalName') || 'Hastane';
   const hospitalCity = s('hospitalCity');
   const hospitalDistrict = s('hospitalDistrict');
   const address = s('hospitalAddress');
   const hospitalPhone = s('hospitalPhone');
   const bloodType = s('bloodType');
-  const needType = s('needType') || 'Kan';
-  const units = (d.unitsNeeded ?? d.units) ? String(d.unitsNeeded ?? d.units) : '';
-  const patientName = s('patientName');
-  const contactName = s('contactName') || s('requestedByName');
+  const patientName = s('patientName') || 'Hasta';
+  const contactName = s('contactName') || s('requestedByName') || 'İrtibat kişisi';
   const contactPhone = s('contactPhone');
   const hospitalLocation = [hospitalDistrict, hospitalCity].filter(Boolean).join(', ');
+  const fullAddress = [address, hospitalLocation].filter(Boolean).join(' — ');
 
-  const lines: string[] = [];
-  lines.push(`🩸 İhtiyaç: ${needType}${bloodType ? ` · ${bloodType}` : ''}`);
-  if (hospital) lines.push(`🏥 Hastane: ${hospital}`);
-  if (hospitalLocation) lines.push(`📍 Hastane Konumu: ${hospitalLocation}`);
-  if (address) lines.push(`🗺️ Adres: ${address}`);
-  if (hospitalPhone) lines.push(`☎️ Hastane Tel: ${hospitalPhone}`);
-  if (units) lines.push(`Ünite: ${units}`);
-  if (patientName) lines.push(`Hasta: ${patientName}`);
-  if (contactName) lines.push(`İrtibat: ${contactName}`);
-  if (contactPhone) lines.push(`📞 İrtibat Tel: ${contactPhone}`);
+  const compatibleList = compatibleDonors(bloodType);
+  const compatibleStr = compatibleList.length > 0 ? compatibleList.join(', ') : 'belirsiz';
 
-  const content = `Yardım talebinize çok teşekkürler! 🙏 İşte kan talebinin detayları:\n\n${lines.join('\n')}\n\nLütfen en kısa sürede hastane veya irtibat kişisi ile iletişime geçin. İyilik için teşekkürler.`;
+  // ── Mesaj template ─────────────────────────────────────────────────────────
+  const messageContent = `Merhaba ${callerDisplayName},
+
+"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an o hastanın tek umudu senin gibi birinin gelmesi.
+
+İşte bilmen gerekenler:
+🩸 Kan Grubu: ${bloodType} (kan verebilen gruplar: ${compatibleStr})
+🏥 Hastane: ${hospital}
+👤 Hasta: ${patientName}
+📞 İrtibat: ${contactName}${contactPhone ? `\n☎️ Telefon: ${contactPhone}` : ''}${hospitalPhone ? `\n📞 Hastane Tel: ${hospitalPhone}` : ''}
+📍 Adres: ${fullAddress || hospital}
+
+Gitmeden önce:
+Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu süre zarfında sigara içme. Yola çıkmadan irtibat kişisini ara — seni bekliyor olacaklar.
+
+Teşekkürler. 🙏`;
+
+  // ── Notification body (push'a sığar) ──────────────────────────────────────
+  const shortBody = `${hospital} • ${bloodType} • ${contactName}${contactPhone ? ` (${contactPhone})` : ''}`;
 
   try {
+    // 1) Messages — kalıcı, /messages gelen kutusunda
     await fs.collection(COLLECTIONS.messages).add({
       sender: { id: 'hangel-system', name: 'Hangel Acil', avatarUrl: '' },
       senderId: 'hangel-system',
       senderType: 'system',
       recipient: { id: caller.uid, name: caller.name, avatarUrl: '' },
       recipientId: caller.uid,
-      subject: '🩸 Kan Talebi Detayları',
-      content,
+      subject: `🩸 Kan Talebi Detayları — ${hospital}`,
+      content: messageContent,
       timestamp: FieldValue.serverTimestamp(),
       status: 'sent',
       relatedRequestId: requestId,
     });
+
+    // 2) Notification — push trigger, telefon ekranına banner
+    //    Cloud Function onNotificationCreated otomatik FCM push yollar.
+    await fs.collection(COLLECTIONS.notifications).add({
+      userId: caller.uid,
+      type: 'emergency-blood-confirmation',
+      title: `🩸 Kan Talebi — ${hospital}`,
+      body: shortBody,
+      data: {
+        type: 'emergency_blood_confirmation',
+        requestId,
+        link: '/messages', // tıklayınca /messages'a yönlendirsin
+        clickAction: '/messages',
+      },
+      read: false,
+      pushSent: false, // Cloud Function gönderir
+      createdAt: FieldValue.serverTimestamp(),
+      createdBy: 'hangel-system',
+    });
+
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('emergency/respond message error', err);
-    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Detay mesajı iletilemedi.' }, { status: 500 });
+    console.error('emergency/respond error', err);
+    return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Detay iletilemedi.' }, { status: 500 });
   }
 }
