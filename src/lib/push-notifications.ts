@@ -98,10 +98,18 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
             },
         },
         apns: {
+            headers: {
+                'apns-priority': '10',
+            },
             payload: {
                 aps: {
                     badge: 1,
-                    sound: 'default',
+                    // Hangel custom alert tonu (ios/App/App/hangel-alert.caf)
+                    // Apple Glass sesi → 30 sn altı, CAF format, app bundle'da.
+                    // 'default' yerine custom sound = brand recognition + acil
+                    // hissi. iPhone muted'de yine çalmaz (Apple kuralı).
+                    sound: 'hangel-alert.caf',
+                    'mutable-content': 1,
                 },
             },
             fcmOptions: {

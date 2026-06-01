@@ -26,6 +26,7 @@
 		A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */; };
 		A7B6045997B67067DBDCDE40 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B28242FE67D8EFE0A1703A /* ContentView.swift */; };
 		BAC39E9CC36F036729030EA1 /* WatchAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C999C34FA43377AECB2140F /* WatchAppDelegate.swift */; };
+		DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */ = {isa = PBXBuildFile; fileRef = A2D314B5559DF9C5592F9987 /* hangel-alert.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,7 @@
 		9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelWatchConnectivityPlugin.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		A2D314B5559DF9C5592F9987 /* hangel-alert.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-alert.caf"; sourceTree = "<group>"; };
 		B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppleSignInPlugin.swift; sourceTree = "<group>"; };
 		BB36A98EDADDAD874D502BC4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */,
 				B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */,
 				9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */,
+				A2D314B5559DF9C5592F9987 /* hangel-alert.caf */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -257,6 +260,7 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */,
+				DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
