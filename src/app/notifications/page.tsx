@@ -13,6 +13,7 @@ import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimest
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 import { formatDistanceToNow } from 'date-fns';
+import { startEmergencyBloodActivity } from '@/lib/native-live-activity';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -195,6 +196,30 @@ export default function NotificationsPage() {
             // Takip bildirimi yazılamasa da yanıt kaydı oluştu — sessiz bırak.
             console.warn('emergency contact notification failed:', notifErr);
           }
+        }
+
+        // iOS Live Activity başlat — kullanıcı hastaneye giderken Lock
+        // Screen + Dynamic Island'da süreç görünür. Cloud Function
+        // (onEmergencyBloodUpdate) emergencyBloodCalls/{requestId} doc'unda
+        // değişiklik olduğunda APNs push ile state günceller.
+        const requestId = notif.data?.requestId || notif.id;
+        const liveActivityHospital = (notif.data as { hospitalName?: string })?.hospitalName || 'Hastane';
+        const liveActivityCity = (notif.data as { city?: string })?.city || 'Konum bilinmiyor';
+        const liveActivityBloodType = (notif.data as { bloodType?: string })?.bloodType || 'Genel';
+        try {
+          await startEmergencyBloodActivity({
+            bloodType: liveActivityBloodType,
+            city: liveActivityCity,
+            requestId,
+            hospitalName: liveActivityHospital,
+            distance: (notif.data as { distance?: string })?.distance,
+            matchedDonors: (notif.data as { matchedDonors?: number })?.matchedDonors,
+            minutesLeft: 60,
+            status: 'Yolda',
+          });
+        } catch (liveActErr) {
+          // Live Activity başlatılamasa da yanıt zaten kaydedildi — sessiz.
+          console.warn('[live-activity] startEmergencyBlood failed', liveActErr);
         }
       }
 
