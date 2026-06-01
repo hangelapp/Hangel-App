@@ -1,5 +1,7 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseCrashlytics
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,6 +9,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Firebase + Crashlytics — explicit init.
+        // capacitor-firebase/crashlytics plugin lazy olarak FirebaseApp.configure()
+        // yapıyor ama Crashlytics'in en erken anda hazır olması (BGTask handler,
+        // crash before web-view loaded, vb. için) için burada kuruyoruz.
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
+        Crashlytics.crashlytics().setCrashlyticsCollectionEnabled(true)
+
         // BGTaskScheduler identifier register'ları (geofence-sync + feed-refresh).
         // ÇOK ERKEN çağrılmalı (didFinishLaunching döner dönmez), aksi halde iOS
         // identifier eşleştirmeyi başaramaz.
@@ -47,6 +58,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Feel free to add additional processing here, but if you want the App API to support
         // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+    }
+
+    // Silent push (aps.content-available=1) handler — HangelSilentPushPlugin'a iletir.
+    //
+    // APNs silent push'larda iOS uygulamayı uyandırır; biz NotificationCenter
+    // üzerinden plugin'e payload'ı bildiririz. Plugin web tarafına `silentPush`
+    // event'i emit eder. Tamamlandığında completionHandler ile iOS'a "newData"
+    // sinyali döneriz (background fetch budget'ini kullanmaya devam etmek için).
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        let isSilent: Bool = {
+            guard let aps = userInfo["aps"] as? [String: Any] else { return false }
+            return (aps["content-available"] as? Int) == 1
+        }()
+
+        if isSilent {
+            // Normalize keys to [String: Any] for Notification.userInfo
+            var payload: [String: Any] = [:]
+            for (k, v) in userInfo {
+                if let key = k as? String { payload[key] = v }
+            }
+            NotificationCenter.default.post(
+                name: HangelSilentPushPlugin.silentPushNotification,
+                object: nil,
+                userInfo: payload
+            )
+            // Capacitor / FCM plugin'leri push'u görmeli; "noData" değil "newData"
+            completionHandler(.newData)
+            return
+        }
+
+        // Visible push (alert/sound/badge) → Capacitor / FCM zinciri ele alır.
+        completionHandler(.noData)
     }
 
 }
