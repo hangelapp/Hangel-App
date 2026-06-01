@@ -104,7 +104,7 @@ export default function SitemapPage() {
                 { label: "2.2.4 Filmler", href: "/library", indent: 1 },
                 { label: "2.2.5 Kitaplar", href: "/library", indent: 1 },
                 { label: "2.2.6 Sivil Toplum Sözlüğü", href: "/library", indent: 1 },
-                { label: "2.2.7 Hangel Sözlük", href: "/library", indent: 1 },
+                { label: "2.2.7 hangel Sözlük", href: "/library", indent: 1 },
                 { label: "2.3 Kullanıcı Hesabı", href: "/profile" },
                 { label: "2.3.1 Bağışlarım", href: "/my-donations", indent: 1 },
                 { label: "2.3.2 Başvurularım", href: "/my-applications", indent: 1 },
@@ -249,7 +249,7 @@ export default function SitemapPage() {
             ]
         },
         {
-            title: "3- DERNEK (Hangel Derneği Resmî Sayfaları)",
+            title: "3- DERNEK (hangel Derneği Resmî Sayfaları)",
             links: [
                 { label: "3.1 Dernek Ana Sayfa", href: "/hangelassociation" },
                 { label: "3.2 Dernek Hakkında", href: "/hangelassociation/about" },

@@ -420,7 +420,7 @@ export default function QrPaymentPage() {
                         <ScanLine className="h-20 w-20 text-primary animate-pulse" />
                         <div>
                             <p className="font-bold text-foreground">Ödemek İçin Okut</p>
-                            <p className="text-muted-foreground text-xs">Diğer Hangel QR kodlarını veya işyeri ödeme noktalarını tarayın.</p>
+                            <p className="text-muted-foreground text-xs">Diğer hangel QR kodlarını veya işyeri ödeme noktalarını tarayın.</p>
                         </div>
                         <Button size="lg" className="w-full rounded-xl h-12 text-base font-bold shadow-lg shadow-primary/20" onClick={() => toast({ title: "Kamera Açılıyor..." })}>
                             <QrCode className="mr-2 h-5 w-5" /> QR Kodu Tara

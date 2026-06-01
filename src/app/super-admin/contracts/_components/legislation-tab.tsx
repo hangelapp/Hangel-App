@@ -177,7 +177,7 @@ function LegislationEditDialog({ item, onSave }: { item?: Legislation; onSave: (
             </div>
           </div>
           <div className="space-y-2"><Label className="text-xs">hangel Konusu / Mini Çıkarım</Label>
-            <Textarea value={hangelSubject} onChange={e => setHangelSubject(e.target.value)} placeholder="Hangel doğrudan bağış toplamadığı durumda dijital aracılık modeli kapsamında değerlendirilir." className="min-h-[60px]" /></div>
+            <Textarea value={hangelSubject} onChange={e => setHangelSubject(e.target.value)} placeholder="hangel doğrudan bağış toplamadığı durumda dijital aracılık modeli kapsamında değerlendirilir." className="min-h-[60px]" /></div>
           <div className="space-y-2"><Label className="text-xs">Resmi Madde Metni</Label>
             <Textarea value={articleText} onChange={e => setArticleText(e.target.value)} placeholder="Kanun maddesinin resmi metni..." className="min-h-[80px]" /></div>
           <div className="space-y-2"><Label className="text-xs">Hukuki Yorum / Risk Analizi / Operasyon Önerisi</Label>

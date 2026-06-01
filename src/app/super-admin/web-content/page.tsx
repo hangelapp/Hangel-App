@@ -266,7 +266,7 @@ export default function WebContentPage() {
     const [aboutSubtitle, setAboutSubtitle] = useState('Geleceğin dayanışma modelini inşa ediyoruz.');
     const [aboutDesc, setAboutDesc] = useState('Bireyleri, sivil toplum kuruluşlarını ve markaları toplumsal fayda odağında birleştiren, en kapsamlı sosyal etki platformuyuz.');
     const [socialTitle, setSocialTitle] = useState('Bir Sosyal Girişim Hikayesi.');
-    const [socialDesc, setSocialDesc] = useState('Hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır.');
+    const [socialDesc, setSocialDesc] = useState('hangel, kârını toplumsal faydaya yatıran bir sosyal girişimdir. Amacımız ticari başarıyı, sosyal sorunlara sürdürülebilir çözümler üretmek için bir araç olarak kullanmaktır.');
     const [foundationTitle, setFoundationTitle] = useState('Kuruluş Felsefemiz.');
     const [foundationDesc, setFoundationDesc] = useState('Yola çıkarken tek bir mottomuz vardı: "Yok öyle yalnız başına mücadele etmek".');
 
@@ -274,7 +274,7 @@ export default function WebContentPage() {
     const [logoUrl, setLogoUrl] = useState('');
     const [logoText, setLogoText] = useState('hangel');
     const [primaryColor, setPrimaryColor] = useState('#0070f3');
-    const [siteTitle, setSiteTitle] = useState('Hangel');
+    const [siteTitle, setSiteTitle] = useState('hangel');
     const [siteDescription, setSiteDescription] = useState('Sosyal Etki Platformu');
     const [faviconUrl, setFaviconUrl] = useState('');
 

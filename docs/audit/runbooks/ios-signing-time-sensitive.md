@@ -74,8 +74,8 @@ Xcode'da:
 7. Apple Server'dan dönen profile preview ekranında profile'ı kontrol et:
    `com.apple.developer.usernotifications.time-sensitive` ✓ olmalı.
 8. **Export** → "Save for App Store Connect" → bir klasöre kaydet
-   (örn. `~/Desktop/HangelExport`).
-9. Klasör içinde `Hangel.ipa` + `App.mobileprovision` olacak.
+   (örn. `~/Desktop/hangelExport`).
+9. Klasör içinde `hangel.ipa` + `App.mobileprovision` olacak.
 
 ### Step 2 — Profile'ı Codemagic'e yükle
 

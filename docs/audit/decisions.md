@@ -1,4 +1,4 @@
-# Hangel — Karar ve Değişiklik Günlüğü
+# hangel — Karar ve Değişiklik Günlüğü
 
 Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolojik olarak kayıt altına alınır. Format:
 
@@ -68,7 +68,7 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 ## 2026-05-18 — FEAT-IMECE-MATCH: intelligent volunteer matching algorithm
 - **ID**: FEAT-IMECE-MATCH
 - **Lead**: backend-lead
-- **Sorun**: Hangel landing page'i "akıllı eşleştirme" vaat ediyor ama orijinal audit `imece` özelliğinin sadece düz liste sayfası olduğunu ve **gerçek matching algoritması olmadığını** tespit etti. Mevcut `volunteering/page.tsx` içindeki `computeMatch` 60/30/10 ağırlıklarıyla içerideydi ama PRD'nin (skill/interest/şehir/uygunluk/work mode/dil) çok-eksenli puanlamasını karşılamıyordu.
+- **Sorun**: hangel landing page'i "akıllı eşleştirme" vaat ediyor ama orijinal audit `imece` özelliğinin sadece düz liste sayfası olduğunu ve **gerçek matching algoritması olmadığını** tespit etti. Mevcut `volunteering/page.tsx` içindeki `computeMatch` 60/30/10 ağırlıklarıyla içerideydi ama PRD'nin (skill/interest/şehir/uygunluk/work mode/dil) çok-eksenli puanlamasını karşılamıyordu.
 - **Değişiklik**: Saf scoring lib + ranker oluşturuldu (`src/lib/volunteer-matching.ts`); 6 eksen üzerinden 0-100 puan (Skills 30 / Interests 20 / Şehir 20 / Uygunluk 15 / Çalışma Şekli 10 / Dil 5), top-N (cap 20) sıralı sonuç + en yüksek katkıdan 3 Türkçe sebep döndürüyor. `volunteering/page.tsx` üstüne "Sana Özel Öneriler" bölümü eklendi (auth + profil varsa), 6 kart, "Tümünü Gör" anchor scroll. Flat list'in mevcut filter/sort/render kodu **dokunulmadı**.
 - **Dosyalar**: `src/lib/volunteer-matching.ts` (NEW, 224 LoC), `src/app/volunteering/page.tsx` (modify: +2 import, +4 useDoc fields, +2 useMemo, +1 öneri bölümü, flat list `id="imece-all-listings"` anchor), `tests/lib/volunteer-matching.test.ts` (NEW, 10 test).
 - **Skor ağırlıkları (final)**: Skills 30 (oran), Interests 20 (oran), Aynı şehir 20 (binary), Gün/saat uygunluk 15 (oran), Çalışma şekli 10 (binary, online/yüz yüze/hibrit normalizasyon), Dil 5 (oran). Saf TS — Firestore yok, side-effect yok, Türkçe locale-safe `toLocaleLowerCase('tr')`.
@@ -341,7 +341,7 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 - **Plan (5 madde)**:
   1. Mevcut button & shared component stilini incele (Button cva variants; lucide-react; Tailwind tokens; Türkçe metin tonu) — 1 ortak template hazırla.
   2. 7 `error.tsx` (global + 6 dashboard segment: profile, my-applications, my-donations, my-badges, notifications, messages) — Client Component, `error & {digest?}`+`reset` props, `digest` sadece `process.env.NODE_ENV === 'development'`, lucide `AlertTriangle`, "Tekrar dene" (reset) + "Ana sayfa" (`/`) butonları, sanitize edilmiş mesaj (240 char cap, fallback "Beklenmeyen bir hata oluştu.").
-  3. `src/components/shared/empty-state.tsx` reusable component: `icon?: LucideIcon` (default `Inbox`), `title`, `description?`, `action?: {label, href?, onClick?}`. Hangel `Button` ile asChild/Link entegrasyonu, 60px stroke-1.5 muted icon, `role="status"`, `cn()` merge.
+  3. `src/components/shared/empty-state.tsx` reusable component: `icon?: LucideIcon` (default `Inbox`), `title`, `description?`, `action?: {label, href?, onClick?}`. hangel `Button` ile asChild/Link entegrasyonu, 60px stroke-1.5 muted icon, `role="status"`, `cn()` merge.
   4. `my-applications/page.tsx`'i proof-of-concept olarak değiştir: yerel inline `EmptyState`'i `NoMatchState`'e (FileSearch ikon) çevir; gerçek liste boşken (`applications.length === 0 && !isLoading`) shared `<EmptyState>` (Inbox, "Henüz başvurun yok", "İlginç fırsatlara başvurmak için etkinliklere göz at.", CTA `/events`). Veri akışı, types, query unchanged.
   5. `npm run typecheck && npm run lint` koş; warning olmaması için unused `eslint-disable-next-line no-console` direktiflerini temizle.
 - **Değişiklik**: 79 loading.tsx + 0 error.tsx asimetrisini kapatan global + 6 segment error boundary eklendi; reusable shared EmptyState component üretildi; my-applications proof-of-concept entegrasyon yapıldı (devops-lead'in `EmptyStateProps.title` missing typecheck regresyonunu da kapatır).
@@ -609,7 +609,7 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 ## 2026-05-18 — P2-1 (partial): API route vitest coverage — 6 critical routes
 - **ID**: P2-1 (partial); follow-up P2-1b for remaining 21+ routes
 - **Lead**: qa
-- **Değişiklik**: Hangel test-engineer worker tarafından 6 en yüksek riskli API route için vitest birim testleri yazıldı. Tüm Firebase Admin SDK ve external HTTP çağrıları `vi.mock` ile module boundary'sinde mocklandı; gerçek emülatör/network çağrısı yok.
+- **Değişiklik**: hangel test-engineer worker tarafından 6 en yüksek riskli API route için vitest birim testleri yazıldı. Tüm Firebase Admin SDK ve external HTTP çağrıları `vi.mock` ile module boundary'sinde mocklandı; gerçek emülatör/network çağrısı yok.
 - **Plan**:
   1. `vitest.config.ts` glob'u zaten `tests/**/*.test.ts` kapsıyor — değişiklik gerek yok.
   2. Mock stratejisi: `firebase-admin/auth`, `firebase-admin/firestore`, `@/lib/firebase-admin`, `@/lib/payment`, `@/lib/messaging/server-auth`, vb. modül seviyesinde mocklanır.
@@ -1236,10 +1236,10 @@ Her uygulanan değişiklik (ya da bilinçli olarak ertelenen iş) burada kronolo
 
 ---
 
-## 2026-05-18 — FEAT-AFFILIATE-WEBHOOK: brand → Hangel sale confirmation endpoint
+## 2026-05-18 — FEAT-AFFILIATE-WEBHOOK: brand → hangel sale confirmation endpoint
 - **ID**: FEAT-AFFILIATE-WEBHOOK
 - **Lead**: backend-lead
-- **Scope**: Implement the receiving side of the affiliate webhook flow flagged by the `TODO(affiliate-webhook)` in `src/app/market/[id]/page.tsx:142`. Brands POST confirmed sales to `POST /api/affiliate/webhook/[brandId]`; Hangel verifies HMAC, records an idempotent audit row, and increments the user's `impactScore`.
+- **Scope**: Implement the receiving side of the affiliate webhook flow flagged by the `TODO(affiliate-webhook)` in `src/app/market/[id]/page.tsx:142`. Brands POST confirmed sales to `POST /api/affiliate/webhook/[brandId]`; hangel verifies HMAC, records an idempotent audit row, and increments the user's `impactScore`.
 - **Endpoint shape**: `POST /api/affiliate/webhook/[brandId]`.
   - Headers: `x-affiliate-signature: <hex>` (or `sha256=<hex>`) — HMAC SHA256 of raw body. Optional `x-affiliate-timestamp: <unix-seconds>` enforced ±5min (P1-3 pattern) when present.
   - Secret resolution: per-brand `brands/{brandId}.affiliateSecret` first, else env fallback `AFFILIATE_WEBHOOK_SECRET`. Both compared via `crypto.timingSafeEqual` on equal-length buffers.
@@ -1852,7 +1852,7 @@ Index gerektiğinde sorgu `failed-precondition` döner; UI toast ile bildirir, k
 - **Kullanıcının manuel yapacakları (RUNBOOK)**:
   1. Apple Developer Console → Identifiers → `+` → `com.hangel.ios.app.Clip` (App Clip type, Parent App = `com.hangel.ios.app`). Capabilities: Associated Domains, App Groups.
   2. Apple Developer Console → Identifiers → `com.hangel.ios.app` → Capability → "App Clips" işaretli olsun.
-  3. App Store Connect → Hangel → App Clip Experiences → Advanced → "+" → URL Pattern: `https://hangel.org.tr/clip/event/*` → Action: Show, Default Image/Title/Subtitle.
+  3. App Store Connect → hangel → App Clip Experiences → Advanced → "+" → URL Pattern: `https://hangel.org.tr/clip/event/*` → Action: Show, Default Image/Title/Subtitle.
   4. Backend: `/api/clip/event/{id}` (GET, public, anonim) + `/api/clip/checkin` (POST, deviceId rate-limit) endpoint'leri yazılacak. Bu agent'ın scope'unda DEĞİL (web tarafı başka ajan).
   5. `apple-app-site-association` dosyasına `"appclips": { "apps": ["NKZNY8NU8S.com.hangel.ios.app.Clip"] }` entry'si ekle.
   6. App Clip için ayrı AppIcon set: `ios/App/HangelAppClip/Assets.xcassets/AppIcon.appiconset/` (mevcut App target'tan farklı icon, Apple Review için "App Clip Card Image" 1800x1200).

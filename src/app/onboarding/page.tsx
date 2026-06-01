@@ -16,46 +16,35 @@ import { useTranslation } from '@/components/providers/language-provider';
 // Onboarding tour — welcome akışından önce gösterilen 4 ekran swipeable
 // carousel. PRD: "Yakın STK'ları keşfet" / "Tek dokunla bağış" /
 // "Acil kan çağrılarına yanıt ver" / "Etkinliklere katıl".
-// `onboardingPage.*` key'leri translations.ts'de tanımlı değil (i18n agent
-// olmadığı için inline metin tercih edildi). Skip + Devam akışı korunur.
 
 export default function OnboardingPage() {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const router = useRouter();
   const { t } = useTranslation();
-  // Skip / Devam etiketlerini mevcut key'lerden çek — t key fallback'i
-  // metni geri verir. Eğer key tanımlanmamışsa key string'i döner; o yüzden
-  // try-catch'siz nullish coalescing ile sabit Türkçe metne düş.
-  const skipLabel = (() => {
-    const k = t('onboardingPage.skip');
-    return k === 'onboardingPage.skip' ? 'Geç' : k;
-  })();
-  const nextLabel = (() => {
-    const k = t('onboardingPage.next');
-    return k === 'onboardingPage.next' ? 'İleri' : k;
-  })();
+  const skipLabel = t('onboarding.skip');
+  const nextLabel = t('onboarding.next');
 
   const onboardingSteps: { icon: typeof Building2; title: string; description: string }[] = [
     {
       icon: Building2,
-      title: "Yakın STK'ları keşfet",
-      description: 'Sana yakın güvenilir sivil toplum kuruluşlarını gör, projelerini incele ve sürece dahil ol.',
+      title: t('onboarding.step1Title'),
+      description: t('onboarding.step1Desc'),
     },
     {
       icon: Heart,
-      title: 'Tek dokunla bağış',
-      description: 'Markalardan yaptığın her alışveriş, seçtiğin STK\'lara otomatik bağış yapsın. Cebinden ekstra para çıkmaz.',
+      title: t('onboarding.step2Title'),
+      description: t('onboarding.step2Desc'),
     },
     {
       icon: Droplet,
-      title: 'Acil kan çağrılarına yanıt ver',
-      description: 'Kan grubun ve konumunla eşleşen acil çağrılar anında bildirilir. Bir hayat kurtarmak elinde.',
+      title: t('onboarding.step3Title'),
+      description: t('onboarding.step3Desc'),
     },
     {
       icon: CalendarHeart,
-      title: 'Etkinliklere katıl',
-      description: 'Gönüllülük, eğitim ve toplum buluşmalarına başvur. Sosyal etki puanın ve rozetlerin biriksin.',
+      title: t('onboarding.step4Title'),
+      description: t('onboarding.step4Desc'),
     },
   ];
 
@@ -112,7 +101,7 @@ export default function OnboardingPage() {
             <div
               className="flex justify-center gap-2"
               role="tablist"
-              aria-label="Onboarding adımları"
+              aria-label={t('onboarding.stepsLabel')}
             >
                 {onboardingSteps.map((_, i) => (
                 <button
@@ -120,7 +109,7 @@ export default function OnboardingPage() {
                     type="button"
                     role="tab"
                     aria-selected={i === current}
-                    aria-label={`Adım ${i + 1} / ${onboardingSteps.length}`}
+                    aria-label={`${t('onboarding.stepAriaPrefix')}${i + 1}${t('onboarding.stepAriaSeparator')}${onboardingSteps.length}`}
                     onClick={() => api?.scrollTo(i)}
                     className={cn(
                       'h-2 rounded-full transition-all',

@@ -724,7 +724,7 @@ export default function CommunicationsPage() {
                 if (entityId) {
                     try {
                         await addDoc(collection(db, COLLECTIONS.messages), {
-                            sender: { id: authUser?.uid || 'super-admin', name: 'Hangel Süper Admin', avatarUrl: null },
+                            sender: { id: authUser?.uid || 'super-admin', name: 'hangel Süper Admin', avatarUrl: null },
                             senderId: authUser?.uid || 'super-admin',
                             recipient: { id: entityId, name: entityName, avatarUrl: null },
                             recipientId: entityId,

@@ -1,4 +1,4 @@
-# Hangel — Release Notes (2026-05-18 Audit Sprint)
+# hangel — Release Notes (2026-05-18 Audit Sprint)
 
 Bu doküman 2026-05-18 tarihinde gerçekleştirilen kapsamlı güvenlik + UX + altyapı audit'inin teslim edilen değişikliklerinin özetidir.
 

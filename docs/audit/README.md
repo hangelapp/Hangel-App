@@ -1,6 +1,6 @@
-# Hangel — Audit Workspace
+# hangel — Audit Workspace
 
-Bu klasör Hangel projesinin denetim ve görev takip alanıdır. Tüm bulgular, görevler, kararlar ve runbook'lar burada.
+Bu klasör hangel projesinin denetim ve görev takip alanıdır. Tüm bulgular, görevler, kararlar ve runbook'lar burada.
 
 ## İçindekiler
 

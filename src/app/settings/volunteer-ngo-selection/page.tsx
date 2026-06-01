@@ -122,7 +122,7 @@ export default function VolunteerNgoSelectionPage() {
         const result = await updateDocumentNonBlocking(userDocRef, { volunteerNgos: selectedNgos });
         setIsSaving(false);
         if (!result.ok) {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+            toast({ variant: 'destructive', title: t('settings_volunteer_ngo_selection.saveFailedTitle'), description: result.error.message.slice(0, 200) });
             return;
         }
         toast({ title: t('dashboard.settingsVolunteerNgo.toastSavedTitle'), description: t('dashboard.settingsVolunteerNgo.toastSavedDesc') });
@@ -159,7 +159,7 @@ export default function VolunteerNgoSelectionPage() {
                         <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.filter')}><Filter className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Kategoriye Göre Filtrele</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('settings_volunteer_ngo_selection.filterByCategory')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         {allCategories.map(cat => (
                             <DropdownMenuCheckboxItem
@@ -175,28 +175,29 @@ export default function VolunteerNgoSelectionPage() {
                         <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'random', direction: 'asc' })}>Karışık (varsayılan)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>İsme Göre (Z-A)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>Gönüllü Sayısı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'transparencyScore', direction: 'desc' })}>Şeffaflık Puanı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'random', direction: 'asc' })}>{t('settings_volunteer_ngo_selection.sortRandom')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>{t('settings_volunteer_ngo_selection.sortNameAsc')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>{t('settings_volunteer_ngo_selection.sortNameDesc')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>{t('settings_volunteer_ngo_selection.sortVolunteers')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'transparencyScore', direction: 'desc' })}>{t('settings_volunteer_ngo_selection.sortTransparency')}</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={v => setTypeFilter(v as NgoType)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-                    <TabsTrigger value="Dernek">Dernek</TabsTrigger>
-                    <TabsTrigger value="Vakıf">Vakıf</TabsTrigger>
-                    <TabsTrigger value="Spor Kulübü">Spor</TabsTrigger>
-                    <TabsTrigger value="Özel İzinli">Özel</TabsTrigger>
+                    {/* value attribute'ları Firestore'daki NGO.type enum'larıyla birebir eşleşir; etiket child'ları çevrilir. */}
+                    <TabsTrigger value="Tümü">{t('settings_volunteer_ngo_selection.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="Dernek">{t('settings_volunteer_ngo_selection.tabAssociation')}</TabsTrigger>
+                    <TabsTrigger value="Vakıf">{t('settings_volunteer_ngo_selection.tabFoundation')}</TabsTrigger>
+                    <TabsTrigger value="Spor Kulübü">{t('settings_volunteer_ngo_selection.tabSports')}</TabsTrigger>
+                    <TabsTrigger value="Özel İzinli">{t('settings_volunteer_ngo_selection.tabSpecial')}</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             <Card>
                 <CardHeader className="p-4">
-                    <p className="text-sm font-medium">{selectedNgos.length} STK Seçildi</p>
+                    <p className="text-sm font-medium">{selectedNgos.length}{t('settings_volunteer_ngo_selection.selectedCounterSuffix')}</p>
                 </CardHeader>
                 <CardContent className="p-0">
                     {isNgosLoading ? (
@@ -218,7 +219,7 @@ export default function VolunteerNgoSelectionPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    aria-label="İncele"
+                                                    aria-label={t('settings_volunteer_ngo_selection.previewAriaLabel')}
                                                     onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
                                                 >
                                                     <Eye className="h-4 w-4" />
@@ -234,7 +235,7 @@ export default function VolunteerNgoSelectionPage() {
                                     />
                                 );
                             }) : (
-                                <p className="text-center text-muted-foreground p-8">Bu filtrelerle eşleşen STK bulunamadı.</p>
+                                <p className="text-center text-muted-foreground p-8">{t('settings_volunteer_ngo_selection.noResults')}</p>
                             )}
                         </div>
                     )}
@@ -242,7 +243,7 @@ export default function VolunteerNgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave} disabled={isSaving}>{isSaving ? 'Kaydediliyor...' : (isOnboarding ? 'Devam Et' : t('dashboard.settingsVolunteerNgo.saveBtn'))}</Button>
+                <Button onClick={handleSave} disabled={isSaving}>{isSaving ? t('settings_volunteer_ngo_selection.savingBtn') : (isOnboarding ? t('settings_volunteer_ngo_selection.continueBtn') : t('dashboard.settingsVolunteerNgo.saveBtn'))}</Button>
             </div>
 
             {/* Preview Dialog — ngo-selection ile aynı pattern */}
@@ -266,16 +267,16 @@ export default function VolunteerNgoSelectionPage() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <Badge variant="secondary" className="font-bold">
                                         <ShieldCheck className="h-3 w-3 mr-1 text-primary" />
-                                        Şeffaflık: {previewNgo.transparencyScore || 0}
+                                        {t('settings_volunteer_ngo_selection.transparencyLabel')}: {previewNgo.transparencyScore || 0}
                                     </Badge>
                                     {previewNgo.stats?.followers != null && (
                                         <Badge variant="outline" className="font-medium">
-                                            {previewNgo.stats.followers.toLocaleString('tr-TR')} bağışçı
+                                            {previewNgo.stats.followers.toLocaleString('tr-TR')} {t('settings_volunteer_ngo_selection.donorsSuffix')}
                                         </Badge>
                                     )}
                                     {previewNgo.stats?.volunteers != null && (
                                         <Badge variant="outline" className="font-medium">
-                                            {previewNgo.stats.volunteers.toLocaleString('tr-TR')} gönüllü
+                                            {previewNgo.stats.volunteers.toLocaleString('tr-TR')} {t('settings_volunteer_ngo_selection.volunteersSuffix')}
                                         </Badge>
                                     )}
                                 </div>
@@ -284,13 +285,13 @@ export default function VolunteerNgoSelectionPage() {
                                 )}
                                 <div className="flex gap-2 pt-2">
                                     <Button asChild variant="outline" className="flex-1 rounded-xl">
-                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">Profili Aç</a>
+                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">{t('settings_volunteer_ngo_selection.openProfile')}</a>
                                     </Button>
                                     <Button
                                         className="flex-1 rounded-xl"
                                         onClick={() => { handleSelectNgo(previewNgo.id); setPreviewNgo(null); }}
                                     >
-                                        {selectedNgos.includes(previewNgo.id) ? 'Seçimi Kaldır' : 'Seç'}
+                                        {selectedNgos.includes(previewNgo.id) ? t('settings_volunteer_ngo_selection.unselect') : t('settings_volunteer_ngo_selection.select')}
                                     </Button>
                                 </div>
                             </div>

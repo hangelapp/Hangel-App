@@ -57,7 +57,7 @@ Kullanıcı "Gmail/Outlook ile bağlan" tıklar
 ## 2) Microsoft (Outlook / Hotmail) — Azure Portal
 
 1. **Azure Portal → Microsoft Entra ID → App registrations → New registration**:
-   - Name: `Hangel Contacts Import` (serbest).
+   - Name: `hangel Contacts Import` (serbest).
    - Supported account types: **Accounts in any organizational directory and
      personal Microsoft accounts** (common tenant için).
    - Redirect URI: Platform **Web**, değer:

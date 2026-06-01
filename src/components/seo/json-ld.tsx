@@ -180,7 +180,7 @@ export function BreadcrumbSchema({ items }: { items: Array<{ name: string; url: 
 }
 
 /**
- * Organization schema — root level (anasayfada Hangel için)
+ * Organization schema — root level (anasayfada hangel için)
  */
 export function HangelOrgSchema() {
     return (
@@ -188,7 +188,7 @@ export function HangelOrgSchema() {
             data={{
                 '@context': 'https://schema.org',
                 '@type': 'Organization',
-                name: 'Hangel',
+                name: 'hangel',
                 url: 'https://hangel.org.tr',
                 logo: 'https://hangel.org.tr/logo.png',
                 description: 'Türkiye\'nin sosyal etki platformu — STK, marka, kulüp ekosistemi',

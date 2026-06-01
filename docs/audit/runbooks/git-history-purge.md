@@ -10,7 +10,7 @@
 
 - Git geçmişi yeniden yazılır.
 - Bütün geliştiricilerin lokal clone'ları geçersiz olur; yeniden clone gerekir.
-- Open PR'lar ve forklar bozulur (Hangel monorepo solo geliştiricilerse risk düşük).
+- Open PR'lar ve forklar bozulur (hangel monorepo solo geliştiricilerse risk düşük).
 - Repository hash'leri değişir.
 
 ## Hangi commit'lerden temizliyoruz

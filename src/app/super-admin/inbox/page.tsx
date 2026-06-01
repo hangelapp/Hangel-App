@@ -27,7 +27,7 @@ const notifications = [
 
 const _sentMessages = [
     { id: 101, recipient: 'Aktif Gönüllüler', subject: 'Haftalık Bilgilendirme', time: '1 gün önce', status: 'İletildi' },
-    { id: 102, recipient: 'Hangel Sistem Yöneticisi', subject: 'Belge Onayı Hakkında', time: '3 gün önce', status: 'Okundu' },
+    { id: 102, recipient: 'hangel Sistem Yöneticisi', subject: 'Belge Onayı Hakkında', time: '3 gün önce', status: 'Okundu' },
     { id: 103, recipient: 'Bağışçılarım', subject: 'Aylık Faaliyet Özeti', time: '5 gün önce', status: 'İletildi' },
 ];
 

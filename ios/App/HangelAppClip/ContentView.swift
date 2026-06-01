@@ -52,7 +52,7 @@ struct ContentView: View {
             Image(systemName: "heart.text.square.fill")
                 .font(.system(size: 44))
                 .foregroundStyle(.red)
-            Text("Hangel")
+            Text("hangel")
                 .font(.title2.bold())
             Text("Gönüllü Etkinlik Check-in")
                 .font(.caption)
@@ -116,7 +116,7 @@ struct ContentView: View {
                 .foregroundStyle(.green)
             Text("Check-in Başarılı")
                 .font(.title3.bold())
-            Text("Etkinliğe katılımın kaydedildi. Tam deneyim için\nHangel uygulamasını indirebilirsin.")
+            Text("Etkinliğe katılımın kaydedildi. Tam deneyim için\nhangel uygulamasını indirebilirsin.")
                 .font(.caption)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -124,7 +124,7 @@ struct ContentView: View {
             Button {
                 openAppStore()
             } label: {
-                Label("Hangel'i İndir", systemImage: "arrow.down.app.fill")
+                Label("hangel'i İndir", systemImage: "arrow.down.app.fill")
                     .font(.callout)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)

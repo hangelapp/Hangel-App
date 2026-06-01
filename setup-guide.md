@@ -1,4 +1,4 @@
-# Hangel Hub - Yerel Kurulum Kılavuzu
+# hangel Hub - Yerel Kurulum Kılavuzu
 
 Bu projeyi kendi bilgisayarınızda (Mac, Windows veya Linux) çalıştırmak için aşağıdaki adımları takip edin.
 

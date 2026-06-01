@@ -68,7 +68,7 @@ const DEFAULTS: ContentMap = {
     },
     press: {
         title: 'Basında Biz',
-        subtitle: 'Hangel Derneği medya kayıtları.',
+        subtitle: 'hangel Derneği medya kayıtları.',
         description: 'Derneğimizin ulusal ve uluslararası basında yer alan haberlerini, röportajlarını ve duyurularını bu sayfada bulabilirsiniz.',
         coverImageUrl: '',
     },
@@ -125,7 +125,7 @@ const DEFAULTS: ContentMap = {
     contact: {
         title: 'Bize Ulaşın.',
         subtitle: 'Sorularınız, iş birlikleri ve geri bildirimleriniz için.',
-        description: 'Hangel ekibiyle iletişime geçmek için aşağıdaki kanalları kullanabilirsiniz.',
+        description: 'hangel ekibiyle iletişime geçmek için aşağıdaki kanalları kullanabilirsiniz.',
         coverImageUrl: '',
     },
     feedback: {

@@ -1,4 +1,4 @@
-# **App Name**: Hangel
+# **App Name**: hangel
 
 ## Core Features:
 

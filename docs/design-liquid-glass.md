@@ -1,8 +1,8 @@
-# Hangel Design System — Liquid Glass (iOS 26)
+# hangel Design System — Liquid Glass (iOS 26)
 
-Bu doküman Hangel'in iOS 26 ("Liquid Glass") design language migrasyonunun
+Bu doküman hangel'in iOS 26 ("Liquid Glass") design language migrasyonunun
 referansıdır. WWDC 2025'te tanıtılan refractive glass yüzeyleri Apple
-ekosisteminin (iOS, iPadOS, macOS Sequoia 16) yeni tasarım dilidir. Hangel
+ekosisteminin (iOS, iPadOS, macOS Sequoia 16) yeni tasarım dilidir. hangel
 Capacitor wrapper iOS uygulama olarak çalıştığı için native estetiğe
 yaklaşmak kullanıcı algısında "Apple-grade" hissi yaratır.
 
@@ -101,7 +101,7 @@ Ek yardımcılar:
 
 ## 4. Brand korunumu
 
-Hangel kırmızısı (`#f34723` light, `#f87158` dark) brand identity'nin
+hangel kırmızısı (`#f34723` light, `#f87158` dark) brand identity'nin
 parçasıdır ve glass katmanın **altında** kalır. Primary button, badge,
 toast destructive variant'ları brand rengi + glass overlay kombinasyonu
 ile render edilir.

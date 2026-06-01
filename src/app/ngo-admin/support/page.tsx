@@ -92,7 +92,7 @@ const sections: Section[] = [
     topics: [
       { id: 'sms', icon: MessageSquare, label: 'SMS Gönderimi', description: 'Toplu SMS bildirim altyapısı.', hint: 'Tedarikçi entegrasyonu yakında.' },
       { id: 'mail', icon: Mail, label: 'Mail Gönderimi', description: 'Bülten ve toplu mail gönderim altyapısı.', hint: '' },
-      { id: 'ads', icon: Megaphone, label: 'Reklam Yönetimi', description: 'Hangel içi sponsorlu içerik ve kampanya yönetimi.', hint: '' },
+      { id: 'ads', icon: Megaphone, label: 'Reklam Yönetimi', description: 'hangel içi sponsorlu içerik ve kampanya yönetimi.', hint: '' },
       { id: 'events', icon: Calendar, label: 'Etkinlik Yönetimi', description: 'Yüz yüze ve online etkinliklerinizi yönetin.', hint: '' },
       { id: 'online-meeting', icon: Video, label: 'Online Eğitim/Toplantı Araçları', description: 'Zoom benzeri toplantı araçları entegrasyonu.', hint: '' },
       { id: 'design-tools', icon: Palette, label: 'Tasarım Programları', description: 'Canva, Figma vb. entegrasyonları.', hint: '' },

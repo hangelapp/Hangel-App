@@ -82,7 +82,7 @@ const SHARED_PASS_DEFAULTS = {
   formatVersion: 1,
   passTypeIdentifier: PASS_TYPE_ID,
   teamIdentifier: TEAM_ID,
-  organizationName: 'Hangel',
+  organizationName: 'hangel',
   foregroundColor: 'rgb(255, 255, 255)',
   backgroundColor: 'rgb(243, 71, 35)',
   labelColor: 'rgb(255, 255, 255)',
@@ -100,7 +100,7 @@ export async function generateEventPass(input: EventPassInput): Promise<Buffer> 
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
       serialNumber: input.serialNumber,
-      description: `Hangel — ${input.eventTitle}`,
+      description: `hangel — ${input.eventTitle}`,
       eventTicket: {
         primaryFields: [
           { key: 'event', label: 'ETKİNLİK', value: input.eventTitle },
@@ -152,7 +152,7 @@ export async function generateTaskPass(input: TaskPassInput): Promise<Buffer> {
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_PASS_DEFAULTS,
       serialNumber: input.serialNumber,
-      description: `Hangel — ${input.taskTitle}`,
+      description: `hangel — ${input.taskTitle}`,
       generic: {
         primaryFields: [
           { key: 'task', label: 'GÖREV', value: input.taskTitle },

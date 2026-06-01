@@ -1,6 +1,6 @@
-# Hangel — Orchestration Playbook for Claude
+# hangel — Orchestration Playbook for Claude
 
-Bu dosya proje kökündedir ve Claude Code her oturumda otomatik yükler. Hangel projesinde nasıl çalışılacağını tanımlar.
+Bu dosya proje kökündedir ve Claude Code her oturumda otomatik yükler. hangel projesinde nasıl çalışılacağını tanımlar.
 
 ## Üç katmanlı ajan sistemi
 

@@ -105,7 +105,7 @@ export default function CampaignWizardPage() {
   const [body, setBody] = useState('');
   const [senderId, setSenderId] = useState('HANGEL');
   const [fromEmail, setFromEmail] = useState('noreply@hangel.org');
-  const [fromName, setFromName] = useState('Hangel');
+  const [fromName, setFromName] = useState('hangel');
   const [previewVars, setPreviewVars] = useState<Record<string, string>>({});
 
   // Step 4

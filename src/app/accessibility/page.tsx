@@ -243,7 +243,7 @@ export default function AccessibilityPublicPage() {
                                 <ShieldCheck className="h-8 w-8 text-primary" />
                             </div>
                             <h3 className="text-2xl md:text-3xl font-black tracking-tight text-[#1d1d1f]">
-                                Hangel'de erişilebilirlik bir özellik değil, bir hak.
+                                hangel'de erişilebilirlik bir özellik değil, bir hak.
                             </h3>
                             <p className="text-sm md:text-base text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
                                 Herkes — görme, işitme, motor, bilişsel farklılıkları olan kullanıcılar dahil — platformumuzu

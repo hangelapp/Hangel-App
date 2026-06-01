@@ -82,7 +82,7 @@ export default function MaintenancePage() {
             const films = [
                 {
                     slug: 'film-the-pursuit-of-happyness', title: 'The Pursuit of Happyness (2006)',
-                    content: '<p>Bir babanın oğluyla evsiz kalması ve borsa stajından çıkmak için verdiği mücadele.</p><ul><li><strong>Yönetmen:</strong> Gabriele Muccino</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 2006</li><li><strong>Dil:</strong> İngilizce</li><li><strong>Ülke:</strong> ABD / İngilizce Yapımlar</li><li><strong>Kategori:</strong> Yoksulluk & Umut</li><li><strong>Duygu:</strong> Azim, Umut, İnsanlık</li><li><strong>İçerik Türü:</strong> Gerçek Hikaye</li><li><strong>Hangel Aksiyonu:</strong> Farkındalık</li></ul>',
+                    content: '<p>Bir babanın oğluyla evsiz kalması ve borsa stajından çıkmak için verdiği mücadele.</p><ul><li><strong>Yönetmen:</strong> Gabriele Muccino</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 2006</li><li><strong>Dil:</strong> İngilizce</li><li><strong>Ülke:</strong> ABD / İngilizce Yapımlar</li><li><strong>Kategori:</strong> Yoksulluk & Umut</li><li><strong>Duygu:</strong> Azim, Umut, İnsanlık</li><li><strong>İçerik Türü:</strong> Gerçek Hikaye</li><li><strong>hangel Aksiyonu:</strong> Farkındalık</li></ul>',
                 },
                 {
                     slug: 'film-spotlight', title: 'Spotlight (2015)',
@@ -166,7 +166,7 @@ export default function MaintenancePage() {
                 },
                 {
                     slug: 'film-pad-man', title: 'Pad Man (2018)',
-                    content: '<p>Hindistan\'da uygun fiyatlı hijyenik ped üreten Arunachalam Muruganantham\'ın hikayesi.</p><ul><li><strong>Yönetmen:</strong> R. Balki</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 2018</li><li><strong>Dil:</strong> Hintçe</li><li><strong>Ülke:</strong> Hindistan</li><li><strong>Kategori:</strong> Sosyal Tabu & Sosyal Girişim</li><li><strong>Duygu:</strong> İnovasyon, Kabul, Toplumsal Farkındalık</li><li><strong>İçerik Türü:</strong> Gerçek Hikaye</li><li><strong>Hangel Aksiyonu:</strong> Farkındalık</li></ul>',
+                    content: '<p>Hindistan\'da uygun fiyatlı hijyenik ped üreten Arunachalam Muruganantham\'ın hikayesi.</p><ul><li><strong>Yönetmen:</strong> R. Balki</li><li><strong>Tür:</strong> Film</li><li><strong>Yıl:</strong> 2018</li><li><strong>Dil:</strong> Hintçe</li><li><strong>Ülke:</strong> Hindistan</li><li><strong>Kategori:</strong> Sosyal Tabu & Sosyal Girişim</li><li><strong>Duygu:</strong> İnovasyon, Kabul, Toplumsal Farkındalık</li><li><strong>İçerik Türü:</strong> Gerçek Hikaye</li><li><strong>hangel Aksiyonu:</strong> Farkındalık</li></ul>',
                 },
                 {
                     slug: 'film-the-help', title: 'The Help (2011)',

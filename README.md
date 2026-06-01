@@ -1,4 +1,4 @@
-# Hangel
+# hangel
 
 Next.js 15 + Firebase + Capacitor uygulaması — STK, gönüllülük, kulüp ve marka platformu.
 

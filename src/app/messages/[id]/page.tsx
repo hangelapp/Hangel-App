@@ -81,7 +81,7 @@ export default function MessageDetailPage() {
   }
 
   const otherParty = isSent ? msg.recipient : msg.sender;
-  const otherName = otherParty?.name || (isSent ? msg.recipientName : msg.senderName) || 'Hangel';
+  const otherName = otherParty?.name || (isSent ? msg.recipientName : msg.senderName) || 'hangel';
   const otherAvatar = otherParty?.avatarUrl;
   const otherId = otherParty?.id || (isSent ? msg.recipientId : msg.senderId);
   const isSystemMessage = otherId === 'hangel-system';

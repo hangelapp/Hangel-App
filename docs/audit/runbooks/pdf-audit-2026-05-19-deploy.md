@@ -165,7 +165,7 @@ Aşağıdaki yolları kullanıcı manuel test eder:
 
 ### G. Library + AI
 - [ ] `/library` sağ orta sticky 2 ikon görünür
-- [ ] Chat icon → Sheet aç → "Hangel'in misyonu nedir?" sor → AI cevap (yoksa "AI servisi hazır değil" toast)
+- [ ] Chat icon → Sheet aç → "hangel'in misyonu nedir?" sor → AI cevap (yoksa "AI servisi hazır değil" toast)
 - [ ] Project icon → 3-step form doldur → AI proje önerisi
 - [ ] "Sosyal Etki Envanteri" başlığında Filtrele + Sırala butonları çalışıyor
 - [ ] Super-admin: `/super-admin/ai-management` → systemPrompt edit → kaydet → reload → kalıcı

@@ -62,7 +62,7 @@ interface AssistantConfig {
 const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
   library: {
     systemPrompt:
-      'Sen Hangel Kütüphane Asistanısın. SADECE kütüphanedeki seçili dokümanları kullanarak cevap ver. ' +
+      'Sen hangel Kütüphane Asistanısın. SADECE kütüphanedeki seçili dokümanları kullanarak cevap ver. ' +
       'Dokümanlarda olmayan bilgileri uydurma; bilmiyorsan "Bu konuda kütüphanede içerik bulamadım." de.',
     knowledgeSourceSlugs: [],
     model: 'gemini-2.5-pro',
@@ -71,7 +71,7 @@ const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
   },
   project: {
     systemPrompt:
-      'Sen Hangel Proje Yazma Asistanısın. Kullanıcının anlattığı projeyi alır, kütüphane kaynakları ve ' +
+      'Sen hangel Proje Yazma Asistanısın. Kullanıcının anlattığı projeyi alır, kütüphane kaynakları ve ' +
       'süper admin tarafından sağlanan şablonlarla birlikte yapılandırılmış bir proje dokümanı taslağı oluşturursun. ' +
       'Başlık, özet, hedefler, paydaşlar, faaliyet planı, bütçe ve etki ölçümü bölümleri içersin.',
     knowledgeSourceSlugs: [],

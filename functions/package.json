@@ -1,7 +1,7 @@
 {
   "name": "hangel-functions",
   "version": "1.0.0",
-  "description": "Hangel Cloud Functions (Firestore triggers, scheduled jobs).",
+  "description": "hangel Cloud Functions (Firestore triggers, scheduled jobs).",
   "engines": {
     "node": "20"
   },

@@ -253,7 +253,7 @@ export default function NgoSelectionPage() {
             toast({
                 variant: 'destructive',
                 title: t('dashboard.settingsNgoSelection.toastLimitTitle'),
-                description: 'En az 2 STK seçmen gerekiyor.',
+                description: t('settings_ngo_selection.minTwoRequired'),
             });
             return;
         }
@@ -288,10 +288,10 @@ export default function NgoSelectionPage() {
             if (fb.ok) {
                 toast({
                     title: t('dashboard.settingsNgoSelection.toastSavedTitle'),
-                    description: 'Seçim kaydedildi; STK sayaçları güncellenemedi (yetki kısıtı).',
+                    description: t('settings_ngo_selection.partialSavedDesc'),
                 });
             } else {
-                toast({ variant: 'destructive', title: 'Kayıt başarısız', description: fb.error.message.slice(0, 200) });
+                toast({ variant: 'destructive', title: t('settings_ngo_selection.saveFailedTitle'), description: fb.error.message.slice(0, 200) });
                 return;
             }
         }
@@ -322,7 +322,7 @@ export default function NgoSelectionPage() {
                 </div>
                 {/* Üstteki kaydet butonu — alttakinin aynısı, uzun listede aşağı kaydırmadan kaydetmek için. */}
                 <Button onClick={handleSave} className="shrink-0">
-                    {isOnboarding ? 'Devam Et' : t('dashboard.settingsNgoSelection.saveBtn')}
+                    {isOnboarding ? t('settings_ngo_selection.continueBtn') : t('dashboard.settingsNgoSelection.saveBtn')}
                 </Button>
             </div>
 
@@ -334,7 +334,7 @@ export default function NgoSelectionPage() {
                     {remainingDays > 0 && (
                         <p className="flex items-center gap-1.5 mt-1 font-semibold">
                             <Calendar className="h-3.5 w-3.5" />
-                            Kalan süre: <span className="font-black">{remainingDays}</span> gün
+                            {t('settings_ngo_selection.remainingDaysPrefix')}<span className="font-black">{remainingDays}</span>{t('settings_ngo_selection.remainingDaysSuffix')}
                         </p>
                     )}
                 </AlertDescription>
@@ -358,16 +358,16 @@ export default function NgoSelectionPage() {
                     </SheetTrigger>
                     <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
                         <SheetHeader className="p-4 border-b">
-                            <SheetTitle className="font-black tracking-tight">Filtreler</SheetTitle>
-                            <SheetDescription>STK listesini ihtiyaca göre daralt.</SheetDescription>
+                            <SheetTitle className="font-black tracking-tight">{t('settings_ngo_selection.filtersTitle')}</SheetTitle>
+                            <SheetDescription>{t('settings_ngo_selection.filtersDesc')}</SheetDescription>
                         </SheetHeader>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-6">
                             {/* Kategori */}
                             <section className="space-y-2">
-                                <h3 className="font-bold text-sm flex items-center gap-2"><Filter className="h-4 w-4 text-primary" /> Kategori</h3>
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Filter className="h-4 w-4 text-primary" /> {t('settings_ngo_selection.categoryTitle')}</h3>
                                 {allCategories.length === 0 ? (
-                                    <p className="text-xs text-muted-foreground">Kategori bulunamadı.</p>
+                                    <p className="text-xs text-muted-foreground">{t('settings_ngo_selection.categoryEmpty')}</p>
                                 ) : (
                                     <div className="grid grid-cols-2 gap-2">
                                         {allCategories.map(cat => (
@@ -385,19 +385,19 @@ export default function NgoSelectionPage() {
 
                             {/* Il / Sehir */}
                             <section className="space-y-2">
-                                <h3 className="font-bold text-sm flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> İl</h3>
+                                <h3 className="font-bold text-sm flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {t('settings_ngo_selection.cityTitle')}</h3>
                                 {allCities.length === 0 ? (
-                                    <p className="text-xs text-muted-foreground">Konum bilgisi olan STK bulunamadı.</p>
+                                    <p className="text-xs text-muted-foreground">{t('settings_ngo_selection.cityEmpty')}</p>
                                 ) : (
                                     <>
-                                        <Label htmlFor="ngo-city-filter" className="sr-only">İl seç</Label>
+                                        <Label htmlFor="ngo-city-filter" className="sr-only">{t('settings_ngo_selection.cityLabel')}</Label>
                                         <select
                                             id="ngo-city-filter"
                                             value={cityFilter}
                                             onChange={e => setCityFilter(e.target.value)}
                                             className="w-full rounded-2xl border bg-background px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
                                         >
-                                            <option value="">Tüm İller</option>
+                                            <option value="">{t('settings_ngo_selection.cityAll')}</option>
                                             {allCities.map(c => (
                                                 <option key={c} value={c}>{c}</option>
                                             ))}
@@ -408,9 +408,9 @@ export default function NgoSelectionPage() {
 
                             {/* Uye Olunan Platformlar */}
                             <section className="space-y-2">
-                                <h3 className="font-bold text-sm flex items-center gap-2"><Network className="h-4 w-4 text-primary" /> Üye Olunan Platformlar</h3>
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Network className="h-4 w-4 text-primary" /> {t('settings_ngo_selection.platformsTitle')}</h3>
                                 {allPlatforms.length === 0 ? (
-                                    <p className="text-xs text-muted-foreground">Platform bilgisi bulunamadı.</p>
+                                    <p className="text-xs text-muted-foreground">{t('settings_ngo_selection.platformsEmpty')}</p>
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
                                         {allPlatforms.map(p => {
@@ -437,9 +437,9 @@ export default function NgoSelectionPage() {
 
                             {/* Faydalanici Gruplar */}
                             <section className="space-y-2">
-                                <h3 className="font-bold text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Faydalanıcı Gruplar</h3>
+                                <h3 className="font-bold text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> {t('settings_ngo_selection.beneficiariesTitle')}</h3>
                                 {allBeneficiaries.length === 0 ? (
-                                    <p className="text-xs text-muted-foreground">Faydalanıcı grubu bilgisi bulunamadı.</p>
+                                    <p className="text-xs text-muted-foreground">{t('settings_ngo_selection.beneficiariesEmpty')}</p>
                                 ) : (
                                     <div className="flex flex-wrap gap-2">
                                         {allBeneficiaries.map(b => {
@@ -472,13 +472,13 @@ export default function NgoSelectionPage() {
                                 onClick={clearAllFilters}
                                 disabled={activeFilterCount === 0}
                             >
-                                Temizle
+                                {t('settings_ngo_selection.clearBtn')}
                             </Button>
                             <Button
                                 className="flex-1 rounded-2xl font-bold"
                                 onClick={() => setIsFilterSheetOpen(false)}
                             >
-                                Uygula{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+                                {t('settings_ngo_selection.applyBtn')}{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
                             </Button>
                         </SheetFooter>
                     </SheetContent>
@@ -488,29 +488,30 @@ export default function NgoSelectionPage() {
                         <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('aria.sort')}><ArrowDownUp className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'random', direction: 'asc' })}>Karışık (varsayılan)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>İsme Göre (A-Z)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>İsme Göre (Z-A)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'followers', direction: 'desc' })}>Takipçi Sayısı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>Gönüllü Sayısı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'transparencyScore', direction: 'desc' })}>Şeffaflık Puanı</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'random', direction: 'asc' })}>{t('settings_ngo_selection.sortRandom')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>{t('settings_ngo_selection.sortNameAsc')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>{t('settings_ngo_selection.sortNameDesc')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'followers', direction: 'desc' })}>{t('settings_ngo_selection.sortFollowers')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'volunteers', direction: 'desc' })}>{t('settings_ngo_selection.sortVolunteers')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortConfig({ key: 'transparencyScore', direction: 'desc' })}>{t('settings_ngo_selection.sortTransparency')}</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={v => setTypeFilter(v as NgoType)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-                    <TabsTrigger value="Dernek">Dernek</TabsTrigger>
-                    <TabsTrigger value="Vakıf">Vakıf</TabsTrigger>
-                    <TabsTrigger value="Spor Kulübü">Spor</TabsTrigger>
-                    <TabsTrigger value="Özel İzinli">Özel</TabsTrigger>
+                    {/* value attribute'ları Firestore'daki NGO.type enum'larıyla birebir eşleşir; etiket child'ları çevrilir. */}
+                    <TabsTrigger value="Tümü">{t('settings_ngo_selection.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="Dernek">{t('settings_ngo_selection.tabAssociation')}</TabsTrigger>
+                    <TabsTrigger value="Vakıf">{t('settings_ngo_selection.tabFoundation')}</TabsTrigger>
+                    <TabsTrigger value="Spor Kulübü">{t('settings_ngo_selection.tabSports')}</TabsTrigger>
+                    <TabsTrigger value="Özel İzinli">{t('settings_ngo_selection.tabSpecial')}</TabsTrigger>
                 </TabsList>
             </Tabs>
 
             <Card>
                 <CardHeader className="p-4">
-                    <p className="text-sm font-medium">{selectedNgos.length} / 2 STK Seçildi</p>
+                    <p className="text-sm font-medium">{selectedNgos.length}{t('settings_ngo_selection.selectedCounterSuffix')}</p>
                 </CardHeader>
                 <CardContent className="p-0">
                     {isNgosLoading ? (
@@ -532,7 +533,7 @@ export default function NgoSelectionPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    aria-label="İncele"
+                                                    aria-label={t('settings_ngo_selection.previewAriaLabel')}
                                                     onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
                                                 >
                                                     <Eye className="h-4 w-4" />
@@ -548,7 +549,7 @@ export default function NgoSelectionPage() {
                                     />
                                 );
                             }) : (
-                                <p className="text-center text-muted-foreground p-8">Bu filtrelerle eşleşen STK bulunamadı.</p>
+                                <p className="text-center text-muted-foreground p-8">{t('settings_ngo_selection.noResults')}</p>
                             )}
                         </div>
                     )}
@@ -556,7 +557,7 @@ export default function NgoSelectionPage() {
             </Card>
 
             <div className="flex justify-end">
-                <Button onClick={handleSave}>{isOnboarding ? 'Devam Et' : t('dashboard.settingsNgoSelection.saveBtn')}</Button>
+                <Button onClick={handleSave}>{isOnboarding ? t('settings_ngo_selection.continueBtn') : t('dashboard.settingsNgoSelection.saveBtn')}</Button>
             </div>
 
             <Dialog open={!!previewNgo} onOpenChange={(open) => !open && setPreviewNgo(null)}>
@@ -579,16 +580,16 @@ export default function NgoSelectionPage() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <Badge variant="secondary" className="font-bold">
                                         <ShieldCheck className="h-3 w-3 mr-1 text-primary" />
-                                        Şeffaflık: {previewNgo.transparencyScore || 0}
+                                        {t('settings_ngo_selection.transparencyLabel')}: {previewNgo.transparencyScore || 0}
                                     </Badge>
                                     {previewNgo.stats?.followers != null && (
                                         <Badge variant="outline" className="font-medium">
-                                            {previewNgo.stats.followers.toLocaleString('tr-TR')} bağışçı
+                                            {previewNgo.stats.followers.toLocaleString('tr-TR')} {t('settings_ngo_selection.donorsSuffix')}
                                         </Badge>
                                     )}
                                     {previewNgo.stats?.volunteers != null && (
                                         <Badge variant="outline" className="font-medium">
-                                            {previewNgo.stats.volunteers.toLocaleString('tr-TR')} gönüllü
+                                            {previewNgo.stats.volunteers.toLocaleString('tr-TR')} {t('settings_ngo_selection.volunteersSuffix')}
                                         </Badge>
                                     )}
                                 </div>
@@ -597,13 +598,13 @@ export default function NgoSelectionPage() {
                                 )}
                                 <div className="flex gap-2 pt-2">
                                     <Button asChild variant="outline" className="flex-1 rounded-xl">
-                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">Profili Aç</a>
+                                        <a href={`/ngos/${previewNgo.id}`} target="_blank" rel="noopener noreferrer">{t('settings_ngo_selection.openProfile')}</a>
                                     </Button>
                                     <Button
                                         className="flex-1 rounded-xl"
                                         onClick={() => { handleNgoSelect(previewNgo.id); setPreviewNgo(null); }}
                                     >
-                                        {selectedNgos.includes(previewNgo.id) ? 'Seçimi Kaldır' : 'Seç'}
+                                        {selectedNgos.includes(previewNgo.id) ? t('settings_ngo_selection.unselect') : t('settings_ngo_selection.select')}
                                     </Button>
                                 </div>
                             </div>

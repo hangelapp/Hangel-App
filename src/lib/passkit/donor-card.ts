@@ -58,7 +58,7 @@ const SHARED_DEFAULTS = {
   formatVersion: 1,
   passTypeIdentifier: PASS_TYPE_ID,
   teamIdentifier: TEAM_ID,
-  organizationName: 'Hangel',
+  organizationName: 'hangel',
   foregroundColor: 'rgb(255, 255, 255)',
   backgroundColor: 'rgb(243, 71, 35)',
   labelColor: 'rgb(255, 255, 255)',
@@ -88,7 +88,7 @@ export async function generateDonorCard(input: DonorCardInput): Promise<Buffer> 
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_DEFAULTS,
       serialNumber,
-      description: `Hangel — Bağışçı Kartı (${input.fullName})`,
+      description: `hangel — Bağışçı Kartı (${input.fullName})`,
       generic: {
         primaryFields: [
           { key: 'name', label: 'BAĞIŞÇI', value: input.fullName },
@@ -101,7 +101,7 @@ export async function generateDonorCard(input: DonorCardInput): Promise<Buffer> 
           {
             key: 'about',
             label: 'Hakkında',
-            value: 'Hangel bağışçı kartı, sahibinin Hangel platformunda kayıtlı bağışçı olduğunu kanıtlar. STK\'lara ve etkinliklerde gösterilebilir.',
+            value: 'hangel bağışçı kartı, sahibinin hangel platformunda kayıtlı bağışçı olduğunu kanıtlar. STK\'lara ve etkinliklerde gösterilebilir.',
           },
           {
             key: 'contact',

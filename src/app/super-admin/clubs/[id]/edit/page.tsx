@@ -414,7 +414,7 @@ export default function SuperAdminClubEditPage() {
               <div className="h-9 w-9 rounded-xl bg-purple-100 flex items-center justify-center"><Award className="h-5 w-5 text-purple-700" /></div>
               <div>
                 <p className="text-sm font-bold">Kampüs Elçisi</p>
-                <p className="text-[11px] text-muted-foreground">Hangel elçisi olarak atanmış kulüp.</p>
+                <p className="text-[11px] text-muted-foreground">hangel elçisi olarak atanmış kulüp.</p>
               </div>
             </div>
             <Switch checked={!!form.campusAmbassador} onCheckedChange={c => setForm(p => ({ ...p, campusAmbassador: c }))} />

@@ -138,7 +138,7 @@ export const eventOneHourSmsReminder = onSchedule(
       const hourLabel = formatHourLabel(start);
       const eventName = event.name || 'Etkinlik';
       const loc = event.location?.address || event.location?.district || event.location?.city || '';
-      const smsBody = `Hangel: "${eventName}" 1 saat içinde ${hourLabel}'de başlıyor${loc ? ` (${loc})` : ''}. Görüşmek üzere!`;
+      const smsBody = `hangel: "${eventName}" 1 saat içinde ${hourLabel}'de başlıyor${loc ? ` (${loc})` : ''}. Görüşmek üzere!`;
 
       for (const rsvp of rsvpsSnap.docs) {
         const data = rsvp.data() as { userId?: string };

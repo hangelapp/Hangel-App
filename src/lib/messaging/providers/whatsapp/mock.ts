@@ -54,7 +54,7 @@ export class MockWhatsAppProvider implements WhatsAppProvider {
 
   async syncTemplates(_wabaId: string): Promise<WhatsAppTemplateInfo[]> {
     return [
-      { name: 'hosgeldin_uyari', language: 'tr', category: 'UTILITY', status: 'APPROVED', body: 'Merhaba {{1}}, Hangel\'e hoş geldiniz.' },
+      { name: 'hosgeldin_uyari', language: 'tr', category: 'UTILITY', status: 'APPROVED', body: 'Merhaba {{1}}, hangel\'e hoş geldiniz.' },
       { name: 'bagis_tesekkur', language: 'tr', category: 'UTILITY', status: 'APPROVED', body: '{{1}} TL bağışınız için teşekkürler.' },
     ];
   }

@@ -14,17 +14,17 @@ Apple Wallet (.pkpass) için gerekli görseller. Apple spec:
 
 Şu an `src/lib/passkit/assets/` boş. PassKit endpoint'leri:
 - `loadPassAssets()` çağırıyor, dosya yoksa sessiz default (Apple sade pass üretir).
-- Production'da bu dosyalar Hangel branding ile doldurulmalı.
+- Production'da bu dosyalar hangel branding ile doldurulmalı.
 
 ## Üretim adımları
 
-1. Hangel logo'sundan icon (29/58/87 px versiyonları)
+1. hangel logo'sundan icon (29/58/87 px versiyonları)
 2. Pass header için banner logo (160/320/480 px)
 3. Etkinlik bileti için strip (320/640/960 px)
 
 Tasarım gereği:
 - Background: beyaz veya saydam
-- Icon: Hangel kırmızı (#E0140F)
+- Icon: hangel kırmızı (#E0140F)
 - PNG-32 (alpha kanal destekli)
 
 ## Geçici placeholder
@@ -32,7 +32,7 @@ Tasarım gereği:
 ImageMagick yoksa `sips` ile basit placeholder üretilebilir:
 
 ```bash
-# Beyaz arka plan + Hangel kırmızı circle (placeholder)
+# Beyaz arka plan + hangel kırmızı circle (placeholder)
 # Gerçek tasarım gelene kadar)
 ```
 

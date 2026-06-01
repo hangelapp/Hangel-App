@@ -145,7 +145,7 @@ export default function NewMessagePage() {
                                             <SelectItem value="individual-user">Bireysel Kullanıcı</SelectItem>
                                             <SelectItem value="individual-ngo">Sivil Toplum Kuruluşu (STK)</SelectItem>
                                             <SelectItem value="individual-club">Öğrenci Kulübü</SelectItem>
-                                            <SelectItem value="admin">Hangel Sistem Yöneticisi</SelectItem>
+                                            <SelectItem value="admin">hangel Sistem Yöneticisi</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

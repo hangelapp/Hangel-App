@@ -37,7 +37,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
 export default function AssociationPressPage() {
     const { get } = useAssociationContent();
     const title = get('press.title', 'Basında Biz');
-    const subtitle = get('press.subtitle', 'Hangel Derneği medyada nasıl yer aldı');
+    const subtitle = get('press.subtitle', 'hangel Derneği medyada nasıl yer aldı');
     const bodyHtml = get('press.body', '<p>Henüz yayınlanmış basın bültenimiz bulunmuyor. Yakında burada olacağız.</p>');
     const heroImage = get('press.heroImage', '');
 

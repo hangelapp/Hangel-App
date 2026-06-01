@@ -348,7 +348,7 @@ export default function NgoProfilePage() {
                     sameAs={[(ngo as { website?: string }).website].filter(Boolean) as string[]}
                 />
                 <BreadcrumbSchema items={[
-                    { name: 'Hangel', url: 'https://hangel.org.tr' },
+                    { name: 'hangel', url: 'https://hangel.org.tr' },
                     { name: 'STK\'lar', url: 'https://hangel.org.tr/ngos' },
                     { name: ngo.name, url: `https://hangel.org.tr/ngos/${ngo.id}` },
                 ]} />
@@ -370,7 +370,7 @@ export default function NgoProfilePage() {
                 <Button aria-label="POS ile ödeme" onClick={() => setIsPosInfoOpen(true)} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
                     <CreditCard className="h-4 w-4" />
                 </Button>
-                <ShareButtons url={profileUrl} title={`Hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
+                <ShareButtons url={profileUrl} title={`hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
                 <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Web sitesini görüntüle">
                   <Link href={`/ngo-admin/website/preview`} target="_blank" rel="noopener noreferrer">
                     <Globe className="h-4 w-4" />

@@ -1,4 +1,4 @@
-# Hangel iOS Maestro E2E Tests
+# hangel iOS Maestro E2E Tests
 
 Bu dizindeki YAML'lar Maestro ile iOS Simulator üzerinde otomatik smoke
 test yapar.
@@ -17,7 +17,7 @@ export PATH="$HOME/.maestro/bin:$PATH"
 ## Önkoşul
 
 1. iOS Simulator açık: `open -a Simulator`
-2. Hangel app yüklü (TestFlight'tan veya `npx cap run ios`)
+2. hangel app yüklü (TestFlight'tan veya `npx cap run ios`)
 3. Internet bağlantısı
 
 ## Çalıştırma

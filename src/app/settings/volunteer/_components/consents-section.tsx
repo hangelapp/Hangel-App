@@ -24,9 +24,9 @@ export const ConsentsSection = ({
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Hangel Gönüllülük Katılım ve Onay Beyanı</CardTitle>
+        <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> hangel Gönüllülük Katılım ve Onay Beyanı</CardTitle>
         <p className="text-xs text-muted-foreground leading-relaxed mt-2">
-          Hangel topluluğunun bir parçası olarak, kolektif bilinç ile hareket etmeyi, hangel etik değerlerine bağlı kalmayı, tüm canlılara saygıyla yaklaşmayı ve sosyal fayda üretirken sorumluluk almayı kabul ediyorum.
+          hangel topluluğunun bir parçası olarak, kolektif bilinç ile hareket etmeyi, hangel etik değerlerine bağlı kalmayı, tüm canlılara saygıyla yaklaşmayı ve sosyal fayda üretirken sorumluluk almayı kabul ediyorum.
         </p>
         <p className="text-[11px] font-bold text-primary uppercase tracking-widest mt-1">Tüm maddeler zorunludur</p>
       </CardHeader>

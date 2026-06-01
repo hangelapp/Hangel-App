@@ -92,7 +92,7 @@ export function PermissionPrompter() {
         <DialogHeader>
           <DialogTitle className="text-xl font-black">Daha iyi bir deneyim için</DialogTitle>
           <DialogDescription className="text-sm leading-relaxed pt-2">
-            Hangel sana yakındaki etkinlikleri, kan ilanlarını ve acil çağrıları zamanında ulaştırmak için bu izinleri kullanır:
+            hangel sana yakındaki etkinlikleri, kan ilanlarını ve acil çağrıları zamanında ulaştırmak için bu izinleri kullanır:
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">

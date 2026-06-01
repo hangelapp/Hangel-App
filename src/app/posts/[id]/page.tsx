@@ -65,7 +65,7 @@ export default function PostPermalinkPage() {
   }
 
   const ts = formatTimestamp(post);
-  const authorName = post.author?.name || 'Hangel';
+  const authorName = post.author?.name || 'hangel';
   const authorAvatar = post.author?.avatarUrl;
   const safeHtml = sanitizeHtml(post.content ?? '');
 

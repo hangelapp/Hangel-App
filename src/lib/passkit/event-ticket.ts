@@ -59,7 +59,7 @@ const SHARED_DEFAULTS = {
   formatVersion: 1,
   passTypeIdentifier: PASS_TYPE_ID,
   teamIdentifier: TEAM_ID,
-  organizationName: 'Hangel',
+  organizationName: 'hangel',
   foregroundColor: 'rgb(255, 255, 255)',
   backgroundColor: 'rgb(243, 71, 35)',
   labelColor: 'rgb(255, 255, 255)',
@@ -102,7 +102,7 @@ export async function generateEventTicket(input: EventTicketInput): Promise<Buff
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_DEFAULTS,
       serialNumber,
-      description: `Hangel — ${input.eventTitle}`,
+      description: `hangel — ${input.eventTitle}`,
       eventTicket: {
         primaryFields: [
           { key: 'event', label: 'ETKİNLİK', value: input.eventTitle },

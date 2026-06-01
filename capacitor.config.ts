@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   // Android: com.hangel.app | iOS: com.hangel.ios.app (set in Xcode project, Team: NKZNY8NU8S)
   appId: 'com.hangel.app',
-  appName: 'Hangel',
+  appName: 'hangel',
   webDir: 'out',
   server: {
     url: 'https://hangel.org.tr',

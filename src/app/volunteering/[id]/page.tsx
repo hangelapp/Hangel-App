@@ -181,7 +181,7 @@ export default function VolunteeringDetailPage() {
               </Button>
             </div>
             <div className="absolute top-4 right-4 z-10">
-                <ShareButtons url={profileUrl} title={`${opportunity.title} - Hangel Gönüllülük Fırsatı`} />
+                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük Fırsatı`} />
             </div>
         </div>
 

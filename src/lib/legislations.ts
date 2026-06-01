@@ -1,11 +1,11 @@
 /**
- * Hangel hukuk merkezi — varsayılan mevzuat kütüphanesi (seed).
+ * hangel hukuk merkezi — varsayılan mevzuat kütüphanesi (seed).
  *
  * super-admin/contracts → Mevzuatlar sekmesindeki "Varsayılan Mevzuatları İçe Aktar"
  * butonu bu listeyi `legislations` koleksiyonuna yazar (setDoc merge, id = sabit slug).
  *
  * ÇOK YARGILI (multi-jurisdiction): her kayıt `country` ile etiketlenir.
- * Hangel TR'de faaliyette + AB ve diğer ülkelere açılım planlandığından TR + AB +
+ * hangel TR'de faaliyette + AB ve diğer ülkelere açılım planlandığından TR + AB +
  * uluslararası mevzuat birlikte tutulur. Ülke bazlı detay (her AB üyesinin ulusal
  * uygulaması) avukatlar tarafından kendi ülke etiketiyle eklenecek.
  *
@@ -57,7 +57,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'tr-kvkk-6698', name: 'Kişisel Verilerin Korunması Kanunu', number: '6698', country: 'TR',
     category: 'KVKK', riskLevel: 'yuksek', complianceStatus: 'aksiyon-gerekli',
-    hangelSubject: 'Hangel kimlik, telefon, e-posta, konum ve kan grubu işler. Kan grubu/sağlık verisi md.6 özel nitelikli — daha sıkı korunmalı.',
+    hangelSubject: 'hangel kimlik, telefon, e-posta, konum ve kan grubu işler. Kan grubu/sağlık verisi md.6 özel nitelikli — daha sıkı korunmalı.',
     affectedModules: ['Bağış', 'Gönüllülük', 'Etkinlik', 'AI Araçları', 'Mesajlaşma', 'Kan İlanı', 'Üyelik', 'Ödeme'],
     articleText: 'md.4 genel ilkeler; md.5 işleme şartları/açık rıza; md.6 özel nitelikli veriler; md.10 aydınlatma; md.12 veri güvenliği.',
     interpretation: 'Her veri toplama noktasında aydınlatma + açık rıza. Kan ilanı sağlık verisi → ek güvenlik. VERBİS kaydı. İhlalde idari para cezası + TCK 135-136.',
@@ -87,13 +87,13 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Saklama süreleri ve süre sonunda imha. Hesap silme akışı.',
     affectedModules: ['Üyelik', 'Mesajlaşma', 'Bağış'],
     articleText: 'Saklama ve imha politikası, periyodik imha (6 ay), anonimleştirme yöntemleri.',
-    interpretation: 'Hangel saklama/imha politikası + periyodik imha takvimi belgelendirmeli; "hesabımı sil" işlevi bununla uyumlu olmalı.',
+    interpretation: 'hangel saklama/imha politikası + periyodik imha takvimi belgelendirmeli; "hesabımı sil" işlevi bununla uyumlu olmalı.',
     links: `${RG}\n${KVKK_KARAR}`,
   },
   {
     id: 'tr-verbis-yonetmelik', name: 'Veri Sorumluları Sicili Hakkında Yönetmelik (VERBİS)', country: 'TR',
     category: 'KVKK', riskLevel: 'orta', complianceStatus: 'inceleniyor',
-    hangelSubject: 'Hangel veri sorumlusu; eşik aşılıyorsa VERBİS kaydı zorunlu.',
+    hangelSubject: 'hangel veri sorumlusu; eşik aşılıyorsa VERBİS kaydı zorunlu.',
     affectedModules: ['Üyelik', 'Bağış', 'Mesajlaşma'],
     articleText: 'Sicile kayıt yükümlülüğü, istisnalar ve bildirim usulleri.',
     interpretation: 'Çalışan sayısı/ciro eşiği kontrol edilmeli; gerekirse işleme envanteri + kayıt yapılmalı.',
@@ -113,7 +113,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'tr-dernekler-5253', name: 'Dernekler Kanunu', number: '5253', country: 'TR',
     category: 'Dernekler Kanunu', riskLevel: 'orta', complianceStatus: 'inceleniyor',
-    hangelSubject: 'Hangel dernek değil; STK\'ları listeler ve aracılık eder. STK\'ların beyan/kayıt yükümlülükleri platformu dolaylı bağlar.',
+    hangelSubject: 'hangel dernek değil; STK\'ları listeler ve aracılık eder. STK\'ların beyan/kayıt yükümlülükleri platformu dolaylı bağlar.',
     affectedModules: ['Üyelik', 'Gönüllülük', 'Bağış'],
     articleText: 'Üye kayıtları, beyanname, denetim, yardım/işbirliği; DERBİS beyanları.',
     interpretation: 'Platformdaki derneklerin yasal statüsü (kütük no, tüzük) doğrulanmalı; aracılık DERBİS yükümlülükleriyle uyumlu olmalı.',
@@ -125,7 +125,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Derneklerin defter, beyanname ve elektronik sistem (DERBİS) yükümlülükleri.',
     affectedModules: ['Üyelik', 'Bağış'],
     articleText: 'Tutulacak defterler, beyanname formatları, yardım toplama bildirimleri.',
-    interpretation: 'Hangel STK\'lara raporlama kolaylığı sağlıyorsa formatlar yönetmelikle uyumlu olmalı.',
+    interpretation: 'hangel STK\'lara raporlama kolaylığı sağlıyorsa formatlar yönetmelikle uyumlu olmalı.',
     links: `${SIVILTOPLUM}\n${RG}`,
   },
   {
@@ -145,7 +145,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'EN KRİTİK ALAN. İzinsiz yardım toplama yasak. Bağış akışının "aracılık" mı "yardım toplama" mı sayıldığı doğrudan risk doğurur.',
     affectedModules: ['Bağış'],
     articleText: 'md.3 tanım; md.5-6 izin (mülki amir/İçişleri); izinsiz toplamaya yaptırım.',
-    interpretation: 'Hangel para havuzlarsa izin gerekir. Güvenli model: bağışı doğrudan yetkili STK hesabına yönlendiren teknik aracılık; para Hangel\'de tutulmaz. Her kampanya için izin/istisna ayrı kontrol.',
+    interpretation: 'hangel para havuzlarsa izin gerekir. Güvenli model: bağışı doğrudan yetkili STK hesabına yönlendiren teknik aracılık; para hangel\'de tutulmaz. Her kampanya için izin/istisna ayrı kontrol.',
     links: `${kanun('2860')}\n${SIVILTOPLUM}\n${DANISTAY}`,
   },
   {
@@ -163,7 +163,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Platform üzerinden fon/kampanya toplanması "kitle fonlaması" sayılırsa SPK lisanslı platform şartı doğar.',
     affectedModules: ['Bağış', 'Ödeme'],
     articleText: 'Paya/borçlanmaya/bağışa & ödüle dayalı kitle fonlaması; yalnızca SPK listesindeki lisanslı platformlar aracılık edebilir.',
-    interpretation: 'Hangel\'in bağış modeli "bağış/yardım" olarak kalmalı; yatırım/ödül vaadi içermemeli. Aksi halde SPK lisansı gerekir.',
+    interpretation: 'hangel\'in bağış modeli "bağış/yardım" olarak kalmalı; yatırım/ödül vaadi içermemeli. Aksi halde SPK lisansı gerekir.',
     links: `${SPK}\n${kanun('6362')}`,
   },
   {
@@ -190,7 +190,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Dernek/vakıfların ticari faaliyeti iktisadi işletme sayılır; platform gelir modeli vergisel sonuç doğurur.',
     affectedModules: ['Bağış', 'Ödeme'],
     articleText: 'Kurumlar vergisi muafiyeti/iktisadi işletme, KDV, belge düzeni (fatura/makbuz).',
-    interpretation: 'Hangel komisyon/hizmet geliri vergiye tabidir; STK\'ların bağış makbuzu ve iktisadi işletme ayrımı netleştirilmeli.',
+    interpretation: 'hangel komisyon/hizmet geliri vergiye tabidir; STK\'ların bağış makbuzu ve iktisadi işletme ayrımı netleştirilmeli.',
     links: `${kanun('5520')}\n${kanun('3065')}\n${kanun('213')}`,
   },
 
@@ -207,7 +207,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'tr-eticaret-aracilik-yonetmelik', name: 'Elektronik Ticaret Aracı Hizmet Sağlayıcı ve Hizmet Sağlayıcılar Hakkında Yönetmelik (ETBİS)', country: 'TR',
     category: 'Elektronik Ticaret', riskLevel: 'orta', complianceStatus: 'inceleniyor',
-    hangelSubject: 'Hangel aracı hizmet sağlayıcı (pazar yeri) niteliğindeyse ETBİS kaydı + aracılık yükümlülükleri.',
+    hangelSubject: 'hangel aracı hizmet sağlayıcı (pazar yeri) niteliğindeyse ETBİS kaydı + aracılık yükümlülükleri.',
     affectedModules: ['Ödeme', 'Bağış'],
     articleText: 'Aracı hizmet sağlayıcı tanımı, ETBİS kayıt, bilgi verme ve sorumluluk dağılımı.',
     interpretation: 'Market/aracılık modülü büyürse ETBİS kaydı ve satıcı-platform sorumluluk ayrımı gerekli.',
@@ -225,7 +225,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'tr-internet-5651', name: 'İnternet Ortamında Yapılan Yayınların Düzenlenmesi Hakkında Kanun', number: '5651', country: 'TR',
     category: 'Diğer', riskLevel: 'orta', complianceStatus: 'inceleniyor',
-    hangelSubject: 'Hangel yer/içerik sağlayıcı. Kullanıcı içerikleri için kaldırma + log yükümlülükleri.',
+    hangelSubject: 'hangel yer/içerik sağlayıcı. Kullanıcı içerikleri için kaldırma + log yükümlülükleri.',
     affectedModules: ['Mesajlaşma', 'Etkinlik'],
     articleText: 'Yer/içerik/erişim sağlayıcı yükümlülükleri; içeriğin yayından çıkarılması; trafik bilgisi (log) saklama; sosyal ağ sağlayıcı (7253) ek yükümlülükler.',
     interpretation: 'İçerik moderasyon + bildirim/şikâyet (notice-and-takedown) + log saklama. Erişim eşiği aşılırsa temsilci/raporlama.',
@@ -239,7 +239,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Acil kan ilanı modülünü doğrudan ilgilendirir. Kan menfaat karşılığı alınıp satılamaz; temin yetkili kuruluşlarca (Kızılay).',
     affectedModules: ['Kan İlanı'],
     articleText: 'Kanın bağış esası, ticari amaçlı alım-satım yasağı, kan hizmet birimlerinin yetkilendirilmesi.',
-    interpretation: 'Hangel YALNIZCA ihtiyaç duyurusu + gönüllü eşleştirme yapmalı; kan teminine/ticaretine aracılık ETMEMELİ. "Para karşılığı kan" talepleri engellenmeli; kullanıcılar Kızılay\'a yönlendirilmeli.',
+    interpretation: 'hangel YALNIZCA ihtiyaç duyurusu + gönüllü eşleştirme yapmalı; kan teminine/ticaretine aracılık ETMEMELİ. "Para karşılığı kan" talepleri engellenmeli; kullanıcılar Kızılay\'a yönlendirilmeli.',
     links: `${kanun('5624')}\nhttps://www.kanver.org/\n${DANISTAY}`,
   },
   {
@@ -248,7 +248,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'Kan bağışı süreçleri, uygunluk ve izlenebilirlik.',
     affectedModules: ['Kan İlanı'],
     articleText: 'Bağışçı uygunluğu, kan alma/işleme, izlenebilirlik ve bildirim.',
-    interpretation: 'Hangel tıbbi süreçlere girmemeli; yalnızca bilgilendirme + yetkili merkeze yönlendirme.',
+    interpretation: 'hangel tıbbi süreçlere girmemeli; yalnızca bilgilendirme + yetkili merkeze yönlendirme.',
     links: `${RG}`,
   },
 
@@ -301,10 +301,10 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'tr-odeme-6493', name: 'Ödeme ve Elektronik Para Kuruluşları Hakkında Kanun', number: '6493', country: 'TR',
     category: 'Diğer', riskLevel: 'yuksek', complianceStatus: 'aksiyon-gerekli',
-    hangelSubject: 'Bağış/ödeme tahsilatı lisans gerektirir; Hangel lisanslı kuruluş (ör. N-Kolay) üzerinden çalışmalı.',
+    hangelSubject: 'Bağış/ödeme tahsilatı lisans gerektirir; hangel lisanslı kuruluş (ör. N-Kolay) üzerinden çalışmalı.',
     affectedModules: ['Ödeme', 'Bağış'],
     articleText: 'Ödeme hizmeti/e-para faaliyetlerinin lisansa tabi olması; yetkisiz faaliyet yasağı; TCMB denetimi.',
-    interpretation: 'Hangel kendi adına para tutmamalı; tahsilat lisanslı kuruluş üzerinden, fonlar doğrudan alıcı STK\'ya akmalı.',
+    interpretation: 'hangel kendi adına para tutmamalı; tahsilat lisanslı kuruluş üzerinden, fonlar doğrudan alıcı STK\'ya akmalı.',
     links: `${RG}\n${DANISTAY}`,
   },
   {
@@ -357,7 +357,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'eu-ai-act-2024-1689', name: 'AI Act — Artificial Intelligence Act', number: '2024/1689', country: 'EU',
     category: 'Diğer', riskLevel: 'yuksek', complianceStatus: 'inceleniyor',
-    hangelSubject: 'AB\'de AI sistemleri için risk-temelli rejim. Hangel\'in AI özellikleri sınıflandırılmalı (çoğunlukla sınırlı/asgari risk + şeffaflık).',
+    hangelSubject: 'AB\'de AI sistemleri için risk-temelli rejim. hangel\'in AI özellikleri sınıflandırılmalı (çoğunlukla sınırlı/asgari risk + şeffaflık).',
     affectedModules: ['AI Araçları'],
     articleText: 'Risk sınıfları (yasak / yüksek / sınırlı / asgari); şeffaflık yükümlülükleri (Art.50): kullanıcıya AI ile etkileşimde olduğu ve içeriğin yapay üretildiği bildirilmeli.',
     interpretation: 'AI üretimi içerik (Etki Hikayem) "yapay zeka üretimidir" etiketiyle sunulmalı; insan denetimi + log. Yüksek riskli kullanım yoksa yük asgari.',
@@ -375,7 +375,7 @@ export const legislationsData: SeedLegislation[] = [
   {
     id: 'eu-dma-2022-1925', name: 'DMA — Digital Markets Act', number: '2022/1925', country: 'EU',
     category: 'Diğer', riskLevel: 'dusuk', complianceStatus: 'uyumlu',
-    hangelSubject: 'Yalnızca "gatekeeper" büyük platformlara uygulanır. Hangel bu eşikte değil; izleme amaçlı.',
+    hangelSubject: 'Yalnızca "gatekeeper" büyük platformlara uygulanır. hangel bu eşikte değil; izleme amaçlı.',
     affectedModules: [],
     articleText: 'Gatekeeper yükümlülükleri (kendine kayırma yasağı, birlikte çalışabilirlik vb.).',
     interpretation: 'Şu an kapsam dışı; büyüme senaryosunda yeniden değerlendirilir.',
@@ -396,7 +396,7 @@ export const legislationsData: SeedLegislation[] = [
     hangelSubject: 'AB\'de ödeme/bağış tahsilatı; güçlü müşteri kimlik doğrulama (SCA) ve lisanslı PSP şartı.',
     affectedModules: ['Ödeme', 'Bağış'],
     articleText: 'Ödeme hizmeti lisansı, güçlü kimlik doğrulama (SCA), açık bankacılık.',
-    interpretation: 'AB tahsilatında SCA destekli, lisanslı PSP (ör. Stripe/Adyen) kullanılmalı; Hangel para tutmamalı.',
+    interpretation: 'AB tahsilatında SCA destekli, lisanslı PSP (ör. Stripe/Adyen) kullanılmalı; hangel para tutmamalı.',
     links: `${eurlexDir('2015', '2366')}`,
   },
   {

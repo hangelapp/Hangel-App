@@ -1,4 +1,4 @@
-# Hangel Hub - Dinamik Veri Noktaları ve Dashboard Analizi
+# hangel Hub - Dinamik Veri Noktaları ve Dashboard Analizi
 
 Bu döküman, uygulamada statik (mock) veriden kurtarılıp Firebase veritabanına (Firestore) bağlanması gereken temel dinamik noktaları listeler.
 
@@ -8,7 +8,7 @@ Dashboard ve Veritabanı bağlantısı gereken alanlar:
 - **Gönüllülük Kimliği:** Yetkinlikler, ilgi alanları, eğitim ve kariyer geçmişi.
 - **Etki Karnesi:** Toplam sosyal etki puanı, bağış tutarı, gönüllülük saati.
 - **Rozetler ve Sertifikalar:** Kazanılan/bekleyen rozetler ve resmi sertifikalar.
-- **Cüzdan:** Hangel kart bakiyesi ve işlem geçmişi.
+- **Cüzdan:** hangel kart bakiyesi ve işlem geçmişi.
 
 ## 2. Zaman Tüneli (Feed)
 - **Gönderiler:** STK ve Markaların paylaştığı içerikler, görseller ve videolar.

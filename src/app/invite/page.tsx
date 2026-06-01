@@ -782,7 +782,7 @@ export default function InvitePage() {
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-3 leading-snug">
                         💡 <strong>iPhone / Safari kullanıcıları:</strong> Telefon Rehberini bağlamak için
-                        Hangel mobil uygulamasını kullanın. Veya rehberinizi dışa aktarıp
+                        hangel mobil uygulamasını kullanın. Veya rehberinizi dışa aktarıp
                         <strong className="text-foreground"> vCard / CSV </strong>
                         ile yükleyin.
                     </p>
@@ -838,7 +838,7 @@ export default function InvitePage() {
                             <Mail className="h-5 w-5 text-primary" /> E-posta Kişilerini İçe Aktar
                         </DialogTitle>
                         <DialogDescription>
-                            Mail kişilerini içe aktarmak için bir sağlayıcı seç. Hangel kullanan arkadaşların otomatik işaretlenir.
+                            Mail kişilerini içe aktarmak için bir sağlayıcı seç. hangel kullanan arkadaşların otomatik işaretlenir.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
@@ -998,7 +998,7 @@ export default function InvitePage() {
                                     <div>
                                         <p className="font-semibold">Rehberine Erişim Ver</p>
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Hangel, rehberini yalnızca arkadaşlarını bulmak için kullanır.
+                                            hangel, rehberini yalnızca arkadaşlarını bulmak için kullanır.
                                             Hiçbir kişi bilgisi sunucularımızda saklanmaz.
                                         </p>
                                     </div>

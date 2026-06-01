@@ -18,7 +18,7 @@ struct ContentView: View {
                     list
                 }
             }
-            .navigationTitle("Hangel")
+            .navigationTitle("hangel")
         }
     }
 

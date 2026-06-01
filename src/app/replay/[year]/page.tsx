@@ -79,11 +79,11 @@ export default function ReplayPage() {
     if (!data) return;
     const text = `${data.year} ${t('replay.shareText1')} ${data.totalVolunteerHours} ${t('replay.shareText2')} ${data.estimatedPeopleHelped} ${t('replay.shareText3')}`;
     if (Capacitor.isNativePlatform()) {
-      try { await Share.share({ title: `Hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); } catch { /* iptal */ }
+      try { await Share.share({ title: `hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); } catch { /* iptal */ }
       return;
     }
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
-      try { await navigator.share({ title: `Hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); return; } catch { /* iptal */ }
+      try { await navigator.share({ title: `hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); return; } catch { /* iptal */ }
     }
     try { await navigator.clipboard.writeText(text); toast({ title: t('replay.copied') }); } catch { /* sessiz */ }
   };
@@ -147,7 +147,7 @@ interface Story {
 function buildStories(data: Replay, MONTHS: string[], CATEGORY_TR: Record<string, string>, t: (k: string) => string): Story[] {
   const stories: Story[] = [
     {
-      kicker: 'Hangel',
+      kicker: 'hangel',
       title: `${data.year}`,
       subtitle: t('replay.s1Subtitle'),
       bgClass: 'bg-gradient-to-br from-primary to-orange-600',

@@ -11,6 +11,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { collection, query } from 'firebase/firestore';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface SearchableEntity {
     id: string;
@@ -39,6 +40,7 @@ export default function GlobalSearchPage() {
 function GlobalSearchPageInner() {
     const router = useRouter();
     const params = useSearchParams();
+    const { t } = useTranslation();
     const initialQ = params.get('q') || '';
     const [q, setQ] = useState(initialQ);
     const [recent, setRecent] = useState<string[]>([]);
@@ -94,14 +96,14 @@ function GlobalSearchPageInner() {
         <div className="min-h-dvh bg-background">
             <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b">
                 <div className="container mx-auto px-3 h-14 flex items-center gap-2 max-w-3xl">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label="Geri">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="h-9 w-9 shrink-0" aria-label={t('search.backAria')}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div className="relative flex-1">
                         <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="search"
-                            placeholder="STK, marka, kulüp, etkinlik, gönüllülük ara..."
+                            placeholder={t('search.placeholder')}
                             className="pl-9 pr-8 h-10"
                             autoFocus
                             value={q}
@@ -113,7 +115,7 @@ function GlobalSearchPageInner() {
                                 type="button"
                                 onClick={() => setQ('')}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted"
-                                aria-label="Temizle"
+                                aria-label={t('search.clearAria')}
                             >
                                 <X className="h-3.5 w-3.5 text-muted-foreground" />
                             </button>
@@ -126,13 +128,13 @@ function GlobalSearchPageInner() {
                 {!term && recent.length > 0 && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Son Aramalar</h2>
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('search.recentTitle')}</h2>
                             <button
                                 type="button"
                                 onClick={() => { setRecent([]); try { localStorage.removeItem(RECENT_KEY); } catch { /* noop */ } }}
                                 className="text-[11px] text-primary hover:underline"
                             >
-                                Temizle
+                                {t('search.clearBtn')}
                             </button>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -153,31 +155,31 @@ function GlobalSearchPageInner() {
                 {!term && recent.length === 0 && (
                     <div className="text-center py-16 space-y-3 text-muted-foreground">
                         <SearchIcon className="h-12 w-12 mx-auto opacity-30" />
-                        <p className="text-sm">STK, marka, kulüp, etkinlik veya gönüllülük ilanı ara.</p>
+                        <p className="text-sm">{t('search.emptyHint')}</p>
                     </div>
                 )}
 
                 {term && totalResults === 0 && (
                     <div className="text-center py-12 space-y-2">
-                        <p className="text-sm font-bold">Sonuç bulunamadı</p>
-                        <p className="text-xs text-muted-foreground">&quot;{q}&quot; için eşleşen STK, marka, kulüp, etkinlik veya ilan yok.</p>
+                        <p className="text-sm font-bold">{t('search.noResultsTitle')}</p>
+                        <p className="text-xs text-muted-foreground">&quot;{q}&quot; {t('search.noResultsDescPrefix')}</p>
                     </div>
                 )}
 
                 {ngoResults.length > 0 && (
-                    <Section icon={HeartHandshake} title="STK'lar" items={ngoResults} hrefPrefix="/ngos" getLogo={getLogo} />
+                    <Section icon={HeartHandshake} title={t('search.sectionNgos')} items={ngoResults} hrefPrefix="/ngos" getLogo={getLogo} />
                 )}
                 {brandResults.length > 0 && (
-                    <Section icon={Store} title="Markalar" items={brandResults} hrefPrefix="/market" getLogo={getLogo} />
+                    <Section icon={Store} title={t('search.sectionBrands')} items={brandResults} hrefPrefix="/market" getLogo={getLogo} />
                 )}
                 {clubResults.length > 0 && (
-                    <Section icon={GraduationCap} title="Öğrenci Kulüpleri" items={clubResults} hrefPrefix="/clubs/profile" getLogo={getLogo} />
+                    <Section icon={GraduationCap} title={t('search.sectionClubs')} items={clubResults} hrefPrefix="/clubs/profile" getLogo={getLogo} />
                 )}
                 {eventResults.length > 0 && (
-                    <Section icon={Calendar} title="Etkinlikler" items={eventResults} hrefPrefix="/events" getLogo={getLogo} />
+                    <Section icon={Calendar} title={t('search.sectionEvents')} items={eventResults} hrefPrefix="/events" getLogo={getLogo} />
                 )}
                 {oppResults.length > 0 && (
-                    <Section icon={Users} title="Gönüllülük İlanları" items={oppResults} hrefPrefix="/volunteering" getLogo={getLogo} />
+                    <Section icon={Users} title={t('search.sectionOpps')} items={oppResults} hrefPrefix="/volunteering" getLogo={getLogo} />
                 )}
             </main>
         </div>
@@ -191,6 +193,7 @@ function Section({ icon: Icon, title, items, hrefPrefix, getLogo }: {
     hrefPrefix: string;
     getLogo: (i: SearchableEntity) => string | undefined;
 }) {
+    const { t } = useTranslation();
     return (
         <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -200,7 +203,7 @@ function Section({ icon: Icon, title, items, hrefPrefix, getLogo }: {
             </div>
             <div className="space-y-1.5">
                 {items.map(item => {
-                    const name = item.name || item.title || 'İsimsiz';
+                    const name = item.name || item.title || t('search.itemUnnamed');
                     return (
                         <Link key={item.id} href={`${hrefPrefix}/${item.id}`} className="block">
                             <Card className="hover:bg-accent transition-colors">

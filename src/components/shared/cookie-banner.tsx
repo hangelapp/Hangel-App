@@ -55,7 +55,7 @@ export function CookieBanner() {
                     <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm leading-tight">{policyTitle}</p>
                         <p className="text-[12px] text-muted-foreground leading-snug mt-1">
-                            Hangel deneyimini iyileştirmek için analitik ve işlevsel çerezler kullanırız.{' '}
+                            hangel deneyimini iyileştirmek için analitik ve işlevsel çerezler kullanırız.{' '}
                             <Link href="/settings/contracts/cerez-politikasi" className="font-bold text-primary underline">
                                 Detayları incele
                             </Link>

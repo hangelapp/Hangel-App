@@ -1,9 +1,9 @@
-# Hangel iOS Yol Haritası — Freelancer Brief
+# hangel iOS Yol Haritası — Freelancer Brief
 
-**Hedef kitle:** Bu belgenin alıcısı, Hangel iOS uygulamasının Apple ekosistem entegrasyonunu yapacak kıdemli iOS geliştirici(ler)dir. Belge "açıp uygulayabilecek" detayda yazılmıştır; yorum/karar bekleyen yerler `❓ KARAR` etiketiyle işaretlidir, bunlar Hangel ürün ekibiyle netleştirilmelidir.
+**Hedef kitle:** Bu belgenin alıcısı, hangel iOS uygulamasının Apple ekosistem entegrasyonunu yapacak kıdemli iOS geliştirici(ler)dir. Belge "açıp uygulayabilecek" detayda yazılmıştır; yorum/karar bekleyen yerler `❓ KARAR` etiketiyle işaretlidir, bunlar hangel ürün ekibiyle netleştirilmelidir.
 
 **Son güncelleme:** 2026-05-30
-**Hazırlayan:** Hangel ürün ekibi (Claude Code asistanı ile)
+**Hazırlayan:** hangel ürün ekibi (Claude Code asistanı ile)
 **App Store URL:** https://apps.apple.com/tr/app/hangel-app/id6664058822
 **Apple Team ID:** `NKZNY8NU8S`
 **Mevcut Bundle ID:** `com.hangel.ios.app`
@@ -34,7 +34,7 @@
 
 ## 0. Yönetici özeti
 
-Hangel (hangel.org.tr), Türkiye'nin sosyal etki marketplace'idir — STK, marka, öğrenci kulübü ve bireysel gönüllüleri buluşturur. Mevcut iOS uygulaması **Capacitor + WebView** hibrit yapıda çalışır, `https://hangel.org.tr` web sitesini sarmalar. App Store'da `id6664058822` ile yayındadır.
+hangel (hangel.org.tr), Türkiye'nin sosyal etki marketplace'idir — STK, marka, öğrenci kulübü ve bireysel gönüllüleri buluşturur. Mevcut iOS uygulaması **Capacitor + WebView** hibrit yapıda çalışır, `https://hangel.org.tr` web sitesini sarmalar. App Store'da `id6664058822` ile yayındadır.
 
 Bu yol haritası, Apple ekosistem özelliklerinin entegrasyonunu **5 faz** halinde tarif eder:
 
@@ -65,7 +65,7 @@ hangel.org.tr (Next.js 15.5 + React 19, Firebase App Hosting)
         │
 [iOS Capacitor App] ── server.url = hangel.org.tr ──┐
         │                                            │
-        ├── WKWebView (Hangel web app)              │
+        ├── WKWebView (hangel web app)              │
         ├── @capacitor/app, browser, contacts,      │
         │   filesystem, keyboard, share, splash,    │
         │   status-bar (zaten yüklü)                 │
@@ -156,7 +156,7 @@ npm install \
 ```ts
 {
   appId: 'com.hangel.app',
-  appName: 'Hangel',
+  appName: 'hangel',
   webDir: 'out',
   server: {
     url: 'https://hangel.org.tr',
@@ -245,7 +245,7 @@ Ana app target için aktif edilecekler:
 
 1. https://developer.apple.com/account → Certificates, Identifiers & Profiles → **Keys**
 2. "+" → **Apple Push Notifications service (APNs)** seç → Continue
-3. Key Name: `Hangel APNs Auth Key`
+3. Key Name: `hangel APNs Auth Key`
 4. Configure'a tıkla, **Environment: Sandbox & Production** seç
 5. Save → Download .p8 dosyası (**bir kere indirilir, kaybedersen yenisini yapmak gerek**)
 6. Key ID ve Team ID'yi not al (Team ID: `NKZNY8NU8S`)
@@ -254,7 +254,7 @@ Ana app target için aktif edilecekler:
 ### 3.4. PassKit Pass Type ID oluşturma (Faz 1 başında)
 
 1. https://developer.apple.com/account → Identifiers → "+" → **Pass Type IDs** seç
-2. Description: `Hangel Volunteer Event Tickets`
+2. Description: `hangel Volunteer Event Tickets`
 3. Identifier: `pass.com.hangel.ios.app`
 4. Register
 5. Pass Type ID'ye tıkla → Create Certificate → CSR yükle → indir (`pass.cer`)
@@ -271,14 +271,14 @@ Otomatik yönetim (Xcode → Signing & Capabilities → **Automatically manage s
 
 ## 4. Mac / build altyapısı
 
-**Karar:** Hangel ürün ekibinin Mac'i (MacBook Air 2017, Intel, 8 GB, macOS Monterey 12.7.6) Sonoma'yı desteklemiyor → Xcode 15 native kurulamaz → App Store yeni IPA submission yapılamaz.
+**Karar:** hangel ürün ekibinin Mac'i (MacBook Air 2017, Intel, 8 GB, macOS Monterey 12.7.6) Sonoma'yı desteklemiyor → Xcode 15 native kurulamaz → App Store yeni IPA submission yapılamaz.
 
 **Önerilen çözüm: Cloud Mac CI** (Codemagic)
 
 ### 4.1. Codemagic kurulumu (freelancer yapacak)
 
 1. https://codemagic.io üyelik aç (GitHub OAuth ile)
-2. Hangel repository'sini bağla
+2. hangel repository'sini bağla
 3. `codemagic.yaml` oluştur (bu brief'in repo'suna eklenecek):
 
 ```yaml
@@ -430,7 +430,7 @@ Apple Sign In ile gelen kullanıcı için `users/{uid}` doc oluştur (mevcut use
 
 #### Done definition
 
-- [ ] iOS Hangel app'te login ekranında "Apple ile devam et" butonu görünür
+- [ ] iOS hangel app'te login ekranında "Apple ile devam et" butonu görünür
 - [ ] Apple Sign In flow tamamlanır, Firebase Auth'a düşer, `users/{uid}` doc oluşur
 - [ ] Apple Review reject riski yok (Guideline 4.8 met)
 - [ ] iOS-only (Android'de buton gizli)
@@ -446,7 +446,7 @@ Apple Sign In ile gelen kullanıcı için `users/{uid}` doc oluştur (mevcut use
 #### Adımlar
 
 1. Xcode → File → New File → **Property List** → İsim: `PrivacyInfo`
-2. Aşağıdaki içeriği yapıştır (Hangel'in mevcut SDK kullanımına göre):
+2. Aşağıdaki içeriği yapıştır (hangel'in mevcut SDK kullanımına göre):
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -693,7 +693,7 @@ export async function registerNativePushToken(uid: string): Promise<string | nul
   // Foreground notification (app açıkken push geldiğinde)
   FirebaseMessaging.addListener('notificationReceived', (event) => {
     // ❓ KARAR: Foreground'da banner göster mi yoksa in-app notification mı?
-    // Önerim: in-app toast (Hangel UI bileşeni) + Bildirim Merkezi'ne ekle
+    // Önerim: in-app toast (hangel UI bileşeni) + Bildirim Merkezi'ne ekle
     console.debug('[push] foreground:', event.notification);
   });
 
@@ -898,7 +898,7 @@ Ana layout'ta `useEffect` ile init et.
 
 #### Test senaryoları
 
-- iPhone'da Mesajlar → `https://hangel.org.tr/event/abc` link → uzun bas → "Hangel App'te Aç" görünür
+- iPhone'da Mesajlar → `https://hangel.org.tr/event/abc` link → uzun bas → "hangel App'te Aç" görünür
 - Safari → `hangel.org.tr/ngo/xyz` → smart banner görünür, tıklayınca app açılır
 - QR koddan `https://hangel.org.tr/checkin/abc` okutulduğunda direkt app açılır + `/checkin/abc` sayfasına gider
 - AASA test: `https://app-site-association.cdn-apple.com/a/v1/hangel.org.tr` cache'lendi mi
@@ -909,7 +909,7 @@ Ana layout'ta `useEffect` ile init et.
 - [ ] AASA + assetlinks.json hangel.org.tr'den `application/json` content-type ile servis ediliyor
 - [ ] iPhone'da link tıklayınca app açılır
 - [ ] QR'dan link okutulduğunda app açılır
-- [ ] App içinde route doğru render olur (mevcut Hangel router'ı)
+- [ ] App içinde route doğru render olur (mevcut hangel router'ı)
 
 ---
 
@@ -1024,7 +1024,7 @@ await FirebaseCrashlytics.recordException({ message: 'Payment failed', stacktrac
 #### Mimari
 
 ```
-[Hangel Web] ── Capacitor Plugin ──→ [HangelLiveActivityPlugin (Swift)]
+[hangel Web] ── Capacitor Plugin ──→ [HangelLiveActivityPlugin (Swift)]
                                             ↓ ActivityKit
                                        [HangelLiveActivityExtension]
                                             ↑ APNs liveactivity push
@@ -1353,9 +1353,9 @@ export async function startEmergencyBloodActivity(req: {
   "formatVersion": 1,
   "passTypeIdentifier": "pass.com.hangel.ios.app",
   "teamIdentifier": "NKZNY8NU8S",
-  "organizationName": "Hangel",
-  "description": "Hangel Etkinlik Bileti",
-  "logoText": "Hangel",
+  "organizationName": "hangel",
+  "description": "hangel Etkinlik Bileti",
+  "logoText": "hangel",
   "foregroundColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(243, 71, 35)",
   "labelColor": "rgb(255, 255, 255)",
@@ -1421,7 +1421,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     },
     {
       serialNumber: id,
-      description: `Hangel — ${e.title}`,
+      description: `hangel — ${e.title}`,
       eventTicket: {
         primaryFields: [{ key: 'event', label: 'ETKİNLİK', value: e.title }],
         secondaryFields: [
@@ -1504,7 +1504,7 @@ Tarayıcı `.pkpass` MIME type'ını tanır → Wallet'a ekleme dialog'u açar.
 
 - [ ] Event sayfasında "Apple Wallet'a Ekle" butonu görünür (iOS only)
 - [ ] Buton tıklanınca .pkpass indirilir + Wallet'a ekleme dialog'u açılır
-- [ ] Pass eklendikten sonra Wallet'ta Hangel logosu + etkinlik bilgileri + QR görünür
+- [ ] Pass eklendikten sonra Wallet'ta hangel logosu + etkinlik bilgileri + QR görünür
 - [ ] Etkinlik saati değişirse pass otomatik güncellenir (push trigger)
 - [ ] QR kod taratınca `https://hangel.org.tr/checkin/{id}` açılır (Universal Link → app içinde check-in)
 
@@ -1525,7 +1525,7 @@ Tarayıcı `.pkpass` MIME type'ını tanır → Wallet'a ekleme dialog'u açar.
 #### Mimari
 
 ```
-[Hangel App (Capacitor)] ──→ App Group UserDefaults ──→ [Widget Extension]
+[hangel App (Capacitor)] ──→ App Group UserDefaults ──→ [Widget Extension]
         ↓                                                       ↑
    Firestore                                            WidgetCenter.reloadTimelines
         ↓
@@ -1730,7 +1730,7 @@ Cloud Function — acil bir kan ihtiyacı oluştuğunda silent push gönder, app
 
 #### Done definition
 
-- [ ] iOS Home Screen'de uzun bas → Widget ekle → Hangel görünür
+- [ ] iOS Home Screen'de uzun bas → Widget ekle → hangel görünür
 - [ ] 4 widget tipi seçilebilir (small + medium + large where supported)
 - [ ] Widget veri App Group üzerinden güncellenir
 - [ ] Widget tap → deep link ile ilgili sayfa açılır
@@ -1741,7 +1741,7 @@ Cloud Function — acil bir kan ihtiyacı oluştuğunda silent push gönder, app
 
 #### Bileşenler
 
-1. **QR check-in** — Mevcut Hangel app + web kamera ile QR okuma
+1. **QR check-in** — Mevcut hangel app + web kamera ile QR okuma
 2. **NFC check-in** — Etkinlik girişinde NFC etiketi okutarak (Faz 1 + 2 ortak)
 3. **Konum doğrulamalı check-in** — Etkinlik konumuna 100m içinde olmadan check-in yapılamaz
 4. **Otomatik check-out** — Geofence exit eventi ile otomatik
@@ -1886,15 +1886,15 @@ Background location entitlement kullanımı sebep olarak "Etkinlik bittiğinde g
 #### Mimari karar
 
 **App Clip Capacitor + WebView ile YAPILMAMALIDIR.** Sebepler:
-- App Clip 15 MB sınırı — Capacitor + Hangel web bundle bu sınıra sığmaz
+- App Clip 15 MB sınırı — Capacitor + hangel web bundle bu sınıra sığmaz
 - Apple Review "minimal native experience" istiyor
 
 **App Clip bağımsız SwiftUI mini-app olarak yazılır.** Sadece şu flow'u içerir:
-1. Splash + Hangel logo
+1. Splash + hangel logo
 2. Etkinlik/STK bilgisi (URL'den gelen `eventId` ile Firestore'dan çek)
 3. "Sign in with Apple" butonu
 4. Sign in başarılıysa "Kayıt ol" butonu → Firestore'a `volunteers/{uid}` veya `eventRegistrations/{eventId}/{uid}` yazımı
-5. "Hangel'i indir" butonu → App Store
+5. "hangel'i indir" butonu → App Store
 
 #### Xcode adımlar
 
@@ -1905,7 +1905,7 @@ Background location entitlement kullanımı sebep olarak "Etkinlik bittiğinde g
 
 #### App Clip Invocation URL'leri
 
-App Store Connect → My Apps → Hangel → App Clips → Advanced App Clip Experiences → "+":
+App Store Connect → My Apps → hangel → App Clips → Advanced App Clip Experiences → "+":
 
 - URL Pattern: `https://hangel.org.tr/clip/event/*`
 - URL Pattern: `https://hangel.org.tr/clip/ngo/*`
@@ -1966,7 +1966,7 @@ struct ContentView: View {
                 .frame(height: 50)
                 .padding(.horizontal)
 
-                Button("Hangel'i App Store'dan indir") {
+                Button("hangel'i App Store'dan indir") {
                     // App Clip → Full App promotion
                 }
             } else if loading {
@@ -2009,7 +2009,7 @@ struct EventInfo {
 - [ ] App Store Connect'e App Clip submit edildi
 - [ ] QR `https://hangel.org.tr/clip/event/abc` → iPhone'da App Clip Card açılır
 - [ ] Sign in with Apple → Firebase Auth'a düşer → `users/{uid}` + `eventRegistrations/{eventId}/{uid}` yazılır
-- [ ] "Hangel'i indir" App Store'a yönlendirir
+- [ ] "hangel'i indir" App Store'a yönlendirir
 
 ---
 
@@ -2156,11 +2156,11 @@ struct ShowBloodRequestsIntent: AppIntent {
 struct HangelAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: ShowNearbyEventsIntent(), phrases: [
-            "Hangel'da yakındaki etkinlikleri göster",
-            "Hangel'da etkinlik bul",
+            "hangel'da yakındaki etkinlikleri göster",
+            "hangel'da etkinlik bul",
         ], shortTitle: "Yakındaki Etkinlikler", systemImageName: "calendar")
         AppShortcut(intent: ShowBloodRequestsIntent(), phrases: [
-            "Hangel'da acil kan ihtiyaçlarını göster",
+            "hangel'da acil kan ihtiyaçlarını göster",
             "Acil kan ihtiyacı",
         ], shortTitle: "Acil Kan", systemImageName: "drop.fill")
         // ...
@@ -2187,13 +2187,13 @@ struct HangelAppShortcuts: AppShortcutsProvider {
 
 #### Test senaryoları
 
-- "Hey Siri, Hangel'da yakındaki etkinlikleri göster" → app açılır, etkinlikler sayfası render
-- iOS Shortcuts uygulamasında Hangel altyatkı görünür (4 shortcut otomatik)
-- Spotlight'ta "Hangel etkinlikleri" araması → shortcut görünür
+- "Hey Siri, hangel'da yakındaki etkinlikleri göster" → app açılır, etkinlikler sayfası render
+- iOS Shortcuts uygulamasında hangel altyatkı görünür (4 shortcut otomatik)
+- Spotlight'ta "hangel etkinlikleri" araması → shortcut görünür
 
 #### Done definition
 
-- [ ] 4 Siri Shortcut iOS Settings → Siri & Search → Hangel'da görünür
+- [ ] 4 Siri Shortcut iOS Settings → Siri & Search → hangel'da görünür
 - [ ] Her shortcut çalıştırılınca app doğru sayfaya açılır
 - [ ] iOS 16+ test edildi
 
@@ -2330,7 +2330,7 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 #### Done definition
 
 - [ ] iOS Spotlight (ana ekran sağa kaydır) → "Kızılay" arayınca Kızılay STK görünür
-- [ ] Tap → Hangel app açılır → Kızılay STK sayfası render
+- [ ] Tap → hangel app açılır → Kızılay STK sayfası render
 - [ ] Index sayısı: tüm aktif STK + etkinlik + kampanya
 - [ ] 24 saatte bir resync
 
@@ -2338,7 +2338,7 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 
 ## 8. Faz 3 — Web tarafı
 
-Bu faz **iOS native kod gerektirmez**, tamamen Next.js + Firebase. Mevcut Hangel ekibinin de yapabileceği bir faz; bu brief'te freelancer da yapabilsin diye dahil edilmiştir.
+Bu faz **iOS native kod gerektirmez**, tamamen Next.js + Firebase. Mevcut hangel ekibinin de yapabileceği bir faz; bu brief'te freelancer da yapabilsin diye dahil edilmiştir.
 
 ### 8.1. Sosyal Etki Pasaportu
 
@@ -2403,7 +2403,7 @@ users/{uid}/career (single doc)
 - LinkedIn benzeri profil görünüm
 - Yetkinlikler: bar chart + endorsement (başka gönüllülerin onayı)
 - Tamamlanan görevler timeline (en yeniden eskiye)
-- Eğitimler listesi (Hangel kütüphanesinden alınanlar + dışarıdan)
+- Eğitimler listesi (hangel kütüphanesinden alınanlar + dışarıdan)
 - Sertifikalar (PDF download)
 - Liderlik deneyimleri (proje yönetimi, koordinatörlük vs)
 - "PDF'e Dönüştür" → API'den PDF oluştur (puppeteer veya pdfkit)
@@ -2424,7 +2424,7 @@ users/{uid}/career (single doc)
 
 #### Görsel akış
 
-1. Splash: "2026 Hangel Senin Yılın"
+1. Splash: "2026 hangel Senin Yılın"
 2. Toplam gönüllülük saati (animated counter)
 3. Toplam bağış (TL)
 4. En çok katıldığın STK
@@ -2555,7 +2555,7 @@ struct ContentView: View {
                 NavigationLink("Etkinlikler", destination: EventsView())
                 NavigationLink("Pasaport", destination: PassportView())
             }
-            .navigationTitle("Hangel")
+            .navigationTitle("hangel")
         }
     }
 }
@@ -2601,7 +2601,7 @@ struct NotificationView: View {
 
 #### Done definition
 
-- [ ] Apple Watch app yüklenir + ana ekranda Hangel görünür
+- [ ] Apple Watch app yüklenir + ana ekranda hangel görünür
 - [ ] Görev listesi + Acil kan listesi Firestore'dan gelir
 - [ ] Acil kan push notification Watch'ta görünür + action buttons çalışır
 - [ ] Etkinlik check-in Watch'tan yapılabilir
@@ -2625,7 +2625,7 @@ struct NotificationView: View {
 
 **Apple Silicon Mac:** Sıfır kod — App Store Connect'te ayar:
 
-1. App Store Connect → Hangel → App Information → "Mac" sekmesi (Apple Silicon only)
+1. App Store Connect → hangel → App Information → "Mac" sekmesi (Apple Silicon only)
 2. ✓ "Make this iPad app available on Mac"
 3. App Store Mac'te "iPhone & iPad Apps" sekmesinde görünür
 
@@ -2637,7 +2637,7 @@ struct NotificationView: View {
 
 **Native Mac app (önerilmiyor):**
 - 30+ gün ekstra iş
-- ROI düşük (Hangel kullanıcılarının %95'i mobile)
+- ROI düşük (hangel kullanıcılarının %95'i mobile)
 
 #### Done definition
 
@@ -2703,14 +2703,14 @@ struct NotificationView: View {
 4. ✅ Unit test + integration test geçer
 5. ✅ TestFlight'a yüklendi + internal test edildi (en az 3 cihaz: iPhone 14+, iPhone XR, iPad)
 6. ✅ App Review checklist (bölüm 12) tamamlandı
-7. ✅ Hangel ürün ekibi tarafından kabul edildi (sign-off)
+7. ✅ hangel ürün ekibi tarafından kabul edildi (sign-off)
 8. ✅ Production'a deploy edildi
 
 ### Teslim formatı
 
-- **Pull Request** ana Hangel repo'suna (her özellik bir PR)
+- **Pull Request** ana hangel repo'suna (her özellik bir PR)
 - PR açıklamasında: ne yapıldı + nasıl test edilir + Apple Developer/Firebase Console adımları
-- PR review: Hangel ekibi (ürün + tech lead)
+- PR review: hangel ekibi (ürün + tech lead)
 - Merge sonrası: Codemagic otomatik build + TestFlight upload
 
 ### Final teslim paketi
@@ -2907,7 +2907,7 @@ match /users/{uid}/passport {
 
 ### Acil iletişim
 
-- **Slack/Discord:** Hangel ekibi sağlar (kanal: `#freelancer-ios`)
+- **Slack/Discord:** hangel ekibi sağlar (kanal: `#freelancer-ios`)
 - **Email:** ismailhilmi@hangel.org
 - **WhatsApp:** Acil sorunlar için
 
@@ -2915,15 +2915,15 @@ match /users/{uid}/passport {
 
 - **Branch naming:** `feature/ios-{faz}-{özellik-kısa-ad}` (örn. `feature/ios-1-live-activities`)
 - **Commit message:** Conventional Commits (`feat:`, `fix:`, `chore:`)
-- **PR template:** Hangel repo'sunda mevcut, doldur
-- **Code review:** Hangel ekibi (1-2 reviewer)
+- **PR template:** hangel repo'sunda mevcut, doldur
+- **Code review:** hangel ekibi (1-2 reviewer)
 - **Merge:** Squash + merge
 
 ### Deploy
 
 - **Web (Next.js):** PR merge sonrası App Hosting otomatik build
 - **iOS:** Codemagic merge sonrası otomatik TestFlight upload
-- **Production submission:** Hangel ürün ekibi onayıyla App Store Connect → Submit for Review
+- **Production submission:** hangel ürün ekibi onayıyla App Store Connect → Submit for Review
 
 ### Faz teslim raporları
 
@@ -2952,7 +2952,7 @@ Her faz sonunda **freelancer aşağıdaki dokümanı sağlar:**
 - ... (eğer varsa)
 
 ## Sonraki faz için önkoşullar
-- ... (Hangel ekibinden bekleyenler)
+- ... (hangel ekibinden bekleyenler)
 ```
 
 ---
@@ -2982,22 +2982,22 @@ Her faz sonunda **freelancer aşağıdaki dokümanı sağlar:**
 
 ---
 
-## Ek B: Hangel ürün ekibi sorumlulukları
+## Ek B: hangel ürün ekibi sorumlulukları
 
-Freelancer'ın yapamayacağı / Hangel ekibinden bekleyenler:
+Freelancer'ın yapamayacağı / hangel ekibinden bekleyenler:
 
 1. **Apple Developer Console erişimi** — Team admin'in freelancer'ı Developer veya Marketing role ile invite etmesi
 2. **Firebase Console erişimi** — Project owner'ın freelancer'ı Editor role ile invite etmesi (Auth, Firestore, Functions için)
 3. **GitHub repo erişimi** — Write access
 4. **App Store Connect erişimi** — App Manager role
 5. **Codemagic ödemesi** — Pro plan ($30/ay) onayı
-6. **Apple Sign In Services ID** — Hangel admin oluşturacak (Apple Developer Console'da)
-7. **APNs Auth Key (.p8)** — Hangel admin indirip freelancer'a güvenli paylaşır (Bitwarden veya 1Password)
-8. **PassKit Pass Type ID + sertifika** — Hangel admin oluşturup .p12 paylaşır
+6. **Apple Sign In Services ID** — hangel admin oluşturacak (Apple Developer Console'da)
+7. **APNs Auth Key (.p8)** — hangel admin indirip freelancer'a güvenli paylaşır (Bitwarden veya 1Password)
+8. **PassKit Pass Type ID + sertifika** — hangel admin oluşturup .p12 paylaşır
 9. **Apple WWDR Cert** — Apple'ın root cert'i, public ama paylaşılması kolaylık
-10. **Test account** — Apple Review için fake test kullanıcısı (Hangel ekibi sağlar)
-11. **App Store Connect metadata** — Açıklama, screenshot, keywords (Hangel ürün ekibi yazar; freelancer screenshot generator kullanır)
-12. **Privacy Policy + Terms URL** — Hangel ekibi günceller (Apple Sign In + ATT için ek metinler)
+10. **Test account** — Apple Review için fake test kullanıcısı (hangel ekibi sağlar)
+11. **App Store Connect metadata** — Açıklama, screenshot, keywords (hangel ürün ekibi yazar; freelancer screenshot generator kullanır)
+12. **Privacy Policy + Terms URL** — hangel ekibi günceller (Apple Sign In + ATT için ek metinler)
 13. **N-Kolay PSP entegrasyonu** — Mevcut, freelancer dokunmaz
 
 ---
@@ -3006,10 +3006,10 @@ Freelancer'ın yapamayacağı / Hangel ekibinden bekleyenler:
 
 Freelancer aşağıdaki alanlara **dokunmamalı**:
 
-- `firestore.rules` — yeni rule eklenebilir ama mevcut rule değiştirilemez (Hangel ekibi review etmeli)
-- `src/lib/payment/**` — N-Kolay entegrasyonu, payment flow Hangel'in core'u
+- `firestore.rules` — yeni rule eklenebilir ama mevcut rule değiştirilemez (hangel ekibi review etmeli)
+- `src/lib/payment/**` — N-Kolay entegrasyonu, payment flow hangel'in core'u
 - `src/app/api/admin/**` — super-admin route'ları
-- `src/ai/flows/**` — Genkit AI flow'ları (Hangel ekibinin alanı)
+- `src/ai/flows/**` — Genkit AI flow'ları (hangel ekibinin alanı)
 - `src/firebase/config.ts` — Firebase proje config (değiştirme)
 - `apphosting.yaml` — production env variables (sadece yeni ekleme, mevcut değiştirme yok)
 - `.env*` — secrets (asla commit'leme)
@@ -3017,4 +3017,4 @@ Freelancer aşağıdaki alanlara **dokunmamalı**:
 
 ---
 
-**SON.** Bu belge freelancer için kapsayıcıdır. Soru/karar gereken yerler `❓ KARAR` etiketiyle işaretlenmiştir; Hangel ürün ekibi (ismailhilmi@hangel.org) ile haftalık demo'da netleştirilmelidir.
+**SON.** Bu belge freelancer için kapsayıcıdır. Soru/karar gereken yerler `❓ KARAR` etiketiyle işaretlenmiştir; hangel ürün ekibi (ismailhilmi@hangel.org) ile haftalık demo'da netleştirilmelidir.

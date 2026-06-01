@@ -41,6 +41,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 
 // Demo veriler kaldırıldı — gerçek çağrılar Firestore'dan beslenecek (henüz bağlanmadıysa boş gösterilir).
@@ -73,7 +74,9 @@ interface ReportTabContentProps {
     onOpenBloodDialog: () => void;
 }
 
-const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: ReportTabContentProps) => (
+const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: ReportTabContentProps) => {
+    const { t } = useTranslation();
+    return (
     <div className="flex flex-col gap-4 p-4">
         <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -83,40 +86,40 @@ const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: Rep
                     disabled={!!isReporting}
                 >
                     {isReporting === 'Genel Afet Bildirimi' ? <Loader2 className="h-8 w-8 animate-spin" /> : <Siren className="h-8 w-8" />}
-                    Afet Bildirimi
+                    {t('emergency_root.btnDisaster')}
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="rounded-3xl">
                 <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-bold">Emin misiniz?</AlertDialogTitle>
+                    <AlertDialogTitle className="text-xl font-bold">{t('emergency_root.disasterConfirmTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                        <strong>Genel Afet</strong> bildirimi yapmak üzeresiniz. Bu işlem konum ve iletişim bilgilerinizi acil durum ekipleriyle paylaşacaktır.
+                        <strong>{t('emergency_root.disasterConfirmKind')}</strong> {t('emergency_root.disasterConfirmDescPrefix')}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="space-y-2 py-2">
-                    <Label htmlFor="disaster-details">Acil Durum Detayları (İsteğe Bağlı)</Label>
+                    <Label htmlFor="disaster-details">{t('emergency_root.detailsLabel')}</Label>
                     <Textarea
                         id="disaster-details"
-                        placeholder="Durumu kısaca açıklayın. Örn: 'Bina çökmesi', 'Büyük trafik kazası', 'Ormanlık alanda duman görülüyor'..."
+                        placeholder={t('emergency_root.detailsPlaceholder')}
                         className="min-h-[80px] placeholder:text-xs"
                     />
                 </div>
                 <div className="py-2">
                     <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive rounded-2xl">
                         <Siren className="h-4 w-4" />
-                        <AlertTitle className="font-black text-xs uppercase tracking-widest">YASAL UYARI</AlertTitle>
+                        <AlertTitle className="font-black text-xs uppercase tracking-widest">{t('emergency_root.legalWarningTitle')}</AlertTitle>
                         <AlertDescription className="text-xs font-bold leading-tight">
-                            Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur.
+                            {t('emergency_root.legalWarningShort')}
                         </AlertDescription>
                     </Alert>
                 </div>
                 <AlertDialogFooter className="gap-2 mt-4">
-                    <AlertDialogCancel className="rounded-2xl font-bold">Vazgeç</AlertDialogCancel>
+                    <AlertDialogCancel className="rounded-2xl font-bold">{t('emergency_root.btnCancel')}</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={() => onReportClick('disaster', 'Genel Afet Bildirimi')}
                         className="rounded-2xl font-bold bg-destructive hover:bg-destructive/90 text-white border-none"
                     >
-                        Bildirimi Gönder
+                        {t('emergency_root.btnSendReport')}
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
@@ -129,12 +132,14 @@ const ReportTabContent = ({ isReporting, onReportClick, onOpenBloodDialog }: Rep
             onClick={onOpenBloodDialog}
         >
             <Droplets className="h-8 w-8 text-red-600" />
-            Kan İhtiyacı Bildirimi
+            {t('emergency_root.btnBloodNeed')}
         </Button>
     </div>
-);
+    );
+};
 
 const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOpenChange: (open: boolean) => void, onSubmit: (data: BloodNeedFormData) => void }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState<BloodNeedFormData>({
         hospital: '',
         hospitalCity: '',
@@ -183,10 +188,10 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold flex items-center gap-2">
                         <Droplets className="h-5 w-5 text-red-600" />
-                        Kan İhtiyacı Bildirimi
+                        {t('emergency_root.bloodDialogTitle')}
                     </DialogTitle>
                     <DialogDescription>
-                        Lütfen acil kan ihtiyacı ile ilgili detayları eksiksiz doldurun. Bu bilgiler ilgili birimlere ve gönüllülere iletilecektir.
+                        {t('emergency_root.bloodDialogDesc')}
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -221,7 +226,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     {/* Seçilen hastanenin detayları (Bilgileri Getir sonrası seçim yapılırsa görünür) */}
                     {(formData.hospitalCity || formData.hospitalAddress || formData.hospitalPhone) && (
                         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs space-y-1 dark:border-emerald-800 dark:bg-emerald-900/20">
-                            <p className="font-bold text-emerald-900 dark:text-emerald-100">✓ Hastane bilgileri</p>
+                            <p className="font-bold text-emerald-900 dark:text-emerald-100">{t('emergency_root.hospitalInfoOk')}</p>
                             {(formData.hospitalDistrict || formData.hospitalCity) && (
                                 <p className="text-emerald-800 dark:text-emerald-200">📍 {[formData.hospitalDistrict, formData.hospitalCity].filter(Boolean).join(', ')}</p>
                             )}
@@ -237,27 +242,27 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                         Kan ihtiyacı bu konumdaki uygun bağışçılara iletilir. */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="space-y-2">
-                            <Label htmlFor="ev-city">İl</Label>
+                            <Label htmlFor="ev-city">{t('emergency_root.labelCity')}</Label>
                             <Select value={formData.city} onValueChange={(v) => setFormData({ ...formData, city: v, district: '', neighborhood: '' })}>
-                                <SelectTrigger id="ev-city"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
+                                <SelectTrigger id="ev-city"><SelectValue placeholder={t('emergency_root.selectPlaceholder')} /></SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {allProvinces.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ev-district">İlçe</Label>
+                            <Label htmlFor="ev-district">{t('emergency_root.labelDistrict')}</Label>
                             <Select value={formData.district} onValueChange={(v) => setFormData({ ...formData, district: v, neighborhood: '' })} disabled={!formData.city}>
-                                <SelectTrigger id="ev-district"><SelectValue placeholder={formData.city ? 'Seçiniz' : 'Önce il'} /></SelectTrigger>
+                                <SelectTrigger id="ev-district"><SelectValue placeholder={formData.city ? t('emergency_root.selectPlaceholder') : t('emergency_root.selectFirstCity')} /></SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {districtOptions.map((d: string) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ev-neighborhood">Mahalle</Label>
+                            <Label htmlFor="ev-neighborhood">{t('emergency_root.labelNeighborhood')}</Label>
                             <Select value={formData.neighborhood} onValueChange={(v) => setFormData({ ...formData, neighborhood: v })} disabled={!formData.district}>
-                                <SelectTrigger id="ev-neighborhood"><SelectValue placeholder={formData.district ? 'Seçiniz' : 'Önce ilçe'} /></SelectTrigger>
+                                <SelectTrigger id="ev-neighborhood"><SelectValue placeholder={formData.district ? t('emergency_root.selectPlaceholder') : t('emergency_root.selectFirstDistrict')} /></SelectTrigger>
                                 <SelectContent className="max-h-60">
                                     {neighborhoodOptions.map((n: string) => <SelectItem key={n} value={n}>{n}</SelectItem>)}
                                 </SelectContent>
@@ -267,17 +272,17 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     {/* Hasta bilgileri */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="patient-name">Hasta Adı Soyadı</Label>
+                            <Label htmlFor="patient-name">{t('emergency_root.labelPatientName')}</Label>
                             <Input
                                 id="patient-name"
                                 value={formData.patientName}
                                 onChange={e => setFormData({ ...formData, patientName: e.target.value })}
-                                placeholder="Ad Soyad"
+                                placeholder={t('emergency_root.placeholderPatientName')}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="patient-birth-year">Doğum Yılı</Label>
+                            <Label htmlFor="patient-birth-year">{t('emergency_root.labelBirthYear')}</Label>
                             <Input
                                 id="patient-birth-year"
                                 type="number"
@@ -286,13 +291,13 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                                 max={new Date().getFullYear()}
                                 value={formData.patientBirthYear}
                                 onChange={e => setFormData({ ...formData, patientBirthYear: e.target.value })}
-                                placeholder="1985"
+                                placeholder={t('emergency_root.placeholderBirthYear')}
                                 required
                             />
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="need-type">İhtiyaç Türü</Label>
+                        <Label htmlFor="need-type">{t('emergency_root.labelNeedType')}</Label>
                         <Select value={formData.needType} onValueChange={value => setFormData({ ...formData, needType: value })}>
                             <SelectTrigger id="need-type">
                                 <SelectValue />
@@ -304,10 +309,10 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     </div>
                     <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-2 col-span-2">
-                            <Label htmlFor="blood-type">Hastanın Kan Grubu</Label>
+                            <Label htmlFor="blood-type">{t('emergency_root.labelPatientBloodType')}</Label>
                             <Select required onValueChange={value => setFormData({...formData, bloodType: value})}>
                                 <SelectTrigger id="blood-type">
-                                    <SelectValue placeholder="Seçiniz" />
+                                    <SelectValue placeholder={t('emergency_root.selectPlaceholder')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {bloodTypes.map(bt => <SelectItem key={bt} value={bt}>{bt}</SelectItem>)}
@@ -315,7 +320,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="units">Ünite</Label>
+                            <Label htmlFor="units">{t('emergency_root.labelUnits')}</Label>
                             <Input
                                 id="units"
                                 type="number"
@@ -330,7 +335,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
-                             <Label htmlFor="contact-phone">İrtibat Telefon</Label>
+                             <Label htmlFor="contact-phone">{t('emergency_root.labelContactPhone')}</Label>
                              <div className="flex gap-1">
                                 <div className="w-[70px] shrink-0">
                                     <Select defaultValue="90" required>
@@ -349,16 +354,16 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
                         </div>
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="contact-name">İrtibat Kişisi Adı</Label>
-                        <Input id="contact-name" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder="İsmail Hilmi ADIGÜZEL" required />
+                        <Label htmlFor="contact-name">{t('emergency_root.labelContactName')}</Label>
+                        <Input id="contact-name" value={formData.contactName} onChange={e => setFormData({...formData, contactName: e.target.value})} placeholder={t('emergency_root.placeholderContactName')} required />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="notes">Özel Durumlar (İsteğe Bağlı)</Label>
-                        <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Hasta durumu, aciliyet seviyesi veya diğer önemli notlar..." />
+                        <Label htmlFor="notes">{t('emergency_root.labelNotes')}</Label>
+                        <Textarea id="notes" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder={t('emergency_root.placeholderNotes')} />
                     </div>
                      <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Vazgeç</Button>
-                        <Button type="submit" className="bg-red-600 hover:bg-red-700">Bildirimi Gönder</Button>
+                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{t('emergency_root.btnCancel')}</Button>
+                        <Button type="submit" className="bg-red-600 hover:bg-red-700">{t('emergency_root.btnSendReport')}</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
@@ -369,6 +374,7 @@ const BloodNeedDialog = ({ open, onOpenChange, onSubmit }: { open: boolean, onOp
 export default function EmergencyPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const db = useFirestore();
     const { user: authUser, isUserLoading } = useUser();
 
@@ -399,8 +405,8 @@ export default function EmergencyPage() {
         if (!authUser) {
             toast({
                 variant: 'destructive',
-                title: 'Giriş gerekli',
-                description: 'Acil durum bildirimi göndermek için giriş yapmalısınız.',
+                title: t('emergency_root.toastLoginRequiredTitle'),
+                description: t('emergency_root.toastLoginReportDesc'),
             });
             return;
         }
@@ -416,14 +422,14 @@ export default function EmergencyPage() {
                 createdAt: serverTimestamp(),
             });
             toast({
-                title: 'İhbar İletildi',
-                description: `${details} durumu konumunuzla birlikte ilgili birimlere başarıyla ulaştırıldı.`,
+                title: t('emergency_root.toastReportSentTitle'),
+                description: `${details} ${t('emergency_root.toastReportSentDescSuffix')}`,
             });
         } catch {
             toast({
                 variant: 'destructive',
-                title: 'Gönderilemedi',
-                description: 'İhbar iletilemedi. Lütfen tekrar deneyin.',
+                title: t('emergency_root.toastSendFailedTitle'),
+                description: t('emergency_root.toastReportSendFailedDesc'),
             });
         } finally {
             setIsReporting(null);
@@ -434,8 +440,8 @@ export default function EmergencyPage() {
         if (!authUser) {
             toast({
                 variant: 'destructive',
-                title: 'Giriş gerekli',
-                description: 'Acil kan talebi göndermek için giriş yapmalısınız.',
+                title: t('emergency_root.toastLoginRequiredTitle'),
+                description: t('emergency_root.toastLoginBloodDesc'),
             });
             return;
         }
@@ -473,17 +479,17 @@ export default function EmergencyPage() {
                 createdAt: serverTimestamp(),
             });
             toast({
-                title: '✅ Kan İhtiyacı Bildirimi Alındı',
-                description: 'Talebiniz süper admin onayından sonra yakındaki kullanıcılara bildirim olarak gönderilecek.',
+                title: t('emergency_root.toastBloodReceivedTitle'),
+                description: t('emergency_root.toastBloodReceivedDesc'),
             });
         } catch (e) {
             const err = e as { code?: string; message?: string };
             toast({
                 variant: 'destructive',
-                title: 'Gönderilemedi',
+                title: t('emergency_root.toastSendFailedTitle'),
                 description: err?.code === 'permission-denied'
-                    ? 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.'
-                    : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+                    ? t('emergency_root.toastPermDeniedDesc')
+                    : (err?.message || t('emergency_root.toastGenericErrDesc')),
             });
         }
     };
@@ -492,8 +498,8 @@ export default function EmergencyPage() {
         if (!authUser) {
             toast({
                 variant: 'destructive',
-                title: 'Giriş gerekli',
-                description: 'Yardım için giriş yapmalısınız.',
+                title: t('emergency_root.toastLoginRequiredTitle'),
+                description: t('emergency_root.toastLoginHelpDesc'),
             });
             return;
         }
@@ -513,14 +519,14 @@ export default function EmergencyPage() {
                 createdAt: serverTimestamp(),
             });
             toast({
-                title: 'Yardım Talebi Alındı',
-                description: `"${call.details}" için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.`,
+                title: t('emergency_root.toastHelpReceivedTitle'),
+                description: `"${call.details}" ${t('emergency_root.toastHelpReceivedDescPrefix')}`,
             });
         } catch {
             toast({
                 variant: 'destructive',
-                title: 'Gönderilemedi',
-                description: 'Yardım talebiniz gönderilemedi. Lütfen tekrar deneyin.',
+                title: t('emergency_root.toastSendFailedTitle'),
+                description: t('emergency_root.toastHelpSendFailedDesc'),
             });
         }
     };
@@ -528,18 +534,18 @@ export default function EmergencyPage() {
   return (
     <div className="min-h-full bg-secondary/30 animate-in fade-in-0 flex flex-col">
         <div className="px-4 sm:px-6 pt-6 pb-3 space-y-1 shrink-0">
-            <h1 className="text-3xl sm:text-4xl font-black font-headline tracking-tighter">Acil Durum</h1>
-            <p className="text-muted-foreground text-sm font-medium">Topluluğun gücüyle hayat kurtar.</p>
+            <h1 className="text-3xl sm:text-4xl font-black font-headline tracking-tighter">{t('emergency_root.headerTitle')}</h1>
+            <p className="text-muted-foreground text-sm font-medium">{t('emergency_root.headerSubtitle')}</p>
         </div>
 
         <div className="px-4">
             <Tabs defaultValue="report" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1.5 h-14 rounded-3xl backdrop-blur-xl shrink-0">
                     <TabsTrigger value="report" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
-                        Bildirimde Bulun
+                        {t('emergency_root.tabReport')}
                     </TabsTrigger>
                     <TabsTrigger value="calls" className="rounded-2xl text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">
-                        Çağrılar & Kayıtlar
+                        {t('emergency_root.tabCalls')}
                     </TabsTrigger>
                 </TabsList>
 
@@ -554,8 +560,8 @@ export default function EmergencyPage() {
                 <TabsContent value="calls" className="mt-4 space-y-6 pb-6">
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-1">
-                            <h3 className="text-base font-bold">Aktif Acil Çağrılar</h3>
-                            <Badge variant="outline" className="rounded-full bg-blue-100 text-blue-700 border-blue-200 text-[10px] font-bold uppercase">Canlı</Badge>
+                            <h3 className="text-base font-bold">{t('emergency_root.activeCallsTitle')}</h3>
+                            <Badge variant="outline" className="rounded-full bg-blue-100 text-blue-700 border-blue-200 text-[10px] font-bold uppercase">{t('emergency_root.liveBadge')}</Badge>
                         </div>
                         <div className="space-y-3">
                             {activeCalls.map(call => (
@@ -572,26 +578,26 @@ export default function EmergencyPage() {
                                         <p className="text-[10px] font-bold text-muted-foreground uppercase">{call.time}</p>
                                     </div>
                                     <div className="p-3 bg-background border-t border-dashed">
-                                        <Button 
-                                            variant="outline" 
+                                        <Button
+                                            variant="outline"
                                             className="w-full rounded-xl font-bold group-hover:bg-destructive group-hover:text-white transition-colors"
                                             onClick={() => handleHelpClick(call)}
                                         >
-                                            Yardım Et
+                                            {t('emergency_root.btnHelp')}
                                         </Button>
                                     </div>
                                 </Card>
                             ))}
                             {activeCalls.length === 0 && (
                                 <div className="text-center py-16 bg-white/5 rounded-[2rem] border-2 border-dashed border-muted-foreground/20">
-                                    <p className="text-sm font-medium text-muted-foreground">Şu anda aktif bir acil çağrı bulunmuyor.</p>
+                                    <p className="text-sm font-medium text-muted-foreground">{t('emergency_root.noActiveCalls')}</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="text-base font-bold px-1">Geçmiş Başvurularım</h3>
+                        <h3 className="text-base font-bold px-1">{t('emergency_root.pastAppsTitle')}</h3>
                         <div className="space-y-3">
                             {pastApplications.map(app => (
                                 <Card key={app.id} className="rounded-2xl border-none shadow-sm hover:bg-accent/5 transition-colors">
@@ -607,7 +613,7 @@ export default function EmergencyPage() {
                                 </Card>
                             ))}
                             {pastApplications.length === 0 && (
-                                <p className="text-center text-xs text-muted-foreground py-8 italic">Geçmişte bir acil durum başvurunuz bulunmuyor.</p>
+                                <p className="text-center text-xs text-muted-foreground py-8 italic">{t('emergency_root.noPastApps')}</p>
                             )}
                         </div>
                     </div>
@@ -623,8 +629,8 @@ export default function EmergencyPage() {
                     <Siren className="h-5 w-5 text-destructive" />
                 </div>
                 <div className="text-[10px] font-medium leading-snug">
-                    <span className="font-bold text-red-400 uppercase tracking-widest mr-1">YASAL UYARI:</span>
-                    Sadece gerçekten acil durumlarda kullanın. Asılsız bildirimler yasal sorumluluk ve cezai yaptırım doğurur. Konum ve iletişim bilgileriniz paylaşılacaktır.
+                    <span className="font-bold text-red-400 uppercase tracking-widest mr-1">{t('emergency_root.footerLegalLabel')}</span>
+                    {t('emergency_root.footerLegalBody')}
                 </div>
             </div>
         </div>
@@ -654,6 +660,7 @@ function HospitalAutocompleteField({
     value: string;
     onChange: (name: string, hit?: HospitalHit) => void;
 }) {
+    const { t } = useTranslation();
     const [hits, setHits] = useState<HospitalHit[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -675,13 +682,13 @@ function HospitalAutocompleteField({
 
     return (
         <div className="space-y-2">
-            <Label htmlFor="hospital">Hastane Adı</Label>
+            <Label htmlFor="hospital">{t('emergency_root.labelHospital')}</Label>
             <div className="flex gap-2">
                 <Input
                     id="hospital"
                     value={value}
                     onChange={(e) => { onChange(e.target.value); setOpen(false); }}
-                    placeholder="Örn: Ankara Şehir Hastanesi"
+                    placeholder={t('emergency_root.placeholderHospital')}
                     required
                     className="flex-1"
                 />
@@ -692,7 +699,7 @@ function HospitalAutocompleteField({
                     disabled={loading || value.trim().length < 2}
                     className="shrink-0"
                 >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Bilgileri Getir'}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('emergency_root.btnFetchInfo')}
                 </Button>
             </div>
             {open && hits.length > 0 && (
@@ -718,7 +725,7 @@ function HospitalAutocompleteField({
                 </div>
             )}
             {open && hits.length === 0 && !loading && (
-                <p className="text-xs text-muted-foreground px-1">Sonuç yok. Yazıyı kontrol et veya elle yaz.</p>
+                <p className="text-xs text-muted-foreground px-1">{t('emergency_root.noLookupResults')}</p>
             )}
         </div>
     );

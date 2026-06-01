@@ -84,7 +84,7 @@ export default function SocialEntrepreneurshipPage() {
                 imageHint="collaborative meeting brainstorming"
             />
 
-            {/* Hangel Model */}
+            {/* hangel Model */}
              <InfoSection
                 theme="dark"
                 title={t('socialEnterprisePage.modelTitle')}

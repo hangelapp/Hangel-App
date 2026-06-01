@@ -161,17 +161,17 @@ async function downloadCanvasAsPdf(canvas: HTMLCanvasElement, filename: string) 
     pdf.save(filename);
 }
 
-// 3 GERÇEK basın bülteni — Hangel vizyonu ve küresel bakış açısıyla.
+// 3 GERÇEK basın bülteni — hangel vizyonu ve küresel bakış açısıyla.
 // Promosyon dilinden (yayına başladı, ramak vermiyoruz vb.) kaçınılır.
 const PRESS_RELEASES: { date: string; lang: 'TR' | 'EN'; title: string; body: string }[] = [
     {
         date: '15.04.2026',
         lang: 'TR',
-        title: 'Hangel\'in Vizyonu: Bireysel İyiliği Ölçülebilir Etkiye Dönüştürmek',
+        title: 'hangel\'in Vizyonu: Bireysel İyiliği Ölçülebilir Etkiye Dönüştürmek',
         body: [
-            'Hangel, bireylerin gönüllülük, bağış ve topluluk katılımı yoluyla yarattığı sosyal etkiyi ölçülebilir, paylaşılabilir ve doğrulanabilir hale getirme vizyonuyla kurulmuştur. Platform, kullanıcının her bir nitelikli eylemini sosyal alan bazlı puan modeline aktararak hem birey hem de işbirliği yaptığı sivil toplum kuruluşu için şeffaf bir etki haritası üretir.',
+            'hangel, bireylerin gönüllülük, bağış ve topluluk katılımı yoluyla yarattığı sosyal etkiyi ölçülebilir, paylaşılabilir ve doğrulanabilir hale getirme vizyonuyla kurulmuştur. Platform, kullanıcının her bir nitelikli eylemini sosyal alan bazlı puan modeline aktararak hem birey hem de işbirliği yaptığı sivil toplum kuruluşu için şeffaf bir etki haritası üretir.',
             '',
-            'Vizyonumuz, yardımseverliği tek seferlik bir jest olmaktan çıkarıp sürdürülebilir, izlenebilir bir alışkanlığa dönüştürmektir. Bu doğrultuda Hangel, bireylerin destekledikleri kuruluşların gerçek faaliyetlerini görebildiği, gönüllülük saatlerinin onaylanan kayıt zincirine bağlandığı ve her bağışın hedef projeye ulaşımının doğrulanabildiği bir altyapı geliştirmektedir.',
+            'Vizyonumuz, yardımseverliği tek seferlik bir jest olmaktan çıkarıp sürdürülebilir, izlenebilir bir alışkanlığa dönüştürmektir. Bu doğrultuda hangel, bireylerin destekledikleri kuruluşların gerçek faaliyetlerini görebildiği, gönüllülük saatlerinin onaylanan kayıt zincirine bağlandığı ve her bağışın hedef projeye ulaşımının doğrulanabildiği bir altyapı geliştirmektedir.',
             '',
             'Platform, etki ölçümünde SROI (Social Return on Investment) ve "Theory of Change" metodolojilerini referans alır. Kullanıcı verisi minimum prensibiyle toplanır, KVKK ve GDPR çerçevesinde işlenir.',
         ].join('\n\n'),
@@ -181,11 +181,11 @@ const PRESS_RELEASES: { date: string; lang: 'TR' | 'EN'; title: string; body: st
         lang: 'TR',
         title: 'Küresel Bakış: Yerel STK\'lara Dijital Sosyal Etki Altyapısı',
         body: [
-            'Dünya genelinde 10 milyondan fazla sivil toplum kuruluşu, dijital altyapı eksikliği nedeniyle topluma ulaşmakta ve etkilerini görünür kılmakta zorlanmaktadır. Hangel, yerel STK\'lara — büyüklüklerinden bağımsız olarak — kurumsal düzeyde bir bağış, gönüllülük, raporlama ve etki ölçüm altyapısı sunma amacındadır.',
+            'Dünya genelinde 10 milyondan fazla sivil toplum kuruluşu, dijital altyapı eksikliği nedeniyle topluma ulaşmakta ve etkilerini görünür kılmakta zorlanmaktadır. hangel, yerel STK\'lara — büyüklüklerinden bağımsız olarak — kurumsal düzeyde bir bağış, gönüllülük, raporlama ve etki ölçüm altyapısı sunma amacındadır.',
             '',
             'Platform, çok dilli içerik desteği, ülke bazlı yasal uyum modülleri (Türkiye için 5253 sayılı Dernekler Kanunu, Vakıflar Kanunu; uluslararası için GDPR, COPPA, CCPA referansları) ve yerel ödeme entegrasyonlarıyla küresel ölçekte yerel deneyim sunma hedefine yönelmiştir.',
             '',
-            'Hangel\'in açık veri prensibi gereği, etki verileri (kişisel bilgiler hariç) STK\'ların kendi web sitelerinde ve yıllık raporlarında kullanabileceği açık formatlarda yayınlanır. Bu yaklaşım, bağışçı güvenini ve STK\'ların hesap verebilirliğini destekler.',
+            'hangel\'in açık veri prensibi gereği, etki verileri (kişisel bilgiler hariç) STK\'ların kendi web sitelerinde ve yıllık raporlarında kullanabileceği açık formatlarda yayınlanır. Bu yaklaşım, bağışçı güvenini ve STK\'ların hesap verebilirliğini destekler.',
         ].join('\n\n'),
     },
     {
@@ -193,11 +193,11 @@ const PRESS_RELEASES: { date: string; lang: 'TR' | 'EN'; title: string; body: st
         lang: 'TR',
         title: 'Sürdürülebilir Sosyal Etki: Verinin Yönü ve Bireyin Rolü',
         body: [
-            'Sürdürülebilir sosyal etki, tek tek eylemlerin toplamından çok daha fazlasını gerektirir: tutarlı, hedeflenmiş ve doğrulanmış bir aksiyon zinciri. Hangel, bireylerin sosyal hassasiyetleri ile STK kategorilerini eşleştirerek her gönüllülük saatinin ve her bağışın hangi BM Sürdürülebilir Kalkınma Amacına (SKA) katkı sağladığını ölçer.',
+            'Sürdürülebilir sosyal etki, tek tek eylemlerin toplamından çok daha fazlasını gerektirir: tutarlı, hedeflenmiş ve doğrulanmış bir aksiyon zinciri. hangel, bireylerin sosyal hassasiyetleri ile STK kategorilerini eşleştirerek her gönüllülük saatinin ve her bağışın hangi BM Sürdürülebilir Kalkınma Amacına (SKA) katkı sağladığını ölçer.',
             '',
             'Platformun "rozet sistemi" — bireyin uzun vadeli yardımseverlik yolculuğunu görselleştiren bir mekanizma — yardımseverliği oyunlaştırma değil, bireyin kendi etki haritasını görmesine olanak tanıyan bir geri bildirim katmanıdır. Her seviye, kullanıcının belirli bir sosyal alanda gösterdiği tutarlılığı temsil eder.',
             '',
-            'Hangel, bu altyapıyı uluslararası gönüllülük ağları (UN Volunteers, IAVE) ve sosyal girişim ekosistemiyle uyumlu standartlarda geliştirmeye devam etmektedir.',
+            'hangel, bu altyapıyı uluslararası gönüllülük ağları (UN Volunteers, IAVE) ve sosyal girişim ekosistemiyle uyumlu standartlarda geliştirmeye devam etmektedir.',
         ].join('\n\n'),
     },
 ];

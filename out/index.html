@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Hangel</title>
+  <title>hangel</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -46,7 +46,7 @@
 <body>
   <div class="loader">
     <div class="spinner"></div>
-    <p id="status">Hangel yükleniyor...</p>
+    <p id="status">hangel yükleniyor...</p>
     <p class="offline-msg" id="offline-msg">
       İnternet bağlantınızı kontrol edin ve tekrar deneyin.
     </p>
@@ -58,7 +58,7 @@
     });
     window.addEventListener('online', function() {
       document.getElementById('offline-msg').style.display = 'none';
-      document.getElementById('status').textContent = 'Hangel yükleniyor...';
+      document.getElementById('status').textContent = 'hangel yükleniyor...';
       window.location.reload();
     });
     if (!navigator.onLine) {

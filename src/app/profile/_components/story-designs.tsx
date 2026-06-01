@@ -252,8 +252,8 @@ export function StoryDesigns({ data }: { data: StoryInput }) {
         }
         const file = new File([blob], `hangel-hikaye-${designId}.png`, { type: 'image/png' });
         const shareData: ShareData = {
-          title: 'Hangel Etki Hikayem',
-          text: `Hangel'deki etki hikayem! #hangel #iyilikhareketi`,
+          title: 'hangel Etki Hikayem',
+          text: `hangel'deki etki hikayem! #hangel #iyilikhareketi`,
           files: [file],
         };
         const nav = navigator as Navigator & { canShare?: (data?: ShareData) => boolean };

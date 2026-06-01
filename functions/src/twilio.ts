@@ -1,5 +1,5 @@
 /**
- * Twilio SMS helper for Hangel Cloud Functions.
+ * Twilio SMS helper for hangel Cloud Functions.
  *
  * Sends transactional SMS via Twilio REST API (no SDK dependency to keep cold
  * start small). Used by sms-reminder.ts (event reminders) and any future
@@ -9,7 +9,7 @@
  *   TWILIO_ACCOUNT_SID   — ACxxxxxxxxxxxxxxxx
  *   TWILIO_AUTH_TOKEN    — REST API auth token
  *   TWILIO_FROM_NUMBER   — E.164 sender (örn. "+15005550006") veya
- *                          alphanumeric sender ID (TR'de "Hangel" gibi —
+ *                          alphanumeric sender ID (TR'de "hangel" gibi —
  *                          Twilio'da önceden kayıtlı olmalı)
  *
  * Secret setup:

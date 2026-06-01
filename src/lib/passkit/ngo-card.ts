@@ -52,7 +52,7 @@ const SHARED_DEFAULTS = {
   formatVersion: 1,
   passTypeIdentifier: PASS_TYPE_ID,
   teamIdentifier: TEAM_ID,
-  organizationName: 'Hangel',
+  organizationName: 'hangel',
   foregroundColor: 'rgb(255, 255, 255)',
   backgroundColor: 'rgb(243, 71, 35)',
   labelColor: 'rgb(255, 255, 255)',
@@ -91,7 +91,7 @@ export async function generateNgoCard(input: NgoCardInput): Promise<Buffer> {
     'pass.json': Buffer.from(JSON.stringify({
       ...SHARED_DEFAULTS,
       serialNumber,
-      description: `Hangel — ${input.ngoName} Üyelik Kartı`,
+      description: `hangel — ${input.ngoName} Üyelik Kartı`,
       generic: {
         primaryFields: [
           { key: 'member', label: 'ÜYE', value: input.fullName },
@@ -111,7 +111,7 @@ export async function generateNgoCard(input: NgoCardInput): Promise<Buffer> {
           },
           {
             key: 'contact',
-            label: 'Hangel',
+            label: 'hangel',
             value: 'hangel.org.tr | destek@hangel.org',
           },
         ],

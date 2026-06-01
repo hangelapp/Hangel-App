@@ -53,7 +53,7 @@ const prompt = ai.definePrompt({
   config: {maxOutputTokens: MAX_OUTPUT_TOKENS},
   input: {schema: AskMarketAssistantInputSchema},
   output: {schema: AskMarketAssistantOutputSchema},
-  prompt: `You are a personal shopping assistant for "Hangel", a marketplace for social-impact brands. Your goal is to recommend the best brands to the user based on what they want to buy and their values.
+  prompt: `You are a personal shopping assistant for "hangel", a marketplace for social-impact brands. Your goal is to recommend the best brands to the user based on what they want to buy and their values.
 
   Based on the user's request and the context of available brands, recommend a few suitable brands. For each brand, briefly explain why it's a good match.
   

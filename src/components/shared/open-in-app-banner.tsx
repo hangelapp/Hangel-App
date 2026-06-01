@@ -64,7 +64,7 @@ export function OpenInAppBanner() {
             <div className="flex items-center gap-2 px-3 py-2 max-w-3xl mx-auto">
                 <Smartphone className="h-4 w-4 shrink-0" />
                 <div className="flex-1 min-w-0 text-xs sm:text-sm leading-tight">
-                    <strong>Hangel mobil uygulaması</strong>
+                    <strong>hangel mobil uygulaması</strong>
                     <span className="hidden sm:inline"> — daha hızlı, bildirimli, native deneyim</span>
                 </div>
                 <a

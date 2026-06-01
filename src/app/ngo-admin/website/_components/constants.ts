@@ -6,7 +6,7 @@ export const analyticsProviders = [
 ];
 
 export const colorOptions = [
-    { name: 'Hangel Mercan', value: '#f34723' },
+    { name: 'hangel Mercan', value: '#f34723' },
     { name: 'Gece Mavisi', value: '#042654' },
     { name: 'Orman Yeşili', value: '#10b981' },
     { name: 'Kraliyet Moru', value: '#8b5cf6' },

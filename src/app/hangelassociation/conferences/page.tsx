@@ -37,7 +37,7 @@ const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
 export default function AssociationConferencesPage() {
     const { get } = useAssociationContent();
     const title = get('conferences.title', 'Konferanslar');
-    const subtitle = get('conferences.subtitle', "Hangel Derneği'nin düzenlediği uluslararası konferanslar");
+    const subtitle = get('conferences.subtitle', "hangel Derneği'nin düzenlediği uluslararası konferanslar");
     const bodyHtml = get('conferences.body', '<p>Önümüzdeki konferans takvimi yakında burada paylaşılacak.</p>');
     const heroImage = get('conferences.heroImage', '');
 

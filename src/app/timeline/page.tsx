@@ -155,7 +155,7 @@ export default function TimelinePage() {
     // For now we deep-link back to the timeline anchor for this card.
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
     const url = `${origin}/timeline#post-${post.id}`;
-    const shareData = { title: post.author?.name || 'Hangel', text: post.content?.slice(0, 120) || '', url };
+    const shareData = { title: post.author?.name || 'hangel', text: post.content?.slice(0, 120) || '', url };
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share(shareData);

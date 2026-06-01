@@ -226,7 +226,7 @@ export default function ClubProfilePage() {
             <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="absolute top-4 right-4">
-            <ShareButtons url={profileUrl} title={`Hangel'deki ${club.name} kulüp profilini incele!`} buttonClassName="border-white/50 text-white hover:bg-white/20"/>
+            <ShareButtons url={profileUrl} title={`hangel'deki ${club.name} kulüp profilini incele!`} buttonClassName="border-white/50 text-white hover:bg-white/20"/>
         </div>
       </div>
       <div className="p-4 bg-background">

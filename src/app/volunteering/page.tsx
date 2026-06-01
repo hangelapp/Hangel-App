@@ -29,6 +29,7 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
     selected: string[];
     onSelectedChange: (selected: string[]) => void;
 }) => {
+    const { t } = useTranslation();
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -46,7 +47,7 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
                 <DropdownMenuLabel>{title}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {options.length === 0 ? (
-                    <div className="px-2 py-3 text-xs text-muted-foreground">Seçenek yok</div>
+                    <div className="px-2 py-3 text-xs text-muted-foreground">{t('volunteering_root.noOptions')}</div>
                 ) : options.map(option => (
                     <DropdownMenuCheckboxItem
                         key={option}
@@ -63,7 +64,7 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
                         <DropdownMenuSeparator />
                         <div className="px-1">
                             <Button variant="ghost" size="sm" className="w-full h-8 text-xs" onClick={() => onSelectedChange([])}>
-                                Temizle
+                                {t('volunteering_root.clearAll')}
                             </Button>
                         </div>
                     </>
@@ -168,12 +169,13 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
     profile: MatchingUserProfile;
     hasProfile: boolean;
 }) => {
+    const { t } = useTranslation();
     const ngo = ngos.find(n => n.id === opp.ngoId);
     const match = computeMatch(opp, profile);
     const matchPercentage = match.percent;
 
     const daysRemaining = differenceInDays(parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
-    const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
+    const countdownText = daysRemaining > 0 ? t('volunteering_root.remainingDays').replace('{days}', String(daysRemaining)) : (daysRemaining === 0 ? t('volunteering_root.lastDay') : t('volunteering_root.expired'));
 
     // Profil uyumu satırı kullanıcı talebine göre tek renk: narçiçeği (#E34234).
     const matchAccent = '#E34234';
@@ -201,7 +203,7 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                                 className="shrink-0 inline-flex items-center justify-center rounded-full px-3 py-1.5 text-[11px] font-bold transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
                                 style={{ color: matchAccent, border: `1px solid ${matchAccent}` }}
                             >
-                                İncele
+                                {t('volunteering_root.reviewBtn')}
                             </span>
                         </div>
 
@@ -211,7 +213,7 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                                 <span className="flex items-center gap-1"><Calendar size={12} /> {opp.commitment}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-primary text-[11px]">{opp.points} Puan</span>
+                                <span className="font-bold text-primary text-[11px]">{opp.points} {t('volunteering_root.points')}</span>
                                 <Badge variant={daysRemaining < 0 ? 'destructive' : 'outline'} className="text-[10px] font-bold">
                                     {countdownText}
                                 </Badge>
@@ -221,10 +223,10 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                         {hasProfile && (
                             <div
                                 className="mt-2 space-y-1"
-                                title={`Yetkinlik: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • Hassasiyet: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • Konum: ${match.breakdown.location}`}
+                                title={`${t('volunteering_root.breakdownAbility')}: ${match.breakdown.ability.matched}/${match.breakdown.ability.total} • ${t('volunteering_root.breakdownSensitivity')}: ${match.breakdown.interest.matched}/${match.breakdown.interest.total} • ${t('volunteering_root.breakdownLocation')}: ${match.breakdown.location}`}
                             >
                                 <div className="flex justify-between text-[10px] uppercase tracking-wider">
-                                    <span className="font-bold text-muted-foreground">Profil Uygunluğu</span>
+                                    <span className="font-bold text-muted-foreground">{t('volunteering_root.profileEligibility')}</span>
                                     <span className="font-black" style={{ color: matchAccent }}>%{matchPercentage}</span>
                                 </div>
                                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -395,30 +397,30 @@ export default function VolunteeringPage() {
               <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('volunteeringPage.filterAria')} title={t('volunteeringPage.filterAria')}><Filter size={20} /></Button>
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala" title="Sırala"><ArrowDownUp size={20} /></Button>
+                      <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('volunteering_root.sortAria')} title={t('volunteering_root.sortAria')}><ArrowDownUp size={20} /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Sıralama</DropdownMenuLabel>
+                      <DropdownMenuLabel>{t('volunteering_root.sortHeader')}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuCheckboxItem checked={sortBy === 'points'} onCheckedChange={() => setSortBy('points')}>Puana göre</DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem checked={sortBy === 'deadline'} onCheckedChange={() => setSortBy('deadline')}>Son tarihe göre</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={sortBy === 'points'} onCheckedChange={() => setSortBy('points')}>{t('volunteering_root.sortByPoints')}</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={sortBy === 'deadline'} onCheckedChange={() => setSortBy('deadline')}>{t('volunteering_root.sortByDeadline')}</DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
               </DropdownMenu>
           </div>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar items-center">
-              <FilterButton title="Hassasiyet" options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
-              <FilterButton title="Yetkinlikler" options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
-              <FilterButton title="Konum" options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
+              <FilterButton title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
+              <FilterButton title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
+              <FilterButton title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
               <Button
                 variant="outline"
                 size="sm"
                 className="h-9 gap-1.5 rounded-full shrink-0"
                 onClick={() => setMapOpen(true)}
-                aria-label="Haritada Göster"
-                title="Haritada Göster"
+                aria-label={t('volunteering_root.mapAria')}
+                title={t('volunteering_root.mapAria')}
               >
                 <MapIcon className="h-4 w-4" />
-                <span className="text-xs font-medium">Harita</span>
+                <span className="text-xs font-medium">{t('volunteering_root.mapLabel')}</span>
               </Button>
               {(interestFilter.length + skillFilter.length + cityFilter.length) > 0 && (
                   <Button
@@ -427,7 +429,7 @@ export default function VolunteeringPage() {
                       className="h-9 text-xs shrink-0"
                       onClick={() => { setInterestFilter([]); setSkillFilter([]); setCityFilter([]); }}
                   >
-                      Filtreleri temizle
+                      {t('volunteering_root.clearFilters')}
                   </Button>
               )}
           </div>
@@ -444,7 +446,7 @@ export default function VolunteeringPage() {
             >
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <h2 id="imece-recs-heading" className="text-base font-bold">Sana Özel</h2>
+                <h2 id="imece-recs-heading" className="text-base font-bold">{t('volunteering_root.personalizedTitle')}</h2>
                 <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-primary/10 text-primary">
                   {personalizedRecs.length}
                 </span>
@@ -480,7 +482,7 @@ export default function VolunteeringPage() {
                       {/* Uyum yüzdesi çubuğu */}
                       <div className="space-y-1">
                         <div className="flex justify-between text-[9px] uppercase tracking-wider font-bold">
-                          <span className="text-muted-foreground">Profil Uyumun</span>
+                          <span className="text-muted-foreground">{t('volunteering_root.profileMatch')}</span>
                           <span style={{ color: '#E34234' }}>%{score}</span>
                         </div>
                         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -495,7 +497,7 @@ export default function VolunteeringPage() {
                       )}
                       <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                         <span className="flex items-center gap-1"><MapPin size={12} /> {opportunity.location.city}</span>
-                        <span className="font-bold text-primary">{opportunity.points} Puan</span>
+                        <span className="font-bold text-primary">{opportunity.points} {t('volunteering_root.points')}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -518,7 +520,7 @@ export default function VolunteeringPage() {
                   />
               ))
           ) : (
-              <p className="text-center py-20 text-muted-foreground">İlan bulunamadı.</p>
+              <p className="text-center py-20 text-muted-foreground">{t('volunteering_root.noListings')}</p>
           )}
         </div>
       </div>

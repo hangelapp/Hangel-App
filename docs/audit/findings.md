@@ -1,8 +1,8 @@
-# Hangel — Birleştirilmiş Audit Bulguları
+# hangel — Birleştirilmiş Audit Bulguları
 **Tarih:** 2026-05-18 | **Yöntem:** 6 paralel uzman ajan + ana orchestrator doğrulaması | **Kapsam:** read-only
 
 ## 1. Proje özeti
-Hangel — Türkiye merkezli sivil etki platformu. Personalar: STK, dernek, kulüp, marka, gönüllü, bağışçı, süper-admin. Ana akışlar: timeline, market (alışveriş + affiliate bağışı), gönüllülük (imece), etkinlikler, acil durum, library (AI destekli), QR ile bağış/ödeme, profil + impact story + rozet, admin panelleri.
+hangel — Türkiye merkezli sivil etki platformu. Personalar: STK, dernek, kulüp, marka, gönüllü, bağışçı, süper-admin. Ana akışlar: timeline, market (alışveriş + affiliate bağışı), gönüllülük (imece), etkinlikler, acil durum, library (AI destekli), QR ile bağış/ödeme, profil + impact story + rozet, admin panelleri.
 
 ## 2. Tech stack
 - Next.js 15.5.9 (App Router) + React 19.2.1 + TypeScript strict

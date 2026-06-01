@@ -625,7 +625,7 @@ export default function EmergencyManagementPage() {
           const msgContent = `İlanınız ${hospitalName} hastanesinin civarındaki (${civar}) ${bloodType} kan grubuna sahip kullanıcılarımıza iletilmek üzere paylaşılmıştır. Yalnız değilsiniz, 6 saat içerisinde sonuç almazsanız formu yeniden doldurun. Geçmiş olsun.`;
           const subject = '🩸 Acil kan talebiniz iletildi';
           await addDoc(collection(db, COLLECTIONS.messages), {
-            sender: { id: 'hangel-system', name: 'Hangel Resmi', avatarUrl: '' },
+            sender: { id: 'hangel-system', name: 'hangel Resmi', avatarUrl: '' },
             senderId: 'hangel-system',
             senderType: 'system',
             recipient: { id: requesterUid, name: requesterRef.current.name || '', avatarUrl: '' },

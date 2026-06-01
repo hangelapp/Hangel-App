@@ -34,6 +34,7 @@ import { collection, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { librarySections as staticSections } from '@/lib/library';
+import { useTranslation } from '@/components/providers/language-provider';
 
 // Kütüphane bölüm icon allow-list'i. Bölüm icon'ları Firestore'dan runtime string
 // olarak gelir; lucide wildcard import yerine kapalı küme map kullanıyoruz.
@@ -58,7 +59,7 @@ type FilterDef =
 
 const FILM_FILTERS: FilterDef[] = [
   {
-    key: 'category', label: 'Kategori', type: 'select',
+    key: 'category', label: 'category', type: 'select',
     options: [
       'İnsan Hakları', 'Yoksulluk & Umut', 'Etik & Hukuk', 'Dijital Toplum',
       'Kriz & Yardım', 'Gazetecilik & Adalet', 'Çocuk Hakları', 'Sosyal Eşitsizlik',
@@ -79,26 +80,26 @@ const FILM_FILTERS: FilterDef[] = [
     ],
   },
   {
-    key: 'language', label: 'Dil', type: 'select',
+    key: 'language', label: 'language', type: 'select',
     options: ['İngilizce', 'Türkçe', 'Arapça', 'Korece', 'Fransızca', 'Hintçe',
       'Japonca', 'Norveççe', 'İtalyanca', 'İşaret Dili', 'Çok Dilli'],
   },
   {
-    key: 'dub', label: 'Dublaj / Ses', type: 'select',
+    key: 'dub', label: 'dub', type: 'select',
     options: ['Türkçe', 'İngilizce'],
   },
-  { key: 'year', label: 'Yıl Aralığı', type: 'year-range', min: 1962, max: 2021 },
+  { key: 'year', label: 'yearRange', type: 'year-range', min: 1962, max: 2021 },
   {
-    key: 'genre', label: 'Tür', type: 'select',
+    key: 'genre', label: 'genre', type: 'select',
     options: ['Film', 'Belgesel (Film)', 'Belgesel (Dizi)'],
   },
   {
-    key: 'country', label: 'Ülke / Bölge', type: 'select',
+    key: 'country', label: 'country', type: 'select',
     options: ['ABD / İngilizce Yapımlar', 'Türkiye', 'Fransa', 'Güney Kore',
       'Hindistan', 'Japonya', 'Norveç', 'İtalya', 'Çok Uluslu'],
   },
   {
-    key: 'emotion', label: 'Duygu / Deneyim', type: 'multi-select',
+    key: 'emotion', label: 'emotion', type: 'multi-select',
     options: ['Vicdan', 'Cesaret', 'İnsanlık', 'Umut', 'Azim', 'Hayatta Kalma',
       'Adalet', 'Mücadele', 'Gerçeklerin Ortaya Çıkması', 'Sarsıcı', 'Yoksulluk',
       'Dayanışma', 'Empati', 'Kabul', 'Dışlanma', 'Kimlik Arayışı', 'Bağımsızlık',
@@ -106,18 +107,18 @@ const FILM_FILTERS: FilterDef[] = [
       'Motivasyon', 'Sistem Eleştirisi', 'Toplumsal Farkındalık', 'Aktivizm', 'Özgürlük'],
   },
   {
-    key: 'contentType', label: 'İçerik Türü', type: 'select',
+    key: 'contentType', label: 'contentType', type: 'select',
     options: ['Gerçek Hikaye', 'Kurgu'],
   },
   {
-    key: 'hangelAction', label: 'Hangel Aksiyonu', type: 'select',
+    key: 'hangelAction', label: 'hangelAction', type: 'select',
     options: ['Gönüllülük', 'Bağış', 'Farkındalık', 'Eğitim'],
   },
 ];
 
 const BOOK_FILTERS: FilterDef[] = [
   {
-    key: 'category', label: 'Kategori', type: 'select',
+    key: 'category', label: 'category', type: 'select',
     options: [
       'Sosyal Girişimcilik', 'Liderlik', 'Strateji', 'Davranış Bilimi',
       'Gönüllülük', 'Gönüllülük Yönetimi', 'İletişim', 'Pazarlama',
@@ -142,32 +143,32 @@ const BOOK_FILTERS: FilterDef[] = [
     ],
   },
   {
-    key: 'language', label: 'Dil', type: 'select',
+    key: 'language', label: 'language', type: 'select',
     options: ['Türkçe', 'İngilizce', 'Rusça', 'Almanca', 'Fransızca', 'İspanyolca'],
   },
   {
-    key: 'country', label: 'Ülke / Bölge', type: 'select',
+    key: 'country', label: 'country', type: 'select',
     options: ['Türkiye', 'Global / Uluslararası', 'ABD / İngiltere', 'Rusya',
       'Almanya', 'Fransa', 'İspanya', 'Avrupa', 'Latin Amerika'],
   },
   {
-    key: 'contentType', label: 'İçerik Türü', type: 'select',
+    key: 'contentType', label: 'contentType', type: 'select',
     options: ['Akademik Kitap', 'Araştırma / Rapor', 'Rehber / Handbook',
       'Biyografi / Otobiyografi', 'Hikaye / Vaka Analizi', 'Teorik Kitap',
       'Pratik Uygulama Kitabı', 'Politika / Analiz Kitabı'],
   },
   {
-    key: 'focusArea', label: 'Odak Alanı', type: 'multi-select',
+    key: 'focusArea', label: 'focusArea', type: 'multi-select',
     options: ['Sosyal Etki', 'Gönüllülük', 'STK Yönetimi', 'Sosyal Girişim',
       'Kamu Politikası', 'Eğitim', 'Sağlık', 'İnsan Hakları', 'Çevre',
       'Ekonomi / Kalkınma'],
   },
   {
-    key: 'level', label: 'Seviye', type: 'select',
+    key: 'level', label: 'level', type: 'select',
     options: ['Başlangıç', 'Orta', 'İleri / Akademik'],
   },
   {
-    key: 'publisher', label: 'Yayınevi', type: 'select',
+    key: 'publisher', label: 'publisher', type: 'select',
     options: ['Oxford University Press', 'Penguin', 'Wiley', 'Routledge',
       'Springer', 'STGM Yayınları', 'Nobel Yayınları', 'İletişim Yayınları',
       'Remzi Kitabevi', 'Kamu Yayınları', 'UNDP / World Bank / OECD'],
@@ -179,7 +180,7 @@ const BOOK_FILTERS: FilterDef[] = [
 // alanları geçer. `itemContainsValue` haystack araması bu serbest-metin alanlarını yakalar.
 const ACADEMIC_FILTERS: FilterDef[] = [
   {
-    key: 'topic', label: 'Konu', type: 'select',
+    key: 'topic', label: 'topic', type: 'select',
     options: [
       'Etki Odaklı Yardım', 'Etki Ölçümü', 'Kalkınma İktisadı',
       'Kalkınma ve Yoksulluk', 'Kalkınma ve Sosyal Politika', 'Sosyal Sermaye',
@@ -189,7 +190,7 @@ const ACADEMIC_FILTERS: FilterDef[] = [
     ],
   },
   {
-    key: 'publisher', label: 'Yayınevi', type: 'select',
+    key: 'publisher', label: 'publisher', type: 'select',
     options: [
       'Penguin', 'Wiley', 'Oxford University Press', 'PublicAffairs',
       'Simon & Schuster', 'Princeton University Press',
@@ -224,7 +225,7 @@ function isAcademicSection(section: LibrarySection): boolean {
   return t.includes('akademik') || t.includes('academic') || t.includes('makale');
 }
 
-// Envanter (Hangel Sosyal Etki Envanteri) için filtre seti.
+// Envanter (hangel Sosyal Etki Envanteri) için filtre seti.
 // Veri kaynağı: src/lib/hangel-impact-inventory.json — her item.content HTML içinde
 // "Sektör", "Merkez Ülke", "Kuruluş Yılı", "Skor" alanları geçer. `itemContainsValue`
 // haystack araması bu serbest-metin alanlarını yakalar.
@@ -233,7 +234,7 @@ function isAcademicSection(section: LibrarySection): boolean {
 // eşleşir (itemContainsValue serbest-metin tarayıcı).
 const DATA_LIBRARY_FILTERS: FilterDef[] = [
   {
-    key: 'source', label: 'Kaynak Kurum', type: 'select',
+    key: 'source', label: 'source', type: 'select',
     options: [
       'T.C. İçişleri Bakanlığı', 'T.C. Sağlık Bakanlığı', 'T.C. Aile ve Sosyal Hizmetler',
       'T.C. Çevre, Şehircilik ve İklim Değişikliği', 'T.C. Milli Eğitim Bakanlığı',
@@ -243,12 +244,12 @@ const DATA_LIBRARY_FILTERS: FilterDef[] = [
     ],
   },
   {
-    key: 'scope', label: 'Kapsam', type: 'select',
+    key: 'scope', label: 'scope', type: 'select',
     options: ['Türkiye geneli', 'İstanbul', 'Ankara', 'İzmir', 'Bölgesel', 'AB', 'Uluslararası'],
   },
-  { key: 'year', label: 'Veri Yılı', type: 'year-range', min: 2000, max: 2025 },
+  { key: 'year', label: 'dataYear', type: 'year-range', min: 2000, max: 2025 },
   {
-    key: 'topic', label: 'Konu', type: 'select',
+    key: 'topic', label: 'topic', type: 'select',
     options: [
       'Sosyal Etki', 'Sosyal Yardım', 'Gönüllülük', 'Eğitim', 'Sağlık', 'Çevre',
       'Afet', 'Göç', 'Yoksulluk', 'Cinsiyet Eşitliği', 'Engellilik',
@@ -259,7 +260,7 @@ const DATA_LIBRARY_FILTERS: FilterDef[] = [
 
 const INVENTORY_FILTERS: FilterDef[] = [
   {
-    key: 'sector', label: 'Sektör', type: 'select',
+    key: 'sector', label: 'sector', type: 'select',
     options: [
       'Agriculture', 'Education', 'Technology', 'Tourism', 'Hydraulic',
       'Industry', 'Culture', 'Craft', 'Construction', 'Eco-tourism',
@@ -268,16 +269,16 @@ const INVENTORY_FILTERS: FilterDef[] = [
     ],
   },
   {
-    key: 'country', label: 'Merkez Ülke', type: 'select',
+    key: 'country', label: 'headquartersCountry', type: 'select',
     options: [
       'Algeria', 'Austria', 'Bangladesh', 'Hong Kong', 'Morocco',
       'Turkey', 'Türkiye', 'United States', 'United Kingdom', 'France',
       'Germany', 'India', 'Brazil', 'South Africa', 'Kenya',
     ],
   },
-  { key: 'year', label: 'Kuruluş Yılı', type: 'year-range', min: 1970, max: 2025 },
+  { key: 'year', label: 'foundingYear', type: 'year-range', min: 1970, max: 2025 },
   {
-    key: 'score', label: 'Etki Skoru', type: 'select',
+    key: 'score', label: 'impactScore', type: 'select',
     options: ['Skor: 9', 'Skor: 8', 'Skor: 7', 'Skor: 6', 'Skor: 5'],
   },
 ];
@@ -351,18 +352,21 @@ function FilterControl({
   value: unknown;
   onChange: (v: unknown) => void;
 }) {
+  const { t } = useTranslation();
+  const labelText = t(`library.filterLabels.${def.label}`);
+  const allPrefix = t('library.toolbar.allPrefix');
   if (def.type === 'select') {
     return (
       <div className="space-y-1">
         <label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          {def.label}
+          {labelText}
         </label>
         <Select value={(typeof value === 'string' && value) || '__all__'} onValueChange={v => onChange(v === '__all__' ? '' : v)}>
           <SelectTrigger className="h-9 bg-background text-xs">
-            <SelectValue placeholder={`Tüm ${def.label}`} />
+            <SelectValue placeholder={`${allPrefix} ${labelText}`} />
           </SelectTrigger>
           <SelectContent className="max-h-72">
-            <SelectItem value="__all__">Tüm {def.label}</SelectItem>
+            <SelectItem value="__all__">{allPrefix} {labelText}</SelectItem>
             {def.options.map(opt => (
               <SelectItem key={opt} value={opt}>{opt}</SelectItem>
             ))}
@@ -378,7 +382,7 @@ function FilterControl({
       <div className="space-y-1 md:col-span-2">
         <div className="flex items-center justify-between">
           <label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {def.label}
+            {labelText}
           </label>
           {arr.length > 0 && (
             <button
@@ -386,7 +390,7 @@ function FilterControl({
               onClick={() => onChange([])}
               className="text-[10px] text-muted-foreground hover:text-foreground"
             >
-              Temizle ({arr.length})
+              {t('library.toolbar.clearMultiSelect')} ({arr.length})
             </button>
           )}
         </div>
@@ -402,7 +406,7 @@ function FilterControl({
     return (
       <div className="space-y-2">
         <label className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-          {def.label}: <span className="text-foreground">{range[0]}–{range[1]}</span>
+          {labelText}: <span className="text-foreground">{range[0]}–{range[1]}</span>
         </label>
         <Slider
           min={def.min}
@@ -440,6 +444,7 @@ function SectionToolbar({
   filteredCount: number;
   totalCount: number;
 }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   const activeFilterCount = useMemo(() => {
@@ -458,10 +463,10 @@ function SectionToolbar({
   }, [filters, filterDefs]);
 
   const placeholder = isFilmSection(section)
-    ? 'Film, yönetmen veya tür ara...'
+    ? t('library.toolbar.filmPlaceholder')
     : isBookSection(section)
-      ? 'Kitap, yazar veya kategori ara...'
-      : `${section.title} içinde ara...`;
+      ? t('library.toolbar.bookPlaceholder')
+      : `${section.title} ${t('library.toolbar.defaultPlaceholderSuffix')}`;
 
   return (
     <div className="border-b bg-muted/30">
@@ -480,7 +485,7 @@ function SectionToolbar({
                 type="button"
                 onClick={() => onQueryChange('')}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted"
-                aria-label="Aramayı temizle"
+                aria-label={t('library.toolbar.clearSearchAria')}
               >
                 <X className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
@@ -498,7 +503,7 @@ function SectionToolbar({
               onClick={() => setExpanded(e => !e)}
             >
               <Filter className="h-3.5 w-3.5 mr-1.5" />
-              Filtreler
+              {t('library.toolbar.filtersButton')}
               {activeFilterCount > 0 && (
                 <span className="ml-1.5 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-background/20 text-[10px] font-bold">
                   {activeFilterCount}
@@ -511,7 +516,7 @@ function SectionToolbar({
           )}
           {(activeFilterCount > 0 || query) && (
             <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={onClearAll}>
-              <X className="h-3 w-3 mr-1" /> Temizle
+              <X className="h-3 w-3 mr-1" /> {t('library.toolbar.clearAllButton')}
             </Button>
           )}
         </div>
@@ -534,6 +539,7 @@ function SectionToolbar({
 }
 
 function SectionAccordion({ section }: { section: LibrarySection }) {
+  const { t } = useTranslation();
   const filterDefs = useMemo(() => getFilterDefs(section), [section]);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Record<string, unknown>>({});
@@ -613,8 +619,8 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
                 <BookOpen className="h-8 w-8 text-muted-foreground/50 mb-2" />
                 <p className="text-sm text-muted-foreground">
                   {(section.items ?? []).length === 0
-                    ? 'Bu bölümde henüz içerik bulunmuyor.'
-                    : 'Aramaya uyan sonuç yok.'}
+                    ? t('library.sectionNoItems')
+                    : t('library.sectionNoMatches')}
                 </p>
               </div>
             )}
@@ -630,23 +636,23 @@ function SectionAccordion({ section }: { section: LibrarySection }) {
 type ChatMessage = { role: 'user' | 'assistant'; content: string; ts: number };
 type AssistantKind = 'library' | 'project';
 
-const ASSISTANT_META: Record<AssistantKind, { title: string; description: string; placeholder: string; endpoint: string; storageKey: string; icon: React.ComponentType<{ className?: string }>; accent: string }> = {
-  library: { title: 'Kütüphane Asistanı', description: 'Yalnızca kütüphanedeki dokümanları kullanarak sorularınızı yanıtlar.', placeholder: 'Kütüphane içeriği hakkında bir soru sorun...', endpoint: '/api/library/chat', storageKey: 'hangel.assistant.library.history', icon: Bot, accent: 'bg-primary text-primary-foreground' },
-  project: { title: 'Proje Yazma Asistanı', description: 'Projenizi anlatın, kütüphane ve yönetim şablonlarıyla proje dokümanı oluştursun.', placeholder: 'Projenizi birkaç cümleyle anlatın...', endpoint: '/api/library/project', storageKey: 'hangel.assistant.project.history', icon: Sparkles, accent: 'bg-fuchsia-600 text-white' },
+const ASSISTANT_META: Record<AssistantKind, { titleKey: string; descriptionKey: string; placeholderKey: string; endpoint: string; storageKey: string; icon: React.ComponentType<{ className?: string }>; accent: string }> = {
+  library: { titleKey: 'library.assistant.libraryTitle', descriptionKey: 'library.assistant.libraryDescription', placeholderKey: 'library.assistant.libraryPlaceholder', endpoint: '/api/library/chat', storageKey: 'hangel.assistant.library.history', icon: Bot, accent: 'bg-primary text-primary-foreground' },
+  project: { titleKey: 'library.assistant.projectTitle', descriptionKey: 'library.assistant.projectDescription', placeholderKey: 'library.assistant.projectPlaceholder', endpoint: '/api/library/project', storageKey: 'hangel.assistant.project.history', icon: Sparkles, accent: 'bg-fuchsia-600 text-white' },
 };
 
 // Boş sohbet ekranında gösterilen tıklanabilir örnek sorular (kullanıcıyı başlatır).
-const SUGGESTED_QUESTIONS: Record<AssistantKind, string[]> = {
+const SUGGESTED_QUESTION_KEYS: Record<AssistantKind, string[]> = {
   library: [
-    'Liderlik üzerine hangi kitaplar var?',
-    'Gönüllü yönetimi için kaynak öner',
-    'Sosyal girişimcilik nedir?',
-    'STK şeffaflığı hakkında ne var?',
+    'library.suggestedQuestions.library1',
+    'library.suggestedQuestions.library2',
+    'library.suggestedQuestions.library3',
+    'library.suggestedQuestions.library4',
   ],
   project: [
-    'Çocuklara yönelik eğitim projesi taslağı çıkar',
-    'Çevre temizliği projesi için hedefler öner',
-    'Bağışçılara sunulacak kısa proje özeti yaz',
+    'library.suggestedQuestions.project1',
+    'library.suggestedQuestions.project2',
+    'library.suggestedQuestions.project3',
   ],
 };
 
@@ -669,6 +675,10 @@ const PROJECT_INSTITUTIONS = [
 
 function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; open: boolean; onOpenChange: (o: boolean) => void }) {
   const meta = ASSISTANT_META[kind];
+  const { t } = useTranslation();
+  const metaTitle = t(meta.titleKey);
+  const metaDescription = t(meta.descriptionKey);
+  const metaPlaceholder = t(meta.placeholderKey);
   const { toast } = useToast();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -709,7 +719,7 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
       if (!reply) throw new Error('Empty reply');
       setMessages(prev => [...prev, { role: 'assistant', content: reply, ts: Date.now() }]);
     } catch {
-      toast({ title: 'AI servisi henüz hazır değil', description: 'AI servisi yakında aktif olacak. Süper admin yapay zeka yönetiminden eğitildikten sonra cevap verecek.' });
+      toast({ title: t('library.assistant.unavailableTitle'), description: t('library.assistant.unavailableDesc') });
     } finally { setSending(false); }
   };
 
@@ -725,50 +735,53 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
         <DialogHeader className="p-5 border-b">
           <DialogTitle className="flex items-center gap-2 text-base">
             <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${meta.accent}`}><Icon className="h-4 w-4" /></span>
-            {meta.title}
+            {metaTitle}
           </DialogTitle>
-          <DialogDescription className="text-xs">{meta.description}</DialogDescription>
+          <DialogDescription className="text-xs">{metaDescription}</DialogDescription>
         </DialogHeader>
         <div ref={listRef} className="px-5 py-4 h-[60vh] max-h-[420px] overflow-y-auto space-y-3 bg-muted/30">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground gap-3">
               <Icon className="h-8 w-8 opacity-50" />
-              <p className="text-sm">{meta.placeholder}</p>
+              <p className="text-sm">{metaPlaceholder}</p>
               <div className="flex flex-wrap gap-2 justify-center pt-1">
-                {SUGGESTED_QUESTIONS[kind].map(q => (
-                  <button
-                    key={q}
-                    type="button"
-                    onClick={() => void handleSend(q)}
-                    className="text-xs rounded-full border bg-background px-3 py-1.5 text-foreground hover:bg-accent transition-colors"
-                  >
-                    {q}
-                  </button>
-                ))}
+                {SUGGESTED_QUESTION_KEYS[kind].map(qKey => {
+                  const q = t(qKey);
+                  return (
+                    <button
+                      key={qKey}
+                      type="button"
+                      onClick={() => void handleSend(q)}
+                      className="text-xs rounded-full border bg-background px-3 py-1.5 text-foreground hover:bg-accent transition-colors"
+                    >
+                      {q}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
           {messages.map((m, idx) => (
             <div key={`${m.ts}-${idx}`} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
               <div className={m.role === 'user' ? 'max-w-[80%] rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-3 py-2 text-sm whitespace-pre-wrap' : 'max-w-[80%] rounded-2xl rounded-bl-sm bg-background border px-3 py-2 text-sm whitespace-pre-wrap'}>
-                <div className="text-[10px] uppercase tracking-wide opacity-70 mb-1">{m.role === 'user' ? 'Siz' : meta.title}</div>
+                <div className="text-[10px] uppercase tracking-wide opacity-70 mb-1">{m.role === 'user' ? t('library.assistant.userLabel') : metaTitle}</div>
                 {m.content}
               </div>
             </div>
           ))}
           {sending && (
             <div className="flex justify-start">
-              <div className="rounded-2xl rounded-bl-sm bg-background border px-3 py-2 text-sm flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" />Düşünüyor...</div>
+              <div className="rounded-2xl rounded-bl-sm bg-background border px-3 py-2 text-sm flex items-center gap-2 text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" />{t('library.assistant.thinking')}</div>
             </div>
           )}
         </div>
         <div className="p-3 border-t bg-background flex items-end gap-2">
-          <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend(); } }} placeholder={meta.placeholder} disabled={sending} className="flex-1" />
-          <Button type="button" size="icon" onClick={() => void handleSend()} disabled={sending || !input.trim()} aria-label="Gönder">
+          <Input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void handleSend(); } }} placeholder={metaPlaceholder} disabled={sending} className="flex-1" />
+          <Button type="button" size="icon" onClick={() => void handleSend()} disabled={sending || !input.trim()} aria-label={t('library.assistant.sendAria')}>
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
           {messages.length > 0 && (
-            <Button type="button" size="icon" variant="ghost" onClick={handleClear} aria-label="Geçmişi temizle"><Trash2 className="h-4 w-4" /></Button>
+            <Button type="button" size="icon" variant="ghost" onClick={handleClear} aria-label={t('library.assistant.clearHistoryAria')}><Trash2 className="h-4 w-4" /></Button>
           )}
         </div>
       </DialogContent>
@@ -781,6 +794,8 @@ function AssistantDialog({ kind, open, onOpenChange }: { kind: AssistantKind; op
 // (ProjectWriterInput.sections schema'sıyla birebir uyumlu: summary/goals/audience/...).
 function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const meta = ASSISTANT_META.project;
+  const { t } = useTranslation();
+  const metaTitle = t(meta.titleKey);
   const { toast } = useToast();
   const db = useFirestore();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -835,8 +850,8 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
       setStep(4);
     } catch {
       toast({
-        title: 'Proje Yazma servisi henüz hazır değil',
-        description: 'AI servisi yakında aktif olacak. Süper admin yapay zeka yönetiminden eğitildikten sonra cevap verecek.',
+        title: t('library.projectWriter.unavailableTitle'),
+        description: t('library.projectWriter.unavailableDesc'),
       });
     } finally {
       setSubmitting(false);
@@ -893,18 +908,18 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${meta.accent}`}>
               <Sparkles className="h-4 w-4" />
             </span>
-            {meta.title}
+            {metaTitle}
           </DialogTitle>
           <DialogDescription className="text-xs">
             {step < 4
-              ? `Adım ${step} / 3 — ${
+              ? `${t('library.projectWriter.stepLabel')} ${step} ${t('library.projectWriter.stepOfThree')} ${
                   step === 1
-                    ? 'Projeyi hangi kuruma sunacaksınız?'
+                    ? t('library.projectWriter.step1Desc')
                     : step === 2
-                      ? 'Projenizi birkaç cümleyle anlatın.'
-                      : 'Hedef kitle, faaliyetler ve bütçe.'
+                      ? t('library.projectWriter.step2Desc')
+                      : t('library.projectWriter.step3Desc')
                 }`
-              : 'Proje taslağınız hazır.'}
+              : t('library.projectWriter.step4Desc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -912,23 +927,23 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           {step === 1 && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Hedef Kurum / Hibe Programı
+                {t('library.projectWriter.institutionLabel')}
               </label>
               <Select value={institution} onValueChange={setInstitution}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Kurum veya hibe seçin..." />
+                  <SelectValue placeholder={t('library.projectWriter.institutionPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="max-h-72">
                   {fundInstitutions.length > 0 && (
                     <>
                       <div className="px-2 py-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Açık Hibe & Fon Programları
+                        {t('library.projectWriter.openFundsHeader')}
                       </div>
                       {fundInstitutions.map(inst => (
                         <SelectItem key={`fund:${inst}`} value={inst}>{inst}</SelectItem>
                       ))}
                       <div className="px-2 py-1.5 mt-1 border-t text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                        Genel Kurumlar
+                        {t('library.projectWriter.generalInstitutionsHeader')}
                       </div>
                     </>
                   )}
@@ -938,7 +953,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 </SelectContent>
               </Select>
               <p className="text-[11px] text-muted-foreground">
-                Proje, seçtiğiniz kurumun veya hibenin talep ve esaslarına uygun şekilde yazılacaktır.
+                {t('library.projectWriter.institutionHint')}
               </p>
             </div>
           )}
@@ -946,7 +961,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           {step === 2 && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Proje Konusu / Özet
+                {t('library.projectWriter.summaryLabel')}
               </label>
               <textarea
                 value={summary}
@@ -954,7 +969,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 rows={6}
                 maxLength={2000}
                 className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Örnek: İstanbul'da liseli gençlere kodlama eğitimi vermek için 6 aylık atölye programı..."
+                placeholder={t('library.projectWriter.summaryPlaceholder')}
               />
               <p className="text-[11px] text-muted-foreground text-right">{summary.length}/2000</p>
             </div>
@@ -964,7 +979,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             <div className="space-y-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Hedefler (SMART)
+                  {t('library.projectWriter.goalsLabel')}
                 </label>
                 <textarea
                   value={goals}
@@ -972,12 +987,12 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                   rows={3}
                   maxLength={1500}
                   className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Örnek: 100 lise öğrencisine Python eğitimi vermek, %70 mezuniyet oranına ulaşmak..."
+                  placeholder={t('library.projectWriter.goalsPlaceholder')}
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Hedef Kitle
+                  {t('library.projectWriter.audienceLabel')}
                 </label>
                 <textarea
                   value={audience}
@@ -985,12 +1000,12 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                   rows={2}
                   maxLength={1000}
                   className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Yaş, sosyo-ekonomik durum, bölge..."
+                  placeholder={t('library.projectWriter.audiencePlaceholder')}
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Faaliyet Planı
+                  {t('library.projectWriter.activitiesLabel')}
                 </label>
                 <textarea
                   value={activities}
@@ -998,12 +1013,12 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                   rows={2}
                   maxLength={1500}
                   className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Atölyeler, mentorluk, etkinlikler, süre..."
+                  placeholder={t('library.projectWriter.activitiesPlaceholder')}
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Bütçe Yaklaşımı
+                  {t('library.projectWriter.budgetLabel')}
                 </label>
                 <textarea
                   value={budget}
@@ -1011,7 +1026,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                   rows={2}
                   maxLength={1000}
                   className="w-full rounded-lg border bg-background p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Tahmini bütçe, ana kalemler (eğitmen, materyal, mekan)..."
+                  placeholder={t('library.projectWriter.budgetPlaceholder')}
                 />
               </div>
             </div>
@@ -1020,7 +1035,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           {step === 4 && proposal && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
-                Proje taslağı — kopyalayıp düzenleyebilirsiniz. Hedef kurum: <strong>{institution}</strong>
+                {t('library.projectWriter.proposalReadyText')} <strong>{institution}</strong>
               </p>
               <textarea
                 readOnly
@@ -1029,7 +1044,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 className="w-full rounded-lg border bg-background p-3 text-sm font-mono"
               />
               <Button type="button" size="sm" variant="outline" onClick={handleDownloadWord}>
-                <Download className="h-4 w-4 mr-2" /> Word olarak indir
+                <Download className="h-4 w-4 mr-2" /> {t('library.projectWriter.downloadWord')}
               </Button>
             </div>
           )}
@@ -1038,7 +1053,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         <div className="p-3 border-t bg-background flex items-center justify-between gap-2">
           {step > 1 && step < 4 ? (
             <Button type="button" variant="ghost" size="sm" onClick={() => setStep(s => (s - 1) as 1 | 2 | 3)}>
-              Geri
+              {t('library.projectWriter.back')}
             </Button>
           ) : (
             <span />
@@ -1051,7 +1066,7 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
                 disabled={!canAdvance}
                 onClick={() => setStep(s => (s + 1) as 2 | 3)}
               >
-                İleri
+                {t('library.projectWriter.next')}
               </Button>
             )}
             {step === 3 && (
@@ -1063,18 +1078,18 @@ function ProjectWriterDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Hazırlanıyor...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> {t('library.projectWriter.preparing')}
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4 mr-2" /> Projeyi Oluştur
+                    <Sparkles className="h-4 w-4 mr-2" /> {t('library.projectWriter.generate')}
                   </>
                 )}
               </Button>
             )}
             {step === 4 && (
               <Button type="button" size="sm" variant="outline" onClick={reset}>
-                <Trash2 className="h-4 w-4 mr-2" /> Yeni Proje
+                <Trash2 className="h-4 w-4 mr-2" /> {t('library.projectWriter.newProject')}
               </Button>
             )}
           </div>
@@ -1088,6 +1103,9 @@ function LibraryAssistantsFab({ openLibrary, setOpenLibrary, openProject, setOpe
   openLibrary: boolean; setOpenLibrary: (o: boolean) => void;
   openProject: boolean; setOpenProject: (o: boolean) => void;
 }) {
+  const { t } = useTranslation();
+  const libAria = t('library.fab.libraryAria');
+  const projAria = t('library.fab.projectAria');
   return (
     <>
       {/* PDF #1: sağ kenarın ortasında 2 yapay zeka ikonu (sticky vertical-center). */}
@@ -1096,8 +1114,8 @@ function LibraryAssistantsFab({ openLibrary, setOpenLibrary, openProject, setOpe
           type="button"
           onClick={() => setOpenLibrary(true)}
           className="rounded-full shadow-lg h-12 w-12 sm:h-14 sm:w-14 p-0"
-          aria-label="Kütüphane Asistanı"
-          title="Kütüphane Asistanı"
+          aria-label={libAria}
+          title={libAria}
         >
           <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
@@ -1105,8 +1123,8 @@ function LibraryAssistantsFab({ openLibrary, setOpenLibrary, openProject, setOpe
           type="button"
           onClick={() => setOpenProject(true)}
           className="rounded-full shadow-lg h-12 w-12 sm:h-14 sm:w-14 p-0 bg-fuchsia-600 hover:bg-fuchsia-700 text-white"
-          aria-label="Proje Yazma Asistanı"
-          title="Proje Yazma Asistanı"
+          aria-label={projAria}
+          title={projAria}
         >
           <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
@@ -1118,6 +1136,7 @@ function LibraryAssistantsFab({ openLibrary, setOpenLibrary, openProject, setOpe
 }
 
 export default function LibraryPage() {
+  const { t } = useTranslation();
   const db = useFirestore();
   const [searchTerm, setSearchTerm] = useState('');
   const [openLibrary, setOpenLibrary] = useState(false);
@@ -1158,8 +1177,8 @@ export default function LibraryPage() {
       },
       {
         slug: 'hangel-sozlugu',
-        title: 'Hangel Sözlüğü',
-        description: 'Hangel ekosistemine özel kavramların açıklamaları.',
+        title: 'hangel Sözlüğü',
+        description: 'hangel ekosistemine özel kavramların açıklamaları.',
         icon: 'BookA',
         items: [],
       },
@@ -1252,25 +1271,25 @@ export default function LibraryPage() {
 
     const hasProfile = kw.length > 0; // Hakkında/Gönüllülük bilgisi doldurulmuş mu
     const recGroups = hasProfile ? [
-      { title: 'Kitaplar', items: pickMatched('kitaplar', 3) },
-      { title: 'Filmler', items: pickMatched('filmler', 3) },
-      { title: 'Sosyal Etki Envanteri', items: pickMatched('hangel-sosyal-etki-envanteri', 3) },
+      { title: t('library.recGroupBooks'), items: pickMatched('kitaplar', 3) },
+      { title: t('library.recGroupFilms'), items: pickMatched('filmler', 3) },
+      { title: t('library.recGroupInventory'), items: pickMatched('hangel-sosyal-etki-envanteri', 3) },
     ].filter(g => g.items.length > 0) : [];
     return { savedItems, recGroups, hasProfile };
-  }, [user, userData, sections]);
+  }, [user, userData, sections, t]);
 
   return (
     <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0 bg-secondary min-h-screen">
       <div className="text-center">
-        <h1 className="text-3xl font-bold font-headline">Kütüphane</h1>
-        <p className="mt-2 text-muted-foreground">Sosyal etki kaynaklarını veritabanından anlık keşfedin.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('library.pageTitle')}</h1>
+        <p className="mt-2 text-muted-foreground">{t('library.pageSubtitle')}</p>
       </div>
 
       <div className="max-w-lg mx-auto flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Tüm kategorilerde ara..."
+            placeholder={t('library.searchAllPlaceholder')}
             className="pl-10 h-11"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
@@ -1279,7 +1298,7 @@ export default function LibraryPage() {
         {personal && personal.savedItems.length > 0 && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label="Kaydettiklerin">
+              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 relative" aria-label={t('library.ariaSaved')}>
                 <Bookmark className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
                   {personal.savedItems.length}
@@ -1287,7 +1306,7 @@ export default function LibraryPage() {
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto">
-              <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> Kaydettiklerin</p>
+              <p className="font-semibold text-sm flex items-center gap-2"><Bookmark className="h-4 w-4 text-primary" /> {t('library.savedTitle')}</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 {personal.savedItems.map(i => (
                   <Link key={i.slug} href={`/library/${i.slug}`} className="text-xs rounded-full border bg-background px-3 py-1.5 hover:bg-accent transition-colors">{i.title}</Link>
@@ -1299,12 +1318,12 @@ export default function LibraryPage() {
         {personal && (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Profilin için öneriler">
+              <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label={t('library.ariaSuggestions')}>
                 <Compass className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-80 max-h-96 overflow-y-auto space-y-3">
-              <p className="font-semibold text-sm flex items-center gap-2"><Compass className="h-4 w-4 text-primary" /> Profilin için öneriler</p>
+              <p className="font-semibold text-sm flex items-center gap-2"><Compass className="h-4 w-4 text-primary" /> {t('library.suggestionsTitle')}</p>
               {personal.hasProfile && personal.recGroups.length > 0 ? (
                 <>
                   {personal.recGroups.map(g => (
@@ -1318,20 +1337,20 @@ export default function LibraryPage() {
                     </div>
                   ))}
                   <p className="text-[11px] text-muted-foreground leading-snug pt-2 border-t">
-                    Bu öneriler profilindeki <strong>Hakkında</strong> ve <strong>Gönüllülük</strong> bilgileri baz alınarak hazırlanmıştır.
+                    {t('library.suggestionsHintPrefix')} <strong>{t('library.suggestionsHintAbout')}</strong> {t('library.suggestionsHintAnd')} <strong>{t('library.suggestionsHintVolunteer')}</strong> {t('library.suggestionsHintSuffix')}
                   </p>
                 </>
               ) : (
                 <div className="space-y-3 pt-1">
                   <p className="text-sm text-muted-foreground leading-snug">
-                    Sana öneride bulunabilmem için profilindeki <strong>Hakkında</strong> ve <strong>Gönüllülük</strong> bilgilerini doldurman gerekiyor.
+                    {t('library.suggestionsEmptyPrefix')} <strong>{t('library.suggestionsEmptyAbout')}</strong> {t('library.suggestionsEmptyAnd')} <strong>{t('library.suggestionsEmptyVolunteer')}</strong> {t('library.suggestionsEmptySuffix')}
                   </p>
                   <div className="flex flex-col gap-2">
                     <Button asChild size="sm" variant="outline" className="w-full justify-between">
-                      <Link href="/settings/profile">Hakkında bilgilerim <ChevronRight className="h-4 w-4" /></Link>
+                      <Link href="/settings/profile">{t('library.profileAboutLink')} <ChevronRight className="h-4 w-4" /></Link>
                     </Button>
                     <Button asChild size="sm" variant="outline" className="w-full justify-between">
-                      <Link href="/settings/volunteer">Gönüllülük bilgilerim <ChevronRight className="h-4 w-4" /></Link>
+                      <Link href="/settings/volunteer">{t('library.profileVolunteerLink')} <ChevronRight className="h-4 w-4" /></Link>
                     </Button>
                   </div>
                 </div>
@@ -1350,8 +1369,8 @@ export default function LibraryPage() {
         >
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></span>
           <span>
-            <span className="block font-semibold text-sm">Kütüphane Asistanı</span>
-            <span className="block text-xs text-muted-foreground">Kaynaklar hakkında soru sor</span>
+            <span className="block font-semibold text-sm">{t('library.ctaLibraryAssistant')}</span>
+            <span className="block text-xs text-muted-foreground">{t('library.ctaLibraryAssistantDesc')}</span>
           </span>
         </button>
         <button
@@ -1361,8 +1380,8 @@ export default function LibraryPage() {
         >
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fuchsia-600 text-white"><Sparkles className="h-5 w-5" /></span>
           <span>
-            <span className="block font-semibold text-sm">STK&apos;na Proje Yaz</span>
-            <span className="block text-xs text-muted-foreground">AI ile proje dokümanı oluştur</span>
+            <span className="block font-semibold text-sm">{t('library.ctaProjectWriter')}</span>
+            <span className="block text-xs text-muted-foreground">{t('library.ctaProjectWriterDesc')}</span>
           </span>
         </button>
       </div>
@@ -1373,7 +1392,7 @@ export default function LibraryPage() {
         ) : filteredSections.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Search className="h-10 w-10 text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground">Aramanızla eşleşen sonuç bulunamadı.</p>
+            <p className="text-muted-foreground">{t('library.noSearchResults')}</p>
           </div>
         ) : filteredSections.map(section => (
           <SectionAccordion key={section.slug} section={section} />
