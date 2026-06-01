@@ -128,9 +128,13 @@ workflows:
         api_key: $APP_STORE_CONNECT_PRIVATE_KEY
         key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
         issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
-        beta_groups:
-          - Internal Testers
+        # submit_to_testflight: true → "Submit Build to TestFlight Beta Review" yapar
+        # ama bu external testing için. Bizim internal install için sadece
+        # build'in App Store Connect'e upload edilmesi yeterli (zaten yukarıda
+        # configured). beta review submit'i metadata gerektiriyor (test info,
+        # contact details). Internal kullanıma submit gerek yok — TestFlight
+        # app'i build'i otomatik gösterir.
+        submit_to_testflight: false
       email:
         recipients:
           - ismailhilmi@hangel.org
