@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { HangelLogo } from '@/components/icons';
 import { IndividualForm } from './_components/IndividualForm';
 import { CorporateForm } from './_components/CorporateForm';
-// Apple Sign-In butonu geçici olarak gizlendi.
-// Geri açmak için: import { AppleSignInButton } from '@/components/auth/apple-signin-button';
+import { AppleSignInButton } from '@/components/auth/apple-signin-button';
 
 // P2-6c: God-page (1174 LoC) refactored into _components/.
 // page.tsx is now a thin router. Auth-critical flows (handleCheckEmail,
@@ -53,7 +52,7 @@ const FormRenderer = () => {
                                 <TabsTrigger value="corporate" className="rounded-lg font-bold">Kurumsal</TabsTrigger>
                             </TabsList>
                             <TabsContent value="individual" className="pt-4">
-                                {/* <AppleSignInButton onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} /> */}
+                                <AppleSignInButton onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} />
                                 <IndividualForm onComplete={(isNewUser) => router.push(isNewUser ? '/welcome' : nextPath)} />
                             </TabsContent>
                             <TabsContent value="corporate" className="pt-4">

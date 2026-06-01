@@ -17,10 +17,12 @@
 import { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Loader2 } from 'lucide-react';
+import { signInWithCustomToken } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithAppleNative } from '@/lib/apple-signin';
+import { useAuth } from '@/firebase';
 
 interface Props {
   onComplete: (isNewUser: boolean) => void;
@@ -28,6 +30,7 @@ interface Props {
 
 export function AppleSignInButton({ onComplete }: Props) {
   const { toast } = useToast();
+  const auth = useAuth();
   const [loading, setLoading] = useState(false);
 
   if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') {
@@ -37,9 +40,9 @@ export function AppleSignInButton({ onComplete }: Props) {
   const handleClick = async () => {
     setLoading(true);
     const result = await signInWithAppleNative();
-    setLoading(false);
 
     if (!result.ok) {
+      setLoading(false);
       if (result.errorCode === 'APPLE_CANCELLED') return; // sessiz iptal
       toast({
         variant: 'destructive',
@@ -48,6 +51,26 @@ export function AppleSignInButton({ onComplete }: Props) {
       });
       return;
     }
+
+    if (!result.customToken) {
+      setLoading(false);
+      toast({ variant: 'destructive', title: 'Hata', description: 'Custom token alınamadı.' });
+      return;
+    }
+
+    try {
+      await signInWithCustomToken(auth, result.customToken);
+    } catch (e) {
+      setLoading(false);
+      toast({
+        variant: 'destructive',
+        title: 'Firebase oturum hatası',
+        description: e instanceof Error ? e.message : 'Bilinmeyen hata.',
+      });
+      return;
+    }
+
+    setLoading(false);
     onComplete(result.isNewUser ?? false);
   };
 
