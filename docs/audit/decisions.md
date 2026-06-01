@@ -1823,3 +1823,39 @@ Index gerektiğinde sorgu `failed-precondition` döner; UI toast ile bildirir, k
 - **Rollback**: `git revert <commit>`. Eski davranış: UI suspend yalnız `status` yazar (Auth dokunulmaz). disable route eski tek-yön haline döner.
 - **firestore.rules önerisi (DEĞİŞTİRİLMEDİ — rapor-only)**: Firestore rules `request.auth.token` claim'lerine bakar; `disabled` flag'i Firestore doc alanı, token claim'i DEĞİL. Rules `disabled` doc alanını kendi yazma/okuma işleminde güvenilir biçimde kullanamaz (kullanıcı kendi disabled alanını sıfırlayamasın diye zaten `users/{uid}` self-write alan kısıtı gerekir). Gerçek server-side enforcement için seçenek: (a) disable sırasında bir custom claim (`disabled:true`) set edip rules'da `request.auth.token.disabled != true` kontrolü — claim revoke + token refresh ile yayılır; (b) `revokeRefreshTokens` zaten Firestore/Storage erişimini token süresi (≤1s server-revoke check) içinde keser çünkü Firebase güvenlik kuralları `auth_time < tokensValidAfterTime` token'ları reddeder. (b) bu PR ile zaten geliyor. (a) ayrı bir görev (claim modeli değişikliği = yüksek riskli, user onayı). ÖNERİ: rules'a ŞU AN dokunma; revokeRefreshTokens yeterli ilk hat. Takip görevi SEC-DISABLE-CLAIM açılabilir.
 - **middleware önerisi (rapor-only)**: `middleware.ts` YOK ve session-cookie verify yolu YOK (uygulama Firebase ID token'larını `verifyIdToken` ile doğrudan doğruluyor; auth state client `onAuthStateChanged` ile yönetiliyor). Middleware eklemek server-side bir gate sağlar AMA bunun için önce session-cookie mimarisi (`createSessionCookie` + httpOnly cookie + her istekte `verifySessionCookie(..., checkRevoked=true)`) kurulmalı. Bu büyük bir mimari değişiklik; KÖR EKLENMEMELİ. Mevcut yapıda `revokeRefreshTokens` + client guard, disabled enforcement için yeterli ilk hat. Middleware ancak session-cookie auth'a geçilirse anlamlı.
+
+## 2026-06-01 — iOS Time Sensitive Notifications + App Clip target skeleton
+- **ID**: IOS-TIMESENS-WORKAROUND + IOS-APPCLIP-SKELETON
+- **Lead**: hangel-devops-lead (kullanıcı tarafından iOS-native ajansı olarak dispatch)
+- **Bağlam (Task 1 — Time Sensitive)**: Codemagic'in `app-store-connect fetch-signing-files` komutu App Store Connect API endpoint'ini kullanıyor. Apple bu endpoint'te `com.apple.developer.usernotifications.time-sensitive` entitlement'ını DESTEKLEMİYOR (Apple yönetim listesi dışı). Sonuç: fetch-signing-files'in oluşturduğu profile bu entitlement'ı kapsamıyor → Build IPA "provisioning profile does not include time-sensitive entitlement" hatasıyla fail ediyor.
+- **Çözüm (Method A — DEPLOYED)**: codemagic.yaml'da signing akışını Xcode automatic signing'e çevir. Adımlar:
+  1. fetch-signing-files yerine `app-store-connect create-certificate --type IOS_DISTRIBUTION` (yalnız cert, profile yok).
+  2. App Store Connect API key'i diske yaz (`~/.appstoreconnect/private_keys/AuthKey_*.p8`).
+  3. Build aşamasında `xcodebuild archive -allowProvisioningUpdates -authenticationKeyPath ... -authenticationKeyID ... -authenticationKeyIssuerID ...` çağır. Bu Xcode'a "eksik profile'ları services2.apple.com endpoint'i üzerinden yarat" talimatı verir.
+  4. `xcodebuild -exportArchive` ile IPA üret, `$CM_BUILD_DIR/build/ios/ipa/`'ya kopyala.
+- **Anahtar bilgi**: `pbxproj`'de App target'ın hem Debug hem Release config'inde `CODE_SIGN_STYLE = Automatic` + `DEVELOPMENT_TEAM = NKZNY8NU8S` zaten ayarlı (1FED79650016851F xcode setup'tan beri). xcodebuild'in services2 endpoint'i App Store Connect API'den FARKLI ve time-sensitive entitlement'ı destekler — bu Apple'ın bilinçli ayrımı, bug değil.
+- **Çözüm (Method B — FALLBACK, docs)**: Lokal Xcode'da archive yapıp `.mobileprovision`'ı manuel oluştur, Codemagic'e dosya olarak yükle. Method A fail ederse Method B'ye geç. `docs/audit/runbooks/ios-signing-time-sensitive.md` runbook'unda adım adım açıklandı.
+- **Risk (Task 1)**: M. Method A Xcode 13+ ve geçerli App Store Connect API key gerektirir; her ikisi de zaten Codemagic ortamında. Fail ederse Method B runbook'u açık.
+- **Rollback (Task 1)**: codemagic.yaml'ın eski "Set up code signing" + "Build IPA" step'lerini revert; ama eski hâl zaten fail ediyordu (problemin kendisi).
+
+- **Bağlam (Task 2 — App Clip)**: ios-roadmap.md §7.1'de tasarlanan App Clip target'ı (Faz 2). Kullanıcı `https://hangel.org.tr/clip/event/{id}` URL'ini QR/NFC ile açtığında iOS App Clip Card açar, kullanıcı app indirmeden tek seferlik check-in yapar. App Clip 15 MB sınırı nedeniyle Capacitor + web bundle KULLANILMAZ; bağımsız SwiftUI mini-app.
+- **Değişiklik (Task 2)**:
+  - Yeni dizin: `ios/App/HangelAppClip/`
+    - `HangelAppClipApp.swift` — @main SwiftUI App, `NSUserActivityTypeBrowsingWeb` handler URL'i parse eder.
+    - `ContentView.swift` — splash + event detail + "Check-in" butonu + success state + App Store CTA.
+    - `ClipState.swift` — `@MainActor ObservableObject` state container.
+    - `ClipAPI.swift` — `URLSession`-tabanlı REST client (Firebase SDK YOK, 15 MB sınırı için). Endpoint'ler: `GET /api/clip/event/{id}`, `POST /api/clip/checkin`. Anonim deviceId UserDefaults'ta saklı (App Group ile parent app ile paylaşımlı, rate-limit ortak).
+    - `Info.plist` — `NSAppClip` dictionary + minimum iOS 16.0.
+    - `HangelAppClip.entitlements` — `appclips:hangel.org.tr` + `parent-application-identifiers` + App Group + `on-demand-install-capable`.
+  - Yeni script: `scripts/automation/add-appclip-target.rb` — `add-watch-target.rb`'den modellendi, idempotent. App Clip için `productType = com.apple.product-type.application.on-demand-install-capable` set eder; xcodeproj gem'in built-in `:application` sembolü standart app product type üretiyor, manuel override gerekiyor.
+  - `App.xcodeproj/project.pbxproj` — HangelAppClip native target eklendi (24 hex UUID prefix `C11C0A...`). App target'a "Embed App Clips" copy phase (`dstSubfolderSpec = 16`, `dstPath = $(CONTENTS_FOLDER_PATH)/AppClips`) + target dependency.
+- **Kullanıcının manuel yapacakları (RUNBOOK)**:
+  1. Apple Developer Console → Identifiers → `+` → `com.hangel.ios.app.Clip` (App Clip type, Parent App = `com.hangel.ios.app`). Capabilities: Associated Domains, App Groups.
+  2. Apple Developer Console → Identifiers → `com.hangel.ios.app` → Capability → "App Clips" işaretli olsun.
+  3. App Store Connect → Hangel → App Clip Experiences → Advanced → "+" → URL Pattern: `https://hangel.org.tr/clip/event/*` → Action: Show, Default Image/Title/Subtitle.
+  4. Backend: `/api/clip/event/{id}` (GET, public, anonim) + `/api/clip/checkin` (POST, deviceId rate-limit) endpoint'leri yazılacak. Bu agent'ın scope'unda DEĞİL (web tarafı başka ajan).
+  5. `apple-app-site-association` dosyasına `"appclips": { "apps": ["NKZNY8NU8S.com.hangel.ios.app.Clip"] }` entry'si ekle.
+  6. App Clip için ayrı AppIcon set: `ios/App/HangelAppClip/Assets.xcassets/AppIcon.appiconset/` (mevcut App target'tan farklı icon, Apple Review için "App Clip Card Image" 1800x1200).
+- **Risk (Task 2)**: D-M. Skeleton; backend endpoint'leri ve Apple Console config'i olmadan App Clip çalışmaz ama Xcode build doğru product üretir. pbxproj manuel düzenlemesi (ruby script bu sandbox'tan çalışmadı, allowlist sınırlı) UUID kolizyonu yok (yeni prefix `C11C0A...` tüm projeyle disjoint).
+- **Test (Task 2)**: pbxproj cross-reference verification: tüm `C11C0A...` UUID'lerin file ref, build file, target, group, config list referansları tutuyor. xcodebuild fiilen test edilmedi (sandbox kısıtı). Lokal `open ios/App/App.xcodeproj` + Xcode'da "HangelAppClip" target görünmeli + build et + Schemes manage'dan scheme oluştur.
+- **Rollback (Task 2)**: pbxproj `C11C0A*` UUID'li tüm satırları sil; `ios/App/HangelAppClip/` dizinini sil; `scripts/automation/add-appclip-target.rb`'i sil. Veya `git revert <commit>`.

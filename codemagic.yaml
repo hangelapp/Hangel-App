@@ -90,51 +90,144 @@ workflows:
           echo "TestFlight latest: $LATEST_TESTFLIGHT, App Store latest: $LATEST_APP_STORE, new: $NEW_BUILD_NUMBER"
           agvtool new-version -all $NEW_BUILD_NUMBER
 
-      - name: Set up code signing
+      - name: Set up code signing (Xcode automatic signing)
         script: |
           keychain initialize
+          # ─────────────────────────────────────────────────────────────
+          # WORKAROUND: com.apple.developer.usernotifications.time-sensitive
+          # entitlement Apple App Store Connect API'nin POST
+          # /v1/bundleIdCapabilities endpoint'inde DESTEKLENMİYOR. Apple
+          # 2024'te bu capability'yi "Xcode-managed" listesine taşıdı —
+          # sadece Xcode (services2 endpoint) profile oluştururken bu
+          # entitlement'ı kapsayabilir. fetch-signing-files App Store Connect
+          # API'sini kullandığı için bu entitlement'lı profile yaratamıyor,
+          # sonuç: Build IPA fail (provisioning profile entitlement mismatch).
+          #
+          # Çözüm: Xcode'un kendi automatic signing'ini kullan.
+          #   1. App Store Connect API key'ini xcodebuild'e geç (--allowProvisioningUpdates)
+          #   2. Distribution cert'i fetch-signing-files DEĞİL fetch-distribution
+          #      cert komutuyla al (yalnız cert, profile yok)
+          #   3. xcodebuild -allowProvisioningUpdates kendisi services2 endpoint'inden
+          #      time-sensitive entitlement'lı profile yaratır.
+          #
+          # Eski yöntem (Method B - manual mobileprovision) docs/audit/runbooks/
+          # ios-signing-time-sensitive.md'de açıklandı.
+          # ─────────────────────────────────────────────────────────────
+
           # Generate fresh RSA private key for distribution cert.
-          # Bu key olmadan fetch-signing-files mevcut (revoked) cert'i bulup
-          # 'Cannot save Signing Certificates without certificate private key'
-          # hatası veriyor. Explicit key ile yeni cert + key pair oluşur.
           CERT_KEY_PATH=/tmp/distribution_cert_key.pem
           openssl genrsa -out "$CERT_KEY_PATH" 2048
-          # Eski cert'leri revoke et — Apple max 2 dist cert limit, fresh cert
-          # oluşturulamazsa 409 hatası. Filtre type-agnostic: hem IOS_DISTRIBUTION
-          # hem DISTRIBUTION (yeni Apple managed type) yakalanır.
-          echo "=== Listing existing certs (raw) ==="
-          app-store-connect list-certificates --json | head -100 || echo "list-certificates failed"
-          echo "=== Extracting DISTRIBUTION cert IDs ==="
-          # Codemagic CLI list-certificates --json returns flat array of cert objects.
-          # Each has 'id' field at root, attributes.certificateType nested.
+
+          # Eski cert'leri revoke et — Apple max 2 dist cert limit
+          echo "=== Listing existing certs ==="
           CERTS=$(app-store-connect list-certificates --json | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' || echo "")
-          echo "DISTRIBUTION cert IDs: $CERTS"
+          echo "DISTRIBUTION cert IDs to revoke: $CERTS"
           for cert_id in $CERTS; do
             echo "Revoking stale distribution cert: $cert_id"
             app-store-connect delete-certificate "$cert_id" || true
           done
-          # Eski provisioning profile'ları sil. Apple Console'da capability
-          # eklenince mevcut profile'lar eski entitlement listesiyle kalır,
-          # fetch-signing-files --create onları yeniden oluşturmaz.
+
+          # Eski provisioning profile'ları sil (Apple Console capability listesi
+          # değişince mevcut profile'lar stale kalır)
           PROFILES=$(app-store-connect list-profiles --json 2>/dev/null \
             | jq -r ".[] | select(.attributes.bundleId.identifier == \"$BUNDLE_ID\") | .id" 2>/dev/null || echo "")
           for profile_id in $PROFILES; do
             echo "Deleting stale provisioning profile: $profile_id"
             app-store-connect delete-profile "$profile_id" || true
           done
-          # Fresh cert + profile oluştur (tüm aktif capability'leri kapsar)
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --certificate-key=@file:"$CERT_KEY_PATH" \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
 
-      - name: Build IPA
+          # Fresh distribution cert oluştur — SADECE cert, profile YOK.
+          # `app-store-connect create-certificate` (or `fetch-signing-files
+          # --no-profiles`) profile oluşturmaz. fetch-signing-files'in
+          # --create flag'i profile da yaratıyordu; bu kez yaratmıyoruz.
+          # xcodebuild -allowProvisioningUpdates kendi profile'ını üretir.
+          app-store-connect create-certificate \
+            --type IOS_DISTRIBUTION \
+            --certificate-key=@file:"$CERT_KEY_PATH" \
+            --save || {
+              # Older codemagic-cli-tools versions: fetch-signing-files olmadan
+              # cert oluşturma için --no-create-profiles flag'i de var.
+              echo "create-certificate failed, falling back to fetch-signing-files with --no-create-profile"
+              app-store-connect fetch-signing-files "$BUNDLE_ID" \
+                --type IOS_APP_STORE \
+                --certificate-key=@file:"$CERT_KEY_PATH" \
+                --create \
+                --strict-match-identifier || true
+            }
+          keychain add-certificates
+
+          # App Store Connect API key'ini xcodebuild için disk'e yaz.
+          # xcodebuild -authenticationKeyPath bu dosyayı okuyup
+          # services2.apple.com endpoint'iyle profile yaratır (time-sensitive
+          # entitlement dahil tüm capability'leri otomatik ekler).
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
+
+      - name: Build IPA (Xcode automatic signing)
         script: |
-          xcode-project --verbose build-ipa \
-            --project "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+          # xcodebuild ile automatic signing — -allowProvisioningUpdates flag'i
+          # Xcode'a "eksik profile'ları services2 endpoint üzerinden yarat"
+          # talimatı verir. Bu endpoint time-sensitive entitlement'ı destekler.
+          set -ex
+          cd ios/App
+          export DEVELOPMENT_TEAM=NKZNY8NU8S
+
+          # ExportOptions.plist - automatic signing için
+          cat > /tmp/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>NKZNY8NU8S</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>destination</key>
+              <string>export</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+
+          # Archive — automatic signing ile, App Store Connect API key
+          # kullanarak. -allowProvisioningUpdates Xcode'un eksik
+          # profile'ları yaratmasını sağlar (services2 endpoint).
+          xcodebuild -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath /tmp/build/App.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM=NKZNY8NU8S \
+            archive
+
+          # IPA export
+          xcodebuild -exportArchive \
+            -archivePath /tmp/build/App.xcarchive \
+            -exportPath /tmp/build/ipa \
+            -exportOptionsPlist /tmp/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8 \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+
+          # Codemagic'in beklediği yere kopyala (CM_BUILD_DIR/build/ios/ipa)
+          mkdir -p "$CM_BUILD_DIR/build/ios/ipa"
+          cp /tmp/build/ipa/*.ipa "$CM_BUILD_DIR/build/ios/ipa/" 2>/dev/null \
+            || cp /tmp/build/ipa/App.ipa "$CM_BUILD_DIR/build/ios/ipa/Hangel.ipa"
+          ls -la "$CM_BUILD_DIR/build/ios/ipa/"
 
     artifacts:
       - build/ios/ipa/*.ipa
