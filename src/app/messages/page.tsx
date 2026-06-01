@@ -373,7 +373,7 @@ export default function MessagesPage() {
                         const senderName = getSenderName(msg);
                         const senderAvatar = getSenderAvatar(msg);
                         return (
-                        <Card key={msg.id} onClick={() => { void markAsRead(msg); setViewMessage(msg); setViewIsSent(false); }} className={cn(
+                        <Card key={msg.id} onClick={() => { void markAsRead(msg); router.push(`/messages/${msg.id}`); }} className={cn(
                             "cursor-pointer hover:bg-accent/50 transition-colors",
                             isUnread(msg) && "border-l-4 border-l-primary"
                         )}>
@@ -426,7 +426,7 @@ export default function MessagesPage() {
                         const recipientName = getRecipientName(msg);
                         const recipientAvatar = getRecipientAvatar(msg);
                         return (
-                            <Card key={msg.id} onClick={() => { setViewMessage(msg); setViewIsSent(true); }} className="cursor-pointer hover:bg-accent/50 transition-colors">
+                            <Card key={msg.id} onClick={() => router.push(`/messages/${msg.id}?sent=1`)} className="cursor-pointer hover:bg-accent/50 transition-colors">
                                 <CardContent className="p-4 flex items-center gap-4">
                                     <Avatar className="h-12 w-12 border">
                                         {recipientAvatar ? <AvatarImage src={recipientAvatar} /> : null}
@@ -454,65 +454,7 @@ export default function MessagesPage() {
                 </TabsContent>
             </Tabs>
 
-            {/* Mesaj Detay Dialog — kart tıklanınca tam mesaj açılır */}
-            <Dialog open={!!viewMessage} onOpenChange={(open) => !open && setViewMessage(null)}>
-                <DialogContent className="sm:max-w-lg">
-                    {viewMessage && (
-                        <>
-                            <DialogHeader>
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="h-11 w-11 border">
-                                        {(viewIsSent ? getRecipientAvatar(viewMessage) : getSenderAvatar(viewMessage)) ? (
-                                            <AvatarImage src={(viewIsSent ? getRecipientAvatar(viewMessage) : getSenderAvatar(viewMessage)) || ''} />
-                                        ) : null}
-                                        <AvatarFallback>{(viewIsSent ? getRecipientName(viewMessage) : getSenderName(viewMessage))[0]}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0 text-left">
-                                        <DialogTitle className="text-base truncate">{viewMessage.subject || t('dashboard.messages.noSubject')}</DialogTitle>
-                                        <DialogDescription className="text-xs">
-                                            {viewIsSent ? `${t('dashboard.messages.recipientLabel')}: ` : `${t('dashboard.messages.senderLabel')}: `}
-                                            <span className="font-semibold text-foreground">
-                                                {viewIsSent ? getRecipientName(viewMessage) : getSenderName(viewMessage)}
-                                            </span>
-                                            {viewMessage.time ? ` · ${viewMessage.time}` : ''}
-                                        </DialogDescription>
-                                    </div>
-                                </div>
-                            </DialogHeader>
-                            <div className="pt-2 max-h-[50vh] overflow-y-auto">
-                                <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                    {viewMessage.content || viewMessage.excerpt || t('dashboard.messages.noContent')}
-                                </p>
-                            </div>
-                            <DialogFooter className="flex-row gap-2 sm:gap-2">
-                                {!viewIsSent && (
-                                    <Button
-                                        type="button"
-                                        className="flex-1"
-                                        onClick={() => {
-                                            // Gönderene yanıt: compose dialog'u alıcı ön-dolu aç
-                                            const sName = getSenderName(viewMessage);
-                                            const sId = typeof viewMessage.sender === 'object' ? viewMessage.sender?.id : viewMessage.senderId;
-                                            if (sId && sId !== 'hangel-system') {
-                                                setSelectedRecipient({ id: sId, name: sName, avatarUrl: getSenderAvatar(viewMessage) || undefined, kind: 'user' } as UserRecord);
-                                                setSubject(viewMessage.subject ? `RE: ${viewMessage.subject}` : '');
-                                                setViewMessage(null);
-                                                setComposeOpen(true);
-                                            }
-                                        }}
-                                        disabled={(typeof viewMessage.sender === 'object' ? viewMessage.sender?.id : viewMessage.senderId) === 'hangel-system'}
-                                    >
-                                        {t('dashboard.messages.replyCta')}
-                                    </Button>
-                                )}
-                                <Button type="button" variant="outline" className="flex-1" onClick={() => setViewMessage(null)}>
-                                    {t('dashboard.messages.close')}
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
-                </DialogContent>
-            </Dialog>
+            {/* Mesaj Detay artık /messages/[id] dedicated page — popup yerine Instagram benzeri sayfa açılır */}
 
             {/* Yeni Mesaj Dialog */}
             <Dialog open={composeOpen} onOpenChange={(open) => { setComposeOpen(open); if (!open) resetCompose(); }}>
