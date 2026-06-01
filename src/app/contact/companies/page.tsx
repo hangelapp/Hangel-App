@@ -11,10 +11,12 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
 import { LocationFields } from '@/components/shared/location-fields';
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function CompaniesPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const [city, setCity] = useState('');
     const [district, setDistrict] = useState('');
     const [neighborhood, setNeighborhood] = useState('');
@@ -22,50 +24,50 @@ export default function CompaniesPage() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         toast({
-            title: "Mesajınız Gönderildi",
-            description: "İş geliştirme ekibimiz en kısa sürede sizinle iletişime geçecektir.",
+            title: t('contactPage.sentTitle'),
+            description: t('contactCompanies.sentDesc'),
         });
     };
 
     return (
         <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('aria.back')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div className="text-center space-y-4">
                 <div className="inline-block bg-primary/10 p-4 rounded-full">
                     <Briefcase className="h-10 w-10 text-primary" />
                 </div>
-                <h1 className="text-3xl font-bold font-headline">Şirketler için hangel</h1>
+                <h1 className="text-3xl font-bold font-headline">{t('contactCompanies.title')}</h1>
                 <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-                    Kurumsal sosyal sorumluluk hedeflerinizi Hangel'in teknoloji ve topluluk gücüyle birleştirin.
+                    {t('contactCompanies.subtitle')}
                 </p>
             </div>
 
             <Card className="max-w-3xl mx-auto">
                 <CardHeader>
-                    <CardTitle>İletişim Formu</CardTitle>
-                    <CardDescription>Şirketinize özel çözümler ve işbirliği modelleri hakkında bilgi almak için formu doldurun.</CardDescription>
+                    <CardTitle>{t('contactCompanies.cardTitle')}</CardTitle>
+                    <CardDescription>{t('contactCompanies.cardDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="company-name">Şirket Adı</Label>
-                                <Input id="company-name" placeholder="Şirketinizin adı" required />
+                                <Label htmlFor="company-name">{t('contactCompanies.companyName')}</Label>
+                                <Input id="company-name" placeholder={t('contactCompanies.companyNamePh')} required />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="contact-name">Yetkili Adı</Label>
+                                <Label htmlFor="contact-name">{t('contactPage.contactPerson')}</Label>
                                 <Input id="contact-name" placeholder="İsmail Hilmi ADIGÜZEL" required />
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="email">E-posta Adresi</Label>
+                                <Label htmlFor="email">{t('contactCompanies.emailLabel')}</Label>
                                 <Input id="email" type="email" placeholder="kurumsal@sirket.com" required />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="phone">Telefon Numarası</Label>
+                                <Label htmlFor="phone">{t('contactPage.phone')}</Label>
                                 <Input id="phone" type="tel" placeholder="+90..." />
                             </div>
                         </div>
@@ -73,7 +75,7 @@ export default function CompaniesPage() {
                         {/* Address Section */}
                         <div className="space-y-4 pt-4 border-t border-dashed">
                             <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <MapPin className="h-3.5 w-3.5" /> Şirket Adres Bilgileri
+                                <MapPin className="h-3.5 w-3.5" /> {t('contactCompanies.addrInfo')}
                             </h4>
                             <LocationFields
                                 value={{ country: 'Türkiye', city, district, neighborhood }}
@@ -88,14 +90,14 @@ export default function CompaniesPage() {
                         </div>
 
                          <div className="space-y-2">
-                            <Label htmlFor="website">Web Sitesi</Label>
+                            <Label htmlFor="website">{t('contactPage.website')}</Label>
                             <Input id="website" placeholder="https://sirket.com" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="message">Mesajınız</Label>
-                            <Textarea id="message" placeholder="İşbirliği yapmak istediğiniz alanlar, KSS hedefleriniz veya sorularınız..." rows={5} required/>
+                            <Label htmlFor="message">{t('contactPage.message')}</Label>
+                            <Textarea id="message" placeholder={t('contactCompanies.messagePh')} rows={5} required/>
                         </div>
-                        <Button type="submit" className="w-full h-12 rounded-xl font-bold text-base">Mesajı Gönder</Button>
+                        <Button type="submit" className="w-full h-12 rounded-xl font-bold text-base">{t('contactCompanies.sendMessage')}</Button>
                     </form>
                 </CardContent>
             </Card>

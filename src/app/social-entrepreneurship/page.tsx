@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const InfoSection = ({ 
     title, 
@@ -57,6 +58,7 @@ const InfoSection = ({
 export default function SocialEntrepreneurshipPage() {
     const router = useRouter();
     const cms = useWebPage('social-entrepreneurship');
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -64,44 +66,44 @@ export default function SocialEntrepreneurshipPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Sosyal Girişimcilik</span>
+                    <span className="text-[12px] font-bold tracking-tight">{t('socialEnterprisePage.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-                        <Link href="/hangelassociation">hangel Derneği</Link>
+                        <Link href="/hangelassociation">{t('socialEnterprisePage.associationLink')}</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Hero */}
             <InfoSection
-                title={cms.title || 'Kârın Amacı: Toplumsal Fayda.'}
-                subtitle={cms.subtitle || 'Sosyal Girişim Nedir?'}
-                description={cms.description || 'Bir sosyal girişim, ticari faaliyetlerden elde ettiği geliri öncelikli olarak toplumsal veya çevresel bir sorunu çözmek için kullanan bir iş modelidir. Geleneksel şirketlerden farkı, kârı maksimize etmek yerine etkiyi maksimize etmesidir.'}
+                title={cms.title || t('socialEnterprisePage.heroTitle')}
+                subtitle={cms.subtitle || t('socialEnterprisePage.heroSubtitle')}
+                description={cms.description || t('socialEnterprisePage.heroDescription')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="collaborative meeting brainstorming"
             />
 
             {/* Hangel Model */}
-             <InfoSection 
+             <InfoSection
                 theme="dark"
-                title="hangel Modeli: Etki Odaklı Ticaret."
-                subtitle="Kâr Kilidi (Asset-Lock) Prensibi"
-                description="hangel A.Ş. ana sözleşmesi gereği, elde edilen kârın minimum %85'ini sivil toplum ekosistemini güçlendirmek, teknolojik altyapıyı geliştirmek ve sosyal etki projelerine fon sağlamak için kullanır. Hissedarlarımıza kâr payı dağıtılmaz; tüm gelir, misyonumuzu gerçekleştirmek için yeniden yatırıma dönüşür."
+                title={t('socialEnterprisePage.modelTitle')}
+                subtitle={t('socialEnterprisePage.modelSubtitle')}
+                description={t('socialEnterprisePage.modelDescription')}
                 imageUrl="https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop"
                 imageHint="customer paying at store"
             />
 
             {/* Why Social Enterprise */}
-            <InfoSection 
-                title="Neden Sosyal Girişim?"
-                subtitle="Sürdürülebilirlik ve Bağımsızlık"
-                description="Sosyal girişim modeli, sadece bağışlara bağımlı kalmadan, kendi ekonomik değerini yaratarak ayakta kalmayı sağlar. Bu, uzun vadeli ve kalıcı çözümler üretebilmek için finansal bağımsızlık ve esneklik anlamına gelir."
+            <InfoSection
+                title={t('socialEnterprisePage.whyTitle')}
+                subtitle={t('socialEnterprisePage.whySubtitle')}
+                description={t('socialEnterprisePage.whyDescription')}
                 imageUrl="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop"
                 imageHint="coins gold stack donation"
             />
-            
-            <PublicFooter currentPageLabel="Sosyal Girişimcilik" />
+
+            <PublicFooter currentPageLabel={t('socialEnterprisePage.navLabel')} />
         </div>
     );
 }

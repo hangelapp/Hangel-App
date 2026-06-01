@@ -22,6 +22,7 @@ import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface PassportData {
   totalVolunteerHours: number;
@@ -40,6 +41,7 @@ const formatNum = (n: number) => new Intl.NumberFormat('tr-TR').format(n);
 export default function PassportPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [data, setData] = useState<PassportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -57,7 +59,7 @@ export default function PassportPage() {
       if (!json.passport) throw new Error('Passport boş döndü');
       setData(json.passport as PassportData);
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Yüklenemedi', description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('passportPage.loadFailed'), description: e instanceof Error ? e.message : t('passportPage.unknownError') });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -72,29 +74,29 @@ export default function PassportPage() {
 
   const share = async () => {
     if (!data || !user) return;
-    const text = `Hangel'de sosyal etki puanım: ${formatNum(data.impactScore)}\n`
-      + `${formatNum(data.totalVolunteerHours)} saat gönüllülük\n`
-      + `${formatNum(data.totalEvents)} etkinlik\n`
-      + `${formatTry(data.totalDonationsTry)} bağış\n`
+    const text = `${t('passportPage.shareLine1')}: ${formatNum(data.impactScore)}\n`
+      + `${formatNum(data.totalVolunteerHours)} ${t('passportPage.shareHours')}\n`
+      + `${formatNum(data.totalEvents)} ${t('passportPage.shareEvents')}\n`
+      + `${formatTry(data.totalDonationsTry)} ${t('passportPage.shareDonations')}\n`
       + `\n#hangel #sosyaletki`;
     const url = `https://hangel.org.tr/profile/${user.uid}`;
 
     if (Capacitor.isNativePlatform()) {
       try {
-        await Share.share({ title: 'Hangel Pasaportum', text, url });
+        await Share.share({ title: t('passportPage.shareTitle'), text, url });
       } catch { /* iptal */ }
       return;
     }
 
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try {
-        await navigator.share({ title: 'Hangel Pasaportum', text, url });
+        await navigator.share({ title: t('passportPage.shareTitle'), text, url });
         return;
       } catch { /* iptal */ }
     }
     try {
       await navigator.clipboard.writeText(`${text}\n${url}`);
-      toast({ title: 'Kopyalandı', description: 'Pasaport özetin panoya kopyalandı.' });
+      toast({ title: t('passportPage.copied'), description: t('passportPage.copiedDesc') });
     } catch {
       /* sessiz */
     }
@@ -102,8 +104,8 @@ export default function PassportPage() {
 
   const addToWallet = () => {
     toast({
-      title: 'Yakında',
-      description: 'Apple Wallet entegrasyonu PassKit Faz 1.2 ile aktif olacak.',
+      title: t('passportPage.soonTitle'),
+      description: t('passportPage.soonDesc'),
     });
   };
 
@@ -118,7 +120,7 @@ export default function PassportPage() {
   if (!user) {
     return (
       <div className="min-h-dvh flex items-center justify-center px-6 text-center">
-        <p className="text-muted-foreground">Pasaportunu görmek için giriş yap.</p>
+        <p className="text-muted-foreground">{t('passportPage.signInRequired')}</p>
       </div>
     );
   }
@@ -133,17 +135,17 @@ export default function PassportPage() {
         <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-primary via-primary to-orange-600 text-white rounded-[2rem]">
           <CardContent className="p-7 sm:p-9 text-center space-y-3">
             <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider">
-              <Sparkles className="h-3 w-3" /> Sosyal Etki Pasaportu
+              <Sparkles className="h-3 w-3" /> {t('passportPage.badge')}
             </div>
             <h1 className="text-7xl font-black leading-none">{formatNum(data.impactScore)}</h1>
-            <p className="text-sm opacity-90">Toplam Etki Puanın</p>
+            <p className="text-sm opacity-90">{t('passportPage.totalScore')}</p>
             <div className="flex items-center justify-center gap-2 pt-2">
               <Button size="sm" variant="secondary" onClick={share} className="rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/25 border-0">
-                <Share2 className="h-4 w-4 mr-1.5" /> Paylaş
+                <Share2 className="h-4 w-4 mr-1.5" /> {t('passportPage.share')}
               </Button>
               {Capacitor.getPlatform() === 'ios' && (
                 <Button size="sm" variant="secondary" onClick={addToWallet} className="rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/25 border-0">
-                  <Wallet className="h-4 w-4 mr-1.5" /> Wallet'a Ekle
+                  <Wallet className="h-4 w-4 mr-1.5" /> {t('passportPage.addToWallet')}
                 </Button>
               )}
               <Button size="sm" variant="secondary" onClick={() => load(true)} disabled={refreshing} className="rounded-full bg-white/15 backdrop-blur text-white hover:bg-white/25 border-0">
@@ -155,22 +157,22 @@ export default function PassportPage() {
 
         {/* 4 stat */}
         <div className="grid grid-cols-2 gap-3">
-          <StatCard icon={Clock} label="Gönüllülük Saati" value={formatNum(data.totalVolunteerHours)} color="text-blue-600 bg-blue-50" />
-          <StatCard icon={Calendar} label="Etkinlik" value={formatNum(data.totalEvents)} color="text-emerald-600 bg-emerald-50" />
-          <StatCard icon={Sparkles} label="Kampanya" value={formatNum(data.totalCampaigns)} color="text-violet-600 bg-violet-50" />
-          <StatCard icon={Heart} label="Bağış" value={formatTry(data.totalDonationsTry)} color="text-rose-600 bg-rose-50" />
+          <StatCard icon={Clock} label={t('passportPage.volHours')} value={formatNum(data.totalVolunteerHours)} color="text-blue-600 bg-blue-50" />
+          <StatCard icon={Calendar} label={t('passportPage.events')} value={formatNum(data.totalEvents)} color="text-emerald-600 bg-emerald-50" />
+          <StatCard icon={Sparkles} label={t('passportPage.campaigns')} value={formatNum(data.totalCampaigns)} color="text-violet-600 bg-violet-50" />
+          <StatCard icon={Heart} label={t('passportPage.donations')} value={formatTry(data.totalDonationsTry)} color="text-rose-600 bg-rose-50" />
         </div>
 
         {/* Rozetler */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Rozetlerim ({data.badges.length})</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('passportPage.badgesTitle')} ({data.badges.length})</h2>
           </div>
           {data.badges.length === 0 ? (
             <Card className="border-dashed bg-background/60 rounded-2xl">
               <CardContent className="p-6 text-center text-sm text-muted-foreground">
                 <Award className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                Henüz rozet kazanmadın. İlk gönüllülüğüne başla!
+                {t('passportPage.badgesEmpty')}
               </CardContent>
             </Card>
           ) : (
@@ -194,12 +196,12 @@ export default function PassportPage() {
         {/* Sertifikalar */}
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Sertifikalarım ({data.certificates.length})</h2>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{t('passportPage.certsTitle')} ({data.certificates.length})</h2>
           </div>
           {data.certificates.length === 0 ? (
             <Card className="border-dashed bg-background/60 rounded-2xl">
               <CardContent className="p-6 text-center text-sm text-muted-foreground">
-                Henüz sertifika yok.
+                {t('passportPage.certsEmpty')}
               </CardContent>
             </Card>
           ) : (
@@ -225,7 +227,7 @@ export default function PassportPage() {
         </section>
 
         <p className="text-center text-[10px] text-muted-foreground pt-4">
-          Son güncelleme: {new Date(data.lastUpdatedAt).toLocaleString('tr-TR')}
+          {t('passportPage.lastUpdate')}: {new Date(data.lastUpdatedAt).toLocaleString('tr-TR')}
         </p>
       </div>
     </div>

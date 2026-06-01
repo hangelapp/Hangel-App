@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const SitemapGroup = ({ title, links }: { title: string, links: { label: string, href: string, indent?: number }[] }) => (
     <div className="space-y-6">
@@ -37,6 +38,7 @@ const SitemapGroup = ({ title, links }: { title: string, links: { label: string,
 
 export default function SitemapPage() {
     const router = useRouter();
+    const { t } = useTranslation();
 
     const mainPages = [
         { label: "1. WEB - Karşılama ve Kurumsal", href: "/login" },
@@ -273,29 +275,29 @@ export default function SitemapPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-4xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">Site Haritası</span>
+                    <span className="text-[12px] font-bold tracking-tight uppercase">{t('sitemapPage.navLabel')}</span>
                     <div className="w-20" />
                 </div>
             </header>
 
             <main className="container mx-auto px-4 pt-32 pb-32 max-w-4xl space-y-12">
                 <div className="text-left space-y-4">
-                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">Navigasyon.</h1>
-                    <p className="text-xl md:text-2xl text-muted-foreground font-medium">Platformdaki tüm erişim noktalarını hiyerarşik olarak inceleyin.</p>
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-[#1d1d1f]">{t('sitemapPage.heroTitle')}</h1>
+                    <p className="text-xl md:text-2xl text-muted-foreground font-medium">{t('sitemapPage.heroSubtitle')}</p>
                 </div>
 
                 <Tabs defaultValue="all-pages" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-12 rounded-xl bg-muted/50 p-1">
-                        <TabsTrigger value="main-pages" className="rounded-lg text-sm font-semibold">Ana Sayfalar ({mainPages.length})</TabsTrigger>
-                        <TabsTrigger value="all-pages" className="rounded-lg text-sm font-semibold">Tüm Sayfalar ({totalAllPagesCount})</TabsTrigger>
+                        <TabsTrigger value="main-pages" className="rounded-lg text-sm font-semibold">{t('sitemapPage.tabMain')} ({mainPages.length})</TabsTrigger>
+                        <TabsTrigger value="all-pages" className="rounded-lg text-sm font-semibold">{t('sitemapPage.tabAll')} ({totalAllPagesCount})</TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="main-pages" className="mt-8 animate-in fade-in-0 duration-500">
-                        <SitemapGroup title="Platform Temelleri" links={mainPages} />
+                        <SitemapGroup title={t('sitemapPage.platformBasics')} links={mainPages} />
                     </TabsContent>
-                    
+
                     <TabsContent value="all-pages" className="mt-8 animate-in fade-in-0 duration-500">
                         <div className="grid grid-cols-1 gap-16">
                             {allPagesSections.map((section) => (
@@ -306,7 +308,7 @@ export default function SitemapPage() {
                 </Tabs>
             </main>
 
-            <PublicFooter currentPageLabel="Site Haritası" />
+            <PublicFooter currentPageLabel={t('sitemapPage.navLabel')} />
         </div>
     );
 }

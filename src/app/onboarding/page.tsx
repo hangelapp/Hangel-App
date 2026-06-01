@@ -11,39 +11,41 @@ import {
   CarouselItem,
   type CarouselApi,
 } from "@/components/ui/carousel"
-
-const onboardingSteps = [
-  {
-    icon: Handshake,
-    title: 'İyiliğe Hoş Geldiniz',
-    description: 'Toplumsal fayda ve pozitif değişim için bireyleri, STK\'ları ve markaları birleştiren bir dünyaya adım atın.',
-  },
-  {
-    icon: HeartHandshake,
-    title: 'Gönüllü Olun, Etki Oluşturun',
-    description: 'Yeteneklerinize ve ilgi alanlarınıza uygun gönüllülük fırsatlarını keşfedin, topluma değer katın ve ilham verin.',
-  },
-  {
-    icon: HandCoins,
-    title: 'Alışverişle Fark Oluşturun',
-    description: 'Günlük alışverişlerinizi, seçtiğiniz sivil toplum kuruluşları için anlamlı bir desteğe dönüştürün. Ekstra bir ücret ödemeden.',
-  },
-  {
-    icon: Star,
-    title: 'Etkinizi Görün ve Büyütün',
-    description: 'Yaptığınız her katkıyla "Sosyal Etki Puanı" kazanın. Başarılarınızı rozetler ve sertifikalarla sergileyerek ilham kaynağı olun.',
-  },
-  {
-    icon: Rocket,
-    title: 'Değişimi Başlatmaya Hazır Mısınız?',
-    description: 'Hangel ile iyilik dolu bir yolculuğa çıkmak ve pozitif bir etki oluşturmak için şimdi başlayın.',
-  },
-];
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function OnboardingPage() {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const router = useRouter();
+  const { t } = useTranslation();
+
+  const onboardingSteps = [
+    {
+      icon: Handshake,
+      title: t('onboardingPage.step1Title'),
+      description: t('onboardingPage.step1Description'),
+    },
+    {
+      icon: HeartHandshake,
+      title: t('onboardingPage.step2Title'),
+      description: t('onboardingPage.step2Description'),
+    },
+    {
+      icon: HandCoins,
+      title: t('onboardingPage.step3Title'),
+      description: t('onboardingPage.step3Description'),
+    },
+    {
+      icon: Star,
+      title: t('onboardingPage.step4Title'),
+      description: t('onboardingPage.step4Description'),
+    },
+    {
+      icon: Rocket,
+      title: t('onboardingPage.step5Title'),
+      description: t('onboardingPage.step5Description'),
+    },
+  ];
 
   useEffect(() => {
     if (!api) return
@@ -71,7 +73,7 @@ export default function OnboardingPage() {
       <Carousel setApi={setApi} className="w-full h-full flex flex-col">
           <header className="flex items-center justify-end p-2">
             <Button variant="ghost" onClick={handleSkip}>
-              Atla
+              {t('onboardingPage.skip')}
             </Button>
           </header>
           <main className='flex-1 flex flex-col items-center justify-center'>
@@ -108,7 +110,7 @@ export default function OnboardingPage() {
             </div>
           </footer>
       </Carousel>
-      <Button onClick={handleNext} size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-10" aria-label="İleri">
+      <Button onClick={handleNext} size="icon" className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full h-12 w-12 z-10" aria-label={t('onboardingPage.next')}>
            <ChevronRight className="h-6 w-6" />
       </Button>
     </div>

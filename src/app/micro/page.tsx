@@ -15,6 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface MicroTask {
   id: string;
@@ -28,21 +29,22 @@ interface MicroTask {
   distanceKm?: number;
 }
 
-const CATEGORY_META: Record<string, { label: string; icon: typeof Heart; color: string }> = {
-  environment: { label: 'Çevre', icon: Leaf, color: 'text-emerald-600 bg-emerald-50' },
-  elderly: { label: 'Yaşlı', icon: Heart, color: 'text-rose-600 bg-rose-50' },
-  animals: { label: 'Hayvan', icon: PawPrint, color: 'text-amber-600 bg-amber-50' },
-  children: { label: 'Çocuk', icon: Baby, color: 'text-blue-600 bg-blue-50' },
-  health: { label: 'Sağlık', icon: Stethoscope, color: 'text-red-600 bg-red-50' },
-  education: { label: 'Eğitim', icon: GraduationCap, color: 'text-violet-600 bg-violet-50' },
-  other: { label: 'Diğer', icon: Heart, color: 'text-gray-600 bg-gray-100' },
-};
-
 export default function MicroVolunteeringPage() {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<MicroTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasLocation, setHasLocation] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const CATEGORY_META: Record<string, { label: string; icon: typeof Heart; color: string }> = {
+    environment: { label: t('microPage.catEnvironment'), icon: Leaf, color: 'text-emerald-600 bg-emerald-50' },
+    elderly: { label: t('microPage.catElderly'), icon: Heart, color: 'text-rose-600 bg-rose-50' },
+    animals: { label: t('microPage.catAnimals'), icon: PawPrint, color: 'text-amber-600 bg-amber-50' },
+    children: { label: t('microPage.catChildren'), icon: Baby, color: 'text-blue-600 bg-blue-50' },
+    health: { label: t('microPage.catHealth'), icon: Stethoscope, color: 'text-red-600 bg-red-50' },
+    education: { label: t('microPage.catEducation'), icon: GraduationCap, color: 'text-violet-600 bg-violet-50' },
+    other: { label: t('microPage.catOther'), icon: Heart, color: 'text-gray-600 bg-gray-100' },
+  };
 
   const load = async () => {
     setLoading(true);
@@ -74,15 +76,15 @@ export default function MicroVolunteeringPage() {
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-5">
 
         <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tight">Mikro Gönüllülük</h1>
+          <h1 className="text-3xl font-black tracking-tight">{t('microPage.title')}</h1>
           <p className="text-sm text-muted-foreground">
-            5-30 dakikalık küçük iyilikler. {hasLocation ? 'Yakındaki' : 'Tüm'} açık görevler.
+            {t('microPage.descPrefix')} {hasLocation ? t('microPage.nearby') : t('microPage.all')} {t('microPage.descSuffix')}
           </p>
         </div>
 
         {/* Kategori filtresi */}
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
-          <CategoryChip label="Tümü" active={selectedCategory === null} onClick={() => setSelectedCategory(null)} />
+          <CategoryChip label={t('microPage.catAll')} active={selectedCategory === null} onClick={() => setSelectedCategory(null)} />
           {Object.entries(CATEGORY_META).map(([k, m]) => (
             <CategoryChip
               key={k}
@@ -101,31 +103,31 @@ export default function MicroVolunteeringPage() {
           <Card className="border-dashed bg-background/60 rounded-2xl">
             <CardContent className="p-10 text-center text-sm text-muted-foreground">
               <Heart className="h-10 w-10 mx-auto mb-3 opacity-30" />
-              {selectedCategory ? 'Bu kategoride açık görev yok.' : 'Şu an aktif mikro görev yok.'}
+              {selectedCategory ? t('microPage.emptyCategory') : t('microPage.emptyAll')}
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
-            {tasks.map(t => {
-              const meta = CATEGORY_META[t.category] ?? CATEGORY_META.other;
+            {tasks.map(task => {
+              const meta = CATEGORY_META[task.category] ?? CATEGORY_META.other;
               const Icon = meta.icon;
               return (
-                <Link key={t.id} href={`/micro/${t.id}`}>
+                <Link key={task.id} href={`/micro/${task.id}`}>
                   <Card className="border-none shadow-sm bg-background rounded-2xl hover:shadow-md transition-shadow">
                     <CardContent className="p-4 flex items-start gap-3">
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${meta.color}`}>
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
-                        <p className="font-bold text-sm leading-tight">{t.title}</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
+                        <p className="font-bold text-sm leading-tight">{task.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
                         <div className="flex items-center gap-3 pt-1 text-[11px] text-muted-foreground">
-                          <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {t.estimatedMinutes} dk</span>
-                          {typeof t.distanceKm === 'number' && (
-                            <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {t.distanceKm} km</span>
+                          <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" /> {task.estimatedMinutes} {t('microPage.minutes')}</span>
+                          {typeof task.distanceKm === 'number' && (
+                            <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {task.distanceKm} km</span>
                           )}
-                          {t.reward?.points ? (
-                            <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 rounded-full">+{t.reward.points} puan</Badge>
+                          {task.reward?.points ? (
+                            <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 rounded-full">+{task.reward.points} {t('microPage.points')}</Badge>
                           ) : null}
                         </div>
                       </div>

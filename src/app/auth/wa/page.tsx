@@ -7,11 +7,13 @@ import { useAuth } from '@/firebase';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useTranslation } from '@/components/providers/language-provider';
 
 function WhatsAppLinkAuthInner() {
     const router = useRouter();
     const params = useSearchParams();
     const auth = useAuth();
+    const { t } = useTranslation();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState<string>('');
     const token = params.get('t');
@@ -19,7 +21,7 @@ function WhatsAppLinkAuthInner() {
     useEffect(() => {
         if (!token) {
             setStatus('error');
-            setErrorMessage('Bağlantı eksik.');
+            setErrorMessage(t('authWa.missingLink'));
             return;
         }
         if (!auth) return;
@@ -31,7 +33,7 @@ function WhatsAppLinkAuthInner() {
                 if (cancelled) return;
                 if (!res.ok || !data.ok || !data.customToken) {
                     setStatus('error');
-                    setErrorMessage(data.message || 'Bağlantı doğrulanamadı.');
+                    setErrorMessage(data.message || t('authWa.verifyFailed'));
                     return;
                 }
                 await signInWithCustomToken(auth, data.customToken);
@@ -48,11 +50,11 @@ function WhatsAppLinkAuthInner() {
             } catch (e) {
                 if (cancelled) return;
                 setStatus('error');
-                setErrorMessage(e instanceof Error ? e.message : 'Beklenmeyen hata.');
+                setErrorMessage(e instanceof Error ? e.message : t('authWa.unexpectedError'));
             }
         })();
         return () => { cancelled = true; };
-    }, [token, auth, router]);
+    }, [token, auth, router, t]);
 
     return (
         <div className="min-h-dvh flex items-center justify-center bg-background p-6">
@@ -61,8 +63,8 @@ function WhatsAppLinkAuthInner() {
                     <>
                         <Loader2 className="h-12 w-12 mx-auto animate-spin text-primary" />
                         <div className="space-y-2">
-                            <p className="font-bold text-lg">WhatsApp bağlantın doğrulanıyor...</p>
-                            <p className="text-sm text-muted-foreground">Birkaç saniye sürebilir.</p>
+                            <p className="font-bold text-lg">{t('authWa.loadingTitle')}</p>
+                            <p className="text-sm text-muted-foreground">{t('authWa.loadingDesc')}</p>
                         </div>
                     </>
                 )}
@@ -70,8 +72,8 @@ function WhatsAppLinkAuthInner() {
                     <>
                         <CheckCircle2 className="h-12 w-12 mx-auto text-green-600" />
                         <div className="space-y-2">
-                            <p className="font-bold text-lg">Hoş geldin!</p>
-                            <p className="text-sm text-muted-foreground">hangel hesabın hazır. Yönlendiriliyorsun...</p>
+                            <p className="font-bold text-lg">{t('authWa.successTitle')}</p>
+                            <p className="text-sm text-muted-foreground">{t('authWa.successDesc')}</p>
                         </div>
                     </>
                 )}
@@ -79,11 +81,11 @@ function WhatsAppLinkAuthInner() {
                     <>
                         <XCircle className="h-12 w-12 mx-auto text-destructive" />
                         <div className="space-y-2">
-                            <p className="font-bold text-lg">Bağlantı çalışmadı</p>
+                            <p className="font-bold text-lg">{t('authWa.errorTitle')}</p>
                             <p className="text-sm text-muted-foreground">{errorMessage}</p>
                         </div>
                         <Button asChild className="w-full">
-                            <Link href="/login/selection?action=register">Yeni Bağlantı İste</Link>
+                            <Link href="/login/selection?action=register">{t('authWa.requestNew')}</Link>
                         </Button>
                     </>
                 )}

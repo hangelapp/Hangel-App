@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useWebPage } from '@/hooks/use-site-content';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const InvestorSection = ({ 
     title, 
@@ -56,6 +57,7 @@ const InvestorSection = ({
 export default function InvestorRelationsPage() {
     const router = useRouter();
     const cms = useWebPage('yatirimci-iliskileri');
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -63,44 +65,44 @@ export default function InvestorRelationsPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri Dön
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
                     </Button>
-                    <span className="text-[12px] font-bold tracking-tight">Yatırımcı İlişkileri</span>
+                    <span className="text-[12px] font-bold tracking-tight">{t('investorPage.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-                        <Link href="/press">Raporlar</Link>
+                        <Link href="/press">{t('investorPage.reports')}</Link>
                     </Button>
                 </div>
             </header>
 
             {/* Hero */}
             <InvestorSection
-                title={cms.title || 'Şeffaf Finansal Gelecek.'}
-                subtitle={cms.subtitle || 'Sosyal etkinin ekonomik değeri.'}
-                description={cms.description || "hangel'in sürdürülebilir iş modeli, elde edilen gelirlerin %85'inin toplumsal faydaya aktarıldığı, kâr amacı gütmeyen kuruluşlarla ticari ekosistemi buluşturan bir yapıdır."}
+                title={cms.title || t('investorPage.heroTitle')}
+                subtitle={cms.subtitle || t('investorPage.heroSubtitle')}
+                description={cms.description || t('investorPage.heroDescription')}
                 imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop'}
                 imageHint="abstract data stock market graph"
             />
 
             {/* Growth */}
-            <InvestorSection 
+            <InvestorSection
                 theme="dark"
-                title="Büyüme Metriklerimiz."
-                subtitle="Yıllık %120 kullanıcı artışı."
-                description="Platform hacmimiz, kayıtlı STK sayımız ve marka işbirliklerimiz her geçen gün katlanarak büyüyor. Bu büyüme, toplumsal sorunlara üretilen çözüm kapasitemizi de aynı oranda artırıyor."
+                title={t('investorPage.growthTitle')}
+                subtitle={t('investorPage.growthSubtitle')}
+                description={t('investorPage.growthDescription')}
                 imageUrl="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
                 imageHint="clean data visualization dashboard"
             />
 
             {/* Ethics */}
-            <InvestorSection 
-                title="Etik Yatırım İlkeleri."
-                subtitle="Hesap verebilir bir finans yönetimi."
-                description="Yatırımcılarımıza ve bağışçılarımıza karşı sorumluluğumuzun bilincindeyiz. Tüm finansal hareketlerimiz bağımsız denetim kuruluşları tarafından düzenli olarak raporlanmaktadır."
+            <InvestorSection
+                title={t('investorPage.ethicsTitle')}
+                subtitle={t('investorPage.ethicsSubtitle')}
+                description={t('investorPage.ethicsDescription')}
                 imageUrl="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?q=80&w=2070&auto=format&fit=crop"
                 imageHint="legal documents verify concept"
             />
 
-            <PublicFooter currentPageLabel="Yatırımcı İlişkileri" />
+            <PublicFooter currentPageLabel={t('investorPage.navLabel')} />
         </div>
     );
 }

@@ -14,6 +14,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface StoryCardProps {
   category: string;
@@ -25,9 +26,10 @@ interface StoryCardProps {
   bgColor: string;
   textColor: string;
   icon: React.ComponentType<{ className?: string }>;
+  watchLabel: string;
 }
 
-const StoryCard: React.FC<StoryCardProps> = ({ category, title, description, imageUrl, imageHint, href, bgColor, textColor, icon: Icon }) => {
+const StoryCard: React.FC<StoryCardProps> = ({ category, title, description, imageUrl, imageHint, href, bgColor, textColor, icon: Icon, watchLabel }) => {
   return (
     <Link href={href} className="block group h-full">
       <Card className={cn("relative w-full h-full overflow-hidden rounded-[2.5rem] border border-black/5 shadow-xl transition-all duration-700 group-hover:scale-[1.02] group-hover:shadow-2xl", bgColor)}>
@@ -50,7 +52,7 @@ const StoryCard: React.FC<StoryCardProps> = ({ category, title, description, ima
             </div>
           </div>
           <div className="flex justify-between items-end">
-             <span className="text-xs font-bold uppercase tracking-widest opacity-60">Şimdi İzle</span>
+             <span className="text-xs font-bold uppercase tracking-widest opacity-60">{watchLabel}</span>
              <PlusCircle className="h-10 w-10 transition-transform duration-700 group-hover:rotate-90" />
           </div>
         </div>
@@ -60,11 +62,12 @@ const StoryCard: React.FC<StoryCardProps> = ({ category, title, description, ima
 };
 
 export default function StoriesPage() {
+  const { t } = useTranslation();
   const storyCategories = [
     {
-      category: "Hangel Etkisi",
-      title: "Rakamlarla İyilik",
-      description: "Platformun toplumsal etkisini ve başarılarını keşfedin.",
+      category: t('storiesPage.cat1Category'),
+      title: t('storiesPage.cat1Title'),
+      description: t('storiesPage.cat1Description'),
       imageUrl: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=2064&auto=format&fit=crop",
       imageHint: "happy group people",
       href: "/ngo-admin/impact-story?category=hangel",
@@ -73,9 +76,9 @@ export default function StoriesPage() {
       icon: Sparkles
     },
     {
-      category: "Senin Hikayen",
-      title: "Kişisel Başarın",
-      description: "Yarattığın pozitif değişimi ve kazandığın rozetleri gör.",
+      category: t('storiesPage.cat2Category'),
+      title: t('storiesPage.cat2Title'),
+      description: t('storiesPage.cat2Description'),
       imageUrl: "https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1080",
       imageHint: "person portrait",
       href: "/ngo-admin/impact-story?category=user",
@@ -84,9 +87,9 @@ export default function StoriesPage() {
       icon: Heart
     },
     {
-      category: "İlanlar",
-      title: "Yeni Fırsatlar",
-      description: "Kampüs elçiliği, marka kampanyaları ve gönüllülük ilanları.",
+      category: t('storiesPage.cat3Category'),
+      title: t('storiesPage.cat3Title'),
+      description: t('storiesPage.cat3Description'),
       imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
       imageHint: "volunteers hands",
       href: "/ngo-admin/impact-story?category=opportunities",
@@ -95,9 +98,9 @@ export default function StoriesPage() {
       icon: School
     },
     {
-      category: "Topluluk",
-      title: "İlham Verenler",
-      description: "Gönüllülerin ve STK'ların sahadan hikayeleri.",
+      category: t('storiesPage.cat4Category'),
+      title: t('storiesPage.cat4Title'),
+      description: t('storiesPage.cat4Description'),
       imageUrl: "https://images.unsplash.com/photo-1559027615-cd4428d63b5f?q=80&w=2074&auto=format&fit=crop",
       imageHint: "volunteers working together",
       href: "/ngo-admin/impact-story?category=community",
@@ -113,10 +116,10 @@ export default function StoriesPage() {
         <div className="space-y-4 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-2">
                 <Sparkles className="h-4 w-4" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Etki Hikayeleri</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{t('storiesPage.badge')}</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">İyiliğin Yeni <br className="hidden md:block" /> Anlatım Biçimi.</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl leading-tight">Platformumuzdaki ilham verici anlara ve etki raporlarına tam ekran göz atın.</p>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-foreground leading-[0.95]">{t('storiesPage.heroTitleLine1')} <br className="hidden md:block" /> {t('storiesPage.heroTitleLine2')}</h1>
+            <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl leading-tight">{t('storiesPage.heroDescription')}</p>
         </div>
 
         <Carousel
@@ -129,7 +132,7 @@ export default function StoriesPage() {
             {storyCategories.map((story, index) => (
                 <CarouselItem key={index} className="pl-6 basis-[85%] sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                 <div className="h-[550px] md:h-[600px]">
-                    <StoryCard {...story} />
+                    <StoryCard {...story} watchLabel={t('storiesPage.watchNow')} />
                 </div>
                 </CarouselItem>
             ))}

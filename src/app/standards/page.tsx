@@ -34,6 +34,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { useTranslation } from '@/components/providers/language-provider';
 
 const ComplianceTable = ({ title, description, data, headers }: { title: string, description?: string, data: Array<Record<string, unknown>>, headers: string[] }) => (
     <div className="space-y-6 scroll-mt-24" id={title.toLowerCase().replace(/\s+/g, '-')}>
@@ -136,6 +137,7 @@ const regions = [
 export default function StandardsPage() {
     const router = useRouter();
     const cms = useWebPage('standards');
+    const { t } = useTranslation();
     const plugin = React.useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
@@ -255,11 +257,11 @@ export default function StandardsPage() {
             <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
                 <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
                     <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
+                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('aria.back')}
                     </Button>
-                    <span className="text-[10px] font-black tracking-tight uppercase hidden sm:inline">Kalite & Sertifikasyon Standartları</span>
+                    <span className="text-[10px] font-black tracking-tight uppercase hidden sm:inline">{t('standardsPage.navLabel')}</span>
                     <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
-                        <Link href="/settings/contracts">Beyanları Oku</Link>
+                        <Link href="/settings/contracts">{t('standardsPage.readDeclarations')}</Link>
                     </Button>
                 </div>
             </header>
@@ -269,21 +271,21 @@ export default function StandardsPage() {
                 <section className="container mx-auto px-6 max-w-5xl text-center py-16 md:py-24 space-y-6">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4 animate-in fade-in zoom-in duration-700">
                         <Award className="h-4 w-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Global Güven Standartları</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest">{t('standardsPage.badge')}</span>
                     </div>
                     <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-[#1d1d1f] leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                        {cms.title || (<>Standartlarına Uyum sağladığımız <br className="hidden md:block" /> Sertifikasyon Kurumları.</>)}
+                        {cms.title || (<>{t('standardsPage.heroTitleLine1')} <br className="hidden md:block" /> {t('standardsPage.heroTitleLine2')}</>)}
                     </h1>
                     <p className="text-lg md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed opacity-80">
-                        {cms.description || 'hangel, teknoloji ve sosyal fayda arasındaki köprüyü uluslararası otoritelerin belirlediği en sıkı standartlarla inşaa eder. Güvenimiz, uyum sağladığımız bu ilkelerden gelir.'}
+                        {cms.description || t('standardsPage.heroDescription')}
                     </p>
                 </section>
 
                 {/* Regions Section - Flag Integrated Design */}
                 <section className="container mx-auto px-4 max-w-7xl mb-32">
                     <div className="text-center mb-12 space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight">Küresel Uyum Ağımız</h2>
-                        <p className="text-muted-foreground font-medium">Faaliyet gösterdiğimiz bölgelerdeki en sıkı yasal ve etik normları uyguluyoruz.</p>
+                        <h2 className="text-3xl font-bold tracking-tight">{t('standardsPage.globalNetwork')}</h2>
+                        <p className="text-muted-foreground font-medium">{t('standardsPage.globalNetworkDesc')}</p>
                     </div>
                     <Carousel 
                         opts={{ align: "start", loop: true }}
@@ -310,7 +312,7 @@ export default function StandardsPage() {
                                             </div>
                                             <div className="pt-4">
                                                 <span className="text-primary font-bold flex items-center text-sm group-hover:gap-2 transition-all">
-                                                    Standartları İncele <ChevronRight className="h-4 w-4 ml-1" />
+                                                    {t('standardsPage.exploreStandards')} <ChevronRight className="h-4 w-4 ml-1" />
                                                 </span>
                                             </div>
                                         </div>
@@ -365,9 +367,9 @@ export default function StandardsPage() {
 
                     <div className="space-y-12 pt-12 border-t border-black/10">
                         <div className="text-center space-y-4">
-                            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">Tam Uyumluluk Beyan Listesi.</h2>
+                            <h2 className="text-3xl md:text-5xl font-black tracking-tighter">{t('standardsPage.auditListTitle')}</h2>
                             <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto leading-tight">
-                                hangel ekosisteminde %100 uyum sağlanan ve periyodik denetime tabi olan döküman ve beyanların tam listesi.
+                                {t('standardsPage.auditListDesc')}
                             </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -396,24 +398,24 @@ export default function StandardsPage() {
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
                         <CardHeader className="relative z-10 space-y-4">
                             <ShieldCheck className="h-16 w-16 text-primary mx-auto mb-4" />
-                            <CardTitle className="text-3xl md:text-5xl font-bold tracking-tight">Sürekli Denetim ve Gelişim.</CardTitle>
+                            <CardTitle className="text-3xl md:text-5xl font-bold tracking-tight">{t('standardsPage.continuousTitle')}</CardTitle>
                             <CardDescription className="text-lg text-white/60 font-medium leading-relaxed max-w-2xl mx-auto">
-                                Standartlara uyum bizim için bir son durak değil, sürekli bir gelişim yolculuğudur. Altyapımız, her yeni güncellenen regülasyona ve teknolojik standarda göre anlık olarak revize edilmektedir.
+                                {t('standardsPage.continuousDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardFooter className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
                             <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold bg-white text-black hover:bg-white/90 w-full sm:w-auto transition-all active:scale-95">
-                                <Link href="/ngo-admin/transparency">Şeffaflık Raporu</Link>
+                                <Link href="/ngo-admin/transparency">{t('standardsPage.transparencyReport')}</Link>
                             </Button>
                             <Button asChild variant="ghost" size="lg" className="rounded-full px-10 h-14 font-bold text-white hover:bg-white/10 w-full sm:w-auto transition-all active:scale-95">
-                                <Link href="/support">Teknik Bilgi Al</Link>
+                                <Link href="/support">{t('standardsPage.technicalInfo')}</Link>
                             </Button>
                         </CardFooter>
                     </Card>
                 </section>
             </main>
 
-            <PublicFooter currentPageLabel="Standartlar" />
+            <PublicFooter currentPageLabel={t('standardsPage.footerLabel')} />
         </div>
     );
 }

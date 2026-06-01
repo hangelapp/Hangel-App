@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { HangelLogo } from '@/components/icons';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type Phase =
     | { kind: 'loading' }
@@ -24,27 +25,28 @@ type Phase =
     | { kind: 'reset-success' }
     | { kind: 'error'; message: string };
 
-function mapAuthError(code: string | undefined): string {
-    switch (code) {
-        case 'auth/invalid-action-code':
-        case 'auth/expired-action-code':
-            return 'Bağlantı geçersiz veya süresi dolmuş. Lütfen yeni bir link isteyin.';
-        case 'auth/user-disabled':
-            return 'Hesabınız devre dışı bırakılmış.';
-        case 'auth/user-not-found':
-            return 'Hesap bulunamadı.';
-        case 'auth/weak-password':
-            return 'Şifre çok zayıf. En az 6 karakter kullanın.';
-        default:
-            return 'Bir hata oluştu. Lütfen tekrar deneyin.';
-    }
-}
-
 function ActionInner() {
     const auth = useAuth();
     const router = useRouter();
     const params = useSearchParams();
     const { toast } = useToast();
+    const { t } = useTranslation();
+
+    const mapAuthError = (code: string | undefined): string => {
+        switch (code) {
+            case 'auth/invalid-action-code':
+            case 'auth/expired-action-code':
+                return t('authAction.errInvalidCode');
+            case 'auth/user-disabled':
+                return t('authAction.errDisabled');
+            case 'auth/user-not-found':
+                return t('authAction.errNotFound');
+            case 'auth/weak-password':
+                return t('authAction.errWeakPassword');
+            default:
+                return t('authAction.errGeneric');
+        }
+    };
 
     const mode = params.get('mode');
     const oobCode = params.get('oobCode') || '';
@@ -57,7 +59,7 @@ function ActionInner() {
     useEffect(() => {
         if (!auth) return;
         if (!oobCode || !mode) {
-            setPhase({ kind: 'error', message: 'Geçersiz bağlantı.' });
+            setPhase({ kind: 'error', message: t('authAction.errInvalidLink') });
             return;
         }
 
@@ -72,7 +74,7 @@ function ActionInner() {
                     const email = await verifyPasswordResetCode(auth, oobCode);
                     if (!cancelled) setPhase({ kind: 'reset-form', email });
                 } else {
-                    if (!cancelled) setPhase({ kind: 'error', message: 'Desteklenmeyen işlem.' });
+                    if (!cancelled) setPhase({ kind: 'error', message: t('authAction.errUnsupported') });
                 }
             } catch (err: unknown) {
                 const code = (err as { code?: string } | null)?.code;
@@ -81,17 +83,17 @@ function ActionInner() {
         })();
 
         return () => { cancelled = true; };
-    }, [auth, mode, oobCode]);
+    }, [auth, mode, oobCode, t]);
 
     const handleResetSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (phase.kind !== 'reset-form' || !auth) return;
         if (newPassword.length < 6) {
-            toast({ variant: 'destructive', title: 'Hata', description: 'Şifre en az 6 karakter olmalıdır.' });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: t('authAction.passwordTooShort') });
             return;
         }
         if (newPassword !== newPasswordConfirm) {
-            toast({ variant: 'destructive', title: 'Hata', description: 'Şifreler uyuşmuyor.' });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: t('authAction.passwordMismatch') });
             return;
         }
         setIsSubmitting(true);
@@ -105,7 +107,7 @@ function ActionInner() {
             setPhase({ kind: 'reset-success' });
         } catch (err: unknown) {
             const code = (err as { code?: string } | null)?.code;
-            toast({ variant: 'destructive', title: 'Hata', description: mapAuthError(code) });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: mapAuthError(code) });
         } finally {
             setIsSubmitting(false);
         }
@@ -120,7 +122,7 @@ function ActionInner() {
                 {phase.kind === 'loading' && (
                     <CardContent className="py-16 flex flex-col items-center gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        <p className="text-sm text-muted-foreground">İşleniyor...</p>
+                        <p className="text-sm text-muted-foreground">{t('authAction.processing')}</p>
                     </CardContent>
                 )}
 
@@ -130,15 +132,15 @@ function ActionInner() {
                             <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
                                 <CheckCircle2 className="h-7 w-7 text-green-600" />
                             </div>
-                            <CardTitle className="text-xl font-black">E-posta doğrulandı</CardTitle>
-                            <CardDescription>Hesabınız aktif. Uygulamayı kullanmaya başlayabilirsiniz.</CardDescription>
+                            <CardTitle className="text-xl font-black">{t('authAction.emailVerifiedTitle')}</CardTitle>
+                            <CardDescription>{t('authAction.emailVerifiedDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pb-10">
                             <Button
                                 className="w-full h-12 rounded-2xl font-black"
                                 onClick={() => router.push('/market')}
                             >
-                                Uygulamaya dön
+                                {t('authAction.returnToApp')}
                             </Button>
                         </CardContent>
                     </>
@@ -150,18 +152,18 @@ function ActionInner() {
                             <div className="mx-auto w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
                                 <KeyRound className="h-7 w-7 text-primary" />
                             </div>
-                            <CardTitle className="text-xl font-black">Yeni şifre belirleyin</CardTitle>
+                            <CardTitle className="text-xl font-black">{t('authAction.setNewPassword')}</CardTitle>
                             <CardDescription>{phase.email}</CardDescription>
                         </CardHeader>
                         <CardContent className="pb-10">
                             <form onSubmit={handleResetSubmit} className="space-y-5">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 block text-left">
-                                        Yeni Şifre *
+                                        {t('authAction.newPasswordLabel')}
                                     </Label>
                                     <Input
                                         type="password"
-                                        placeholder="En az 6 karakter"
+                                        placeholder={t('authAction.passwordMin')}
                                         required
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
@@ -172,11 +174,11 @@ function ActionInner() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1 block text-left">
-                                        Şifre Tekrar *
+                                        {t('authAction.passwordRepeat')}
                                     </Label>
                                     <Input
                                         type="password"
-                                        placeholder="Şifrenizi tekrar girin"
+                                        placeholder={t('authAction.passwordRepeatPh')}
                                         required
                                         value={newPasswordConfirm}
                                         onChange={(e) => setNewPasswordConfirm(e.target.value)}
@@ -185,7 +187,7 @@ function ActionInner() {
                                     />
                                 </div>
                                 <Button type="submit" className="w-full h-14 rounded-2xl text-base font-black shadow-xl" disabled={isSubmitting}>
-                                    {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Şifreyi Güncelle'}
+                                    {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : t('authAction.updatePassword')}
                                 </Button>
                             </form>
                         </CardContent>
@@ -198,15 +200,15 @@ function ActionInner() {
                             <div className="mx-auto w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
                                 <MailCheck className="h-7 w-7 text-green-600" />
                             </div>
-                            <CardTitle className="text-xl font-black">Şifreniz güncellendi</CardTitle>
-                            <CardDescription>Giriş yapıldı, devam edebilirsiniz.</CardDescription>
+                            <CardTitle className="text-xl font-black">{t('authAction.passwordUpdatedTitle')}</CardTitle>
+                            <CardDescription>{t('authAction.passwordUpdatedDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="pb-10">
                             <Button
                                 className="w-full h-12 rounded-2xl font-black"
                                 onClick={() => router.push('/market')}
                             >
-                                Uygulamaya dön
+                                {t('authAction.returnToApp')}
                             </Button>
                         </CardContent>
                     </>
@@ -218,7 +220,7 @@ function ActionInner() {
                             <div className="mx-auto w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
                                 <AlertTriangle className="h-7 w-7 text-red-600" />
                             </div>
-                            <CardTitle className="text-xl font-black">Bir sorun oluştu</CardTitle>
+                            <CardTitle className="text-xl font-black">{t('authAction.errorTitle')}</CardTitle>
                             <CardDescription>{phase.message}</CardDescription>
                         </CardHeader>
                         <CardContent className="pb-10">
@@ -226,7 +228,7 @@ function ActionInner() {
                                 className="w-full h-12 rounded-2xl font-black"
                                 onClick={() => router.push('/login/selection')}
                             >
-                                Giriş sayfasına dön
+                                {t('authAction.backToLogin')}
                             </Button>
                         </CardContent>
                     </>
