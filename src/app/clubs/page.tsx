@@ -13,6 +13,7 @@ import type { StudentClub } from '@/lib/types';
 import { useFirestore, useMemoFirebase, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 
 const ClubCard = ({
@@ -24,7 +25,8 @@ const ClubCard = ({
     actualMembers: number;
     actualPoints: number;
 }) => {
-    const name = club?.name || 'İsimsiz Kulüp';
+    const { t } = useTranslation();
+    const name = club?.name || t('clubsPage.namelessClub');
     const university = club?.university || '—';
     return (
         <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
@@ -38,8 +40,8 @@ const ClubCard = ({
                         <p className="font-semibold text-sm truncate leading-tight">{name}</p>
                         <p className="text-[11px] text-muted-foreground truncate leading-tight">{university}</p>
                         <div className="flex items-center gap-2.5 text-[11px] text-muted-foreground leading-tight">
-                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {actualMembers.toLocaleString('tr-TR')} Üye</span>
-                            <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {actualPoints.toLocaleString('tr-TR')} Puan</span>
+                            <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {actualMembers.toLocaleString('tr-TR')} {t('clubsPage.memberLabel')}</span>
+                            <span className="flex items-center gap-1"><BrainCircuit className="h-3 w-3" /> {actualPoints.toLocaleString('tr-TR')} {t('clubsPage.pointLabel')}</span>
                         </div>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -70,6 +72,7 @@ function getImpact(u: MemberUser): number {
 
 export default function ClubsPage() {
   const db = useFirestore();
+  const { t } = useTranslation();
   const { user: authUser } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState<'global' | 'country' | 'city' | 'school' | 'university' | 'highSchool'>('global');
@@ -259,7 +262,7 @@ export default function ClubsPage() {
   const universitiesGrouped = useMemo(() => {
     const map = new Map<string, StudentClub[]>();
     for (const c of filteredClubs) {
-      const uni = c.university || 'Diğer';
+      const uni = c.university || t('clubsPage.otherUniversity');
       if (!map.has(uni)) map.set(uni, []);
       map.get(uni)!.push(c);
     }
@@ -301,14 +304,14 @@ export default function ClubsPage() {
   // BUG-27: tek filtre state'i (locationFilter) iki satıra ayrıldı —
   // 2. satır: kulüp türü (Üniversite/Lise), 3. satır: konum (Global/Ülkem/Şehrim/Okulum)
   const typeTabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[] = [
-    { value: 'university', label: 'Üniversite', icon: GraduationCap },
-    { value: 'highSchool', label: 'Lise', icon: BookOpen },
+    { value: 'university', label: t('clubsPage.tabUniversity'), icon: GraduationCap },
+    { value: 'highSchool', label: t('clubsPage.tabHighSchool'), icon: BookOpen },
   ];
   const locationTabs: { value: typeof locationFilter; label: string; icon: LucideIcon; sublabel?: string }[] = [
-    { value: 'global', label: 'Global', icon: Globe },
-    { value: 'country', label: 'Ülkemde', icon: MapPin, sublabel: userCountry || undefined },
-    { value: 'city', label: 'Şehrimde', icon: MapPin, sublabel: userCity || undefined },
-    { value: 'school', label: 'Okulumda', icon: School, sublabel: userSchoolSublabel },
+    { value: 'global', label: t('clubsPage.tabGlobal'), icon: Globe },
+    { value: 'country', label: t('clubsPage.tabCountry'), icon: MapPin, sublabel: userCountry || undefined },
+    { value: 'city', label: t('clubsPage.tabCity'), icon: MapPin, sublabel: userCity || undefined },
+    { value: 'school', label: t('clubsPage.tabSchool'), icon: School, sublabel: userSchoolSublabel },
   ];
 
   // Ortak tab render helper (iki ayrı tabset için)
@@ -343,14 +346,14 @@ export default function ClubsPage() {
 
   return (
     <div className="p-4 space-y-4 animate-in fade-in-0">
-      <h1 className="text-2xl font-bold font-headline">Öğrenci Kulüpleri</h1>
+      <h1 className="text-2xl font-bold font-headline">{t('clubsPage.title')}</h1>
 
       {/* 1. satır: Arama + filtre/sıralama */}
       <div className="p-0 flex gap-2 items-center sticky top-14 bg-background z-10 py-2">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Üniversite veya kulüp ara..."
+            placeholder={t('clubsPage.searchPlaceholder')}
             className="pl-10 h-11"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -358,7 +361,7 @@ export default function ClubsPage() {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11 relative" aria-label="Filtrele">
+            <Button variant="outline" size="icon" className="h-11 w-11 relative" aria-label={t('clubsPage.filterAria')}>
               <Filter className="h-5 w-5" />
               {filterCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-4 min-w-[1rem] px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
@@ -370,7 +373,7 @@ export default function ClubsPage() {
           <DropdownMenuContent align="end" className="max-h-[60vh] overflow-y-auto w-56">
             {availableCategories.length > 0 && (
               <>
-                <DropdownMenuLabel>Kategoriler</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('clubsPage.categoriesLabel')}</DropdownMenuLabel>
                 {availableCategories.map(s => (
                   <DropdownMenuCheckboxItem
                     key={`cat-${s}`}
@@ -386,7 +389,7 @@ export default function ClubsPage() {
             )}
             {availableSkills.length > 0 && (
               <>
-                <DropdownMenuLabel>Yetkinlikler</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('clubsPage.skillsLabel')}</DropdownMenuLabel>
                 {availableSkills.map(s => (
                   <DropdownMenuCheckboxItem
                     key={`skill-${s}`}
@@ -402,7 +405,7 @@ export default function ClubsPage() {
             )}
             {availableInterests.length > 0 && (
               <>
-                <DropdownMenuLabel>Hassasiyetler</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('clubsPage.interestsLabel')}</DropdownMenuLabel>
                 {availableInterests.map(s => (
                   <DropdownMenuCheckboxItem
                     key={`int-${s}`}
@@ -418,26 +421,26 @@ export default function ClubsPage() {
             )}
             {availableCategories.length === 0 && availableSkills.length === 0 && availableInterests.length === 0 && (
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                Henüz filtre verisi yok
+                {t('clubsPage.filterEmpty')}
               </DropdownMenuLabel>
             )}
             {filterCount > 0 && (
               <DropdownMenuItem onSelect={() => { setSelectedCategories([]); setSelectedSkills([]); setSelectedInterests([]); }}>
-                Filtreleri Temizle
+                {t('clubsPage.clearFilters')}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="h-11 w-11" aria-label="Sırala">
+            <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('clubsPage.sortAria')}>
               <ArrowDownUp className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setSortMode('clubCount')}>Kulüp Sayısı (Çok → Az)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortMode('members')}>Toplam Üye (Çok → Az)</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortMode('name')}>İsme Göre (A → Z)</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('clubCount')}>{t('clubsPage.sortByClubCount')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('members')}>{t('clubsPage.sortByMembers')}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setSortMode('name')}>{t('clubsPage.sortByName')}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -451,22 +454,22 @@ export default function ClubsPage() {
       {/* Login bilgi mesajı */}
       {locationFilter === 'country' && !userCountry && authUser && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-          Ülke bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+          {t('clubsPage.hintCountry')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {locationFilter === 'city' && !userCity && authUser && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-          Şehir bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+          {t('clubsPage.hintCity')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {locationFilter === 'school' && authUser && userSchools.length === 0 && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-          Okul bilgini profilinde belirt → <Link href="/settings/profile" className="underline font-bold">Profili Düzenle</Link>
+          {t('clubsPage.hintSchool')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {!authUser && (locationFilter === 'country' || locationFilter === 'city' || locationFilter === 'school') && (
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
-          Konum/okul bazlı filtre için giriş yapmanız gerekir.
+          {t('clubsPage.hintLogin')}
         </div>
       )}
 
@@ -475,11 +478,11 @@ export default function ClubsPage() {
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
         ) : universitiesGrouped.length === 0 ? (
-          <div className="text-center text-muted-foreground p-12">Bu filtreyle eşleşen üniversite bulunamadı.</div>
+          <div className="text-center text-muted-foreground p-12">{t('clubsPage.noMatch')}</div>
         ) : (
           <div className="space-y-1">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1 mb-1">
-              Üniversite Listesi ({universitiesGrouped.length})
+              {t('clubsPage.universityListPrefix')} ({universitiesGrouped.length})
             </p>
             {universitiesGrouped.map(({ university, clubs: uClubs, memberTotal }) => {
               const isOpen = expandedUniversity === university;
@@ -507,19 +510,19 @@ export default function ClubsPage() {
                     <div className="flex-1 min-w-0 leading-tight">
                       <p className="font-bold text-sm truncate leading-tight">{university}</p>
                       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap leading-tight">
-                        <Badge variant="secondary" className="text-[10px] font-bold">{uClubs.length} kulüp</Badge>
+                        <Badge variant="secondary" className="text-[10px] font-bold">{uClubs.length} {t('clubsPage.clubsSuffix')}</Badge>
                         <span className="flex items-center gap-1 font-medium">
-                          <Users className="h-3 w-3" /> {totalClubMembers.toLocaleString('tr-TR')} kulüp üyesi
+                          <Users className="h-3 w-3" /> {totalClubMembers.toLocaleString('tr-TR')} {t('clubsPage.clubMembersSuffix')}
                         </span>
                         <span className="text-muted-foreground/40">|</span>
-                        <span className="flex items-center gap-1 font-medium" title="Üye etki puanları toplamı">
-                          <span className="font-bold">{totalClubPoints.toLocaleString('tr-TR')}</span> puan
+                        <span className="flex items-center gap-1 font-medium" title={t('clubsPage.memberPointsTooltip')}>
+                          <span className="font-bold">{totalClubPoints.toLocaleString('tr-TR')}</span> {t('clubsPage.pointsSuffix')}
                         </span>
                         {memberTotal > 0 && (
                           <>
                             <span className="text-muted-foreground/40">|</span>
-                            <span className="flex items-center gap-1 font-medium" title="Bu okulda profilini yapan üye sayısı">
-                              {memberTotal} okul üyesi
+                            <span className="flex items-center gap-1 font-medium" title={t('clubsPage.schoolMembersTooltip')}>
+                              {memberTotal} {t('clubsPage.schoolMembersSuffix')}
                             </span>
                           </>
                         )}

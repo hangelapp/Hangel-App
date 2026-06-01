@@ -14,6 +14,7 @@ import { collection } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
 import { COLLECTIONS } from '@/firebase/collections';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const BrandLogo = ({ brand }: { brand: Brand }) => {
   const domain = (() => {
@@ -76,6 +77,7 @@ const BrandLogo = ({ brand }: { brand: Brand }) => {
 
 export default function MarketPage() {
   const db = useFirestore();
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('Tümü');
   const [brandType, setBrandType] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -226,7 +228,7 @@ export default function MarketPage() {
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Marka Ara..."
+              placeholder={t('marketPage.searchPlaceholder')}
               className="pl-10 h-12 rounded-2xl border-none bg-muted/50 focus-visible:ring-1 text-lg"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -234,7 +236,7 @@ export default function MarketPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label="Filtrele">
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.filterAria')}>
                 <Filter className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -248,27 +250,27 @@ export default function MarketPage() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label="Sırala">
+              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0 rounded-2xl bg-background border-none shadow-sm" aria-label={t('marketPage.sortAria')}>
                 <ArrowDownUp className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>Önerilen</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('donationDesc')} className={sortBy === 'donationDesc' ? 'font-bold text-primary' : ''}>En çok bağış yapan</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('donationAsc')} className={sortBy === 'donationAsc' ? 'font-bold text-primary' : ''}>En az bağış yapan</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>Alfabetik (A → Z)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortBy('nameDesc')} className={sortBy === 'nameDesc' ? 'font-bold text-primary' : ''}>Alfabetik (Z → A)</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('default')} className={sortBy === 'default' ? 'font-bold text-primary' : ''}>{t('marketPage.sortRecommended')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('donationDesc')} className={sortBy === 'donationDesc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortDonationDesc')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('donationAsc')} className={sortBy === 'donationAsc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortDonationAsc')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('nameAsc')} className={sortBy === 'nameAsc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortNameAsc')}</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSortBy('nameDesc')} className={sortBy === 'nameDesc' ? 'font-bold text-primary' : ''}>{t('marketPage.sortNameDesc')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
           <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">Tümü</TabsTrigger>
-            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">Ticari</TabsTrigger>
-            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">Kooperatif</TabsTrigger>
-            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">Sosyal İşletme</TabsTrigger>
-            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">İktisadi İşletme</TabsTrigger>
+            <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabAll')}</TabsTrigger>
+            <TabsTrigger value="brand" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCommercial')}</TabsTrigger>
+            <TabsTrigger value="cooperative" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabCooperative')}</TabsTrigger>
+            <TabsTrigger value="social" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabSocial')}</TabsTrigger>
+            <TabsTrigger value="economic" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabEconomic')}</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -300,7 +302,7 @@ export default function MarketPage() {
             </div>
           ) : brandsToShow.length === 0 ? (
             <div className="text-center py-20 text-muted-foreground italic">
-              Aramanızla eşleşen marka bulunamadı.
+              {t('marketPage.noMatch')}
             </div>
           ) : (
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -335,18 +337,18 @@ export default function MarketPage() {
                 <HeartHandshake className="h-7 w-7 text-white" />
               </div>
             </div>
-            <DialogTitle className="text-center text-xl font-black">Hoş geldin aramıza!</DialogTitle>
+            <DialogTitle className="text-center text-xl font-black">{t('marketPage.welcomeTitle')}</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-3 text-sm text-left pt-2 text-foreground leading-relaxed">
-                <p>Merhaba, hoş geldin aramıza, iyi ki geldin.</p>
-                <p>Anlaşmalı markalardan yaptığın alışverişlerin bir kısmı biraz önce seçtiğin STK&apos;lara bağışlanacak.</p>
-                <p>Kooperatif ve sosyal işletmelerden yaptığınız alışverişlerden ise hâli hazırda bir sosyal sorunu çözmek üzere kurulduklarından ve kârlarını bu amaç doğrultusunda kullandıkları için seçtiğin STK&apos;lara bağış gerçekleşmeyecek.</p>
-                <p className="font-bold">Bu ülkenin sosyal sorunları için birlikte mücadele edeceğiz… hep birlikte.</p>
+                <p>{t('marketPage.welcomeP1')}</p>
+                <p>{t('marketPage.welcomeP2')}</p>
+                <p>{t('marketPage.welcomeP3')}</p>
+                <p className="font-bold">{t('marketPage.welcomeP4')}</p>
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button onClick={() => setShowWelcome(false)} className="w-full rounded-xl">Anladım, devam et</Button>
+            <Button onClick={() => setShowWelcome(false)} className="w-full rounded-xl">{t('marketPage.welcomeCta')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

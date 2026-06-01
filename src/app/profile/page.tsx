@@ -102,7 +102,7 @@ const NextBadgeGoal = ({ userProfile: _userProfile }: { userProfile: unknown }) 
 // BUG-28: Her bağlı kurumu kart olarak göster (logo + isim + sağ üst düzenle ikonu)
 type ConnectionItem = { id: string; name?: string; logoUrl?: string; href: string };
 
-const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, items, icon: Icon }: {
+const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText, items, icon: Icon, orgCountSuffix, editVerb }: {
     value: string;
     title: string;
     count: number;
@@ -111,6 +111,8 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
     emptyText: string;
     items: ConnectionItem[];
     icon: React.ComponentType<{ className?: string }>;
+    orgCountSuffix: string;
+    editVerb: string;
 }) => (
     <AccordionItem value={value} className="border-b">
         <AccordionTrigger className="py-3.5 hover:no-underline">
@@ -120,7 +122,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                 </span>
                 <span className="flex flex-col items-start gap-0.5">
                     <span className="font-bold text-sm leading-tight text-left">{title}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium">{count} kuruluş</span>
+                    <span className="text-[11px] text-muted-foreground font-medium">{count} {orgCountSuffix}</span>
                 </span>
             </span>
         </AccordionTrigger>
@@ -137,7 +139,7 @@ const ConnectionSection = ({ value, title, count, editHref, editLabel, emptyText
                     <div className="flex justify-end">
                         <Button asChild variant="outline" size="sm" className="h-7 rounded-xl text-xs">
                             <Link href={editHref}>
-                                <Edit className="mr-1.5 h-3 w-3" /> Düzenle
+                                <Edit className="mr-1.5 h-3 w-3" /> {editVerb}
                             </Link>
                         </Button>
                     </div>
@@ -185,7 +187,7 @@ export default function ProfilePage() {
             await signOut(auth);
             router.push('/login');
         } catch {
-            toast({ variant: 'destructive', title: 'Hata', description: 'Çıkış yapılırken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('profilePage.logoutErrorTitle'), description: t('profilePage.logoutErrorDesc') });
         }
     };
 
@@ -429,10 +431,10 @@ export default function ProfilePage() {
             const filename = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.pdf`;
             pdf.save(filename);
 
-            toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
+            toast({ title: t('profilePage.certDownloaded'), description: `${cert.title} ${t('profilePage.certDownloadedSuffix')}` });
         } catch (error) {
             console.error('Certificate PDF generation failed:', error);
-            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('profilePage.certDownloadFail'), description: t('profilePage.pdfFailDesc') });
         }
     };
 
@@ -464,10 +466,10 @@ export default function ProfilePage() {
             a.href = canvas.toDataURL('image/jpeg', 0.95);
             a.download = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
             a.click();
-            toast({ title: 'Sertifika İndirildi', description: `${cert.title} (JPG) indirildi.` });
+            toast({ title: t('profilePage.certDownloaded'), description: `${cert.title} ${t('profilePage.certJpgSuffix')}` });
         } catch (error) {
             console.error('Certificate JPG generation failed:', error);
-            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'JPG oluşturulurken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('profilePage.certDownloadFail'), description: t('profilePage.jpgFailDesc') });
         }
     };
 
@@ -504,14 +506,14 @@ export default function ProfilePage() {
             if (msg.includes('QUOTA_EXCEEDED')) {
                 toast({
                     variant: "destructive",
-                    title: "Günlük yapay zeka kotası doldu",
-                    description: "Bugün için hikaye oluşturma limitine ulaştın. Lütfen yarın tekrar dene."
+                    title: t('profilePage.aiQuotaTitle'),
+                    description: t('profilePage.aiQuotaDesc')
                 });
             } else {
                 toast({
                     variant: "destructive",
-                    title: "Hikaye oluşturulamadı",
-                    description: "Yapay zeka ile hikaye oluşturulurken bir sorun oluştu."
+                    title: t('profilePage.aiFailTitle'),
+                    description: t('profilePage.aiFailDesc')
                 });
             }
         } finally {
@@ -567,7 +569,7 @@ export default function ProfilePage() {
                     </CardContent>
                     {item.review && (
                         <div className="px-6 pb-2 pt-0">
-                            <AccordionTrigger className="text-sm hover:no-underline p-0 justify-start gap-2">STK Değerlendirmesini Gör</AccordionTrigger>
+                            <AccordionTrigger className="text-sm hover:no-underline p-0 justify-start gap-2">{t('profilePage.seeNgoReview')}</AccordionTrigger>
                         </div>
                     )}
                     <AccordionContent className="px-6">
@@ -617,9 +619,9 @@ export default function ProfilePage() {
                         <span className="text-muted-foreground">{tierCurrent.toLocaleString('tr-TR')}/{tierDelta.toLocaleString('tr-TR')}</span>
                         {' · '}
                         {isEarned ? (
-                            <span className="text-green-600">Tamamlandı</span>
+                            <span className="text-green-600">{t('profilePage.completed')}</span>
                         ) : (
-                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} kaldı</span>
+                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} {t('profilePage.remaining')}</span>
                         )}
                     </p>
                  </div>
@@ -641,7 +643,7 @@ export default function ProfilePage() {
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('aria.back')}>
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label="Çıkış yap">
+                <Button onClick={handleLogout} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('profilePage.logoutAria')}>
                     <LogOut className="h-5 w-5" />
                 </Button>
             </div>
@@ -656,7 +658,7 @@ export default function ProfilePage() {
                             <TabsTrigger value="impact">{t('dashboard.profile.tabImpact')}</TabsTrigger>
                             <TabsTrigger value="about">{t('dashboard.profile.tabAbout')}</TabsTrigger>
                             <TabsTrigger value="volunteering">{t('dashboard.profile.tabVolunteering')}</TabsTrigger>
-                            <TabsTrigger value="connections">Bağlantılarım</TabsTrigger>
+                            <TabsTrigger value="connections">{t('profilePage.tabConnections')}</TabsTrigger>
                             <TabsTrigger value="badges-certificates">{t('dashboard.profile.tabBadges')}</TabsTrigger>
                             <TabsTrigger value="story">{t('dashboard.profile.tabStory')}</TabsTrigger>
                         </TabsList>
@@ -671,7 +673,7 @@ export default function ProfilePage() {
                         />
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Son Puan İşlemleri</CardTitle>
+                                <CardTitle>{t('profilePage.lastTransactions')}</CardTitle>
                                 <div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -680,7 +682,7 @@ export default function ProfilePage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuLabel>İşlem Türü</DropdownMenuLabel>
+                                            <DropdownMenuLabel>{t('profilePage.transactionType')}</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
                                             {transactionTypes.map(type => (
                                                 <DropdownMenuCheckboxItem
@@ -702,17 +704,17 @@ export default function ProfilePage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'desc' })}>Tarihe Göre (En Yeni)</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'asc' })}>Tarihe Göre (En Eski)</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>Puana Göre (En Yüksek)</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>Puana Göre (En Düşük)</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'desc' })}>{t('profilePage.sortDateNewest')}</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'date', direction: 'asc' })}>{t('profilePage.sortDateOldest')}</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'desc' })}>{t('profilePage.sortPointsDesc')}</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'points', direction: 'asc' })}>{t('profilePage.sortPointsAsc')}</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
                             </CardHeader>
                             <CardContent className="space-y-3">
                                 {sortedAndFilteredTransactions.length === 0 ? (
-                                    <p className="text-center text-muted-foreground text-sm py-8">Henüz puan işleminiz bulunmuyor.</p>
+                                    <p className="text-center text-muted-foreground text-sm py-8">{t('profilePage.noTransactions')}</p>
                                 ) : sortedAndFilteredTransactions.slice(0, 5).map((tx, index) => {
                                     const Icon = tx.icon;
                                     return (
@@ -724,13 +726,13 @@ export default function ProfilePage() {
                                                 {tx.time && <p className="text-xs text-muted-foreground">{format(parseISO(tx.time), 'dd MMMM yyyy, HH:mm', { locale: tr })}</p>}
                                             </div>
                                         </div>
-                                        <p className="font-bold text-green-600">+{tx.points} Puan</p>
+                                        <p className="font-bold text-green-600">+{tx.points} {t('profilePage.pointSuffix')}</p>
                                     </div>
                                 )})}
                             </CardContent>
                              <CardFooter>
                                 <Button asChild variant="secondary" className="w-full">
-                                    <Link href="/my-badges">Tüm İşlemleri Gör</Link>
+                                    <Link href="/my-badges">{t('profilePage.viewAllTransactions')}</Link>
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -743,9 +745,9 @@ export default function ProfilePage() {
                             <Card>
                                 <CardHeader className="flex flex-row justify-between items-center pb-2">
                                     <CardTitle className='text-lg flex items-center gap-2'>
-                                        <Sparkles className='h-5 w-5 text-fuchsia-500' /> Kullanım Tercihleri
+                                        <Sparkles className='h-5 w-5 text-fuchsia-500' /> {t('profilePage.usagePreferences')}
                                     </CardTitle>
-                                    <Button asChild variant="ghost" size="icon" aria-label="Düzenle">
+                                    <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editLabel')}>
                                         <Link href="/settings/intents">
                                             <Edit className="h-4 w-4" />
                                         </Link>
@@ -762,31 +764,31 @@ export default function ProfilePage() {
                          )}
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
-                                <CardTitle className='text-lg'>Kişisel Bilgiler</CardTitle>
-                                 <Button asChild variant="ghost" size="icon" aria-label="Profili düzenle">
+                                <CardTitle className='text-lg'>{t('profilePage.personalInfoTitle')}</CardTitle>
+                                 <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editProfileAria')}>
                                     <Link href="/settings/profile">
                                         <Edit className="h-4 w-4" />
                                     </Link>
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Mail} label="E-posta" value={currentUser.personalInfo.email} verified />
-                                <InfoRow icon={Phone} label="Telefon" value={currentUser.personalInfo.phone} verified />
-                                <InfoRow icon={Cake} label="Doğum Tarihi" value={currentUser.personalInfo.birthDate ? format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr }) : '-'} />
-                                 <InfoRow icon={Globe} label="Uyruk" value={currentUser.personalInfo.nationality} />
-                                <InfoRow icon={UserIcon} label="Cinsiyet" value={currentUser.personalInfo.gender} />
-                                <InfoRow icon={MapPin} label="İl" value={currentUser.personalInfo.address.city || '-'} />
-                                <InfoRow icon={MapPin} label="İlçe" value={currentUser.personalInfo.address.district || '-'} />
-                                <InfoRow icon={MapPin} label="Mahalle" value={(currentUser.personalInfo.address as { neighborhood?: string }).neighborhood || '-'} />
+                                <InfoRow icon={Mail} label={t('profilePage.fieldEmail')} value={currentUser.personalInfo.email} verified />
+                                <InfoRow icon={Phone} label={t('profilePage.fieldPhone')} value={currentUser.personalInfo.phone} verified />
+                                <InfoRow icon={Cake} label={t('profilePage.fieldBirthDate')} value={currentUser.personalInfo.birthDate ? format(new Date(currentUser.personalInfo.birthDate), 'dd MMMM yyyy', { locale: tr }) : '-'} />
+                                 <InfoRow icon={Globe} label={t('profilePage.fieldNationality')} value={currentUser.personalInfo.nationality} />
+                                <InfoRow icon={UserIcon} label={t('profilePage.fieldGender')} value={currentUser.personalInfo.gender} />
+                                <InfoRow icon={MapPin} label={t('profilePage.fieldCity')} value={currentUser.personalInfo.address.city || '-'} />
+                                <InfoRow icon={MapPin} label={t('profilePage.fieldDistrict')} value={currentUser.personalInfo.address.district || '-'} />
+                                <InfoRow icon={MapPin} label={t('profilePage.fieldNeighborhood')} value={(currentUser.personalInfo.address as { neighborhood?: string }).neighborhood || '-'} />
                                 {(currentUser.personalInfo.address as { fullAddress?: string }).fullAddress && (
-                                    <InfoRow icon={MapPin} label="Açık Adres" value={(currentUser.personalInfo.address as { fullAddress?: string }).fullAddress} />
+                                    <InfoRow icon={MapPin} label={t('profilePage.fieldFullAddress')} value={(currentUser.personalInfo.address as { fullAddress?: string }).fullAddress} />
                                 )}
-                                <InfoRow icon={Globe} label="Web Sitesi" value={currentUser.personalInfo.website} />
-                                <InfoRow icon={Linkedin} label="LinkedIn" value={currentUser.personalInfo.social?.linkedin} />
-                                <InfoRow icon={Github} label="GitHub" value={currentUser.personalInfo.social?.github} />
-                                <InfoRow icon={Palette} label="Behance" value={currentUser.personalInfo.social?.behance} />
-                                <InfoRow icon={Instagram} label="Instagram" value={currentUser.personalInfo.social?.instagram} />
-                                <InfoRow icon={Twitter} label="X (Twitter)" value={currentUser.personalInfo.social?.twitter} />
+                                <InfoRow icon={Globe} label={t('profilePage.fieldWebsite')} value={currentUser.personalInfo.website} />
+                                <InfoRow icon={Linkedin} label={t('profilePage.fieldLinkedin')} value={currentUser.personalInfo.social?.linkedin} />
+                                <InfoRow icon={Github} label={t('profilePage.fieldGithub')} value={currentUser.personalInfo.social?.github} />
+                                <InfoRow icon={Palette} label={t('profilePage.fieldBehance')} value={currentUser.personalInfo.social?.behance} />
+                                <InfoRow icon={Instagram} label={t('profilePage.fieldInstagram')} value={currentUser.personalInfo.social?.instagram} />
+                                <InfoRow icon={Twitter} label={t('profilePage.fieldTwitter')} value={currentUser.personalInfo.social?.twitter} />
                                 {(((currentUser.personalInfo.social as { custom?: Array<{ platform?: string; url?: string }> } | undefined)?.custom) || []).map((link, i) =>
                                     link?.platform && link?.url ? (
                                         <InfoRow key={`custom-${i}`} icon={Globe} label={link.platform} value={link.url} />
@@ -799,37 +801,37 @@ export default function ProfilePage() {
                     <TabsContent value="volunteering" className="p-4 space-y-4">
                          <Card>
                             <CardHeader className="flex flex-row justify-between items-center">
-                                <CardTitle className='text-lg'>Gönüllülük Bilgileri</CardTitle>
-                                <Button asChild variant="ghost" size="icon" aria-label="Gönüllülük bilgilerini düzenle">
+                                <CardTitle className='text-lg'>{t('profilePage.volunteerInfoTitle')}</CardTitle>
+                                <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editVolunteerAria')}>
                                     <Link href="/settings/volunteer">
                                         <Edit className="h-4 w-4" />
                                     </Link>
                                 </Button>
                             </CardHeader>
                             <CardContent className="divide-y">
-                                <InfoRow icon={Sparkles} label="Sosyal Hassasiyetler" value={currentUser.volunteerInfo.interests.join(', ')} />
-                                <InfoRow icon={Brain} label="Profesyonel Yetkinlikler" value={currentUser.volunteerInfo.skills.join(', ')} />
-                                <InfoRow icon={Users} label="Sosyal Yetkinlikler" value={currentUser.volunteerInfo.dailySkills.join(', ')} />
-                                <InfoRow icon={Cpu} label="Bildiği Programlar" value={currentUser.volunteerInfo.programs.join(', ')} />
-                                <InfoRow icon={Languages} label="Diller" value={currentUser.volunteerInfo.languages.join(', ')} />
-                                <InfoRow icon={FileText} label="Lisanslar" value={currentUser.volunteerInfo.licenses.join(', ')} verified />
-                                <InfoRow icon={FileText} label="Belgeler" value={currentUser.volunteerInfo.documents.join(', ')} verified />
-                                <InfoRow icon={Plane} label="Yurtiçi Seyahat" value={currentUser.volunteerInfo.travelInfo.domesticObstacle ? 'Engelli' : 'Engel Yok'} />
-                                <InfoRow icon={Plane} label="Yurtdışı Seyahat" value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? 'Engelli' : 'Engel Yok'} />
-                                <InfoRow icon={Landmark} label="Vizeler" value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
-                                <InfoRow icon={School} label="Eğitim" value={currentUser.volunteerInfo.education.map((e: { school?: string }) => e.school || '').join('; ')} verified />
-                                <InfoRow icon={Briefcase} label="Çalıştığınız Sektör" value={currentUser.volunteerInfo.sector} />
-                                <InfoRow icon={Briefcase} label="Çalıştığınız Pozisyon" value={currentUser.volunteerInfo.profession} />
-                                 <InfoRow icon={HeartPulse} label="Acil Durumda Uygunluk" value={currentUser.volunteerInfo.emergency.available ? 'Uygun' : 'Uygun Değil'} />
-                                <InfoRow icon={HeartPulse} label="Kronik Hastalık" value={currentUser.volunteerInfo.emergency.hasChronicIllness ? 'Var' : 'Yok'} />
-                                <InfoRow icon={HeartPulse} label="Düzenli İlaç" value={currentUser.volunteerInfo.emergency.usesRegularMedication ? 'Var' : 'Yok'} />
-                                <InfoRow icon={HeartPulse} label="Fiziksel Kısıt" value={currentUser.volunteerInfo.emergency.hasPhysicalLimitation ? 'Var' : 'Yok'} />
-                                <InfoRow icon={UserIcon} label="Acil Durum Kişisi 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.name} />
-                                <InfoRow icon={Phone} label="Acil Durum Tel 1" value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
+                                <InfoRow icon={Sparkles} label={t('profilePage.fieldInterests')} value={currentUser.volunteerInfo.interests.join(', ')} />
+                                <InfoRow icon={Brain} label={t('profilePage.fieldSkills')} value={currentUser.volunteerInfo.skills.join(', ')} />
+                                <InfoRow icon={Users} label={t('profilePage.fieldDailySkills')} value={currentUser.volunteerInfo.dailySkills.join(', ')} />
+                                <InfoRow icon={Cpu} label={t('profilePage.fieldPrograms')} value={currentUser.volunteerInfo.programs.join(', ')} />
+                                <InfoRow icon={Languages} label={t('profilePage.fieldLanguages')} value={currentUser.volunteerInfo.languages.join(', ')} />
+                                <InfoRow icon={FileText} label={t('profilePage.fieldLicenses')} value={currentUser.volunteerInfo.licenses.join(', ')} verified />
+                                <InfoRow icon={FileText} label={t('profilePage.fieldDocuments')} value={currentUser.volunteerInfo.documents.join(', ')} verified />
+                                <InfoRow icon={Plane} label={t('profilePage.fieldDomestic')} value={currentUser.volunteerInfo.travelInfo.domesticObstacle ? t('profilePage.hasObstacle') : t('profilePage.noObstacle')} />
+                                <InfoRow icon={Plane} label={t('profilePage.fieldInternational')} value={currentUser.volunteerInfo.travelInfo.internationalObstacle ? t('profilePage.hasObstacle') : t('profilePage.noObstacle')} />
+                                <InfoRow icon={Landmark} label={t('profilePage.fieldVisas')} value={currentUser.volunteerInfo.travelInfo.visas.join(', ')} />
+                                <InfoRow icon={School} label={t('profilePage.fieldEducation')} value={currentUser.volunteerInfo.education.map((e: { school?: string }) => e.school || '').join('; ')} verified />
+                                <InfoRow icon={Briefcase} label={t('profilePage.fieldSector')} value={currentUser.volunteerInfo.sector} />
+                                <InfoRow icon={Briefcase} label={t('profilePage.fieldProfession')} value={currentUser.volunteerInfo.profession} />
+                                 <InfoRow icon={HeartPulse} label={t('profilePage.fieldEmergencyAvail')} value={currentUser.volunteerInfo.emergency.available ? t('profilePage.yesAvailable') : t('profilePage.notAvailable')} />
+                                <InfoRow icon={HeartPulse} label={t('profilePage.fieldChronic')} value={currentUser.volunteerInfo.emergency.hasChronicIllness ? t('profilePage.yes') : t('profilePage.no')} />
+                                <InfoRow icon={HeartPulse} label={t('profilePage.fieldRegularMed')} value={currentUser.volunteerInfo.emergency.usesRegularMedication ? t('profilePage.yes') : t('profilePage.no')} />
+                                <InfoRow icon={HeartPulse} label={t('profilePage.fieldPhysical')} value={currentUser.volunteerInfo.emergency.hasPhysicalLimitation ? t('profilePage.yes') : t('profilePage.no')} />
+                                <InfoRow icon={UserIcon} label={t('profilePage.fieldEmergencyContact')} value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.name} />
+                                <InfoRow icon={Phone} label={t('profilePage.fieldEmergencyPhone')} value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
                             </CardContent>
                         </Card>
                         <Card>
-                             <CardHeader><CardTitle className='text-lg'>Geçmiş Gönüllülükler</CardTitle></CardHeader>
+                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.pastVolunteering')}</CardTitle></CardHeader>
                              <CardContent className='space-y-4'>
                                  {pastVolunteering.length > 0 ? (
                                      pastVolunteering.map(item => <VolunteerCard key={item.id} item={item} />)
@@ -837,27 +839,29 @@ export default function ProfilePage() {
                                      <EmptyState
                                          icon={Handshake}
                                          title={t('emptyStates.noVolunteeringDone')}
-                                         description="Etkinliklere katılınca burada görünecek."
-                                         action={{ label: 'Etkinlikleri keşfet', href: '/events' }}
+                                         description={t('profilePage.noPastVolunteeringDesc')}
+                                         action={{ label: t('profilePage.exploreEvents'), href: '/events' }}
                                      />
                                  )}
-                                 <Button variant="secondary" className='w-full'>Tüm Gönüllülük Geçmişini Gör</Button>
+                                 <Button variant="secondary" className='w-full'>{t('profilePage.seeAllPastVolunteering')}</Button>
                              </CardContent>
                         </Card>
                     </TabsContent>
 
                     <TabsContent value="connections" className="p-4 space-y-4">
                         <Card className="rounded-2xl">
-                            <CardHeader><CardTitle className='text-lg'>Bağlantılarım</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className='text-lg'>{t('profilePage.myConnections')}</CardTitle></CardHeader>
                             <CardContent>
                                 <Accordion type="multiple" className="w-full">
                                     <ConnectionSection
                                         value="donor-ngos"
-                                        title="Bağışçı Olduğun STK'lar"
+                                        title={t('profilePage.donorNgosTitle')}
                                         count={supportedNgoIds.length}
                                         editHref="/settings/ngo-selection"
-                                        editLabel="Bağışçı olduğun STK'ları düzenle"
-                                        emptyText="Henüz bağış yaptığın STK yok."
+                                        editLabel={t('profilePage.editDonorNgos')}
+                                        emptyText={t('profilePage.noDonorNgos')}
+                                        orgCountSuffix={t('profilePage.orgCountSuffix')}
+                                        editVerb={t('profilePage.editLabel')}
                                         icon={HandCoins}
                                         items={(supportedNgosData || []).map(ngo => ({
                                             id: ngo.id,
@@ -868,11 +872,13 @@ export default function ProfilePage() {
                                     />
                                     <ConnectionSection
                                         value="volunteer-ngos"
-                                        title="Gönüllü Olduğun STK'lar"
+                                        title={t('profilePage.volunteerNgosTitle')}
                                         count={volunteerNgoIds.length}
                                         editHref="/settings/volunteer-ngo-selection"
-                                        editLabel="Gönüllü olduğun STK'ları düzenle"
-                                        emptyText="Henüz gönüllü olduğun STK yok."
+                                        editLabel={t('profilePage.editVolunteerNgos')}
+                                        emptyText={t('profilePage.noVolunteerNgos')}
+                                        orgCountSuffix={t('profilePage.orgCountSuffix')}
+                                        editVerb={t('profilePage.editLabel')}
                                         icon={HeartHandshake}
                                         items={(volunteerNgosData || []).map(ngo => ({
                                             id: ngo.id,
@@ -883,11 +889,13 @@ export default function ProfilePage() {
                                     />
                                     <ConnectionSection
                                         value="brands"
-                                        title="Takip Ettiğin Markalar"
+                                        title={t('profilePage.followedBrandsTitle')}
                                         count={followedBrandIds.length}
                                         editHref="/settings/brands"
-                                        editLabel="Takip ettiğin markaları düzenle"
-                                        emptyText="Henüz takip ettiğin marka yok."
+                                        editLabel={t('profilePage.editFollowedBrands')}
+                                        emptyText={t('profilePage.noFollowedBrands')}
+                                        orgCountSuffix={t('profilePage.orgCountSuffix')}
+                                        editVerb={t('profilePage.editLabel')}
                                         icon={Store}
                                         items={(followedBrandsData || []).map(brand => ({
                                             id: brand.id,
@@ -898,11 +906,13 @@ export default function ProfilePage() {
                                     />
                                     <ConnectionSection
                                         value="clubs"
-                                        title="Üye Olduğun Kulüpler"
+                                        title={t('profilePage.joinedClubsTitle')}
                                         count={joinedClubIds.length}
                                         editHref="/clubs"
-                                        editLabel="Üye olduğun kulüpleri düzenle"
-                                        emptyText="Henüz üye olduğun kulüp yok."
+                                        editLabel={t('profilePage.editJoinedClubs')}
+                                        emptyText={t('profilePage.noJoinedClubs')}
+                                        orgCountSuffix={t('profilePage.orgCountSuffix')}
+                                        editVerb={t('profilePage.editLabel')}
                                         icon={School}
                                         items={(joinedClubsData || []).map(club => ({
                                             id: club.id,
@@ -918,7 +928,7 @@ export default function ProfilePage() {
 
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
                         <Card>
-                            <CardHeader><CardTitle className='text-lg'>Kazanılan & Devam Eden Rozetler</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className='text-lg'>{t('profilePage.earnedBadgesTitle')}</CardTitle></CardHeader>
                             <CardContent>
                                 {visibleBadges.length > 0 ? (
                                     <div className="grid grid-cols-3 gap-4">
@@ -928,18 +938,18 @@ export default function ProfilePage() {
                                     <EmptyState
                                         icon={Award}
                                         title={t('emptyStates.noBadges')}
-                                        description="Bağış ve gönüllülük yaparak rozet kazanmaya başla."
+                                        description={t('profilePage.noBadgesDesc')}
                                     />
                                 )}
                             </CardContent>
                              <CardFooter className='pt-4'>
                                  <Button asChild variant="secondary" className='w-full'>
-                                     <Link href="/my-badges">Tüm Rozetleri ve Sertifikaları Gör</Link>
+                                     <Link href="/my-badges">{t('profilePage.seeAllBadges')}</Link>
                                 </Button>
                             </CardFooter>
                         </Card>
                          <Card>
-                            <CardHeader><CardTitle className='text-lg'>Sertifikalarım</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className='text-lg'>{t('profilePage.myCertificates')}</CardTitle></CardHeader>
                             <CardContent>
                             {certificates.length > 0 ? (
                                 <div className="space-y-4">
@@ -950,17 +960,17 @@ export default function ProfilePage() {
                                             <p className='font-semibold mt-1'>{cert.title}</p>
                                         </div>
                                         <div className='absolute top-2 right-2 flex gap-1 bg-background/50 backdrop-blur-sm rounded-md p-1'>
-                                            <Button aria-label="Sertifikayı görüntüle" size="icon" variant="ghost" className="h-7 w-7" onClick={() => setViewingCert({ id: cert.id, title: cert.title, organization: cert.organization, date: cert.date })}><Eye className="h-4 w-4"/></Button>
-                                            <Button aria-label="Sertifikayı indir" size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}><Download className="h-4 w-4"/></Button>
-                                            <Button aria-label="Sertifikayı paylaş" size="icon" variant="ghost" className="h-7 w-7" onClick={async () => {
-                                                const shareData = { title: cert.title, text: `${cert.title} — ${cert.organization} (${cert.date}) sertifikamı hangel üzerinden paylaşıyorum.`, url: typeof window !== 'undefined' ? window.location.href : '' };
+                                            <Button aria-label={t('profilePage.certViewAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={() => setViewingCert({ id: cert.id, title: cert.title, organization: cert.organization, date: cert.date })}><Eye className="h-4 w-4"/></Button>
+                                            <Button aria-label={t('profilePage.certDownloadAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}><Download className="h-4 w-4"/></Button>
+                                            <Button aria-label={t('profilePage.certShareAria')} size="icon" variant="ghost" className="h-7 w-7" onClick={async () => {
+                                                const shareData = { title: cert.title, text: `${cert.title} — ${cert.organization} (${cert.date})${t('profilePage.shareTextSuffix')}`, url: typeof window !== 'undefined' ? window.location.href : '' };
                                                 if (typeof navigator !== 'undefined' && navigator.share) {
                                                     try { await navigator.share(shareData); } catch { /* user cancelled */ }
                                                 } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
                                                     await navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-                                                    toast({ title: 'Kopyalandı', description: 'Paylaşım metni panoya kopyalandı.' });
+                                                    toast({ title: t('profilePage.copied'), description: t('profilePage.copiedDesc') });
                                                 } else {
-                                                    toast({ title: 'Paylaşım', description: 'Tarayıcınız paylaşımı desteklemiyor.' });
+                                                    toast({ title: t('profilePage.shareTitle'), description: t('profilePage.shareUnsupported') });
                                                 }
                                             }}><Share2 className="h-4 w-4"/></Button>
                                         </div>
@@ -971,7 +981,7 @@ export default function ProfilePage() {
                                 <EmptyState
                                     icon={FileText}
                                     title={t('emptyStates.noCertificates')}
-                                    description="Tamamladığın programlardan kazanacağın sertifikalar burada listelenir."
+                                    description={t('profilePage.noCertificatesDesc')}
                                 />
                             )}
                             </CardContent>
@@ -982,13 +992,13 @@ export default function ProfilePage() {
                     <TabsContent value="story" className="p-4 space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Etki Hikayem</CardTitle>
-                                <CardDescription>Bağışların, gönüllülüğün ve topluluğunla ilgili 5 farklı hikaye tasarımı oluştur, indir, paylaş.</CardDescription>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> {t('profilePage.impactStoryTitle')}</CardTitle>
+                                <CardDescription>{t('profilePage.impactStoryDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {!showStoryDesigns ? (
                                     <Button onClick={() => setShowStoryDesigns(true)} className="w-full">
-                                        <Sparkles className="mr-2 h-4 w-4" /> Hikayeni Oluştur
+                                        <Sparkles className="mr-2 h-4 w-4" /> {t('profilePage.createStoryBtn')}
                                     </Button>
                                 ) : (
                                     <>
@@ -1003,7 +1013,7 @@ export default function ProfilePage() {
                                             return (
                                                 <UnifiedStoryCard
                                                     data={{
-                                                        name: currentUser.name || 'Hangel Üyesi',
+                                                        name: currentUser.name || t('profilePage.anonMember'),
                                                         avatarUrl: currentUser.avatarUrl,
                                                         impactScore: Number(currentUser.impactScore) || 0,
                                                         totalDonation: Number(currentUser.stats.totalDonation) || 0,
@@ -1020,7 +1030,7 @@ export default function ProfilePage() {
                                             );
                                         })()}
                                         <Button variant="outline" onClick={() => setShowStoryDesigns(false)} className="w-full">
-                                            Hikayeyi Gizle
+                                            {t('profilePage.hideStoryBtn')}
                                         </Button>
                                     </>
                                 )}
@@ -1029,12 +1039,12 @@ export default function ProfilePage() {
 
                         <Card>
                             <CardHeader>
-                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> Yapay Zeka Anlatımı</CardTitle>
-                                <CardDescription>Verilerinden ilham alarak kişisel bir hikaye metni oluştur.</CardDescription>
+                                <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> {t('profilePage.aiNarrationTitle')}</CardTitle>
+                                <CardDescription>{t('profilePage.aiNarrationDesc')}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Button onClick={handleGenerateStories} disabled={isStoryLoading} variant="secondary" className="w-full">
-                                    {isStoryLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Anlatım hazırlanıyor...</> : 'Anlatımlı Hikaye Üret (AI)'}
+                                    {isStoryLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('profilePage.aiNarrationLoading')}</> : t('profilePage.aiNarrationBtn')}
                                 </Button>
                                 {stories.length > 0 && (
                                     <div className="space-y-4">
@@ -1048,8 +1058,8 @@ export default function ProfilePage() {
                             </CardContent>
                             <CardFooter className="text-xs text-muted-foreground">
                                 <div className="w-full flex justify-between items-center">
-                                    <p>Yapay zeka tarafından oluşturulmuştur.</p>
-                                    <Link href="/support/ai-assistants" className="hover:underline text-primary">Nasıl çalışır?</Link>
+                                    <p>{t('profilePage.aiFooter')}</p>
+                                    <Link href="/support/ai-assistants" className="hover:underline text-primary">{t('profilePage.aiHowItWorks')}</Link>
                                 </div>
                             </CardFooter>
                         </Card>
@@ -1060,28 +1070,28 @@ export default function ProfilePage() {
             <Dialog open={!!viewingCert} onOpenChange={(open) => { if (!open) setViewingCert(null); }}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Sertifika Önizleme</DialogTitle>
+                        <DialogTitle>{t('profilePage.certPreviewTitle')}</DialogTitle>
                         <DialogDescription>{viewingCert?.organization}</DialogDescription>
                     </DialogHeader>
                     {viewingCert && (
                         <div className="rounded-lg border-2 border-primary/30 p-6 bg-gradient-to-br from-primary/5 to-background text-center space-y-3">
                             <Award className="h-12 w-12 text-primary mx-auto" />
-                            <p className="text-xs uppercase tracking-widest text-muted-foreground">Sertifika</p>
+                            <p className="text-xs uppercase tracking-widest text-muted-foreground">{t('profilePage.certWord')}</p>
                             <p className="text-lg font-bold leading-tight">{viewingCert.title}</p>
-                            <p className="text-sm text-muted-foreground">Sahibi: <span className="font-medium text-foreground">{currentUser.name || '-'}</span></p>
+                            <p className="text-sm text-muted-foreground">{t('profilePage.certOwner')} <span className="font-medium text-foreground">{currentUser.name || '-'}</span></p>
                             <p className="text-sm text-muted-foreground">{viewingCert.organization}</p>
-                            <p className="text-xs text-muted-foreground">Tarih: {viewingCert.date}</p>
+                            <p className="text-xs text-muted-foreground">{t('profilePage.certDate')} {viewingCert.date}</p>
                         </div>
                     )}
                     <DialogFooter className="gap-2 sm:gap-2">
-                        <Button variant="secondary" onClick={() => setViewingCert(null)}>Kapat</Button>
+                        <Button variant="secondary" onClick={() => setViewingCert(null)}>{t('profilePage.close')}</Button>
                         {viewingCert && (
                             <>
                                 <Button variant="outline" onClick={() => handleDownloadCertificateImage({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
-                                    <Download className="mr-2 h-4 w-4" /> JPG İndir
+                                    <Download className="mr-2 h-4 w-4" /> {t('profilePage.jpgDownload')}
                                 </Button>
                                 <Button onClick={() => handleDownloadCertificate({ title: viewingCert.title, organization: viewingCert.organization, date: viewingCert.date })}>
-                                    <Download className="mr-2 h-4 w-4" /> PDF İndir
+                                    <Download className="mr-2 h-4 w-4" /> {t('profilePage.pdfDownload')}
                                 </Button>
                             </>
                         )}

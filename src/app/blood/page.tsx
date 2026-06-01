@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface BloodCall {
   id: string;
@@ -31,6 +32,7 @@ interface BloodCall {
 
 export default function BloodFeedPage() {
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
   const [calls, setCalls] = useState<BloodCall[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,14 +58,15 @@ export default function BloodFeedPage() {
           headers: { authorization: `Bearer ${idToken}` },
         });
         const data = await res.json();
-        if (!res.ok || !data.ok) throw new Error(data.message || 'Yüklenemedi');
+        if (!res.ok || !data.ok) throw new Error(data.message || t('bloodPage.loadError'));
         setCalls(data.calls ?? []);
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Bilinmeyen hata');
+        setError(e instanceof Error ? e.message : t('bloodPage.unknownError'));
       } finally {
         setLoading(false);
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   if (isUserLoading || loading) {
@@ -73,11 +76,11 @@ export default function BloodFeedPage() {
   if (needsLocation) {
     return (
       <div className="p-4 space-y-4">
-        <h1 className="text-2xl font-black tracking-tight">Yakın Kan İlanları</h1>
+        <h1 className="text-2xl font-black tracking-tight">{t('bloodPage.title')}</h1>
         <Card><CardContent className="pt-6 text-center text-sm">
           <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground mb-3">Yakın ilanları gösterebilmek için konum izni gerekli.</p>
-          <Button onClick={() => location.reload()}>İzin Ver</Button>
+          <p className="text-muted-foreground mb-3">{t('bloodPage.locationNeeded')}</p>
+          <Button onClick={() => location.reload()}>{t('bloodPage.grantLocation')}</Button>
         </CardContent></Card>
       </div>
     );
@@ -86,9 +89,9 @@ export default function BloodFeedPage() {
   return (
     <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-2xl font-black tracking-tight">Yakın Kan İlanları</h1>
+        <h1 className="text-2xl font-black tracking-tight">{t('bloodPage.title')}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {calls.length > 0 ? `${calls.length} aktif çağrı bulundu.` : 'Şu an aktif çağrı yok.'}
+          {calls.length > 0 ? `${calls.length} ${t('bloodPage.activeCountSuffix')}` : t('bloodPage.noneActive')}
         </p>
       </div>
 
@@ -99,7 +102,7 @@ export default function BloodFeedPage() {
       {calls.length === 0 && !error && (
         <Card><CardContent className="pt-6 text-center text-sm text-muted-foreground">
           <Droplet className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-          <p>Yakınınızda aktif kan ilanı yok. Bu iyi haber. 🩷</p>
+          <p>{t('bloodPage.noneNearby')}</p>
         </CardContent></Card>
       )}
 
@@ -107,9 +110,9 @@ export default function BloodFeedPage() {
         <Card key={call.id} className={call.urgency === 'critical' ? 'border-2 border-red-500' : ''}>
           <CardContent className="pt-4 space-y-2">
             <div className="flex items-start justify-between gap-2">
-              <h2 className="font-bold text-base leading-snug">{call.title || 'Kan ihtiyacı'}</h2>
+              <h2 className="font-bold text-base leading-snug">{call.title || t('bloodPage.defaultTitle')}</h2>
               {call.urgency === 'critical' && (
-                <Badge variant="destructive" className="shrink-0 gap-1"><AlertCircle className="h-3 w-3" /> Acil</Badge>
+                <Badge variant="destructive" className="shrink-0 gap-1"><AlertCircle className="h-3 w-3" /> {t('bloodPage.criticalBadge')}</Badge>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5 text-xs">
@@ -129,14 +132,14 @@ export default function BloodFeedPage() {
               )}
               {call.donationType && (
                 <Badge variant="secondary" className="text-[10px]">
-                  {call.donationType === 'platelet' ? 'Trombosit' : call.donationType === 'stem-cell' ? 'Kök Hücre' : 'Kan'}
+                  {call.donationType === 'platelet' ? t('bloodPage.donationPlatelet') : call.donationType === 'stem-cell' ? t('bloodPage.donationStemCell') : t('bloodPage.donationBlood')}
                 </Badge>
               )}
             </div>
             {call.contactPhone && (
               <Button asChild size="sm" className="w-full mt-2">
                 <Link href={`tel:${call.contactPhone}`}>
-                  <Phone className="h-4 w-4 mr-2" /> Hastane ile İletişim
+                  <Phone className="h-4 w-4 mr-2" /> {t('bloodPage.contactHospital')}
                 </Link>
               </Button>
             )}

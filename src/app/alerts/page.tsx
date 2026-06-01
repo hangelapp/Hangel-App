@@ -16,6 +16,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface DisasterAlert {
   id: string;
@@ -28,13 +29,6 @@ interface DisasterAlert {
   distanceKm?: number;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  earthquake: 'Deprem',
-  flood: 'Sel',
-  fire: 'Yangın',
-  storm: 'Fırtına',
-  other: 'Diğer',
-};
 const TYPE_EMOJI: Record<string, string> = {
   earthquake: '🌍',
   flood: '🌊',
@@ -45,6 +39,14 @@ const TYPE_EMOJI: Record<string, string> = {
 
 export default function DisasterAlertsPage() {
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
+  const TYPE_LABELS: Record<string, string> = {
+    earthquake: t('alertsPage.typeEarthquake'),
+    flood: t('alertsPage.typeFlood'),
+    fire: t('alertsPage.typeFire'),
+    storm: t('alertsPage.typeStorm'),
+    other: t('alertsPage.typeOther'),
+  };
   const [alerts, setAlerts] = useState<DisasterAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [needsLocation, setNeedsLocation] = useState(false);
@@ -88,11 +90,11 @@ export default function DisasterAlertsPage() {
   if (optedOut) {
     return (
       <div className="p-4 space-y-4">
-        <h1 className="text-2xl font-black tracking-tight">Afet Çağrıları</h1>
+        <h1 className="text-2xl font-black tracking-tight">{t('alertsPage.title')}</h1>
         <Card><CardContent className="pt-6 text-center text-sm space-y-3">
           <Siren className="h-10 w-10 text-muted-foreground mx-auto" />
-          <p className="text-muted-foreground">Afet bildirimleri kapalı. Ayarlardan açabilirsin.</p>
-          <Button asChild><Link href="/settings/emergency"><SettingsIcon className="h-4 w-4 mr-2" />Ayarlar</Link></Button>
+          <p className="text-muted-foreground">{t('alertsPage.optedOut')}</p>
+          <Button asChild><Link href="/settings/emergency"><SettingsIcon className="h-4 w-4 mr-2" />{t('alertsPage.settingsCta')}</Link></Button>
         </CardContent></Card>
       </div>
     );
@@ -101,11 +103,11 @@ export default function DisasterAlertsPage() {
   if (needsLocation) {
     return (
       <div className="p-4 space-y-4">
-        <h1 className="text-2xl font-black tracking-tight">Afet Çağrıları</h1>
+        <h1 className="text-2xl font-black tracking-tight">{t('alertsPage.title')}</h1>
         <Card><CardContent className="pt-6 text-center text-sm">
           <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-muted-foreground mb-3">Yakın çağrıları gösterebilmek için konum izni gerekli.</p>
-          <Button onClick={() => location.reload()}>İzin Ver</Button>
+          <p className="text-muted-foreground mb-3">{t('alertsPage.locationNeeded')}</p>
+          <Button onClick={() => location.reload()}>{t('alertsPage.grantLocation')}</Button>
         </CardContent></Card>
       </div>
     );
@@ -114,16 +116,16 @@ export default function DisasterAlertsPage() {
   return (
     <div className="p-4 space-y-4">
       <div>
-        <h1 className="text-2xl font-black tracking-tight">Afet Çağrıları</h1>
+        <h1 className="text-2xl font-black tracking-tight">{t('alertsPage.title')}</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          {alerts.length > 0 ? `${alerts.length} aktif uyarı.` : 'Şu an aktif uyarı yok.'}
+          {alerts.length > 0 ? `${alerts.length} ${t('alertsPage.activeCountSuffix')}` : t('alertsPage.noneActive')}
         </p>
       </div>
 
       {alerts.length === 0 && (
         <Card><CardContent className="pt-6 text-center text-sm text-muted-foreground">
           <Siren className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-          <p>Yakınınızda aktif afet uyarısı yok.</p>
+          <p>{t('alertsPage.noneNearby')}</p>
         </CardContent></Card>
       )}
 
@@ -136,18 +138,18 @@ export default function DisasterAlertsPage() {
                 {alert.title || TYPE_LABELS[alert.type ?? 'other']}
               </h2>
               {alert.severity === 'critical' && (
-                <Badge variant="destructive" className="shrink-0 gap-1"><AlertCircle className="h-3 w-3" /> Kritik</Badge>
+                <Badge variant="destructive" className="shrink-0 gap-1"><AlertCircle className="h-3 w-3" /> {t('alertsPage.criticalBadge')}</Badge>
               )}
             </div>
             {alert.description && <p className="text-sm leading-snug">{alert.description}</p>}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {alert.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{alert.location}</span>}
-              {alert.distanceKm != null && <span>{alert.distanceKm.toFixed(0)} km uzakta</span>}
+              {alert.distanceKm != null && <span>{alert.distanceKm.toFixed(0)} {t('alertsPage.distanceSuffix')}</span>}
             </div>
             {alert.helpUrl && (
               <Button asChild size="sm" variant="outline" className="w-full mt-2">
                 <a href={alert.helpUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-2" /> Yardım Bilgileri
+                  <ExternalLink className="h-4 w-4 mr-2" /> {t('alertsPage.helpInfo')}
                 </a>
               </Button>
             )}

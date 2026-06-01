@@ -176,17 +176,17 @@ function EventsPageContent() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex-1">
-                    <ListFilter className="mr-2 h-4 w-4" /> Sırala
+                    <ListFilter className="mr-2 h-4 w-4" /> {t('eventsPageExtra.sortLabel')}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setSortKey('date')}>Tarihe Göre (En Yeni)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortKey('name')}>İsme Göre (A-Z)</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortKey('capacity')}>Kalan Kapasite</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortKey('date')}>{t('eventsPageExtra.sortByDate')}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortKey('name')}>{t('eventsPageExtra.sortByName')}</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortKey('capacity')}>{t('eventsPageExtra.sortByCapacity')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="outline" onClick={() => setIsMapOpen(true)}>
-            <Map className="mr-2 h-4 w-4" /> Harita
+            <Map className="mr-2 h-4 w-4" /> {t('eventsPageExtra.mapLabel')}
           </Button>
         </div>
       </div>
@@ -195,12 +195,12 @@ function EventsPageContent() {
       <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="text-lg font-black">Filtrele</SheetTitle>
+            <SheetTitle className="text-lg font-black">{t('eventsPageExtra.filterSheetTitle')}</SheetTitle>
           </SheetHeader>
           <div className="space-y-6 py-6">
             {/* Event Type Filter */}
             <div className="space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Etkinlik Türü</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.typeLabel')}</Label>
               <div className="flex flex-wrap gap-2">
                 {eventTypes.map(type => (
                   <Button
@@ -213,31 +213,35 @@ function EventsPageContent() {
                     {type}
                   </Button>
                 ))}
-                {eventTypes.length === 0 && <p className="text-xs text-muted-foreground">Henüz etkinlik verisi yok</p>}
+                {eventTypes.length === 0 && <p className="text-xs text-muted-foreground">{t('eventsPageExtra.noEventDataYet')}</p>}
               </div>
             </div>
 
             {/* Location Type Filter */}
             <div className="space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Konum</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.locationLabel')}</Label>
               <div className="flex gap-2">
-                {([['all', 'Tümü', MapPin], ['Fiziksel', 'Fiziksel', MapPinned], ['Online', 'Online', Globe]] as const).map(([value, label, Icon]) => (
-                  <Button
-                    key={value}
-                    variant={locationTypeFilter === value ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1 rounded-full text-xs h-9"
-                    onClick={() => setLocationTypeFilter(value)}
-                  >
-                    <Icon className="mr-1.5 h-3.5 w-3.5" /> {label}
-                  </Button>
-                ))}
+                {(['all', 'Fiziksel', 'Online'] as const).map(value => {
+                  const label = value === 'all' ? t('eventsPageExtra.locAll') : value === 'Fiziksel' ? t('eventsPageExtra.locPhysical') : t('eventsPageExtra.locOnline');
+                  const Icon = value === 'all' ? MapPin : value === 'Fiziksel' ? MapPinned : Globe;
+                  return (
+                    <Button
+                      key={value}
+                      variant={locationTypeFilter === value ? 'default' : 'outline'}
+                      size="sm"
+                      className="flex-1 rounded-full text-xs h-9"
+                      onClick={() => setLocationTypeFilter(value)}
+                    >
+                      <Icon className="mr-1.5 h-3.5 w-3.5" /> {label}
+                    </Button>
+                  );
+                })}
               </div>
             </div>
 
             {/* City Filter */}
             <div className="space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Şehir</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.cityLabel')}</Label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {cities.map(city => (
                   <div key={city} className="flex items-center gap-2">
@@ -251,16 +255,16 @@ function EventsPageContent() {
                     <label htmlFor={`city-${city}`} className="text-sm cursor-pointer">{city}</label>
                   </div>
                 ))}
-                {cities.length === 0 && <p className="text-xs text-muted-foreground">Henüz etkinlik verisi yok</p>}
+                {cities.length === 0 && <p className="text-xs text-muted-foreground">{t('eventsPageExtra.noEventDataYet')}</p>}
               </div>
             </div>
 
             {/* Date Range Filter */}
             <div className="space-y-3">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tarih Aralığı</Label>
+              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.dateRangeLabel')}</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Başlangıç</label>
+                  <label className="text-xs text-muted-foreground">{t('eventsPageExtra.dateFromLabel')}</label>
                   <Input
                     type="date"
                     value={dateFrom}
@@ -269,7 +273,7 @@ function EventsPageContent() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Bitiş</label>
+                  <label className="text-xs text-muted-foreground">{t('eventsPageExtra.dateToLabel')}</label>
                   <Input
                     type="date"
                     value={dateTo}
@@ -282,10 +286,10 @@ function EventsPageContent() {
           </div>
           <SheetFooter className="flex-row gap-2 pt-4 border-t">
             <Button variant="outline" className="flex-1" onClick={clearFilters}>
-              <X className="mr-2 h-4 w-4" /> Temizle
+              <X className="mr-2 h-4 w-4" /> {t('eventsPageExtra.clearLabel')}
             </Button>
             <Button className="flex-1" onClick={() => setIsFilterOpen(false)}>
-              Uygula ({sortedEvents.length})
+              {t('eventsPageExtra.applyPrefix')} ({sortedEvents.length})
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -298,15 +302,15 @@ function EventsPageContent() {
           <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center">
             <CalendarIcon className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-bold">Henüz etkinlik yok</h3>
+          <h3 className="text-lg font-bold">{t('eventsPageExtra.noEventsTitle')}</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm)
-              ? 'Bu filtrelere uygun etkinlik bulunamadı. Filtreleri değiştir veya temizle.'
-              : 'Yakında etkinlikler eklenecek. STK\'lar yeni etkinlik açtığında burada görünür.'}
+              ? t('eventsPageExtra.noEventsFiltered')
+              : t('eventsPageExtra.noEventsDefault')}
           </p>
           {(typeFilter.length > 0 || cityFilter.length > 0 || searchTerm) && (
             <Button variant="outline" onClick={() => { setTypeFilter([]); setCityFilter([]); setSearchTerm(''); }}>
-              Filtreleri Temizle
+              {t('eventsPageExtra.clearFiltersBtn')}
             </Button>
           )}
         </div>
@@ -339,18 +343,18 @@ function EventsPageContent() {
                     </div>
                     <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
                         <MapPin className='h-3 w-3 text-primary'/>
-                        <span className="truncate">{event.location?.type === 'Online' ? 'Online' : event.location?.city}</span>
+                        <span className="truncate">{event.location?.type === 'Online' ? t('eventsPageExtra.onlineLabel') : event.location?.city}</span>
                     </div>
                   </div>
                 </CardContent>
                 <CardFooter className="px-3 pb-3 pt-0 mt-auto flex flex-col gap-2">
                   <div className="flex justify-between items-center w-full">
                     <div className="space-y-0">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Kapasite</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{t('eventsPageExtra.capacityLabel')}</p>
                         <p className="text-[10px] font-black">{event.capacity?.current}/{event.capacity?.max}</p>
                     </div>
                     <Button size="sm" className="rounded-lg font-black text-[10px] h-7 px-3 pointer-events-none">
-                      İncele
+                      {t('eventsPageExtra.inspectBtn')}
                     </Button>
                   </div>
                 </CardFooter>
@@ -363,9 +367,14 @@ function EventsPageContent() {
   );
 }
 
+function EventsLoadingFallback() {
+    const { t } = useTranslation();
+    return <div>{t('eventsPageExtra.loadingFallback')}</div>;
+}
+
 export default function EventsPageWrapper() {
     return (
-        <Suspense fallback={<div>Yükleniyor...</div>}>
+        <Suspense fallback={<EventsLoadingFallback />}>
             <EventsPageContent />
         </Suspense>
     )

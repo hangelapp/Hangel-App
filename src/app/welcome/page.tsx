@@ -108,7 +108,7 @@ export default function WelcomePage() {
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
       router.replace((firstWithPath && INTENT_PATHS[firstWithPath]) ?? '/market');
     } catch (e) {
-      toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : t('welcomeExtra.unknownError') });
     } finally {
       setSaving(false);
     }
@@ -163,7 +163,7 @@ export default function WelcomePage() {
             <p className="text-xs text-muted-foreground">{t('welcome.intentSubtitle')}</p>
             {/* Seçim sayacı */}
             {selected.size > 0 && (
-              <p className="text-[11px] text-primary font-bold">{selected.size} seçim</p>
+              <p className="text-[11px] text-primary font-bold">{selected.size} {t('welcomeExtra.selectionSuffix')}</p>
             )}
           </div>
           <div className="space-y-2">

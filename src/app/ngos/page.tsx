@@ -197,31 +197,31 @@ export default function NgosPage() {
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Sırala">
+                        <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label={t('ngosPageExtra.sortLabel')}>
                             <ArrowDownUp className="h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Sırala</DropdownMenuLabel>
+                        <DropdownMenuLabel>{t('ngosPageExtra.sortLabel')}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => setSortKey('random')}>Karışık (varsayılan)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('viewCount')}>En Çok Görüntülenen</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('transparency-desc')}>En Yüksek Şeffaflık</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('donors-desc')}>En Çok Bağışçı</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('volunteers-desc')}>En Çok Gönüllü</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('name-asc')}>İsme Göre (A-Z)</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setSortKey('name-desc')}>İsme Göre (Z-A)</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('random')}>{t('ngosPageExtra.sortRandom')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('viewCount')}>{t('ngosPageExtra.sortViewCount')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('transparency-desc')}>{t('ngosPageExtra.sortTransparency')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('donors-desc')}>{t('ngosPageExtra.sortDonors')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('volunteers-desc')}>{t('ngosPageExtra.sortVolunteers')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('name-asc')}>{t('ngosPageExtra.sortNameAsc')}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setSortKey('name-desc')}>{t('ngosPageExtra.sortNameDesc')}</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
             <Tabs defaultValue="Tümü" className="w-full" onValueChange={(value) => setTypeFilter(value as NgoType)}>
                 <TabsList className="grid w-full grid-cols-5">
-                    <TabsTrigger value="Tümü">Tümü</TabsTrigger>
-                    <TabsTrigger value="Dernek">Dernek</TabsTrigger>
-                    <TabsTrigger value="Vakıf">Vakıf</TabsTrigger>
-                    <TabsTrigger value="Spor Kulübü">Spor</TabsTrigger>
-                    <TabsTrigger value="Özel İzinli">Özel</TabsTrigger>
+                    <TabsTrigger value="Tümü">{t('ngosPageExtra.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="Dernek">{t('ngosPageExtra.tabAssociation')}</TabsTrigger>
+                    <TabsTrigger value="Vakıf">{t('ngosPageExtra.tabFoundation')}</TabsTrigger>
+                    <TabsTrigger value="Spor Kulübü">{t('ngosPageExtra.tabSportClub')}</TabsTrigger>
+                    <TabsTrigger value="Özel İzinli">{t('ngosPageExtra.tabSpecialPermit')}</TabsTrigger>
                 </TabsList>
             </Tabs>
 
