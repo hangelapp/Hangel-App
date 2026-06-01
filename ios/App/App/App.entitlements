@@ -25,7 +25,5 @@
 	<array>
 		<string>group.com.hangel.app.shared</string>
 	</array>
-	<key>com.apple.developer.usernotifications.time-sensitive</key>
-	<true/>
 </dict>
 </plist>
