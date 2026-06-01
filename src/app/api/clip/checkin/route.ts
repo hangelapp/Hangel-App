@@ -84,15 +84,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // Body
-  let body: ClipCheckinBody | null = null;
+  let body: ClipCheckinBody;
   try {
     body = (await req.json()) as ClipCheckinBody;
   } catch {
     return NextResponse.json({ errorCode: 'INVALID_JSON' }, { status: 400 });
   }
 
-  const eventId = body?.eventId?.trim();
-  const source = body?.source;
+  const eventId = body.eventId?.trim();
+  const source = body.source;
   if (!eventId) {
     return NextResponse.json({ errorCode: 'MISSING_EVENT_ID' }, { status: 400 });
   }
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // NFC için tag doğrulama (qr'da App Clip URL kanıtı yeterli)
     if (source === 'nfc') {
-      if (!body?.tagId) {
+      if (!body.tagId) {
         return NextResponse.json({ errorCode: 'MISSING_TAG_ID' }, { status: 400 });
       }
       const tagSnap = await db.collection(COLLECTIONS.nfcTags).doc(body.tagId).get();

@@ -149,8 +149,8 @@ export default function CareerPage() {
               {career.completedTasks.slice(0, 10).map(task => (
                 <Card key={task.id} className="border-none shadow-sm bg-background rounded-xl">
                   <CardContent className="p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                      <Briefcase className="h-4 w-4 text-emerald-600" />
+                    <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 dark:bg-emerald-900/30">
+                      <Briefcase className="h-4 w-4 text-emerald-600 dark:text-emerald-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">{task.title}</p>
@@ -184,8 +184,8 @@ export default function CareerPage() {
               {career.trainings.map((tr, i) => (
                 <Card key={i} className="border-none shadow-sm bg-background rounded-xl">
                   <CardContent className="p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-                      <BookOpen className="h-4 w-4 text-violet-600" />
+                    <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 dark:bg-violet-900/30">
+                      <BookOpen className="h-4 w-4 text-violet-600 dark:text-violet-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">{tr.title}</p>
@@ -214,8 +214,8 @@ export default function CareerPage() {
               {career.certificates.map(c => (
                 <Card key={c.id} className="border-none shadow-sm bg-background rounded-xl">
                   <CardContent className="p-3 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                      <Award className="h-4 w-4 text-amber-600" />
+                    <div className="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center shrink-0 dark:bg-amber-900/30">
+                      <Award className="h-4 w-4 text-amber-600 dark:text-amber-300" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold truncate">{c.title}</p>

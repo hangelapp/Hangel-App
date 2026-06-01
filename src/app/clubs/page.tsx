@@ -454,22 +454,22 @@ export default function ClubsPage() {
 
       {/* Login bilgi mesajı */}
       {locationFilter === 'country' && !userCountry && authUser && (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 dark:text-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
           {t('clubsPage.hintCountry')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {locationFilter === 'city' && !userCity && authUser && (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 dark:text-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
           {t('clubsPage.hintCity')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {locationFilter === 'school' && authUser && userSchools.length === 0 && (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 dark:text-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
           {t('clubsPage.hintSchool')} → <Link href="/settings/profile" className="underline font-bold">{t('clubsPage.hintEditProfile')}</Link>
         </div>
       )}
       {!authUser && (locationFilter === 'country' || locationFilter === 'city' || locationFilter === 'school') && (
-        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-3 dark:text-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
           {t('clubsPage.hintLogin')}
         </div>
       )}

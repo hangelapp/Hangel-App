@@ -111,7 +111,7 @@ workflows:
           done
           # Fresh cert + profile oluştur — 3 target için: App, Watch, AppClip
           # Tüm bundle ID'ler aynı Distribution cert'i paylaşır, sadece profile'lar farklı
-          for BID in "$BUNDLE_ID" "com.hangel.ios.app.watchapp" "com.hangel.ios.app.Clip"; do
+          for BID in "$BUNDLE_ID" "com.hangel.ios.app.watchapp" "com.hangel.ios.app.Clip" "com.hangel.ios.app.LiveActivities"; do
             echo "Fetching signing files for: $BID"
             app-store-connect fetch-signing-files "$BID" \
               --type IOS_APP_STORE \

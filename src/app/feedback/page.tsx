@@ -339,7 +339,7 @@ export default function FeedbackPage() {
                     </p>
 
                     {!authUser && (
-                        <Card className="border-amber-300 bg-amber-50/50">
+                        <Card className="border-amber-300 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-900/20">
                             <CardContent className="p-4 text-center text-sm">
                                 {t('feedbackPage.loginToFill')}
                             </CardContent>
@@ -353,7 +353,7 @@ export default function FeedbackPage() {
                         const answeredCount = surveyModule.questions.filter(q => sa[q.id] > 0).length;
                         const progress = Math.round((answeredCount / surveyModule.questions.length) * 100);
                         return (
-                            <Card key={surveyModule.key} className={cn(isDone && 'border-emerald-300 bg-emerald-50/30')}>
+                            <Card key={surveyModule.key} className={cn(isDone && 'border-emerald-300 bg-emerald-50/30 dark:border-emerald-800 dark:bg-emerald-900/20')}>
                                 <button
                                     type="button"
                                     onClick={() => setOpenSurvey(isOpen ? null : surveyModule.key)}

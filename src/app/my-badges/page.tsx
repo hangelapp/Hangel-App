@@ -23,11 +23,11 @@ import { isNativeApp } from '@/lib/capacitor';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 
 const levelColors: Record<BadgeLevel, { bg: string; text: string }> = {
-  'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800' },
-  'Bronz':  { bg: 'bg-amber-700/20',   text: 'text-amber-800' },
-  'Gümüş':  { bg: 'bg-gray-400/20',    text: 'text-gray-500' },
-  'Altın':  { bg: 'bg-yellow-500/20',  text: 'text-yellow-600' },
-  'Platin': { bg: 'bg-cyan-300/20',    text: 'text-cyan-500' },
+  'Bakır':  { bg: 'bg-orange-700/15',  text: 'text-orange-800 dark:text-orange-300' },
+  'Bronz':  { bg: 'bg-amber-700/20',   text: 'text-amber-800 dark:text-amber-300' },
+  'Gümüş':  { bg: 'bg-gray-400/20',    text: 'text-gray-500 dark:text-gray-300' },
+  'Altın':  { bg: 'bg-yellow-500/20',  text: 'text-yellow-600 dark:text-yellow-300' },
+  'Platin': { bg: 'bg-cyan-300/20',    text: 'text-cyan-500 dark:text-cyan-300' },
 };
 
 const LEVEL_ORDER: BadgeLevel[] = ['Bakır', 'Bronz', 'Gümüş', 'Altın', 'Platin'];
