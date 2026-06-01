@@ -90,30 +90,36 @@ workflows:
           # oluşturulamazsa 409 hatası. Filtre type-agnostic: hem IOS_DISTRIBUTION
           # hem DISTRIBUTION (yeni Apple managed type) yakalanır.
           echo "=== Listing existing certs (raw) ==="
-          app-store-connect list-certificates --json | head -100 || echo "list-certificates failed"
+          # Codemagic CLI v0.49+ prepends a banner ("Found N Signing
+          # Certificates...") + deprecation notice before the JSON array,
+          # which breaks jq. sed strips everything until the first [ or {.
+          # Also: list-certificates is deprecated in favor of `certificates list`.
+          app-store-connect certificates list --json 2>/dev/null | sed -n '/^[[{]/,$p' | head -200 || echo "list failed"
           echo "=== Extracting DISTRIBUTION cert IDs ==="
-          # Codemagic CLI list-certificates --json returns flat array of cert objects.
-          # Each has 'id' field at root, attributes.certificateType nested.
-          CERTS=$(app-store-connect list-certificates --json | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' || echo "")
-          echo "DISTRIBUTION cert IDs: $CERTS"
+          CERTS=$(app-store-connect certificates list --json 2>/dev/null \
+            | sed -n '/^[[{]/,$p' \
+            | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' \
+            2>/dev/null || echo "")
+          echo "DISTRIBUTION cert IDs: [$CERTS]"
           for cert_id in $CERTS; do
             echo "Revoking stale distribution cert: $cert_id"
-            app-store-connect delete-certificate "$cert_id" || true
+            app-store-connect certificates delete "$cert_id" 2>/dev/null || \
+              app-store-connect delete-certificate "$cert_id" 2>/dev/null || true
           done
-          # Eski provisioning profile'ları sil. Apple Console'da capability
-          # eklenince mevcut profile'lar eski entitlement listesiyle kalır,
-          # fetch-signing-files --create onları yeniden oluşturmaz.
+          # Eski provisioning profile'ları sil — capability değişiklikleri
+          # mevcut profile'lara otomatik yansımıyor.
           PROFILES=$(app-store-connect list-profiles --json 2>/dev/null \
-            | jq -r ".[] | select(.attributes.bundleId.identifier == \"$BUNDLE_ID\") | .id" 2>/dev/null || echo "")
+            | sed -n '/^[[{]/,$p' \
+            | jq -r '.[] | .id' 2>/dev/null || echo "")
           for profile_id in $PROFILES; do
             echo "Deleting stale provisioning profile: $profile_id"
-            app-store-connect delete-profile "$profile_id" || true
+            app-store-connect delete-profile "$profile_id" 2>/dev/null || true
           done
           # Her bundle için fetch-signing-files (--create).
           # Aynı --certificate-key kullanıldığında Codemagic CLI cert'i ilk
           # bundle'da oluşturur, sonraki bundle'larda re-use eder.
-          # profiles create kullanmıyoruz — o capability'leri inherit etmiyor,
-          # build "requires App Groups feature" gibi hatalarla patlıyordu.
+          # HangelLiveActivities target'ı widgets bundle kullanıyor (Apple
+          # 'LiveActivities' adını reserved kabul ettiği için).
           for BID in "com.hangel.ios.app" "com.hangel.ios.app.watchapp" "com.hangel.ios.app.Clip" "com.hangel.ios.app.widgets"; do
             echo "=== fetch-signing-files: $BID ==="
             app-store-connect fetch-signing-files "$BID" \
