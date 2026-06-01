@@ -119,3 +119,26 @@ export {
     onEventCountdownUpdate,
     onDonationCampaignUpdate,
 } from './live-activity';
+
+// Blood emergency match algorithm — emergencyBloodCalls/{id} onCreate
+// fan-out: writes notification docs for the first 50 matching donors.
+// See ./blood-match.ts
+export { onEmergencyBloodCallCreated } from './blood-match';
+
+// Daily 09:00 Europe/Istanbul reminder for volunteer tasks starting within
+// the next 24 hours. See ./volunteer-cron.ts
+export { dailyVolunteerTaskReminder } from './volunteer-cron';
+
+// Weekly Monday 09:00 Europe/Istanbul user digest (donations + nearby events
+// + active blood calls) via SendGrid. See ./email-digest.ts
+export { weeklyEmailDigest } from './email-digest';
+
+// Event SMS reminder ~1 hour before start via Twilio. Runs every 15 min.
+// See ./sms-reminder.ts
+export { eventOneHourSmsReminder } from './sms-reminder';
+
+// Disaster alert geofence trigger — disasterAlerts/{id} onCreate.
+// Tarama: users.lastKnownLocation ↔ alert.coordinates 50km radius (Haversine).
+// Eşleşenler için notifications doc yaz; onNotificationCreated push gönderir.
+// See ./disaster-geofence.ts
+export { onDisasterAlertCreated } from './disaster-geofence';
