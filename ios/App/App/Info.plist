@@ -37,6 +37,8 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Etkinlik check-in, gönüllülük görev doğrulama ve STK masası bağış sayfalarını açmak için NFC etiketlerini okutmamız gerekiyor.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Kayıt olduğunuz gönüllülük etkinliklerini ve kan bağışı randevularınızı takviminize otomatik eklemek için izin gerekiyor.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Profil fotoğrafı çekmek ve etkinlik / proje görselleri paylaşmak için kameraya erişim gerekiyor.</string>
 	<key>NSContactsUsageDescription</key>
@@ -47,20 +49,30 @@
 	<string>Etkinliğe katıldığınızda otomatik check-out yapabilmemiz için arka planda konum gerekir. Bu izin sadece kayıtlı olduğunuz etkinliğin konumu için kullanılır.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Yakınınızdaki etkinlikleri, STK'ları ve gönüllü ihtiyaçlarını gösterebilmek için konum bilginize ihtiyaç var.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Etkinlik ve proje videoları çekerken ses kaydı için mikrofona erişim gerekiyor.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Kan bağışı sonrası 56 günlük bekleme süresi, periyodik gönüllülük hedefleri ve etkinlik hazırlıkları için hatırlatıcı oluşturmamız gerekiyor.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Reklamları size kişiselleştirmek ve hangel deneyimini iyileştirmek için izniniz gerekir. Reddederseniz hangel tüm özellikleriyle çalışmaya devam eder.</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>org.hangel.tasks.geofence-sync</string>
+		<string>org.hangel.tasks.feed-refresh</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
 		<string>location</string>
+		<string>processing</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
