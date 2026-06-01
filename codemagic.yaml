@@ -95,7 +95,16 @@ workflows:
             echo "Revoking stale distribution cert: $cert_id"
             app-store-connect delete-certificate "$cert_id" || true
           done
-          # Fresh cert + profile oluştur
+          # Eski provisioning profile'ları sil. Apple Console'da capability
+          # eklenince mevcut profile'lar eski entitlement listesiyle kalır,
+          # fetch-signing-files --create onları yeniden oluşturmaz.
+          PROFILES=$(app-store-connect list-profiles --json 2>/dev/null \
+            | jq -r ".[] | select(.attributes.bundleId.identifier == \"$BUNDLE_ID\") | .id" 2>/dev/null || echo "")
+          for profile_id in $PROFILES; do
+            echo "Deleting stale provisioning profile: $profile_id"
+            app-store-connect delete-profile "$profile_id" || true
+          done
+          # Fresh cert + profile oluştur (tüm aktif capability'leri kapsar)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --certificate-key=@file:"$CERT_KEY_PATH" \
