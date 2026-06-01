@@ -1,12 +1,17 @@
 // @vitest-environment jsdom
 /**
- * Snapshot tests for `<Sheet>` — bottom / right side variants.
+ * Semantic tests for `<Sheet>` — bottom / right side variants.
  *
  * Glass sheet: kenar yönlü modal panel. Bottom side ek olarak `glass-handle`
  * grip element render eder (iOS 26 sheet anatomy).
+ *
+ * NOTE: We assert semantic structure (role, accessible text, handle presence)
+ * instead of snapshotting because Radix Dialog Portal injects non-deterministic
+ * `data-state` and `aria-describedby` ids that break snapshot equality
+ * across runs.
  */
 import { describe, expect, it } from 'vitest';
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import {
   Sheet,
   SheetTrigger,
@@ -17,7 +22,7 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
-describe('<Sheet> snapshot', () => {
+describe('<Sheet>', () => {
   it('renders bottom-side open state with glass handle grip', () => {
     const { baseElement } = render(
       <Sheet open>
@@ -29,10 +34,14 @@ describe('<Sheet> snapshot', () => {
         </SheetContent>
       </Sheet>,
     );
-    expect(baseElement).toMatchSnapshot();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Bottom Sheet')).toBeInTheDocument();
+    expect(screen.getByText('Bottom-side variant with handle grip')).toBeInTheDocument();
+    // Glass handle grip is rendered only for the bottom variant.
+    expect(baseElement.querySelector('.glass-handle')).not.toBeNull();
   });
 
-  it('renders right-side open state (default)', () => {
+  it('renders right-side open state (default) without handle', () => {
     const { baseElement } = render(
       <Sheet open>
         <SheetContent side="right">
@@ -43,17 +52,22 @@ describe('<Sheet> snapshot', () => {
         </SheetContent>
       </Sheet>,
     );
-    expect(baseElement).toMatchSnapshot();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Right Sheet')).toBeInTheDocument();
+    expect(screen.getByText('Right-side variant, no handle')).toBeInTheDocument();
+    // Non-bottom variants must not render the grip handle.
+    expect(baseElement.querySelector('.glass-handle')).toBeNull();
   });
 
   it('renders only the trigger when sheet is closed', () => {
-    const { container } = render(
+    render(
       <Sheet>
         <SheetTrigger asChild>
           <Button>Open Sheet</Button>
         </SheetTrigger>
       </Sheet>,
     );
-    expect(container.firstChild).toMatchSnapshot();
+    expect(screen.getByRole('button', { name: 'Open Sheet' })).toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

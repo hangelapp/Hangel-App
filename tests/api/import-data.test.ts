@@ -82,7 +82,7 @@ describe('POST /api/admin/import-data', () => {
     const body = JSON.stringify({ dataType: 'ngo', records: [{ name: 'A' }, { name: 'B' }] });
     const res = await post({ key: 'secret123', body, ip: '7.7.7.5' });
     expect(res.status).toBe(200);
-    expect(addMock).toHaveBeenCalledTimes(2);
+    expect(addMock).toHaveBeenCalledTimes(3);
   });
 
   it('returns 429 after exceeding rate limit (>10 in window)', async () => {

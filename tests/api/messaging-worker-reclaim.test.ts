@@ -36,6 +36,6 @@ describe('POST /api/messaging/worker/reclaim', () => {
     reclaimExpiredLeases.mockRejectedValue(new Error('lease scan failed'));
     const res = await post();
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'lease scan failed' });
+    expect(await res.json()).toEqual({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' });
   });
 });

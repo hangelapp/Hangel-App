@@ -51,6 +51,6 @@ describe('POST /api/messaging/worker/run', () => {
     workerTick.mockRejectedValue(new Error('queue down'));
     const res = await post({ 'x-messaging-key': 'secretkey' });
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'queue down' });
+    expect(await res.json()).toEqual({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' });
   });
 });

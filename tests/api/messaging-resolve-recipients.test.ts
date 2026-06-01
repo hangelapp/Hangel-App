@@ -55,6 +55,6 @@ describe('POST /api/messaging/resolve-recipients', () => {
     resolveRecipients.mockRejectedValue(new Error('boom'));
     const res = await post({ channel: 'sms', useCase: 'transactional' });
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'boom' });
+    expect(await res.json()).toEqual({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' });
   });
 });

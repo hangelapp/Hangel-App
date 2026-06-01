@@ -36,6 +36,6 @@ describe('POST /api/messaging/worker/schedule', () => {
     promoteScheduledCampaigns.mockRejectedValue(new Error('schedule scan failed'));
     const res = await post();
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: 'schedule scan failed' });
+    expect(await res.json()).toEqual({ errorCode: 'INTERNAL_ERROR', error: 'Internal server error' });
   });
 });
