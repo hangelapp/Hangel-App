@@ -21,6 +21,7 @@ import { brandSectorOptions } from '@/app/login/selection/_components/shared';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -105,7 +106,9 @@ interface EntityDoc {
 
 const FileUpload = ({ label, currentFile, required, accept, uploading, onSelect }: {
     label: string; currentFile?: string; required?: boolean; accept?: string; uploading?: boolean; onSelect: (file: File) => void;
-}) => (
+}) => {
+    const { t } = useTranslation();
+    return (
     <div className="space-y-2">
         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
         <div className="flex items-center gap-4 p-4 border rounded-2xl bg-muted/20 border-dashed border-primary/20">
@@ -119,21 +122,22 @@ const FileUpload = ({ label, currentFile, required, accept, uploading, onSelect 
             <Button asChild variant="outline" size="sm" disabled={uploading} className="rounded-xl border-primary/20 hover:bg-primary/5">
                 <label htmlFor={`${label}-upload`} className="cursor-pointer font-bold">
                     {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    {currentFile ? 'Değiştir' : 'Belge Seç'}
+                    {currentFile ? t('ngo_admin_manage_profile.fileBtnChange') : t('ngo_admin_manage_profile.fileBtnSelect')}
                 </label>
             </Button>
             <div className="flex-1 min-w-0">
                 {currentFile ? (
                     <a href={currentFile} target="_blank" rel="noopener noreferrer" className="text-[11px] text-green-700 font-bold inline-flex items-center gap-1 hover:underline">
-                        <FileText className="h-3.5 w-3.5" /> Yüklendi — Görüntüle
+                        <FileText className="h-3.5 w-3.5" /> {t('ngo_admin_manage_profile.fileViewLink')}
                     </a>
                 ) : (
-                    <p className="text-[10px] text-muted-foreground leading-tight">{required ? 'Zorunlu — henüz yüklenmedi.' : 'Henüz dosya yüklenmedi.'}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{required ? t('ngo_admin_manage_profile.fileRequiredEmpty') : t('ngo_admin_manage_profile.fileOptionalEmpty')}</p>
                 )}
             </div>
         </div>
     </div>
-)
+    );
+};
 
 const CheckboxGroup = ({ title, options, values, onChange }: { title: string, options: string[], values: string[], onChange: (next: string[]) => void }) => {
     return (
@@ -165,6 +169,7 @@ const CheckboxGroup = ({ title, options, values, onChange }: { title: string, op
 export default function ManageProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: authUser } = useUser();
 
@@ -293,11 +298,11 @@ export default function ManageProfilePage() {
 
   const handleFileUpload = async (file: File, kind: 'logo' | 'activityCertificate' | 'charter') => {
       if (!activeEntity) {
-        toast({ variant: 'destructive', title: 'Varlık bulunamadı' });
+        toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastEntityNotFound') });
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 10MB yükleyebilirsiniz.' });
+        toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastFileTooLarge'), description: t('ngo_admin_manage_profile.toastFileTooLargeDesc') });
         return;
       }
       setUploadingKind(kind);
@@ -314,7 +319,7 @@ export default function ManageProfilePage() {
         else setCharterFile(url);
 
         // Super-admin "Arşiv" sekmesine kurum evrakı olarak ayna (best-effort).
-        const docType = kind === 'logo' ? 'Logo' : kind === 'activityCertificate' ? 'Faaliyet Belgesi' : (ngoType === 'vakif' ? 'Vakıf Senedi' : 'Tüzük');
+        const docType = kind === 'logo' ? t('ngo_admin_manage_profile.docTypeLogo') : kind === 'activityCertificate' ? t('ngo_admin_manage_profile.docTypeActivity') : (ngoType === 'vakif' ? t('ngo_admin_manage_profile.docTypeVakif') : t('ngo_admin_manage_profile.docTypeCharter'));
         try {
           const token = await authUser?.getIdToken();
           if (token) {
@@ -326,10 +331,10 @@ export default function ManageProfilePage() {
           }
         } catch { /* arşiv aynası best-effort */ }
 
-        toast({ title: 'Belge yüklendi', description: 'Kaydet butonuna basınca profilinize işlenir.' });
+        toast({ title: t('ngo_admin_manage_profile.toastUploaded'), description: t('ngo_admin_manage_profile.toastUploadedDesc') });
       } catch (err) {
         const e2 = err as { message?: string };
-        toast({ variant: 'destructive', title: 'Yükleme hatası', description: e2?.message?.slice(0, 160) || 'Bilinmeyen hata.' });
+        toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastUploadFailed'), description: e2?.message?.slice(0, 160) || t('ngo_admin_manage_profile.toastUploadFailedDesc') });
       } finally {
         setUploadingKind(null);
       }
@@ -338,7 +343,7 @@ export default function ManageProfilePage() {
   const handleSave = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!activeEntity) {
-        toast({ variant: 'destructive', title: 'Varlık bulunamadı', description: 'Yönettiğiniz bir kuruluş bulunamadı.' });
+        toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastEntityNotFound'), description: t('ngo_admin_manage_profile.toastEntityNotFoundDesc') });
         return;
       }
       setIsSaving(true);
@@ -368,16 +373,16 @@ export default function ManageProfilePage() {
           'files.charter': charterFile ?? null,
           updatedAt: new Date().toISOString(),
         });
-        toast({ title: 'Değişiklikler Kaydedildi', description: 'Kuruluş profiliniz başarıyla güncellendi.' });
+        toast({ title: t('ngo_admin_manage_profile.toastSaved'), description: t('ngo_admin_manage_profile.toastSavedDesc') });
       } catch (err) {
         console.error('Profile save failed:', err);
         const e2 = err as { code?: string; message?: string };
         const description = e2?.code === 'permission-denied'
-          ? 'Bu kuruluşu güncelleme yetkiniz yok. Hesabınız bu kuruluşun yöneticisi olarak atanmamış olabilir; lütfen Hangel ekibi ile iletişime geçin.'
+          ? t('ngo_admin_manage_profile.toastPermDenied')
           : e2?.code === 'not-found'
-            ? 'Kuruluş kaydı bulunamadı. Sayfayı yenileyip tekrar deneyin.'
-            : (e2?.message || 'Beklenmeyen bir hata oluştu. Lütfen bağlantınızı kontrol edip tekrar deneyin.');
-        toast({ variant: 'destructive', title: 'Kaydedilemedi', description });
+            ? t('ngo_admin_manage_profile.toastNotFound')
+            : (e2?.message || t('ngo_admin_manage_profile.toastGenericErr'));
+        toast({ variant: 'destructive', title: t('ngo_admin_manage_profile.toastSaveFailed'), description });
       } finally {
         setIsSaving(false);
       }
@@ -403,20 +408,20 @@ export default function ManageProfilePage() {
     return (
       <div className="space-y-6 p-4 max-w-4xl mx-auto">
         <div className="flex items-center gap-2">
-          <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+          <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_manage_profile.backAria')}>
             <ArrowLeft className="h-6 w-6" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold font-headline">Profili Güncelle</h1>
-            <p className="text-muted-foreground text-sm">Yönettiğiniz varlığı buradan düzenleyin.</p>
+            <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_manage_profile.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('ngo_admin_manage_profile.subtitle')}</p>
           </div>
         </div>
         <Card>
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center text-center">
               <ShieldAlert className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-muted-foreground font-medium">Yönetici olduğunuz bir varlık bulunamadı.</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">Profil oluşturulduktan sonra bilgileri buradan güncelleyebilirsiniz.</p>
+              <p className="text-muted-foreground font-medium">{t('ngo_admin_manage_profile.notFoundMsg')}</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">{t('ngo_admin_manage_profile.notFoundDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -428,73 +433,73 @@ export default function ManageProfilePage() {
     <div className="p-4 space-y-6 animate-in fade-in-0 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_manage_profile.backAria')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">{entityPossessive(activeEntity.kind, activeSubType)} Profilini Güncelle</h1>
+                <h1 className="text-2xl font-bold font-headline">{entityPossessive(activeEntity.kind, activeSubType)} {t('ngo_admin_manage_profile.headerSuffix')}</h1>
                 <p className="text-muted-foreground text-sm">
                   <span className="font-semibold text-foreground">{name || activeEntity.data.name || activeEntity.data.id}</span>
                   <span className="mx-2 text-muted-foreground/40">·</span>
-                  Platformda görünen bilgilerinizi yönetin.
+                  {t('ngo_admin_manage_profile.headerSub')}
                 </p>
             </div>
           </div>
           <Button onClick={handleSave} size="sm" className="shadow-lg" disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Kaydet
+            {t('ngo_admin_manage_profile.btnSave')}
           </Button>
       </div>
 
       <form onSubmit={handleSave} className="space-y-8">
         <Card className="rounded-[2rem] overflow-hidden shadow-sm">
           <CardHeader className="bg-muted/30 border-b">
-            <CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" /> Kuruluş Bilgileri</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.orgInfoTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
             {activeEntity.kind === 'ngo' && (
               <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Türü</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelOrgType')}</Label>
                   <Select required onValueChange={setNgoType} value={ngoType}>
                       <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                          <SelectItem value="dernek">Dernek</SelectItem>
-                          <SelectItem value="vakif">Vakıf</SelectItem>
-                          <SelectItem value="spor-kulubu">Spor Kulübü</SelectItem>
-                          <SelectItem value="ozel-izinli">Özel İzinli</SelectItem>
+                          <SelectItem value="dernek">{t('ngo_admin_manage_profile.orgTypeDernek')}</SelectItem>
+                          <SelectItem value="vakif">{t('ngo_admin_manage_profile.orgTypeVakif')}</SelectItem>
+                          <SelectItem value="spor-kulubu">{t('ngo_admin_manage_profile.orgTypeSporKulubu')}</SelectItem>
+                          <SelectItem value="ozel-izinli">{t('ngo_admin_manage_profile.orgTypeOzelIzinli')}</SelectItem>
                       </SelectContent>
                   </Select>
               </div>
             )}
 
             <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Tam Adı</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelFullName')}</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-xl" required />
             </div>
 
             <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kısa Link (Profil Bağlantısı)</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelShortLink')}</Label>
                 <div className="flex items-center rounded-xl border h-11 overflow-hidden focus-within:ring-2 focus-within:ring-ring">
                     <span className="px-3 text-sm text-muted-foreground bg-muted/50 h-full flex items-center select-none whitespace-nowrap">hangel.org.tr/s/</span>
                     <Input
                         value={shortLink}
                         onChange={(e) => setShortLink(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-'))}
-                        placeholder="kurumunuz"
+                        placeholder={t('ngo_admin_manage_profile.shortLinkPlaceholder')}
                         className="h-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
                     />
                 </div>
-                <p className="text-[10px] text-muted-foreground ml-1">Kurumunuzun kısa profil bağlantısı — QR koduna da işlenir. Kaydet&apos;e basın.</p>
+                <p className="text-[10px] text-muted-foreground ml-1">{t('ngo_admin_manage_profile.shortLinkHelp')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Kısa Adı</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelShortName')}</Label>
                     <Input value={shortName} onChange={(e) => setShortName(e.target.value)} className="h-11 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Yılı</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelFoundedYear')}</Label>
                     <Select value={foundedYear} onValueChange={setFoundedYear}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Yıl seçiniz..." /></SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.foundedYearPlaceholder')} /></SelectTrigger>
                         <SelectContent>
                             {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
                         </SelectContent>
@@ -504,38 +509,38 @@ export default function ManageProfilePage() {
 
             {activeEntity.kind === 'brand' && (
               <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Faaliyet Sektörü</Label>
-                  <Input value={sector} onChange={(e) => setSector(e.target.value)} placeholder="Örn: Gıda, Teknoloji, Tekstil, Finans..." className="h-11 rounded-xl" />
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelSector')}</Label>
+                  <Input value={sector} onChange={(e) => setSector(e.target.value)} placeholder={t('ngo_admin_manage_profile.sectorPlaceholder')} className="h-11 rounded-xl" />
               </div>
             )}
 
             {activeEntity.kind === 'club' && (
               <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Üniversite / Bağlı Olunan Okul</Label>
-                  <Input value={university} onChange={(e) => setUniversity(e.target.value)} placeholder="Üniversite / okul adı" className="h-11 rounded-xl" />
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelUniversity')}</Label>
+                  <Input value={university} onChange={(e) => setUniversity(e.target.value)} placeholder={t('ngo_admin_manage_profile.universityPlaceholder')} className="h-11 rounded-xl" />
               </div>
             )}
 
             {activeEntity.kind === 'ngo' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İktisadi İşletme Durumu</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelEconomicEntity')}</Label>
                       <Select value={economicEntity} onValueChange={setEconomicEntity}>
                           <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
-                              <SelectItem value="var">Var</SelectItem>
-                              <SelectItem value="yok">Yok</SelectItem>
+                              <SelectItem value="var">{t('ngo_admin_manage_profile.economicVar')}</SelectItem>
+                              <SelectItem value="yok">{t('ngo_admin_manage_profile.economicYok')}</SelectItem>
                           </SelectContent>
                       </Select>
                   </div>
                   <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kullanım Amacı</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelPurpose')}</Label>
                       <Select value={purpose} onValueChange={setPurpose}>
                           <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
-                              <SelectItem value="donation">Bağış toplamak</SelectItem>
-                              <SelectItem value="volunteer">Gönüllülük ilanı vermek</SelectItem>
-                              <SelectItem value="both">Bağış ve Gönüllülük ilanı vermek</SelectItem>
+                              <SelectItem value="donation">{t('ngo_admin_manage_profile.purposeDonation')}</SelectItem>
+                              <SelectItem value="volunteer">{t('ngo_admin_manage_profile.purposeVolunteer')}</SelectItem>
+                              <SelectItem value="both">{t('ngo_admin_manage_profile.purposeBoth')}</SelectItem>
                           </SelectContent>
                       </Select>
                   </div>
@@ -544,9 +549,9 @@ export default function ManageProfilePage() {
 
             {ngoType === 'spor-kulubu' && (
                 <div className="space-y-4 p-4 border rounded-[2rem] bg-primary/5 border-primary/10 animate-in slide-in-from-top-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Kayıt Olduğunuz Federasyonlar</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">{t('ngo_admin_manage_profile.labelFederations')}</Label>
                     <Select onValueChange={toggleFed}>
-                        <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm"><SelectValue placeholder="Federasyon ekleyin..." /></SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl bg-white shadow-sm"><SelectValue placeholder={t('ngo_admin_manage_profile.federationPlaceholder')} /></SelectTrigger>
                         <SelectContent className="max-h-60">
                             {sportsFederations.map(fed => <SelectItem key={fed} value={fed}>{fed}</SelectItem>)}
                         </SelectContent>
@@ -564,7 +569,7 @@ export default function ManageProfilePage() {
 
             <div className="space-y-2">
                 <div className="flex justify-between items-end mb-1">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kuruluş Hakkında</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelAbout')}</Label>
                     <span className={cn("text-[10px] font-bold text-muted-foreground")}>{aboutText.length} / {ABOUT_MAX_LENGTH}</span>
                 </div>
                 <Textarea
@@ -572,7 +577,7 @@ export default function ManageProfilePage() {
                     onChange={(e) => setAboutText(e.target.value)}
                     maxLength={ABOUT_MAX_LENGTH}
                     className="min-h-[120px] rounded-2xl"
-                    placeholder="Kuruluşunuzu kısaca tanıtın..."
+                    placeholder={t('ngo_admin_manage_profile.aboutPlaceholder')}
                 />
             </div>
           </CardContent>
@@ -581,50 +586,50 @@ export default function ManageProfilePage() {
         {activeEntity.kind === 'brand' && (
           <Card className="rounded-[2rem] overflow-hidden shadow-sm">
             <CardHeader className="bg-muted/30 border-b">
-              <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Bağış Kategorileri & Oranları</CardTitle>
-              <CardDescription>Hangi kategoride ne oranda sosyal etkiye katkı yapılacağını belirleyin.</CardDescription>
+              <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.donationCatsTitle')}</CardTitle>
+              <CardDescription>{t('ngo_admin_manage_profile.donationCatsDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 pt-6">
               {donationCategories.map((dc, idx) => (
                 <div key={dc.id} className="flex items-end gap-2">
                   <div className="flex-1 space-y-1 min-w-0">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kategori</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCategory')}</Label>
                     <Select value={dc.category} onValueChange={(v) => setDonationCategories(prev => prev.map((p, i) => i === idx ? { ...p, category: v } : p))}>
-                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Kategori seç..." /></SelectTrigger>
+                      <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.categoryPlaceholder')} /></SelectTrigger>
                       <SelectContent className="max-h-60">{brandSectorOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="w-24 space-y-1 shrink-0">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Oran (%)</Label>
-                    <Input type="number" min="0" max="100" value={dc.rate} onChange={(e) => setDonationCategories(prev => prev.map((p, i) => i === idx ? { ...p, rate: e.target.value } : p))} placeholder="%" className="h-11 rounded-xl" />
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRate')}</Label>
+                    <Input type="number" min="0" max="100" value={dc.rate} onChange={(e) => setDonationCategories(prev => prev.map((p, i) => i === idx ? { ...p, rate: e.target.value } : p))} placeholder={t('ngo_admin_manage_profile.ratePlaceholder')} className="h-11 rounded-xl" />
                   </div>
-                  <Button type="button" variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-destructive" disabled={donationCategories.length <= 1} onClick={() => setDonationCategories(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev)} aria-label="Kaldır">
+                  <Button type="button" variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-destructive" disabled={donationCategories.length <= 1} onClick={() => setDonationCategories(prev => prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev)} aria-label={t('ngo_admin_manage_profile.removeAria')}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
               <Button type="button" variant="outline" size="sm" onClick={() => setDonationCategories(prev => [...prev, { id: String(Date.now()), category: '', rate: '' }])}>
-                + Kategori Ekle
+                {t('ngo_admin_manage_profile.btnAddCategory')}
               </Button>
             </CardContent>
           </Card>
         )}
 
         <div className="grid grid-cols-1 gap-8">
-            <CheckboxGroup title="Faydalanıcılar" options={allBeneficiaries} values={beneficiaries} onChange={setBeneficiaries} />
-            <CheckboxGroup title="Sürdürülebilir Kalkınma Hedefleri (SKA)" options={allSdgs} values={sdgs} onChange={setSdgs} />
-            <CheckboxGroup title="Üye Olunan Platformlar" options={allMemberships} values={memberships} onChange={setMemberships} />
+            <CheckboxGroup title={t('ngo_admin_manage_profile.beneficiariesTitle')} options={allBeneficiaries} values={beneficiaries} onChange={setBeneficiaries} />
+            <CheckboxGroup title={t('ngo_admin_manage_profile.sdgsTitle')} options={allSdgs} values={sdgs} onChange={setSdgs} />
+            <CheckboxGroup title={t('ngo_admin_manage_profile.membershipsTitle')} options={allMemberships} values={memberships} onChange={setMemberships} />
         </div>
 
         <Card className="rounded-[2rem] overflow-hidden shadow-sm">
             <CardHeader className="bg-muted/30 border-b">
-                <CardTitle className="text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> Adres & İletişim</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2"><MapPin className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.addressContactTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ülke</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCountry')}</Label>
                     <Select value={country || 'Türkiye'} onValueChange={(val) => { setCountry(val); setCity(''); setDistrict(''); setNeighborhood(''); }}>
-                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Türkiye" /></SelectTrigger>
+                        <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.countryPlaceholder')} /></SelectTrigger>
                         <SelectContent>
                             {countryOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
@@ -633,18 +638,18 @@ export default function ManageProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İl</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCity')}</Label>
                         {isTurkey ? (
                             <Select value={city} onValueChange={(val) => { setCity(val); setDistrict(''); setNeighborhood(''); }}>
-                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="İl seçin..." /></SelectTrigger>
+                                <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('ngo_admin_manage_profile.cityPlaceholderTr')} /></SelectTrigger>
                                 <SelectContent className="max-h-72">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={city} onChange={e => setCity(e.target.value)} placeholder="Şehir / Eyalet" className="h-11 rounded-xl" />
+                            <Input value={city} onChange={e => setCity(e.target.value)} placeholder={t('ngo_admin_manage_profile.cityPlaceholderOther')} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">İlçe</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelDistrict')}</Label>
                         {isTurkey ? (
                             <Select
                                 value={district}
@@ -652,16 +657,16 @@ export default function ManageProfilePage() {
                                 disabled={!city || districtOptions.length === 0}
                             >
                                 <SelectTrigger className="h-11 rounded-xl">
-                                    <SelectValue placeholder={!city ? 'Önce il seçin' : 'İlçe seçin...'} />
+                                    <SelectValue placeholder={!city ? t('ngo_admin_manage_profile.districtPlaceholderEmpty') : t('ngo_admin_manage_profile.districtPlaceholderTr')} />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-72">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
                             </Select>
                         ) : (
-                            <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder="İlçe / Bölge" className="h-11 rounded-xl" />
+                            <Input value={district} onChange={e => setDistrict(e.target.value)} placeholder={t('ngo_admin_manage_profile.districtPlaceholderOther')} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Mahalle</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelNeighborhood')}</Label>
                         {isTurkey ? (
                             <Select
                                 value={neighborhood}
@@ -669,33 +674,33 @@ export default function ManageProfilePage() {
                                 disabled={!district || neighborhoodOptions.length === 0}
                             >
                                 <SelectTrigger className="h-11 rounded-xl">
-                                    <SelectValue placeholder={!district ? 'Önce ilçe seçin' : 'Mahalle seçin...'} />
+                                    <SelectValue placeholder={!district ? t('ngo_admin_manage_profile.neighborhoodPlaceholderEmpty') : t('ngo_admin_manage_profile.neighborhoodPlaceholderTr')} />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-72">
                                     {neighborhoodOptions.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         ) : (
-                            <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder="Mahalle" className="h-11 rounded-xl" />
+                            <Input value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} placeholder={t('ngo_admin_manage_profile.neighborhoodPlaceholderOther')} className="h-11 rounded-xl" />
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Sokak / Açık Adres</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelStreet')}</Label>
                         <Input
                             value={street}
                             onChange={(e) => setStreet(e.target.value)}
-                            placeholder="Sokak, kapı no..."
+                            placeholder={t('ngo_admin_manage_profile.streetPlaceholder')}
                             className="h-11 rounded-xl"
                         />
                     </div>
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal E-posta</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCorpEmail')}</Label>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="h-11 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Kurumsal Telefon</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelCorpPhone')}</Label>
                     <div className="flex gap-2">
                         <div className="w-[100px] shrink-0">
                             <Select value={phoneCode} onValueChange={setPhoneCode}>
@@ -711,7 +716,7 @@ export default function ManageProfilePage() {
 
         <Card className="rounded-[2rem] overflow-hidden shadow-sm">
             <CardHeader className="bg-muted/30 border-b">
-                <CardTitle className="text-lg flex items-center gap-2"><Palette className="h-5 w-5 text-primary" /> Sosyal Medya</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2"><Palette className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.socialMediaTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
                 {[
@@ -724,7 +729,7 @@ export default function ManageProfilePage() {
                         <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{social.label}</Label>
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-muted rounded-lg"><social.icon className="h-4 w-4 text-muted-foreground" /></div>
-                            <Input value={social.value} onChange={(e) => social.set(e.target.value)} placeholder={social.prefix + "kullaniciadi"} className="h-11 rounded-xl" />
+                            <Input value={social.value} onChange={(e) => social.set(e.target.value)} placeholder={social.prefix + t('ngo_admin_manage_profile.socialPlaceholderSuffix')} className="h-11 rounded-xl" />
                         </div>
                     </div>
                 ))}
@@ -733,21 +738,21 @@ export default function ManageProfilePage() {
 
         <Card className="rounded-[2rem] overflow-hidden shadow-sm">
           <CardHeader className="bg-muted/30 border-b">
-            <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Yasal Belgeler</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.legalDocsTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
-             <FileUpload label={activeEntity.kind === 'brand' ? 'Marka Logosu (PNG/JPG)' : 'Kuruluş Logosu (PNG/JPG)'} currentFile={logoFile} required={true}
+             <FileUpload label={activeEntity.kind === 'brand' ? t('ngo_admin_manage_profile.logoLabelBrand') : t('ngo_admin_manage_profile.logoLabelDefault')} currentFile={logoFile} required={true}
                 accept="image/png,image/jpeg,image/webp" uploading={uploadingKind === 'logo'}
                 onSelect={(f) => handleFileUpload(f, 'logo')} />
              {/* Faaliyet Belgesi: STK + Öğrenci Kulübü (kulüpte okuldan alınır). Markaya sorulmaz. */}
              {activeEntity.kind !== 'brand' && (
-               <FileUpload label={activeEntity.kind === 'club' ? 'Faaliyet Belgesi — Okuldan (PNG/JPG/PDF)' : 'Faaliyet Belgesi (PNG/JPG/PDF)'} currentFile={activityCertificate} required={true}
+               <FileUpload label={activeEntity.kind === 'club' ? t('ngo_admin_manage_profile.activityCertLabelClub') : t('ngo_admin_manage_profile.activityCertLabelDefault')} currentFile={activityCertificate} required={true}
                   accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'activityCertificate'}
                   onSelect={(f) => handleFileUpload(f, 'activityCertificate')} />
              )}
              {/* Tüzük / Vakıf Senedi: yalnızca STK. */}
              {activeEntity.kind === 'ngo' && (
-               <FileUpload label={ngoType === 'vakif' ? 'Vakıf Senedi (PDF/JPG)' : 'Tüzük (PDF/JPG)'} currentFile={charterFile} required={true}
+               <FileUpload label={ngoType === 'vakif' ? t('ngo_admin_manage_profile.charterLabelVakif') : t('ngo_admin_manage_profile.charterLabelDernek')} currentFile={charterFile} required={true}
                   accept=".pdf,image/png,image/jpeg" uploading={uploadingKind === 'charter'}
                   onSelect={(f) => handleFileUpload(f, 'charter')} />
              )}
@@ -756,30 +761,30 @@ export default function ManageProfilePage() {
 
         <Card className="rounded-[2rem] overflow-hidden shadow-sm bg-primary/5 border-primary/20">
             <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Yetkili Kişi Bilgileri</CardTitle>
-                <CardDescription>Kuruluşu platformda temsil eden ana yetkili bilgileri.</CardDescription>
+                <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> {t('ngo_admin_manage_profile.repInfoTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_manage_profile.repInfoDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-0">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Ad Soyad</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepFullName')}</Label>
                     <Input value={repFullName} onChange={(e) => setRepFullName(e.target.value)} className="h-11 rounded-xl bg-white" />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Görevi</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepTitle')}</Label>
                     <Input value={repTitle} onChange={(e) => setRepTitle(e.target.value)} className="h-11 rounded-xl bg-white" />
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Şahsi E-posta</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{t('ngo_admin_manage_profile.labelRepEmail')}</Label>
                     <Input value={repEmail} onChange={(e) => setRepEmail(e.target.value)} className="h-11 rounded-xl bg-white" />
                 </div>
             </CardContent>
         </Card>
 
         <div className="flex justify-end gap-4 pb-10">
-          <Button type="button" variant="outline" onClick={() => router.back()}>İptal</Button>
+          <Button type="button" variant="outline" onClick={() => router.back()}>{t('ngo_admin_manage_profile.btnCancel')}</Button>
           <Button type="submit" className="px-10 font-bold" disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Tümünü Kaydet
+            {t('ngo_admin_manage_profile.btnSaveAll')}
           </Button>
         </div>
       </form>

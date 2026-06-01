@@ -12,6 +12,7 @@ import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '../active-entity-context';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface SustainabilityReport {
     id: string;
@@ -42,30 +43,30 @@ interface BrandWithSustainability {
     };
 }
 
-// BM Sürdürülebilir Kalkınma Hedefleri (UN SDGs) — sadece sayı seç UX
-const SDG_LABELS: Record<number, string> = {
-    1: 'Yoksulluğa Son',
-    2: 'Açlığa Son',
-    3: 'Sağlıklı ve Kaliteli Yaşam',
-    4: 'Nitelikli Eğitim',
-    5: 'Toplumsal Cinsiyet Eşitliği',
-    6: 'Temiz Su ve Sanitasyon',
-    7: 'Erişilebilir ve Temiz Enerji',
-    8: 'İnsana Yakışır İş ve Ekonomik Büyüme',
-    9: 'Sanayi, Yenilikçilik ve Altyapı',
-    10: 'Eşitsizliklerin Azaltılması',
-    11: 'Sürdürülebilir Şehir ve Yaşam Alanları',
-    12: 'Sorumlu Üretim ve Tüketim',
-    13: 'İklim Eylemi',
-    14: 'Sudaki Yaşam',
-    15: 'Karasal Yaşam',
-    16: 'Barış, Adalet ve Güçlü Kurumlar',
-    17: 'Amaçlar için Ortaklıklar',
-};
-
 export default function SustainabilityPage() {
     const { toast } = useToast();
+    const { t } = useTranslation();
     const firestore = useFirestore();
+    // BM Sürdürülebilir Kalkınma Hedefleri (UN SDGs) — sadece sayı seç UX
+    const SDG_LABELS: Record<number, string> = {
+        1: t('ngo_admin_sustainability.sdg.sdg1'),
+        2: t('ngo_admin_sustainability.sdg.sdg2'),
+        3: t('ngo_admin_sustainability.sdg.sdg3'),
+        4: t('ngo_admin_sustainability.sdg.sdg4'),
+        5: t('ngo_admin_sustainability.sdg.sdg5'),
+        6: t('ngo_admin_sustainability.sdg.sdg6'),
+        7: t('ngo_admin_sustainability.sdg.sdg7'),
+        8: t('ngo_admin_sustainability.sdg.sdg8'),
+        9: t('ngo_admin_sustainability.sdg.sdg9'),
+        10: t('ngo_admin_sustainability.sdg.sdg10'),
+        11: t('ngo_admin_sustainability.sdg.sdg11'),
+        12: t('ngo_admin_sustainability.sdg.sdg12'),
+        13: t('ngo_admin_sustainability.sdg.sdg13'),
+        14: t('ngo_admin_sustainability.sdg.sdg14'),
+        15: t('ngo_admin_sustainability.sdg.sdg15'),
+        16: t('ngo_admin_sustainability.sdg.sdg16'),
+        17: t('ngo_admin_sustainability.sdg.sdg17'),
+    };
     const { id: entityId, kind } = useActiveEntity();
     const { data: entity, isLoading } = useActiveEntityDoc<BrandWithSustainability>();
 
@@ -132,9 +133,9 @@ export default function SustainabilityPage() {
                     updatedAt: serverTimestamp(),
                 },
             });
-            toast({ title: 'Kaydedildi', description: 'Sürdürülebilirlik bilgileriniz güncellendi.' });
+            toast({ title: t('ngo_admin_sustainability.saveSuccessTitle'), description: t('ngo_admin_sustainability.saveSuccessDescription') });
         } catch (e) {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: e instanceof Error ? e.message.slice(0, 200) : 'Bilinmeyen hata' });
+            toast({ variant: 'destructive', title: t('ngo_admin_sustainability.saveErrorTitle'), description: e instanceof Error ? e.message.slice(0, 200) : t('ngo_admin_sustainability.saveErrorDefault') });
         } finally {
             setSaving(false);
         }
@@ -145,7 +146,7 @@ export default function SustainabilityPage() {
     }
 
     if (!entity) {
-        return <div className="text-center py-20 text-muted-foreground">Marka verisi bulunamadı.</div>;
+        return <div className="text-center py-20 text-muted-foreground">{t('ngo_admin_sustainability.brandNotFound')}</div>;
     }
 
     return (
@@ -155,36 +156,36 @@ export default function SustainabilityPage() {
                     <Leaf className="h-6 w-6 text-emerald-700" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight">Sürdürülebilirlik ve KSS Raporları</h1>
-                    <p className="text-sm text-muted-foreground">Markanızın sosyal ve çevresel etkisini paylaşın.</p>
+                    <h1 className="text-2xl font-black tracking-tight">{t('ngo_admin_sustainability.heading')}</h1>
+                    <p className="text-sm text-muted-foreground">{t('ngo_admin_sustainability.subheading')}</p>
                 </div>
             </div>
 
             {/* Misyon + İletişim */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">Sürdürülebilirlik Vizyonu</CardTitle>
-                    <CardDescription>Markanızın sürdürülebilirlik yaklaşımı — toplumsal ve çevresel taahhüt.</CardDescription>
+                    <CardTitle className="text-base">{t('ngo_admin_sustainability.visionTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_sustainability.visionDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="mission" className="text-xs font-bold uppercase tracking-wider">Misyon Metni</Label>
+                        <Label htmlFor="mission" className="text-xs font-bold uppercase tracking-wider">{t('ngo_admin_sustainability.missionLabel')}</Label>
                         <Textarea
                             id="mission"
                             value={mission}
                             onChange={(e) => setMission(e.target.value)}
-                            placeholder="Sürdürülebilirlik vizyonunuzu kısaca anlatın..."
+                            placeholder={t('ngo_admin_sustainability.missionPlaceholder')}
                             className="min-h-[100px]"
                         />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="sustainability-email" className="text-xs font-bold uppercase tracking-wider">Sürdürülebilirlik İletişim E-posta</Label>
+                        <Label htmlFor="sustainability-email" className="text-xs font-bold uppercase tracking-wider">{t('ngo_admin_sustainability.contactEmailLabel')}</Label>
                         <Input
                             id="sustainability-email"
                             type="email"
                             value={contactEmail}
                             onChange={(e) => setContactEmail(e.target.value)}
-                            placeholder="surdurulebilirlik@markaniz.com"
+                            placeholder={t('ngo_admin_sustainability.contactEmailPlaceholder')}
                         />
                     </div>
                 </CardContent>
@@ -193,8 +194,8 @@ export default function SustainabilityPage() {
             {/* SKH (UN SDG) hedefleri */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-base">BM Sürdürülebilir Kalkınma Hedefleri</CardTitle>
-                    <CardDescription>Markanızın katkıda bulunduğu küresel hedefleri işaretleyin.</CardDescription>
+                    <CardTitle className="text-base">{t('ngo_admin_sustainability.sdgTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_sustainability.sdgDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -227,24 +228,24 @@ export default function SustainabilityPage() {
             <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
                     <div>
-                        <CardTitle className="text-base">KSS Faaliyet Alanları</CardTitle>
-                        <CardDescription>Kurumsal sosyal sorumluluk projeleri ve etki alanları.</CardDescription>
+                        <CardTitle className="text-base">{t('ngo_admin_sustainability.kssTitle')}</CardTitle>
+                        <CardDescription>{t('ngo_admin_sustainability.kssDescription')}</CardDescription>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={addKssArea}>
-                        <Plus className="h-4 w-4 mr-1" /> Alan Ekle
+                        <Plus className="h-4 w-4 mr-1" /> {t('ngo_admin_sustainability.kssAddButton')}
                     </Button>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {kssAreas.length === 0 && (
                         <p className="text-center text-sm text-muted-foreground py-6">
-                            Henüz KSS alanı eklenmedi.
+                            {t('ngo_admin_sustainability.kssEmpty')}
                         </p>
                     )}
                     {kssAreas.map((k) => (
                         <div key={k.id} className="border rounded-lg p-3 space-y-2">
                             <div className="flex items-start gap-2">
                                 <Input
-                                    placeholder="Alan başlığı (örn. Eğitim, Çevre)"
+                                    placeholder={t('ngo_admin_sustainability.kssTitlePlaceholder')}
                                     value={k.title}
                                     onChange={(e) => updateKssArea(k.id, { title: e.target.value })}
                                     className="flex-1 font-semibold"
@@ -254,13 +255,13 @@ export default function SustainabilityPage() {
                                 </Button>
                             </div>
                             <Textarea
-                                placeholder="Açıklama"
+                                placeholder={t('ngo_admin_sustainability.kssDescriptionPlaceholder')}
                                 value={k.description}
                                 onChange={(e) => updateKssArea(k.id, { description: e.target.value })}
                                 className="min-h-[60px] text-sm"
                             />
                             <Input
-                                placeholder="Etki metriği (örn. 50.000 öğrenciye burs)"
+                                placeholder={t('ngo_admin_sustainability.kssImpactPlaceholder')}
                                 value={k.impactMetric || ''}
                                 onChange={(e) => updateKssArea(k.id, { impactMetric: e.target.value })}
                                 className="text-sm"
@@ -274,28 +275,28 @@ export default function SustainabilityPage() {
             <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
                     <div>
-                        <CardTitle className="text-base">Yıllık Sürdürülebilirlik Raporları</CardTitle>
-                        <CardDescription>PDF rapor linkleri (Drive, S3, websitesi link).</CardDescription>
+                        <CardTitle className="text-base">{t('ngo_admin_sustainability.reportsTitle')}</CardTitle>
+                        <CardDescription>{t('ngo_admin_sustainability.reportsDescription')}</CardDescription>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={addReport}>
-                        <Upload className="h-4 w-4 mr-1" /> Rapor Ekle
+                        <Upload className="h-4 w-4 mr-1" /> {t('ngo_admin_sustainability.reportsAddButton')}
                     </Button>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {reports.length === 0 && (
-                        <p className="text-center text-sm text-muted-foreground py-6">Henüz rapor eklenmedi.</p>
+                        <p className="text-center text-sm text-muted-foreground py-6">{t('ngo_admin_sustainability.reportsEmpty')}</p>
                     )}
                     {reports.map((r) => (
                         <div key={r.id} className="border rounded-lg p-3 space-y-2">
                             <div className="flex items-start gap-2">
                                 <Input
-                                    placeholder="Yıl"
+                                    placeholder={t('ngo_admin_sustainability.reportYearPlaceholder')}
                                     value={r.year}
                                     onChange={(e) => updateReport(r.id, { year: e.target.value })}
                                     className="w-24"
                                 />
                                 <Input
-                                    placeholder="Başlık"
+                                    placeholder={t('ngo_admin_sustainability.reportTitlePlaceholder')}
                                     value={r.title}
                                     onChange={(e) => updateReport(r.id, { title: e.target.value })}
                                     className="flex-1 font-semibold"
@@ -305,14 +306,14 @@ export default function SustainabilityPage() {
                                 </Button>
                             </div>
                             <Textarea
-                                placeholder="Kısa açıklama (opsiyonel)"
+                                placeholder={t('ngo_admin_sustainability.reportDescriptionPlaceholder')}
                                 value={r.description || ''}
                                 onChange={(e) => updateReport(r.id, { description: e.target.value })}
                                 className="min-h-[50px] text-sm"
                             />
                             <div className="flex items-center gap-2">
                                 <Input
-                                    placeholder="https://markaniz.com/2024-rapor.pdf"
+                                    placeholder={t('ngo_admin_sustainability.reportUrlPlaceholder')}
                                     value={r.url || ''}
                                     onChange={(e) => updateReport(r.id, { url: e.target.value })}
                                     className="text-sm"
@@ -334,34 +335,34 @@ export default function SustainabilityPage() {
             <Card>
                 <CardHeader className="flex flex-row items-start justify-between">
                     <div>
-                        <CardTitle className="text-base">Sürdürülebilirlik Sertifikaları</CardTitle>
-                        <CardDescription>ISO 14001, B Corp, LEED gibi sertifikalar.</CardDescription>
+                        <CardTitle className="text-base">{t('ngo_admin_sustainability.certificatesTitle')}</CardTitle>
+                        <CardDescription>{t('ngo_admin_sustainability.certificatesDescription')}</CardDescription>
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={addCertificate}>
-                        <Plus className="h-4 w-4 mr-1" /> Sertifika Ekle
+                        <Plus className="h-4 w-4 mr-1" /> {t('ngo_admin_sustainability.certificatesAddButton')}
                     </Button>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {certificates.length === 0 && (
-                        <p className="text-center text-sm text-muted-foreground py-6">Henüz sertifika eklenmedi.</p>
+                        <p className="text-center text-sm text-muted-foreground py-6">{t('ngo_admin_sustainability.certificatesEmpty')}</p>
                     )}
                     {certificates.map((c, idx) => (
                         <div key={idx} className="flex items-start gap-2 border rounded-lg p-2">
                             <FileText className="h-4 w-4 text-muted-foreground mt-2.5 shrink-0" />
                             <Input
-                                placeholder="Sertifika adı (örn. ISO 14001)"
+                                placeholder={t('ngo_admin_sustainability.certificateNamePlaceholder')}
                                 value={c.name}
                                 onChange={(e) => updateCertificate(idx, { name: e.target.value })}
                                 className="flex-1 font-semibold"
                             />
                             <Input
-                                placeholder="Veren kurum"
+                                placeholder={t('ngo_admin_sustainability.certificateIssuerPlaceholder')}
                                 value={c.issuer}
                                 onChange={(e) => updateCertificate(idx, { issuer: e.target.value })}
                                 className="w-40"
                             />
                             <Input
-                                placeholder="Yıl"
+                                placeholder={t('ngo_admin_sustainability.certificateYearPlaceholder')}
                                 value={c.year}
                                 onChange={(e) => updateCertificate(idx, { year: e.target.value })}
                                 className="w-20"
@@ -377,7 +378,7 @@ export default function SustainabilityPage() {
             <div className="flex justify-end pb-8">
                 <Button onClick={handleSave} disabled={saving} size="lg" className="rounded-2xl font-bold">
                     {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                    Kaydet
+                    {t('ngo_admin_sustainability.saveButton')}
                 </Button>
             </div>
         </div>

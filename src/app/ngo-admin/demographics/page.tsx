@@ -9,14 +9,15 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection } from 'firebase/firestore';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const COLORS = ['#f34723', '#042654', '#1f1f1f', '#8884d8', '#10b981', '#f59e0b', '#3b82f6', '#ef4444'];
 
-const EmptyChartState = ({ message }: { message?: string }) => (
+const EmptyChartState = ({ message, hint }: { message?: string; hint?: string }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
-    <p className="text-muted-foreground font-medium">{message || 'Henüz yeterli veri yok'}</p>
-    <p className="text-sm text-muted-foreground/70 mt-1">Bu varlığı destekleyen/gönüllüsü olan kullanıcılar olduğunda grafikler oluşur.</p>
+    <p className="text-muted-foreground font-medium">{message}</p>
+    {hint && <p className="text-sm text-muted-foreground/70 mt-1">{hint}</p>}
   </div>
 );
 
@@ -78,6 +79,7 @@ function DemographicsPageContent() {
   const [isMounted, setIsMounted] = useState(false);
   const firestore = useFirestore();
   useUser();
+  const { t } = useTranslation();
 
   useEffect(() => { setIsMounted(true); }, []);
 
@@ -90,9 +92,13 @@ function DemographicsPageContent() {
 
   const activeEntity = useMemo<ManagedEntity | null>(() => {
     if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
-    const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+    const labels: Record<EntityKind, string> = {
+      ngo: t('ngo_admin_demographics.labelNgo'),
+      brand: t('ngo_admin_demographics.labelBrand'),
+      club: t('ngo_admin_demographics.labelClub'),
+    };
     return { kind: activeKind, id: activeIdFromCtx, name: activeDoc.name || labels[activeKind] };
-  }, [activeIdFromCtx, activeKind, activeDoc]);
+  }, [activeIdFromCtx, activeKind, activeDoc, t]);
 
   // Tüm kullanıcıları + tüm markaları oku (filtreleme için)
   const usersQuery = useMemoFirebase(() => (firestore ? collection(firestore, COLLECTIONS.users) : null), [firestore]);
@@ -246,15 +252,15 @@ function DemographicsPageContent() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Demografi Analizi</h1>
-          <p className="text-muted-foreground">Yönettiğiniz STK, marka ya da kulüp için destekçi demografisini görün.</p>
+          <h1 className="text-2xl font-bold">{t('ngo_admin_demographics.pageTitle')}</h1>
+          <p className="text-muted-foreground">{t('ngo_admin_demographics.pageSubtitleNoEntity')}</p>
         </div>
         <Card>
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center text-center">
               <ShieldAlert className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-muted-foreground font-medium">Yönetici olduğunuz bir varlık bulunamadı.</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">Lütfen sistem yöneticinize danışın.</p>
+              <p className="text-muted-foreground font-medium">{t('ngo_admin_demographics.noEntityTitle')}</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">{t('ngo_admin_demographics.noEntityDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -262,8 +268,10 @@ function DemographicsPageContent() {
     );
   }
 
-  const entityTypeLabel = activeEntity.kind === 'ngo' ? 'STK' : activeEntity.kind === 'brand' ? 'Marka' : 'Kulüp';
-  const supportersLabel = activeEntity.kind === 'brand' ? 'Toplam Takipçi' : 'Toplam Destekçi';
+  const entityTypeLabel = activeEntity.kind === 'ngo' ? t('ngo_admin_demographics.labelNgo') : activeEntity.kind === 'brand' ? t('ngo_admin_demographics.labelBrand') : t('ngo_admin_demographics.labelClub');
+  const supportersLabel = activeEntity.kind === 'brand' ? t('ngo_admin_demographics.totalFollowers') : t('ngo_admin_demographics.totalSupporters');
+  const emptyChartTitle = t('ngo_admin_demographics.emptyChartTitle');
+  const emptyChartHint = t('ngo_admin_demographics.emptyChartHint');
 
   const hasAnyData = ageGroupData.length > 0 || cityData.length > 0 || volunteerInterestData.length > 0 ||
     genderAgeData.length > 0 || schoolData.length > 0 || spendingHabitsData.length > 0 || competencyData.length > 0;
@@ -272,7 +280,7 @@ function DemographicsPageContent() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold">Demografi Analizi</h1>
+          <h1 className="text-2xl font-bold">{t('ngo_admin_demographics.pageTitle')}</h1>
           <p className="text-muted-foreground">
             <span className="font-semibold text-foreground">{activeEntity.name}</span>
             <span className="mx-2 text-muted-foreground/40">·</span>
@@ -283,31 +291,31 @@ function DemographicsPageContent() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-primary/10"><Users className="h-5 w-5 text-primary" /></div><div><p className="text-2xl font-black">{supporters.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{supportersLabel}</p></div></CardContent></Card>
-        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-green-500/10"><Users className="h-5 w-5 text-green-600" /></div><div><p className="text-2xl font-black">{volunteers.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">Gönüllü</p></div></CardContent></Card>
-        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-blue-500/10"><Users className="h-5 w-5 text-blue-600" /></div><div><p className="text-2xl font-black">{donors.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{activeEntity.kind === 'brand' ? 'Takipçi' : 'Bağışçı'}</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-green-500/10"><Users className="h-5 w-5 text-green-600" /></div><div><p className="text-2xl font-black">{volunteers.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{t('ngo_admin_demographics.statVolunteer')}</p></div></CardContent></Card>
+        <Card><CardContent className="p-5 flex items-center gap-4"><div className="p-3 rounded-xl bg-blue-500/10"><Users className="h-5 w-5 text-blue-600" /></div><div><p className="text-2xl font-black">{donors.length}</p><p className="text-xs text-muted-foreground font-semibold uppercase tracking-widest">{activeEntity.kind === 'brand' ? t('ngo_admin_demographics.statFollower') : t('ngo_admin_demographics.statDonor')}</p></div></CardContent></Card>
       </div>
 
       {!hasAnyData ? (
         <Card>
           <CardContent className="py-16">
-            <EmptyChartState />
+            <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} />
           </CardContent>
         </Card>
       ) : (
       <Tabs defaultValue="charts" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="charts">Grafikler</TabsTrigger>
-          <TabsTrigger value="numbers">Sayilar</TabsTrigger>
+          <TabsTrigger value="charts">{t('ngo_admin_demographics.tabCharts')}</TabsTrigger>
+          <TabsTrigger value="numbers">{t('ngo_admin_demographics.tabNumbers')}</TabsTrigger>
         </TabsList>
         <TabsContent value="charts" className="mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Gönüllü & Bağışçı Yaş Dağılımı</CardTitle>
-                <CardDescription>Destekçilerinizin yaş gruplarına göre karşılaştırmalı dağılımı.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartAgeTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartAgeDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {ageGroupData.length === 0 ? <EmptyChartState /> : (
+                {ageGroupData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={ageGroupData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -325,11 +333,11 @@ function DemographicsPageContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Gönüllü İlgi Alanları</CardTitle>
-                <CardDescription>Gönüllülerinizin en çok ilgi gösterdiği sosyal alanlar.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartInterestTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartInterestDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {volunteerInterestData.length === 0 ? <EmptyChartState /> : (
+                {volunteerInterestData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                    <BarChart layout="vertical" data={volunteerInterestData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -346,11 +354,11 @@ function DemographicsPageContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Cinsiyete Göre Yaş Dağılımı</CardTitle>
-                <CardDescription>Destekçilerinizin yaş ve cinsiyet kırılımı.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartGenderTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartGenderDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {genderAgeData.length === 0 ? <EmptyChartState /> : (
+                {genderAgeData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={genderAgeData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -369,11 +377,11 @@ function DemographicsPageContent() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Gönüllü Yetkinlikleri</CardTitle>
-                    <CardDescription>Gönüllü havuzunuzdaki en yaygın yetkinlikler.</CardDescription>
+                    <CardTitle>{t('ngo_admin_demographics.chartCompetencyTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_demographics.chartCompetencyDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {competencyData.length === 0 ? <EmptyChartState /> : (
+                    {competencyData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                     <ResponsiveContainer width="100%" height={300}>
                        <BarChart layout="vertical" data={competencyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" />
@@ -381,7 +389,7 @@ function DemographicsPageContent() {
                             <YAxis dataKey="name" type="category" width={110} />
                             <Tooltip />
                             <Legend />
-                            <Bar dataKey="value" name="Kisi Sayisi" fill="#042654" />
+                            <Bar dataKey="value" name={t('ngo_admin_demographics.chartCompetencyLegend')} fill="#042654" />
                         </BarChart>
                     </ResponsiveContainer>
                     )}
@@ -390,11 +398,11 @@ function DemographicsPageContent() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Bağışçı Tüketim Alışkanlıkları</CardTitle>
-                <CardDescription>Bağışçılarınızın takip ettiği markalar.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartSpendingTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartSpendingDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {spendingHabitsData.length === 0 ? <EmptyChartState /> : (
+                {spendingHabitsData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie data={spendingHabitsData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
@@ -411,11 +419,11 @@ function DemographicsPageContent() {
 
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Destekçilerin Şehirlere Göre Dağılımı</CardTitle>
-                <CardDescription>Gönüllü ve bağışçılarınızın yoğunlaştığı ilk 5 şehir.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartCityTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartCityDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {cityData.length === 0 ? <EmptyChartState /> : (
+                {cityData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={cityData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -433,11 +441,11 @@ function DemographicsPageContent() {
 
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Destekçilerin Okullara Göre Dağılımı</CardTitle>
-                <CardDescription>Destekçilerinizin en yoğun olduğu ilk 5 üniversite/okul.</CardDescription>
+                <CardTitle>{t('ngo_admin_demographics.chartSchoolTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_demographics.chartSchoolDesc')}</CardDescription>
               </CardHeader>
               <CardContent>
-                {schoolData.length === 0 ? <EmptyChartState /> : (
+                {schoolData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={schoolData}>
                         <CartesianGrid strokeDasharray="3 3" />
@@ -455,11 +463,11 @@ function DemographicsPageContent() {
         </TabsContent>
         <TabsContent value="numbers" className="mt-6 space-y-6">
             <Card>
-                <CardHeader><CardTitle>Yaş Dağılımı (Sayısal)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_demographics.numbersAgeTitle')}</CardTitle></CardHeader>
                 <CardContent>
-                    {ageGroupData.length === 0 ? <EmptyChartState /> : (
+                    {ageGroupData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                     <Table>
-                        <TableHeader><TableRow><TableHead>Yaş Grubu</TableHead><TableHead className='text-right'>Gönüllü Sayısı</TableHead><TableHead className='text-right'>Bağışçı Sayısı</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow><TableHead>{t('ngo_admin_demographics.colAgeGroup')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colVolunteerCount')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colDonorCount')}</TableHead></TableRow></TableHeader>
                         <TableBody>
                             {ageGroupData.map(d => (<TableRow key={d.age}><TableCell>{d.age}</TableCell><TableCell className='text-right'>{d['Gonullu']}</TableCell><TableCell className='text-right'>{d['Bagisci']}</TableCell></TableRow>))}
                         </TableBody>
@@ -468,11 +476,11 @@ function DemographicsPageContent() {
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader><CardTitle>Cinsiyete Göre Yaş Dağılımı (Sayısal)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_demographics.numbersGenderTitle')}</CardTitle></CardHeader>
                 <CardContent>
-                    {genderAgeData.length === 0 ? <EmptyChartState /> : (
+                    {genderAgeData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                     <Table>
-                        <TableHeader><TableRow><TableHead>Yaş Grubu</TableHead><TableHead className='text-right'>Kadın</TableHead><TableHead className='text-right'>Erkek</TableHead><TableHead className='text-right'>Diğer</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow><TableHead>{t('ngo_admin_demographics.colAgeGroup')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colFemale')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colMale')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colOther')}</TableHead></TableRow></TableHeader>
                         <TableBody>
                             {genderAgeData.map(d => (<TableRow key={d.age}><TableCell>{d.age}</TableCell><TableCell className='text-right'>{d.Kadin}</TableCell><TableCell className='text-right'>{d.Erkek}</TableCell><TableCell className='text-right'>{d.Diger}</TableCell></TableRow>))}
                         </TableBody>
@@ -481,11 +489,11 @@ function DemographicsPageContent() {
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader><CardTitle>Şehirlere Göre Dağılım (Sayısal)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_demographics.numbersCityTitle')}</CardTitle></CardHeader>
                 <CardContent>
-                    {cityData.length === 0 ? <EmptyChartState /> : (
+                    {cityData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                     <Table>
-                        <TableHeader><TableRow><TableHead>Şehir</TableHead><TableHead className='text-right'>Gönüllü Sayısı</TableHead><TableHead className='text-right'>Bağışçı Sayısı</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow><TableHead>{t('ngo_admin_demographics.colCity')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colVolunteerCount')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colDonorCount')}</TableHead></TableRow></TableHeader>
                         <TableBody>
                             {cityData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className='text-right'>{d['Gonullu']}</TableCell><TableCell className='text-right'>{d['Bagisci']}</TableCell></TableRow>))}
                         </TableBody>
@@ -494,11 +502,11 @@ function DemographicsPageContent() {
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader><CardTitle>Okullara Göre Dağılım (Sayısal)</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_demographics.numbersSchoolTitle')}</CardTitle></CardHeader>
                 <CardContent>
-                    {schoolData.length === 0 ? <EmptyChartState /> : (
+                    {schoolData.length === 0 ? <EmptyChartState message={emptyChartTitle} hint={emptyChartHint} /> : (
                     <Table>
-                        <TableHeader><TableRow><TableHead>Okul</TableHead><TableHead className='text-right'>Destekçi Sayısı</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow><TableHead>{t('ngo_admin_demographics.colSchool')}</TableHead><TableHead className='text-right'>{t('ngo_admin_demographics.colSupporterCount')}</TableHead></TableRow></TableHeader>
                         <TableBody>
                             {schoolData.map(d => (<TableRow key={d.name}><TableCell>{d.name}</TableCell><TableCell className='text-right'>{d.Destekci}</TableCell></TableRow>))}
                         </TableBody>
@@ -507,24 +515,24 @@ function DemographicsPageContent() {
                 </CardContent>
             </Card>
             <Card>
-                <CardHeader><CardTitle>Detaylı Kırılımlar</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_demographics.numbersDetailsTitle')}</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className='space-y-2'>
-                        <h4 className='font-semibold'>Gönüllü İlgi Alanları</h4>
-                        {volunteerInterestData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
-                          volunteerInterestData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d['Gonullu']} kişi</span></div>))
+                        <h4 className='font-semibold'>{t('ngo_admin_demographics.detailsInterestsTitle')}</h4>
+                        {volunteerInterestData.length === 0 ? <p className="text-sm text-muted-foreground">{t('ngo_admin_demographics.noDataInDetail')}</p> : (
+                          volunteerInterestData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d['Gonullu']} {t('ngo_admin_demographics.personSuffix')}</span></div>))
                         )}
                     </div>
                     <div className='space-y-2'>
-                        <h4 className='font-semibold'>Gönüllü Yetkinlikleri</h4>
-                        {competencyData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
-                          competencyData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))
+                        <h4 className='font-semibold'>{t('ngo_admin_demographics.detailsCompetenciesTitle')}</h4>
+                        {competencyData.length === 0 ? <p className="text-sm text-muted-foreground">{t('ngo_admin_demographics.noDataInDetail')}</p> : (
+                          competencyData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} {t('ngo_admin_demographics.personSuffix')}</span></div>))
                         )}
                     </div>
                     <div className='space-y-2'>
-                        <h4 className='font-semibold'>Bağışçı Tüketim Alışkanlıkları</h4>
-                        {spendingHabitsData.length === 0 ? <p className="text-sm text-muted-foreground">Henüz yeterli veri yok</p> : (
-                          spendingHabitsData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} kişi</span></div>))
+                        <h4 className='font-semibold'>{t('ngo_admin_demographics.detailsSpendingTitle')}</h4>
+                        {spendingHabitsData.length === 0 ? <p className="text-sm text-muted-foreground">{t('ngo_admin_demographics.noDataInDetail')}</p> : (
+                          spendingHabitsData.map(d => (<div key={d.name} className='flex justify-between text-sm'><span className='text-muted-foreground'>{d.name}</span><span>{d.value} {t('ngo_admin_demographics.personSuffix')}</span></div>))
                         )}
                     </div>
                 </CardContent>

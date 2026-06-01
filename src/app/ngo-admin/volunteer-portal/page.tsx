@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const portalPartners = [
     { id: 'gonulluyuz-biz', name: 'Gönüllüyüz Biz', logo: 'G', color: 'bg-red-700', status: 'Bağlı', type: 'Kamu / Bakanlık' },
@@ -22,25 +23,33 @@ const portalPartners = [
 export default function VolunteerPortalIntegrationPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { t } = useTranslation();
     const [isSyncing, setIsSyncing] = useState(false);
 
     const handleSync = () => {
         setIsSyncing(true);
         setTimeout(() => {
-            toast({ title: "Portal Senkronizasyonu Başarılı", description: "İlanlarınız diğer platformlara aktarıldı." });
+            toast({ title: t('ngo_admin_volunteer_portal.syncSuccessToast'), description: t('ngo_admin_volunteer_portal.syncSuccessDesc') });
             setIsSyncing(false);
         }, 1500);
+    };
+
+    const statusLabel = (status: string) => {
+        if (status === 'Bağlı') return t('ngo_admin_volunteer_portal.statusConnected');
+        if (status === 'Bağlanabilir') return t('ngo_admin_volunteer_portal.statusConnectable');
+        if (status === 'Geliştirme Aşamasında') return t('ngo_admin_volunteer_portal.statusInDevelopment');
+        return status;
     };
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_volunteer_portal.backAria')}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-headline">Gönüllülük Portalı Entegrasyonu</h1>
-                    <p className="text-muted-foreground text-sm">İlanlarınızı diğer yerel ve küresel platformlarla senkronize edin.</p>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_volunteer_portal.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('ngo_admin_volunteer_portal.subtitle')}</p>
                 </div>
             </div>
 
@@ -53,15 +62,15 @@ export default function VolunteerPortalIntegrationPage() {
                                     {item.logo}
                                 </div>
                                 <Badge variant={item.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[9px] uppercase">
-                                    {item.status}
+                                    {statusLabel(item.status)}
                                 </Badge>
                             </div>
                             <CardTitle className="text-base font-bold mt-3">{item.name}</CardTitle>
                             <CardDescription className="text-[10px] uppercase font-black tracking-widest text-primary">{item.type}</CardDescription>
                         </CardHeader>
                         <CardFooter className="p-4 pt-0">
-                            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => toast({title: "Bağlantı Ayarları", description: `${item.name} yetkilendirmesi açılıyor.`})}>
-                                {item.status === 'Bağlı' ? 'Yapılandır' : 'Şimdi Bağla'}
+                            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => toast({title: t('ngo_admin_volunteer_portal.connectionSettingsToast'), description: `${item.name}${t('ngo_admin_volunteer_portal.connectionSettingsDescSuffix')}`})}>
+                                {item.status === 'Bağlı' ? t('ngo_admin_volunteer_portal.configureBtn') : t('ngo_admin_volunteer_portal.connectNowBtn')}
                             </Button>
                         </CardFooter>
                     </Card>
@@ -70,45 +79,45 @@ export default function VolunteerPortalIntegrationPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> API & Webhook Bilgileri</CardTitle>
-                    <CardDescription>Diğer portallardan ilan çekmek veya ilan göndermek için gerekli bilgiler.</CardDescription>
+                    <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> {t('ngo_admin_volunteer_portal.apiTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_volunteer_portal.apiDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Global Portal Auth Token</Label>
+                        <Label>{t('ngo_admin_volunteer_portal.authTokenLabel')}</Label>
                         <div className="flex gap-2">
                             <Input type="password" value="sk_test_51MzZ2SE1..." readOnly className="font-mono text-xs bg-muted" />
-                            <Button variant="outline" size="icon" onClick={() => toast({title: "Kopyalandı"})} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon" onClick={() => toast({title: t('ngo_admin_volunteer_portal.copiedToast')})} aria-label={t('ngo_admin_volunteer_portal.shareAria')}><Share2 className="h-4 w-4" /></Button>
                         </div>
                     </div>
                     <div className="p-4 border rounded-xl bg-orange-50 text-orange-800 text-xs flex items-center gap-3">
                         <ShieldCheck className="h-5 w-5 shrink-0" />
-                        <p>Dış portallara aktarılan verileriniz KVKK uyumlu olarak anonimleştirilerek paylaşılır. Sadece temel ilan detayları senkronize edilir.</p>
+                        <p>{t('ngo_admin_volunteer_portal.kvkkNote')}</p>
                     </div>
                 </CardContent>
                 <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
                     <Button onClick={handleSync} disabled={isSyncing}>
-                        {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Veriler Aktarılıyor</> : 'Manuel Senkronizasyon Başlat'}
+                        {isSyncing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('ngo_admin_volunteer_portal.syncingBtn')}</> : t('ngo_admin_volunteer_portal.manualSyncBtn')}
                     </Button>
                 </CardFooter>
             </Card>
 
             <Card className="bg-muted/20 border-dashed">
                 <CardHeader>
-                    <CardTitle className="text-sm font-bold flex items-center gap-2"><Globe className="h-4 w-4" /> Yayın Durumu</CardTitle>
+                    <CardTitle className="text-sm font-bold flex items-center gap-2"><Globe className="h-4 w-4" /> {t('ngo_admin_volunteer_portal.broadcastStatus')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs">
-                            <span>Aktif İlanlarınız:</span>
+                            <span>{t('ngo_admin_volunteer_portal.activeListings')}</span>
                             <span className="font-bold">12</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                            <span>Portallara Aktarılan:</span>
+                            <span>{t('ngo_admin_volunteer_portal.exportedListings')}</span>
                             <span className="font-bold text-green-600">8</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
-                            <span>Dış Kaynaklı Başvurular (Ay):</span>
+                            <span>{t('ngo_admin_volunteer_portal.externalApplications')}</span>
                             <span className="font-bold">45</span>
                         </div>
                     </div>

@@ -25,6 +25,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { useTranslation } from '@/components/providers/language-provider';
 import { SectionCard } from './_components/section-card';
 import { DomainSection } from './_components/domain-section';
 import { ColorsSection } from './_components/colors-section';
@@ -51,6 +52,7 @@ import type { Banner, NgoDoc, NgoSiteBanner, SectionKey } from './_components/ty
 export default function WebsiteBuilderPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const db = useFirestore();
     useUser();
 
@@ -115,9 +117,10 @@ export default function WebsiteBuilderPage() {
 
     const toggleSection = (key: SectionKey) => {
         setSections(prev => ({ ...prev, [key]: !prev[key] }));
+        const state = !sections[key] ? t('ngo_admin_website.toggleActive') : t('ngo_admin_website.togglePassive');
         toast({
-            title: "Görünüm Güncellendi",
-            description: `${String(key).toUpperCase()} bölümü ${!sections[key] ? 'aktif' : 'pasif'} hale getirildi.`,
+            title: t('ngo_admin_website.toggleTitle'),
+            description: t('ngo_admin_website.toggleDescription').replace('{section}', String(key).toUpperCase()).replace('{state}', state),
         });
     };
 
@@ -142,7 +145,7 @@ export default function WebsiteBuilderPage() {
 
     const handleSave = async (silent = false) => {
         if (!db || !ngoId) {
-            toast({ variant: 'destructive', title: 'Yönetici varlık bulunamadı', description: 'Kaydetmek için yönettiğiniz bir STK olmalı.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_website.noEntityTitle'), description: t('ngo_admin_website.noEntityDescription') });
             return false;
         }
         setIsSaving(true);
@@ -150,12 +153,12 @@ export default function WebsiteBuilderPage() {
             await updateDoc(doc(db, COLLECTIONS.ngos, ngoId), buildPayload() as Record<string, unknown>);
             setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
             if (!silent) {
-                toast({ title: 'Tüm Değişiklikler Kaydedildi', description: 'Web siteniz güncel bilgilerle yayına hazır.' });
+                toast({ title: t('ngo_admin_website.saveSuccessTitle'), description: t('ngo_admin_website.saveSuccessDescription') });
             }
             return true;
         } catch (err) {
             const e = err as { message?: string };
-            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_website.saveErrorTitle'), description: e?.message || t('ngo_admin_website.saveErrorDefault') });
             return false;
         } finally {
             setIsSaving(false);
@@ -165,37 +168,37 @@ export default function WebsiteBuilderPage() {
     const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text);
         toast({
-            title: "Kopyalandı",
-            description: `${label} başarıyla panoya kopyalandı.`,
+            title: t('ngo_admin_website.copiedTitle'),
+            description: t('ngo_admin_website.copiedDescription').replace('{label}', label),
         });
     };
 
     const addBanner = () => {
         const newId = (banners.length + 1).toString();
         setBanners([...banners, { id: newId, url: `https://picsum.photos/seed/banner${newId}/1920/600`, isPrimary: false }]);
-        toast({ title: "Yeni Banner Eklendi", description: "Listeye yeni bir görsel alanı tanımlandı." });
+        toast({ title: t('ngo_admin_website.bannerAddedTitle'), description: t('ngo_admin_website.bannerAddedDescription') });
     };
 
     const removeBanner = (id: string) => {
         setBanners(prev => prev.filter(b => b.id !== id));
-        toast({ variant: "destructive", title: "Banner Kaldırıldı" });
+        toast({ variant: "destructive", title: t('ngo_admin_website.bannerRemovedTitle') });
     };
 
     const handleBannerReplaceClick = () => {
-        toast({ title: "Görsel Değiştir", description: "Dosya seçici açılıyor..." });
+        toast({ title: t('ngo_admin_website.bannerReplaceTitle'), description: t('ngo_admin_website.bannerReplaceDescription') });
     };
 
     const handleAnalyticsConnect = (providerName: string) => {
-        toast({ title: `${providerName} Bağlantısı` });
+        toast({ title: t('ngo_admin_website.analyticsConnectTitle').replace('{provider}', providerName) });
     };
 
     const handlePublish = async () => {
         if (!ngoId) {
-            toast({ variant: 'destructive', title: 'Yönetici varlık bulunamadı' });
+            toast({ variant: 'destructive', title: t('ngo_admin_website.publishNoEntityTitle') });
             return;
         }
         if (!domainName.trim()) {
-            toast({ variant: 'destructive', title: 'Alan adı eksik', description: 'Yayına almak için Alan Adınızı girin.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_website.publishMissingDomainTitle'), description: t('ngo_admin_website.publishMissingDomainDescription') });
             return;
         }
         // 1) DNS doğrulaması
@@ -205,10 +208,10 @@ export default function WebsiteBuilderPage() {
         if (!dns.ok) {
             toast({
                 variant: 'destructive',
-                title: 'DNS doğrulanamadı',
+                title: t('ngo_admin_website.publishDnsErrorTitle'),
                 description: dns.error
                     ? dns.error
-                    : `Alan adınızın NS kayıtları henüz ns1.hangel.org / ns2.hangel.org değerlerini göstermiyor. Bulunan: ${dns.foundNS.join(', ') || 'kayıt yok'}.`,
+                    : t('ngo_admin_website.publishDnsErrorDescription').replace('{found}', dns.foundNS.join(', ') || t('ngo_admin_website.publishDnsErrorEmpty')),
             });
             return;
         }
@@ -223,11 +226,11 @@ export default function WebsiteBuilderPage() {
                 'siteSettings.dnsVerifiedAt': serverTimestamp(),
             } as Record<string, unknown>);
             setLastUpdated(new Date().toLocaleTimeString('tr-TR'));
-            toast({ title: 'Siteniz Yayınlandı!', description: 'DNS doğrulandı, içerikler kaydedildi. Önizleme yeni sekmede açılıyor...' });
+            toast({ title: t('ngo_admin_website.publishSuccessTitle'), description: t('ngo_admin_website.publishSuccessDescription') });
             window.open(`/ngo-admin/website/preview?primary=${primaryColor.replace('#', '')}&id=${ngoId}`, '_blank');
         } catch (err) {
             const e = err as { message?: string };
-            toast({ variant: 'destructive', title: 'Yayınlama başarısız', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_website.publishFailedTitle'), description: e?.message || t('ngo_admin_website.saveErrorDefault') });
         } finally {
             setIsSaving(false);
         }
@@ -235,16 +238,16 @@ export default function WebsiteBuilderPage() {
 
     return (
         <div className="p-4 space-y-6 animate-in fade-in-0 max-w-5xl mx-auto pb-32">
-            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('ngo_admin_website.backAria')}>
                 <ArrowLeft className="h-6 w-6" />
             </Button>
             <div>
-                <h1 className="text-2xl font-bold font-headline">Web Sitesi Yönetimi</h1>
+                <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_website.heading')}</h1>
                 <p className="text-muted-foreground text-sm">
                     {ngoData?.name ? (
-                        <><span className="font-semibold text-foreground">{ngoData.name}</span> için web sitesinin görünüm ve içerik ayarları.</>
+                        <><span className="font-semibold text-foreground">{ngoData.name}</span> {t('ngo_admin_website.subheadingForName')}</>
                     ) : (
-                        'Kuruluşunuza özel web sitesinin tüm görünüm ve içerik ayarlarını yönetin.'
+                        t('ngo_admin_website.subheadingDefault')
                     )}
                 </p>
             </div>
@@ -253,8 +256,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Globe className="h-5 w-5 text-white" />}
                     iconBg="bg-blue-500"
-                    title="Alan Adı (Domain) Ayarları"
-                    description="Web sitenizi kurumsal markanıza bağlayın."
+                    title={t('ngo_admin_website.sectionDomainTitle')}
+                    description={t('ngo_admin_website.sectionDomainDescription')}
                     enabled={sections.domain}
                     onToggle={() => toggleSection('domain')}
                 >
@@ -270,8 +273,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Palette className="h-5 w-5 text-white" />}
                     iconBg="bg-gray-500"
-                    title="Kurumsal Renk Seçimi"
-                    description="Sitenizin ana temasını belirleyecek kurumsal rengi seçin."
+                    title={t('ngo_admin_website.sectionColorsTitle')}
+                    description={t('ngo_admin_website.sectionColorsDescription')}
                     enabled={sections.colors}
                     onToggle={() => toggleSection('colors')}
                 >
@@ -281,8 +284,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<ImageIcon className="h-5 w-5 text-white" />}
                     iconBg="bg-orange-500"
-                    title="Görsel Yönetimi (Banner)"
-                    description="Web sitesi ana sayfasında dönecek görselleri yönetin."
+                    title={t('ngo_admin_website.sectionBannersTitle')}
+                    description={t('ngo_admin_website.sectionBannersDescription')}
                     enabled={sections.banners}
                     onToggle={() => toggleSection('banners')}
                 >
@@ -297,8 +300,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Building2 className="h-5 w-5 text-white" />}
                     iconBg="bg-blue-400"
-                    title="Hakkımızda Bölümü"
-                    description="Kuruluş hikayesi ve misyon bilgilerini yönetin."
+                    title={t('ngo_admin_website.sectionAboutTitle')}
+                    description={t('ngo_admin_website.sectionAboutDescription')}
                     enabled={sections.about}
                     onToggle={() => toggleSection('about')}
                 >
@@ -308,8 +311,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<MessageSquare className="h-5 w-5 text-white" />}
                     iconBg="bg-blue-500"
-                    title="Başkanın Mesajı"
-                    description="Web sitesi ana sayfasında yer alacak kurumsal mesaj."
+                    title={t('ngo_admin_website.sectionPresidentTitle')}
+                    description={t('ngo_admin_website.sectionPresidentDescription')}
                     enabled={sections.president}
                     onToggle={() => toggleSection('president')}
                 >
@@ -325,8 +328,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<BarChart3 className="h-5 w-5 text-white" />}
                     iconBg="bg-indigo-500"
-                    title="Kurumsal İstatistikler"
-                    description="Web sitesinde gösterilecek sayaçları yönetin."
+                    title={t('ngo_admin_website.sectionStatsTitle')}
+                    description={t('ngo_admin_website.sectionStatsDescription')}
                     enabled={sections.stats}
                     onToggle={() => toggleSection('stats')}
                 >
@@ -336,8 +339,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Heart className="h-5 w-5 text-white" />}
                     iconBg="bg-green-600"
-                    title="Bağış ve Destek Yöntemleri"
-                    description="Aktif bağış kanallarını yapılandırın."
+                    title={t('ngo_admin_website.sectionDonationsTitle')}
+                    description={t('ngo_admin_website.sectionDonationsDescription')}
                     enabled={sections.donations}
                     onToggle={() => toggleSection('donations')}
                 >
@@ -347,8 +350,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<HeartHandshake className="h-5 w-5 text-white" />}
                     iconBg="bg-red-500"
-                    title="Gönüllülük İlanları"
-                    description="İlanların web sitesindeki görünümünü yönetin."
+                    title={t('ngo_admin_website.sectionVolunteeringTitle')}
+                    description={t('ngo_admin_website.sectionVolunteeringDescription')}
                     enabled={sections.volunteering}
                     onToggle={() => toggleSection('volunteering')}
                 >
@@ -358,8 +361,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Calendar className="h-5 w-5 text-white" />}
                     iconBg="bg-rose-500"
-                    title="Etkinlik Takvimi"
-                    description="Web sitesinde yaklaşan etkinliklerinizi listeleyin."
+                    title={t('ngo_admin_website.sectionEventsTitle')}
+                    description={t('ngo_admin_website.sectionEventsDescription')}
                     enabled={sections.events}
                     onToggle={() => toggleSection('events')}
                 >
@@ -369,8 +372,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<ShoppingCart className="h-5 w-5 text-white" />}
                     iconBg="bg-violet-500"
-                    title="İktisadi İşletme Mağazası"
-                    description="Ürünlerinizi web sitesi vitrininde sergileyin."
+                    title={t('ngo_admin_website.sectionEcommerceTitle')}
+                    description={t('ngo_admin_website.sectionEcommerceDescription')}
                     enabled={sections.ecommerce}
                     onToggle={() => toggleSection('ecommerce')}
                 >
@@ -380,8 +383,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Newspaper className="h-5 w-5 text-white" />}
                     iconBg="bg-orange-500"
-                    title="Haberler ve Duyurular"
-                    description="Mini Blog içeriklerini yayına alın."
+                    title={t('ngo_admin_website.sectionNewsTitle')}
+                    description={t('ngo_admin_website.sectionNewsDescription')}
                     enabled={sections.news}
                     onToggle={() => toggleSection('news')}
                 >
@@ -391,8 +394,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Target className="h-5 w-5 text-white" />}
                     iconBg="bg-red-600"
-                    title="Küresel Amaçlar (SKA)"
-                    description="Desteklediğiniz 17 amacı web sitenizde listeleyin."
+                    title={t('ngo_admin_website.sectionSdgTitle')}
+                    description={t('ngo_admin_website.sectionSdgDescription')}
                     enabled={sections.sdg}
                     onToggle={() => toggleSection('sdg')}
                 >
@@ -402,8 +405,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Shield className="h-5 w-5 text-white" />}
                     iconBg="bg-green-600"
-                    title="Şeffaflık Endeksi"
-                    description="Güven puanınızı ve belgelerinizi gösterin."
+                    title={t('ngo_admin_website.sectionTransparencyTitle')}
+                    description={t('ngo_admin_website.sectionTransparencyDescription')}
                     enabled={sections.transparency}
                     onToggle={() => toggleSection('transparency')}
                 >
@@ -413,8 +416,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Phone className="h-5 w-5 text-white" />}
                     iconBg="bg-gray-500"
-                    title="İletişim Bilgileri"
-                    description="İletişim kanallarını yapılandırın."
+                    title={t('ngo_admin_website.sectionContactTitle')}
+                    description={t('ngo_admin_website.sectionContactDescription')}
                     enabled={sections.contact}
                     onToggle={() => toggleSection('contact')}
                 >
@@ -424,8 +427,8 @@ export default function WebsiteBuilderPage() {
                 <SectionCard
                     icon={<Code className="h-5 w-5 text-white" />}
                     iconBg="bg-sky-500"
-                    title="Web Analiz Araçları"
-                    description="Takip kodlarını sitenize entegre edin."
+                    title={t('ngo_admin_website.sectionAnalyticsTitle')}
+                    description={t('ngo_admin_website.sectionAnalyticsDescription')}
                     enabled={sections.analytics}
                     onToggle={() => toggleSection('analytics')}
                 >

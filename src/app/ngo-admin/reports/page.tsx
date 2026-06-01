@@ -8,6 +8,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -52,11 +53,11 @@ interface OpportunityDoc {
 
 const fmtTRY = (n: number) => n.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
 
-const EmptyState = ({ message }: { message?: string }) => (
+const EmptyState = ({ message, hint }: { message?: string; hint?: string }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
     <BarChart3 className="h-12 w-12 text-muted-foreground/30 mb-4" />
-    <p className="text-muted-foreground font-medium">{message || 'Henüz veri yok'}</p>
-    <p className="text-sm text-muted-foreground/70 mt-1">İlgili faaliyetler oluştukça raporlar burada görünür.</p>
+    <p className="text-muted-foreground font-medium">{message}</p>
+    {hint ? <p className="text-sm text-muted-foreground/70 mt-1">{hint}</p> : null}
   </div>
 );
 
@@ -70,6 +71,7 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
 export default function ReportsPage() {
   const firestore = useFirestore();
   const { user: authUser } = useUser();
+  const { t } = useTranslation();
 
   // Aktif kuruluş (ActiveEntityProvider) — banner ve rapor içeriği tek kaynak.
   const { id: activeIdFromCtx, kind: activeKind, isLoading: activeLoading } = useActiveEntity();
@@ -80,9 +82,13 @@ export default function ReportsPage() {
 
   const activeEntity = useMemo<{ kind: EntityKind; id: string; name: string } | null>(() => {
     if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
-    const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+    const labels: Record<EntityKind, string> = {
+      ngo: t('ngo_admin_reports.entityKindNgo'),
+      brand: t('ngo_admin_reports.entityKindBrand'),
+      club: t('ngo_admin_reports.entityKindClub'),
+    };
     return { kind: activeKind, id: activeIdFromCtx, name: activeDoc.name || labels[activeKind] };
-  }, [activeIdFromCtx, activeKind, activeDoc]);
+  }, [activeIdFromCtx, activeKind, activeDoc, t]);
 
   // ---- Real data sources ----
   const donationsQuery = useMemoFirebase(() => (firestore ? collection(firestore, COLLECTIONS.donations) : null), [firestore]);
@@ -132,8 +138,9 @@ export default function ReportsPage() {
     };
     const totalShare = matching.reduce((s, d) => s + share(d), 0);
     const byBrandMap: Record<string, number> = {};
+    const otherLabel = t('ngo_admin_reports.otherBrand');
     matching.forEach((d) => {
-      const name = d.brandName || 'Diğer';
+      const name = d.brandName || otherLabel;
       byBrandMap[name] = (byBrandMap[name] || 0) + share(d);
     });
     const byBrand = Object.entries(byBrandMap)
@@ -145,7 +152,7 @@ export default function ReportsPage() {
       average: matching.length > 0 ? totalShare / matching.length : 0,
       byBrand,
     };
-  }, [activeEntity, allDonations]);
+  }, [activeEntity, allDonations, t]);
 
   const earnings = useMemo(() => monthlyEarnings || [], [monthlyEarnings]);
 
@@ -167,12 +174,13 @@ export default function ReportsPage() {
     const opps = opportunities || [];
     const openOpportunities = opps.filter((o) => o.status === 'Aktif' || o.status === 'Yayında').length;
     const totalApplications = opps.reduce((s, o) => s + (o.volunteerCount?.applications || 0), 0);
+    const fallbackName = t('ngo_admin_reports.opportunityDefaultName');
     const byOpportunity = opps
-      .map((o) => ({ name: o.title || 'İlan', Başvuru: o.volunteerCount?.applications || 0 }))
+      .map((o) => ({ name: o.title || fallbackName, Başvuru: o.volunteerCount?.applications || 0 }))
       .filter((o) => o.Başvuru > 0)
       .sort((a, b) => b.Başvuru - a.Başvuru);
     return { volunteers, supporters, openOpportunities, totalOpportunities: opps.length, totalApplications, byOpportunity };
-  }, [activeEntity, allUsers, opportunities]);
+  }, [activeEntity, allUsers, opportunities, t]);
 
   // ---- Sosyal Etki: real activity-derived impact metrics ----
   const impactStats = useMemo(() => ({
@@ -195,15 +203,15 @@ export default function ReportsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Raporlar</h1>
-          <p className="text-muted-foreground">Kuruluşunuzun faaliyetleri, finansalları ve etkisiyle ilgili tüm raporlara buradan erişin.</p>
+          <h1 className="text-2xl font-bold">{t('ngo_admin_reports.heading')}</h1>
+          <p className="text-muted-foreground">{t('ngo_admin_reports.subheading')}</p>
         </div>
         <Card>
           <CardContent className="py-16">
             <div className="flex flex-col items-center justify-center text-center">
               <ShieldAlert className="h-12 w-12 text-muted-foreground/40 mb-4" />
-              <p className="text-muted-foreground font-medium">Yönetici olduğunuz bir varlık bulunamadı.</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">Lütfen sistem yöneticinize danışın.</p>
+              <p className="text-muted-foreground font-medium">{t('ngo_admin_reports.noManagedEntityTitle')}</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">{t('ngo_admin_reports.noManagedEntityHint')}</p>
             </div>
           </CardContent>
         </Card>
@@ -211,7 +219,11 @@ export default function ReportsPage() {
     );
   }
 
-  const entityTypeLabel = activeEntity.kind === 'ngo' ? 'STK' : activeEntity.kind === 'brand' ? 'Marka' : 'Kulüp';
+  const entityTypeLabel = activeEntity.kind === 'ngo'
+    ? t('ngo_admin_reports.entityKindNgo')
+    : activeEntity.kind === 'brand'
+      ? t('ngo_admin_reports.entityKindBrand')
+      : t('ngo_admin_reports.entityKindClub');
   const hasFinancial = financial.totalCount > 0 || earnings.length > 0;
   const hasVolunteer = volunteerStats.supporters > 0 || volunteerStats.totalOpportunities > 0 || volunteerStats.totalApplications > 0;
   const hasImpact = impactStats.postsCount > 0 || impactStats.transparencyCount > 0 || impactStats.opportunitiesCount > 0;
@@ -219,7 +231,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Raporlar</h1>
+        <h1 className="text-2xl font-bold">{t('ngo_admin_reports.heading')}</h1>
         <p className="text-muted-foreground">
           <span className="font-semibold text-foreground">{activeEntity.name}</span>
           <span className="mx-2 text-muted-foreground/40">·</span>
@@ -229,30 +241,30 @@ export default function ReportsPage() {
 
       <Tabs defaultValue="Finansal" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="Finansal">Finansal</TabsTrigger>
-          <TabsTrigger value="Gönüllülük">Gönüllülük</TabsTrigger>
-          <TabsTrigger value="Sosyal Etki">Sosyal Etki</TabsTrigger>
+          <TabsTrigger value="Finansal">{t('ngo_admin_reports.tabFinancial')}</TabsTrigger>
+          <TabsTrigger value="Gönüllülük">{t('ngo_admin_reports.tabVolunteer')}</TabsTrigger>
+          <TabsTrigger value="Sosyal Etki">{t('ngo_admin_reports.tabImpact')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="Finansal" className="mt-6 space-y-6">
           {!hasFinancial ? (
-            <Card><CardContent className="py-4"><EmptyState message="Henüz finansal veri yok" /></CardContent></Card>
+            <Card><CardContent className="py-4"><EmptyState message={t('ngo_admin_reports.financialEmpty')} hint={t('ngo_admin_reports.emptyHint')} /></CardContent></Card>
           ) : (
             <>
               <Card>
-                <CardHeader><CardTitle>Genel Finansal Özet</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_reports.financialOverviewTitle')}</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <StatCard label={activeEntity.kind === 'brand' ? 'Toplam Bağış' : 'Toplam STK Payı'} value={fmtTRY(financial.totalShare)} />
-                  <StatCard label="Toplam İşlem Sayısı" value={String(financial.totalCount)} />
-                  <StatCard label="Ortalama Bağış Tutarı" value={fmtTRY(financial.average)} />
+                  <StatCard label={activeEntity.kind === 'brand' ? t('ngo_admin_reports.totalBrandDonation') : t('ngo_admin_reports.totalNgoShare')} value={fmtTRY(financial.totalShare)} />
+                  <StatCard label={t('ngo_admin_reports.totalTransactions')} value={String(financial.totalCount)} />
+                  <StatCard label={t('ngo_admin_reports.avgDonation')} value={fmtTRY(financial.average)} />
                 </CardContent>
               </Card>
 
               {financial.byBrand.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Markalara Göre Bağış Dağılımı</CardTitle>
-                    <CardDescription>Bağışların kaynağına göre dağılımı.</CardDescription>
+                    <CardTitle>{t('ngo_admin_reports.brandChartTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_reports.brandChartDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -272,15 +284,15 @@ export default function ReportsPage() {
               {earnings.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Aylık Hak Edişler</CardTitle>
-                    <CardDescription>Kesinleşmiş ve tahmini aylık hak edişleriniz.</CardDescription>
+                    <CardTitle>{t('ngo_admin_reports.monthlyEarningsTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_reports.monthlyEarningsDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {earnings.map((earning) => (
                       <div key={earning.id} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
                         <div>
                           <p className="font-semibold">{earning.month}</p>
-                          <p className="text-xs text-muted-foreground">{earning.status} Hak Ediş</p>
+                          <p className="text-xs text-muted-foreground">{earning.status} {t('ngo_admin_reports.monthlyEarningsLabel')}</p>
                         </div>
                         <p className="text-lg font-bold text-primary">{fmtTRY(earning.amount || 0)}</p>
                       </div>
@@ -294,26 +306,26 @@ export default function ReportsPage() {
 
         <TabsContent value="Gönüllülük" className="mt-6 space-y-6">
           {activeEntity.kind !== 'ngo' ? (
-            <Card><CardContent className="py-4"><EmptyState message="Gönüllülük raporları yalnızca STK hesapları içindir" /></CardContent></Card>
+            <Card><CardContent className="py-4"><EmptyState message={t('ngo_admin_reports.volunteerNgoOnly')} hint={t('ngo_admin_reports.emptyHint')} /></CardContent></Card>
           ) : !hasVolunteer ? (
-            <Card><CardContent className="py-4"><EmptyState message="Henüz gönüllülük verisi yok" /></CardContent></Card>
+            <Card><CardContent className="py-4"><EmptyState message={t('ngo_admin_reports.volunteerEmpty')} hint={t('ngo_admin_reports.emptyHint')} /></CardContent></Card>
           ) : (
             <>
               <Card>
-                <CardHeader><CardTitle>Genel Gönüllülük Özeti</CardTitle></CardHeader>
+                <CardHeader><CardTitle>{t('ngo_admin_reports.volunteerOverviewTitle')}</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <StatCard label="Destekçi" value={String(volunteerStats.supporters)} />
-                  <StatCard label="Gönüllü" value={String(volunteerStats.volunteers)} />
-                  <StatCard label="Aktif İlan" value={String(volunteerStats.openOpportunities)} />
-                  <StatCard label="Toplam Başvuru" value={String(volunteerStats.totalApplications)} />
+                  <StatCard label={t('ngo_admin_reports.volunteerSupporters')} value={String(volunteerStats.supporters)} />
+                  <StatCard label={t('ngo_admin_reports.volunteerVolunteers')} value={String(volunteerStats.volunteers)} />
+                  <StatCard label={t('ngo_admin_reports.volunteerOpenOpportunities')} value={String(volunteerStats.openOpportunities)} />
+                  <StatCard label={t('ngo_admin_reports.volunteerTotalApplications')} value={String(volunteerStats.totalApplications)} />
                 </CardContent>
               </Card>
 
               {volunteerStats.byOpportunity.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>İlana Göre Başvuru Dağılımı</CardTitle>
-                    <CardDescription>Gönüllülük ilanlarınıza gelen başvuru sayıları.</CardDescription>
+                    <CardTitle>{t('ngo_admin_reports.opportunityChartTitle')}</CardTitle>
+                    <CardDescription>{t('ngo_admin_reports.opportunityChartDescription')}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={300}>
@@ -335,17 +347,17 @@ export default function ReportsPage() {
 
         <TabsContent value="Sosyal Etki" className="mt-6 space-y-6">
           {!hasImpact ? (
-            <Card><CardContent className="py-4"><EmptyState message="Henüz sosyal etki verisi yok" /></CardContent></Card>
+            <Card><CardContent className="py-4"><EmptyState message={t('ngo_admin_reports.impactEmpty')} hint={t('ngo_admin_reports.emptyHint')} /></CardContent></Card>
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Faaliyet Özeti</CardTitle>
-                <CardDescription>Kuruluşunuzun platform üzerindeki etki faaliyetleri.</CardDescription>
+                <CardTitle>{t('ngo_admin_reports.impactOverviewTitle')}</CardTitle>
+                <CardDescription>{t('ngo_admin_reports.impactOverviewDescription')}</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <StatCard label="Paylaşım" value={String(impactStats.postsCount)} />
-                {activeEntity.kind === 'ngo' && <StatCard label="Şeffaflık Kaydı" value={String(impactStats.transparencyCount)} />}
-                {activeEntity.kind === 'ngo' && <StatCard label="Gönüllülük İlanı" value={String(impactStats.opportunitiesCount)} />}
+                <StatCard label={t('ngo_admin_reports.impactPosts')} value={String(impactStats.postsCount)} />
+                {activeEntity.kind === 'ngo' && <StatCard label={t('ngo_admin_reports.impactTransparency')} value={String(impactStats.transparencyCount)} />}
+                {activeEntity.kind === 'ngo' && <StatCard label={t('ngo_admin_reports.impactOpportunities')} value={String(impactStats.opportunitiesCount)} />}
               </CardContent>
             </Card>
           )}

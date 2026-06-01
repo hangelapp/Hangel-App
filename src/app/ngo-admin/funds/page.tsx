@@ -22,6 +22,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { collection, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface Fund {
   id: string;
@@ -101,6 +102,7 @@ const fallbackFunds: Fund[] = [
 export default function FundsPage() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const db = useFirestore();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -197,7 +199,7 @@ export default function FundsPage() {
         setStatusFilter(null);
         setAreaFilters([]);
         setSearchTerm('');
-        toast({ title: "Filtreler Temizlendi" });
+        toast({ title: t('ngo_admin_funds.filtersClearedToast') });
     };
 
     const activeFilterCount = (statusFilter ? 1 : 0) + areaFilters.length;
@@ -205,21 +207,21 @@ export default function FundsPage() {
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_funds.backAria')}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-headline">Hibeler ve Fonlar</h1>
-                    <p className="text-muted-foreground text-sm">Kuruluşunuzun başvurabileceği aktif hibe ve fon fırsatları.</p>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_funds.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('ngo_admin_funds.subtitle')}</p>
                 </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                 <div className="relative flex-grow w-full">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input 
-                        placeholder="Hibe veya sağlayıcı ara..." 
-                        className="pl-10 h-11 rounded-xl" 
+                    <Input
+                        placeholder={t('ngo_admin_funds.searchPlaceholder')}
+                        className="pl-10 h-11 rounded-xl"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -227,7 +229,7 @@ export default function FundsPage() {
                 <div className="flex gap-2 w-full sm:w-auto">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl relative" aria-label="Filtrele">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl relative" aria-label={t('ngo_admin_funds.filterAria')}>
                                 <Filter className="h-5 w-5" />
                                 {activeFilterCount > 0 && (
                                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
@@ -237,22 +239,22 @@ export default function FundsPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                            <DropdownMenuLabel>Duruma Göre</DropdownMenuLabel>
-                            <DropdownMenuCheckboxItem 
-                                checked={statusFilter === 'Açık'} 
+                            <DropdownMenuLabel>{t('ngo_admin_funds.filterByStatus')}</DropdownMenuLabel>
+                            <DropdownMenuCheckboxItem
+                                checked={statusFilter === 'Açık'}
                                 onCheckedChange={() => setStatusFilter(statusFilter === 'Açık' ? null : 'Açık')}
                             >
-                                Sadece Açık İlanlar
+                                {t('ngo_admin_funds.onlyOpen')}
                             </DropdownMenuCheckboxItem>
-                            <DropdownMenuCheckboxItem 
-                                checked={statusFilter === 'Kapandı'} 
+                            <DropdownMenuCheckboxItem
+                                checked={statusFilter === 'Kapandı'}
                                 onCheckedChange={() => setStatusFilter(statusFilter === 'Kapandı' ? null : 'Kapandı')}
                             >
-                                Kapanan İlanlar
+                                {t('ngo_admin_funds.onlyClosed')}
                             </DropdownMenuCheckboxItem>
-                            
+
                             <DropdownMenuSeparator />
-                            <DropdownMenuLabel>Odak Alanlarına Göre</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('ngo_admin_funds.filterByArea')}</DropdownMenuLabel>
                             {allPossibleAreas.map(area => (
                                 <DropdownMenuCheckboxItem
                                     key={area}
@@ -267,7 +269,7 @@ export default function FundsPage() {
                                 <>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={clearFilters} className="text-destructive font-bold focus:text-destructive">
-                                        <X className="mr-2 h-4 w-4" /> Filtreleri Temizle
+                                        <X className="mr-2 h-4 w-4" /> {t('ngo_admin_funds.clearFilters')}
                                     </DropdownMenuItem>
                                 </>
                             )}
@@ -276,25 +278,25 @@ export default function FundsPage() {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl" aria-label="Sırala">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0 rounded-xl" aria-label={t('ngo_admin_funds.sortAria')}>
                                 <ArrowDownUp className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                            <DropdownMenuLabel>Sıralama Seçenekleri</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('ngo_admin_funds.sortOptions')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setSortConfig({ key: 'deadline', direction: 'asc' })}>
-                                Tarih (En Yakın) {sortConfig.key === 'deadline' && sortConfig.direction === 'asc' && '✓'}
+                                {t('ngo_admin_funds.sortDeadlineAsc')} {sortConfig.key === 'deadline' && sortConfig.direction === 'asc' && '✓'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setSortConfig({ key: 'deadline', direction: 'desc' })}>
-                                Tarih (En Uzak) {sortConfig.key === 'deadline' && sortConfig.direction === 'desc' && '✓'}
+                                {t('ngo_admin_funds.sortDeadlineDesc')} {sortConfig.key === 'deadline' && sortConfig.direction === 'desc' && '✓'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'asc' })}>
-                                İsim (A-Z) {sortConfig.key === 'name' && sortConfig.direction === 'asc' && '✓'}
+                                {t('ngo_admin_funds.sortNameAsc')} {sortConfig.key === 'name' && sortConfig.direction === 'asc' && '✓'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>
-                                İsim (Z-A) {sortConfig.key === 'name' && sortConfig.direction === 'desc' && '✓'}
+                                {t('ngo_admin_funds.sortNameDesc')} {sortConfig.key === 'name' && sortConfig.direction === 'desc' && '✓'}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -304,10 +306,10 @@ export default function FundsPage() {
             <Card className="rounded-[2rem] border-black/5 shadow-sm">
                 <CardHeader>
                     <div className="flex justify-between items-center">
-                        <CardTitle>Hibe Programları</CardTitle>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{filteredAndSortedFunds.length} Sonuç</p>
+                        <CardTitle>{t('ngo_admin_funds.cardTitle')}</CardTitle>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{filteredAndSortedFunds.length} {t('ngo_admin_funds.resultsSuffix')}</p>
                     </div>
-                    <CardDescription>Başvuruya açık olan ve geçmiş hibe fırsatlarını inceleyin.</CardDescription>
+                    <CardDescription>{t('ngo_admin_funds.cardDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {filteredAndSortedFunds.length > 0 ? filteredAndSortedFunds.map(fund => (
@@ -324,7 +326,7 @@ export default function FundsPage() {
                                             const sc = compatScore(fund);
                                             return sc !== null ? (
                                                 <Badge className={cn('text-[10px] font-black border-none mt-0.5', sc >= 60 ? 'bg-green-600 text-white' : sc >= 30 ? 'bg-amber-500 text-white' : 'bg-muted text-muted-foreground')}>
-                                                    Kurumunuza %{sc} uyumlu
+                                                    {t('ngo_admin_funds.compatibilityPrefix')}{sc}{t('ngo_admin_funds.compatibilitySuffix')}
                                                 </Badge>
                                             ) : null;
                                         })()}
@@ -333,7 +335,7 @@ export default function FundsPage() {
                                         "font-black text-[9px] tracking-widest px-3 py-1 uppercase rounded-lg border-none",
                                         fund.status === 'Açık' ? 'bg-green-600 text-white' : 'bg-muted text-muted-foreground'
                                     )}>
-                                        {fund.status}
+                                        {fund.status === 'Açık' ? t('ngo_admin_funds.statusOpen') : fund.status === 'Kapandı' ? t('ngo_admin_funds.statusClosed') : fund.status}
                                     </Badge>
                                 </div>
                             </CardHeader>
@@ -348,16 +350,16 @@ export default function FundsPage() {
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-[11px] font-bold text-muted-foreground">
                                     <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1.5 rounded-full">
                                         <Calendar className="h-3.5 w-3.5" />
-                                        <span>Son Başvuru: {fund.deadline || 'Belirtilmemiş'}</span>
+                                        <span>{t('ngo_admin_funds.deadlineLabel')} {fund.deadline || t('ngo_admin_funds.deadlineUnspecified')}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 bg-primary/5 text-primary px-3 py-1.5 rounded-full">
                                         <DollarSign className="h-3.5 w-3.5" />
-                                        <span>{fund.budget || 'Bütçe belirtilmemiş'}</span>
+                                        <span>{fund.budget || t('ngo_admin_funds.budgetUnspecified')}</span>
                                     </div>
                                 </div>
                             </CardContent>
                             <CardFooter className="p-6 pt-0 flex flex-wrap gap-3">
-                                <Button size="sm" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl" onClick={() => handleOpenDetails(fund)}>Detayları Gör</Button>
+                                <Button size="sm" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl" onClick={() => handleOpenDetails(fund)}>{t('ngo_admin_funds.viewDetails')}</Button>
                                 <Button
                                     size="sm"
                                     variant="default"
@@ -365,14 +367,14 @@ export default function FundsPage() {
                                     onClick={() => router.push('/library')}
                                 >
                                     <Send className="mr-2 h-3.5 w-3.5" />
-                                    Proje Hazırla
+                                    {t('ngo_admin_funds.prepareProject')}
                                 </Button>
                                 {(() => {
                                     const officialUrl = normalizeUrl(fund.url);
                                     return officialUrl ? (
                                         <Button asChild size="sm" variant="outline" className="flex-1 min-w-[120px] font-bold h-10 rounded-xl border-black/10">
                                             <a href={officialUrl} target="_blank" rel="noopener noreferrer">
-                                                Resmi Sayfa <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                                                {t('ngo_admin_funds.officialPage')} <ExternalLink className="ml-2 h-3.5 w-3.5" />
                                             </a>
                                         </Button>
                                     ) : null;
@@ -384,11 +386,11 @@ export default function FundsPage() {
                             <HandCoins className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
                             {(activeFilterCount > 0 || searchTerm) ? (
                                 <>
-                                    <p className="text-muted-foreground font-medium italic">Aradığınız kriterlerde hibe fırsatı bulunamadı.</p>
-                                    <Button variant="link" onClick={clearFilters} className="mt-2 text-primary">Tüm Filtreleri Temizle</Button>
+                                    <p className="text-muted-foreground font-medium italic">{t('ngo_admin_funds.noResultsFiltered')}</p>
+                                    <Button variant="link" onClick={clearFilters} className="mt-2 text-primary">{t('ngo_admin_funds.clearAllFilters')}</Button>
                                 </>
                             ) : (
-                                <p className="text-muted-foreground font-medium italic">Henüz yayınlanan bir hibe veya fon ilanı yok.</p>
+                                <p className="text-muted-foreground font-medium italic">{t('ngo_admin_funds.noFundsYet')}</p>
                             )}
                         </div>
                     )}

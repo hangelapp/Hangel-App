@@ -23,6 +23,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { collection, doc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -56,6 +57,7 @@ const defaultPanelSettings: Required<PanelSettings> = {
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const firestore = useFirestore();
   const { user: authUser, isUserLoading } = useUser();
 
@@ -90,7 +92,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     if (!entityRef) {
-      toast({ variant: 'destructive', title: 'Kuruluş bulunamadı', description: 'Ayarlar kaydedilemedi. Lütfen oturumunuzu yenileyin.' });
+      toast({ variant: 'destructive', title: t('ngo_admin_settings.toastEntityMissing'), description: t('ngo_admin_settings.toastEntityMissingDesc') });
       return;
     }
     setSaving(true);
@@ -103,14 +105,14 @@ export default function SettingsPage() {
           publicListing: settings.publicListing,
         },
       });
-      toast({ title: 'Ayarlar kaydedildi', description: 'Panel tercihleriniz güncellendi.' });
+      toast({ title: t('ngo_admin_settings.toastSaved'), description: t('ngo_admin_settings.toastSavedDesc') });
     } catch (error) {
       console.error('Panel settings save failed:', error);
       const err = error as { code?: string; message?: string };
       toast({
         variant: 'destructive',
-        title: 'Ayarlar kaydedilemedi',
-        description: err?.code === 'permission-denied' ? 'Sunucu izin vermedi.' : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+        title: t('ngo_admin_settings.toastSaveFailed'),
+        description: err?.code === 'permission-denied' ? t('ngo_admin_settings.toastPermDenied') : (err?.message || t('ngo_admin_settings.toastGenericErr')),
       });
     } finally {
       setSaving(false);
@@ -120,7 +122,7 @@ export default function SettingsPage() {
   // Danger zone: record a request doc (no direct destructive entity write).
   const handleAccountRequest = async (action: 'freeze' | 'delete') => {
     if (!authUser?.uid || !activeEntity?.data?.id) {
-      toast({ variant: 'destructive', title: 'İşlem yapılamadı', description: 'Kuruluş bulunamadı. Lütfen oturumunuzu yenileyin.' });
+      toast({ variant: 'destructive', title: t('ngo_admin_settings.toastReqFailedTitle'), description: t('ngo_admin_settings.toastReqFailedDesc') });
       return;
     }
     setRequesting(true);
@@ -135,18 +137,18 @@ export default function SettingsPage() {
         createdAt: Timestamp.now(),
       });
       toast({
-        title: 'Talebiniz alındı',
+        title: t('ngo_admin_settings.toastReqReceived'),
         description: action === 'freeze'
-          ? 'Profil dondurma talebiniz ekibimize iletildi.'
-          : 'Hesap silme talebiniz ekibimize iletildi. En kısa sürede sizinle iletişime geçeceğiz.',
+          ? t('ngo_admin_settings.toastReqReceivedFreeze')
+          : t('ngo_admin_settings.toastReqReceivedDelete'),
       });
     } catch (error) {
       console.error('Account request failed:', error);
       const err = error as { code?: string; message?: string };
       toast({
         variant: 'destructive',
-        title: 'Talep gönderilemedi',
-        description: err?.code === 'permission-denied' ? 'Sunucu izin vermedi.' : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+        title: t('ngo_admin_settings.toastReqSendFailed'),
+        description: err?.code === 'permission-denied' ? t('ngo_admin_settings.toastPermDenied') : (err?.message || t('ngo_admin_settings.toastGenericErr')),
       });
     } finally {
       setRequesting(false);
@@ -165,7 +167,7 @@ export default function SettingsPage() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">Bu sayfayı görüntülemek için oturum açmalısınız.</p>
+          <p className="text-muted-foreground">{t('ngo_admin_settings.loadingLogin')}</p>
         </CardContent>
       </Card>
     );
@@ -175,8 +177,8 @@ export default function SettingsPage() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">Yönettiğiniz bir kuruluş bulunamadı.</p>
-          <p className="text-sm text-muted-foreground/70 mt-1">Panel ayarları yalnızca kuruluş yöneticileri için kullanılabilir.</p>
+          <p className="text-muted-foreground">{t('ngo_admin_settings.noEntityTitle')}</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">{t('ngo_admin_settings.noEntityDesc')}</p>
         </CardContent>
       </Card>
     );
@@ -185,38 +187,38 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Panel Ayarları</h1>
+        <h1 className="text-2xl font-bold">{t('ngo_admin_settings.title')}</h1>
         <p className="text-muted-foreground">
-          {activeEntity.data.name || activeEntity.data.shortName || 'Kuruluşunuz'} için bildirim ve görünürlük tercihlerini yönetin.
+          {activeEntity.data.name || activeEntity.data.shortName || t('ngo_admin_settings.orgFallback')} {t('ngo_admin_settings.subtitleSuffix')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-muted-foreground" /> Bildirim Tercihleri
+            <Bell className="h-5 w-5 text-muted-foreground" /> {t('ngo_admin_settings.notifTitle')}
           </CardTitle>
-          <CardDescription>Kuruluşunuzla ilgili hangi durumlarda bildirim almak istediğinizi seçin.</CardDescription>
+          <CardDescription>{t('ngo_admin_settings.notifDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
             <div className="space-y-0.5">
-              <Label htmlFor="notify-message" className="font-medium">Yeni mesaj bildirimi</Label>
-              <p className="text-sm text-muted-foreground">Size yeni bir mesaj geldiğinde bildirim al.</p>
+              <Label htmlFor="notify-message" className="font-medium">{t('ngo_admin_settings.notifMessageLabel')}</Label>
+              <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.notifMessageDesc')}</p>
             </div>
             <Switch id="notify-message" checked={settings.notifyNewMessage} onCheckedChange={() => handleToggle('notifyNewMessage')} />
           </div>
           <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
             <div className="space-y-0.5">
-              <Label htmlFor="notify-volunteer" className="font-medium">Yeni gönüllü başvurusu bildirimi</Label>
-              <p className="text-sm text-muted-foreground">İlanlarınıza yeni bir gönüllü başvurusu geldiğinde bildirim al.</p>
+              <Label htmlFor="notify-volunteer" className="font-medium">{t('ngo_admin_settings.notifVolunteerLabel')}</Label>
+              <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.notifVolunteerDesc')}</p>
             </div>
             <Switch id="notify-volunteer" checked={settings.notifyNewVolunteerApplication} onCheckedChange={() => handleToggle('notifyNewVolunteerApplication')} />
           </div>
           <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
             <div className="space-y-0.5">
-              <Label htmlFor="notify-donation" className="font-medium">Yeni bağış bildirimi</Label>
-              <p className="text-sm text-muted-foreground">Kuruluşunuza yeni bir bağış yapıldığında bildirim al.</p>
+              <Label htmlFor="notify-donation" className="font-medium">{t('ngo_admin_settings.notifDonationLabel')}</Label>
+              <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.notifDonationDesc')}</p>
             </div>
             <Switch id="notify-donation" checked={settings.notifyNewDonation} onCheckedChange={() => handleToggle('notifyNewDonation')} />
           </div>
@@ -226,15 +228,15 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5 text-muted-foreground" /> Görünürlük
+            <Eye className="h-5 w-5 text-muted-foreground" /> {t('ngo_admin_settings.visibilityTitle')}
           </CardTitle>
-          <CardDescription>Kuruluşunuzun platformda nasıl listeleneceğini yönetin.</CardDescription>
+          <CardDescription>{t('ngo_admin_settings.visibilityDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between gap-4 p-4 border rounded-lg">
             <div className="space-y-0.5">
-              <Label htmlFor="public-listing" className="font-medium">Herkese açık listeleme</Label>
-              <p className="text-sm text-muted-foreground">Kapatıldığında kuruluşunuz keşfet ve arama sonuçlarında gösterilmez.</p>
+              <Label htmlFor="public-listing" className="font-medium">{t('ngo_admin_settings.publicListingLabel')}</Label>
+              <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.publicListingDesc')}</p>
             </div>
             <Switch id="public-listing" checked={settings.publicListing} onCheckedChange={() => handleToggle('publicListing')} />
           </div>
@@ -242,59 +244,59 @@ export default function SettingsPage() {
         <CardFooter className="justify-end">
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Kaydet
+            {t('ngo_admin_settings.btnSave')}
           </Button>
         </CardFooter>
       </Card>
 
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-destructive">Tehlikeli Bölge</CardTitle>
-          <CardDescription>Bu işlemler ekibimiz tarafından gözden geçirilir.</CardDescription>
+          <CardTitle className="text-destructive">{t('ngo_admin_settings.dangerTitle')}</CardTitle>
+          <CardDescription>{t('ngo_admin_settings.dangerDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-medium">Profili Geçici Olarak Dondur</h3>
-            <p className="text-sm text-muted-foreground">Profiliniz platformda görünmez olur, ancak verileriniz silinmez.</p>
+            <h3 className="font-medium">{t('ngo_admin_settings.freezeTitle')}</h3>
+            <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.freezeDesc')}</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="secondary" className="mt-2" disabled={requesting}>Profili Dondur</Button>
+                <Button variant="secondary" className="mt-2" disabled={requesting}>{t('ngo_admin_settings.btnFreeze')}</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Profili dondurmak istediğinizden emin misiniz?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('ngo_admin_settings.freezeConfirmTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Profiliniz platformda görünmez olur. Talebiniz ekibimize iletilir ve verileriniz silinmez.
+                    {t('ngo_admin_settings.freezeConfirmDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => handleAccountRequest('freeze')}>Talep Gönder</AlertDialogAction>
+                  <AlertDialogCancel>{t('ngo_admin_settings.btnCancel')}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleAccountRequest('freeze')}>{t('ngo_admin_settings.btnSendRequest')}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </div>
           <div>
-            <h3 className="font-medium text-destructive">Hesabı Kalıcı Olarak Sil</h3>
-            <p className="text-sm text-muted-foreground">Bu işlem geri alınamaz. Talebiniz onaylandığında tüm verileriniz kalıcı olarak silinir.</p>
+            <h3 className="font-medium text-destructive">{t('ngo_admin_settings.deleteTitle')}</h3>
+            <p className="text-sm text-muted-foreground">{t('ngo_admin_settings.deleteDesc')}</p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="mt-2" disabled={requesting}>Hesabı Sil</Button>
+                <Button variant="destructive" className="mt-2" disabled={requesting}>{t('ngo_admin_settings.btnDelete')}</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Hesabı silmek istediğinizden emin misiniz?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('ngo_admin_settings.deleteConfirmTitle')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Bu işlem geri alınamaz. Silme talebiniz ekibimize iletilir; onaylandığında tüm verileriniz kalıcı olarak silinir.
+                    {t('ngo_admin_settings.deleteConfirmDesc')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                  <AlertDialogCancel>{t('ngo_admin_settings.btnCancel')}</AlertDialogCancel>
                   <AlertDialogAction
                     className={cn(buttonVariants({ variant: 'destructive' }))}
                     onClick={() => handleAccountRequest('delete')}
                   >
-                    Evet, Sil Talebi Gönder
+                    {t('ngo_admin_settings.btnConfirmDelete')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

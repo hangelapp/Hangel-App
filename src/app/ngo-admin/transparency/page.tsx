@@ -18,6 +18,7 @@ import { useFirestore, useUser, useDoc, useMemoFirebase, setDocumentNonBlocking 
 import { doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface CriteriaItem {
   id: number;
@@ -68,6 +69,7 @@ export default function TransparencyPage() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user: authUser } = useUser();
+  const { t } = useTranslation();
 
   const [uploadingId, setUploadingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -108,11 +110,11 @@ export default function TransparencyPage() {
 
   const handleFileUpload = useCallback(async (itemId: number, file: File) => {
     if (!authUser?.uid) {
-      toast({ variant: 'destructive', title: 'Oturum bulunamadı' });
+      toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastNoSession') });
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 10MB yükleyebilirsiniz.' });
+      toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastFileTooLargeTitle'), description: t('ngo_admin_transparency.toastFileTooLargeDesc') });
       return;
     }
 
@@ -144,19 +146,19 @@ export default function TransparencyPage() {
         await fetch('/api/ngo/archive', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ docType: existing?.name || `Evrak ${itemId}`, fileUrl, entityType: 'ngo' }),
+          body: JSON.stringify({ docType: existing?.name || `${t('ngo_admin_transparency.docPrefixFallback')} ${itemId}`, fileUrl, entityType: 'ngo' }),
         });
       } catch { /* arşiv aynası başarısız olsa da yükleme tamam */ }
 
-      toast({ title: 'Belge yüklendi', description: `"${file.name}" kaydedildi.` });
+      toast({ title: t('ngo_admin_transparency.toastUploadedTitle'), description: `"${file.name}" ${t('ngo_admin_transparency.toastUploadedDescSuffix')}` });
     } catch (err) {
       console.error('Upload failed', err);
       const e = err as { message?: string };
-      toast({ variant: 'destructive', title: 'Yükleme hatası', description: e?.message || 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastUploadFailedTitle'), description: e?.message || t('ngo_admin_transparency.toastUploadFailedDesc') });
     } finally {
       setUploadingId(null);
     }
-  }, [activeCriteria, authUser, persistCriteria, toast]);
+  }, [activeCriteria, authUser, persistCriteria, toast, t]);
 
   const handleRemove = useCallback(async (itemId: number) => {
     if (!authUser?.uid) return;
@@ -185,8 +187,8 @@ export default function TransparencyPage() {
         : item,
     );
     persistCriteria(next);
-    toast({ title: 'Kaldırıldı', description: `"${target.name}" kriteri sıfırlandı.` });
-  }, [activeCriteria, authUser, persistCriteria, toast]);
+    toast({ title: t('ngo_admin_transparency.toastRemovedTitle'), description: `"${target.name}" ${t('ngo_admin_transparency.toastRemovedDescSuffix')}` });
+  }, [activeCriteria, authUser, persistCriteria, toast, t]);
 
   const openEditor = (item: CriteriaItem) => {
     setEditingId(item.id);
@@ -201,12 +203,12 @@ export default function TransparencyPage() {
   const saveEditor = (item: CriteriaItem) => {
     const val = editValue.trim();
     if (!val) {
-      toast({ variant: 'destructive', title: 'Boş değer girilemez' });
+      toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastEmptyValue') });
       return;
     }
     const isLinkType = item.type === 'link' || item.type === 'document-link';
     if (isLinkType && !/^https?:\/\//i.test(val)) {
-      toast({ variant: 'destructive', title: 'Geçersiz bağlantı', description: 'Bağlantı http:// veya https:// ile başlamalı.' });
+      toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastInvalidLinkTitle'), description: t('ngo_admin_transparency.toastInvalidLinkDesc') });
       return;
     }
 
@@ -222,7 +224,7 @@ export default function TransparencyPage() {
         : c,
     );
     persistCriteria(next);
-    toast({ title: 'Kaydedildi', description: `"${item.name}" güncellendi.` });
+    toast({ title: t('ngo_admin_transparency.toastSavedTitle'), description: `"${item.name}" ${t('ngo_admin_transparency.toastSavedDescSuffix')}` });
     setEditingId(null);
     setEditValue('');
   };
@@ -255,25 +257,25 @@ export default function TransparencyPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Şeffaflık Endeksi</h1>
+        <h1 className="text-2xl font-bold">{t('ngo_admin_transparency.pageTitle')}</h1>
         <p className="text-muted-foreground">
-          Platformda STK'ların şeffaflık puanını belirleyen kriterler aşağıda listelenmiştir. Bu kriterleri karşılayarak destekçilerinizin güvenini artırabilirsiniz.
+          {t('ngo_admin_transparency.pageSubtitle')}
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className={cn('text-2xl font-bold', hasMetThreshold ? 'text-green-600' : 'text-destructive')}>
-            Şeffaflık Puanı: {currentPoints} / {totalPoints}
+            {t('ngo_admin_transparency.scoreLabel')}: {currentPoints} / {totalPoints}
           </CardTitle>
           <Progress value={progressValue} className={cn('mt-2', hasMetThreshold && '[&>div]:bg-green-600')} />
         </CardHeader>
         <CardContent>
           <Alert variant={hasMetThreshold ? 'default' : 'destructive'} className={cn(hasMetThreshold && 'border-green-600/50 bg-green-500/5 text-green-700 [&>svg]:text-green-600')}>
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{hasMetThreshold ? 'Tebrikler!' : 'Önemli Uyarı'}</AlertTitle>
+            <AlertTitle>{hasMetThreshold ? t('ngo_admin_transparency.alertSuccessTitle') : t('ngo_admin_transparency.alertWarnTitle')}</AlertTitle>
             <AlertDescription>
-              {hasMetThreshold ? 'Şeffaflık eşiğini aştınız. Profiliniz platformda güvenle listeleniyor.' : 'Şeffaflık puanı 35\'in altında olan kuruluşlar platformda listelenmez.'}
+              {hasMetThreshold ? t('ngo_admin_transparency.alertSuccessDesc') : t('ngo_admin_transparency.alertWarnDesc')}
             </AlertDescription>
           </Alert>
 
@@ -298,17 +300,17 @@ export default function TransparencyPage() {
                         {item.isCompleted ? (
                           <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
                             <CheckCircle className="h-3 w-3" />
-                            {item.type === 'document' || (item.type === 'document-link' && item.fileName) ? 'Yüklendi ✓' : 'Tamamlandı'}
+                            {item.type === 'document' || (item.type === 'document-link' && item.fileName) ? t('ngo_admin_transparency.badgeUploaded') : t('ngo_admin_transparency.badgeCompleted')}
                           </Badge>
                         ) : (
                           <>
                             {(item.type === 'document' || item.type === 'document-link') && (
                               <Badge variant="outline" className="text-[10px] text-muted-foreground border-muted-foreground/30 gap-1">
                                 <AlertCircle className="h-3 w-3" />
-                                Yüklenmedi
+                                {t('ngo_admin_transparency.badgeNotUploaded')}
                               </Badge>
                             )}
-                            <Badge variant="secondary" className="text-[10px]">+{item.points} puan</Badge>
+                            <Badge variant="secondary" className="text-[10px]">+{item.points} {t('ngo_admin_transparency.pointsSuffix')}</Badge>
                           </>
                         )}
                       </div>
@@ -357,10 +359,10 @@ export default function TransparencyPage() {
                         size="sm"
                         className="gap-1.5"
                         onClick={() => setPreviewItem(item)}
-                        title="Önizle"
+                        title={t('ngo_admin_transparency.previewBtn')}
                       >
                         <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">Önizle</span>
+                        <span className="hidden sm:inline">{t('ngo_admin_transparency.previewBtn')}</span>
                       </Button>
                     )}
 
@@ -373,7 +375,7 @@ export default function TransparencyPage() {
                           ) : (
                             <Upload className="mr-2 h-4 w-4" />
                           )}
-                          {item.fileName ? 'Dosya Güncelle' : (item.type === 'document-link' ? 'Dosya Yükle' : 'Yükle')}
+                          {item.fileName ? t('ngo_admin_transparency.updateFile') : (item.type === 'document-link' ? t('ngo_admin_transparency.uploadFile') : t('ngo_admin_transparency.uploadingBtn'))}
                           <input
                             id={`upload-${item.id}`}
                             type="file"
@@ -397,7 +399,7 @@ export default function TransparencyPage() {
                         onClick={() => openEditor(item)}
                       >
                         <LinkIcon className="mr-2 h-4 w-4" />
-                        {item.linkUrl ? 'Bağlantı Güncelle' : 'Bağlantı Ekle'}
+                        {item.linkUrl ? t('ngo_admin_transparency.updateLink') : t('ngo_admin_transparency.addLink')}
                       </Button>
                     )}
 
@@ -409,7 +411,7 @@ export default function TransparencyPage() {
                         onClick={() => openEditor(item)}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        {item.isCompleted ? 'Güncelle' : 'Ekle'}
+                        {item.isCompleted ? t('ngo_admin_transparency.updateBtn') : t('ngo_admin_transparency.addBtn')}
                       </Button>
                     )}
 
@@ -420,13 +422,13 @@ export default function TransparencyPage() {
                           <Button variant={item.isCompleted ? 'outline' : 'secondary'} size="sm">
                             <Plus className="mr-2 h-4 w-4" />
                             {item.isCompleted
-                              ? `${(item.selectedOptions || []).length} seçili`
-                              : 'Seçiniz'}
+                              ? `${(item.selectedOptions || []).length} ${t('ngo_admin_transparency.multiSelectSelected')}`
+                              : t('ngo_admin_transparency.multiSelectChoose')}
                             <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="max-h-72 overflow-y-auto">
-                          <DropdownMenuLabel>Üye olunan platformlar</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t('ngo_admin_transparency.multiSelectLabel')}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           {(item.options || MEMBERSHIP_OPTIONS).map(opt => (
                             <DropdownMenuCheckboxItem
@@ -443,7 +445,7 @@ export default function TransparencyPage() {
                     )}
 
                     {!isEditing && item.isCompleted && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title="Kaldır" aria-label="Kaldır">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleRemove(item.id)} title={t('ngo_admin_transparency.removeAria')} aria-label={t('ngo_admin_transparency.removeAria')}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
@@ -462,16 +464,16 @@ export default function TransparencyPage() {
                         if (e.key === 'Escape') cancelEditor();
                       }}
                       placeholder={
-                        item.type === 'link' ? 'https://...' :
-                        item.name === 'E-posta Adresi' ? 'ornek@kuruluş.org' :
-                        item.name === 'Telefon Numarası' ? '+90 xxx xxx xx xx' :
-                        'Değeri girin'
+                        item.type === 'link' ? t('ngo_admin_transparency.placeholderLink') :
+                        item.name === 'E-posta Adresi' ? t('ngo_admin_transparency.placeholderEmail') :
+                        item.name === 'Telefon Numarası' ? t('ngo_admin_transparency.placeholderPhone') :
+                        t('ngo_admin_transparency.placeholderDefault')
                       }
                       className="flex-1"
                     />
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => saveEditor(item)}>Kaydet</Button>
-                      <Button size="sm" variant="outline" onClick={cancelEditor}>İptal</Button>
+                      <Button size="sm" onClick={() => saveEditor(item)}>{t('ngo_admin_transparency.saveBtn')}</Button>
+                      <Button size="sm" variant="outline" onClick={cancelEditor}>{t('ngo_admin_transparency.cancelBtn')}</Button>
                     </div>
                   </div>
                 )}
@@ -497,7 +499,7 @@ export default function TransparencyPage() {
                   <Button asChild variant="outline" size="sm" className="gap-1.5">
                     <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
                       <Download className="h-4 w-4" />
-                      <span className="hidden sm:inline">İndir</span>
+                      <span className="hidden sm:inline">{t('ngo_admin_transparency.previewDownload')}</span>
                     </a>
                   </Button>
                 )}
@@ -505,7 +507,7 @@ export default function TransparencyPage() {
                   <Button asChild variant="ghost" size="sm" className="gap-1.5">
                     <a href={previewItem.fileUrl || previewItem.linkUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                      <span className="hidden sm:inline">Yeni Sekme</span>
+                      <span className="hidden sm:inline">{t('ngo_admin_transparency.previewNewTab')}</span>
                     </a>
                   </Button>
                 )}
@@ -532,12 +534,12 @@ export default function TransparencyPage() {
                 <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center gap-4">
                   <FileText className="h-16 w-16 text-muted-foreground/40" />
                   <div className="space-y-1">
-                    <p className="font-medium">{previewItem.fileName || 'Belge'}</p>
-                    <p className="text-sm text-muted-foreground">Bu dosya türü tarayıcıda önizlenemiyor.</p>
+                    <p className="font-medium">{previewItem.fileName || t('ngo_admin_transparency.docFallback')}</p>
+                    <p className="text-sm text-muted-foreground">{t('ngo_admin_transparency.previewUnsupportedDesc')}</p>
                   </div>
                   <Button asChild>
                     <a href={previewItem.fileUrl} download={previewItem.fileName} target="_blank" rel="noopener noreferrer">
-                      <Download className="mr-2 h-4 w-4" /> Dosyayı İndir
+                      <Download className="mr-2 h-4 w-4" /> {t('ngo_admin_transparency.previewDownloadBtn')}
                     </a>
                   </Button>
                 </div>
@@ -554,7 +556,7 @@ export default function TransparencyPage() {
           </div>
           <DialogFooter className="p-3 border-t shrink-0">
             <Button variant="outline" onClick={() => setPreviewItem(null)} className="gap-1.5">
-              <XIcon className="h-4 w-4" /> Kapat
+              <XIcon className="h-4 w-4" /> {t('ngo_admin_transparency.previewClose')}
             </Button>
           </DialogFooter>
         </DialogContent>

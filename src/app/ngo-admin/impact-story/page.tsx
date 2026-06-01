@@ -19,6 +19,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'fire
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 export type ImpactSlide = {
   id: string;
@@ -75,6 +76,7 @@ type ManagedEntity = { kind: EntityKind; id: string; name: string; data: EntityD
 function StoryViewer() {
     const router = useRouter();
     const { toast } = useToast();
+    const { t } = useTranslation();
 
     const [api, setApi] = useState<CarouselApi>();
     const [current, setCurrent] = useState(0);
@@ -94,14 +96,14 @@ function StoryViewer() {
 
     const activeEntity = useMemo<ManagedEntity | null>(() => {
         if (!activeIdFromCtx || !activeKind || !activeDoc) return null;
-        const labels: Record<EntityKind, string> = { ngo: 'STK', brand: 'Marka', club: 'Kulüp' };
+        const labels: Record<EntityKind, string> = { ngo: t('ngo_admin_impact_story.labelNgo'), brand: t('ngo_admin_impact_story.labelBrand'), club: t('ngo_admin_impact_story.labelClub') };
         return {
             kind: activeKind,
             id: activeIdFromCtx,
             name: activeDoc.name || labels[activeKind],
             data: activeDoc,
         };
-    }, [activeIdFromCtx, activeKind, activeDoc]);
+    }, [activeIdFromCtx, activeKind, activeDoc, t]);
 
     // İlgili koleksiyonları topla
     const allUsersQ = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.users) : null), [db]);
@@ -194,8 +196,8 @@ function StoryViewer() {
         slides.push({
             id: 'cover',
             title: activeEntity.name,
-            subtitle: activeEntity.kind === 'ngo' ? 'STK Etki Raporu' : activeEntity.kind === 'brand' ? 'Marka Etki Raporu' : 'Kulüp Etki Raporu',
-            content: 'Birlikte yarattığımız değişimi rakamlarla anlatıyoruz.',
+            subtitle: activeEntity.kind === 'ngo' ? t('ngo_admin_impact_story.coverSubtitleNgo') : activeEntity.kind === 'brand' ? t('ngo_admin_impact_story.coverSubtitleBrand') : t('ngo_admin_impact_story.coverSubtitleClub'),
+            content: t('ngo_admin_impact_story.coverContent'),
             icon: Building2,
             background: coverOverride || activeEntity.data?.coverUrl || activeEntity.data?.avatarUrl || activeEntity.data?.logoUrl,
         });
@@ -204,9 +206,11 @@ function StoryViewer() {
         if (stats.totalDonationAmount > 0) {
             slides.push({
                 id: 'donations',
-                title: 'Toplam Bağış',
-                subtitle: 'Finansal Destek',
-                content: `${stats.donorCount.toLocaleString('tr-TR')} bağışçı aracılığıyla toplam ${stats.totalDonationAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺ destek aldık.`,
+                title: t('ngo_admin_impact_story.donationsTitle'),
+                subtitle: t('ngo_admin_impact_story.donationsSubtitle'),
+                content: t('ngo_admin_impact_story.donationsContentTemplate')
+                    .replace('{donorCount}', stats.donorCount.toLocaleString('tr-TR'))
+                    .replace('{amount}', stats.totalDonationAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })),
                 stat: `₺${stats.totalDonationAmount.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`,
                 icon: Heart,
             });
@@ -216,11 +220,13 @@ function StoryViewer() {
         if (stats.supporterCount > 0 || stats.volunteerCount > 0) {
             slides.push({
                 id: 'supporters',
-                title: activeEntity.kind === 'brand' ? 'Takipçilerimiz' : 'Destekçilerimiz',
-                subtitle: 'Topluluğumuz',
+                title: activeEntity.kind === 'brand' ? t('ngo_admin_impact_story.supportersTitleBrand') : t('ngo_admin_impact_story.supportersTitleDefault'),
+                subtitle: t('ngo_admin_impact_story.supportersSubtitle'),
                 content: activeEntity.kind === 'brand'
-                    ? `${stats.supporterCount.toLocaleString('tr-TR')} kişi sizi takip ediyor.`
-                    : `${stats.supporterCount.toLocaleString('tr-TR')} destekçi, bunların ${stats.volunteerCount.toLocaleString('tr-TR')}'i aktif gönüllü.`,
+                    ? t('ngo_admin_impact_story.supportersContentBrand').replace('{count}', stats.supporterCount.toLocaleString('tr-TR'))
+                    : t('ngo_admin_impact_story.supportersContentDefault')
+                        .replace('{count}', stats.supporterCount.toLocaleString('tr-TR'))
+                        .replace('{volunteers}', stats.volunteerCount.toLocaleString('tr-TR')),
                 stat: stats.supporterCount.toLocaleString('tr-TR'),
                 icon: Users,
             });
@@ -230,9 +236,12 @@ function StoryViewer() {
         if (activeEntity.kind === 'ngo' && stats.totalOpportunities > 0) {
             slides.push({
                 id: 'opportunities',
-                title: 'Gönüllülük İlanları',
-                subtitle: 'Sahada İhtiyaç',
-                content: `Toplam ${stats.totalOpportunities} ilan yayınladık, ${stats.totalApplications.toLocaleString('tr-TR')} başvuru aldık. Şu anda ${stats.openOpportunities} aktif ilan var.`,
+                title: t('ngo_admin_impact_story.opportunitiesTitle'),
+                subtitle: t('ngo_admin_impact_story.opportunitiesSubtitle'),
+                content: t('ngo_admin_impact_story.opportunitiesContent')
+                    .replace('{total}', String(stats.totalOpportunities))
+                    .replace('{apps}', stats.totalApplications.toLocaleString('tr-TR'))
+                    .replace('{open}', String(stats.openOpportunities)),
                 stat: stats.openOpportunities.toString(),
                 icon: HeartHandshake,
             });
@@ -242,9 +251,9 @@ function StoryViewer() {
         if (stats.postsCount > 0) {
             slides.push({
                 id: 'posts',
-                title: 'Paylaşımlarımız',
-                subtitle: 'Topluluk İletişimi',
-                content: `Topluluğumuzla ${stats.postsCount.toLocaleString('tr-TR')} gönderi paylaştık.`,
+                title: t('ngo_admin_impact_story.postsTitle'),
+                subtitle: t('ngo_admin_impact_story.postsSubtitle'),
+                content: t('ngo_admin_impact_story.postsContent').replace('{count}', stats.postsCount.toLocaleString('tr-TR')),
                 stat: stats.postsCount.toString(),
                 icon: Newspaper,
             });
@@ -254,9 +263,9 @@ function StoryViewer() {
         if (activeEntity.kind === 'ngo' && stats.transparencyCount > 0) {
             slides.push({
                 id: 'transparency',
-                title: 'Şeffaflık Endeksi',
-                subtitle: 'Hesap Veriyoruz',
-                content: `${stats.transparencyCount} kayıtlı şeffaflık girişimiz ile hesap verme sorumluluğumuzu sürdürüyoruz.`,
+                title: t('ngo_admin_impact_story.transparencyTitle'),
+                subtitle: t('ngo_admin_impact_story.transparencySubtitle'),
+                content: t('ngo_admin_impact_story.transparencyContent').replace('{count}', String(stats.transparencyCount)),
                 stat: stats.transparencyCount.toString(),
                 icon: ShieldCheck,
             });
@@ -265,25 +274,25 @@ function StoryViewer() {
         // 7) Kapanış — kayda değer veri yoksa bile en az bu görünür
         slides.push({
             id: 'closing',
-            title: 'Birlikte Daha Güçlüyüz',
+            title: t('ngo_admin_impact_story.closingTitle'),
             subtitle: activeEntity.name,
-            content: 'Hangel topluluğuyla iyiliği büyütmeye devam ediyoruz.',
+            content: t('ngo_admin_impact_story.closingContent'),
             icon: TrendingUp,
         });
 
         return slides;
-    }, [activeEntity, stats, coverOverride]);
+    }, [activeEntity, stats, coverOverride, t]);
 
     const handleClose = useCallback(() => router.back(), [router]);
 
     const handleCoverUpload = useCallback(async (file: File) => {
         if (!activeEntity || !db) return;
         if (file.size > 5 * 1024 * 1024) {
-            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Maksimum 5MB yükleyebilirsiniz.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_impact_story.toastFileTooLarge'), description: t('ngo_admin_impact_story.toastFileTooLargeDesc') });
             return;
         }
         if (!/^image\/(png|jpe?g|webp|svg\+xml)$/.test(file.type)) {
-            toast({ variant: 'destructive', title: 'Geçersiz format', description: 'Sadece JPG, PNG, WebP veya SVG kabul edilir.' });
+            toast({ variant: 'destructive', title: t('ngo_admin_impact_story.toastInvalidFormat'), description: t('ngo_admin_impact_story.toastInvalidFormatDesc') });
             return;
         }
         setUploading(true);
@@ -299,7 +308,7 @@ function StoryViewer() {
             const url = await getDownloadURL(ref);
             await updateDoc(doc(db, collectionName, activeEntity.id), { coverUrl: url });
             setCoverOverride(url);
-            toast({ title: 'Kapak güncellendi', description: 'Etki hikayeniz için yeni kapak yüklendi.' });
+            toast({ title: t('ngo_admin_impact_story.toastCoverUpdated'), description: t('ngo_admin_impact_story.toastCoverUpdatedDesc') });
         } catch (err) {
             console.warn('Storage upload failed, falling back to Base64:', err);
             const sErr = err as { code?: string };
@@ -307,10 +316,10 @@ function StoryViewer() {
             if (file.size > 500 * 1024) {
                 toast({
                     variant: 'destructive',
-                    title: 'Görsel yüklenemedi',
+                    title: t('ngo_admin_impact_story.toastUploadFailed'),
                     description: sErr?.code === 'storage/unauthorized'
-                        ? 'Kapak yükleme izniniz yok ve dosya 500KB üzerinde. Lütfen dosyayı küçültün veya Hangel ekibi ile iletişime geçin.'
-                        : 'Storage yüklemesi başarısız. Maksimum 500KB önerilir, dosyayı küçültün.',
+                        ? t('ngo_admin_impact_story.toastUploadFailedUnauth')
+                        : t('ngo_admin_impact_story.toastUploadFailedSize'),
                 });
                 setUploading(false);
                 return;
@@ -324,15 +333,15 @@ function StoryViewer() {
                 });
                 await updateDoc(doc(db, collectionName, activeEntity.id), { coverUrl: dataUrl });
                 setCoverOverride(dataUrl);
-                toast({ title: 'Base64 olarak kaydedildi', description: 'Storage erişilemediği için görsel Base64 olarak gömüldü.' });
+                toast({ title: t('ngo_admin_impact_story.toastBase64Saved'), description: t('ngo_admin_impact_story.toastBase64SavedDesc') });
             } catch (fallbackErr) {
                 console.error('Base64 fallback failed:', fallbackErr);
-                toast({ variant: 'destructive', title: 'Yükleme başarısız', description: 'Görsel kaydedilemedi.' });
+                toast({ variant: 'destructive', title: t('ngo_admin_impact_story.toastUploadGenericFail'), description: t('ngo_admin_impact_story.toastUploadGenericFailDesc') });
             }
         } finally {
             setUploading(false);
         }
-    }, [activeEntity, db, toast]);
+    }, [activeEntity, db, toast, t]);
 
     useEffect(() => {
         if (!api) return;
@@ -367,11 +376,11 @@ function StoryViewer() {
         return (
             <div className="flex flex-col items-center justify-center h-full bg-white p-8 text-center">
                 <Sparkles className="h-12 w-12 text-muted-foreground/40 mb-4" />
-                <p className="font-bold text-lg mb-2">Etki Hikayesi Hazır Değil</p>
+                <p className="font-bold text-lg mb-2">{t('ngo_admin_impact_story.notReadyTitle')}</p>
                 <p className="text-sm text-muted-foreground mb-6">
-                    Etki hikayesi oluşturulabilmesi için bir varlığın yöneticisi olmanız gerekiyor.
+                    {t('ngo_admin_impact_story.notReadyDesc')}
                 </p>
-                <Button onClick={handleClose} variant="outline">Kapat</Button>
+                <Button onClick={handleClose} variant="outline">{t('ngo_admin_impact_story.btnClose')}</Button>
             </div>
         );
     }
@@ -435,7 +444,7 @@ function StoryViewer() {
                                 disabled={uploading}
                                 className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
                                 onClick={() => fileInputRef.current?.click()}
-                                aria-label="Kapak görseli yükle"
+                                aria-label={t('ngo_admin_impact_story.uploadCoverAria')}
                             >
                                 {uploading
                                     ? <Loader2 className="h-5 w-5 animate-spin" />
@@ -448,7 +457,7 @@ function StoryViewer() {
                         size="icon"
                         className="text-foreground hover:bg-black/5 rounded-full h-10 w-10 backdrop-blur-md bg-white/40 border shadow-sm"
                         onClick={handleClose}
-                        aria-label="Kapat"
+                        aria-label={t('ngo_admin_impact_story.closeAria')}
                     >
                         <X className="h-5 w-5" />
                     </Button>

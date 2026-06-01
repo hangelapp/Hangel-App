@@ -15,6 +15,7 @@ import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -100,6 +101,7 @@ export default function UsersPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const { user: authUser } = useUser();
+  const { t } = useTranslation();
 
   // Aktif kuruluş (ActiveEntityProvider) — banner ve sayfa içeriği tek kaynak.
   const { id: activeIdFromCtx, kind: activeKindFromCtx } = useActiveEntity();
@@ -169,16 +171,16 @@ export default function UsersPage() {
 
     const resolveName = (uid: string | undefined, fallback?: string): string => {
       const u = uid ? usersById.get(uid) : undefined;
-      return u?.name || u?.displayName || fallback || 'Üye';
+      return u?.name || u?.displayName || fallback || t('ngo_admin_users.memberFallback');
     };
 
     // Birincil yöneticiler önce (revoke davranışında managed alanı temizlenir).
     for (const u of managedUsers || []) {
       byUserId.set(u.id, {
         userId: u.id,
-        name: u.name || u.displayName || 'Üye',
+        name: u.name || u.displayName || t('ngo_admin_users.memberFallback'),
         avatarUrl: u.avatarUrl,
-        role: u.roleTitle || 'Genel Yönetici',
+        role: u.roleTitle || t('ngo_admin_users.defaultPrimaryRole'),
         since: 0,
         isPrimary: true,
       });
@@ -203,7 +205,7 @@ export default function UsersPage() {
         userId: uid,
         name: resolveName(uid, inv.inviteeName),
         avatarUrl: u?.avatarUrl,
-        role: inv.role || 'Yönetici',
+        role: inv.role || t('ngo_admin_users.defaultInviteRole'),
         since,
         invitationId: inv.id,
         isPrimary: false,
@@ -211,7 +213,7 @@ export default function UsersPage() {
     }
 
     return Array.from(byUserId.values()).sort((a, b) => b.since - a.since);
-  }, [entityId, managedUsers, invitations, allUsers]);
+  }, [entityId, managedUsers, invitations, allUsers, t]);
 
   const [revoking, setRevoking] = useState<string | null>(null);
   const [roleEdits, setRoleEdits] = useState<Record<string, string>>({});
@@ -239,12 +241,12 @@ export default function UsersPage() {
       // 3) Rolü değiştirilen kullanıcıya uygulama içi bildirim gönder.
       //    Bildirim oluşturulamasa bile rol güncellemesi geri alınmaz.
       try {
-        const entityName = activeEntity?.data?.name || 'Kuruluş';
+        const entityName = activeEntity?.data?.name || t('ngo_admin_users.notifEntityFallback');
         await addDoc(collection(firestore, COLLECTIONS.notifications), {
           userId: row.userId,
           type: 'authorization',
-          title: 'Yetkilendirildiniz',
-          body: `${entityName} için ${newRole} olarak yetkilendirildiniz.`,
+          title: t('ngo_admin_users.notifTitle'),
+          body: `${entityName} ${t('ngo_admin_users.notifBodyMiddle')} ${newRole} ${t('ngo_admin_users.notifBodySuffix')}`,
           data: { entityId, entityType: entityKind, role: newRole },
           read: false,
           createdAt: serverTimestamp(),
@@ -260,18 +262,18 @@ export default function UsersPage() {
         return next;
       });
       toast({
-        title: 'Rol Güncellendi',
-        description: `${row.name} kullanıcısının rolü "${newRole}" olarak güncellendi.`,
+        title: t('ngo_admin_users.toastRoleUpdatedTitle'),
+        description: `${row.name} ${t('ngo_admin_users.toastRoleUpdatedDescPrefix')} "${newRole}" ${t('ngo_admin_users.toastRoleUpdatedDescSuffix')}`,
       });
     } catch (error) {
       console.error('Update role failed:', error);
       const err = error as { code?: string; message?: string };
       toast({
         variant: 'destructive',
-        title: 'Rol güncellenemedi',
+        title: t('ngo_admin_users.toastRoleFailedTitle'),
         description: err?.code === 'permission-denied'
-          ? 'Bu işlem için yeterli yetkiniz yok.'
-          : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+          ? t('ngo_admin_users.toastPermissionDenied')
+          : (err?.message || t('ngo_admin_users.toastUnexpected')),
       });
     } finally {
       setUpdatingRole(null);
@@ -301,18 +303,18 @@ export default function UsersPage() {
 
       toast({
         variant: 'destructive',
-        title: 'Yetkili Kaldırıldı',
-        description: `${row.name} kullanıcısının panel erişimi sonlandırıldı.`,
+        title: t('ngo_admin_users.toastRevokedTitle'),
+        description: `${row.name} ${t('ngo_admin_users.toastRevokedDescSuffix')}`,
       });
     } catch (error) {
       console.error('Revoke failed:', error);
       const err = error as { code?: string; message?: string };
       toast({
         variant: 'destructive',
-        title: 'Yetki kaldırılamadı',
+        title: t('ngo_admin_users.toastRevokeFailedTitle'),
         description: err?.code === 'permission-denied'
-          ? 'Bu işlem için yeterli yetkiniz yok.'
-          : (err?.message || 'Beklenmeyen bir hata oluştu.'),
+          ? t('ngo_admin_users.toastPermissionDenied')
+          : (err?.message || t('ngo_admin_users.toastUnexpected')),
       });
     } finally {
       setRevoking(null);
@@ -322,13 +324,13 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 animate-in fade-in-0">
       <div className="flex items-center gap-2">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngo_admin_users.backAria')}>
             <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>
-            <h1 className="text-2xl font-bold font-headline">Yetkili Yönetimi</h1>
+            <h1 className="text-2xl font-bold font-headline">{t('ngo_admin_users.pageTitle')}</h1>
             <p className="text-muted-foreground text-sm">
-              Panele erişebilecek ve kuruluşunuzu temsil edecek kullanıcıları yönetin.
+              {t('ngo_admin_users.pageSubtitle')}
             </p>
         </div>
       </div>
@@ -336,22 +338,22 @@ export default function UsersPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Yetkili Listesi</CardTitle>
+            <CardTitle>{t('ngo_admin_users.cardTitle')}</CardTitle>
             <CardDescription className="flex items-center gap-1.5">
               {isGeneralAdmin ? (
                 <>
                   <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-                  Genel Yönetici olarak diğer yetkililerin rolünü değiştirebilir veya yetkilerini kaldırabilirsiniz.
+                  {t('ngo_admin_users.descGeneralAdmin')}
                 </>
               ) : (
-                'Kuruluşunuza yetkili kullanıcılar ve rolleri.'
+                t('ngo_admin_users.descMember')
               )}
             </CardDescription>
           </div>
           {isGeneralAdmin && (
             <Button asChild size="sm">
               <Link href="/ngo-admin/users/new">
-                  <Plus className="mr-2 h-4 w-4"/> Yeni Yetkili Ekle
+                  <Plus className="mr-2 h-4 w-4"/> {t('ngo_admin_users.addNew')}
               </Link>
             </Button>
           )}
@@ -360,12 +362,12 @@ export default function UsersPage() {
             {!authUser ? (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
                     <User className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Yetkilileri görüntülemek için oturum açın.</p>
+                    <p className="text-muted-foreground">{t('ngo_admin_users.authRequired')}</p>
                 </div>
             ) : !activeEntity ? (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
                     <User className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                    <p className="text-muted-foreground">Yönettiğiniz bir kuruluş bulunamadı.</p>
+                    <p className="text-muted-foreground">{t('ngo_admin_users.noEntity')}</p>
                 </div>
             ) : isLoading ? (
                 <div className="flex items-center justify-center py-12">
@@ -393,7 +395,7 @@ export default function UsersPage() {
                                     <p className="font-medium truncate">{row.name}</p>
                                     {isOwnerRow && (
                                         <Badge variant="outline" className="text-[10px] font-bold px-2 py-0 bg-amber-100 text-amber-800 border-amber-300/50 dark:bg-amber-900/40 dark:text-amber-300">
-                                            Kuruluş Sahibi
+                                            {t('ngo_admin_users.ownerBadge')}
                                         </Badge>
                                     )}
                                 </div>
@@ -406,7 +408,7 @@ export default function UsersPage() {
                                     <Select
                                         value={isKnownRole ? editedRole : undefined}
                                         onValueChange={(v) => setRoleEdits(prev => ({ ...prev, [row.userId]: v }))}>
-                                        <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold" aria-label="Rol seç">
+                                        <SelectTrigger className="h-8 w-auto min-w-[150px] text-xs font-bold" aria-label={t('ngo_admin_users.selectRoleAria')}>
                                             <SelectValue placeholder={row.role} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -420,7 +422,7 @@ export default function UsersPage() {
                                         disabled={isRowUpdating || editedRole === row.role}
                                         onClick={() => { void handleUpdateRole(row, editedRole); }}>
                                         {isRowUpdating && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
-                                        Güncelle
+                                        {t('ngo_admin_users.updateBtn')}
                                     </Button>
                                 </div>
                             ) : (
@@ -436,24 +438,24 @@ export default function UsersPage() {
                                             size="icon"
                                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                             disabled={isRowRevoking}
-                                            aria-label="Yetkiyi kaldır"
+                                            aria-label={t('ngo_admin_users.revokeAria')}
                                         >
                                             {isRowRevoking ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                                         </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>Yetkiyi kaldırmak istediğinizden emin misiniz?</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('ngo_admin_users.revokeConfirmTitle')}</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                <span className="font-bold">{row.name}</span> kullanıcısının {activeEntity.data.name || 'kuruluşunuz'} için panel erişimi sonlandırılacak. Bu işlem geri alınabilir; kullanıcıyı tekrar davet edebilirsiniz.
+                                                <span className="font-bold">{row.name}</span> {t('ngo_admin_users.revokeConfirmDescPrefix')} {activeEntity.data.name || t('ngo_admin_users.revokeConfirmEntityFallback')} {t('ngo_admin_users.revokeConfirmDescSuffix')}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
-                                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                                            <AlertDialogCancel>{t('ngo_admin_users.revokeCancel')}</AlertDialogCancel>
                                             <AlertDialogAction
                                                 className={cn(buttonVariants({ variant: "destructive" }))}
                                                 onClick={() => handleRevoke(row)}>
-                                                Evet, Kaldır
+                                                {t('ngo_admin_users.revokeConfirm')}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -465,7 +467,7 @@ export default function UsersPage() {
                 }) : (
                     <div className="text-center py-12 border-2 border-dashed rounded-lg">
                         <User className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                        <p className="text-muted-foreground">Kayıtlı yetkili bulunmuyor.</p>
+                        <p className="text-muted-foreground">{t('ngo_admin_users.noAdmins')}</p>
                     </div>
                 )}
             </div>
