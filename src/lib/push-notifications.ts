@@ -171,11 +171,12 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
             payload: {
                 aps: {
                     badge: 1,
-                    // Bildirim tipine göre Hangel custom ton. payload.data.type
-                    // yoksa generic 'hangel-alert.caf'a düşer. Bundle'da CAF
-                    // yoksa iOS system default'a otomatik fallback yapar.
-                    // Tüm tonlar: ios/App/App/hangel-{blood,disaster,volunteer,event,alert}.caf
-                    sound: getSoundForNotificationType(payload.data?.type),
+                    // GEÇİCİ: 'default' iOS Tri-tone. Mevcut TestFlight build'lerinde
+                    // hangel-*.caf dosyaları yok (sonradan eklendi) — custom sound
+                    // referansı sessiz fail eder. Tüm kullanıcılar yeni build
+                    // yüklediğinde getSoundForNotificationType() geri çevrilir.
+                    // sound: getSoundForNotificationType(payload.data?.type),
+                    sound: 'default',
                     'mutable-content': 1,
                 },
             },
