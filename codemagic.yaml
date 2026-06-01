@@ -89,8 +89,13 @@ workflows:
           # Eski cert'leri revoke et — Apple max 2 dist cert limit, fresh cert
           # oluşturulamazsa 409 hatası. Filtre type-agnostic: hem IOS_DISTRIBUTION
           # hem DISTRIBUTION (yeni Apple managed type) yakalanır.
-          CERTS=$(app-store-connect list-certificates --json 2>/dev/null \
-            | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' 2>/dev/null || echo "")
+          echo "=== Listing existing certs (raw) ==="
+          app-store-connect list-certificates --json | head -100 || echo "list-certificates failed"
+          echo "=== Extracting DISTRIBUTION cert IDs ==="
+          # Codemagic CLI list-certificates --json returns flat array of cert objects.
+          # Each has 'id' field at root, attributes.certificateType nested.
+          CERTS=$(app-store-connect list-certificates --json | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' || echo "")
+          echo "DISTRIBUTION cert IDs: $CERTS"
           for cert_id in $CERTS; do
             echo "Revoking stale distribution cert: $cert_id"
             app-store-connect delete-certificate "$cert_id" || true
