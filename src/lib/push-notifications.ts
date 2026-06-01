@@ -104,11 +104,11 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
             payload: {
                 aps: {
                     badge: 1,
-                    // Hangel custom alert tonu (ios/App/App/hangel-alert.caf)
-                    // Apple Glass sesi → 30 sn altı, CAF format, app bundle'da.
-                    // 'default' yerine custom sound = brand recognition + acil
-                    // hissi. iPhone muted'de yine çalmaz (Apple kuralı).
-                    sound: 'hangel-alert.caf',
+                    // 'default' iOS sistem Tri-tone sesi. iOS bundle'da
+                    // hangel-alert.caf yoksa custom sound silently fail eder
+                    // (sessiz görünür). Tüm kullanıcılar yeni build'i yükleyince
+                    // 'hangel-alert.caf'a çevrilecek.
+                    sound: 'default',
                     'mutable-content': 1,
                 },
             },

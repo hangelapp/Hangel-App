@@ -16,6 +16,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { maybeRequestAttPermission } from '@/lib/native-att';
 import { registerNativePushToken } from '@/lib/native-push';
+import { requestContactsPermission } from '@/lib/native-contacts-permission';
 
 type IntentKey =
   | 'donate'
@@ -95,14 +96,17 @@ export default function WelcomePage() {
         'preferences.intents': intents,
         'preferences.intentsSelectedAt': serverTimestamp(),
       });
-      // Konum + ATT + Push izinleri paralel iste (her zaman, fail open).
+      // Konum + ATT + Push + Contacts izinleri paralel iste (her zaman, fail open).
       // - Konum: yakın etkinlik, kan ilanı, acil çağrı için
       // - ATT: Firebase Analytics IDFA için Apple zorunlu prompt
       // - Push: bildirim akışı (FCM token register, kullanıcı reddederse de devam)
+      // - Contacts: rehberde Hangel kullanıcılarını eşleştirmek için
+      //   (iOS Settings → Hangel'da görünmesi için bu çağrı şart)
       await Promise.all([
         getCurrentPositionUnified().catch(() => null),
         maybeRequestAttPermission().catch(() => null),
         registerNativePushToken(user.uid).catch(() => null),
+        requestContactsPermission().catch(() => null),
       ]);
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
