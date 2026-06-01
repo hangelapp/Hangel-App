@@ -152,7 +152,7 @@ workflows:
         # Testers group hazır. Artık submit_to_testflight: true güvenli.
         submit_to_testflight: true
         beta_groups:
-          - Internal Testers
+          - Hangel Team
       email:
         recipients:
           - ismailhilmi@hangel.org
