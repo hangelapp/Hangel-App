@@ -1,20 +1,46 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+// Why: Card varyant API'si — Liquid Glass migrasyonu sonrası default `glass`
+// olur. Mevcut çağrılar değişmeden çalışmaya devam eder; opak yüzey isteyenler
+// `variant="solid"` ile eski davranışı alır.
+const cardVariants = cva(
+  "rounded-3xl text-card-foreground",
+  {
+    variants: {
+      variant: {
+        // Default: standart glass — Card, kart-liste gridleri.
+        default: "glass shadow-glass-soft",
+        // Solid: opak yüzey — non-glass background gereken yerler (form alanları,
+        // input-grup container'ları). Eski `bg-card border shadow-sm` davranışı.
+        solid: "bg-card border border-border shadow-sm",
+        // Glass: explicit glass (default ile aynı, semantic alias).
+        glass: "glass shadow-glass-soft",
+        // Glass-prominent: yüksek depth (multi-layer modallar, hero kartlar).
+        "glass-prominent": "glass-prominent",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant }), className)}
+      {...props}
+    />
+  )
+)
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
@@ -74,4 +100,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants }

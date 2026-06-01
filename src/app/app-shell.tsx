@@ -138,9 +138,9 @@ const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick
 
     return (
         <SheetClose asChild>
-            <Link href={item.href} className='group flex items-center justify-between p-3 hover:bg-accent/50 transition-colors'>
+            <Link href={item.href} className='group flex items-center justify-between p-3 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 active:scale-[0.98] transition-all duration-200 ease-spring'>
                 <div className="flex items-center gap-4">
-                    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', color)}>
+                    <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center shadow-glass-soft', color)}>
                         <Icon className="h-5 w-5 text-white" />
                     </div>
                     <span className='text-sm font-semibold text-foreground'>{item.label}</span>
@@ -516,8 +516,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                        <SheetTitle className="sr-only">Ana Menü</SheetTitle>
                        <SheetDescription className="sr-only">Uygulama ana navigasyon menüsü</SheetDescription>
                    </SheetHeader>
-                   <div className="flex h-full flex-col overflow-y-auto bg-secondary/30">
-                        <div className="p-4 bg-background border-b sticky top-0 z-10">
+                   {/* Liquid Glass drawer body — sheet zaten glass-prominent, içerik transparent kalır. */}
+                   <div className="flex h-full flex-col overflow-y-auto glass-scroll">
+                        <div className="p-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass">
                             <div className="flex justify-between items-center mb-6">
                                 <Link href="/login" onClick={() => setDrawerOpen(false)}>
                                     <HangelLogo className="text-2xl" />
@@ -535,16 +536,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             </Link>
                         </div>
                         <nav className="flex-1 space-y-4 p-4">
-                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                            <ul className="glass-thin rounded-2xl overflow-hidden divide-y divide-glass-black-8 dark:divide-glass-white-8">
                                 {translateItems(group1Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
-                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                            <ul className="glass-thin rounded-2xl overflow-hidden divide-y divide-glass-black-8 dark:divide-glass-white-8">
                                 {translateItems(group2Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
-                             <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                             <ul className="glass-thin rounded-2xl overflow-hidden divide-y divide-glass-black-8 dark:divide-glass-white-8">
                                 {translateItems(group3Items).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
-                            <ul className="bg-card rounded-xl border overflow-hidden divide-y">
+                            <ul className="glass-thin rounded-2xl overflow-hidden divide-y divide-glass-black-8 dark:divide-glass-white-8">
                                 {translateItems(filteredSecondaryItems).map((item) => <MobileNavLink key={item.href} item={item} onClick={() => setDrawerOpen(false)} />)}
                             </ul>
                         </nav>

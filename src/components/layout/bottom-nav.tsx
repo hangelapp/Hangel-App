@@ -47,9 +47,10 @@ export default function AppBottomNav() {
   if (!isAppPath) return null;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/70 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 glass-prominent border-t border-glass-black-8 dark:border-glass-white-8 pb-[env(safe-area-inset-bottom)]">
       {/* Why: h-16 (64px) - pt-1 (4px) - pb-2 (8px) = 52px content area > 44px Apple touch target.
-          Her Link tap area en az 44x44 — accessibility-friendly. */}
+          Her Link tap area en az 44x44 — accessibility-friendly.
+          Glass: iOS 26 dock pattern'i — alttaki sayfa içeriği refractive sızar. */}
       <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-1 pb-2 pt-1 lg:max-w-2xl">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
@@ -61,7 +62,7 @@ export default function AppBottomNav() {
               key={item.label}
               className={cn(
                 // min-h-[48px] = Apple touch target — small icon ile birlikte
-                "flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 px-0.5 text-center transition-colors active:bg-accent/50 rounded-lg",
+                "flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 px-0.5 text-center transition-all duration-200 ease-spring active:scale-[0.96] active:bg-glass-black-5 dark:active:bg-glass-white-8 rounded-xl",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >

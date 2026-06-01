@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Menu, Siren, Bell, Globe, Search,
@@ -13,6 +13,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import { HangelLogo } from '@/components/icons';
 import { COLLECTIONS } from '@/firebase/collections';
+import { cn } from '@/lib/utils';
 
 export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const { language, changeLanguage, t } = useTranslation();
@@ -20,6 +21,16 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const isAuthPage = pathname.startsWith('/login') || pathname === '/onboarding' || pathname === '/';
+
+  // Liquid Glass: adaptive blur — sayfa scroll edildikçe glass katmanı kalınlaşır.
+  // Why: iOS 26 header pattern'i (sayfa üstünde flat, scroll'da prominent).
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    const handler = () => setIsScrolled(window.scrollY > 8);
+    handler();
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
   // Okunmamış bildirim sayısı (kullanıcı giriş yaptığında)
   const notifQuery = useMemoFirebase(() => {
@@ -34,12 +45,21 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
   const unreadCount = (unreadNotifs || []).length;
 
   if (isAuthPage) return null;
-  
+
   const isManagementPage = ['/ngo-admin', '/admin', '/super-admin'].some(p => pathname.startsWith(p));
   if (isManagementPage) return null;
 
   return (
-      <header className="fixed top-0 left-0 right-0 z-30 mx-auto border-b bg-card/80 backdrop-blur-xl lg:left-64 pt-[env(safe-area-inset-top)]">
+      <header
+        className={cn(
+          'fixed top-0 left-0 right-0 z-30 mx-auto lg:left-64 pt-[env(safe-area-inset-top)]',
+          'transition-[background-color,backdrop-filter,border-color] duration-300 ease-spring',
+          // Adaptive: scroll'da glass yoğunlaşır, üst durumda neredeyse şeffaf.
+          isScrolled
+            ? 'glass border-b border-glass-black-8 dark:border-glass-white-8'
+            : 'bg-background/40 backdrop-blur-glass-1 border-b border-transparent'
+        )}
+      >
         <div className="flex h-12 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden" aria-label={t('a11y.openMenu')}>
