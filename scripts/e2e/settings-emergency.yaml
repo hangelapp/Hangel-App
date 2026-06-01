@@ -1,0 +1,34 @@
+# Hangel iOS — Settings → Emergency tab E2E
+# Kan grubu seçimi + bağış toggles + disaster alerts toggle
+
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+- tapOn:
+    text: ".*Ayarlar.*"
+
+- tapOn: "Acil Durum"
+
+- assertVisible: "Kan Grubu"
+
+# Kan grubu seç
+- tapOn:
+    id: "blood-type-select"
+    optional: true
+- tapOn: "0+"
+
+# Kan bağışı yapabilirim toggle
+- tapOn: ".*Kan bağış.*"
+
+# Disaster alerts toggle
+- tapOn: ".*[Aa]fet.*"
+
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Geri dön
+- tapOn: "←"

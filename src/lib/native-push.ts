@@ -71,7 +71,11 @@ export function attachNativePushListeners(uid: string): Unsubscribe {
 
   void FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
     const data = event.notification?.data as Record<string, unknown> | undefined;
-    const link = typeof data?.link === 'string' ? data.link : undefined;
+    // Backend bazen `clickAction` (Cloud Function onNotificationCreated),
+    // bazen `link` (eski API'lar) yazıyor. İkisini de oku.
+    const link =
+      (typeof data?.link === 'string' ? data.link : undefined) ||
+      (typeof data?.clickAction === 'string' ? data.clickAction : undefined);
     if (link && link.startsWith('/')) {
       window.location.assign(link);
     }

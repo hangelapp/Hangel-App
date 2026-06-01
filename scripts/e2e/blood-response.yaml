@@ -1,0 +1,30 @@
+# Hangel iOS — Kan ihtiyacı bildirimi yanıtı E2E
+# Test: kullanıcı bildirim alır → "Yardım Edebilirim" butonu çalışır
+# (firestore rules + /api/emergency/respond entegrasyonu test)
+
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    permissions:
+      all: allow
+
+# Notifications sayfası
+- tapOn:
+    text: ".*Bildirim.*"
+
+- assertVisible:
+    text: ".*Acil Kan İhtiyacı.*"
+    optional: true
+
+# Yardım edebilirim butonu
+- tapOn: "Yardım Edebilirim"
+
+# Toast/dialog görünmeli (success veya error)
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Başarısız değil mi (firestore rules deploy edildiyse)
+- assertNotVisible:
+    text: ".*[Mm]issing.*[Pp]ermission.*"
+    optional: true

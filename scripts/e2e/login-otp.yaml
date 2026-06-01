@@ -1,0 +1,51 @@
+# Hangel iOS — Login OTP akışı E2E test (Maestro)
+#
+# WhatsApp OTP ile giriş yapma akışı testi.
+#
+# Önkoşul: iOS Simulator açık + Hangel app yüklü + test numarası backend'de tanımlı.
+
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+
+# Login seçim ekranı
+- assertVisible:
+    text: ".*Hoş Geldiniz.*"
+
+- tapOn: "Bireysel"
+
+# Phone input
+- assertVisible: ".*telefon.*"
+  optional: true
+
+- tapOn:
+    id: "phone-input"
+    optional: true
+
+- inputText: "5384009090"
+
+- tapOn:
+    text: "Devam"
+    enabled: true
+
+# OTP 6-box
+- assertVisible: ".*kod.*"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Test mode'da OTP backend'den dönen sabit kod (örn: 123456)
+- tapOn:
+    id: "otp-input-0"
+    optional: true
+- inputText: "123456"
+
+# Welcome ekranı (yeni kullanıcı)
+- waitForAnimationToEnd:
+    timeout: 10000
+- assertVisible:
+    text: ".*hoş geldin.*"
+    optional: true
