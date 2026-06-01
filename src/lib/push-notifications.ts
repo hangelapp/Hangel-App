@@ -32,6 +32,73 @@ export interface PushPayload {
     data?: Record<string, string>; // Custom data
 }
 
+/**
+ * APNs custom sound dosyası seçer (bildirim tipine göre).
+ *
+ * iOS uygulamasında bundle'a paketlenmiş .caf dosyaları (ios/App/App/):
+ *   - hangel-blood.caf      → kan emergency (Glass tonu, urgent)
+ *   - hangel-disaster.caf   → afet uyarısı (Sosumi, alarm)
+ *   - hangel-volunteer.caf  → gönüllülük daveti (Tink, sakin)
+ *   - hangel-event.caf      → etkinlik hatırlatıcı (Pop, nötr)
+ *   - hangel-alert.caf      → generic fallback (Glass, eski bildirimler için)
+ *
+ * Tip belirleme önceliği:
+ *   1. payload.data.type değeri
+ *   2. payload.data.notifType değeri
+ *   3. Tanınmadıysa generic fallback
+ *
+ * Not: iPhone "muted" konumdaysa ses çalmaz (Apple kuralı, override yok).
+ * Notification yine görünür, banner/badge çalışır.
+ *
+ * Eski client'lar (CAF dosyası eski APK'da bulunmayan): iOS custom sound
+ * yoksa system default tonuna düşer (silent fail değil, system Tri-tone).
+ */
+export function getSoundForNotificationType(type: string | undefined | null): string {
+    if (!type) return 'hangel-alert.caf';
+    const lower = type.toLowerCase();
+
+    // Blood / kan emergency
+    if (
+        lower === 'blood_emergency' ||
+        lower === 'emergency-blood' ||
+        lower === 'blood-emergency' ||
+        lower === 'emergency_blood'
+    ) {
+        return 'hangel-blood.caf';
+    }
+    // Disaster / afet
+    if (
+        lower === 'disaster_alert' ||
+        lower === 'disaster-alert' ||
+        lower === 'disaster' ||
+        lower === 'emergency_disaster'
+    ) {
+        return 'hangel-disaster.caf';
+    }
+    // Volunteer / gönüllülük
+    if (
+        lower === 'volunteer_task' ||
+        lower === 'volunteer-task' ||
+        lower === 'opportunity' ||
+        lower === 'application_accepted' ||
+        lower === 'application_rejected'
+    ) {
+        return 'hangel-volunteer.caf';
+    }
+    // Event / etkinlik
+    if (
+        lower === 'event_reminder' ||
+        lower === 'event-reminder' ||
+        lower === 'event_created' ||
+        lower === 'event' ||
+        lower === 'badge_earned'
+    ) {
+        return 'hangel-event.caf';
+    }
+    // Welcome / message / diğer — generic
+    return 'hangel-alert.caf';
+}
+
 export interface PushSendResult {
     ok: boolean;
     successCount: number;
@@ -104,11 +171,11 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
             payload: {
                 aps: {
                     badge: 1,
-                    // 'default' iOS sistem Tri-tone sesi. iOS bundle'da
-                    // hangel-alert.caf yoksa custom sound silently fail eder
-                    // (sessiz görünür). Tüm kullanıcılar yeni build'i yükleyince
-                    // 'hangel-alert.caf'a çevrilecek.
-                    sound: 'default',
+                    // Bildirim tipine göre Hangel custom ton. payload.data.type
+                    // yoksa generic 'hangel-alert.caf'a düşer. Bundle'da CAF
+                    // yoksa iOS system default'a otomatik fallback yapar.
+                    // Tüm tonlar: ios/App/App/hangel-{blood,disaster,volunteer,event,alert}.caf
+                    sound: getSoundForNotificationType(payload.data?.type),
                     'mutable-content': 1,
                 },
             },
