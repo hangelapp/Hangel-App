@@ -2,9 +2,17 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 3
+  # Cold-start fix (2026-06-01): kullanıcılar ara ara 'upstream connect error
+  # / connection termination' alıyordu. Sebebi: minInstances default 0
+  # (scale-to-zero) → idle period sonrası ilk request Next.js + Firestore
+  # bootstrap 10-30 sn sürerken Envoy bağlantıyı düşürüyordu.
+  # En az 1 warm instance her zaman ayakta.
+  minInstances: 1
+  maxInstances: 10
+  concurrency: 60      # Next.js SSR ağır — OOM önle
+  memoryMiB: 1024      # 512 yetmiyor (Firestore + Genkit + Next)
+  cpu: 1
+  timeoutSeconds: 120  # Yavaş Firestore aggregation için
 
 # Server-side secrets injected from Secret Manager at runtime.
 # GEMINI_API_KEY: Genkit/Gemini (library AI, project writer, impact stories).
