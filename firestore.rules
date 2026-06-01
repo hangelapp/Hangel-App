@@ -870,6 +870,11 @@ service cloud.firestore {
     // Path: events/{eventId}/checkins/{uid}. Akıllı check-in (QR/NFC/konum) ile
     // yazılır; geofence exit ile otomatik check-out. Server write (Admin SDK)
     // tercihli — client kendi check-in'ini görebilir.
+    //
+    // App Clip anonymous check-in (POST /api/clip/checkin): doc id = `dev_<hash>`
+    // (hash = SHA-256(deviceId)[:32]). Bu doc Admin SDK üzerinden yazılır (rules
+    // bypass) — client write izni gerekmez. Read tarafı: organizer + super-admin
+    // mevcut wildcard match'ten yararlanır (uid yerine dev_<hash> doc id'si).
     match /events/{eventId}/checkins/{uid} {
       allow read: if isSignedIn() && (request.auth.uid == uid || isSuperAdmin());
       allow list: if isSuperAdmin() || (
@@ -877,6 +882,8 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/events/$(eventId)) &&
         get(/databases/$(database)/documents/events/$(eventId)).data.organizerId == request.auth.uid
       );
+      // Client create yalnızca authenticated kullanıcı için (uid == auth.uid).
+      // App Clip anonymous check-in Admin SDK ile yazılır — rules bypass.
       allow create: if isSignedIn() && request.auth.uid == uid &&
         request.resource.data.uid == request.auth.uid;
       allow update: if isSignedIn() && request.auth.uid == uid;
@@ -926,6 +933,11 @@ service cloud.firestore {
     // disasterAlerts — Afet ve acil durum çağrıları (deprem, sel, yangın)
     // Read: imzalı kullanıcılar (afet bildirimi public yararına)
     // Write: sadece super-admin veya verified emergency coordinator role
+    //
+    // onCreate trigger (Cloud Functions): onDisasterAlertCreated 50km
+    // geofence ile users.lastKnownLocation tarayıp notifications doc'larını
+    // Admin SDK ile yazar (rules bypass). geofence audit alanını
+    // ({ processedAt, scanned, matched, radiusKm }) Functions update eder.
     match /disasterAlerts/{alertId} {
       allow read, list: if isSignedIn();
       allow create, update: if isSuperAdmin() || (
