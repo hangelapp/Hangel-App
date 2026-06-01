@@ -37,6 +37,10 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Etkinlik check-in, gönüllülük görev doğrulama ve STK masası bağış sayfalarını açmak için NFC etiketlerini okutmamız gerekiyor.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Etkinlik mekânlarındaki Bluetooth beacon'larla otomatik check-in yapabilmemiz için Bluetooth erişimi gerekiyor.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Etkinlik mekânlarındaki Bluetooth beacon'larla otomatik check-in yapabilmemiz için Bluetooth erişimi gerekiyor.</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
 	<string>Kayıt olduğunuz gönüllülük etkinliklerini ve kan bağışı randevularınızı takviminize otomatik eklemek için izin gerekiyor.</string>
 	<key>NSCameraUsageDescription</key>
@@ -51,12 +55,16 @@
 	<string>Yakınınızdaki etkinlikleri, STK'ları ve gönüllü ihtiyaçlarını gösterebilmek için konum bilginize ihtiyaç var.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Etkinlik ve proje videoları çekerken ses kaydı için mikrofona erişim gerekiyor.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Sportif ve yürüyüş etkinliklerinde adım ve aktivite verinizi kaydedebilmek için hareket sensörlerine erişim gerekiyor.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Sertifikalarınızı ve hangel görsellerini galerinize kaydetmek için izin gerekiyor.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil fotoğrafı yüklemek ve etkinlik / proje görselleri paylaşmak için galerinize erişim gerekiyor.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>Kan bağışı sonrası 56 günlük bekleme süresi, periyodik gönüllülük hedefleri ve etkinlik hazırlıkları için hatırlatıcı oluşturmamız gerekiyor.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>STK, etkinlik ve marka aramalarını sesinizle yapabilmeniz için konuşma tanımaya erişim gerekiyor.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
