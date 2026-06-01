@@ -109,17 +109,36 @@ workflows:
             echo "Deleting stale provisioning profile: $profile_id"
             app-store-connect delete-profile "$profile_id" || true
           done
-          # Fresh cert + profile oluştur — 3 target için: App, Watch, AppClip
-          # Tüm bundle ID'ler aynı Distribution cert'i paylaşır, sadece profile'lar farklı
-          # Widget Extension (LiveActivities) parent app'in profile'ını paylaşır,
-          # ayrı identifier gerek yok. Sadece bağımsız target'lar için profile çek.
-          for BID in "$BUNDLE_ID" "com.hangel.ios.app.watchapp" "com.hangel.ios.app.Clip" "com.hangel.ios.app.widgets"; do
-            echo "Fetching signing files for: $BID"
-            app-store-connect fetch-signing-files "$BID" \
+          # ADIM 1: Sadece App için fetch-signing-files
+          # Cert + private key keychain'e + App profile yaratır
+          echo "=== Step 1: fetch-signing-files for App (creates cert + profile) ==="
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@file:"$CERT_KEY_PATH" \
+            --create
+
+          # ADIM 2: Cert ID'sini al
+          CERT_ID=$(app-store-connect list-certificates --json | jq -r '.[] | select(.attributes.certificateType | tostring | contains("DISTRIBUTION")) | .id' | head -1)
+          echo "Distribution cert ID: $CERT_ID"
+
+          # ADIM 3: Diğer bundle ID'ler için sadece PROFILE (cert YENİDEN oluşturma)
+          # create-profile mevcut cert'le bağlar
+          for BID in "com.hangel.ios.app.watchapp" "com.hangel.ios.app.Clip" "com.hangel.ios.app.widgets"; do
+            echo "=== Creating profile for: $BID ==="
+            BID_RESOURCE=$(app-store-connect list-bundle-ids --bundle-id-identifier "$BID" --json | jq -r '.[] | .id' | head -1)
+            if [ -z "$BID_RESOURCE" ]; then
+              echo "WARN: bundle id resource not found for $BID"
+              continue
+            fi
+            PROFILE_NAME="hangel ${BID##*.} $(date +%s)"
+            app-store-connect profiles create \
+              --bundle-id "$BID_RESOURCE" \
+              --certificate-id "$CERT_ID" \
               --type IOS_APP_STORE \
-              --certificate-key=@file:"$CERT_KEY_PATH" \
-              --create || echo "WARN: fetch-signing-files failed for $BID"
+              --name "$PROFILE_NAME" \
+              --save || echo "WARN: profile create failed for $BID"
           done
+
           keychain add-certificates
           xcode-project use-profiles
 
