@@ -7,6 +7,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // BGTaskScheduler identifier'larını register et. Bu ÇOK ERKEN çağrılmalı
+        // (didFinishLaunching döner dönmez), aksi halde iOS launchOptions yokken
+        // identifier eşleştirmeyi başaramaz.
+        HangelBackgroundTasksPlugin.registerTasks()
         return true
     }
 
