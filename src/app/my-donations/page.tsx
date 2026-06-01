@@ -42,7 +42,7 @@ const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: Do
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{t('dashboard.donations.receiptTitle')}</DialogTitle>
-                    <DialogDescription>İşlem ID: {transaction.id}</DialogDescription>
+                    <DialogDescription>{t('dashboard.donations.transactionId')}: {transaction.id}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="p-4 border rounded-lg bg-muted/50">
@@ -56,17 +56,17 @@ const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: Do
                     </div>
                     {transaction.type === 'expense' && (
                         <div className="space-y-2 text-sm">
-                            <h4 className="font-semibold">Bağış Detayları</h4>
-                            <div className='flex justify-between'><span className='text-muted-foreground'>Toplam Bağış</span><span className='font-medium text-primary'>{transaction.donationAmount} ₺</span></div>
+                            <h4 className="font-semibold">{t('dashboard.donations.donationDetails')}</h4>
+                            <div className='flex justify-between'><span className='text-muted-foreground'>{t('dashboard.donations.totalDonation')}</span><span className='font-medium text-primary'>{transaction.donationAmount} ₺</span></div>
                             <Separator />
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>KDV (%20)</span><span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (STK Payının %10'u)</span><span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.ngoShare')}</span><span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.incomeTax')}</span><span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.vat')}</span><span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.hangelShare')}</span><span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                             {transaction.ngo.length > 0 && <Separator />}
                             {transaction.ngo.length > 0 && (
                                 <div className='flex justify-between items-center text-xs mt-2'>
-                                    <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
+                                    <span className='text-muted-foreground'>{t('dashboard.donations.supportedNgos')}</span>
                                     <span className="text-right font-medium">{transaction.ngo.join(', ')}</span>
                                 </div>
                             )}
@@ -180,10 +180,10 @@ export default function MyDonationsPage() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('desc'); }}>{t('dashboard.applications.sortNewest')}</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => { setSortKey('date'); setSortDir('asc'); }}>{t('dashboard.applications.sortOldest')}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('desc'); }}>Alışveriş Tutarı (Azalan)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('asc'); }}>Alışveriş Tutarı (Artan)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('desc'); }}>Bağış Tutarı (Azalan)</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('asc'); }}>Bağış Tutarı (Artan)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('desc'); }}>{t('dashboard.donations.sortPurchaseDesc')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('purchaseAmount'); setSortDir('asc'); }}>{t('dashboard.donations.sortPurchaseAsc')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('desc'); }}>{t('dashboard.donations.sortDonationDesc')}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setSortKey('donationAmount'); setSortDir('asc'); }}>{t('dashboard.donations.sortDonationAsc')}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -215,10 +215,10 @@ export default function MyDonationsPage() {
                 const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
                 const isPending = !isPaid && status !== 'Reddedildi';
                 const statusBadge = isPaid
-                  ? { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: 'Yatırıldı' }
+                  ? { class: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2, label: t('dashboard.donations.statusDeposited') }
                   : status === 'Reddedildi'
-                    ? { class: 'bg-red-100 text-red-700 border-red-200', icon: Clock, label: 'Reddedildi' }
-                    : { class: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: status || 'İşleme Alındı' };
+                    ? { class: 'bg-red-100 text-red-700 border-red-200', icon: Clock, label: t('dashboard.donations.statusRejected') }
+                    : { class: 'bg-orange-100 text-orange-700 border-orange-200', icon: Clock, label: status || t('dashboard.donations.statusProcessing') };
                 const StatusIcon = statusBadge.icon;
                 const rowAccent = isPaid
                   ? 'border-l-4 border-l-green-500'
@@ -249,42 +249,42 @@ export default function MyDonationsPage() {
                         </div>
                         <div className="text-right">
                           <p className={`${donation.type === 'income' ? 'text-green-600' : ''}`}>{donation.purchaseAmount} ₺</p>
-                          {donation.type === 'expense' && <p className="text-xs text-primary">Bağış: {donation.donationAmount} ₺</p>}
+                          {donation.type === 'expense' && <p className="text-xs text-primary">{t('dashboard.donations.donationLabel')}: {donation.donationAmount} ₺</p>}
                         </div>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4 bg-muted/50">
                       <div className="space-y-2 text-sm mt-2 pt-4 border-t">
                         <div className='flex justify-between font-medium'>
-                          <span className='text-muted-foreground'>Alışveriş Tutarı</span>
+                          <span className='text-muted-foreground'>{t('dashboard.donations.purchaseAmount')}</span>
                           <span>{donation.purchaseAmount} ₺</span>
                         </div>
                         <div className='flex justify-between font-bold'>
-                          <span className='text-muted-foreground'>Toplam Bağış</span>
+                          <span className='text-muted-foreground'>{t('dashboard.donations.totalDonation')}</span>
                           <span className='text-primary'>{donation.donationAmount} ₺</span>
                         </div>
                         <Separator />
                         <div className='space-y-1.5'>
-                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Desteklenen STK Payı</span><span className="font-medium text-foreground">{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>Gelir Vergisi (%20)</span><span className="font-medium text-foreground">{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>hangel Katkı Payı (%10)</span><span className="font-medium text-foreground">{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.ngoShare')}</span><span className="font-medium text-foreground">{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.incomeTax')}</span><span className="font-medium text-foreground">{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
+                          <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.hangelShareShort')}</span><span className="font-medium text-foreground">{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                         </div>
                         <Separator />
                         {(donation.ngo || []).length > 0 && (
                           <div className='flex justify-between items-center text-xs mt-2'>
-                            <span className='text-muted-foreground'>Desteklenen STK(lar)</span>
+                            <span className='text-muted-foreground'>{t('dashboard.donations.supportedNgos')}</span>
                             <span className="text-right font-medium">{donation.ngo.join(', ')}</span>
                           </div>
                         )}
                         <div className='flex justify-between items-center text-xs'>
                           <div>
-                            <span className='text-muted-foreground'>İşlem Tarihi: </span>
+                            <span className='text-muted-foreground'>{t('dashboard.donations.transactionDate')}: </span>
                             <span>{format(parse(donation.date, 'yyyy-MM-dd', new Date()), 'dd MMMM yyyy', { locale: tr })} - {donation.time}</span>
                           </div>
                           <div className="flex">
-                            <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }} aria-label="Dekontu görüntüle"><Eye className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastReceiptDownloading') })} aria-label="Dekontu indir"><Download className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastShareOpening') })} aria-label="Paylaş"><Share2 className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => { setSelectedTransaction(donation); setIsReceiptOpen(true); }} aria-label={t('dashboard.donations.ariaViewReceipt')}><Eye className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastReceiptDownloading') })} aria-label={t('dashboard.donations.ariaDownloadReceipt')}><Download className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" onClick={() => toast({ title: t('dashboard.donations.toastShareOpening') })} aria-label={t('dashboard.donations.ariaShare')}><Share2 className="h-4 w-4" /></Button>
                           </div>
                         </div>
                       </div>

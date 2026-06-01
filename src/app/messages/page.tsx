@@ -168,12 +168,12 @@ export default function MessagesPage() {
     }
 
     // Sender / recipient adını her iki şemadan da güvenli çıkar
-    const getSenderName = (m: MessageItem): string => typeof m.sender === 'string' ? m.sender : (m.sender?.name || 'Kullanıcı');
+    const getSenderName = (m: MessageItem): string => typeof m.sender === 'string' ? m.sender : (m.sender?.name || t('dashboard.messages.senderFallback'));
     const getSenderAvatar = (m: MessageItem): string | null => {
         if (typeof m.sender === 'object' && m.sender?.avatarUrl) return m.sender.avatarUrl;
         return m.senderAvatarUrl || null;
     };
-    const getRecipientName = (m: MessageItem): string => m.recipient?.name || 'Alıcı';
+    const getRecipientName = (m: MessageItem): string => m.recipient?.name || t('dashboard.messages.recipientFallback');
     const getRecipientAvatar = (m: MessageItem): string | null => m.recipient?.avatarUrl || null;
 
     const matchSearch = (text: string) => text.toLowerCase().includes(searchTerm.toLowerCase());
@@ -230,9 +230,9 @@ export default function MessagesPage() {
         if (!content.trim()) { toast({ variant: 'destructive', title: t('dashboard.messages.toastEmptyTitle'), description: t('dashboard.messages.toastEmptyDesc') }); return; }
         setSending(true);
         try {
-            const recipientName = selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || 'Kullanıcı';
-            const senderName = authUser.displayName || 'Bir kullanıcı';
-            const trimmedSubject = subject.trim() || '(Konu yok)';
+            const recipientName = selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name || t('dashboard.messages.senderFallback');
+            const senderName = authUser.displayName || t('dashboard.messages.someUserFallback');
+            const trimmedSubject = subject.trim() || t('dashboard.messages.noSubject');
             const trimmedContent = content.trim();
             const msgDoc = await addDoc(collection(db, COLLECTIONS.messages), {
                 sender: { id: authUser.uid, name: senderName, avatarUrl: authUser.photoURL || null },
@@ -378,7 +378,7 @@ export default function MessagesPage() {
                             isUnread(msg) && "border-l-4 border-l-primary"
                         )}>
                             <CardContent className="p-4 flex items-center gap-4">
-                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${senderName} profilini gör`}>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); openProfileFromMessage(msg); }} className="rounded-full hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary" aria-label={`${senderName} ${t('dashboard.messages.profileAriaSuffix')}`}>
                                     <Avatar className="h-12 w-12 border">
                                         {senderAvatar ? <AvatarImage src={senderAvatar} /> : null}
                                         <AvatarFallback>{senderName[0]}</AvatarFallback>
@@ -420,7 +420,7 @@ export default function MessagesPage() {
                         <EmptyState
                             icon={SendHorizontal}
                             title={t('emptyStates.noMessagesSent')}
-                            description="Gönderdiğiniz mesajlar burada görünecek."
+                            description={t('dashboard.messages.sentEmptyDesc')}
                         />
                     ) : filteredSentMessages.length > 0 ? filteredSentMessages.map((msg) => {
                         const recipientName = getRecipientName(msg);
@@ -435,11 +435,11 @@ export default function MessagesPage() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center mb-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Alıcı</span>
+                                                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('dashboard.messages.recipientLabel')}</span>
                                                 <span className="font-bold text-sm truncate">{recipientName}</span>
                                             </div>
                                         </div>
-                                        <p className="text-sm font-semibold text-foreground truncate">{msg.subject || '(Konu yok)'}</p>
+                                        <p className="text-sm font-semibold text-foreground truncate">{msg.subject || t('dashboard.messages.noSubject')}</p>
                                         <p className="text-xs text-muted-foreground truncate">{msg.excerpt || msg.content}</p>
                                     </div>
                                 </CardContent>
@@ -468,9 +468,9 @@ export default function MessagesPage() {
                                         <AvatarFallback>{(viewIsSent ? getRecipientName(viewMessage) : getSenderName(viewMessage))[0]}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0 text-left">
-                                        <DialogTitle className="text-base truncate">{viewMessage.subject || '(Konu yok)'}</DialogTitle>
+                                        <DialogTitle className="text-base truncate">{viewMessage.subject || t('dashboard.messages.noSubject')}</DialogTitle>
                                         <DialogDescription className="text-xs">
-                                            {viewIsSent ? 'Alıcı: ' : 'Gönderen: '}
+                                            {viewIsSent ? `${t('dashboard.messages.recipientLabel')}: ` : `${t('dashboard.messages.senderLabel')}: `}
                                             <span className="font-semibold text-foreground">
                                                 {viewIsSent ? getRecipientName(viewMessage) : getSenderName(viewMessage)}
                                             </span>
@@ -481,7 +481,7 @@ export default function MessagesPage() {
                             </DialogHeader>
                             <div className="pt-2 max-h-[50vh] overflow-y-auto">
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                    {viewMessage.content || viewMessage.excerpt || '(İçerik yok)'}
+                                    {viewMessage.content || viewMessage.excerpt || t('dashboard.messages.noContent')}
                                 </p>
                             </div>
                             <DialogFooter className="flex-row gap-2 sm:gap-2">
@@ -502,11 +502,11 @@ export default function MessagesPage() {
                                         }}
                                         disabled={(typeof viewMessage.sender === 'object' ? viewMessage.sender?.id : viewMessage.senderId) === 'hangel-system'}
                                     >
-                                        Yanıtla
+                                        {t('dashboard.messages.replyCta')}
                                     </Button>
                                 )}
                                 <Button type="button" variant="outline" className="flex-1" onClick={() => setViewMessage(null)}>
-                                    Kapat
+                                    {t('dashboard.messages.close')}
                                 </Button>
                             </DialogFooter>
                         </>
@@ -532,25 +532,25 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div>
                                         <p className="text-sm font-semibold">{selectedRecipient.displayName || selectedRecipient.fullName || selectedRecipient.name}</p>
-                                        <p className="text-xs text-muted-foreground">{selectedRecipient.recipientKind === 'ngo' ? 'STK' : selectedRecipient.recipientKind === 'brand' ? 'Marka' : selectedRecipient.recipientKind === 'club' ? 'Kulüp' : ''}</p>
+                                        <p className="text-xs text-muted-foreground">{selectedRecipient.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : selectedRecipient.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : selectedRecipient.recipientKind === 'club' ? t('dashboard.messages.kindClub') : ''}</p>
                                     </div>
                                 </div>
-                                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>Değiştir</Button>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedRecipient(null)}>{t('dashboard.messages.changeCta')}</Button>
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <Input placeholder="STK / Kulüp / Marka adı ara..." value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
+                                <Input placeholder={t('dashboard.messages.entitySearchPlaceholder')} value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} />
                                 <div className="max-h-44 overflow-y-auto rounded-lg border divide-y">
                                     {!hasAnyRelations ? (
                                         <div className="text-xs text-muted-foreground text-center py-6 px-4 space-y-2">
-                                            <p>Henüz bağlantı kurduğunuz bir kurum yok.</p>
-                                            <p className="opacity-80">Sadece bağışçısı/gönüllüsü olduğunuz STK'lara, takip ettiğiniz markalara, üye olduğunuz kulüplere ve kabul edilmiş gönüllülük başvurularınızdaki STK'lara mesaj yazabilirsiniz.</p>
+                                            <p>{t('dashboard.messages.noRelationsTitle')}</p>
+                                            <p className="opacity-80">{t('dashboard.messages.noRelationsDesc')}</p>
                                         </div>
                                     ) : recipientCandidates.length === 0 ? (
-                                        <p className="text-xs text-muted-foreground text-center py-4">Aramanızla eşleşen kurum bulunamadı.</p>
+                                        <p className="text-xs text-muted-foreground text-center py-4">{t('dashboard.messages.noEntityMatch')}</p>
                                     ) : recipientCandidates.map((u) => {
-                                        const name = u.displayName || u.fullName || u.name || 'Kurum';
-                                        const kindLabel = u.recipientKind === 'ngo' ? 'STK' : u.recipientKind === 'brand' ? 'Marka' : u.recipientKind === 'club' ? 'Kulüp' : '';
+                                        const name = u.displayName || u.fullName || u.name || t('dashboard.messages.entityFallback');
+                                        const kindLabel = u.recipientKind === 'ngo' ? t('dashboard.messages.kindNgo') : u.recipientKind === 'brand' ? t('dashboard.messages.kindBrand') : u.recipientKind === 'club' ? t('dashboard.messages.kindClub') : '';
                                         return (
                                             <button key={`${u.recipientKind || 'entity'}-${u.id}`} type="button" onClick={() => setSelectedRecipient(u)} className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-accent/50">
                                                 <Avatar className="h-8 w-8">

@@ -14,32 +14,37 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { requestPushPermission, registerForPushToken } from '@/lib/fcm';
 
-const notificationGroups = [
+// Gruplar i18n key referansı ile tanımlandı — render anında t() ile çevrilir.
+const notificationGroups: Array<{
+    titleKey: string;
+    descriptionKey: string;
+    items: Array<{ id: string; labelKey: string }>;
+}> = [
     {
-        title: 'Gönüllülük ve Başvurular',
-        description: 'Gönüllülük ilanları ve başvurularınızla ilgili bildirimler.',
+        titleKey: 'dashboard.settingsNotifications.groupVolunteer.title',
+        descriptionKey: 'dashboard.settingsNotifications.groupVolunteer.desc',
         items: [
-            { id: 'app-status', label: 'Başvuru durumu değiştiğinde' },
-            { id: 'new-opportunity', label: 'İlgi alanlarıma uygun yeni ilanlar' },
-            { id: 'event-reminder', label: 'Katılacağım etkinlikler için hatırlatma' },
+            { id: 'app-status', labelKey: 'dashboard.settingsNotifications.groupVolunteer.appStatus' },
+            { id: 'new-opportunity', labelKey: 'dashboard.settingsNotifications.groupVolunteer.newOpp' },
+            { id: 'event-reminder', labelKey: 'dashboard.settingsNotifications.groupVolunteer.eventReminder' },
         ],
     },
     {
-        title: 'Bağış ve Etki',
-        description: 'Yaptığınız bağışlar ve kazandığınız puanlarla ilgili bildirimler.',
+        titleKey: 'dashboard.settingsNotifications.groupDonation.title',
+        descriptionKey: 'dashboard.settingsNotifications.groupDonation.desc',
         items: [
-            { id: 'donation-success', label: "Bağış STK'ya ulaştığında" },
-            { id: 'new-badge', label: 'Yeni rozet kazanıldığında' },
-            { id: 'impact-report', label: 'Aylık etki raporu hazır olduğunda' },
+            { id: 'donation-success', labelKey: 'dashboard.settingsNotifications.groupDonation.donationSuccess' },
+            { id: 'new-badge', labelKey: 'dashboard.settingsNotifications.groupDonation.newBadge' },
+            { id: 'impact-report', labelKey: 'dashboard.settingsNotifications.groupDonation.impactReport' },
         ],
     },
     {
-        title: 'Platform ve Topluluk',
-        description: 'Duyurular, bültenler ve sosyal bildirimler.',
+        titleKey: 'dashboard.settingsNotifications.groupPlatform.title',
+        descriptionKey: 'dashboard.settingsNotifications.groupPlatform.desc',
         items: [
-            { id: 'announcements', label: 'Platform duyuruları ve güncellemeler' },
-            { id: 'newsletter', label: 'Haftalık hangel bülteni' },
-            { id: 'social', label: 'Sosyal etkileşimler (beğeni, yorum vb.)' },
+            { id: 'announcements', labelKey: 'dashboard.settingsNotifications.groupPlatform.announcements' },
+            { id: 'newsletter', labelKey: 'dashboard.settingsNotifications.groupPlatform.newsletter' },
+            { id: 'social', labelKey: 'dashboard.settingsNotifications.groupPlatform.social' },
         ],
     },
 ];
@@ -92,7 +97,7 @@ export default function NotificationSettingsPage() {
         if (result.ok) {
             toast({ title: t('dashboard.settingsNotifications.toastSavedTitle'), description: t('dashboard.settingsNotifications.toastSavedDesc') });
         } else {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+            toast({ variant: 'destructive', title: t('common.saveFailedTitle'), description: result.error.message.slice(0, 200) });
         }
     };
 
@@ -114,21 +119,21 @@ export default function NotificationSettingsPage() {
 
             <div className="space-y-8">
                 {notificationGroups.map((group) => (
-                    <Card key={group.title}>
+                    <Card key={group.titleKey}>
                         <CardHeader>
-                            <CardTitle>{group.title}</CardTitle>
-                            <CardDescription>{group.description}</CardDescription>
+                            <CardTitle>{t(group.titleKey)}</CardTitle>
+                            <CardDescription>{t(group.descriptionKey)}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-end gap-4 pr-4">
-                                    <span title="Anlık Bildirim"><Bell className="h-5 w-5 text-muted-foreground" /></span>
-                                    <span title="E-posta"><Mail className="h-5 w-5 text-muted-foreground" /></span>
-                                    <span title="SMS"><MessageSquare className="h-5 w-5 text-muted-foreground" /></span>
+                                    <span title={t('dashboard.settingsNotifications.channelPush')}><Bell className="h-5 w-5 text-muted-foreground" /></span>
+                                    <span title={t('dashboard.settingsNotifications.channelEmail')}><Mail className="h-5 w-5 text-muted-foreground" /></span>
+                                    <span title={t('dashboard.settingsNotifications.channelSms')}><MessageSquare className="h-5 w-5 text-muted-foreground" /></span>
                                 </div>
                                 {group.items.map((item) => (
                                     <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                        <label className="font-medium text-sm flex-1">{item.label}</label>
+                                        <label className="font-medium text-sm flex-1">{t(item.labelKey)}</label>
                                         <div className="flex items-center gap-4">
                                             <Switch checked={!!settings[`${item.id}-push`]} onCheckedChange={() => handleToggle(`${item.id}-push`)} />
                                             <Switch checked={!!settings[`${item.id}-email`]} onCheckedChange={() => handleToggle(`${item.id}-email`)} />
@@ -162,6 +167,7 @@ function MarketingConsentCard() {
     const { user } = useUser();
     const db = useFirestore();
     const { toast } = useToast();
+    const { t } = useTranslation();
     const [emailEnabled, setEmailEnabled] = useState(false);
     const [smsEnabled, setSmsEnabled] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -193,9 +199,9 @@ function MarketingConsentCard() {
                 channelAddresses: { email: user.email ?? null },
                 updatedAt: serverTimestamp(),
             }, { merge: true });
-            toast({ title: 'Pazarlama izinleri kaydedildi' });
+            toast({ title: t('dashboard.settingsMarketing.toastSavedTitle') });
         } catch (err) {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: err instanceof Error ? err.message.slice(0, 200) : '' });
+            toast({ variant: 'destructive', title: t('common.saveFailedTitle'), description: err instanceof Error ? err.message.slice(0, 200) : '' });
         } finally {
             setSaving(false);
         }
@@ -215,8 +221,8 @@ function MarketingConsentCard() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary" /> Pazarlama İzinleri (SMS & E-Posta)</CardTitle>
-                <CardDescription>Hangel duyuru, kampanya ve özel teklif iletilerini almak ister misin? İstediğin zaman değiştirebilirsin.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><Megaphone className="h-5 w-5 text-primary" /> {t('dashboard.settingsMarketing.cardTitle')}</CardTitle>
+                <CardDescription>{t('dashboard.settingsMarketing.cardDesc')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
                 <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -225,8 +231,8 @@ function MarketingConsentCard() {
                             <Mail className="h-4 w-4 text-blue-700" />
                         </div>
                         <div>
-                            <Label className="text-sm font-medium">E-posta ile Pazarlama</Label>
-                            <p className="text-xs text-muted-foreground">Kampanya, etkinlik, blog güncellemeleri.</p>
+                            <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.emailRowLabel')}</Label>
+                            <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.emailRowDesc')}</p>
                         </div>
                     </div>
                     <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
@@ -237,21 +243,20 @@ function MarketingConsentCard() {
                             <MessageSquare className="h-4 w-4 text-emerald-700" />
                         </div>
                         <div>
-                            <Label className="text-sm font-medium">SMS ile Pazarlama</Label>
-                            <p className="text-xs text-muted-foreground">Acil durum & özel teklif bildirimleri.</p>
+                            <Label className="text-sm font-medium">{t('dashboard.settingsMarketing.smsRowLabel')}</Label>
+                            <p className="text-xs text-muted-foreground">{t('dashboard.settingsMarketing.smsRowDesc')}</p>
                         </div>
                     </div>
                     <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
                 </div>
                 <Button onClick={handleSave} disabled={saving} className="w-full" variant="outline">
                     {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Pazarlama İzinlerini Kaydet
+                    {t('dashboard.settingsMarketing.saveMarketingBtn')}
                 </Button>
                 <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t flex items-start gap-1.5">
                     <Shield className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                     <span>
-                        <strong>KVKK ve İYS:</strong> İzinlerini istediğin zaman buradan veya gelen mesajdaki
-                        &quot;Aboneliği iptal et&quot; bağlantısıyla geri çekebilirsin. İzinler İleti Yönetim Sistemi (İYS) ile senkron tutulur.
+                        <strong>{t('dashboard.settingsMarketing.kvkkPrefix')}</strong> {t('dashboard.settingsMarketing.kvkkBody')}
                     </span>
                 </p>
             </CardContent>
@@ -265,6 +270,7 @@ function MarketingConsentCard() {
  */
 function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
     const { toast } = useToast();
+    const { t } = useTranslation();
     const [permission, setPermission] = useState<NotificationPermission | 'unsupported' | 'loading'>('loading');
     const [busy, setBusy] = useState(false);
 
@@ -278,7 +284,7 @@ function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
 
     const handleEnable = async () => {
         if (!authUid) {
-            toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Anlık bildirim için giriş yapmalısınız.' });
+            toast({ variant: 'destructive', title: t('dashboard.settingsNotifications.pushLoginRequiredTitle'), description: t('dashboard.settingsNotifications.pushLoginRequiredDesc') });
             return;
         }
         setBusy(true);
@@ -288,16 +294,16 @@ function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
             if (next === 'granted') {
                 const tok = await registerForPushToken(authUid);
                 if (tok) {
-                    toast({ title: 'Anlık bildirim açıldı', description: 'Cihazın artık bildirim alabilir.' });
+                    toast({ title: t('dashboard.settingsNotifications.pushEnabledTitle'), description: t('dashboard.settingsNotifications.pushEnabledDesc') });
                 } else {
-                    toast({ variant: 'destructive', title: 'Token alınamadı', description: 'Bildirim izni verildi ama token kaydedilemedi. Tarayıcıyı yenileyip tekrar dene.' });
+                    toast({ variant: 'destructive', title: t('dashboard.settingsNotifications.pushTokenFailTitle'), description: t('dashboard.settingsNotifications.pushTokenFailDesc') });
                 }
             } else if (next === 'denied') {
-                toast({ variant: 'destructive', title: 'İzin reddedildi', description: 'Tarayıcı ayarlarından sonradan da açabilirsin.' });
+                toast({ variant: 'destructive', title: t('dashboard.settingsNotifications.pushDeniedTitle'), description: t('dashboard.settingsNotifications.pushDeniedDesc') });
             }
         } catch (e) {
             console.error('[push] permission flow failed', e);
-            toast({ variant: 'destructive', title: 'Hata', description: 'Bildirim izni alınamadı.' });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: t('dashboard.settingsNotifications.pushGenericFailDesc') });
         } finally {
             setBusy(false);
         }
@@ -313,20 +319,20 @@ function PushPermissionCard({ authUid }: { authUid: string | undefined }) {
             <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                     {granted ? <BellRing className="h-5 w-5 text-primary" /> : <BellOff className="h-5 w-5 text-muted-foreground" />}
-                    Anlık (Push) Bildirim İzni
+                    {t('dashboard.settingsNotifications.pushCardTitle')}
                 </CardTitle>
                 <CardDescription>
                     {granted
-                        ? 'Cihazın aktif olarak anlık bildirim alabilir.'
+                        ? t('dashboard.settingsNotifications.pushDescGranted')
                         : denied
-                        ? 'Bildirim izni reddedildi. Tarayıcı ayarlarından da açabilirsin.'
-                        : 'Acil kan ihtiyacı, gönüllülük eşleşmesi ve mesaj bildirimlerini cihazınla anında almak için izin ver.'}
+                        ? t('dashboard.settingsNotifications.pushDescDenied')
+                        : t('dashboard.settingsNotifications.pushDescPrompt')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-end">
                 <Button onClick={handleEnable} disabled={busy || granted || denied}>
                     {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {granted ? 'Aktif' : denied ? 'Reddedildi' : 'Bildirimleri Aç'}
+                    {granted ? t('dashboard.settingsNotifications.pushBtnActive') : denied ? t('dashboard.settingsNotifications.pushBtnDenied') : t('dashboard.settingsNotifications.pushBtnEnable')}
                 </Button>
             </CardContent>
         </Card>

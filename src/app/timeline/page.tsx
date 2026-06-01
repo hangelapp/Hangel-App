@@ -36,6 +36,7 @@ import type { Post } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 import { TimelineBanner } from '@/components/shared/timeline-banner';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AdCarousel = () => {
     const plugin = useRef(
@@ -82,6 +83,7 @@ export default function TimelinePage() {
   const db = useFirestore();
   const { user: authUser } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [sortKey, setSortKey] = useState('id');
   const [sortDir, setSortDir] = useState('desc');
   const [filterSponsored, setFilterSponsored] = useState(false);
@@ -95,7 +97,7 @@ export default function TimelinePage() {
 
   const handleLike = async (post: Post) => {
     if (!authUser?.uid) {
-      toast({ title: 'Beğenmek için giriş yapmalısın', variant: 'destructive' });
+      toast({ title: t('timelinePage.toastLoginToLike'), variant: 'destructive' });
       return;
     }
     if (!db) return;
@@ -120,7 +122,7 @@ export default function TimelinePage() {
     } catch {
       // rollback
       setLikeState(prev => ({ ...prev, [post.id]: current }));
-      toast({ title: 'Beğeni kaydedilemedi', variant: 'destructive' });
+      toast({ title: t('timelinePage.toastLikeFailed'), variant: 'destructive' });
     } finally {
       setPendingPostId(null);
     }
@@ -128,7 +130,7 @@ export default function TimelinePage() {
 
   const handleReport = async (post: Post) => {
     if (!authUser?.uid) {
-      toast({ title: 'Bildirmek için giriş yapmalısın', variant: 'destructive' });
+      toast({ title: t('timelinePage.toastLoginToReport'), variant: 'destructive' });
       return;
     }
     if (!db) return;
@@ -142,9 +144,9 @@ export default function TimelinePage() {
         createdAt: serverTimestamp(),
         status: 'pending',
       });
-      toast({ title: 'Bildirim alındı', description: 'Hangel ekibi inceleyecek. Teşekkürler.' });
+      toast({ title: t('timelinePage.toastReportReceived'), description: t('timelinePage.toastReportReceivedDesc') });
     } catch {
-      toast({ variant: 'destructive', title: 'Bildirim gönderilemedi', description: 'Lütfen tekrar dene.' });
+      toast({ variant: 'destructive', title: t('timelinePage.toastReportFailed'), description: t('timelinePage.toastTryAgain') });
     }
   };
 
@@ -165,9 +167,9 @@ export default function TimelinePage() {
     }
     try {
       await navigator.clipboard.writeText(url);
-      toast({ title: 'Bağlantı kopyalandı' });
+      toast({ title: t('timelinePage.toastLinkCopied') });
     } catch {
-      toast({ title: 'Bağlantı kopyalanamadı', variant: 'destructive' });
+      toast({ title: t('timelinePage.toastLinkCopyFailed'), variant: 'destructive' });
     }
   };
 
@@ -384,7 +386,7 @@ export default function TimelinePage() {
                     {isLoading ? (
                         [...Array(3)].map((_, i) => <Card key={i} className="h-64 animate-pulse bg-muted" />)
                     ) : list.length === 0 ? (
-                        <div className="py-16 text-center text-muted-foreground text-sm">Bu sekmede gösterilecek gönderi yok.</div>
+                        <div className="py-16 text-center text-muted-foreground text-sm">{t('timelinePage.emptyTabFeed')}</div>
                     ) : list.map((post, index) => {
                     const cached = likeState[post.id];
                     const fallbackMine = !!(authUser?.uid && post.likedBy?.includes(authUser.uid));
@@ -412,18 +414,18 @@ export default function TimelinePage() {
                                         <div className="flex items-center gap-1 shrink-0">
                                             {post.sponsored && (
                                                 <Badge variant="outline" className="text-[10px] h-5">
-                                                    <Star className="h-3 w-3 mr-1" /> Sponsorlu
+                                                    <Star className="h-3 w-3 mr-1" /> {t('timelinePage.sponsoredBadge')}
                                                 </Badge>
                                             )}
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Daha fazla seçenek">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label={t('timelinePage.moreOptionsAria')}>
                                                         <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => handleReport(post)} className="text-destructive focus:text-destructive">
-                                                        <Flag className="mr-2 h-4 w-4" /> Bildir
+                                                        <Flag className="mr-2 h-4 w-4" /> {t('timelinePage.reportCta')}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -449,7 +451,7 @@ export default function TimelinePage() {
                                     aria-pressed={isLiked}
                                 >
                                     <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
-                                    <span>Beğen</span>
+                                    <span>{t('timelinePage.likeCta')}</span>
                                 </Button>
                                 <div className="w-[1px] h-6 bg-border self-center" />
                                 <Button
@@ -457,7 +459,7 @@ export default function TimelinePage() {
                                     className="flex-1 flex items-center gap-2 text-muted-foreground h-12 text-base"
                                     onClick={() => handleShare(post)}
                                 >
-                                    <Share2 className="h-5 w-5" /> <span>Paylaş</span>
+                                    <Share2 className="h-5 w-5" /> <span>{t('timelinePage.shareCta')}</span>
                                 </Button>
                             </CardFooter>
                         </Card>
@@ -477,7 +479,7 @@ export default function TimelinePage() {
                     <div className="relative flex-grow">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                            placeholder="Akışta ara..."
+                            placeholder={t('timelinePage.searchPlaceholder')}
                             className="pl-10 h-11"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -485,53 +487,53 @@ export default function TimelinePage() {
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Filtrele">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label={t('aria.filter')}>
                                 <Filter className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Filtrele</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('aria.filter')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuCheckboxItem checked={filterSponsored} onCheckedChange={setFilterSponsored}>
-                                Sadece Sponsorlu
+                                {t('timelinePage.onlySponsored')}
                             </DropdownMenuCheckboxItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuLabel>İlişkiye Göre</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('timelinePage.byRelation')}</DropdownMenuLabel>
                             {([
-                                { key: 'all', label: 'Tümü' },
-                                { key: 'supported', label: 'Bağış yaptığım STK\'lar' },
-                                { key: 'volunteered', label: 'Gönüllüsü olduğum STK\'lar' },
-                                { key: 'followed', label: 'Takip ettiğim markalar' },
-                                { key: 'joined', label: 'Üyesi olduğum kulüpler' },
+                                { key: 'all', labelKey: 'timelinePage.relAll' },
+                                { key: 'supported', labelKey: 'timelinePage.relSupported' },
+                                { key: 'volunteered', labelKey: 'timelinePage.relVolunteered' },
+                                { key: 'followed', labelKey: 'timelinePage.relFollowed' },
+                                { key: 'joined', labelKey: 'timelinePage.relJoined' },
                             ] as const).map(opt => (
                                 <DropdownMenuCheckboxItem
                                     key={opt.key}
                                     checked={relFilter === opt.key}
                                     onCheckedChange={() => setRelFilter(opt.key)}
                                 >
-                                    {opt.label}
+                                    {t(opt.labelKey)}
                                 </DropdownMenuCheckboxItem>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label="Sırala">
+                            <Button variant="outline" size="icon" className="h-11 w-11 shrink-0" aria-label={t('aria.sort')}>
                                 <ArrowDownUp className="h-5 w-5" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('desc')}}>En Yeni</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('asc')}}>En Eski</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {setSortKey('likes'); setSortDir('desc')}}>En Çok Beğenilen</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('desc')}}>{t('timelinePage.sortNewest')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {setSortKey('id'); setSortDir('asc')}}>{t('timelinePage.sortOldest')}</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {setSortKey('likes'); setSortDir('desc')}}>{t('timelinePage.sortMostLiked')}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
                 <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="special">Sana Özel</TabsTrigger>
-                    <TabsTrigger value="country">Ülkende</TabsTrigger>
-                    <TabsTrigger value="city">Şehrinde</TabsTrigger>
-                    <TabsTrigger value="school">Okulunda</TabsTrigger>
+                    <TabsTrigger value="special">{t('timelinePage.tabSpecial')}</TabsTrigger>
+                    <TabsTrigger value="country">{t('timelinePage.tabCountry')}</TabsTrigger>
+                    <TabsTrigger value="city">{t('timelinePage.tabCity')}</TabsTrigger>
+                    <TabsTrigger value="school">{t('timelinePage.tabSchool')}</TabsTrigger>
                 </TabsList>
             </div>
             <TabsContent value="special" className="mt-0">
@@ -544,7 +546,7 @@ export default function TimelinePage() {
                             aria-expanded={isSanaOzelExpanded}
                         >
                             <CardHeader className="flex flex-row items-center justify-between pb-2 hover:bg-accent/30 transition-colors rounded-t-xl">
-                                <CardTitle className="text-lg">Sana Özel</CardTitle>
+                                <CardTitle className="text-lg">{t('timelinePage.forYouTitle')}</CardTitle>
                                 <ChevronDown className={cn(
                                     "h-5 w-5 text-muted-foreground transition-transform duration-200",
                                     isSanaOzelExpanded && "rotate-180"
@@ -554,21 +556,21 @@ export default function TimelinePage() {
                         {isSanaOzelExpanded && (
                             <CardContent className="space-y-4 pt-0">
                                 <div>
-                                    <h3 className="text-sm font-semibold mb-2">Yaklaşan Gönüllülük Etkinliği</h3>
+                                    <h3 className="text-sm font-semibold mb-2">{t('timelinePage.upcomingVolunteeringTitle')}</h3>
                                     <Link href="/volunteering/1" className="block p-3 rounded-lg border hover:bg-accent">
-                                        <p className="font-semibold text-sm">Afet Bölgesi Yardım Dağıtımı</p>
-                                        <p className="text-xs text-muted-foreground">Ahbap Derneği - 1 Ağustos'ta başlıyor</p>
+                                        <p className="font-semibold text-sm">{t('timelinePage.sampleEventTitle')}</p>
+                                        <p className="text-xs text-muted-foreground">{t('timelinePage.sampleEventOrg')}</p>
                                     </Link>
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold mb-2">Rozet Hedefi</h3>
+                                    <h3 className="text-sm font-semibold mb-2">{t('timelinePage.badgeGoalTitle')}</h3>
                                     <Link href="/my-badges" className="block p-3 rounded-lg border hover:bg-accent">
                                         <div className="flex items-center gap-4">
                                             <Leaf className="h-8 w-8 text-green-600"/>
                                             <div className="flex-1">
-                                                <p className="font-semibold text-sm">Gümüş Çevre Koruyucusu</p>
+                                                <p className="font-semibold text-sm">{t('timelinePage.sampleBadgeName')}</p>
                                                 <Progress value={80} className="mt-1 h-2" />
-                                                <p className="text-xs text-muted-foreground mt-1">1000 puandan 800'ü tamamlandı.</p>
+                                                <p className="text-xs text-muted-foreground mt-1">{t('timelinePage.sampleBadgeProgress')}</p>
                                             </div>
                                         </div>
                                     </Link>

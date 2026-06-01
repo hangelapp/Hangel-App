@@ -41,7 +41,7 @@ export default function LanguageSettingsPage() {
                 description: `${t('dashboard.settingsLanguage.toastSavedDescPrefix')}${langName}${t('dashboard.settingsLanguage.toastSavedDescSuffix')}`,
             });
         } else {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+            toast({ variant: 'destructive', title: t('common.saveFailedTitle'), description: result.error.message.slice(0, 200) });
         }
     };
 

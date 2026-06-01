@@ -271,7 +271,7 @@ export default function NotificationsPage() {
 
   const openContract = (n: NotifItem) => {
     const slug = n.data?.contractSlug || (n.data?.link || '').split('/').filter(Boolean).pop() || '';
-    if (slug) setContractDialog({ slug, title: n.title || 'Sözleşme / Politika', version: n.data?.version || '1.0' });
+    if (slug) setContractDialog({ slug, title: n.title || t('dashboard.notifications.contractFallbackTitle'), version: n.data?.version || '1.0' });
   };
 
   const handleNotificationClick = (n: NotifItem, href: string | null) => {
@@ -418,6 +418,7 @@ export default function NotificationsPage() {
 function ContractApprovalDialog({ slug, title, version, onClose }: { slug: string; title: string; version: string; onClose: () => void }) {
   const db = useFirestore();
   const { user: authUser } = useUser();
+  const { t } = useTranslation();
   const docRef = useMemoFirebase(() => (db && slug ? doc(db, COLLECTIONS.contracts, slug) : null), [db, slug]);
   const { data: fsContract, isLoading } = useDoc<{ title?: string; content?: string; version?: string }>(docRef);
   const content = useMemo(() => {
@@ -466,7 +467,7 @@ function ContractApprovalDialog({ slug, title, version, onClose }: { slug: strin
   const ApproveBtn = (
     <Button onClick={approve} disabled={submitting || isLoading} className="w-full bg-green-600 hover:bg-green-700">
       {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-      Okudum, Kabul Ettim
+      {t('dashboard.notifications.contractApproveBtn')}
     </Button>
   );
 

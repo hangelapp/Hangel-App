@@ -79,7 +79,7 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: NextBadgeRow | null; t: (k
                         </div>
                         <Progress value={nextBadge.tierProgress} className="h-2" />
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            {nextBadge.tierCurrent.toLocaleString('tr-TR')} / {nextBadge.tierDelta.toLocaleString('tr-TR')} Puan (Kalan: {remaining.toLocaleString('tr-TR')})
+                            {nextBadge.tierCurrent.toLocaleString('tr-TR')} / {nextBadge.tierDelta.toLocaleString('tr-TR')} {t('dashboard.badges.pointsWord')} ({t('dashboard.badges.remainingLabel')}: {remaining.toLocaleString('tr-TR')})
                         </p>
                     </div>
                 </div>
@@ -98,7 +98,7 @@ const NextBadgeGoal = ({ nextBadge, t }: { nextBadge: NextBadgeRow | null; t: (k
  */
 type TierBadge = BadgeType & { prevTierRequired: number };
 
-const VectorBadge = ({ badge }: { badge: TierBadge }) => {
+const VectorBadge = ({ badge, t }: { badge: TierBadge; t: (key: string) => string }) => {
     const isEarned = badge.currentPoints >= badge.pointsRequired;
     const Icon = badge.iconName;
     const colors = levelColors[badge.level];
@@ -159,9 +159,9 @@ const VectorBadge = ({ badge }: { badge: TierBadge }) => {
                             {tierCurrent.toLocaleString('tr-TR')} / {tierDelta.toLocaleString('tr-TR')}
                         </span>
                         {isEarned ? (
-                            <span style={{ color: '#E34234' }}>TAMAMLANDI</span>
+                            <span style={{ color: '#E34234' }}>{t('dashboard.badges.completedLabel')}</span>
                         ) : (
-                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} KALDI</span>
+                            <span style={{ color: '#E34234' }}>{pointsRemaining.toLocaleString('tr-TR')} {t('dashboard.badges.remainingShort')}</span>
                         )}
                     </div>
                 </div>
@@ -261,7 +261,7 @@ export default function MyBadgesPage() {
     const pastVolunteering = useMemo(() => pastVolunteeringData ?? [], [pastVolunteeringData]);
 
     // PDF alıcı adı: profile/page.tsx currentUser.name kullanıyor; burada userData.name / authUser.displayName.
-    const recipientName = (userData as { name?: string } | undefined)?.name || authUser?.displayName || 'Gönüllü';
+    const recipientName = (userData as { name?: string } | undefined)?.name || authUser?.displayName || t('dashboard.badges.anonVolunteer');
 
     // Sertifika PDF'ini oluştur (jsPDF dinamik import). İndir ve Görüntüle aynı çıktıyı paylaşır.
     const buildCertificatePdf = async (cert: { title: string; organization: string; date: string }) => {
@@ -280,16 +280,16 @@ export default function MyBadgesPage() {
         // Title
         pdf.setFontSize(32);
         pdf.setTextColor(234, 88, 12);
-        pdf.text('SERTİFİKA', pageW / 2, 45, { align: 'center' });
+        pdf.text(t('dashboard.badges.certificateWord').toLocaleUpperCase('tr'), pageW / 2, 45, { align: 'center' });
 
         pdf.setFontSize(12);
         pdf.setTextColor(80, 80, 80);
-        pdf.text('Bu sertifika hangel platformu aracılığıyla verilmiştir.', pageW / 2, 58, { align: 'center' });
+        pdf.text(t('dashboard.badges.certIssuedBy'), pageW / 2, 58, { align: 'center' });
 
         // Recipient
         pdf.setFontSize(14);
         pdf.setTextColor(60, 60, 60);
-        pdf.text('Sayın', pageW / 2, 78, { align: 'center' });
+        pdf.text(t('dashboard.badges.certForPerson'), pageW / 2, 78, { align: 'center' });
 
         pdf.setFontSize(22);
         pdf.setTextColor(20, 20, 20);
@@ -298,7 +298,7 @@ export default function MyBadgesPage() {
         // Body
         pdf.setFontSize(13);
         pdf.setTextColor(60, 60, 60);
-        const body = `${cert.organization} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamladığını belgeler:`;
+        const body = `${cert.organization} ${t('dashboard.badges.certCompletion')}`;
         pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
 
         // Title of cert
@@ -309,8 +309,8 @@ export default function MyBadgesPage() {
         // Date / org footer
         pdf.setFontSize(11);
         pdf.setTextColor(80, 80, 80);
-        pdf.text(`Veren Kuruluş: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
-        pdf.text(`Tarih: ${cert.date}`, pageW / 2, 168, { align: 'center' });
+        pdf.text(`${t('dashboard.badges.certIssuer')}: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
+        pdf.text(`${t('dashboard.badges.certDate')}: ${cert.date}`, pageW / 2, 168, { align: 'center' });
 
         pdf.setFontSize(9);
         pdf.setTextColor(120, 120, 120);
@@ -339,21 +339,21 @@ export default function MyBadgesPage() {
                 try {
                     await Share.share({
                         title: cert.title,
-                        text: `${cert.title} sertifikam`,
+                        text: `${cert.title} ${t('dashboard.badges.shareCertSuffix')}`,
                         url: written.uri,
-                        dialogTitle: 'Sertifikayı kaydet veya paylaş',
+                        dialogTitle: t('dashboard.badges.saveOrShareDialog'),
                     });
                 } catch {
                     // user dismissed share — file is already saved
                 }
-                toast({ title: 'Sertifika Kaydedildi', description: `${filename} dosyanıza eklendi.` });
+                toast({ title: t('dashboard.badges.certSavedTitle'), description: `${filename} ${t('dashboard.badges.certSavedSuffix')}` });
                 return;
             }
             pdf.save(filename);
-            toast({ title: 'Sertifika İndirildi', description: `${cert.title} başarıyla indirildi.` });
+            toast({ title: t('dashboard.badges.certDownloadedTitle'), description: `${cert.title} ${t('dashboard.badges.certDownloadedSuffix')}` });
         } catch (error) {
             console.error('Certificate PDF download failed:', error);
-            toast({ variant: 'destructive', title: 'Sertifika İndirilemedi', description: 'PDF oluşturulurken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('dashboard.badges.certDownloadFailTitle'), description: t('dashboard.badges.certPdfFailDesc') });
         }
     };
 
@@ -377,15 +377,15 @@ export default function MyBadgesPage() {
             const blobUrl = pdf.output('bloburl');
             const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
             if (!opened) {
-                toast({ variant: 'destructive', title: 'Sertifika Açılamadı', description: 'Tarayıcı yeni sekme açmayı engelledi. Lütfen indir seçeneğini kullanın.' });
+                toast({ variant: 'destructive', title: t('dashboard.badges.certOpenFailTitle'), description: t('dashboard.badges.certOpenBlockedDesc') });
             }
         } catch (error) {
             console.error('Certificate PDF view failed:', error);
-            toast({ variant: 'destructive', title: 'Sertifika Açılamadı', description: 'PDF oluşturulurken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('dashboard.badges.certOpenFailTitle'), description: t('dashboard.badges.certPdfFailDesc') });
         }
     };
 
-    const buildShareText = (certTitle: string) => `${certTitle} sertifikamı Hangel'de kazandım! `;
+    const buildShareText = (certTitle: string) => `${certTitle} ${t('dashboard.badges.shareCertEarned')}`;
     const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org';
 
     // Native: iOS/Android share sheet (Capacitor Share). Web: deep link to platform.
@@ -397,7 +397,7 @@ export default function MyBadgesPage() {
                 title: certTitle,
                 text: buildShareText(certTitle),
                 url: shareUrl,
-                dialogTitle: 'Sertifikayı paylaş',
+                dialogTitle: t('dashboard.badges.shareCertDialog'),
             });
             return true;
         } catch {
@@ -416,7 +416,7 @@ export default function MyBadgesPage() {
     };
     const shareEmail = async (certTitle: string) => {
         if (await nativeShare(certTitle)) return;
-        const subject = encodeURIComponent(`${certTitle} sertifikam`);
+        const subject = encodeURIComponent(`${certTitle} ${t('dashboard.badges.shareCertSuffix')}`);
         const bodyText = encodeURIComponent(`${buildShareText(certTitle)}${shareUrl}`);
         window.open(`mailto:?subject=${subject}&body=${bodyText}`, '_blank', 'noopener,noreferrer');
     };
@@ -426,9 +426,9 @@ export default function MyBadgesPage() {
             if (typeof navigator !== 'undefined' && navigator.clipboard) {
                 await navigator.clipboard.writeText(`${buildShareText(certTitle)}${shareUrl}`);
             }
-            toast({ title: 'Metin kopyalandı', description: "Metin kopyalandı, Instagram'da paylaşabilirsin" });
+            toast({ title: t('dashboard.badges.textCopiedTitle'), description: t('dashboard.badges.textCopiedDesc') });
         } catch {
-            toast({ variant: 'destructive', title: 'Paylaşılamadı', description: 'Metin kopyalanırken bir hata oluştu.' });
+            toast({ variant: 'destructive', title: t('dashboard.badges.shareFailTitle'), description: t('dashboard.badges.shareCopyError') });
         }
         window.open('https://www.instagram.com', '_blank', 'noopener,noreferrer');
     };
@@ -669,18 +669,18 @@ export default function MyBadgesPage() {
                             <div key={socialArea} className="space-y-6">
                                 <div className="px-1 flex items-center justify-between">
                                     <div>
-                                        <h2 className="text-2xl font-bold tracking-tight">{socialArea} Alanı</h2>
+                                        <h2 className="text-2xl font-bold tracking-tight">{socialArea} {t('dashboard.badges.areaSuffix')}</h2>
                                         <p className="text-xs font-black uppercase tracking-widest text-muted-foreground mt-0.5">
-                                            Bu alandaki puanın: {areaCurrent.toLocaleString('tr-TR')}
+                                            {t('dashboard.badges.areaScoreLabel')}: {areaCurrent.toLocaleString('tr-TR')}
                                         </p>
                                     </div>
                                     <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest">
-                                        {areaBadges.filter(b => b.currentPoints >= b.pointsRequired).length} / {areaBadges.length} Rozet
+                                        {areaBadges.filter(b => b.currentPoints >= b.pointsRequired).length} / {areaBadges.length} {t('dashboard.badges.badgeWord')}
                                     </Badge>
                                 </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                                     {areaBadges.map(badge => (
-                                        <VectorBadge key={badge.id} badge={badge} />
+                                        <VectorBadge key={badge.id} badge={badge} t={t} />
                                     ))}
                                 </div>
                             </div>
@@ -692,9 +692,9 @@ export default function MyBadgesPage() {
                     {!authUser ? (
                         <EmptyState
                             icon={LogIn}
-                            title="Sertifikalarını görmek için giriş yap"
-                            description="Onaylanan gönüllülük ve etkinlik katılımlarının sertifikaları hesabına bağlıdır."
-                            action={{ label: 'Giriş yap', href: '/login' }}
+                            title={t('dashboard.badges.certLoginPromptTitle')}
+                            description={t('dashboard.badges.certLoginPromptDesc')}
+                            action={{ label: t('dashboard.badges.loginCta'), href: '/login' }}
                         />
                     ) : certificates.length === 0 ? (
                         <div className="text-center py-20">
@@ -721,17 +721,17 @@ export default function MyBadgesPage() {
                                     <div className="flex items-center gap-2 shrink-0">
                                         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleViewCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
                                             <Eye className="h-4 w-4 sm:mr-2" />
-                                            <span className="hidden sm:inline">Görüntüle</span>
+                                            <span className="hidden sm:inline">{t('dashboard.badges.viewCta')}</span>
                                         </Button>
                                         <Button size="sm" variant="outline" className="rounded-xl" onClick={() => handleDownloadCertificate({ title: cert.title, organization: cert.organization, date: cert.date })}>
                                             <Download className="h-4 w-4 sm:mr-2" />
-                                            <span className="hidden sm:inline">İndir</span>
+                                            <span className="hidden sm:inline">{t('dashboard.badges.downloadCta')}</span>
                                         </Button>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button size="sm" variant="outline" className="rounded-xl">
                                                     <Share2 className="h-4 w-4 sm:mr-2" />
-                                                    <span className="hidden sm:inline">Paylaş</span>
+                                                    <span className="hidden sm:inline">{t('dashboard.badges.shareCta')}</span>
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -745,7 +745,7 @@ export default function MyBadgesPage() {
                                                     <Linkedin className="mr-2 h-4 w-4" /> LinkedIn
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => shareEmail(cert.title)}>
-                                                    <Mail className="mr-2 h-4 w-4" /> E-posta
+                                                    <Mail className="mr-2 h-4 w-4" /> {t('dashboard.badges.shareEmail')}
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

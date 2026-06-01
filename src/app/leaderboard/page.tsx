@@ -9,6 +9,7 @@ import React from 'react';
 import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 type LeaderboardUser = {
   id?: string;
@@ -50,9 +51,10 @@ type LeaderboardTableProps = {
   authUserId: string | undefined;
   scope: string;
   isLoading: boolean;
+  t: (key: string) => string;
 };
 
-const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading }: LeaderboardTableProps) => {
+const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading, t }: LeaderboardTableProps) => {
   const sortedData = useMemo(() => {
     if (!allUsers) return [];
     // Her sekme kendi metriğine göre filtre + sıralama yapar; ilk 100 kullanıcı
@@ -79,7 +81,7 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
       .map(x => ({ ...x.user, _value: x.value }));
   }, [allUsers, valueKey, scope, authUserId]);
 
-  const headerLabel = unit === 'Puan' ? 'Puan' : (unit === 'Saat' ? 'Saat' : 'Tutar');
+  const headerLabel = unit === t('leaderboardPage.unitPoints') ? t('leaderboardPage.colPoints') : (unit === t('leaderboardPage.unitHours') ? t('leaderboardPage.colHours') : t('leaderboardPage.colAmount'));
 
   if (isLoading) {
     return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -89,8 +91,8 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
     <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">Sıra</TableHead>
-            <TableHead>Kullanıcı</TableHead>
+            <TableHead className="w-16">{t('leaderboardPage.colRank')}</TableHead>
+            <TableHead>{t('leaderboardPage.colUser')}</TableHead>
             <TableHead className="text-right">{headerLabel}</TableHead>
           </TableRow>
         </TableHeader>
@@ -111,12 +113,12 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{isAnonymous ? 'Profilini gizleyen kullanıcı' : userItem.name}</p>
+                    <p className="font-medium">{isAnonymous ? t('leaderboardPage.anonymousUser') : userItem.name}</p>
                     {!isAnonymous && <p className="text-sm text-muted-foreground">{userItem.username}</p>}
                     {valueKey !== 'impactScore' && getValue(userItem, 'impactScore') > 0 && (
                       <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                         <Star className="h-3 w-3 text-amber-500" />
-                        <span>{getValue(userItem, 'impactScore').toLocaleString('tr-TR')} Puan</span>
+                        <span>{getValue(userItem, 'impactScore').toLocaleString('tr-TR')} {t('leaderboardPage.unitPoints')}</span>
                       </div>
                     )}
                   </div>
@@ -130,7 +132,7 @@ const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoadi
           }) : (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                Bu kategoride gösterilecek kimse yok.
+                {t('leaderboardPage.noEntries')}
               </TableCell>
             </TableRow>
           )}
@@ -145,38 +147,39 @@ export default function LeaderboardPage() {
   const [scope, setScope] = useState('country');
   const { user: authUser } = useUser();
   const db = useFirestore();
+  const { t } = useTranslation();
 
   const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold font-headline">Liderlik Tablosu</h1>
+      <h1 className="text-2xl font-bold font-headline">{t('leaderboardPage.title')}</h1>
 
       <Tabs defaultValue="country" className="w-full" onValueChange={setScope}>
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="global"><Globe className="mr-2 h-4 w-4" />Global</TabsTrigger>
-          <TabsTrigger value="country">Ülkemde</TabsTrigger>
-          <TabsTrigger value="city">Şehrimde</TabsTrigger>
-          <TabsTrigger value="school">Okulumda</TabsTrigger>
+          <TabsTrigger value="global"><Globe className="mr-2 h-4 w-4" />{t('leaderboardPage.scopeGlobal')}</TabsTrigger>
+          <TabsTrigger value="country">{t('leaderboardPage.scopeCountry')}</TabsTrigger>
+          <TabsTrigger value="city">{t('leaderboardPage.scopeCity')}</TabsTrigger>
+          <TabsTrigger value="school">{t('leaderboardPage.scopeSchool')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <Tabs defaultValue="impact" className="w-full">
         <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="impact"><Star className="mr-2 h-4 w-4" /> Etki Puanı</TabsTrigger>
-          <TabsTrigger value="volunteer"><Handshake className="mr-2 h-4 w-4" /> Gönüllülük</TabsTrigger>
-          <TabsTrigger value="donation"><Heart className="mr-2 h-4 w-4" /> Bağış</TabsTrigger>
+          <TabsTrigger value="impact"><Star className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabImpact')}</TabsTrigger>
+          <TabsTrigger value="volunteer"><Handshake className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabVolunteer')}</TabsTrigger>
+          <TabsTrigger value="donation"><Heart className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabDonation')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="impact" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="impactScore" unit="Puan" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
+          <MemoizedLeaderboardTable valueKey="impactScore" unit={t('leaderboardPage.unitPoints')} allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="volunteer" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="volunteerHours" unit="Saat" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
+          <MemoizedLeaderboardTable valueKey="volunteerHours" unit={t('leaderboardPage.unitHours')} allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
         </TabsContent>
         <TabsContent value="donation" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="totalDonation" unit="₺" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} />
+          <MemoizedLeaderboardTable valueKey="totalDonation" unit="₺" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
         </TabsContent>
       </Tabs>
     </div>

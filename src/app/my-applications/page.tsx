@@ -41,7 +41,8 @@ export default function MyApplicationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('desc');
   const [statusFilter, setStatusFilter] = useState('Tümü');
-  const allStatuses = ['Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'];
+  // Veri modeli sabit (TR enum); UI'da görünüm i18n key ile çevrilir.
+  const allStatuses = ['Tümü', 'Onaylandı', 'Beklemede', 'Reddedildi'] as const;
   const { toast } = useToast();
 
   const applicationsQuery = useMemoFirebase(
@@ -112,7 +113,7 @@ export default function MyApplicationsPage() {
           <div className='text-right flex-shrink-0 ml-4 space-y-1'>
             <div className="flex items-center justify-end gap-2">
               {StatusIcon}
-              <p className="font-semibold text-sm">{app.status}</p>
+              <p className="font-semibold text-sm">{t(`dashboard.applications.statuses.${app.status}`)}</p>
             </div>
             <p className='text-xs text-muted-foreground'>{app.date}</p>
           </div>
@@ -141,7 +142,7 @@ export default function MyApplicationsPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>{t('dashboard.applications.withdrawTitle')}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Bu işlem geri alınamaz. "{app.title}" başvurunuz kalıcı olarak iptal edilecektir.
+                      {t('dashboard.applications.withdrawDescPrefix')}&quot;{app.title}&quot;{t('dashboard.applications.withdrawDescSuffix')}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -205,7 +206,7 @@ export default function MyApplicationsPage() {
                 checked={statusFilter === status}
                 onCheckedChange={() => setStatusFilter(status)}
               >
-                {status}
+                {t(`dashboard.applications.statuses.${status}`)}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>

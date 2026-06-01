@@ -13,7 +13,8 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 
-const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'];
+const BLOOD_TYPES = ['A Rh+', 'A Rh-', 'B Rh+', 'B Rh-', 'AB Rh+', 'AB Rh-', '0 Rh+', '0 Rh-', 'Bilinmiyor'] as const;
+type BloodType = typeof BLOOD_TYPES[number];
 
 interface EmergencyPrefs {
   bloodType?: string;
@@ -71,7 +72,7 @@ export default function EmergencySettingsPage() {
       });
       toast({ title: t('emergencyPage.saved'), description: t('emergencyPage.savedDesc') });
     } catch (e) {
-      toast({ variant: 'destructive', title: t('emergencyPage.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('emergencyPage.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
     } finally {
       setSaving(false);
     }
@@ -99,7 +100,7 @@ export default function EmergencySettingsPage() {
             <label className="text-xs font-semibold text-muted-foreground">{t('emergencyPage.bloodType')}</label>
             <Select value={prefs.bloodType || ''} onValueChange={(v) => setPrefs((p) => ({ ...p, bloodType: v }))}>
               <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder={t('emergencyPage.bloodTypePlaceholder')} /></SelectTrigger>
-              <SelectContent>{BLOOD_TYPES.map((bt) => (<SelectItem key={bt} value={bt}>{bt}</SelectItem>))}</SelectContent>
+              <SelectContent>{BLOOD_TYPES.map((bt: BloodType) => (<SelectItem key={bt} value={bt}>{bt === 'Bilinmiyor' ? t('emergencyPage.bloodTypeUnknown') : bt}</SelectItem>))}</SelectContent>
             </Select>
           </div>
           <ToggleRow label={t('emergencyPage.bloodNotifications')} checked={!!prefs.bloodNotifications} onChange={(v) => setPrefs((p) => ({ ...p, bloodNotifications: v }))} />

@@ -78,10 +78,10 @@ export default function IntentsSettingsPage() {
         body: JSON.stringify({ intents: Array.from(selected) }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) throw new Error(data.message || 'Kaydedilemedi');
-      toast({ title: t('welcome.intentTitle'), description: 'Tercihlerin güncellendi.' });
+      if (!res.ok || !data.ok) throw new Error(data.message || t('welcome.saveError'));
+      toast({ title: t('welcome.intentTitle'), description: t('settingsIntentsPage.saved') });
     } catch (e) {
-      toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('welcome.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
     } finally {
       setSaving(false);
     }
@@ -129,7 +129,7 @@ export default function IntentsSettingsPage() {
       </Card>
 
       <Button onClick={save} disabled={saving || selected.size === 0} className="w-full h-12 rounded-xl font-bold">
-        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Kaydet'}
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('common.save')}
       </Button>
     </div>
   );

@@ -28,16 +28,16 @@ interface SessionDoc {
     createdAt?: Timestamp;
 }
 
-function formatRelative(ts?: Timestamp): string {
+function formatRelative(ts: Timestamp | undefined, t: (key: string) => string): string {
     if (!ts) return '—';
     const d = ts.toDate();
     const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
-    if (diffMin < 1) return 'Şu an';
-    if (diffMin < 60) return `${diffMin} dakika önce`;
+    if (diffMin < 1) return t('dashboard.settingsPrivacy.timeJustNow');
+    if (diffMin < 60) return `${diffMin} ${t('dashboard.settingsPrivacy.timeMinAgo')}`;
     const diffH = Math.floor(diffMin / 60);
-    if (diffH < 24) return `${diffH} saat önce`;
+    if (diffH < 24) return `${diffH} ${t('dashboard.settingsPrivacy.timeHourAgo')}`;
     const diffD = Math.floor(diffH / 24);
-    if (diffD < 30) return `${diffD} gün önce`;
+    if (diffD < 30) return `${diffD} ${t('dashboard.settingsPrivacy.timeDayAgo')}`;
     return d.toLocaleDateString('tr-TR');
 }
 
@@ -80,15 +80,15 @@ export default function PrivacySettingsPage() {
             await deleteDoc(doc(db, COLLECTIONS.users, authUser.uid, 'sessions', s.id));
             const isCurrent = s.sessionId === currentSessionId;
             if (isCurrent) {
-                toast({ title: 'Bu oturum kapatılıyor' });
+                toast({ title: t('dashboard.settingsPrivacy.toastClosingCurrentSession') });
                 if (typeof window !== 'undefined') localStorage.removeItem('hangel-session-id');
                 await signOut(auth).catch(() => {});
                 router.push('/login/selection?action=login');
             } else {
-                toast({ title: 'Oturum kapatıldı', description: 'Diğer cihazda 1 saat içinde otomatik çıkış olur.' });
+                toast({ title: t('dashboard.settingsPrivacy.toastSessionClosed'), description: t('dashboard.settingsPrivacy.toastSessionClosedDesc') });
             }
         } catch (err) {
-            toast({ variant: 'destructive', title: 'Hata', description: err instanceof Error ? err.message.slice(0, 200) : 'Oturum kapatılamadı.' });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: err instanceof Error ? err.message.slice(0, 200) : t('dashboard.settingsPrivacy.sessionCloseFailDesc') });
         } finally {
             setClosingSessionId(null);
         }
@@ -100,9 +100,9 @@ export default function PrivacySettingsPage() {
         try {
             const others = sessions.filter(s => s.sessionId !== currentSessionId);
             await Promise.all(others.map(s => deleteDoc(doc(db, COLLECTIONS.users, authUser.uid, 'sessions', s.id))));
-            toast({ title: 'Diğer oturumlar kapatıldı', description: `${others.length} oturum kapatıldı.` });
+            toast({ title: t('dashboard.settingsPrivacy.toastOtherSessionsClosed'), description: `${others.length} ${t('dashboard.settingsPrivacy.sessionsClosedSuffix')}` });
         } catch (err) {
-            toast({ variant: 'destructive', title: 'Hata', description: err instanceof Error ? err.message.slice(0, 200) : '' });
+            toast({ variant: 'destructive', title: t('common.errorTitle'), description: err instanceof Error ? err.message.slice(0, 200) : '' });
         } finally {
             setClosingAll(false);
         }
@@ -162,7 +162,7 @@ export default function PrivacySettingsPage() {
         if (result.ok) {
             toast({ title: t('dashboard.settingsPrivacy.toastSavedTitle'), description: t('dashboard.settingsPrivacy.toastSavedDesc') });
         } else {
-            toast({ variant: 'destructive', title: 'Kayıt başarısız', description: result.error.message.slice(0, 200) });
+            toast({ variant: 'destructive', title: t('common.saveFailedTitle'), description: result.error.message.slice(0, 200) });
         }
     };
 
@@ -183,7 +183,7 @@ export default function PrivacySettingsPage() {
             <Card>
                 <CardHeader><CardTitle>{t('dashboard.settingsPrivacy.profileVisibilityTitle')}</CardTitle></CardHeader>
                 <CardContent className="p-0">
-                    <SettingsItem label="Özel Profil" description="Etkinleştirilirse, profilinizi sadece onayladığınız takipçiler görebilir." icon={Lock} iconColor="bg-red-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.privateProfileLabel')} description={t('dashboard.settingsPrivacy.privateProfileDesc')} icon={Lock} iconColor="bg-red-500">
                         <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
                     </SettingsItem>
                 </CardContent>
@@ -195,25 +195,25 @@ export default function PrivacySettingsPage() {
                     <CardDescription>{t('dashboard.settingsPrivacy.dataVisibilityDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <SettingsItem label="Etki Puanımı Gizle" description="Sosyal etki puanınız ve istatistikleriniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideScoreLabel')} description={t('dashboard.settingsPrivacy.hideScoreDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideScore} onCheckedChange={setHideScore} />
                     </SettingsItem>
-                    <SettingsItem label="Hakkında Bilgilerimi Gizle" description="Kişisel ve iletişim bilgileriniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideAboutLabel')} description={t('dashboard.settingsPrivacy.hideAboutDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideAbout} onCheckedChange={setHideAbout} />
                     </SettingsItem>
-                    <SettingsItem label="Gönüllülük Bilgilerimi Gizle" description="Gönüllülük yetkinlikleriniz ve geçmişiniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideVolunteerLabel')} description={t('dashboard.settingsPrivacy.hideVolunteerDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideVolunteer} onCheckedChange={setHideVolunteer} />
                     </SettingsItem>
-                    <SettingsItem label="Rozetlerimi Gizle" description="Kazandığınız rozetler profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideBadgesLabel')} description={t('dashboard.settingsPrivacy.hideBadgesDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideBadges} onCheckedChange={setHideBadges} />
                     </SettingsItem>
-                    <SettingsItem label="Sertifikalarımı Gizle" description="Kazandığınız sertifikalar profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideCertsLabel')} description={t('dashboard.settingsPrivacy.hideCertsDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideCertificates} onCheckedChange={setHideCertificates} />
                     </SettingsItem>
-                    <SettingsItem label="Gönderilerimi Gizle" description="Paylaştığınız gönderiler profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hidePostsLabel')} description={t('dashboard.settingsPrivacy.hidePostsDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hidePosts} onCheckedChange={setHidePosts} />
                     </SettingsItem>
-                    <SettingsItem label="Bağış Aktivitelerimi Gizle" description="Bağış ve işlem geçmişiniz profilinizde görünmez." icon={Shield} iconColor="bg-green-500">
+                    <SettingsItem label={t('dashboard.settingsPrivacy.hideDonationsLabel')} description={t('dashboard.settingsPrivacy.hideDonationsDesc')} icon={Shield} iconColor="bg-green-500">
                         <Switch checked={hideDonations} onCheckedChange={setHideDonations} />
                     </SettingsItem>
                 </CardContent>
@@ -222,21 +222,21 @@ export default function PrivacySettingsPage() {
             {/* GÜVENLİK BÖLÜMÜ — eski /settings/security içeriği buraya taşındı. */}
             <Card>
                 <CardHeader>
-                    <CardTitle>İki Faktörlü Doğrulama</CardTitle>
-                    <CardDescription>Hesabınızı korumak için ek güvenlik katmanı.</CardDescription>
+                    <CardTitle>{t('dashboard.settingsPrivacy.twoFaTitle')}</CardTitle>
+                    <CardDescription>{t('dashboard.settingsPrivacy.twoFaDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                            <Label htmlFor="2fa-switch">Telefon Numarası ile Doğrulama</Label>
-                            <p className="text-xs text-muted-foreground">Giriş yaparken telefonunuza bir kod gönderilir.</p>
+                            <Label htmlFor="2fa-switch">{t('dashboard.settingsPrivacy.twoFaPhoneLabel')}</Label>
+                            <p className="text-xs text-muted-foreground">{t('dashboard.settingsPrivacy.twoFaPhoneDesc')}</p>
                         </div>
                         <Switch
                             id="2fa-switch"
                             checked={twoFactorEnabled}
                             onCheckedChange={(c) => {
                                 setTwoFactorEnabled(c);
-                                toast({ title: '2FA güncellendi', description: c ? 'Açıldı.' : 'Kapatıldı.' });
+                                toast({ title: t('dashboard.settingsPrivacy.twoFaToastTitle'), description: c ? t('dashboard.settingsPrivacy.twoFaToastOn') : t('dashboard.settingsPrivacy.twoFaToastOff') });
                             }}
                         />
                     </div>
@@ -245,28 +245,28 @@ export default function PrivacySettingsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Açık Oturumlar</CardTitle>
-                    <CardDescription>Bu hesaba bağlı cihaz ve tarayıcılar. Aynı cihazda farklı tarayıcılar ayrı oturum olarak listelenir.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> {t('dashboard.settingsPrivacy.sessionsTitle')}</CardTitle>
+                    <CardDescription>{t('dashboard.settingsPrivacy.sessionsDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {sessionsLoading ? (
                         <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
                     ) : !sessions || sessions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-6">Henüz oturum kaydı yok.</p>
+                        <p className="text-sm text-muted-foreground text-center py-6">{t('dashboard.settingsPrivacy.sessionsEmpty')}</p>
                     ) : (
                         sessions.map((s) => {
                             const Icon = getDeviceIcon(s.deviceType);
                             const isCurrent = s.sessionId === currentSessionId;
-                            const deviceLabel = `${s.deviceName || 'Cihaz'} · ${s.browserName || ''}`.trim();
+                            const deviceLabel = `${s.deviceName || t('dashboard.settingsPrivacy.deviceFallback')} · ${s.browserName || ''}`.trim();
                             return (
                                 <div key={s.id} className={`flex items-start gap-3 p-3 border rounded-lg ${isCurrent ? 'border-primary/40 bg-primary/5' : ''}`}>
                                     <Icon className="h-6 w-6 text-muted-foreground shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0 space-y-0.5">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <p className="font-bold text-sm truncate">{deviceLabel}</p>
-                                            {isCurrent && <Badge variant="default" className="text-[10px] bg-primary/15 text-primary border-primary/30">Bu cihaz</Badge>}
+                                            {isCurrent && <Badge variant="default" className="text-[10px] bg-primary/15 text-primary border-primary/30">{t('dashboard.settingsPrivacy.thisDeviceBadge')}</Badge>}
                                         </div>
-                                        <p className="text-xs text-muted-foreground">{s.osName || '—'} · Son aktif: {formatRelative(s.lastActiveAt)}</p>
+                                        <p className="text-xs text-muted-foreground">{s.osName || '—'} · {t('dashboard.settingsPrivacy.lastActiveLabel')}: {formatRelative(s.lastActiveAt, t)}</p>
                                     </div>
                                     <Button
                                         type="button"
@@ -275,8 +275,8 @@ export default function PrivacySettingsPage() {
                                         className="h-8 w-8 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                                         onClick={() => handleCloseSession(s)}
                                         disabled={closingSessionId === s.id}
-                                        aria-label="Oturum kapat"
-                                        title="Oturumu kapat"
+                                        aria-label={t('dashboard.settingsPrivacy.closeSessionAria')}
+                                        title={t('dashboard.settingsPrivacy.closeSessionAria')}
                                     >
                                         {closingSessionId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : isCurrent ? <LogOut className="h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
                                     </Button>
@@ -287,11 +287,11 @@ export default function PrivacySettingsPage() {
                     {sessions && sessions.length > 1 && (
                         <Button type="button" variant="outline" className="w-full" onClick={handleCloseAllOthers} disabled={closingAll}>
                             {closingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Diğer Tüm Oturumları Kapat
+                            {t('dashboard.settingsPrivacy.closeAllOthersBtn')}
                         </Button>
                     )}
                     <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t">
-                        ⓘ Diğer cihazda oturum kapatıldıktan sonra etki gösterme süresi: en geç <strong>1 saat</strong>.
+                        {t('dashboard.settingsPrivacy.sessionsNote')}
                     </p>
                 </CardContent>
             </Card>

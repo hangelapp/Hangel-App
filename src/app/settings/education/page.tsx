@@ -114,7 +114,7 @@ export default function EducationSettingsPage() {
       });
       toast({ title: t('educationPage.saved'), description: t('educationPage.savedDesc') });
     } catch (e) {
-      toast({ variant: 'destructive', title: t('educationPage.saveError'), description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('educationPage.saveError'), description: e instanceof Error ? e.message : t('common.unknownError') });
     } finally {
       setSaving(false);
     }
@@ -148,7 +148,7 @@ export default function EducationSettingsPage() {
               </div>
               <Select value={entry.level} onValueChange={(v) => updateEducation(idx, { level: v })}>
                 <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.levelPlaceholder')} /></SelectTrigger>
-                <SelectContent>{EDUCATION_LEVELS.map((l) => (<SelectItem key={l} value={l}>{l}</SelectItem>))}</SelectContent>
+                <SelectContent>{EDUCATION_LEVELS.map((l) => (<SelectItem key={l} value={l}>{t(`educationPage.levels.${l}`)}</SelectItem>))}</SelectContent>
               </Select>
               <Input placeholder={t('educationPage.schoolPlaceholder')} value={entry.school} onChange={(e) => updateEducation(idx, { school: e.target.value })} className="h-10 rounded-lg" />
               {(entry.level === 'Önlisans' || entry.level === 'Lisans' || entry.level === 'Yüksek Lisans' || entry.level === 'Doktora') && (
@@ -157,7 +157,7 @@ export default function EducationSettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select value={entry.status ?? ''} onValueChange={(v) => updateEducation(idx, { status: v })}>
                   <SelectTrigger className="h-10 rounded-lg"><SelectValue placeholder={t('educationPage.statusPlaceholder')} /></SelectTrigger>
-                  <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}</SelectContent>
+                  <SelectContent>{STATUS_OPTIONS.map((s) => (<SelectItem key={s} value={s}>{t(`educationPage.statusOptions.${s}`)}</SelectItem>))}</SelectContent>
                 </Select>
                 <Input
                   placeholder={entry.status === 'Mezun' ? t('educationPage.graduationYearPlaceholder') : t('educationPage.gradePlaceholder')}
