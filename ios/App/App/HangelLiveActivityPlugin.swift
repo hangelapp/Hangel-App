@@ -29,7 +29,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func isSupported(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        if #available(iOS 16.1, *) {
+        if #available(iOS 16.2, *) {
             call.resolve(["supported": ActivityAuthorizationInfo().areActivitiesEnabled])
             return
         }
@@ -39,7 +39,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func startEmergencyBlood(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        guard #available(iOS 16.1, *) else { call.reject("Requires iOS 16.1+"); return }
+        guard #available(iOS 16.2, *) else { call.reject("Requires iOS 16.2+"); return }
         guard let bloodType = call.getString("bloodType"),
               let city = call.getString("city"),
               let requestId = call.getString("requestId"),
@@ -61,7 +61,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func startVolunteerTask(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        guard #available(iOS 16.1, *) else { call.reject("Requires iOS 16.1+"); return }
+        guard #available(iOS 16.2, *) else { call.reject("Requires iOS 16.2+"); return }
         guard let taskTitle = call.getString("taskTitle"),
               let ngoName = call.getString("ngoName"),
               let location = call.getString("location"),
@@ -82,7 +82,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func startEventCountdown(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        guard #available(iOS 16.1, *) else { call.reject("Requires iOS 16.1+"); return }
+        guard #available(iOS 16.2, *) else { call.reject("Requires iOS 16.2+"); return }
         guard let eventTitle = call.getString("eventTitle"),
               let location = call.getString("location"),
               let eventId = call.getString("eventId") else {
@@ -101,7 +101,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func startDonationCampaign(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        guard #available(iOS 16.1, *) else { call.reject("Requires iOS 16.1+"); return }
+        guard #available(iOS 16.2, *) else { call.reject("Requires iOS 16.2+"); return }
         guard let campaignTitle = call.getString("campaignTitle"),
               let ngoName = call.getString("ngoName"),
               let campaignId = call.getString("campaignId") else {
@@ -121,7 +121,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc func endActivity(_ call: CAPPluginCall) {
         #if canImport(ActivityKit)
-        guard #available(iOS 16.1, *) else { call.reject("Requires iOS 16.1+"); return }
+        guard #available(iOS 16.2, *) else { call.reject("Requires iOS 16.2+"); return }
         guard let activityId = call.getString("activityId") else {
             call.reject("activityId zorunlu"); return
         }
@@ -150,7 +150,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     #if canImport(ActivityKit)
-    @available(iOS 16.1, *)
+    @available(iOS 16.2, *)
     private static func startActivity<A: ActivityAttributes>(
         attrs: A,
         state: A.ContentState,
