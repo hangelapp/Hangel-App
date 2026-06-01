@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		177AB4B09B7DA119A813C050 /* HangelBackgroundTasksPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */; };
+		1B377CB3E853F8FB52D3ABF1 /* HangelWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5E2922F3390B03293575AB /* HangelWatchApp.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
@@ -17,12 +18,46 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		573BE32EB0C31FB321E29A8A /* HangelAppleSignInPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */; };
+		5D1083187139087BE6090788 /* EmergencyBloodDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */; };
+		600E2BE4C5D92A0B39E12708 /* WatchConnectivityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */; };
+		6D4BDBB3514D12D988510061 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12EFBF34B850E75CF1C82086 /* Foundation.framework */; };
+		7340D25AB18FB68BC5174DEA /* HangelWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 57BBFEC425CB6D475E1BF366 /* HangelWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9CC1E2FEB0FBCBE62420577D /* HangelWatchConnectivityPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */; };
 		A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */; };
+		A7B6045997B67067DBDCDE40 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74B28242FE67D8EFE0A1703A /* ContentView.swift */; };
+		BAC39E9CC36F036729030EA1 /* WatchAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C999C34FA43377AECB2140F /* WatchAppDelegate.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		E939827D922CA52DC54A0274 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5FC82C57944C5B2908026E8C;
+			remoteInfo = HangelWatch;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DD4B06DD9D3A57D1E135ABFB /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				7340D25AB18FB68BC5174DEA /* HangelWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		12EFBF34B850E75CF1C82086 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelBackgroundTasksPlugin.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3C999C34FA43377AECB2140F /* WatchAppDelegate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchAppDelegate.swift; sourceTree = "<group>"; };
+		4A5E2922F3390B03293575AB /* HangelWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelWatchApp.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -31,12 +66,26 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		57BBFEC425CB6D475E1BF366 /* HangelWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HangelWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		74B28242FE67D8EFE0A1703A /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelWatchConnectivityPlugin.swift; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppleSignInPlugin.swift; sourceTree = "<group>"; };
+		BB36A98EDADDAD874D502BC4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchConnectivityManager.swift; sourceTree = "<group>"; };
+		E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EmergencyBloodDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4B2AA9C039DEC4847BCF35F6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D4BDBB3514D12D988510061 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -54,6 +103,8 @@
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				AE86B8F9543F8C5330E09C2E /* HangelWatch */,
+				A7B521F810BE5E27306552FB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -61,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				57BBFEC425CB6D475E1BF366 /* HangelWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,8 +131,39 @@
 				50B271D01FEDC1A000F3C39B /* public */,
 				2C98968A2BDC06C88C6AB0BB /* HangelBackgroundTasksPlugin.swift */,
 				B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */,
+				9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		7515F2AC4DBD263F3ECF4CFF /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				12EFBF34B850E75CF1C82086 /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
+		A7B521F810BE5E27306552FB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7515F2AC4DBD263F3ECF4CFF /* watchOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AE86B8F9543F8C5330E09C2E /* HangelWatch */ = {
+			isa = PBXGroup;
+			children = (
+				4A5E2922F3390B03293575AB /* HangelWatchApp.swift */,
+				74B28242FE67D8EFE0A1703A /* ContentView.swift */,
+				E09F456D3C2DEA2750A80DA7 /* EmergencyBloodDetailView.swift */,
+				3C999C34FA43377AECB2140F /* WatchAppDelegate.swift */,
+				CD4659D98BF68E734557FA2C /* WatchConnectivityManager.swift */,
+				BB36A98EDADDAD874D502BC4 /* Info.plist */,
+			);
+			name = HangelWatch;
+			path = HangelWatch;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -93,10 +176,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				DD4B06DD9D3A57D1E135ABFB /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0D58A2A974D1D67781DAEE6C /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -104,6 +189,23 @@
 			);
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		5FC82C57944C5B2908026E8C /* HangelWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CEF499645FEB73B911741D3B /* Build configuration list for PBXNativeTarget "HangelWatch" */;
+			buildPhases = (
+				251D6ABE44E945991C25EC02 /* Sources */,
+				4B2AA9C039DEC4847BCF35F6 /* Frameworks */,
+				572F7C803BA6F613DC86E173 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HangelWatch;
+			productName = HangelWatch;
+			productReference = 57BBFEC425CB6D475E1BF366 /* HangelWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -138,6 +240,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				5FC82C57944C5B2908026E8C /* HangelWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -157,9 +260,28 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		572F7C803BA6F613DC86E173 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		251D6ABE44E945991C25EC02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B377CB3E853F8FB52D3ABF1 /* HangelWatchApp.swift in Sources */,
+				A7B6045997B67067DBDCDE40 /* ContentView.swift in Sources */,
+				5D1083187139087BE6090788 /* EmergencyBloodDetailView.swift in Sources */,
+				BAC39E9CC36F036729030EA1 /* WatchAppDelegate.swift in Sources */,
+				600E2BE4C5D92A0B39E12708 /* WatchConnectivityManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3001FED79650016851F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -167,10 +289,20 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				177AB4B09B7DA119A813C050 /* HangelBackgroundTasksPlugin.swift in Sources */,
 				573BE32EB0C31FB321E29A8A /* HangelAppleSignInPlugin.swift in Sources */,
+				9CC1E2FEB0FBCBE62420577D /* HangelWatchConnectivityPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		0D58A2A974D1D67781DAEE6C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = HangelWatch;
+			target = 5FC82C57944C5B2908026E8C /* HangelWatch */;
+			targetProxy = E939827D922CA52DC54A0274 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -353,6 +485,81 @@
 			};
 			name = Release;
 		};
+		73B1215CAA232ECA8101FE51 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NKZNY8NU8S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HangelWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Hangel;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.hangel.ios.app;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hangel.ios.app.watchapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		CD330E5459D53F7FAAB2485A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = NKZNY8NU8S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HangelWatch/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Hangel;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_WKApplication = YES;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.hangel.ios.app;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
+				INFOPLIST_KEY_WKWatchOnly = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 2.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hangel.ios.app.watchapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -370,6 +577,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CEF499645FEB73B911741D3B /* Build configuration list for PBXNativeTarget "HangelWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73B1215CAA232ECA8101FE51 /* Release */,
+				CD330E5459D53F7FAAB2485A /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
