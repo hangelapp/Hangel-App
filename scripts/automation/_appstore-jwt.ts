@@ -13,7 +13,10 @@ import * as crypto from 'crypto';
 
 export const ISSUER_ID = '295025c2-6ffb-4e6a-abd5-b7a51dd18ffc';
 
-/** Auto-detect newest .p8 in ~/.apple-keys/ unless KEY_ID env override. */
+// Known APNs-only keys (cannot be used for App Store Connect API):
+const APNS_ONLY_KEYS = new Set(['N24QW65MN5', '9U82ZQY23S']);
+
+/** Pick .p8 key suitable for App Store Connect API (skip APNs-only keys). */
 function findKey(): { keyId: string; p8Path: string } {
   const dir = join(homedir(), '.apple-keys');
   const files = readdirSync(dir).filter((f) => /^AuthKey_[A-Z0-9]+\.p8$/.test(f));
@@ -23,9 +26,17 @@ function findKey(): { keyId: string; p8Path: string } {
     if (!files.includes(f)) throw new Error(`Key ${process.env.APPLE_KEY_ID} not found in ${dir}`);
     return { keyId: process.env.APPLE_KEY_ID, p8Path: join(dir, f) };
   }
-  // pick newest by mtime
-  const sorted = files
-    .map((f) => ({ f, mtime: readFileSync(join(dir, f)).length /* lazy: use size to break tie */, stat: require('fs').statSync(join(dir, f)) }))
+  // Filter out APNs-only keys for App Store Connect API
+  const eligible = files.filter((f) => {
+    const keyId = f.replace('AuthKey_', '').replace('.p8', '');
+    return !APNS_ONLY_KEYS.has(keyId);
+  });
+  if (eligible.length === 0) {
+    throw new Error(`No App Store Connect API key in ${dir}. Existing keys are APNs-only.`);
+  }
+  // Pick newest by mtime
+  const sorted = eligible
+    .map((f) => ({ f, stat: require('fs').statSync(join(dir, f)) }))
     .sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs);
   const newest = sorted[0].f;
   const keyId = newest.replace('AuthKey_', '').replace('.p8', '');
