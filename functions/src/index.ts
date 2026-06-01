@@ -110,3 +110,12 @@ export const onNotificationCreated = onDocumentCreated(
         }
     },
 );
+
+// Live Activity APNs push triggers (emergencyBloodCalls, volunteerTasks,
+// events, donationCampaigns onUpdate). See ./live-activity.ts
+export {
+    onEmergencyBloodUpdate,
+    onVolunteerTaskUpdate,
+    onEventCountdownUpdate,
+    onDonationCampaignUpdate,
+} from './live-activity';
