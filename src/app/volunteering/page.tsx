@@ -256,11 +256,13 @@ export default function VolunteeringPage() {
     const [recsOpen, setRecsOpen] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
 
-    // PERF: ilk 100 ilanı yükle (deadline'a göre sıralı), client-side
+    // PERF: ilk 100 ilanı yükle (createdAt'e göre sıralı), client-side
     // filtreleme yine çalışır ama Firestore'dan tüm collection inmez.
-    // Kullanıcı 100'den fazla görmek isterse arama/filtre yapsın.
+    // NOT: orderBy('deadline') boş listeye yol açtı (mevcut dokümanlarda
+    // deadline field'ı yok — Firestore orderBy field yoksa doc'u atar).
+    // createdAt her dokümanda var (Firestore default), güvenli sort.
     const oppsQuery = useMemoFirebase(
-        () => query(collection(db, COLLECTIONS.volunteering), orderBy('deadline', 'desc'), fsLimit(100)),
+        () => query(collection(db, COLLECTIONS.volunteering), orderBy('createdAt', 'desc'), fsLimit(100)),
         [db],
     );
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
