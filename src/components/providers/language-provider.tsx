@@ -1,6 +1,7 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { translations, Language, languages } from '@/lib/translations';
+import { EVENTS, logHangelEvent } from '@/lib/analytics';
 
 interface LanguageContextValue {
   language: Language;
@@ -36,6 +37,8 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('app-language', lang);
+    // Analytics: dil tercihi değişimi — kullanıcı segment'i için.
+    logHangelEvent(EVENTS.change_language, { language: lang });
   };
 
   const t = (key: string) => {

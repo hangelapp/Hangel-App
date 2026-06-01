@@ -3,17 +3,36 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore'
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore'
 
 // WebChannel/QUIC taşıma katmanı kısıtlı ağlar, VPN ve proxy arkasında sık sık
 // "WebChannelConnection RPC 'Listen' stream transport errored" + ERR_QUIC_PROTOCOL_ERROR
 // üretir. Auto-detect long-polling, WebChannel başarısız olduğunda long-polling'e
-// düşerek bu konsol hatalarını azaltır. İlk init ayarı uygular; tekrar çağrıda
-// (zaten başlatılmışsa) initializeFirestore fırlatır → mevcut örneği döndürürüz.
+// düşerek bu konsol hatalarını azaltır.
+//
+// FEAT-OFFLINE: persistentLocalCache + persistentMultipleTabManager ile
+// IndexedDB persistence açılır — offline iken son okunan dokümanlar cache'ten
+// servis edilir, write'lar online'a dönülünce otomatik sync edilir. Multi-tab
+// manager aynı domain'de birden fazla sekme açık olduğunda quota lock'tan
+// kaçınır (eski enableIndexedDbPersistence single-tab idi → "failed-precondition"
+// hatası verirdi). İlk init ayarı uygular; tekrar çağrıda mevcut örneği döndürürüz.
 function getFirestoreWithLongPolling(app: FirebaseApp): Firestore {
   try {
-    return initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+    return initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
   } catch {
+    // initializeFirestore zaten çağrıldıysa veya IndexedDB kullanılamıyorsa
+    // (Safari private mode, very old browser, server-side render) düşülen path.
     return getFirestore(app);
   }
 }

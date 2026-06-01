@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function SupportTopicPage() {
   const router = useRouter();
   const params = useParams();
+  const { t } = useTranslation();
   const slug = params.slug as string;
   const topic = helpTopics.find(t => t.slug === slug);
 
@@ -21,7 +23,7 @@ export default function SupportTopicPage() {
   return (
     <>
       <main className="p-4 space-y-6 animate-in fade-in-0">
-        <Button onClick={() => router.push('/support')} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+        <Button onClick={() => router.push('/support')} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('supportSlug.backAria')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div>
@@ -39,10 +41,10 @@ export default function SupportTopicPage() {
                   dangerouslySetInnerHTML={{ __html: sanitizeHtml(subtopic.content) }}
                 />
                 <div className="mt-6 pt-4 text-center border-t">
-                    <p className="text-sm font-medium mb-2">Bu size yardımcı oldu mu?</p>
+                    <p className="text-sm font-medium mb-2">{t('supportSlug.helpfulQuestion')}</p>
                     <div className="flex justify-center gap-2">
-                        <Button variant="outline" size="sm">Evet</Button>
-                        <Button variant="outline" size="sm">Hayır</Button>
+                        <Button variant="outline" size="sm">{t('supportSlug.yes')}</Button>
+                        <Button variant="outline" size="sm">{t('supportSlug.no')}</Button>
                     </div>
                 </div>
               </AccordionContent>

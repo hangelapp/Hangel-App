@@ -13,6 +13,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface DonationTransaction {
     id: string;
@@ -35,7 +36,9 @@ const statusVariantMap = {
     'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
 } as const;
 
-const TransactionCard = ({ transaction }: { transaction: DonationTransaction }) => (
+const TransactionCard = ({ transaction }: { transaction: DonationTransaction }) => {
+    const { t } = useTranslation();
+    return (
     <Card>
         <CardHeader className='pb-4'>
             <div className="flex justify-between items-start">
@@ -50,16 +53,17 @@ const TransactionCard = ({ transaction }: { transaction: DonationTransaction }) 
         </CardHeader>
         <CardContent className="space-y-2">
              <div className='flex justify-between items-center text-sm'>
-                <span className='text-muted-foreground'>Alışveriş Tutarı</span>
+                <span className='text-muted-foreground'>{t('ngoAdminDonations.purchaseAmount')}</span>
                 <span className='font-medium'>{transaction.purchaseAmount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
              </div>
              <div className='flex justify-between items-center text-sm'>
-                <span className='text-muted-foreground'>STK Payı</span>
+                <span className='text-muted-foreground'>{t('ngoAdminDonations.ngoShare')}</span>
                 <span className='font-bold text-primary'>{transaction.ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
              </div>
         </CardContent>
     </Card>
 );
+};
 
 const EmptyState = ({ message }: { message: string }) => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -68,10 +72,12 @@ const EmptyState = ({ message }: { message: string }) => (
     </div>
 );
 
-const TransactionList = ({ transactions }: { transactions: DonationTransaction[] }) => (
+const TransactionList = ({ transactions }: { transactions: DonationTransaction[] }) => {
+    const { t } = useTranslation();
+    return (
     <div className="space-y-4">
         {transactions.length === 0 ? (
-            <EmptyState message="Henüz işlem bulunmuyor." />
+            <EmptyState message={t('ngoAdminDonations.noTransactions')} />
         ) : (
             transactions.map((tx) => (
                 <TransactionCard key={tx.id} transaction={tx} />
@@ -79,12 +85,14 @@ const TransactionList = ({ transactions }: { transactions: DonationTransaction[]
         )}
     </div>
 );
+};
 
 
 export default function DonationsPage() {
     const [currentMonthYear, setCurrentMonthYear] = useState('');
     const firestore = useFirestore();
     const { user: authUser } = useUser();
+    const { t } = useTranslation();
 
     useEffect(() => {
         setCurrentMonthYear(format(new Date(), 'MMMM yyyy', { locale: tr }));
@@ -156,18 +164,18 @@ export default function DonationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Bağış Takibi</h1>
-        <p className="text-muted-foreground">Kuruluşunuza aktarılan bağışların geçmişini ve aylık hak edişlerinizi takip edin.</p>
+        <h1 className="text-2xl font-bold">{t('ngoAdminDonations.title')}</h1>
+        <p className="text-muted-foreground">{t('ngoAdminDonations.subtitle')}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Aylık Hak Edişler</CardTitle>
-          <CardDescription>Geçmiş ve gelecek aylara ait kesinleşmiş ve tahmini hak edişleriniz.</CardDescription>
+          <CardTitle>{t('ngoAdminDonations.monthlyTitle')}</CardTitle>
+          <CardDescription>{t('ngoAdminDonations.monthlyDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
             {earnings.length === 0 ? (
-                <EmptyState message="Henüz hak ediş verisi bulunmuyor." />
+                <EmptyState message={t('ngoAdminDonations.noEarnings')} />
             ) : (
             <div className="space-y-3">
                 {earnings.map(earning => (
@@ -177,7 +185,7 @@ export default function DonationsPage() {
                     )}>
                         <div>
                             <p className="font-semibold">{earning.month}</p>
-                            <p className="text-xs text-muted-foreground">{earning.status} Hak Ediş</p>
+                            <p className="text-xs text-muted-foreground">{earning.status} {t('ngoAdminDonations.earningSuffix')}</p>
                         </div>
                         <p className="text-lg font-bold text-primary">{(earning.amount || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
                     </div>
@@ -190,13 +198,13 @@ export default function DonationsPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <CardTitle>İşlem Geçmişi</CardTitle>
+            <CardTitle>{t('ngoAdminDonations.historyTitle')}</CardTitle>
             <div className="flex gap-2 w-full md:w-auto">
               <div className="relative flex-grow">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="İşlemlerde ara..." className="pl-8" />
+                <Input placeholder={t('ngoAdminDonations.searchPh')} className="pl-8" />
               </div>
-              <Button variant="outline" size="icon" aria-label="Sırala">
+              <Button variant="outline" size="icon" aria-label={t('ngoAdminDonations.sortAria')}>
                 <ArrowDownUp className="h-4 w-4" />
               </Button>
             </div>
@@ -205,10 +213,10 @@ export default function DonationsPage() {
         <CardContent>
             <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="all">Tüm İşlemler</TabsTrigger>
-                    <TabsTrigger value="past">Kesinleşenler</TabsTrigger>
-                    <TabsTrigger value="future">Bekleyenler</TabsTrigger>
-                    <TabsTrigger value="stats">İstatistikler</TabsTrigger>
+                    <TabsTrigger value="all">{t('ngoAdminDonations.tabAll')}</TabsTrigger>
+                    <TabsTrigger value="past">{t('ngoAdminDonations.tabPast')}</TabsTrigger>
+                    <TabsTrigger value="future">{t('ngoAdminDonations.tabFuture')}</TabsTrigger>
+                    <TabsTrigger value="stats">{t('ngoAdminDonations.tabStats')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
                     <TransactionList transactions={transactions} />
@@ -221,31 +229,31 @@ export default function DonationsPage() {
                 </TabsContent>
                 <TabsContent value="stats" className="mt-4 space-y-6">
                     {transactions.length === 0 ? (
-                        <EmptyState message="Henüz istatistik oluşturacak yeterli veri bulunmuyor." />
+                        <EmptyState message={t('ngoAdminDonations.noStats')} />
                     ) : (
                     <>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Genel Bağış Özeti</CardTitle>
+                            <CardTitle>{t('ngoAdminDonations.summaryTitle')}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                             <div>
                                 <p className="text-2xl font-bold">{donationStats.totalNgoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
-                                <p className="text-sm text-muted-foreground">Toplam STK Payı</p>
+                                <p className="text-sm text-muted-foreground">{t('ngoAdminDonations.totalNgoShare')}</p>
                             </div>
                              <div>
                                 <p className="text-2xl font-bold">{donationStats.totalTransactions}</p>
-                                <p className="text-sm text-muted-foreground">Toplam İşlem Sayısı</p>
+                                <p className="text-sm text-muted-foreground">{t('ngoAdminDonations.totalTransactions')}</p>
                             </div>
                              <div>
                                 <p className="text-2xl font-bold">{donationStats.averageNgoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</p>
-                                <p className="text-sm text-muted-foreground">Ortalama Bağış Tutarı</p>
+                                <p className="text-sm text-muted-foreground">{t('ngoAdminDonations.avgDonation')}</p>
                             </div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Markalara Göre Bağış Dağılımı</CardTitle>
+                            <CardTitle>{t('ngoAdminDonations.brandChartTitle')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                              <ResponsiveContainer width="100%" height={300}>

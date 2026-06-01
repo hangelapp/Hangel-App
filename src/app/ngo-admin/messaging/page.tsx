@@ -12,6 +12,7 @@ import { messagingFetch } from '@/lib/messaging/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface MeData {
   ngoId: string;
@@ -38,6 +39,7 @@ const STATUS_BADGE: Record<string, string> = {
 export default function NgoMessagingHub() {
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
   const [me, setMe] = useState<MeData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,12 +59,12 @@ export default function NgoMessagingHub() {
         setMe(data);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        toast({ variant: 'destructive', title: 'Hata', description: message });
+        toast({ variant: 'destructive', title: t('ngoAdminMessagingHub.errorTitle'), description: message });
       } finally {
         setLoading(false);
       }
     })();
-  }, [user, isUserLoading, toast]);
+  }, [user, isUserLoading, toast, t]);
 
   if (loading) {
     return (
@@ -75,7 +77,7 @@ export default function NgoMessagingHub() {
   if (!me) {
     return (
       <div className="container mx-auto p-6">
-        <p className="text-sm text-muted-foreground">NGO admin yetkin yok veya managedNgoId atanmamış.</p>
+        <p className="text-sm text-muted-foreground">{t('ngoAdminMessagingHub.noPermission')}</p>
       </div>
     );
   }
@@ -86,18 +88,18 @@ export default function NgoMessagingHub() {
   return (
     <div className="container mx-auto p-4 md:p-6 max-w-5xl space-y-6">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold font-headline">Toplu Mesajlar</h1>
-        <p className="text-muted-foreground text-sm mt-1">Destekçi, gönüllü ve ekibine SMS / e-posta / WhatsApp gönder.</p>
+        <h1 className="text-2xl md:text-3xl font-bold font-headline">{t('ngoAdminMessagingHub.title')}</h1>
+        <p className="text-muted-foreground text-sm mt-1">{t('ngoAdminMessagingHub.subtitle')}</p>
       </div>
 
       <Card className={cn('border-2', lowBalance && 'border-amber-400 bg-amber-50/40')}>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-emerald-600" />
-            <CardTitle className="text-base">Cüzdan</CardTitle>
+            <CardTitle className="text-base">{t('ngoAdminMessagingHub.walletTitle')}</CardTitle>
           </div>
           <Link href="/ngo-admin/messaging/wallet">
-            <Button variant="outline" size="sm">Detay <ChevronRight className="h-4 w-4 ml-1" /></Button>
+            <Button variant="outline" size="sm">{t('ngoAdminMessagingHub.detailBtn')} <ChevronRight className="h-4 w-4 ml-1" /></Button>
           </Link>
         </CardHeader>
         <CardContent>
@@ -105,43 +107,43 @@ export default function NgoMessagingHub() {
             <span className="text-3xl font-bold">{balance.toLocaleString('tr-TR')} {me.wallet.currency}</span>
             {me.wallet.reserved > 0 && (
               <span className="text-sm text-muted-foreground">
-                ({me.wallet.reserved.toLocaleString('tr-TR')} bekleyen kampanyada)
+                ({me.wallet.reserved.toLocaleString('tr-TR')} {t('ngoAdminMessagingHub.reservedSuffix')})
               </span>
             )}
           </div>
           {lowBalance && (
             <p className="text-xs text-amber-700 mt-2 flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" /> Düşük bakiye eşiğine yaklaştın. Kontör satın al.
+              <AlertTriangle className="h-3 w-3" /> {t('ngoAdminMessagingHub.lowBalance')}
             </p>
           )}
           <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
-            <div>SMS: {me.freeQuota.sms} ücretsiz/ay</div>
-            <div>E-posta: {me.freeQuota.email} ücretsiz/ay</div>
-            <div>WA: {me.freeQuota.whatsapp} ücretsiz/ay</div>
+            <div>{t('ngoAdminMessagingHub.smsLabel')}: {me.freeQuota.sms} {t('ngoAdminMessagingHub.freeMonth')}</div>
+            <div>{t('ngoAdminMessagingHub.emailLabel')}: {me.freeQuota.email} {t('ngoAdminMessagingHub.freeMonth')}</div>
+            <div>{t('ngoAdminMessagingHub.waLabel')}: {me.freeQuota.whatsapp} {t('ngoAdminMessagingHub.freeMonth')}</div>
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=sms" icon={MessageSquare} color="bg-blue-500" label="SMS Gönder" />
-        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=email" icon={Mail} color="bg-violet-500" label="E-posta Gönder" />
-        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=whatsapp" icon={MessageCircle} color="bg-emerald-600" label="WhatsApp Gönder" />
+        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=sms" icon={MessageSquare} color="bg-blue-500" label={t('ngoAdminMessagingHub.ctaSms')} />
+        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=email" icon={Mail} color="bg-violet-500" label={t('ngoAdminMessagingHub.ctaEmail')} />
+        <QuickCTA href="/ngo-admin/messaging/campaigns/new?channel=whatsapp" icon={MessageCircle} color="bg-emerald-600" label={t('ngoAdminMessagingHub.ctaWhatsapp')} />
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <NavCard href="/ngo-admin/messaging/campaigns" icon={Send} label="Kampanyalar" />
-        <NavCard href="/ngo-admin/messaging/templates" icon={FileText} label="Şablonlar" />
-        <NavCard href="/ngo-admin/messaging/segments" icon={Filter} label="Segmentler" />
-        <NavCard href="/ngo-admin/messaging/senders" icon={Wallet} label="Sender'lar" />
+        <NavCard href="/ngo-admin/messaging/campaigns" icon={Send} label={t('ngoAdminMessagingHub.navCampaigns')} />
+        <NavCard href="/ngo-admin/messaging/templates" icon={FileText} label={t('ngoAdminMessagingHub.navTemplates')} />
+        <NavCard href="/ngo-admin/messaging/segments" icon={Filter} label={t('ngoAdminMessagingHub.navSegments')} />
+        <NavCard href="/ngo-admin/messaging/senders" icon={Wallet} label={t('ngoAdminMessagingHub.navSenders')} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Son Kampanyalar</CardTitle>
+          <CardTitle className="text-base">{t('ngoAdminMessagingHub.recentTitle')}</CardTitle>
         </CardHeader>
         <CardContent>
           {!campaigns || campaigns.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Henüz kampanya yok.</p>
+            <p className="text-sm text-muted-foreground">{t('ngoAdminMessagingHub.noCampaigns')}</p>
           ) : (
             <ul className="divide-y">
               {campaigns.map((c) => (

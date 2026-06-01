@@ -19,6 +19,7 @@ import { ChevronRight, Share2, Loader2 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface Replay {
   year: number;
@@ -34,19 +35,24 @@ interface Replay {
   percentileVsAllVolunteers: number | null;
 }
 
-const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-const CATEGORY_TR: Record<string, string> = {
-  environment: 'Çevre', elderly: 'Yaşlı', animals: 'Hayvan', children: 'Çocuk',
-  health: 'Sağlık', education: 'Eğitim', other: 'Diğer',
-};
-
 export default function ReplayPage() {
   const params = useParams<{ year: string }>();
   const { user } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [data, setData] = useState<Replay | null>(null);
   const [loading, setLoading] = useState(true);
   const [storyIndex, setStoryIndex] = useState(0);
+
+  const MONTHS = [
+    t('replay.monthJan'), t('replay.monthFeb'), t('replay.monthMar'), t('replay.monthApr'),
+    t('replay.monthMay'), t('replay.monthJun'), t('replay.monthJul'), t('replay.monthAug'),
+    t('replay.monthSep'), t('replay.monthOct'), t('replay.monthNov'), t('replay.monthDec'),
+  ];
+  const CATEGORY_TR: Record<string, string> = {
+    environment: t('replay.catEnvironment'), elderly: t('replay.catElderly'), animals: t('replay.catAnimals'), children: t('replay.catChildren'),
+    health: t('replay.catHealth'), education: t('replay.catEducation'), other: t('replay.catOther'),
+  };
 
   const load = async () => {
     if (!user || !params?.year) return;
@@ -57,7 +63,7 @@ export default function ReplayPage() {
       const json = await res.json();
       setData(json.replay as Replay);
     } catch (e) {
-      toast({ variant: 'destructive', title: 'Yüklenemedi', description: e instanceof Error ? e.message : 'Bilinmeyen hata.' });
+      toast({ variant: 'destructive', title: t('replay.loadErrorTitle'), description: e instanceof Error ? e.message : t('replay.unknownError') });
     } finally {
       setLoading(false);
     }
@@ -71,7 +77,7 @@ export default function ReplayPage() {
 
   const share = async () => {
     if (!data) return;
-    const text = `${data.year} yılında hangel'de ${data.totalVolunteerHours} saat gönüllülük yaptım, ${data.estimatedPeopleHelped} kişiye dokundum. Sen de katıl: hangel.org.tr #hangel #sosyaletki`;
+    const text = `${data.year} ${t('replay.shareText1')} ${data.totalVolunteerHours} ${t('replay.shareText2')} ${data.estimatedPeopleHelped} ${t('replay.shareText3')}`;
     if (Capacitor.isNativePlatform()) {
       try { await Share.share({ title: `Hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); } catch { /* iptal */ }
       return;
@@ -79,14 +85,14 @@ export default function ReplayPage() {
     if (typeof navigator !== 'undefined' && 'share' in navigator) {
       try { await navigator.share({ title: `Hangel ${data.year} Wrapped`, text, url: 'https://hangel.org.tr' }); return; } catch { /* iptal */ }
     }
-    try { await navigator.clipboard.writeText(text); toast({ title: 'Kopyalandı' }); } catch { /* sessiz */ }
+    try { await navigator.clipboard.writeText(text); toast({ title: t('replay.copied') }); } catch { /* sessiz */ }
   };
 
   if (loading || !data) {
     return <div className="min-h-dvh flex items-center justify-center bg-black"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>;
   }
 
-  const stories = buildStories(data);
+  const stories = buildStories(data, MONTHS, CATEGORY_TR, t);
   const story = stories[storyIndex];
 
   return (
@@ -114,14 +120,14 @@ export default function ReplayPage() {
 
       {/* Navigation */}
       <div className="p-6 flex items-center justify-between">
-        <p className="text-xs opacity-60">Tıkla → sonraki</p>
+        <p className="text-xs opacity-60">{t('replay.tapNext')}</p>
         {storyIndex === stories.length - 1 ? (
           <Button onClick={(e) => { e.stopPropagation(); void share(); }} className="bg-white text-black hover:bg-white/90 rounded-full font-bold">
-            <Share2 className="h-4 w-4 mr-1.5" /> Paylaş
+            <Share2 className="h-4 w-4 mr-1.5" /> {t('replay.shareBtn')}
           </Button>
         ) : (
           <button onClick={(e) => { e.stopPropagation(); setStoryIndex(i => Math.min(i + 1, stories.length - 1)); }} className="text-xs opacity-60 hover:opacity-100 inline-flex items-center">
-            İleri <ChevronRight className="h-3 w-3 ml-1" />
+            {t('replay.nextBtn')} <ChevronRight className="h-3 w-3 ml-1" />
           </button>
         )}
       </div>
@@ -138,28 +144,28 @@ interface Story {
   bgClass: string;
 }
 
-function buildStories(data: Replay): Story[] {
+function buildStories(data: Replay, MONTHS: string[], CATEGORY_TR: Record<string, string>, t: (k: string) => string): Story[] {
   const stories: Story[] = [
     {
       kicker: 'Hangel',
       title: `${data.year}`,
-      subtitle: `Bu yıl iyiliklerinin özeti.`,
+      subtitle: t('replay.s1Subtitle'),
       bgClass: 'bg-gradient-to-br from-primary to-orange-600',
     },
     {
       icon: '⏱️',
-      kicker: 'Gönüllülük',
-      title: 'saat',
+      kicker: t('replay.s2Kicker'),
+      title: t('replay.s2Title'),
       bigNumber: data.totalVolunteerHours.toString(),
-      subtitle: `Toplam ${data.totalEvents} etkinlikte yer aldın.`,
+      subtitle: `${t('replay.s2SubtitlePrefix')} ${data.totalEvents} ${t('replay.s2SubtitleSuffix')}`,
       bgClass: 'bg-gradient-to-br from-blue-600 to-blue-900',
     },
     {
       icon: '🤝',
-      kicker: 'Yardım ettiğin kişi sayısı',
-      title: 'kişiye dokundun',
+      kicker: t('replay.s3Kicker'),
+      title: t('replay.s3Title'),
       bigNumber: data.estimatedPeopleHelped.toString(),
-      subtitle: `Her saatin gerçek bir hayata değdi.`,
+      subtitle: t('replay.s3Subtitle'),
       bgClass: 'bg-gradient-to-br from-emerald-600 to-emerald-900',
     },
   ];
@@ -167,10 +173,10 @@ function buildStories(data: Replay): Story[] {
   if (data.totalDonationsTry > 0) {
     stories.push({
       icon: '💝',
-      kicker: 'Bağışların',
+      kicker: t('replay.s4Kicker'),
       title: 'TL',
       bigNumber: new Intl.NumberFormat('tr-TR').format(data.totalDonationsTry),
-      subtitle: `Cüzdandan değil, kalpten.`,
+      subtitle: t('replay.s4Subtitle'),
       bgClass: 'bg-gradient-to-br from-rose-600 to-rose-900',
     });
   }
@@ -178,9 +184,9 @@ function buildStories(data: Replay): Story[] {
   if (data.topNgoName) {
     stories.push({
       icon: '⭐',
-      kicker: 'En çok katıldığın',
+      kicker: t('replay.s5Kicker'),
       title: data.topNgoName,
-      subtitle: `Bu STK ile en güçlü bağı kurdun.`,
+      subtitle: t('replay.s5Subtitle'),
       bgClass: 'bg-gradient-to-br from-violet-600 to-violet-900',
     });
   }
@@ -188,9 +194,9 @@ function buildStories(data: Replay): Story[] {
   if (data.topCategory) {
     stories.push({
       icon: '🎯',
-      kicker: 'En çok odaklandığın alan',
+      kicker: t('replay.s6Kicker'),
       title: CATEGORY_TR[data.topCategory] ?? data.topCategory,
-      subtitle: `${data.year} senin yılındı.`,
+      subtitle: `${data.year} ${t('replay.s6SubtitleSuffix')}`,
       bgClass: 'bg-gradient-to-br from-amber-600 to-amber-900',
     });
   }
@@ -198,9 +204,9 @@ function buildStories(data: Replay): Story[] {
   if (data.topMonth) {
     stories.push({
       icon: '🔥',
-      kicker: 'En aktif olduğun ay',
-      title: MONTHS[data.topMonth.month] ?? 'Bilinmiyor',
-      subtitle: `${data.topMonth.eventCount} etkinlik. Müthiş enerji!`,
+      kicker: t('replay.s7Kicker'),
+      title: MONTHS[data.topMonth.month] ?? t('replay.unknown'),
+      subtitle: `${data.topMonth.eventCount} ${t('replay.s7SubtitleSuffix')}`,
       bgClass: 'bg-gradient-to-br from-pink-600 to-pink-900',
     });
   }
@@ -208,19 +214,19 @@ function buildStories(data: Replay): Story[] {
   if (data.percentileVsAllVolunteers !== null && data.percentileVsAllVolunteers >= 50) {
     stories.push({
       icon: '🏆',
-      kicker: 'Türkiye gönüllüleri arasında',
+      kicker: t('replay.s8Kicker'),
       title: `%${data.percentileVsAllVolunteers}`,
       bigNumber: `Top %${100 - data.percentileVsAllVolunteers}`,
-      subtitle: `Hangel topluluğunun ilk %${100 - data.percentileVsAllVolunteers}'indesin.`,
+      subtitle: `${t('replay.s8SubtitlePrefix')} %${100 - data.percentileVsAllVolunteers}${t('replay.s8SubtitleSuffix')}`,
       bgClass: 'bg-gradient-to-br from-indigo-600 to-indigo-900',
     });
   }
 
   stories.push({
     icon: '✨',
-    kicker: 'Teşekkürler',
-    title: `${data.year} senin yılındı`,
-    subtitle: `Yeni yılda da yanındayız. Paylaş, daha çok kişi katılsın.`,
+    kicker: t('replay.s9Kicker'),
+    title: `${data.year} ${t('replay.s9TitleSuffix')}`,
+    subtitle: t('replay.s9Subtitle'),
     bgClass: 'bg-gradient-to-br from-primary via-pink-600 to-purple-800',
   });
 

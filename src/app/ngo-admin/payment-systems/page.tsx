@@ -11,26 +11,28 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-
-const providers = [
-    { id: 'iyzico', name: 'iyzico', logo: 'i', color: 'bg-[#14294B]', status: 'Bağlı', price: '%1.2 Komisyon', discount: 'STK Özel Oran' },
-    { id: 'paytr', name: 'PayTR', logo: 'P', color: 'bg-[#00A8FF]', status: 'Bağlanabilir', price: '%0.99 Komisyon', discount: 'Ertesi Gün Ödeme' },
-    { id: 'stripe', name: 'Stripe', logo: 'S', color: 'bg-[#635BFF]', status: 'Bağlanabilir', price: '%2.9 + $0.30', discount: 'Global Bağış' },
-];
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function PaymentSystemsPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { t } = useTranslation();
+
+    const providers = [
+        { id: 'iyzico', name: 'iyzico', logo: 'i', color: 'bg-[#14294B]', status: t('ngoAdminPayments.statusConnected'), price: t('ngoAdminPayments.iyzicoPrice'), discount: t('ngoAdminPayments.iyzicoDiscount') },
+        { id: 'paytr', name: 'PayTR', logo: 'P', color: 'bg-[#00A8FF]', status: t('ngoAdminPayments.statusAvailable'), price: t('ngoAdminPayments.paytrPrice'), discount: t('ngoAdminPayments.paytrDiscount') },
+        { id: 'stripe', name: 'Stripe', logo: 'S', color: 'bg-[#635BFF]', status: t('ngoAdminPayments.statusAvailable'), price: t('ngoAdminPayments.stripePrice'), discount: t('ngoAdminPayments.stripeDiscount') },
+    ];
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngoAdminPayments.backAria')}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-headline">Pos & Ödeme Sistemleri</h1>
-                    <p className="text-muted-foreground text-sm">Online bağış ve ödeme altyapınızı yönetin.</p>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngoAdminPayments.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('ngoAdminPayments.subtitle')}</p>
                 </div>
             </div>
 
@@ -43,7 +45,7 @@ export default function PaymentSystemsPage() {
                             </div>
                             <div>
                                 <p className="font-bold text-sm">{item.name}</p>
-                                <Badge variant={item.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                <Badge variant={item.status === t('ngoAdminPayments.statusConnected') ? 'default' : 'secondary'} className="text-[10px] mt-1">
                                     {item.status}
                                 </Badge>
                             </div>
@@ -51,7 +53,7 @@ export default function PaymentSystemsPage() {
                                 <p className="text-xs font-bold text-primary">{item.price}</p>
                                 <p className="text-[10px] text-green-600 font-medium">{item.discount}</p>
                             </div>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Başvuru Yapılıyor"})}>Sanal POS Bağla</Button>
+                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: t('ngoAdminPayments.toastApplying')})}>{t('ngoAdminPayments.connectVposBtn')}</Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -59,27 +61,27 @@ export default function PaymentSystemsPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> Sanal POS Bilgileri</CardTitle>
-                    <CardDescription>Ödeme kuruluşundan aldığınız API anahtarlarını buraya girin.</CardDescription>
+                    <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> {t('ngoAdminPayments.vposTitle')}</CardTitle>
+                    <CardDescription>{t('ngoAdminPayments.vposDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Merchant ID</Label>
-                        <Input placeholder="Mağaza ID girin" />
+                        <Label>{t('ngoAdminPayments.merchantId')}</Label>
+                        <Input placeholder={t('ngoAdminPayments.merchantIdPh')} />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label>API Key</Label>
-                            <Input placeholder="API Anahtarınız" />
+                            <Label>{t('ngoAdminPayments.apiKey')}</Label>
+                            <Input placeholder={t('ngoAdminPayments.apiKeyPh')} />
                         </div>
                         <div className="space-y-2">
-                            <Label>Secret Key</Label>
+                            <Label>{t('ngoAdminPayments.secretKey')}</Label>
                             <Input type="password" placeholder="••••••••" />
                         </div>
                     </div>
                 </CardContent>
                 <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
-                    <Button onClick={() => toast({title: "POS Doğrulandı"})}>Test Et ve Kaydet</Button>
+                    <Button onClick={() => toast({title: t('ngoAdminPayments.toastVerified')})}>{t('ngoAdminPayments.testAndSaveBtn')}</Button>
                 </CardFooter>
             </Card>
         </div>

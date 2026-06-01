@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, documentId, getDocs, query, where, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const statusVariantMap = {
     'approved': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
@@ -80,6 +81,7 @@ const ACTIVE_ENTITY_STORAGE_KEY = 'activeAdminEntity';
 export default function AdminPage() {
   const db = useFirestore();
   const { user: authUser } = useUser();
+  const { t } = useTranslation();
 
   // Kullanıcının yönettiği varlıkları Firestore'dan bul
   const ngosQ = useMemoFirebase(() => {
@@ -224,7 +226,7 @@ export default function AdminPage() {
       seen.add(`ngo:${n.id}`);
       items.push({
         id: n.id,
-        name: n.name || 'STK',
+        name: n.name || t('ngoAdminLanding.fallbackNgoName'),
         type: 'STK',
         icon: 'heart',
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(n.id)}&type=${encodeURIComponent('STK')}`,
@@ -238,7 +240,7 @@ export default function AdminPage() {
       seen.add(`brand:${b.id}`);
       items.push({
         id: b.id,
-        name: b.name || 'Marka',
+        name: b.name || t('ngoAdminLanding.fallbackBrandName'),
         type: 'Marka',
         icon: 'shopping-bag',
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(b.id)}&type=${encodeURIComponent('Marka')}`,
@@ -252,7 +254,7 @@ export default function AdminPage() {
       seen.add(`club:${c.id}`);
       items.push({
         id: c.id,
-        name: c.name || 'Kulüp',
+        name: c.name || t('ngoAdminLanding.fallbackClubName'),
         type: 'Kulüp',
         icon: 'school',
         href: `/ngo-admin/dashboard?id=${encodeURIComponent(c.id)}&type=${encodeURIComponent('Kulüp')}`,
@@ -277,15 +279,15 @@ export default function AdminPage() {
     (invitedClubsData || []).forEach(pushClub);
 
     return items;
-  }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub, invitedNgosData, invitedBrandsData, invitedClubsData, roleByEntityId]);
+  }, [managedNgos, managedBrands, managedClubs, fallbackNgo, fallbackBrand, fallbackClub, invitedNgosData, invitedBrandsData, invitedClubsData, roleByEntityId, t]);
 
   const showDebug = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('debug') === '1';
 
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12 p-4">
       <div className="space-y-1 px-1">
-        <h1 className="text-3xl font-bold font-headline">Yönetim Paneli</h1>
-        <p className="text-muted-foreground text-sm">Varlıklarınızı ve yönetim araçlarınızı buradan yönetin.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('ngoAdminLanding.title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('ngoAdminLanding.subtitle')}</p>
       </div>
 
       {showDebug && (
@@ -314,8 +316,8 @@ export default function AdminPage() {
 
       <Card className="shadow-sm border-black/5 rounded-[2rem] overflow-hidden">
         <CardHeader className="bg-muted/20 p-8 border-b border-black/5">
-            <CardTitle className="text-xl font-bold">Yönettiğim Varlıklar</CardTitle>
-            <CardDescription>Aktif olarak yönetiminde bulunduğunuz STK, Marka, Vakıf, Kulüp ve Kooperatifler.</CardDescription>
+            <CardTitle className="text-xl font-bold">{t('ngoAdminLanding.managedTitle')}</CardTitle>
+            <CardDescription>{t('ngoAdminLanding.managedDesc')}</CardDescription>
         </CardHeader>
         <CardContent className='p-0'>
           {isLoading ? (
@@ -323,8 +325,8 @@ export default function AdminPage() {
           ) : managedItems.length === 0 ? (
             <div className="py-16 text-center text-muted-foreground space-y-2 px-6">
               <Building2 className="h-10 w-10 mx-auto opacity-30" />
-              <p className="font-medium">Henüz yönettiğin bir varlık yok.</p>
-              <p className="text-xs">Aşağıdan yeni başvuru yapabilir veya bir kuruluştan davet bekleyebilirsin.</p>
+              <p className="font-medium">{t('ngoAdminLanding.emptyTitle')}</p>
+              <p className="text-xs">{t('ngoAdminLanding.emptyDesc')}</p>
             </div>
           ) : (
             <div className="divide-y divide-black/5">
@@ -361,7 +363,7 @@ export default function AdminPage() {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-[#f5f5f7] border-none text-muted-foreground">{item.type}</Badge>
                                 <Badge variant="outline" className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-0.5", statusVariantMap[item.status as keyof typeof statusVariantMap])}>
-                                    {item.status === 'approved' ? 'Aktif' : 'Onay Bekliyor'}
+                                    {item.status === 'approved' ? t('ngoAdminLanding.statusActive') : t('ngoAdminLanding.statusPending')}
                                 </Badge>
                                 {item.role && (
                                     <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest bg-primary/5 border-primary/20 text-primary">
@@ -371,7 +373,7 @@ export default function AdminPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
-                            <span className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">Yönet</span>
+                            <span className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">{t('ngoAdminLanding.manageBtn')}</span>
                             <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
                         </div>
                     </div>
@@ -387,11 +389,11 @@ export default function AdminPage() {
               <PlusCircle className="h-8 w-8 text-primary" />
           </div>
           <div className="space-y-2">
-              <h3 className="text-2xl font-bold">Yeni Varlık Ekle</h3>
-              <p className="text-muted-foreground max-w-md mx-auto">Başka bir STK, marka veya kulüp yönetimimine dahil olmak için yeni bir başvuru yapabilirsiniz.</p>
+              <h3 className="text-2xl font-bold">{t('ngoAdminLanding.addEntityTitle')}</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">{t('ngoAdminLanding.addEntityDesc')}</p>
           </div>
           <Button asChild size="lg" className="rounded-full px-10 h-14 font-bold shadow-xl shadow-primary/20">
-              <Link href="/login/selection?action=register&type=corporate">Yeni Başvuru Başlat</Link>
+              <Link href="/login/selection?action=register&type=corporate">{t('ngoAdminLanding.addEntityCta')}</Link>
           </Button>
       </Card>
     </div>

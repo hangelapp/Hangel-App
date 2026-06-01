@@ -38,3 +38,95 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function (_payload) {
   // Intentionally empty — see P-FCM-DELIVERY for content/click handling.
 });
+
+/**
+ * FEAT-OFFLINE: Offline navigation fallback.
+ *
+ * Service worker yalnızca navigation request'leri (top-level HTML) için
+ * minimal bir offline page ile cevap verir. CSS / API / asset request'leri
+ * doğrudan network'e geçer — Firestore IndexedDB cache + offline-queue.ts
+ * data katmanını handle ediyor.
+ *
+ * Install/activate adımlarında basit bir static HTML cache'ler.
+ */
+const OFFLINE_CACHE = 'hangel-offline-v1';
+const OFFLINE_URL = '/offline.html';
+const OFFLINE_FALLBACK_HTML = `
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Çevrimdışı · hangel</title>
+<style>
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#0b0d12;color:#fff;height:100%}
+  .wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px}
+  .logo{font-weight:900;font-size:28px;letter-spacing:-0.02em;margin-bottom:24px}
+  .title{font-size:22px;font-weight:700;margin:0 0 8px}
+  .desc{opacity:0.7;max-width:320px;margin:0 0 32px;line-height:1.5}
+  .btn{background:#fff;color:#0b0d12;padding:12px 24px;border-radius:9999px;border:0;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">hangel</div>
+  <h1 class="title">Çevrimdışısın</h1>
+  <p class="desc">İnternet bağlantın yok. Bağlantı geri geldiğinde sayfa yeniden yüklenecek.</p>
+  <button class="btn" onclick="location.reload()">Yeniden Dene</button>
+</div>
+<script>
+  window.addEventListener('online', function(){ location.reload(); });
+</script>
+</body>
+</html>
+`;
+
+self.addEventListener('install', function (event) {
+  event.waitUntil((async function () {
+    try {
+      const cache = await caches.open(OFFLINE_CACHE);
+      const response = new Response(OFFLINE_FALLBACK_HTML, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+      await cache.put(OFFLINE_URL, response);
+    } catch (_e) {
+      // Cache API kullanılamıyorsa sessizce geç
+    }
+    if (self.skipWaiting) self.skipWaiting();
+  })());
+});
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil((async function () {
+    // Eski cache versiyonlarını sil
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter(function (k) { return k !== OFFLINE_CACHE; }).map(function (k) { return caches.delete(k); }));
+    } catch (_e) { /* noop */ }
+    if (self.clients && self.clients.claim) await self.clients.claim();
+  })());
+});
+
+self.addEventListener('fetch', function (event) {
+  var req = event.request;
+  // Yalnızca navigation (top-level HTML) için offline fallback.
+  if (req.mode !== 'navigate') return;
+
+  event.respondWith((async function () {
+    try {
+      // preload kullanılırsa hızlı path
+      var preload = event.preloadResponse ? await event.preloadResponse : null;
+      if (preload) return preload;
+      return await fetch(req);
+    } catch (_e) {
+      try {
+        var cache = await caches.open(OFFLINE_CACHE);
+        var cached = await cache.match(OFFLINE_URL);
+        if (cached) return cached;
+      } catch (_e2) { /* noop */ }
+      return new Response(OFFLINE_FALLBACK_HTML, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }
+  })());
+});

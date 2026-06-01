@@ -21,6 +21,7 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 import { initializeFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { EVENTS, logHangelEvent } from '@/lib/analytics';
 
 type Unsubscribe = () => void;
 
@@ -40,9 +41,18 @@ async function persistToken(uid: string, token: string): Promise<void> {
 export async function registerNativePushToken(uid: string): Promise<string | null> {
   if (!Capacitor.isNativePlatform() || !uid) return null;
 
-  let perm = await FirebaseMessaging.checkPermissions();
+  const initial = await FirebaseMessaging.checkPermissions();
+  let perm = initial;
   if (perm.receive !== 'granted') {
     perm = await FirebaseMessaging.requestPermissions();
+    // Sadece kullanıcıya ilk kez sorulduğunda (init === 'prompt') analytics gönder.
+    if (initial.receive === 'prompt' || initial.receive === 'prompt-with-rationale') {
+      if (perm.receive === 'granted') {
+        logHangelEvent(EVENTS.enable_push, { platform: Capacitor.getPlatform() });
+      } else {
+        logHangelEvent(EVENTS.disable_push, { platform: Capacitor.getPlatform() });
+      }
+    }
     if (perm.receive !== 'granted') return null;
   }
 
@@ -76,6 +86,9 @@ export function attachNativePushListeners(uid: string): Unsubscribe {
     const link =
       (typeof data?.link === 'string' ? data.link : undefined) ||
       (typeof data?.clickAction === 'string' ? data.clickAction : undefined);
+    // Analytics: kullanıcı bildirimi açtı.
+    const notifType = typeof data?.type === 'string' ? data.type : 'unknown';
+    logHangelEvent(EVENTS.open_notification, { type: notifType });
     if (link && link.startsWith('/')) {
       window.location.assign(link);
     }

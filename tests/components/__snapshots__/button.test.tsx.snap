@@ -1,0 +1,90 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Button> behavior > renders as <a> via asChild + Slot pattern 1`] = `
+<a
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 px-5 py-2"
+  href="/x"
+>
+  Link
+</a>
+`;
+
+exports[`<Button> snapshot — sizes > renders size="default" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — sizes > renders size="icon" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 w-11"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — sizes > renders size="lg" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-12 px-8 text-base"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — sizes > renders size="sm" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-9 px-4 text-xs"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="default" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="destructive" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-destructive text-destructive-foreground border border-white/15 shadow-glass-soft hover:bg-destructive/90 h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="ghost" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-foreground hover:bg-glass-black-5 dark:hover:bg-glass-white-8 hover:text-primary h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="link" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-primary underline-offset-4 hover:underline rounded-md h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="outline" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 glass-thin border-primary/40 text-primary hover:bg-primary/10 h-11 px-5 py-2"
+>
+  Test
+</button>
+`;
+
+exports[`<Button> snapshot — variants > renders variant="secondary" stable snapshot 1`] = `
+<button
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 glass-thin text-secondary-foreground hover:bg-glass-white-20 dark:hover:bg-glass-white-12 h-11 px-5 py-2"
+>
+  Test
+</button>
+`;

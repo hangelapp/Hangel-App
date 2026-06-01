@@ -14,6 +14,7 @@ import { collection, doc, updateDoc, arrayUnion, arrayRemove, increment } from '
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { TEMPLATES_SECTION_SLUG } from '@/lib/library-templates';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useTranslation } from '@/components/providers/language-provider';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -26,6 +27,7 @@ export default function LibraryItemPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { t } = useTranslation();
 
   // Kullanıcının kaydet/okudu durumu (persist) — users/{uid} doc'undan.
   const userRef = useMemoFirebase(() => (user ? doc(db, COLLECTIONS.users, user.uid) : null), [db, user]);
@@ -79,23 +81,23 @@ export default function LibraryItemPage() {
     const FallbackIcon = isLikelyFilm ? Film : BookOpen;
     return (
       <div className="p-4 space-y-6 animate-in fade-in-0">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label={t('librarySlug.backAria')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <FallbackIcon className="h-5 w-5 text-muted-foreground" />
-              İçerik henüz hazır değil
+              {t('librarySlug.notReadyTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>
-              Aradığın içerik şu anda kütüphanede bulunamadı.
-              {isLikelyFilm ? ' Film detay sayfası için içerik kısa süre içinde eklenecek.' : ''}
+              {t('librarySlug.notReadyBody')}
+              {isLikelyFilm ? ' ' + t('librarySlug.notReadyFilmSuffix') : ''}
             </p>
             <Button asChild variant="outline">
-              <Link href="/library">Kütüphaneye dön</Link>
+              <Link href="/library">{t('librarySlug.backToLibrary')}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -106,20 +108,20 @@ export default function LibraryItemPage() {
   const item = itemWithSection;
   const sectionSlugLower = (item.sectionSlug || '').toLowerCase();
   const isViewable = sectionSlugLower.includes('film') || sectionSlugLower.includes('belges') || sectionSlugLower.includes('sinema');
-  const completionText = isViewable ? 'İzledim' : 'Okudum';
+  const completionText = isViewable ? t('librarySlug.watched') : t('librarySlug.read');
   const CompletionIcon = isViewable ? Film : Book;
   const isTemplate = (item.sectionSlug || '') === TEMPLATES_SECTION_SLUG;
 
   const handleToggleComplete = async () => {
     if (!user || !userRef) {
-      toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Okuduğunu işaretlemek için giriş yapmalısın.' });
+      toast({ variant: 'destructive', title: t('librarySlug.loginRequiredTitle'), description: t('librarySlug.loginRequiredCompleteDesc') });
       return;
     }
     setBusy(true);
     try {
       if (isRead) {
         await updateDoc(userRef, { readLibraryItems: arrayRemove(slug) });
-        toast({ title: 'Tamamlandı işareti kaldırıldı', description: `"${item.title}"` });
+        toast({ title: t('librarySlug.unmarkedTitle'), description: `"${item.title}"` });
       } else {
         // Puan yalnızca daha önce ödüllenmemiş içerikte verilir (remove→re-add ile farm engellenir).
         const alreadyAwarded = Array.isArray(userData?.awardedLibraryItems) && userData!.awardedLibraryItems!.includes(slug);
@@ -130,12 +132,12 @@ export default function LibraryItemPage() {
         }
         await updateDoc(userRef, update);
         toast({
-          title: alreadyAwarded ? `"${item.title}" işaretlendi` : `Tebrikler! +${LIBRARY_READ_POINTS} etki puanı 🎉`,
-          description: `"${item.title}" ${completionText.toLowerCase()} olarak işaretlendi.`,
+          title: alreadyAwarded ? `"${item.title}" ${t('librarySlug.markedSuffix')}` : `${t('librarySlug.congratsPrefix')} +${LIBRARY_READ_POINTS} ${t('librarySlug.impactPointsSuffix')} 🎉`,
+          description: `"${item.title}" ${completionText.toLowerCase()} ${t('librarySlug.markedAsSuffix')}`,
         });
       }
     } catch {
-      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: 'Lütfen tekrar deneyin.' });
+      toast({ variant: 'destructive', title: t('librarySlug.saveFailedTitle'), description: t('librarySlug.saveFailedDesc') });
     } finally {
       setBusy(false);
     }
@@ -143,15 +145,15 @@ export default function LibraryItemPage() {
 
   const handleToggleSave = async () => {
     if (!user || !userRef) {
-      toast({ variant: 'destructive', title: 'Giriş gerekli', description: 'Kaydetmek için giriş yapmalısın.' });
+      toast({ variant: 'destructive', title: t('librarySlug.loginRequiredTitle'), description: t('librarySlug.loginRequiredSaveDesc') });
       return;
     }
     setBusy(true);
     try {
       await updateDoc(userRef, { savedLibraryItems: isSaved ? arrayRemove(slug) : arrayUnion(slug) });
-      toast({ title: isSaved ? 'Kayıtlardan çıkarıldı' : 'Kaydedildi 📑', description: `"${item.title}"` });
+      toast({ title: isSaved ? t('librarySlug.removedFromSavedTitle') : t('librarySlug.savedTitle'), description: `"${item.title}"` });
     } catch {
-      toast({ variant: 'destructive', title: 'Kaydedilemedi', description: 'Lütfen tekrar deneyin.' });
+      toast({ variant: 'destructive', title: t('librarySlug.saveFailedTitle'), description: t('librarySlug.saveFailedDesc') });
     } finally {
       setBusy(false);
     }
@@ -170,28 +172,28 @@ export default function LibraryItemPage() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    toast({ title: 'İndiriliyor', description: `"${item.title}" Word belgesi olarak indirildi.` });
+    toast({ title: t('librarySlug.downloadingTitle'), description: `"${item.title}" ${t('librarySlug.downloadingDescSuffix')}` });
   };
 
   const handleRecommend = (rec: 'up' | 'down') => {
       const newRecommendation = recommendation === rec ? null : rec;
       setRecommendation(newRecommendation);
       toast({
-          title: "Değerlendirmeniz Alındı",
-          description: "Geri bildiriminiz için teşekkürler!",
+          title: t('librarySlug.ratingThanksTitle'),
+          description: t('librarySlug.ratingThanksDesc'),
       });
   };
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
       <div className="flex items-center justify-between mb-2">
-        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('librarySlug.backAria')}>
           <ArrowLeft className="h-6 w-6" />
         </Button>
         <div className="flex items-center gap-2">
           {isTemplate && (
             <Button onClick={handleDownloadWord} variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" /> Word indir
+              <Download className="h-4 w-4" /> {t('librarySlug.downloadWord')}
             </Button>
           )}
           <Button
@@ -202,7 +204,7 @@ export default function LibraryItemPage() {
             className="gap-2"
           >
             {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-            {isSaved ? 'Kaydedildi' : 'Kaydet'}
+            {isSaved ? t('librarySlug.saved') : t('librarySlug.save')}
           </Button>
         </div>
       </div>
@@ -215,13 +217,13 @@ export default function LibraryItemPage() {
       />
        <Card className="mt-8">
         <CardHeader>
-          <CardTitle className="text-lg">Bu İçeriği Değerlendir</CardTitle>
+          <CardTitle className="text-lg">{t('librarySlug.rateTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <p className="font-medium flex items-center gap-2">
                 <CompletionIcon className="h-5 w-5 text-muted-foreground"/>
-                Bu içeriği tamamladın mı?
+                {t('librarySlug.completedQuestion')}
             </p>
             <Button
               variant={isRead ? 'default' : 'outline'}
@@ -234,7 +236,7 @@ export default function LibraryItemPage() {
             </Button>
           </div>
           <div className="flex items-center justify-between p-4 border rounded-lg">
-             <p className="font-medium">Bu içeriği yararlı buldun mu?</p>
+             <p className="font-medium">{t('librarySlug.helpfulQuestion')}</p>
              <div className="flex gap-2">
                 <Button
                   variant={recommendation === 'up' ? 'default' : 'outline'}
@@ -242,7 +244,7 @@ export default function LibraryItemPage() {
                   className="gap-2"
                   onClick={() => handleRecommend('up')}
                 >
-                  <ThumbsUp className="h-4 w-4" /> Yararlı
+                  <ThumbsUp className="h-4 w-4" /> {t('librarySlug.helpful')}
                 </Button>
                 <Button
                   variant={recommendation === 'down' ? 'destructive' : 'outline'}
@@ -250,7 +252,7 @@ export default function LibraryItemPage() {
                   className="gap-2"
                   onClick={() => handleRecommend('down')}
                 >
-                  <ThumbsDown className="h-4 w-4" /> Yararsız
+                  <ThumbsDown className="h-4 w-4" /> {t('librarySlug.notHelpful')}
                 </Button>
              </div>
           </div>

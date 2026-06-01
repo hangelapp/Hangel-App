@@ -31,7 +31,7 @@ const ClubCard = ({
     const university = club?.university || '—';
     return (
         <Link href={`/clubs/profile/${club.id}`} key={club.id} className="block">
-            <Card className="hover:bg-accent transition-colors">
+            <Card variant="glass" className="hover:bg-accent transition-colors">
                 <CardContent className="p-2 flex gap-2 items-center">
                     <Avatar className="h-9 w-9">
                         <AvatarImage src={club?.avatarUrl} alt={name} />
@@ -346,7 +346,7 @@ export default function ClubsPage() {
   );
 
   return (
-    <div className="p-4 space-y-4 animate-in fade-in-0">
+    <div className="p-4 space-y-4 animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
       <h1 className="text-2xl font-bold font-headline">{t('clubsPage.title')}</h1>
 
       {/* 1. satır: Arama + filtre/sıralama */}
@@ -513,7 +513,7 @@ export default function ClubsPage() {
                 }
               }
               return (
-                <Card key={university} className="overflow-hidden">
+                <Card variant="glass" key={university} className="overflow-hidden">
                   <button
                     type="button"
                     onClick={() => setExpandedUniversity(isOpen ? null : university)}

@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<GlassSurface> asChild slot pattern > renders as <section> via asChild 1`] = `
+<section
+  class="relative glass rounded-3xl shadow-glass-soft"
+>
+  Semantic
+</section>
+`;
+
+exports[`<GlassSurface> snapshot — radius / shadow > renders radius="full" + shadow="prominent" 1`] = `
+<div
+  class="relative glass rounded-full shadow-glass-prominent"
+>
+  Pill
+</div>
+`;
+
+exports[`<GlassSurface> snapshot — radius / shadow > renders radius="none" + shadow="none" (cleanest baseline) 1`] = `
+<div
+  class="relative glass"
+>
+  Bare
+</div>
+`;
+
+exports[`<GlassSurface> snapshot — variants > renders variant="default" with default radius/shadow 1`] = `
+<div
+  class="relative glass rounded-3xl shadow-glass-soft"
+>
+  Content
+</div>
+`;
+
+exports[`<GlassSurface> snapshot — variants > renders variant="prominent" with default radius/shadow 1`] = `
+<div
+  class="relative glass-prominent rounded-3xl shadow-glass-soft"
+>
+  Content
+</div>
+`;
+
+exports[`<GlassSurface> snapshot — variants > renders variant="thin" with default radius/shadow 1`] = `
+<div
+  class="relative glass-thin rounded-3xl shadow-glass-soft"
+>
+  Content
+</div>
+`;

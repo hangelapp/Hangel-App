@@ -9,10 +9,17 @@
 import { useEffect, useRef } from 'react';
 import { useUser } from '@/firebase';
 import { trackSession, logAdminActivity } from '@/lib/session-tracker';
+import { setAnalyticsUserId } from '@/lib/analytics';
 
 export function SessionTrackerProvider() {
     const { user, isUserLoading } = useUser();
     const trackedRef = useRef<string | null>(null);
+
+    // Auth user değiştiğinde Analytics UID'yi de güncelle (logout → null).
+    useEffect(() => {
+        if (isUserLoading) return;
+        setAnalyticsUserId(user?.uid ?? null);
+    }, [user?.uid, isUserLoading]);
 
     useEffect(() => {
         if (isUserLoading || !user?.uid) return;

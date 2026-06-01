@@ -557,7 +557,7 @@ export default function ProfilePage() {
     }, []);
     
     const VolunteerCard = ({ item }: { item: (typeof pastVolunteering)[0] }) => (
-        <Card>
+        <Card variant="glass">
             <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value={item.id} className="border-b-0">
                     <CardHeader>
@@ -638,7 +638,7 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className="animate-in fade-in-0 bg-secondary min-h-screen">
+        <div className="animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
             <div className="flex items-center justify-between p-4 bg-primary text-primary-foreground">
                 <Button onClick={() => router.back()} variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" aria-label={t('aria.back')}>
                     <ArrowLeft className="h-5 w-5" />
@@ -671,7 +671,7 @@ export default function ProfilePage() {
                             certificateCount={certificates.length}
                             impactCardTitle={t('dashboard.profile.impactCardTitle')}
                         />
-                        <Card>
+                        <Card variant="glass">
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle>{t('profilePage.lastTransactions')}</CardTitle>
                                 <div>
@@ -742,7 +742,7 @@ export default function ProfilePage() {
                          {/* FEAT: Welcome'da seçilen intent'ler — kullanım amacı tercihleri */}
                          {Array.isArray((userData as { preferences?: { intents?: string[] } } | undefined)?.preferences?.intents) &&
                           ((userData as { preferences?: { intents?: string[] } }).preferences!.intents!.length > 0) && (
-                            <Card>
+                            <Card variant="glass">
                                 <CardHeader className="flex flex-row justify-between items-center pb-2">
                                     <CardTitle className='text-lg flex items-center gap-2'>
                                         <Sparkles className='h-5 w-5 text-fuchsia-500' /> {t('profilePage.usagePreferences')}
@@ -762,7 +762,7 @@ export default function ProfilePage() {
                                 </CardContent>
                             </Card>
                          )}
-                         <Card>
+                         <Card variant="glass">
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>{t('profilePage.personalInfoTitle')}</CardTitle>
                                  <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editProfileAria')}>
@@ -799,7 +799,7 @@ export default function ProfilePage() {
                     </TabsContent>
 
                     <TabsContent value="volunteering" className="p-4 space-y-4">
-                         <Card>
+                         <Card variant="glass">
                             <CardHeader className="flex flex-row justify-between items-center">
                                 <CardTitle className='text-lg'>{t('profilePage.volunteerInfoTitle')}</CardTitle>
                                 <Button asChild variant="ghost" size="icon" aria-label={t('profilePage.editVolunteerAria')}>
@@ -830,7 +830,7 @@ export default function ProfilePage() {
                                 <InfoRow icon={Phone} label={t('profilePage.fieldEmergencyPhone')} value={currentUser.volunteerInfo.emergency.emergencyContacts[0]?.phone} />
                             </CardContent>
                         </Card>
-                        <Card>
+                        <Card variant="glass">
                              <CardHeader><CardTitle className='text-lg'>{t('profilePage.pastVolunteering')}</CardTitle></CardHeader>
                              <CardContent className='space-y-4'>
                                  {pastVolunteering.length > 0 ? (
@@ -849,7 +849,7 @@ export default function ProfilePage() {
                     </TabsContent>
 
                     <TabsContent value="connections" className="p-4 space-y-4">
-                        <Card className="rounded-2xl">
+                        <Card variant="glass" className="rounded-2xl">
                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.myConnections')}</CardTitle></CardHeader>
                             <CardContent>
                                 <Accordion type="multiple" className="w-full">
@@ -927,7 +927,7 @@ export default function ProfilePage() {
                     </TabsContent>
 
                     <TabsContent value="badges-certificates" className="p-4 space-y-4">
-                        <Card>
+                        <Card variant="glass">
                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.earnedBadgesTitle')}</CardTitle></CardHeader>
                             <CardContent>
                                 {visibleBadges.length > 0 ? (
@@ -948,7 +948,7 @@ export default function ProfilePage() {
                                 </Button>
                             </CardFooter>
                         </Card>
-                         <Card>
+                         <Card variant="glass">
                             <CardHeader><CardTitle className='text-lg'>{t('profilePage.myCertificates')}</CardTitle></CardHeader>
                             <CardContent>
                             {certificates.length > 0 ? (
@@ -990,7 +990,7 @@ export default function ProfilePage() {
 
 
                     <TabsContent value="story" className="p-4 space-y-4">
-                        <Card>
+                        <Card variant="glass-prominent">
                             <CardHeader>
                                 <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> {t('profilePage.impactStoryTitle')}</CardTitle>
                                 <CardDescription>{t('profilePage.impactStoryDesc')}</CardDescription>
@@ -1037,7 +1037,7 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card variant="glass">
                             <CardHeader>
                                 <CardTitle className='text-lg flex items-center gap-2'><Sparkles className='h-5 w-5 text-primary' /> {t('profilePage.aiNarrationTitle')}</CardTitle>
                                 <CardDescription>{t('profilePage.aiNarrationDesc')}</CardDescription>

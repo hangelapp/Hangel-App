@@ -1,0 +1,117 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<EmptyState> snapshot > renders default (icon + title + description) 1`] = `
+<div
+  class="flex flex-col items-center justify-center text-center p-10 gap-3 animate-in fade-in-0"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-inbox text-muted-foreground/70"
+    fill="none"
+    height="60"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    width="60"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <polyline
+      points="22 12 16 12 14 15 10 15 8 12 2 12"
+    />
+    <path
+      d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+    />
+  </svg>
+  <h3
+    class="text-lg font-semibold"
+  >
+    Henüz veri yok
+  </h3>
+  <p
+    class="text-sm text-muted-foreground max-w-sm"
+  >
+    Yakında burada listelenecek.
+  </p>
+</div>
+`;
+
+exports[`<EmptyState> snapshot > renders with custom icon and href action 1`] = `
+<div
+  class="flex flex-col items-center justify-center text-center p-10 gap-3 animate-in fade-in-0"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-heart text-muted-foreground/70"
+    fill="none"
+    height="60"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    width="60"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+    />
+  </svg>
+  <h3
+    class="text-lg font-semibold"
+  >
+    Yardım Et
+  </h3>
+  <p
+    class="text-sm text-muted-foreground max-w-sm"
+  >
+    STK'ları destekle.
+  </p>
+  <div
+    class="mt-2"
+  >
+    <a
+      class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 px-5 py-2"
+      href="/discover"
+    >
+      Keşfet
+    </a>
+  </div>
+</div>
+`;
+
+exports[`<EmptyState> snapshot > renders without description 1`] = `
+<div
+  class="flex flex-col items-center justify-center text-center p-10 gap-3 animate-in fade-in-0"
+  role="status"
+>
+  <svg
+    aria-hidden="true"
+    class="lucide lucide-inbox text-muted-foreground/70"
+    fill="none"
+    height="60"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.5"
+    viewBox="0 0 24 24"
+    width="60"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <polyline
+      points="22 12 16 12 14 15 10 15 8 12 2 12"
+    />
+    <path
+      d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+    />
+  </svg>
+  <h3
+    class="text-lg font-semibold"
+  >
+    Boş
+  </h3>
+</div>
+`;

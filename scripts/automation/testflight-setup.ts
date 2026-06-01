@@ -62,8 +62,8 @@ async function api<T>(method: string, path: string, body?: unknown): Promise<T> 
 async function setBetaAppReviewDetail() {
   console.log('[1/3] Beta App Review Detail ayarlanıyor...');
   // Find existing detail or create
-  const existing = await api<{ data: Array<{ id: string }> }>('GET', `/apps/${APP_ID}/betaAppReviewDetail`);
-  const detailId = existing.data?.[0]?.id || existing.data?.id;
+  const existing = await api<{ data: { id: string } | Array<{ id: string }> }>('GET', `/apps/${APP_ID}/betaAppReviewDetail`);
+  const detailId = Array.isArray(existing.data) ? existing.data[0]?.id : existing.data?.id;
   if (!detailId) {
     console.log('  Beta App Review Detail bulunamadı; otomatik oluşturulmuş olmalı.');
     return;

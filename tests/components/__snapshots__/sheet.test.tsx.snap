@@ -1,0 +1,269 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Sheet> snapshot > renders bottom-side open state with glass handle grip 1`] = `
+<body
+  data-scroll-locked="1"
+  style="pointer-events: none;"
+>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+  <div
+    aria-hidden="true"
+    data-aria-hidden="true"
+  />
+  <div
+    aria-hidden="true"
+    class="fixed inset-0 z-50 bg-black/30 backdrop-blur-glass-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    data-aria-hidden="true"
+    data-state="open"
+    style="pointer-events: auto;"
+  />
+  <div
+    aria-describedby="radix-_r_2_"
+    aria-labelledby="radix-_r_1_"
+    class="fixed z-50 gap-4 glass-prominent transition ease-spring data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-x-0 bottom-0 rounded-t-3xl p-6 pt-3 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
+    data-state="open"
+    id="radix-_r_0_"
+    role="dialog"
+    style="pointer-events: auto;"
+    tabindex="-1"
+  >
+    <div
+      aria-hidden="true"
+      class="mx-auto mb-3 glass-handle"
+    />
+    <div
+      class="flex flex-col space-y-1.5 text-center sm:text-left"
+    >
+      <h2
+        class="text-lg font-semibold text-foreground"
+        id="radix-_r_1_"
+      >
+        Bottom Sheet
+      </h2>
+      <p
+        class="text-sm text-muted-foreground"
+        id="radix-_r_2_"
+      >
+        Bottom-side variant with handle grip
+      </p>
+    </div>
+    <button
+      class="absolute right-4 top-4 rounded-full p-1.5 opacity-70 ring-offset-background transition-opacity hover:opacity-100 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+      type="button"
+    >
+      <svg
+        class="lucide lucide-x h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M18 6 6 18"
+        />
+        <path
+          d="m6 6 12 12"
+        />
+      </svg>
+      <span
+        class="sr-only"
+      >
+        Close
+      </span>
+    </button>
+  </div>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+</body>
+`;
+
+exports[`<Sheet> snapshot > renders only the trigger when sheet is closed 1`] = `
+<button
+  aria-controls="radix-_r_6_"
+  aria-expanded="false"
+  aria-haspopup="dialog"
+  class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-[transform,background-color,color,box-shadow,opacity] duration-200 ease-spring focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.96] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground border border-white/15 shadow-glass-soft hover:bg-primary/90 hover:shadow-glass-prominent h-11 px-5 py-2"
+  data-state="closed"
+  type="button"
+>
+  Open Sheet
+</button>
+`;
+
+exports[`<Sheet> snapshot > renders right-side open state (default) 1`] = `
+<body
+  data-scroll-locked="2"
+  style="pointer-events: none;"
+>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+  <div
+    aria-hidden="true"
+    data-aria-hidden="true"
+  />
+  <div
+    aria-hidden="true"
+    class="fixed inset-0 z-50 bg-black/30 backdrop-blur-glass-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    data-aria-hidden="true"
+    data-state="open"
+    style="pointer-events: auto;"
+  />
+  <div
+    aria-describedby="radix-_r_2_"
+    aria-hidden="true"
+    aria-labelledby="radix-_r_1_"
+    class="fixed z-50 gap-4 glass-prominent transition ease-spring data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-x-0 bottom-0 rounded-t-3xl p-6 pt-3 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
+    data-aria-hidden="true"
+    data-state="open"
+    id="radix-_r_0_"
+    role="dialog"
+    style="pointer-events: none;"
+    tabindex="-1"
+  >
+    <div
+      aria-hidden="true"
+      class="mx-auto mb-3 glass-handle"
+    />
+    <div
+      class="flex flex-col space-y-1.5 text-center sm:text-left"
+    >
+      <h2
+        class="text-lg font-semibold text-foreground"
+        id="radix-_r_1_"
+      >
+        Bottom Sheet
+      </h2>
+      <p
+        class="text-sm text-muted-foreground"
+        id="radix-_r_2_"
+      >
+        Bottom-side variant with handle grip
+      </p>
+    </div>
+    <button
+      class="absolute right-4 top-4 rounded-full p-1.5 opacity-70 ring-offset-background transition-opacity hover:opacity-100 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+      type="button"
+    >
+      <svg
+        class="lucide lucide-x h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M18 6 6 18"
+        />
+        <path
+          d="m6 6 12 12"
+        />
+      </svg>
+      <span
+        class="sr-only"
+      >
+        Close
+      </span>
+    </button>
+  </div>
+  <div
+    aria-hidden="true"
+    data-aria-hidden="true"
+  />
+  <div
+    aria-hidden="true"
+    class="fixed inset-0 z-50 bg-black/30 backdrop-blur-glass-3 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    data-aria-hidden="true"
+    data-state="open"
+    style="pointer-events: auto;"
+  />
+  <div
+    aria-describedby="radix-_r_5_"
+    aria-labelledby="radix-_r_4_"
+    class="fixed z-50 gap-4 glass-prominent transition ease-spring data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 inset-y-0 right-0 h-full w-3/4 rounded-l-3xl p-6 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm"
+    data-state="open"
+    id="radix-_r_3_"
+    role="dialog"
+    style="pointer-events: auto;"
+    tabindex="-1"
+  >
+    <div
+      class="flex flex-col space-y-1.5 text-center sm:text-left"
+    >
+      <h2
+        class="text-lg font-semibold text-foreground"
+        id="radix-_r_4_"
+      >
+        Right Sheet
+      </h2>
+      <p
+        class="text-sm text-muted-foreground"
+        id="radix-_r_5_"
+      >
+        Right-side variant, no handle
+      </p>
+    </div>
+    <button
+      class="absolute right-4 top-4 rounded-full p-1.5 opacity-70 ring-offset-background transition-opacity hover:opacity-100 hover:bg-glass-black-5 dark:hover:bg-glass-white-8 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary"
+      type="button"
+    >
+      <svg
+        class="lucide lucide-x h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M18 6 6 18"
+        />
+        <path
+          d="m6 6 12 12"
+        />
+      </svg>
+      <span
+        class="sr-only"
+      >
+        Close
+      </span>
+    </button>
+  </div>
+  <span
+    aria-hidden="true"
+    data-aria-hidden="true"
+    data-radix-focus-guard=""
+    style="outline: none; opacity: 0; position: fixed; pointer-events: none;"
+    tabindex="0"
+  />
+</body>
+`;

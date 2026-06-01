@@ -142,7 +142,7 @@ export default function NgosPage() {
     }, [enrichedNgos, typeFilter, searchTerm, sortKey, categoryFilter]);
 
     return (
-        <div className="p-4 space-y-4 animate-in fade-in-0">
+        <div className="p-4 space-y-4 animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
             <div className="space-y-1">
                 <h1 className="text-2xl font-bold font-headline">{t('ngosPage.title')}</h1>
                 <p className="text-muted-foreground text-sm">{t('ngosPage.subtitle')}</p>
@@ -228,7 +228,7 @@ export default function NgosPage() {
 
             {isLoading ? (
                 <div className="space-y-2">
-                    {[...Array(3)].map((_, i) => <Card key={i} className="h-24 animate-pulse bg-muted" />)}
+                    {[...Array(3)].map((_, i) => <Card key={i} variant="glass" className="h-24 animate-pulse" />)}
                 </div>
             ) : filteredNgos.length === 0 ? (
                 <EmptyState

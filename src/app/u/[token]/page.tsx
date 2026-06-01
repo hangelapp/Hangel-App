@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, Check, AlertTriangle, Mail, MessageSquare } from 'lucide-react';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface Info {
   userId: string;
@@ -14,6 +15,7 @@ interface Info {
 
 export default function UnsubscribePage() {
   const params = useParams<{ token: string }>();
+  const { t } = useTranslation();
   const [info, setInfo] = useState<Info | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export default function UnsubscribePage() {
       try {
         const res = await fetch(`/api/messaging/unsubscribe?token=${encodeURIComponent(params.token)}`);
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? 'Hata');
+        if (!res.ok) throw new Error(data.error ?? t('unsubscribePage.errorLabel'));
         setInfo(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -34,7 +36,7 @@ export default function UnsubscribePage() {
         setLoading(false);
       }
     })();
-  }, [params.token]);
+  }, [params.token, t]);
 
   const doUnsubscribe = async (target: 'email' | 'sms' | 'all') => {
     setSubmitting(target);
@@ -49,7 +51,7 @@ export default function UnsubscribePage() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? 'Hata');
+      if (!res.ok) throw new Error(data.error ?? t('unsubscribePage.errorLabel'));
       setDone(target);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -70,7 +72,7 @@ export default function UnsubscribePage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader>
-          <CardTitle>Pazarlama Aboneliği</CardTitle>
+          <CardTitle>{t('unsubscribePage.title')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
@@ -85,10 +87,10 @@ export default function UnsubscribePage() {
               <Check className="h-4 w-4 mt-0.5" />
               <span>
                 {done === 'all'
-                  ? 'Tüm pazarlama iletişiminden çıktın.'
+                  ? t('unsubscribePage.allDone')
                   : done === 'email'
-                  ? 'E-posta pazarlama bildirimleri durduruldu.'
-                  : 'SMS pazarlama bildirimleri durduruldu.'}
+                  ? t('unsubscribePage.emailDone')
+                  : t('unsubscribePage.smsDone')}
               </span>
             </div>
           )}
@@ -96,7 +98,7 @@ export default function UnsubscribePage() {
           {info && !done && (
             <>
               <p className="text-sm text-muted-foreground">
-                Aşağıdaki kanallardan pazarlama iletişimini durdurabilirsin.
+                {t('unsubscribePage.body')}
               </p>
 
               <Button
@@ -110,7 +112,7 @@ export default function UnsubscribePage() {
                 ) : (
                   <Mail className="h-4 w-4 mr-2" />
                 )}
-                E-postaları durdur {info.email.enabled ? '' : '(zaten kapalı)'}
+                {t('unsubscribePage.stopEmail')} {info.email.enabled ? '' : t('unsubscribePage.alreadyOff')}
               </Button>
 
               <Button
@@ -124,7 +126,7 @@ export default function UnsubscribePage() {
                 ) : (
                   <MessageSquare className="h-4 w-4 mr-2" />
                 )}
-                SMS'leri durdur {info.sms.enabled ? '' : '(zaten kapalı)'}
+                {t('unsubscribePage.stopSms')} {info.sms.enabled ? '' : t('unsubscribePage.alreadyOff')}
               </Button>
 
               <Button
@@ -134,13 +136,13 @@ export default function UnsubscribePage() {
                 onClick={() => doUnsubscribe('all')}
               >
                 {submitting === 'all' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Tümünden çık
+                {t('unsubscribePage.stopAll')}
               </Button>
             </>
           )}
 
           <p className="text-xs text-muted-foreground text-center pt-2">
-            Bu işlem KVKK uyarınca İleti Yönetim Sistemi (İYS) ile senkronlanır.
+            {t('unsubscribePage.kvkkNote')}
           </p>
         </CardContent>
       </Card>

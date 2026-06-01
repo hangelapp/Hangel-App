@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithAppleNative } from '@/lib/apple-signin';
 import { useAuth } from '@/firebase';
+import { EVENTS, logHangelEvent } from '@/lib/analytics';
 
 interface Props {
   onComplete: (isNewUser: boolean) => void;
@@ -68,6 +69,12 @@ export function AppleSignInButton({ onComplete }: Props) {
         description: e instanceof Error ? e.message : 'Bilinmeyen hata.',
       });
       return;
+    }
+
+    // Analytics: Apple login (yeni vs mevcut kullanıcı segmentasyonu).
+    logHangelEvent(EVENTS.login_apple, { is_new_user: Boolean(result.isNewUser) });
+    if (result.isNewUser) {
+      logHangelEvent(EVENTS.signup_complete, { provider: 'apple' });
     }
 
     setLoading(false);

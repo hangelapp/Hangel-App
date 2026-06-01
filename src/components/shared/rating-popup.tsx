@@ -11,6 +11,7 @@ import { Star } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, getDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { EVENTS, logHangelEvent } from '@/lib/analytics';
 
 const DISCOVERY_OPTIONS = ['Sosyal Medya', 'Reklamlar', 'Sivil Toplum Kuruluşu', 'Arkadaşım'];
 const DETAIL_REQUIRED = ['Sivil Toplum Kuruluşu', 'Arkadaşım'];
@@ -166,6 +167,8 @@ export function RatingPopup() {
                     console.warn('Rating save failed:', e);
                 }
                 safeSetLS(`hangel_rating_done_${user.uid}`, 'true');
+                // Analytics: kullanıcı puanı (1-5) + comment varsa flag.
+                logHangelEvent(EVENTS.rate_app, { rating, has_comment: comment.length > 0 });
             }
 
             setSubmitted(true);

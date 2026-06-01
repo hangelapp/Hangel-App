@@ -11,30 +11,32 @@ import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-
-const socialIntegrations = [
-    { id: 'whatsapp', name: 'WhatsApp Business', icon: Smartphone, color: 'bg-green-500', status: 'Bağlı' },
-    { id: 'instagram', name: 'Instagram DM', icon: Instagram, color: 'bg-pink-600', status: 'Bağlanabilir' },
-    { id: 'facebook', name: 'Messenger', icon: Facebook, color: 'bg-blue-600', status: 'Bağlanabilir' },
-];
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function DmManagementPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { t } = useTranslation();
     const [msg, setMsg] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    const socialIntegrations = [
+        { id: 'whatsapp', name: t('ngoAdminDm.whatsappName'), icon: Smartphone, color: 'bg-green-500', status: t('ngoAdminDm.statusConnected') },
+        { id: 'instagram', name: t('ngoAdminDm.instagramName'), icon: Instagram, color: 'bg-pink-600', status: t('ngoAdminDm.statusAvailable') },
+        { id: 'facebook', name: t('ngoAdminDm.messengerName'), icon: Facebook, color: 'bg-blue-600', status: t('ngoAdminDm.statusAvailable') },
+    ];
 
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
         if (!msg.trim()) return;
-        toast({ title: "Mesaj Gönderildi", description: "İletişim kanalı üzerinden alıcıya ulaştırıldı." });
+        toast({ title: t('ngoAdminDm.toastSentTitle'), description: t('ngoAdminDm.toastSentDesc') });
         setMsg('');
     };
 
     const handleSaveConfig = () => {
         setIsSaving(true);
         setTimeout(() => {
-            toast({ title: "Ayarlar Kaydedildi", description: "Mesajlaşma kanalları başarıyla doğrulandı." });
+            toast({ title: t('ngoAdminDm.toastSavedTitle'), description: t('ngoAdminDm.toastSavedDesc') });
             setIsSaving(false);
         }, 1500);
     };
@@ -43,17 +45,17 @@ export default function DmManagementPage() {
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngoAdminDm.backAria')}>
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
-                    <h1 className="text-2xl font-bold font-headline">DM Mesajlaşma Merkezi</h1>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngoAdminDm.title')}</h1>
                 </div>
             </div>
 
             <Tabs defaultValue="chat">
                 <TabsList className="grid w-full grid-cols-2 max-w-md">
-                    <TabsTrigger value="chat"><MessageCircle className="mr-2 h-4 w-4" /> Mesajlar</TabsTrigger>
-                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> Kanalları Bağla</TabsTrigger>
+                    <TabsTrigger value="chat"><MessageCircle className="mr-2 h-4 w-4" /> {t('ngoAdminDm.tabMessages')}</TabsTrigger>
+                    <TabsTrigger value="integration"><Settings2 className="mr-2 h-4 w-4" /> {t('ngoAdminDm.tabIntegration')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="chat" className="mt-6">
@@ -61,17 +63,17 @@ export default function DmManagementPage() {
                         <div className="flex-1 flex items-center justify-center text-muted-foreground italic bg-muted/10">
                             <div className="text-center space-y-2">
                                 <MessageCircle className="h-12 w-12 mx-auto opacity-20" />
-                                <p>Mesajlaşma arayüzü yükleniyor... Sol kısımdan bir kanal seçin.</p>
+                                <p>{t('ngoAdminDm.emptyChat')}</p>
                             </div>
                         </div>
                         <div className="p-4 border-t bg-background">
                             <form className="flex gap-2" onSubmit={handleSend}>
-                                <Input 
-                                    placeholder="Mesajınızı yazın..." 
-                                    value={msg} 
+                                <Input
+                                    placeholder={t('ngoAdminDm.messagePh')}
+                                    value={msg}
                                     onChange={(e) => setMsg(e.target.value)}
                                 />
-                                <Button type="submit" size="icon" aria-label="Gönder"><Send className="h-4 w-4" /></Button>
+                                <Button type="submit" size="icon" aria-label={t('ngoAdminDm.sendAria')}><Send className="h-4 w-4" /></Button>
                             </form>
                         </div>
                     </Card>
@@ -87,11 +89,11 @@ export default function DmManagementPage() {
                                     </div>
                                     <div>
                                         <p className="font-bold text-sm">{item.name}</p>
-                                        <Badge variant={item.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                        <Badge variant={item.status === t('ngoAdminDm.statusConnected') ? 'default' : 'secondary'} className="text-[10px] mt-1">
                                             {item.status}
                                         </Badge>
                                     </div>
-                                    <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Ayarlar", description: `${item.name} yapılandırması açılıyor.`})}>Ayarlar</Button>
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: t('ngoAdminDm.settingsBtn'), description: `${item.name} ${t('ngoAdminDm.settingsToastSuffix')}`})}>{t('ngoAdminDm.settingsBtn')}</Button>
                                 </CardContent>
                             </Card>
                         ))}
@@ -99,22 +101,22 @@ export default function DmManagementPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> API & Webhook Bilgileri</CardTitle>
-                            <CardDescription>Meta veya WhatsApp API bilgilerinizi buraya girin ve tüm mesajları tek bir panelden yönetin.</CardDescription>
+                            <CardTitle className="text-lg flex items-center gap-2"><KeyRound className="h-5 w-5 text-primary"/> {t('ngoAdminDm.apiTitle')}</CardTitle>
+                            <CardDescription>{t('ngoAdminDm.apiDesc')}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>API Auth Token</Label>
+                                <Label>{t('ngoAdminDm.authToken')}</Label>
                                 <Input type="password" placeholder="EAAB..." />
                             </div>
                             <div className="space-y-2">
-                                <Label>Verify Token (Webhook için)</Label>
+                                <Label>{t('ngoAdminDm.verifyToken')}</Label>
                                 <Input placeholder="hangel_verify_token" />
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/30 border-t p-4 flex justify-end">
                             <Button onClick={handleSaveConfig} disabled={isSaving}>
-                                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Bağlanıyor</> : 'Kanalı Doğrula ve Kaydet'}
+                                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('ngoAdminDm.connecting')}</> : t('ngoAdminDm.verifyBtn')}
                             </Button>
                         </CardFooter>
                     </Card>

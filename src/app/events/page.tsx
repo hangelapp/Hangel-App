@@ -160,7 +160,7 @@ function EventsPageContent() {
   }, [sortKey, searchTerm, categoryParam, monthParam, tagParam, typeFilter, locationTypeFilter, cityFilter, dateFrom, dateTo, events]);
 
   return (
-    <div className="p-4 space-y-4 animate-in fade-in-0">
+    <div className="p-4 space-y-4 animate-in fade-in-0 bg-secondary/30 backdrop-blur-sm min-h-screen">
       <div className="space-y-2">
         <h1 className="text-2xl font-bold font-headline">{t('eventsPage.title')}</h1>
         <div className="relative">
@@ -316,7 +316,7 @@ function EventsPageContent() {
           const detailHref = `/events/${event.slug || event.id}`;
           return (
             <Link key={event.id} href={detailHref} className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-[1.5rem]">
-              <Card className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer">
+              <Card variant="glass" className="overflow-hidden flex flex-col h-full border-none shadow-md rounded-[1.5rem] hover:shadow-xl transition-shadow cursor-pointer">
                 <div className="relative aspect-[210/297] w-full bg-muted block">
                   <Image
                     src={event.imageUrl}

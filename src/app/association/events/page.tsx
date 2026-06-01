@@ -10,23 +10,25 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { Badge } from '@/components/ui/badge';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
+    const { t } = useTranslation();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
-                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
-                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
-                    <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
-                    <Link href="/association/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</Link>
+                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
+                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
+                    <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
+                    <Link href="/association/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>{t('association.navLegislation')}</Link>
                 </nav>
                 <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                    <Link href="/login/selection?action=register">Gönüllü Ol</Link>
+                    <Link href="/login/selection?action=register">{t('association.volunteerCta')}</Link>
                 </Button>
             </div>
         </header>
@@ -41,9 +43,10 @@ interface EventLineupProps {
     hint: string;
     description: string;
     category: string;
+    inspectLabel: string;
 }
 
-const EventLineup = ({ title, date, location, image, hint, description, category }: EventLineupProps) => (
+const EventLineup = ({ title, date, location, image, hint, description, category, inspectLabel }: EventLineupProps) => (
     <div className="group relative w-full border-b border-black/5 py-16 flex flex-col md:flex-row items-center gap-12 px-6 hover:bg-[#f5f5f7]/50 transition-colors">
         <div className="relative w-full md:w-80 aspect-video rounded-[2rem] overflow-hidden shadow-2xl shrink-0">
             <Image src={image} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" data-ai-hint={hint} />
@@ -59,56 +62,63 @@ const EventLineup = ({ title, date, location, image, hint, description, category
                 <span className="text-[11px] font-bold text-[#1d1d1f]/60 flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-primary" /> {location}</span>
             </div>
         </div>
-        <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white self-start md:self-center">İncele</Button>
+        <Button variant="outline" className="rounded-full px-8 h-12 font-bold border-black/10 hover:bg-white self-start md:self-center">{inspectLabel}</Button>
     </div>
 );
 
 export default function AssociationEventsPage() {
+    const { t } = useTranslation();
+    const inspectLabel = t('associationEvents.inspectBtn');
+
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="events" />
 
             <section className="pt-32 pb-20 px-6 text-center space-y-4 bg-[#f5f5f7]">
-                <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-[#1d1d1f]">Topluluk Gücü.</h1>
+                <h1 className="text-5xl md:text-8xl font-bold tracking-tight text-[#1d1d1f]">{t('associationEvents.heroTitle')}</h1>
                 <p className="text-xl md:text-3xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-                    5 yılda 126 farkındalık etkinliği ile 15.621 kişiye ulaştık. Türkiye'nin 42 üniversitesinde vizyon buluşmaları gerçekleştirdik.
+                    {t('associationEvents.heroDesc')}
                 </p>
             </section>
 
             <div className="container mx-auto max-w-6xl">
-                <EventLineup 
-                    category="AFET DAYANIŞMASI"
-                    title="Deprem Bölgesi Örnek Köy Projesi"
-                    date="2023 - 2024"
-                    location="Hatay, Antakya"
-                    description="4000 gönüllü ve 2000 işletme desteğiyle; 10 tiny house, 1 kreş, 1 atölye ve 1 kütüphaneden oluşan yaşam alanını Hatay'da kurduk."
+                <EventLineup
+                    inspectLabel={inspectLabel}
+                    category={t('associationEvents.event1Cat')}
+                    title={t('associationEvents.event1Title')}
+                    date={t('associationEvents.event1Date')}
+                    location={t('associationEvents.event1Loc')}
+                    description={t('associationEvents.event1Desc')}
                     image="https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?q=80&w=2070&auto=format&fit=crop"
                     hint="charity village concept"
                 />
-                <EventLineup 
-                    category="GLOBAL DİYALOG"
-                    title="Uluslararası Sosyal Girişimcilik Çalıştayı"
-                    date="Yıllık Periyot"
-                    location="İstanbul, Mersin, İzmir, Tunceli"
-                    description="54 ülkeden 421 vizyoner liderle ortak sorunlara kolektif çözümler ürettik. 632 sosyal girişimi big data formatında raporladık."
+                <EventLineup
+                    inspectLabel={inspectLabel}
+                    category={t('associationEvents.event2Cat')}
+                    title={t('associationEvents.event2Title')}
+                    date={t('associationEvents.event2Date')}
+                    location={t('associationEvents.event2Loc')}
+                    description={t('associationEvents.event2Desc')}
                     image="https://images.unsplash.com/photo-1540575861501-7ad0582371f3?q=80&w=2070&auto=format&fit=crop"
                     hint="international conference auditorium"
                 />
-                <EventLineup 
-                    category="AKADEMİK ZİRVE"
-                    title="Güçlü İyilik: Sosyal Girişim Zirvesi"
-                    date="Dönemsel"
-                    location="42 Üniversite Kampüsü"
-                    description="Atatürk, Hakkari ve Pamukkale Üniversiteleri başta olmak üzere Anadolu'nun her köşesinde gençlerimizle sosyal inovasyonu konuştuk."
+                <EventLineup
+                    inspectLabel={inspectLabel}
+                    category={t('associationEvents.event3Cat')}
+                    title={t('associationEvents.event3Title')}
+                    date={t('associationEvents.event3Date')}
+                    location={t('associationEvents.event3Loc')}
+                    description={t('associationEvents.event3Desc')}
                     image="https://images.unsplash.com/photo-1523050335392-9bc56751d11a?q=80&w=2070&auto=format&fit=crop"
                     hint="university students seminar"
                 />
-                <EventLineup 
-                    category="LOJİSTİK DESTEK"
-                    title="Afet Dönemi Yakıt & İlaç Köprüsü"
-                    date="2023"
-                    location="Gaziantep, Hatay, Suriye"
-                    description="Shell Türkiye desteğiyle 120 ton yakıt dağıtımı (70 tonu Ahbap ile) ve Romanya partnerimizle 2 TIR ilaç sevkiyatı gerçekleştirdik."
+                <EventLineup
+                    inspectLabel={inspectLabel}
+                    category={t('associationEvents.event4Cat')}
+                    title={t('associationEvents.event4Title')}
+                    date={t('associationEvents.event4Date')}
+                    location={t('associationEvents.event4Loc')}
+                    description={t('associationEvents.event4Desc')}
                     image="https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop"
                     hint="truck delivery logistics"
                 />
@@ -117,14 +127,14 @@ export default function AssociationEventsPage() {
             <section className="bg-black text-white py-32 text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-8">
                     <Heart className="h-16 w-16 text-primary mx-auto" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">Dayanışmanın Lideriyiz.</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('associationEvents.outroTitle')}</h2>
                     <p className="text-xl md:text-2xl text-white/70 leading-relaxed font-medium">
-                        "Bir toplumun gücü, en savunmasız anlarda gösterdiği dayanışma ile ölçülür." 60 karavan gönüllüsüyle sahada arama kurtarma ve eczacı ekiplerine ev sahipliği yaptık.
+                        {t('associationEvents.outroDesc')}
                     </p>
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="Dernek Etkinlikleri" />
+            <PublicFooter currentPageLabel={t('association.navEvents')} />
         </div>
     );
 }

@@ -1,0 +1,125 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`<Card> snapshot — variants > renders variant="default" stable snapshot 1`] = `
+<div
+  class="rounded-3xl text-card-foreground glass shadow-glass-soft"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-6"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      Title
+    </h3>
+    <p
+      class="text-sm text-muted-foreground"
+    >
+      Description
+    </p>
+  </div>
+  <div
+    class="p-6 pt-0"
+  >
+    Content
+  </div>
+  <div
+    class="flex items-center p-6 pt-0"
+  >
+    Footer
+  </div>
+</div>
+`;
+
+exports[`<Card> snapshot — variants > renders variant="glass" stable snapshot 1`] = `
+<div
+  class="rounded-3xl text-card-foreground glass shadow-glass-soft"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-6"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      Title
+    </h3>
+    <p
+      class="text-sm text-muted-foreground"
+    >
+      Description
+    </p>
+  </div>
+  <div
+    class="p-6 pt-0"
+  >
+    Content
+  </div>
+  <div
+    class="flex items-center p-6 pt-0"
+  >
+    Footer
+  </div>
+</div>
+`;
+
+exports[`<Card> snapshot — variants > renders variant="glass-prominent" stable snapshot 1`] = `
+<div
+  class="rounded-3xl text-card-foreground glass-prominent"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-6"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      Title
+    </h3>
+    <p
+      class="text-sm text-muted-foreground"
+    >
+      Description
+    </p>
+  </div>
+  <div
+    class="p-6 pt-0"
+  >
+    Content
+  </div>
+  <div
+    class="flex items-center p-6 pt-0"
+  >
+    Footer
+  </div>
+</div>
+`;
+
+exports[`<Card> snapshot — variants > renders variant="solid" stable snapshot 1`] = `
+<div
+  class="rounded-3xl text-card-foreground bg-card border border-border shadow-sm"
+>
+  <div
+    class="flex flex-col space-y-1.5 p-6"
+  >
+    <h3
+      class="text-2xl font-semibold leading-none tracking-tight"
+    >
+      Title
+    </h3>
+    <p
+      class="text-sm text-muted-foreground"
+    >
+      Description
+    </p>
+  </div>
+  <div
+    class="p-6 pt-0"
+  >
+    Content
+  </div>
+  <div
+    class="flex items-center p-6 pt-0"
+  >
+    Footer
+  </div>
+</div>
+`;

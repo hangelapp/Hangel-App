@@ -22,6 +22,7 @@ import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 
 import { initializeFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
+import { EVENTS, logHangelEvent } from '@/lib/analytics';
 
 const SW_PATH = '/firebase-messaging-sw.js';
 
@@ -40,7 +41,14 @@ export async function requestPushPermission(): Promise<NotificationPermission> {
     return Notification.permission;
   }
   try {
-    return await Notification.requestPermission();
+    const result = await Notification.requestPermission();
+    // Analytics: kullanıcı izin verdi mi / reddetti mi (segment ve funnel).
+    if (result === 'granted') {
+      logHangelEvent(EVENTS.enable_push, { platform: 'web' });
+    } else if (result === 'denied') {
+      logHangelEvent(EVENTS.disable_push, { platform: 'web' });
+    }
+    return result;
   } catch {
     return 'denied';
   }

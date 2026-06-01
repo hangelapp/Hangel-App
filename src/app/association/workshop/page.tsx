@@ -9,20 +9,22 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useTranslation } from '@/components/providers/language-provider';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
+    const { t } = useTranslation();
     return (
         <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
             <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-5xl">
                 <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Geri
+                    <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('association.back')}
                 </Button>
                 <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold uppercase tracking-tight text-[#1d1d1f]/60">
-                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>Dernek Hakkında</Link>
-                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>Dernek Etkinlikleri</Link>
-                    <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>Uluslararası Çalıştay</Link>
-                    <Link href="/association/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>Mevzuat Taslağı</Link>
+                    <Link href="/association/about" className={cn("hover:text-primary transition-colors", currentPage === 'about' && "text-primary")}>{t('association.navAbout')}</Link>
+                    <Link href="/association/events" className={cn("hover:text-primary transition-colors", currentPage === 'events' && "text-primary")}>{t('association.navEvents')}</Link>
+                    <Link href="/association/workshop" className={cn("hover:text-primary transition-colors", currentPage === 'workshop' && "text-primary")}>{t('association.navWorkshop')}</Link>
+                    <Link href="/association/legislation" className={cn("hover:text-primary transition-colors", currentPage === 'legislation' && "text-primary")}>{t('association.navLegislation')}</Link>
                 </nav>
                 <div className="w-20" />
             </div>
@@ -60,15 +62,16 @@ const ShowcaseSection = ({ title, subtitle, stat, description, image, hint, them
 );
 
 export default function AssociationWorkshopPage() {
+    const { t } = useTranslation();
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
             <AssociationHeader currentPage="workshop" />
 
-            <ShowcaseSection 
-                title="Sınırları Aşan Diyalog."
+            <ShowcaseSection
+                title={t('associationWorkshop.heroTitle')}
                 stat="54"
-                subtitle="Farklı ülkeden vizyoner katılımcı."
-                description="Uluslararası Sosyal Girişimcilik Çalıştayı, 4 yıldır küresel sorunlara kolektif çözümler üretmek için dünyayı Türkiye'de buluşturuyor."
+                subtitle={t('associationWorkshop.heroSubtitle')}
+                description={t('associationWorkshop.heroDesc')}
                 image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
                 hint="diverse group of international students"
             />
@@ -78,48 +81,48 @@ export default function AssociationWorkshopPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-6">
                             <Database className="h-12 w-12 text-primary" />
-                            <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">Sosyal Girişim Big Data.</h2>
+                            <h2 className="text-4xl font-bold tracking-tight text-[#1d1d1f]">{t('associationWorkshop.bigDataTitle')}</h2>
                             <p className="text-lg text-muted-foreground leading-relaxed font-medium">
-                                54 ülkeden 632 sosyal girişimi detaylıca inceledik ve raporladık. Bu verileri 'Big Data' formatında tüm sosyal girişimcilerin kullanımına sunuyoruz.
+                                {t('associationWorkshop.bigDataDesc')}
                             </p>
                         </div>
                         <div className="p-10 bg-white rounded-[2.5rem] shadow-xl border border-black/5 text-center">
                             <p className="text-8xl font-black tracking-tighter text-primary mb-2">632</p>
-                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">İncelenen Sosyal Girişim</p>
+                            <p className="text-sm font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationWorkshop.bigDataLabel')}</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <ShowcaseSection 
+            <ShowcaseSection
                 theme="dark"
-                title="Akademik Öncülük."
+                title={t('associationWorkshop.academicTitle')}
                 stat="421"
-                subtitle="Uluslararası akademik katılımcı."
-                description="Mersin Üniversitesi işbirliği ile Türkiye'nin ilk, dünyanın 27. Sosyal Girişimcilik Yüksek Lisans programına ilham verdik."
+                subtitle={t('associationWorkshop.academicSubtitle')}
+                description={t('associationWorkshop.academicDesc')}
                 image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop"
                 hint="academic meeting discussion"
             />
 
             <section className="py-32 bg-white text-center">
                 <div className="container mx-auto px-6 max-w-4xl space-y-16">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">Geleceğin Müfredatı.</h2>
+                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-[#1d1d1f]">{t('associationWorkshop.curriculumTitle')}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-left">
                         <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
                             <BookOpen className="h-8 w-8 text-primary group-hover:text-white" />
-                            <h3 className="text-xl font-bold group-hover:text-white">YÖK Onaylı Müfredat</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">Maltepe Üniversitesi'nde hazırladığımız 'Uygulamalı Sosyal Girişimcilik' dersi YÖK onayıyla genel müfredata girdi.</p>
+                            <h3 className="text-xl font-bold group-hover:text-white">{t('associationWorkshop.yokTitle')}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">{t('associationWorkshop.yokDesc')}</p>
                         </div>
                         <div className="p-10 bg-[#f5f5f7] rounded-[2.5rem] space-y-4 group hover:bg-primary transition-colors">
                             <Rocket className="h-8 w-8 text-primary group-hover:text-white" />
-                            <h3 className="text-xl font-bold group-hover:text-white">Bilimsel Destek</h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">2 Doktora, 3 Yüksek Lisans tezi ve 2 akademik makaleye veri ve kaynak desteği sağlayarak literatürü güçlendirdik.</p>
+                            <h3 className="text-xl font-bold group-hover:text-white">{t('associationWorkshop.scienceTitle')}</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-white/80">{t('associationWorkshop.scienceDesc')}</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <PublicFooter currentPageLabel="Uluslararası Çalıştay" />
+            <PublicFooter currentPageLabel={t('association.navWorkshop')} />
         </div>
     );
 }

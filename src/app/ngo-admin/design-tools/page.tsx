@@ -9,26 +9,28 @@ import { ArrowLeft, Palette, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-
-const providers = [
-    { id: 'canva', name: 'Canva', logo: 'C', color: 'bg-[#00C4CC]', status: 'Bağlı', price: 'Ücretsiz (NGO)', discount: '%100 İndirim' },
-    { id: 'adobe', name: 'Adobe Creative Cloud', logo: 'A', color: 'bg-[#FF0000]', status: 'Bağlanabilir', price: '120 ₺ / ay', discount: '%60 İndirim' },
-    { id: 'figma', name: 'Figma', logo: 'F', color: 'bg-[#F24E1E]', status: 'Bağlanabilir', price: 'Ücretsiz (Eğitim/NGO)', discount: '%100 İndirim' },
-];
+import { useTranslation } from '@/components/providers/language-provider';
 
 export default function DesignToolsPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { t } = useTranslation();
+
+    const providers = [
+        { id: 'canva', name: 'Canva', logo: 'C', color: 'bg-[#00C4CC]', status: t('ngoAdminDesignTools.statusConnected'), price: t('ngoAdminDesignTools.canvaPrice'), discount: t('ngoAdminDesignTools.discount100') },
+        { id: 'adobe', name: 'Adobe Creative Cloud', logo: 'A', color: 'bg-[#FF0000]', status: t('ngoAdminDesignTools.statusAvailable'), price: t('ngoAdminDesignTools.adobePrice'), discount: t('ngoAdminDesignTools.discount60') },
+        { id: 'figma', name: 'Figma', logo: 'F', color: 'bg-[#F24E1E]', status: t('ngoAdminDesignTools.statusAvailable'), price: t('ngoAdminDesignTools.figmaPrice'), discount: t('ngoAdminDesignTools.discount100') },
+    ];
 
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center gap-2">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngoAdminDesignTools.backAria')}>
                     <ArrowLeft className="h-6 w-6" />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold font-headline">Tasarım Programları Yönetimi</h1>
-                    <p className="text-muted-foreground text-sm">Görsel kimlik ve tasarım araçlarınızı yönetin.</p>
+                    <h1 className="text-2xl font-bold font-headline">{t('ngoAdminDesignTools.title')}</h1>
+                    <p className="text-muted-foreground text-sm">{t('ngoAdminDesignTools.subtitle')}</p>
                 </div>
             </div>
 
@@ -41,7 +43,7 @@ export default function DesignToolsPage() {
                             </div>
                             <div>
                                 <p className="font-bold text-sm">{item.name}</p>
-                                <Badge variant={item.status === 'Bağlı' ? 'default' : 'secondary'} className="text-[10px] mt-1">
+                                <Badge variant={item.status === t('ngoAdminDesignTools.statusConnected') ? 'default' : 'secondary'} className="text-[10px] mt-1">
                                     {item.status}
                                 </Badge>
                             </div>
@@ -49,7 +51,7 @@ export default function DesignToolsPage() {
                                 <p className="text-xs font-bold text-primary">{item.price}</p>
                                 <p className="text-[10px] text-green-600 font-medium">{item.discount}</p>
                             </div>
-                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: "Yönlendiriliyorsunuz", description: "Kurumsal indirim sayfasına aktarılıyorsunuz."})}>İndirimden Yararlan</Button>
+                            <Button variant="outline" size="sm" className="w-full" onClick={() => toast({title: t('ngoAdminDesignTools.toastRedirectTitle'), description: t('ngoAdminDesignTools.toastRedirectDesc')})}>{t('ngoAdminDesignTools.benefitBtn')}</Button>
                         </CardContent>
                     </Card>
                 ))}
@@ -57,13 +59,13 @@ export default function DesignToolsPage() {
 
             <Card className="bg-gradient-to-br from-primary/5 to-purple-500/5 border-primary/20">
                 <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/> Hangel Tasarım Stüdyosu</CardTitle>
-                    <CardDescription>İlanlarınız ve gönderileriniz için yapay zeka destekli otomatik şablonlar oluşturun.</CardDescription>
+                    <CardTitle className="text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary"/> {t('ngoAdminDesignTools.studioTitle')}</CardTitle>
+                    <CardDescription>{t('ngoAdminDesignTools.studioDesc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="py-8 flex flex-col items-center justify-center space-y-4">
                     <Palette className="h-16 w-16 text-primary/40" />
-                    <p className="text-sm text-muted-foreground text-center max-w-sm">Logonuzu ve renklerinizi bir kez tanımlayın, tüm sosyal medya gönderileriniz saniyeler içinde hazır olsun.</p>
-                    <Button size="lg">Stüdyoyu Aç</Button>
+                    <p className="text-sm text-muted-foreground text-center max-w-sm">{t('ngoAdminDesignTools.studioBody')}</p>
+                    <Button size="lg">{t('ngoAdminDesignTools.studioCta')}</Button>
                 </CardContent>
             </Card>
         </div>

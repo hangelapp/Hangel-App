@@ -17,6 +17,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import { useTranslation } from '@/components/providers/language-provider';
 
 interface NotifItem {
     id: string;
@@ -65,6 +66,7 @@ export default function NgoNotificationsPage() {
     const router = useRouter();
     const db = useFirestore();
     const { user: authUser } = useUser();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
     // Bildirim Merkezi: AKTİF KURUMA + yöneticiye düşen bildirimler.
@@ -117,16 +119,16 @@ export default function NgoNotificationsPage() {
                     <Icon className="h-5 w-5" />
                 </div>
                 <div className="flex-1 min-w-0 cursor-pointer" onClick={() => open(n)}>
-                    <p className="font-bold text-sm text-foreground">{n.title || 'Bildirim'}</p>
+                    <p className="font-bold text-sm text-foreground">{n.title || t('ngoAdminNotifs.fallbackTitle')}</p>
                     <p className="text-sm text-muted-foreground mt-0.5 whitespace-pre-wrap break-words">{n.body || n.message || ''}</p>
                     <div className="flex items-center gap-2 mt-2">
                         <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{relTime(n.createdAt)}</p>
-                        {(n.data?.link || n.data?.href) && <span className="text-[10px] text-primary inline-flex items-center gap-0.5">Aç <ExternalLink className="h-3 w-3" /></span>}
+                        {(n.data?.link || n.data?.href) && <span className="text-[10px] text-primary inline-flex items-center gap-0.5">{t('ngoAdminNotifs.open')} <ExternalLink className="h-3 w-3" /></span>}
                     </div>
                 </div>
                 {!n.read && (
                     <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" onClick={() => markRead(n.id)}>
-                        Okundu
+                        {t('ngoAdminNotifs.readBtn')}
                     </Button>
                 )}
             </div>
@@ -137,20 +139,20 @@ export default function NgoNotificationsPage() {
         <div className="space-y-6 animate-in fade-in-0">
             <div className="flex justify-between items-start gap-4 flex-wrap">
                 <div>
-                    <h1 className="text-3xl font-bold font-headline tracking-tight">Bildirim Merkezi</h1>
-                    <p className="text-muted-foreground text-sm mt-1">Kuruluşunuza düşen bildirimler — telefon ve bilgisayarınıza da anlık iletilir.</p>
+                    <h1 className="text-3xl font-bold font-headline tracking-tight">{t('ngoAdminNotifs.title')}</h1>
+                    <p className="text-muted-foreground text-sm mt-1">{t('ngoAdminNotifs.subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    {unread.length > 0 && <Button variant="outline" onClick={markAllRead}>Tümünü Okundu Say</Button>}
+                    {unread.length > 0 && <Button variant="outline" onClick={markAllRead}>{t('ngoAdminNotifs.markAllReadBtn')}</Button>}
                     <Button asChild className="shadow-lg hover:shadow-primary/20 transition-all">
-                        <Link href="/ngo-admin/notifications/new"><PlusCircle className="mr-2 h-4 w-4" /> Yeni Mesaj Yaz</Link>
+                        <Link href="/ngo-admin/notifications/new"><PlusCircle className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.newMessageBtn')}</Link>
                     </Button>
                 </div>
             </div>
 
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Bildirimlerde ara..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                <Input placeholder={t('ngoAdminNotifs.searchPh')} className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
             </div>
 
             <Card className="border-none shadow-none bg-transparent">
@@ -158,10 +160,10 @@ export default function NgoNotificationsPage() {
                     <Tabs defaultValue="all" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 max-w-md h-12 items-center bg-muted/50 p-1 rounded-xl">
                             <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                                <Inbox className="mr-2 h-4 w-4" /> Tümü {unread.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] rounded-full">{unread.length}</span>}
+                                <Inbox className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.allTab')} {unread.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 bg-primary text-white text-[10px] rounded-full">{unread.length}</span>}
                             </TabsTrigger>
                             <TabsTrigger value="unread" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                                <Bell className="mr-2 h-4 w-4" /> Okunmamış
+                                <Bell className="mr-2 h-4 w-4" /> {t('ngoAdminNotifs.unreadTab')}
                             </TabsTrigger>
                         </TabsList>
 
@@ -171,7 +173,7 @@ export default function NgoNotificationsPage() {
                             ) : sorted.length === 0 ? (
                                 <div className="text-center py-24 bg-background rounded-2xl border border-dashed border-muted-foreground/20">
                                     <Inbox className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                    <p className="text-muted-foreground font-medium">Henüz bildiriminiz yok.</p>
+                                    <p className="text-muted-foreground font-medium">{t('ngoAdminNotifs.emptyAll')}</p>
                                 </div>
                             ) : sorted.map(renderRow)}
                         </TabsContent>
@@ -180,7 +182,7 @@ export default function NgoNotificationsPage() {
                             {unread.length === 0 ? (
                                 <div className="text-center py-24 bg-background rounded-2xl border border-dashed border-muted-foreground/20">
                                     <Inbox className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                    <p className="text-muted-foreground font-medium">Yeni bir bildiriminiz bulunmuyor.</p>
+                                    <p className="text-muted-foreground font-medium">{t('ngoAdminNotifs.emptyUnread')}</p>
                                 </div>
                             ) : unread.map(renderRow)}
                         </TabsContent>
