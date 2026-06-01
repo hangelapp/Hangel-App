@@ -1,0 +1,49 @@
+# Hangel iOS — Welcome onboarding flow E2E test (Maestro)
+#
+# Bu test welcome ekranını + intent seçimini + izin promptlarını test eder.
+#
+# Çalıştır (iOS Simulator açık olmalı):
+#   maestro test scripts/e2e/welcome-flow.yaml
+#
+# Önkoşul:
+#   - iOS Simulator açık + Hangel app yüklü (TestFlight'tan veya `npx cap run ios`)
+#   - Kullanıcı zaten OTP ile giriş yapmış (welcome ilk girişte gösterilir)
+#   - Internet bağlantısı
+
+appId: com.hangel.ios.app
+---
+
+- launchApp:
+    clearState: true  # her seferinde temiz başla
+    permissions:
+      all: allow  # location, notifications, contacts, vb hepsi izin
+
+# Welcome ilk ekranı
+- assertVisible: "Hoş Geldin"
+- assertVisible:
+    text: ".*Hangel'e hoş geldin.*"
+    optional: true
+- tapOn: "Devam"
+
+# Intent seçim ekranı
+- assertVisible: "Ne yapmak istersin"
+
+# 3 intent seç (test için en azı)
+- tapOn: "Bağış yap"
+- tapOn: "Gönüllü ol"
+- tapOn: "Kan bağışı"
+
+# Submit
+- tapOn:
+    text: "Devam"
+    enabled: true
+
+# Permission promptları (Maestro otomatik allow all yapar)
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# Ana sayfa yüklendi mi?
+- assertVisible:
+    id: "main-feed"
+    optional: true
+- assertVisible: ".*market.*"  # /market route'a yönlendirme
