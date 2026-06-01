@@ -20,6 +20,13 @@ runConfig:
 # (Gmail/Outlook OAuth client creds are added by the operator once the OAuth
 #  apps are created — until then those routes return OAUTH_NOT_CONFIGURED.)
 env:
+  # Build-time Node heap fix (2026-06-01): App Hosting buildpack default
+  # 2GB heap kullanıyordu, Next.js prod build (translations.ts 5368 satır +
+  # Genkit + ~250 sayfa) OOM ile çakıldı. 4GB heap yeterli.
+  - variable: NODE_OPTIONS
+    value: "--max-old-space-size=4096"
+    availability:
+      - BUILD
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
     availability:
