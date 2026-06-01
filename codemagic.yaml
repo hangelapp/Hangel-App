@@ -73,8 +73,21 @@ workflows:
       - name: Set bundle build number (auto-increment from TestFlight)
         script: |
           cd ios/App
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" || echo "0")
+          # get-latest-app-store-build-number sadece "released" App Store
+          # build'lerini sayıyor — TestFlight'a uploaded ama henüz live
+          # olmayan build'leri kaçırıyor. Sonuç: çakışma (Build #71'de
+          # bundleVersion 3 vs Apple "previousBundleVersion: 3" 409).
+          # get-latest-testflight-build-number tüm uploaded build'leri içerir.
+          LATEST_TESTFLIGHT=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo "0")
+          LATEST_APP_STORE=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo "0")
+          # En yüksek olanı al + 1
+          if [ "$LATEST_TESTFLIGHT" -gt "$LATEST_APP_STORE" ]; then
+            LATEST_BUILD_NUMBER=$LATEST_TESTFLIGHT
+          else
+            LATEST_BUILD_NUMBER=$LATEST_APP_STORE
+          fi
           NEW_BUILD_NUMBER=$(($LATEST_BUILD_NUMBER + 1))
+          echo "TestFlight latest: $LATEST_TESTFLIGHT, App Store latest: $LATEST_APP_STORE, new: $NEW_BUILD_NUMBER"
           agvtool new-version -all $NEW_BUILD_NUMBER
 
       - name: Set up code signing
