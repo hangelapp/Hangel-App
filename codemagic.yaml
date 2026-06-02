@@ -190,7 +190,7 @@ workflows:
         PACKAGE_NAME: com.hangel.app
         GOOGLE_PLAY_TRACK: internal  # 'internal' | 'alpha' | 'beta' | 'production'
       node: 22
-      java: 17
+      java: 21
 
     # Manual-only trigger — main push otomatik tetiklemez (iOS workflow tetikler).
     # Android güncellemesi yapacaksan Codemagic UI'dan "Start new build" tıkla
