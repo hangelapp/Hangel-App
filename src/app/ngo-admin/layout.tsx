@@ -531,9 +531,15 @@ function EntityIdentityBanner() {
 
 function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;
+
+  // Dashboard sayfasında SideMenu gizli — dashboard kendi içinde Hızlı Başlangıç
+  // + kategori bazlı kart navigasyonunu zaten gösteriyor, mükerrer menüyü
+  // (outer hangel sidebar + iç SideMenu) sade tutmak için.
+  const hideSideMenu = pathname === '/ngo-admin/dashboard';
 
   return (
     <div className="min-h-dvh">
@@ -550,7 +556,7 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
           </Button>
         )}
         <div className="flex gap-6">
-          <SideMenu />
+          {!hideSideMenu && <SideMenu />}
           <main className="flex-1 min-w-0">
             <EntityIdentityBanner />
             <EntityRouteGuard>{children}</EntityRouteGuard>
