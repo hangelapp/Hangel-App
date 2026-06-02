@@ -25,6 +25,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Device-link tokens (WhatsApp UTILITY "cihaz bağlama") - server-side only.
+    match /device_links/{docId} {
+      allow read, write: if false;
+    }
+
     // P1-1b: Dağıtık rate-limit kovaları — yalnızca Admin SDK yazar/okur
     // (server-side route'lardan `checkRateLimit()` çağrısı). Client tarafı
     // hiçbir erişim izni almaz; Admin SDK rules'ı bypass eder.

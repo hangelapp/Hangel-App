@@ -170,6 +170,39 @@ export function logHangelEvent(name: HangelEventName, params?: EventParams): voi
 }
 
 /**
+ * Generic event logger — registry'de olmayan event'ler için (örn. telemetry
+ * helper'ı tarafından kullanılan `non_fatal_error`). Public API'de tercih
+ * edilmez; uygulama kodu `logHangelEvent` ile typed event göndermeli.
+ *
+ * SDK yoksa no-op. Hata atmaz.
+ */
+export function logRawEvent(name: string, params?: EventParams): void {
+    const analytics = analyticsInstance;
+    if (!analytics || !logEventFn) {
+        if (process.env.NODE_ENV !== 'production') {
+            // eslint-disable-next-line no-console
+            console.debug('[analytics:queued:raw]', name, params);
+        }
+        return;
+    }
+    try {
+        const clean: Record<string, string | number | boolean> = {};
+        if (params) {
+            for (const k of Object.keys(params)) {
+                const v = params[k];
+                if (v == null) continue;
+                clean[k] = v;
+            }
+        }
+        logEventFn(analytics, name, clean);
+    } catch (e) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('[analytics] logRawEvent failed:', e);
+        }
+    }
+}
+
+/**
  * Authenticated user için UID'yi GA'ya geçir. PII değildir — Firebase docs onaylı.
  * Logout'ta `null` çağrılır.
  */

@@ -50,6 +50,10 @@ export const COLLECTIONS = {
   otpCodes: 'otp_codes',
   // Magic link tokens (WhatsApp link auth) — server-only.
   loginLinks: 'login_links',
+  // Device-link tokens (WhatsApp UTILITY "cihaz bağlama" flow). Single-use,
+  // 10 dk TTL, server-only. Distinct from `loginLinks` so the new flow can
+  // evolve (e.g. multi-device pairing) without touching the welcome chain.
+  deviceLinks: 'device_links',
   events: 'events',
   // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
   // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.

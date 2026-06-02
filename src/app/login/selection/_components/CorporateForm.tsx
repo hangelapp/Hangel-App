@@ -44,6 +44,7 @@ import {
     clubCategoryGroups,
     yearOptions,
 } from './shared';
+import { reportNonFatalError } from '@/lib/telemetry';
 
 // CorporateForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: NGO/Brand/Club branches share the same formData/agreements state,
@@ -252,7 +253,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         body: JSON.stringify({ uid: authUser.uid, isCorporate: true, entityType }),
                     });
                 } catch (e) {
-                    console.warn('corporate welcome msg failed', e);
+                    reportNonFatalError('welcome_send_corporate', e, { entityType });
                 }
             }
             toast({ title: "Başvuru Alındı", description: "En kısa sürede sizinle iletişime geçeceğiz." });

@@ -42,6 +42,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
+import { isAllowedImageHost } from '@/lib/image-host';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useSectionDoc } from './_use-section-doc';
 import { parseBookMetadata, type LibraryItem, type BookMetadata } from '@/lib/library';
@@ -151,7 +152,8 @@ function FilterDropdown({
 
 function BookCoverThumb({ meta }: { meta: BookMetadata }) {
   const { t } = useTranslation();
-  const src = meta.coverUrl || meta.cover;
+  const rawSrc = meta.coverUrl || meta.cover;
+  const src = isAllowedImageHost(rawSrc) ? rawSrc : undefined;
   if (src) {
     return (
       <div className="relative h-32 w-24 sm:h-36 sm:w-28 shrink-0 rounded-lg overflow-hidden bg-muted shadow-md">

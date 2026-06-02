@@ -11,6 +11,7 @@
           { "/": "/event/*", "comment": "Etkinlik detayı" },
           { "/": "/ngo/*", "comment": "STK profili" },
           { "/": "/u/*", "comment": "Kullanıcı magic link" },
+          { "/": "/link/*", "comment": "WhatsApp cihaz bağlama (device-link)" },
           { "/": "/library/*", "comment": "Kütüphane içeriği" },
           { "/": "/donate/*", "comment": "Bağış sayfası" },
           { "/": "/clip/*", "comment": "App Clip experience" },

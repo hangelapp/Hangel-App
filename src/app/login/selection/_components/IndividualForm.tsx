@@ -19,6 +19,7 @@ import { OtpInput } from '@/components/ui/otp-input';
 // Tabs imports — geçici olarak kullanılmıyor (sadece WhatsApp aktif).
 // Mail+SMS geri açıldığında: import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
+import { reportNonFatalError } from '@/lib/telemetry';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -336,7 +337,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     body: JSON.stringify({ uid: userId, isCorporate: false }),
                 });
             } catch (e) {
-                console.warn('welcome msg failed', e);
+                reportNonFatalError('welcome_send_individual', e);
             }
             setStep('verify-sent');
         } catch (error: unknown) {
@@ -466,7 +467,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         body: JSON.stringify({ uid: userId, isCorporate: false }),
                     });
                 } catch (e) {
-                    console.warn('welcome msg failed', e);
+                    reportNonFatalError('welcome_send_individual_2', e);
                 }
             } else {
                 setDocumentNonBlocking(userRef, {

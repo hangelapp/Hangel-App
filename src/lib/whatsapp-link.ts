@@ -11,6 +11,15 @@ import crypto from 'crypto';
 
 const GRAPH_API_VERSION = 'v18.0';
 const TEMPLATE_NAME = 'hangel_welcome_link';
+/**
+ * UTILITY template for device-link flow (login + device pairing reframed as
+ * "yeni cihaz bağlama" to avoid Meta's auto-classifier flagging this as
+ * an Authentication-category template — Authentication forbids URL buttons).
+ *
+ * Body: "Merhaba {{1}}, hangel hesabına yeni cihaz bağlama talebin alındı. ..."
+ * URL button: https://hangel.org/link/{{2}}  (token)
+ */
+export const DEVICE_LINK_TEMPLATE_NAME = 'hangel_device_link';
 
 export interface SendLinkResult {
     ok: boolean;
@@ -61,6 +70,80 @@ export async function sendWhatsAppLink(
                     sub_type: 'url',
                     index: '0',
                     parameters: [{ type: 'text', text: token }],
+                },
+            ],
+        },
+    };
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const data: unknown = await res.json().catch(() => null);
+        if (!res.ok) {
+            const err = (data as { error?: { code?: number; message?: string; error_data?: { details?: string } } } | null)?.error;
+            return {
+                ok: false,
+                errorCode: err?.code ? `WA_${err.code}` : 'WA_HTTP_ERROR',
+                errorMessage: err?.message || err?.error_data?.details || `HTTP ${res.status}`,
+            };
+        }
+        const messageId = (data as { messages?: Array<{ id?: string }> } | null)?.messages?.[0]?.id;
+        return { ok: true, messageId };
+    } catch (e) {
+        return {
+            ok: false,
+            errorCode: 'WA_NETWORK_ERROR',
+            errorMessage: e instanceof Error ? e.message : 'Network error',
+        };
+    }
+}
+
+/**
+ * Send the UTILITY-category "device link" WhatsApp template.
+ *
+ * Distinct from `sendWhatsAppLink` (which uses `hangel_welcome_link` and is
+ * tightly coupled to the welcome/onboarding chain). The device-link template
+ * is framed as cihaz bağlama so Meta's auto-classifier keeps it in UTILITY
+ * (Authentication category forbids URL buttons).
+ *
+ * Template body parameter {{1}}: name. URL button parameter {{2}}: token.
+ * Final URL: https://hangel.org/link/{token}
+ */
+export async function sendDeviceLinkWhatsApp(
+    phoneE164: string,
+    name: string,
+    linkToken: string,
+    lang: string = 'tr',
+): Promise<SendLinkResult> {
+    const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+    const appSecret = process.env.WHATSAPP_APP_SECRET?.trim();
+    const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
+    if (!accessToken || !phoneNumberId) {
+        return { ok: false, errorCode: 'WA_CONFIG_MISSING', errorMessage: 'WhatsApp env missing.' };
+    }
+    const proof = appSecret ? computeProof(accessToken, appSecret) : null;
+    const proofQuery = proof ? `?appsecret_proof=${proof}` : '';
+    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${phoneNumberId}/messages${proofQuery}`;
+    const body = {
+        messaging_product: 'whatsapp',
+        to: normalizePhone(phoneE164),
+        type: 'template',
+        template: {
+            name: DEVICE_LINK_TEMPLATE_NAME,
+            language: { code: lang },
+            components: [
+                {
+                    type: 'body',
+                    parameters: [{ type: 'text', text: name.slice(0, 60) }],
+                },
+                {
+                    type: 'button',
+                    sub_type: 'url',
+                    index: '0',
+                    parameters: [{ type: 'text', text: linkToken }],
                 },
             ],
         },

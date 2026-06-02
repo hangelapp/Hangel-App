@@ -20,6 +20,7 @@ import { useTranslation } from '@/components/providers/language-provider';
 import { parseBookMetadata } from '@/lib/library';
 import { BookRatingStars } from '../_components/books';
 import { cn } from '@/lib/utils';
+import { isAllowedImageHost } from '@/lib/image-host';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -223,7 +224,8 @@ export default function LibraryItemPage() {
   // Kitap detayında: gradient bg + büyük kapak (300x450) + zengin metadata +
   // 10-üzerinden puanlama + paylaş/kütüphaneye ekle.
   if (isBook && bookMeta) {
-    const coverSrc = bookMeta.coverUrl || bookMeta.cover;
+    const rawCoverSrc = bookMeta.coverUrl || bookMeta.cover;
+    const coverSrc = isAllowedImageHost(rawCoverSrc) ? rawCoverSrc : undefined;
     return (
       <div className="relative min-h-[100dvh] animate-in fade-in-0">
         {/* Gradient background — Liquid Glass altı */}
