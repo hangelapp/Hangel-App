@@ -150,11 +150,6 @@ export default function LibraryPage() {
         render: () => <ImpactInventorySection />,
       },
       {
-        slug: templatesSection.slug, key: 'templates',
-        haystack: () => hay(templatesSection.title, templatesSection.description ?? '', templatesSection.items),
-        render: () => <TemplatesToolsSection />,
-      },
-      {
         slug: 'kitaplar', key: 'books',
         haystack: () => {
           const s = lookup('kitaplar');
@@ -195,6 +190,11 @@ export default function LibraryPage() {
         slug: 'veri-kutuphanesi', key: 'dataLibrary',
         haystack: () => hay(dataStatic.title, dataStatic.description),
         render: () => <DataLibrarySection />,
+      },
+      {
+        slug: templatesSection.slug, key: 'templates',
+        haystack: () => hay(templatesSection.title, templatesSection.description ?? '', templatesSection.items),
+        render: () => <TemplatesToolsSection />,
       },
     ];
   }, []);
