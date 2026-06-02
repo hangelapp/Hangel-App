@@ -43,7 +43,7 @@ const FormRenderer = () => {
                 <Card className="rounded-[2.5rem] shadow-2xl border-none overflow-hidden bg-background">
                     <CardHeader className="text-center pt-10 pb-6">
                         <HangelLogo className="text-3xl mx-auto mb-2" />
-                        <CardTitle className="text-3xl font-black tracking-tighter">Hoş Geldiniz</CardTitle>
+                        <CardTitle className="text-3xl font-black tracking-tighter">Merhaba</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6 px-6 sm:px-8 pb-10">
                         <Tabs value={tab} onValueChange={(val) => router.push(`/login/selection?tab=${val}&entity=${entity}`)}>
