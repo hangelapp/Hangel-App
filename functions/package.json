@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "hangel Cloud Functions (Firestore triggers, scheduled jobs).",
   "engines": {
-    "node": "20"
+    "node": "22"
   },
   "main": "lib/index.js",
   "scripts": {
