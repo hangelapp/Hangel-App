@@ -3882,7 +3882,7 @@ export const translations: Record<Language, any> = {
       ctaProjectWriterDesc: 'AI ile proje dokümanı oluştur',
       project_writer: {
         title: 'Proje Yazma AI Asistanı',
-        description: 'AI ile hibe ve fonlara uygun proje dokümanı oluştur',
+        description: 'Kütüphanedeki tüm içeriklerle beslenen AI, projelerinizi daha hızlı ve doğru hazırlamanız için geliştirildi.',
         adminBadge: 'STK yöneticilerine özel',
         lockedTooltip: 'STK yöneticisi olarak giriş yap',
       },
@@ -7720,7 +7720,7 @@ export const translations: Record<Language, any> = {
       ctaProjectWriterDesc: 'Create a project document with AI',
       project_writer: {
         title: 'Project Writing AI Assistant',
-        description: 'Create a grant-ready project document with AI',
+        description: 'Powered by all the content in the library, this AI helps you prepare projects faster and more accurately.',
         adminBadge: 'NGO admins only',
         lockedTooltip: 'Sign in as an NGO admin',
       },
