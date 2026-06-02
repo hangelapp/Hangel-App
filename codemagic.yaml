@@ -231,13 +231,14 @@ workflows:
       - android/app/build/outputs/**/mapping.txt
 
     publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: $GOOGLE_PLAY_TRACK
-        # in_app_update_priority: 0-5 (opsiyonel)
-        # rollout_fraction: 1.0 (production'da kademeli rollout için)
-        submit_as_draft: false
-        changes_not_sent_for_review: false
+      # Google Play auto-publish şimdilik kapalı.
+      # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS env var eklendiğinde aşağıdaki blok'u
+      # açın. AAB artifacts'tan indirilip Play Console'a manuel upload edilebilir.
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: $GOOGLE_PLAY_TRACK
+      #   submit_as_draft: false
+      #   changes_not_sent_for_review: false
       email:
         recipients:
           - ismailhilmi@hangel.org
