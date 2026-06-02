@@ -653,26 +653,26 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.userAgreement} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, userAgreement: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.userAgreement} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, userAgreement: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/kullanici-sozlesmesi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Kullanıcı Sözleşmesi</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.kvkk} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, kvkk: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.kvkk} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, kvkk: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK Aydınlatma Metni</a>&apos;ni okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.privacy} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, privacy: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.privacy} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, privacy: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>&apos;nı okudum ve kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.cookies} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, cookies: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.cookies} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, cookies: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>&apos;nı kabul ediyorum
                             </span>
                         </label>
@@ -755,26 +755,26 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.userAgreement} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, userAgreement: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.userAgreement} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, userAgreement: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/kullanici-sozlesmesi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Kullanıcı Sözleşmesi</a>&apos;ni okudum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.kvkk} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, kvkk: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.kvkk} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, kvkk: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/kvkk-aydinlatma-metni" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">KVKK</a>&apos;yı kabul ediyorum
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.privacy} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, privacy: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.privacy} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, privacy: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/gizlilik-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Gizlilik Politikası</a>
                             </span>
                         </label>
                         <label className="flex items-start gap-2 cursor-pointer">
-                            <Checkbox checked={agreements.cookies} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, cookies: !!c }))} />
-                            <span className="text-[10px] text-muted-foreground leading-snug">
+                            <Checkbox className="h-5 w-5 mt-0.5" checked={agreements.cookies} onCheckedChange={(c) => setAgreements(prev => ({ ...prev, cookies: !!c }))} />
+                            <span className="text-xs text-muted-foreground leading-relaxed">
                                 <a href="/settings/contracts/cerez-politikasi" target="_blank" rel="noopener noreferrer" className="font-bold text-primary underline">Çerez Politikası</a>
                             </span>
                         </label>
