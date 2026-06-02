@@ -229,9 +229,8 @@ const LanyardPreview = React.memo(function LanyardPreview({
         );
     }
     return (
-        // Önizleme — yaka kartı görseli (raster). PDF/JPG indir için
-        // ayrı canvas render'ı 300 DPI'da çıkar.
-        // eslint-disable-next-line @next/next/no-img-element
+        // Önizleme — yaka kartı görseli (raster, data URL). next/image dataURL'i
+        // optimize edemez, ham <img> kullanıyoruz. PDF/JPG indir 300 DPI canvas'tan.
         <img
             src={src}
             alt="Yaka kartı önizleme"
