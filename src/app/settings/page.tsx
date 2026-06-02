@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import {
     Bell, ChevronRight, FileText, Globe, LogOut, Palette, Shield, Trash2, User,
-    HeartHandshake, PersonStanding, HandCoins, Store, Megaphone, Siren, GraduationCap, Sparkles
+    HeartHandshake, PersonStanding, HandCoins, Store, Siren, GraduationCap, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -128,7 +128,6 @@ export default function SettingsPage() {
              <CardContent className="p-0">
                  <div className="flex flex-col divide-y">
                     <SettingsLink href="/settings/notifications" icon={Bell} label={t('settings.notificationSettings')} iconColor="bg-red-500" />
-                    <SettingsLink href="/settings/marketing-consent" icon={Megaphone} label={t('settings.marketingConsent')} iconColor="bg-fuchsia-500" />
                     <SettingsLink href="/settings/theme" icon={Palette} label={t('settings.theme')} iconColor="bg-gray-500" />
                     <SettingsLink href="/settings/language" icon={Globe} label={t('settings.language')} iconColor="bg-blue-500" />
                     <SettingsLink href="/settings/accessibility" icon={PersonStanding} label={t('settings.accessibility')} iconColor="bg-indigo-500" />
