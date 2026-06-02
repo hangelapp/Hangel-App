@@ -171,3 +171,76 @@ workflows:
         notify:
           success: true
           failure: true
+
+  android-play:
+    name: Hangel Android — Google Play
+    instance_type: linux_x2
+    max_build_duration: 60
+
+    # Codemagic dashboard'unda manuel eklenecek env vars (android_credentials group):
+    #   CM_KEYSTORE                       — base64-encoded hangel-release.keystore dosyası
+    #   CM_KEYSTORE_PASSWORD              — keystore (store) şifresi
+    #   CM_KEY_ALIAS                      — keystore içindeki key alias
+    #   CM_KEY_PASSWORD                   — key şifresi (genelde store password ile aynı)
+    #   GCLOUD_SERVICE_ACCOUNT_CREDENTIALS — Play Console Service Account JSON (auto-publish için)
+    environment:
+      groups:
+        - android_credentials
+      vars:
+        PACKAGE_NAME: com.hangel.app
+        GOOGLE_PLAY_TRACK: internal  # 'internal' | 'alpha' | 'beta' | 'production'
+      node: 22
+      java: 17
+
+    # Manual-only trigger — main push otomatik tetiklemez (iOS workflow tetikler).
+    # Android güncellemesi yapacaksan Codemagic UI'dan "Start new build" tıkla
+    # veya bu workflow'a özel branch_patterns ekle.
+
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+
+      - name: Build Next.js (static export to out/)
+        script: |
+          npm run build || true
+
+      - name: Capacitor sync Android
+        script: |
+          npx cap sync android
+
+      - name: Decode keystore + write keystore.properties
+        script: |
+          # Keystore base64'ten decode et
+          echo "$CM_KEYSTORE" | base64 --decode > android/app/hangel-release.keystore
+          # build.gradle keystore.properties'i rootProject (android/) altından okur
+          cat > android/keystore.properties <<EOF
+          storeFile=hangel-release.keystore
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          keyPassword=$CM_KEY_PASSWORD
+          EOF
+
+      - name: Build signed AAB (release bundle)
+        script: |
+          cd android
+          ./gradlew bundleRelease --no-daemon
+
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/mapping.txt
+
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: $GOOGLE_PLAY_TRACK
+        # in_app_update_priority: 0-5 (opsiyonel)
+        # rollout_fraction: 1.0 (production'da kademeli rollout için)
+        submit_as_draft: false
+        changes_not_sent_for_review: false
+      email:
+        recipients:
+          - ismailhilmi@hangel.org
+        notify:
+          success: true
+          failure: true

@@ -98,3 +98,7 @@ playwright-report/
 .github-token
 .codemagic-token
 
+
+# Android signing (NEVER commit keystore credentials)
+android/keystore.properties
+*.keystore.bak
