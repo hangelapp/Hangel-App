@@ -1,4 +1,4 @@
-import { getJwt } from '/Users/macbookair/new-app/scripts/automation/_appstore-jwt';
+import { getJwt } from './_appstore-jwt';
 async function main() {
   const { token } = getJwt();
   // Find latest build
