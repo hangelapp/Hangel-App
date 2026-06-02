@@ -24,7 +24,7 @@ env:
   # 2GB heap kullanıyordu, Next.js prod build (translations.ts 5368 satır +
   # Genkit + ~250 sayfa) OOM ile çakıldı. 4GB heap yeterli.
   - variable: NODE_OPTIONS
-    value: "--max-old-space-size=4096"
+    value: "--max-old-space-size=8192"
     availability:
       - BUILD
   - variable: GEMINI_API_KEY
