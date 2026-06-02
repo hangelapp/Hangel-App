@@ -16,7 +16,6 @@ import { TEMPLATES_SECTION_SLUG } from '@/lib/library-templates';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { parseBookMetadata } from '@/lib/library';
-import { BookRatingStars } from '../_components/books';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
