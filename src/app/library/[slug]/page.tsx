@@ -15,6 +15,8 @@ import { sanitizeHtml } from '@/lib/sanitize-html';
 import { TEMPLATES_SECTION_SLUG } from '@/lib/library-templates';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { parseBookMetadata } from '@/lib/library';
+import { BookRatingStars } from '../_components/books';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -60,6 +62,7 @@ export default function LibraryItemPage() {
 
   const [busy, setBusy] = useState(false);
   const [recommendation, setRecommendation] = useState<'up' | 'down' | null>(null);
+  const [bookRating, setBookRating] = useState<number | null>(null);
   const isRead = Array.isArray(userData?.readLibraryItems) && userData!.readLibraryItems!.includes(slug);
   const isSaved = Array.isArray(userData?.savedLibraryItems) && userData!.savedLibraryItems!.includes(slug);
 
@@ -183,6 +186,17 @@ export default function LibraryItemPage() {
           description: t('librarySlug.ratingThanksDesc'),
       });
   };
+
+  const handleBookRate = (value: number) => {
+    setBookRating(value);
+    toast({
+      title: t('library.books.ratingSaved'),
+      description: t('library.books.ratingSavedDesc'),
+    });
+  };
+
+  const isBook = (item?.sectionSlug || '') === 'kitaplar';
+  const bookMeta = isBook && item ? parseBookMetadata(item) : null;
 
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">

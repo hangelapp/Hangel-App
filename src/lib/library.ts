@@ -5,6 +5,111 @@ export interface LibraryItem {
   slug: string;
   title: string;
   content: string;
+  // Books için opsiyonel zengin metadata; mevcut item'lar bozulmadan
+  // override edebilir. Eksikse `parseBookMetadata` content HTML'inden çıkarır.
+  author?: string;
+  publisher?: string;
+  category?: string;
+  language?: string;
+  topic?: string;
+  year?: number;
+  pages?: number;
+  /** 10 üzerinden ortalama kullanıcı puanı (0-10). */
+  rating?: number;
+  /** Kısa açıklama (cards'da 2 satır truncate). */
+  description?: string;
+  /** Kapak görseli URL (yoksa avatar fallback). */
+  cover?: string;
+}
+
+/**
+ * Bir kitap item'ının content HTML'inden zengin metadata çıkarır. Mevcut mock
+ * data'da `<strong>Yazar:</strong>`, `<strong>Yayınevi:</strong>` gibi etiketli
+ * bölümler vardır; bunları regex ile parse eder. Item üzerindeki açık alanlar
+ * (item.author vb.) varsa onlar kazanır.
+ *
+ * Açıklama: ilk `<p>...</p>` bloğunun text içeriği.
+ * Yıl: title veya content'te ilk 1950-2030 aralığındaki 4 haneli yıl.
+ * Sayfa: slug hash'inden deterministik 120-520 arası (mock — gerçek data Firestore'dan gelir).
+ * Puan: slug hash'inden deterministik 6.5-9.5 (mock).
+ */
+export interface BookMetadata {
+  title: string;
+  author: string;
+  publisher: string;
+  category: string;
+  language: string;
+  topic: string;
+  year: number;
+  pages: number;
+  rating: number;
+  description: string;
+  cover?: string;
+}
+
+function stripTags(html: string): string {
+  return (html || '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function extractLabeled(html: string, label: string): string {
+  // Örn: <strong>Yazar:</strong> X</li>
+  const re = new RegExp(`<strong>\\s*${label}\\s*:?\\s*</strong>\\s*([^<]+)`, 'i');
+  const m = html.match(re);
+  return m ? m[1].trim().replace(/[,;.]$/, '') : '';
+}
+
+function extractDescription(html: string): string {
+  const m = html.match(/<p>([\s\S]*?)<\/p>/);
+  return m ? stripTags(m[1]) : stripTags(html).split('.')[0] || '';
+}
+
+function hashSlug(slug: string): number {
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) {
+    h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  return h;
+}
+
+export function parseBookMetadata(item: LibraryItem): BookMetadata {
+  const content = item.content || '';
+  // Title'dan yazar ayır: "Foo — Bar" formatı.
+  const titleParts = item.title.split(/\s+—\s+|\s+-\s+/);
+  const titleOnly = titleParts[0]?.trim() || item.title;
+  const authorFromTitle = titleParts.length > 1 ? titleParts.slice(1).join(' — ').trim() : '';
+
+  const author = item.author || extractLabeled(content, 'Yazar') || authorFromTitle || '';
+  const publisher = item.publisher || extractLabeled(content, 'Yayınevi') || '';
+  const category = item.category || extractLabeled(content, 'Kategori') || '';
+  const language = item.language || extractLabeled(content, 'Dil') || '';
+  const topic = item.topic || extractLabeled(content, 'Konu') || category;
+
+  // Yıl: explicit field > content'te 4-haneli yıl > slug hash'ten deterministik
+  let year = item.year ?? 0;
+  if (!year) {
+    const m = `${item.title} ${stripTags(content)}`.match(/\b(19[5-9]\d|20[0-3]\d)\b/);
+    if (m) year = Number(m[1]);
+  }
+  const h = hashSlug(item.slug);
+  if (!year) year = 1990 + (h % 35); // 1990-2024
+
+  const pages = item.pages ?? (120 + (h % 401)); // 120-520
+  const rating = item.rating ?? Number((6.5 + ((h >> 3) % 31) / 10).toFixed(1)); // 6.5-9.5
+  const description = item.description || extractDescription(content) || '';
+
+  return {
+    title: titleOnly,
+    author,
+    publisher,
+    category,
+    language,
+    topic,
+    year,
+    pages,
+    rating,
+    description,
+    cover: item.cover,
+  };
 }
 
 export interface LibrarySection {
