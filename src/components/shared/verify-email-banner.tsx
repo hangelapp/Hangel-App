@@ -48,30 +48,42 @@ export function VerifyEmailBanner() {
         setDismissed(true);
     };
 
+    // Banner, fixed header'ın (h-12 + safe-area-top) hemen ALTINA konumlanır.
+    // - `fixed` + safe-area offset: iOS WebView'da status bar / notch altında kalmaz.
+    // - z-40: header (z-30) üzerinde, modal/sheet (z-50) altında.
+    // - Görünmez bir spacer (h-9) normal akışta yer kaplayıp main içeriği aşağı iter.
     return (
-        <div className="bg-amber-50 border-b border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-100">
-            <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center gap-3 text-sm">
-                <MailWarning className="h-4 w-4 shrink-0" />
-                <span className="flex-1 leading-tight">
-                    E-postanızı doğrulayın. Bazı özellikler için gerekli olabilir.
-                </span>
-                <button
-                    type="button"
-                    className="font-bold underline underline-offset-2 disabled:opacity-50"
-                    onClick={handleResend}
-                    disabled={sending}
-                >
-                    {sending ? "Gönderiliyor..." : "Tekrar gönder"}
-                </button>
-                <button
-                    type="button"
-                    className="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/40"
-                    onClick={handleDismiss}
-                    aria-label="Kapat"
-                >
-                    <X className="h-4 w-4" />
-                </button>
+        <>
+            <div
+                className="fixed left-0 right-0 z-40 lg:left-64 bg-amber-50 border-b border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-100 shadow-sm"
+                style={{ top: "calc(3rem + env(safe-area-inset-top))" }}
+            >
+                <div className="max-w-5xl mx-auto px-3 h-9 flex items-center gap-2 text-xs sm:text-sm">
+                    <MailWarning className="h-3.5 w-3.5 shrink-0" />
+                    <span className="flex-1 leading-tight truncate">
+                        E-postanızı doğrulayın. Bazı özellikler için gerekli olabilir.
+                    </span>
+                    <button
+                        type="button"
+                        className="font-bold underline underline-offset-2 disabled:opacity-50 shrink-0"
+                        onClick={handleResend}
+                        disabled={sending}
+                    >
+                        {sending ? "Gönderiliyor..." : "Tekrar gönder"}
+                    </button>
+                    <button
+                        type="button"
+                        className="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/40 shrink-0"
+                        onClick={handleDismiss}
+                        aria-label="Kapat"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                </div>
             </div>
-        </div>
+            {/* Spacer: banner fixed olduğu için normal akışta yer tutarak
+                AppShell'in <main> içeriğini banner kadar aşağı kaydırır. */}
+            <div aria-hidden="true" className="h-9 shrink-0" />
+        </>
     );
 }

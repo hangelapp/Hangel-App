@@ -1,0 +1,990 @@
+'use client';
+
+/**
+ * hangel NGO admin — Gönüllülük Yönetimi sayfası.
+ *
+ * 3 sekme:
+ *   1. İlanlarım     — STK'nın açtığı volunteering doc'ları (status filtreli)
+ *   2. Başvurular    — applications koleksiyonundan ilgili başvurular
+ *                      (skill match score hesaplanır, onay/red butonları
+ *                      bildirim emit eder)
+ *   3. Tamamlanan    — status='Tamamlandı' ilanlar + onaylanan gönüllülere
+ *                      puan + yorum + certificate düzenleme
+ *
+ * Cerrahi: bu yalnızca yeni `/ngo-admin/volunteering` route'unu ekler;
+ * mevcut `/ngo-admin/volunteer-portal` (portal entegrasyonu) ve
+ * `/ngo-admin/volunteer` (eski iki sekmeli görünüm) sayfalarına dokunulmaz.
+ */
+
+import React, { Suspense, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import {
+  collection,
+  query,
+  where,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { Loader2, PlusCircle, Pencil, Trash2, CheckCircle2, Users, Award } from 'lucide-react';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/components/providers/language-provider';
+import type { Volunteering, Application as UserApplication } from '@/lib/types';
+
+import { ListingForm, type ListingFormValues } from './_components/listing-form';
+import { ApplicationReviewCard, type ApplicationReviewItem } from './_components/application-review-card';
+import { CompletionScoringDialog } from './_components/completion-scoring-dialog';
+
+/** Volunteering doc'larında status henüz mevcut değilse default 'Aktif' kabul
+ *  ederiz — eski dokümanlar bozulmasın. */
+type ListingStatus = 'Beklemede' | 'Aktif' | 'Pasif' | 'Tamamlandı';
+
+type VolunteeringWithStatus = Volunteering & {
+  status?: ListingStatus;
+};
+
+function resolveStatus(opp: VolunteeringWithStatus): ListingStatus {
+  return opp.status ?? 'Aktif';
+}
+
+/** Skill match score = (kesişim ÷ ilan skill+interest sayısı) × 100.
+ *  İlan hiç şart koşmuyorsa 100 döner (full match — engel yok). */
+function computeMatchScore(
+  listing: VolunteeringWithStatus | undefined,
+  userSkills: string[] = [],
+  userInterests: string[] = [],
+): number {
+  if (!listing) return 0;
+  const requiredSkills = listing.skills ?? [];
+  const requiredInterests = listing.interests ?? [];
+  const total = requiredSkills.length + requiredInterests.length;
+  if (total === 0) return 100;
+  const userSkillSet = new Set(userSkills.map((s) => s.toLowerCase()));
+  const userInterestSet = new Set(userInterests.map((s) => s.toLowerCase()));
+  const skillHits = requiredSkills.filter((s) => userSkillSet.has(s.toLowerCase())).length;
+  const interestHits = requiredInterests.filter((s) => userInterestSet.has(s.toLowerCase())).length;
+  return Math.round(((skillHits + interestHits) / total) * 100);
+}
+
+function statusBadgeVariant(status: ListingStatus): 'default' | 'secondary' | 'destructive' | 'outline' {
+  if (status === 'Aktif') return 'default';
+  if (status === 'Beklemede') return 'secondary';
+  if (status === 'Tamamlandı') return 'outline';
+  return 'destructive';
+}
+
+// ---------------------------------------------------------------------------
+// Tab 1 — İlanlarım
+// ---------------------------------------------------------------------------
+
+function ListingsTab({
+  opportunities,
+  applicationCounts,
+  ngoId,
+  ngoName,
+  isLoading,
+}: {
+  opportunities: VolunteeringWithStatus[];
+  applicationCounts: Map<string, number>;
+  ngoId: string | null;
+  ngoName: string;
+  isLoading: boolean;
+}) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const db = useFirestore();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<VolunteeringWithStatus | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<VolunteeringWithStatus | null>(null);
+
+  const openCreate = () => {
+    setEditing(null);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (opp: VolunteeringWithStatus) => {
+    setEditing(opp);
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (values: ListingFormValues) => {
+    if (!ngoId) {
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.entityMissingTitle'),
+        description: t('ngo_admin_volunteering.toast.entityMissingDesc'),
+      });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const payload = {
+        title: values.title,
+        description: values.description,
+        organization: ngoName,
+        ngoId,
+        socialArea: editing?.socialArea ?? '',
+        interests: values.interests,
+        skills: values.skills,
+        location: {
+          city: values.city,
+          district: values.district,
+          type: editing?.location?.type ?? 'Saha',
+        },
+        dates: {
+          applicationStart: values.applicationStart,
+          applicationEnd: values.applicationEnd,
+          eventStart: values.eventStart,
+          eventEnd: values.eventEnd,
+        },
+        volunteerCount: {
+          needed: values.capacity,
+          applications: editing?.volunteerCount?.applications ?? 0,
+        },
+        commitment: editing?.commitment ?? 'Tek Günlük',
+      };
+
+      if (editing) {
+        await updateDoc(doc(db, COLLECTIONS.volunteering, editing.id), {
+          ...payload,
+          updatedAt: serverTimestamp(),
+        });
+        toast({
+          title: t('ngo_admin_volunteering.toast.updatedTitle'),
+          description: t('ngo_admin_volunteering.toast.updatedDesc'),
+        });
+      } else {
+        await addDoc(collection(db, COLLECTIONS.volunteering), {
+          ...payload,
+          status: 'Beklemede' satisfies ListingStatus,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        toast({
+          title: t('ngo_admin_volunteering.toast.createdTitle'),
+          description: t('ngo_admin_volunteering.toast.createdDesc'),
+        });
+      }
+      setDialogOpen(false);
+      setEditing(null);
+    } catch (err) {
+      console.error('[ngo-admin/volunteering] listing save failed', err);
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.saveFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.saveFailedDesc'),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleComplete = async (opp: VolunteeringWithStatus) => {
+    try {
+      await updateDoc(doc(db, COLLECTIONS.volunteering, opp.id), {
+        status: 'Tamamlandı' satisfies ListingStatus,
+        completedAt: serverTimestamp(),
+      });
+      toast({
+        title: t('ngo_admin_volunteering.toast.completedTitle'),
+        description: t('ngo_admin_volunteering.toast.completedDesc'),
+      });
+    } catch (err) {
+      console.error('[ngo-admin/volunteering] complete failed', err);
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.completeFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.completeFailedDesc'),
+      });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteDoc(doc(db, COLLECTIONS.volunteering, deleteTarget.id));
+      toast({
+        title: t('ngo_admin_volunteering.toast.deletedTitle'),
+        description: t('ngo_admin_volunteering.toast.deletedDesc'),
+      });
+    } catch (err) {
+      console.error('[ngo-admin/volunteering] delete failed', err);
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.deleteFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.deleteFailedDesc'),
+      });
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  // Tamamlanan ilanlar diğer sekmede gösterildiği için burada Beklemede/
+  // Aktif/Pasif olanları gösteriyoruz.
+  const visible = opportunities.filter((o) => resolveStatus(o) !== 'Tamamlandı');
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  const initialValues: Partial<ListingFormValues> | undefined = editing
+    ? {
+        title: editing.title,
+        description: editing.description,
+        applicationStart: editing.dates?.applicationStart ?? '',
+        applicationEnd: editing.dates?.applicationEnd ?? '',
+        eventStart: editing.dates?.eventStart ?? '',
+        eventEnd: editing.dates?.eventEnd ?? '',
+        city: editing.location?.city ?? '',
+        district: editing.location?.district ?? '',
+        capacity: editing.volunteerCount?.needed ?? 1,
+        skills: editing.skills ?? [],
+        interests: editing.interests ?? [],
+      }
+    : undefined;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <p className="text-sm text-muted-foreground">
+          {t('ngo_admin_volunteering.listings.summaryPrefix')} {visible.length}{' '}
+          {t('ngo_admin_volunteering.listings.summarySuffix')}
+        </p>
+        <Button onClick={openCreate}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          {t('ngo_admin_volunteering.listings.newCta')}
+        </Button>
+      </div>
+
+      {visible.length === 0 ? (
+        <p className="text-center text-muted-foreground p-8">
+          {t('ngo_admin_volunteering.listings.empty')}
+        </p>
+      ) : (
+        visible.map((opp) => {
+          const status = resolveStatus(opp);
+          const appCount = applicationCounts.get(opp.id) ?? 0;
+          return (
+            <Card key={opp.id}>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start gap-2 flex-wrap">
+                  <div>
+                    <CardTitle className="text-base">{opp.title}</CardTitle>
+                    <CardDescription>
+                      {opp.location?.city || ''}
+                      {opp.location?.district ? ` · ${opp.location.district}` : ''}
+                    </CardDescription>
+                  </div>
+                  <Badge variant={statusBadgeVariant(status)}>{status}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  <span>
+                    {t('ngo_admin_volunteering.listings.applicationsLabel')}:
+                  </span>
+                  <Badge variant="secondary" className="ml-1">
+                    {appCount}
+                  </Badge>
+                </div>
+                {opp.volunteerCount?.needed ? (
+                  <span className="text-xs text-muted-foreground">
+                    {t('ngo_admin_volunteering.listings.capacityLabel')}: {opp.volunteerCount.needed}
+                  </span>
+                ) : null}
+              </CardContent>
+              <CardFooter className="flex gap-2 flex-wrap">
+                <Button variant="outline" size="sm" onClick={() => openEdit(opp)}>
+                  <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                  {t('ngo_admin_volunteering.listings.editBtn')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleComplete(opp)}
+                  disabled={status === 'Tamamlandı'}
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                  {t('ngo_admin_volunteering.listings.completeBtn')}
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={`/volunteering/${opp.id}`}>
+                    {t('ngo_admin_volunteering.listings.viewBtn')}
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setDeleteTarget(opp)}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                  {t('ngo_admin_volunteering.listings.deleteBtn')}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })
+      )}
+
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setEditing(null);
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editing
+                ? t('ngo_admin_volunteering.dialog.editTitle')
+                : t('ngo_admin_volunteering.dialog.createTitle')}
+            </DialogTitle>
+            <DialogDescription>
+              {t('ngo_admin_volunteering.dialog.description')}
+            </DialogDescription>
+          </DialogHeader>
+          <ListingForm
+            initialValues={initialValues}
+            onSubmit={handleSubmit}
+            onCancel={() => {
+              setDialogOpen(false);
+              setEditing(null);
+            }}
+            submitting={submitting}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('ngo_admin_volunteering.deleteConfirm.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('ngo_admin_volunteering.deleteConfirm.descPrefix')}{' '}
+              <strong>{deleteTarget?.title ?? ''}</strong>{' '}
+              {t('ngo_admin_volunteering.deleteConfirm.descSuffix')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t('ngo_admin_volunteering.deleteConfirm.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('ngo_admin_volunteering.deleteConfirm.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab 2 — Başvurular
+// ---------------------------------------------------------------------------
+
+type UserSkillProfile = { id: string; skills?: string[]; interests?: string[] };
+
+function ApplicationsTab({
+  opportunities,
+  applications,
+  isLoading,
+  userProfiles,
+}: {
+  opportunities: VolunteeringWithStatus[];
+  applications: UserApplication[];
+  isLoading: boolean;
+  userProfiles: Map<string, UserSkillProfile>;
+}) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  const oppById = useMemo(() => {
+    const m = new Map<string, VolunteeringWithStatus>();
+    opportunities.forEach((o) => m.set(o.id, o));
+    return m;
+  }, [opportunities]);
+
+  // Tamamlanan ilanlara ait başvuruları "Tamamlanan" sekmesi gösterir;
+  // burada sadece aktif/beklemede/pasif olanları listeleriz.
+  const visible = useMemo(
+    () =>
+      applications.filter((app) => {
+        const opp = oppById.get(app.entityId || '');
+        if (!opp) return false;
+        return resolveStatus(opp) !== 'Tamamlandı';
+      }),
+    [applications, oppById],
+  );
+
+  const grouped = useMemo(() => {
+    const m = new Map<string, UserApplication[]>();
+    visible.forEach((a) => {
+      const k = a.title || a.entityId || '';
+      const arr = m.get(k) ?? [];
+      arr.push(a);
+      m.set(k, arr);
+    });
+    return Array.from(m.entries());
+  }, [visible]);
+
+  const handleDecision = async (
+    app: UserApplication,
+    decision: 'approved' | 'rejected',
+  ) => {
+    setPendingId(app.id);
+    const opp = oppById.get(app.entityId || '');
+    const status: UserApplication['status'] = decision === 'approved' ? 'Onaylandı' : 'Reddedildi';
+    try {
+      await updateDoc(doc(db, COLLECTIONS.applications, app.id), {
+        status,
+        reviewedAt: serverTimestamp(),
+        reviewedBy: authUser?.uid ?? null,
+      });
+
+      if (app.userId) {
+        const listingName = opp?.title ?? app.title;
+        const titleMsg =
+          decision === 'approved'
+            ? `${t('ngo_admin_volunteering.notif.approvedPrefix')} ${listingName}`
+            : `${t('ngo_admin_volunteering.notif.rejectedPrefix')} ${listingName}`;
+        const bodyMsg =
+          decision === 'approved'
+            ? t('ngo_admin_volunteering.notif.approvedBody')
+            : t('ngo_admin_volunteering.notif.rejectedBody');
+
+        // In-app bildirim (push tetikleyici Cloud Function notifications
+        // collection'ı dinler — burada sadece dokümanı oluşturmak yeterli).
+        await addDoc(collection(db, COLLECTIONS.notifications), {
+          userId: app.userId,
+          type: 'volunteer-application',
+          title: titleMsg,
+          body: bodyMsg,
+          data: {
+            applicationId: app.id,
+            listingId: app.entityId ?? null,
+            decision,
+          },
+          read: false,
+          createdAt: serverTimestamp(),
+        });
+
+        // In-app DM — kullanıcıya mesajlar sekmesinde görünür.
+        if (authUser) {
+          await addDoc(collection(db, COLLECTIONS.messages), {
+            sender: {
+              id: authUser.uid,
+              name: opp?.organization ?? t('ngo_admin_volunteering.notif.ngoFallback'),
+              avatarUrl: authUser.photoURL || null,
+            },
+            senderId: authUser.uid,
+            recipient: {
+              id: app.userId,
+              name: app.userName ?? t('ngo_admin_volunteering.review.volunteerFallback'),
+              avatarUrl: null,
+            },
+            recipientId: app.userId,
+            subject: titleMsg,
+            content: bodyMsg,
+            timestamp: serverTimestamp(),
+            status: 'sent',
+          });
+        }
+      }
+
+      toast({
+        title:
+          decision === 'approved'
+            ? t('ngo_admin_volunteering.toast.applicationApprovedTitle')
+            : t('ngo_admin_volunteering.toast.applicationRejectedTitle'),
+        description: t('ngo_admin_volunteering.toast.applicationVolunteerNotified'),
+      });
+    } catch (err) {
+      console.error('[ngo-admin/volunteering] decision failed', err);
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.applicationFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.applicationFailedDesc'),
+      });
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (grouped.length === 0) {
+    return (
+      <p className="text-center text-muted-foreground p-8">
+        {t('ngo_admin_volunteering.applications.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {grouped.map(([listingTitle, apps]) => {
+        const opp = oppById.get(apps[0]?.entityId || '');
+        return (
+          <Card key={listingTitle}>
+            <CardHeader>
+              <CardTitle className="text-base">{listingTitle}</CardTitle>
+              <CardDescription>
+                {apps.length} {t('ngo_admin_volunteering.applications.countSuffix')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {apps.map((app) => {
+                const profile = app.userId ? userProfiles.get(app.userId) : undefined;
+                const matchScore = computeMatchScore(opp, profile?.skills, profile?.interests);
+                const item: ApplicationReviewItem = {
+                  id: app.id,
+                  userId: app.userId,
+                  userName: app.userName,
+                  userAvatarUrl: null,
+                  listingTitle,
+                  matchScore,
+                  status: app.status,
+                };
+                return (
+                  <ApplicationReviewCard
+                    key={app.id}
+                    application={item}
+                    pending={pendingId === app.id}
+                    onDecision={(d) => handleDecision(app, d)}
+                  />
+                );
+              })}
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tab 3 — Tamamlanan
+// ---------------------------------------------------------------------------
+
+function CompletedTab({
+  opportunities,
+  applications,
+  ngoName,
+  isLoading,
+}: {
+  opportunities: VolunteeringWithStatus[];
+  applications: UserApplication[];
+  ngoName: string;
+  isLoading: boolean;
+}) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+
+  const [scoringTarget, setScoringTarget] = useState<{
+    listing: VolunteeringWithStatus;
+    volunteer: UserApplication;
+  } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [scoredKeys, setScoredKeys] = useState<Set<string>>(new Set());
+
+  const completed = opportunities.filter((o) => resolveStatus(o) === 'Tamamlandı');
+
+  const acceptedByListing = useMemo(() => {
+    const m = new Map<string, UserApplication[]>();
+    applications.forEach((a) => {
+      if (a.status !== 'Onaylandı' || !a.entityId) return;
+      const arr = m.get(a.entityId) ?? [];
+      arr.push(a);
+      m.set(a.entityId, arr);
+    });
+    return m;
+  }, [applications]);
+
+  const handleScore = async ({ score, comment }: { score: number; comment: string }) => {
+    if (!scoringTarget) return;
+    const { listing, volunteer } = scoringTarget;
+    if (!volunteer.userId) {
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.scoreFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.scoreFailedDesc'),
+      });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Sertifika doc'u — users/{uid}/certificates altında saklanır.
+      await addDoc(collection(db, COLLECTIONS.users, volunteer.userId, COLLECTIONS.certificates), {
+        userId: volunteer.userId,
+        listingId: listing.id,
+        listingTitle: listing.title,
+        ngoName: ngoName || listing.organization || '',
+        ngoId: listing.ngoId,
+        score,
+        comment,
+        date: serverTimestamp(),
+        issuedBy: authUser?.uid ?? null,
+      });
+
+      const titleMsg = `${t('ngo_admin_volunteering.notif.certificateReadyPrefix')} ${listing.title}`;
+      const bodyMsg = t('ngo_admin_volunteering.notif.certificateReadyBody');
+
+      await addDoc(collection(db, COLLECTIONS.notifications), {
+        userId: volunteer.userId,
+        type: 'certificate',
+        title: titleMsg,
+        body: bodyMsg,
+        data: { listingId: listing.id, score },
+        read: false,
+        createdAt: serverTimestamp(),
+      });
+
+      if (authUser) {
+        await addDoc(collection(db, COLLECTIONS.messages), {
+          sender: {
+            id: authUser.uid,
+            name: ngoName || listing.organization || t('ngo_admin_volunteering.notif.ngoFallback'),
+            avatarUrl: authUser.photoURL || null,
+          },
+          senderId: authUser.uid,
+          recipient: {
+            id: volunteer.userId,
+            name: volunteer.userName ?? t('ngo_admin_volunteering.review.volunteerFallback'),
+            avatarUrl: null,
+          },
+          recipientId: volunteer.userId,
+          subject: titleMsg,
+          content: bodyMsg,
+          timestamp: serverTimestamp(),
+          status: 'sent',
+        });
+      }
+
+      setScoredKeys((prev) => {
+        const next = new Set(prev);
+        next.add(`${listing.id}:${volunteer.id}`);
+        return next;
+      });
+
+      toast({
+        title: t('ngo_admin_volunteering.toast.scoreSavedTitle'),
+        description: t('ngo_admin_volunteering.toast.scoreSavedDesc'),
+      });
+      setScoringTarget(null);
+    } catch (err) {
+      console.error('[ngo-admin/volunteering] score failed', err);
+      toast({
+        variant: 'destructive',
+        title: t('ngo_admin_volunteering.toast.scoreFailedTitle'),
+        description: t('ngo_admin_volunteering.toast.scoreFailedDesc'),
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  if (completed.length === 0) {
+    return (
+      <p className="text-center text-muted-foreground p-8">
+        {t('ngo_admin_volunteering.completed.empty')}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {completed.map((opp) => {
+        const winners = acceptedByListing.get(opp.id) ?? [];
+        return (
+          <Card key={opp.id}>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Award className="h-4 w-4 text-amber-500" />
+                {opp.title}
+              </CardTitle>
+              <CardDescription>
+                {winners.length} {t('ngo_admin_volunteering.completed.winnersCountSuffix')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {winners.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t('ngo_admin_volunteering.completed.noWinners')}
+                </p>
+              ) : (
+                winners.map((w) => {
+                  const key = `${opp.id}:${w.id}`;
+                  const alreadyScored = scoredKeys.has(key);
+                  return (
+                    <div
+                      key={w.id}
+                      className="flex items-center justify-between flex-wrap gap-2 border rounded-lg p-3"
+                    >
+                      <div className="text-sm">
+                        <p className="font-semibold">
+                          {w.userName ?? t('ngo_admin_volunteering.review.volunteerFallback')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{w.date}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={alreadyScored ? 'outline' : 'default'}
+                        disabled={alreadyScored}
+                        onClick={() => setScoringTarget({ listing: opp, volunteer: w })}
+                      >
+                        <Award className="h-3.5 w-3.5 mr-1.5" />
+                        {alreadyScored
+                          ? t('ngo_admin_volunteering.completed.alreadyScored')
+                          : t('ngo_admin_volunteering.completed.scoreBtn')}
+                      </Button>
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
+
+      <CompletionScoringDialog
+        open={!!scoringTarget}
+        onOpenChange={(open) => {
+          if (!open) setScoringTarget(null);
+        }}
+        volunteerName={
+          scoringTarget?.volunteer.userName ?? t('ngo_admin_volunteering.review.volunteerFallback')
+        }
+        listingTitle={scoringTarget?.listing.title ?? ''}
+        onSubmit={handleScore}
+        submitting={submitting}
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Page shell
+// ---------------------------------------------------------------------------
+
+function VolunteeringPage() {
+  const { t } = useTranslation();
+  const db = useFirestore();
+  const { user: authUser } = useUser();
+  const searchParams = useSearchParams();
+  const entityId = searchParams.get('id') || authUser?.uid || null;
+
+  const oppsQuery = useMemoFirebase(() => {
+    if (!db || !entityId) return null;
+    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', entityId));
+  }, [db, entityId]);
+  const { data: opps, isLoading: oppsLoading } = useCollection<VolunteeringWithStatus>(oppsQuery);
+
+  const opportunities = useMemo(() => opps ?? [], [opps]);
+  const opportunityIds = useMemo(() => opportunities.map((o) => o.id), [opportunities]);
+
+  const appsQuery = useMemoFirebase(() => {
+    if (!db || opportunityIds.length === 0) return null;
+    return query(collection(db, COLLECTIONS.applications), where('type', '==', 'Gönüllülük'));
+  }, [db, opportunityIds]);
+  const { data: rawApps, isLoading: appsLoading } = useCollection<UserApplication>(appsQuery);
+
+  const applications = useMemo(() => {
+    if (!rawApps) return [];
+    const idSet = new Set(opportunityIds);
+    return rawApps.filter((a) => idSet.has(a.entityId || ''));
+  }, [rawApps, opportunityIds]);
+
+  const applicationCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    applications.forEach((a) => {
+      if (!a.entityId) return;
+      m.set(a.entityId, (m.get(a.entityId) ?? 0) + 1);
+    });
+    return m;
+  }, [applications]);
+
+  // Başvuranların skill/interest profilleri — match score için.
+  const applicantIds = useMemo(() => {
+    const s = new Set<string>();
+    applications.forEach((a) => {
+      if (a.userId) s.add(a.userId);
+    });
+    return Array.from(s);
+  }, [applications]);
+
+  // Firestore 'in' query limiti 10 — fazlasını parçalayıp birden çok hook
+  // açmak yerine, mevcut profile read pattern'inde olduğu gibi tek query
+  // ile çekmek için ilk 10'u alıyoruz; bu yeterli match score görselleştirme
+  // sağlar. 10+ başvurulu ilanlarda sonrakiler 100 default skoru ile düşer.
+  const profileQuery = useMemoFirebase(() => {
+    if (!db || applicantIds.length === 0) return null;
+    const first10 = applicantIds.slice(0, 10);
+    return query(collection(db, COLLECTIONS.users), where('__name__', 'in', first10));
+  }, [db, applicantIds]);
+  const { data: profilesData } = useCollection<UserSkillProfile>(profileQuery);
+  const userProfiles = useMemo(() => {
+    const m = new Map<string, UserSkillProfile>();
+    (profilesData ?? []).forEach((p) => m.set(p.id, p));
+    return m;
+  }, [profilesData]);
+
+  // NGO adı — sertifika ve mesajda kullanılır.
+  const ngoQuery = useMemoFirebase(() => {
+    if (!db || !entityId) return null;
+    return query(collection(db, COLLECTIONS.ngos), where('__name__', '==', entityId));
+  }, [db, entityId]);
+  const { data: ngoData } = useCollection<{ id: string; name?: string }>(ngoQuery);
+  const ngoName = ngoData?.[0]?.name ?? '';
+
+  if (!authUser) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        {t('ngo_admin_volunteering.authRequired')}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 max-w-5xl mx-auto p-4 sm:p-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold font-headline">
+          {t('ngo_admin_volunteering.pageTitle')}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t('ngo_admin_volunteering.pageSubtitle')}
+        </p>
+      </div>
+
+      <Tabs defaultValue="listings" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="listings">{t('ngo_admin_volunteering.tabs.listings')}</TabsTrigger>
+          <TabsTrigger value="applications">
+            {t('ngo_admin_volunteering.tabs.applications')}
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            {t('ngo_admin_volunteering.tabs.completed')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="listings" className="mt-4">
+          <ListingsTab
+            opportunities={opportunities}
+            applicationCounts={applicationCounts}
+            ngoId={entityId}
+            ngoName={ngoName}
+            isLoading={oppsLoading}
+          />
+        </TabsContent>
+        <TabsContent value="applications" className="mt-4">
+          <ApplicationsTab
+            opportunities={opportunities}
+            applications={applications}
+            isLoading={appsLoading || oppsLoading}
+            userProfiles={userProfiles}
+          />
+        </TabsContent>
+        <TabsContent value="completed" className="mt-4">
+          <CompletedTab
+            opportunities={opportunities}
+            applications={applications}
+            ngoName={ngoName}
+            isLoading={oppsLoading}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <VolunteeringPage />
+    </Suspense>
+  );
+}

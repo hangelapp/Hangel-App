@@ -19,11 +19,16 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useTranslation } from '@/components/providers/language-provider';
+import { sanitizeHtml } from '@/lib/sanitize-html';
 
 interface MessageItem {
   id: string;
   subject?: string;
   content?: string;
+  // Rich HTML alternatif — sistem mesajları (örn. /api/emergency/respond)
+  // tıklanabilir tel:/maps:// linkleri için bunu doldurur. Render tarafı
+  // DOMPurify ile sanitize edip basar; yoksa `content` plain text fallback.
+  contentHtml?: string;
   excerpt?: string;
   time?: string;
   read?: boolean;
@@ -132,9 +137,18 @@ export default function MessageDetailPage() {
         )}
         <Card>
           <CardContent className="p-5">
-            <div className="text-sm whitespace-pre-wrap leading-relaxed">
-              {msg.content || msg.excerpt || t('dashboard.messages.noContent') || 'İçerik yok.'}
-            </div>
+            {msg.contentHtml ? (
+              // Sistem mesajları (kan talebi vb.) — tel:/maps:// linkleri var.
+              // sanitizeHtml DOMPurify ile XSS önler; tel:/https: korunur.
+              <div
+                className="text-sm leading-relaxed prose prose-sm max-w-none [&_a]:text-primary [&_a]:underline [&_a]:break-words"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.contentHtml) }}
+              />
+            ) : (
+              <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                {msg.content || msg.excerpt || t('dashboard.messages.noContent') || 'İçerik yok.'}
+              </div>
+            )}
           </CardContent>
         </Card>
 

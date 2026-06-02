@@ -33,10 +33,10 @@ const FilterButton = ({ title, options, selected, onSelectedChange }: {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-full shrink-0">
-                    <span className="text-xs font-medium">{title}</span>
+                <Button variant="outline" size="sm" className="h-8 px-2.5 gap-1 rounded-full shrink-0">
+                    <span className="text-[11px] font-medium whitespace-nowrap">{title}</span>
                     {selected.length > 0 && (
-                        <span className="ml-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold">
+                        <span className="ml-0.5 inline-flex items-center justify-center h-3.5 min-w-3.5 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
                             {selected.length}
                         </span>
                     )}
@@ -409,26 +409,26 @@ export default function VolunteeringPage() {
                   </DropdownMenuContent>
               </DropdownMenu>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar items-center">
+          <div className="flex flex-nowrap gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar [scrollbar-width:none] [&::-webkit-scrollbar]:hidden items-center">
               <FilterButton title={t('volunteering_root.filterSensitivity')} options={interestOptions} selected={interestFilter} onSelectedChange={setInterestFilter} />
               <FilterButton title={t('volunteering_root.filterSkills')} options={skillOptions} selected={skillFilter} onSelectedChange={setSkillFilter} />
               <FilterButton title={t('volunteering_root.filterLocation')} options={cityOptions} selected={cityFilter} onSelectedChange={setCityFilter} />
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 gap-1.5 rounded-full shrink-0"
+                className="h-8 px-2.5 gap-1 rounded-full shrink-0"
                 onClick={() => setMapOpen(true)}
                 aria-label={t('volunteering_root.mapAria')}
                 title={t('volunteering_root.mapAria')}
               >
-                <MapIcon className="h-4 w-4" />
-                <span className="text-xs font-medium">{t('volunteering_root.mapLabel')}</span>
+                <MapIcon className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-medium whitespace-nowrap">{t('volunteering_root.mapLabel')}</span>
               </Button>
               {(interestFilter.length + skillFilter.length + cityFilter.length) > 0 && (
                   <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 text-xs shrink-0"
+                      className="h-8 px-2 text-[11px] whitespace-nowrap shrink-0"
                       onClick={() => { setInterestFilter([]); setSkillFilter([]); setCityFilter([]); }}
                   >
                       {t('volunteering_root.clearFilters')}

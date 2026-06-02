@@ -107,7 +107,26 @@ export async function POST(req: NextRequest) {
   const compatibleList = compatibleDonors(bloodType);
   const compatibleStr = compatibleList.length > 0 ? compatibleList.join(', ') : 'belirsiz';
 
-  // ── Mesaj template ─────────────────────────────────────────────────────────
+  // Telefonu `tel:` URI için E.164-yakını normalize et: sadece + ve rakam kalsın.
+  // İlk + korunur; sonraki tüm + işaretleri atılır.
+  const telUri = (raw: string): string => {
+    if (!raw) return '';
+    const trimmed = raw.trim();
+    const hasPlus = trimmed.startsWith('+');
+    const digits = trimmed.replace(/[^\d]/g, '');
+    return digits ? `tel:${hasPlus ? '+' : ''}${digits}` : '';
+  };
+
+  // HTML escape (XSS önle — kullanıcı adı, hasta adı, hastane adı vs. raw).
+  const esc = (s: string): string =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const addressForMap = fullAddress || hospital;
+  const mapsHref = addressForMap ? `https://maps.apple.com/?q=${encodeURIComponent(addressForMap)}` : '';
+  const contactTelHref = telUri(contactPhone);
+  const hospitalTelHref = telUri(hospitalPhone);
+
+  // ── Mesaj template (plain text — fallback, ve eski client'lar için) ───────
   const messageContent = `Merhaba ${callerDisplayName},
 
 "Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an o hastanın tek umudu senin gibi birinin gelmesi.
@@ -124,6 +143,35 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
 
 Teşekkürler. 🙏`;
 
+  // ── Rich HTML — message detail sayfası dangerouslySetInnerHTML + sanitize ─
+  // Telefon `tel:` ile arama açar; adres Apple Maps'te konum açar (iOS native;
+  // Android/web maps.apple.com → maps.google.com'a yönlendirir).
+  const contactPhoneHtml = contactPhone
+    ? (contactTelHref
+        ? `<br/>☎️ Telefon: <a href="${esc(contactTelHref)}">${esc(contactPhone)}</a>`
+        : `<br/>☎️ Telefon: ${esc(contactPhone)}`)
+    : '';
+  const hospitalPhoneHtml = hospitalPhone
+    ? (hospitalTelHref
+        ? `<br/>📞 Hastane Tel: <a href="${esc(hospitalTelHref)}">${esc(hospitalPhone)}</a>`
+        : `<br/>📞 Hastane Tel: ${esc(hospitalPhone)}`)
+    : '';
+  const addressHtml = mapsHref
+    ? `<a href="${esc(mapsHref)}" target="_blank" rel="noopener noreferrer">${esc(addressForMap)}</a>`
+    : esc(addressForMap);
+
+  const messageContentHtml = `<p>Merhaba ${esc(callerDisplayName)},</p>
+<p>"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an o hastanın tek umudu senin gibi birinin gelmesi.</p>
+<p><strong>İşte bilmen gerekenler:</strong><br/>
+🩸 Kan Grubu: ${esc(bloodType)} (kan verebilen gruplar: ${esc(compatibleStr)})<br/>
+🏥 Hastane: ${esc(hospital)}<br/>
+👤 Hasta: ${esc(patientName)}<br/>
+📞 İrtibat: ${esc(contactName)}${contactPhoneHtml}${hospitalPhoneHtml}<br/>
+📍 Adres: ${addressHtml}</p>
+<p><strong>Gitmeden önce:</strong><br/>
+Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu süre zarfında sigara içme. Yola çıkmadan irtibat kişisini ara — seni bekliyor olacaklar.</p>
+<p>Teşekkürler. 🙏</p>`;
+
   // ── Notification body (push'a sığar) ──────────────────────────────────────
   const shortBody = `${hospital} • ${bloodType} • ${contactName}${contactPhone ? ` (${contactPhone})` : ''}`;
 
@@ -137,6 +185,9 @@ Teşekkürler. 🙏`;
       recipientId: caller.uid,
       subject: `🩸 Kan Talebi Detayları — ${hospital}`,
       content: messageContent,
+      // Rich HTML — render tarafı dangerouslySetInnerHTML + sanitizeHtml ile
+      // basar. tel: ve maps:// linklerini içerir; sanitize bunlara izin verir.
+      contentHtml: messageContentHtml,
       timestamp: FieldValue.serverTimestamp(),
       status: 'sent',
       relatedRequestId: requestId,

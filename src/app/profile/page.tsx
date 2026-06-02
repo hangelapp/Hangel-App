@@ -34,6 +34,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
 import { UnifiedStoryCard, type UnifiedStoryData } from './_components/unified-story-card';
+import { VolunteeringCertificates } from './_components/volunteering-certificates';
 
 
 const InfoRow = ({ icon: Icon, label, value, verified, href }: { icon: React.ElementType; label: string; value?: string | string[] | null, verified?: boolean, href?: string }) => {
@@ -986,6 +987,17 @@ export default function ProfilePage() {
                             )}
                             </CardContent>
                         </Card>
+                        {/* FEAT: Gönüllülük Sertifikaları — NGO logo + puan + yorum + A6 yaka kartı.
+                            Kaynak: pastVolunteering (review içerir) + approvedApplications + manual
+                            certificates (yedek). Logo lookup volunteer/supported NGO bundle'dan. */}
+                        <VolunteeringCertificates
+                            userName={currentUser.name || ''}
+                            pastVolunteering={pastVolunteering as Parameters<typeof VolunteeringCertificates>[0]['pastVolunteering']}
+                            approvedApplications={(approvedAppsData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['approvedApplications']}
+                            manualCertificates={(certificatesData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['manualCertificates']}
+                            volunteerNgos={(volunteerNgosData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['volunteerNgos']}
+                            supportedNgos={(supportedNgosData ?? []) as Parameters<typeof VolunteeringCertificates>[0]['supportedNgos']}
+                        />
                     </TabsContent>
 
 
