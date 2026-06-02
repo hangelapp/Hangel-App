@@ -106,8 +106,6 @@
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>Reklamları size kişiselleştirmek ve hangel deneyimini iyileştirmek için izniniz gerekir. Reddederseniz hangel tüm özellikleriyle çalışmaya devam eder.</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>org.hangel.tasks.geofence-sync</string>
