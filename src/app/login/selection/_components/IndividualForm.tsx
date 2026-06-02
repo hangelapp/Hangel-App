@@ -726,7 +726,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                 <div className="rounded-2xl bg-emerald-50 border border-emerald-200 px-3 py-2 text-[11px] text-emerald-800 leading-snug">
                     📱 Doğrulama kodu hangel resmi WhatsApp numarasından gönderilir. Mesaj WhatsApp dilinde gelir.
                 </div>
-                <form onSubmit={(e) => { e.preventDefault(); handleSendWhatsAppLink(); }} className="space-y-4">
+                <form onSubmit={(e) => { e.preventDefault(); handleSendWhatsAppCode(); }} className="space-y-4">
                     <div className="space-y-2">
                         <FormLabel required>Ad Soyad</FormLabel>
                         <FormInput placeholder="Adınız Soyadınız" required value={name} onChange={e => setName(e.target.value)} />
@@ -779,24 +779,16 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             </span>
                         </label>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="h-12 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                            disabled={isLoading || !allIndividualAgreementsAccepted}
-                            onClick={handleSendWhatsAppCode}
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex flex-col items-center leading-tight"><span className="text-base">🔢 Kod</span><span className="text-[10px] font-normal">6 hane yaz</span></span>}
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700"
-                            disabled={isLoading || !allIndividualAgreementsAccepted}
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex flex-col items-center leading-tight"><span className="text-base">🔗 Link</span><span className="text-[10px] font-normal">1 tıkla aç</span></span>}
-                        </Button>
-                    </div>
+                    {/* Link butonu Meta auto-classifier ile reddediliyor (2026-06-02).
+                        Şimdilik sadece "Kod" akışı. Link template Meta'da onaylanınca grid-cols-2 geri açılır. */}
+                    <Button
+                        type="button"
+                        className="w-full h-12 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700"
+                        disabled={isLoading || !allIndividualAgreementsAccepted}
+                        onClick={handleSendWhatsAppCode}
+                    >
+                        {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex items-center gap-2"><span className="text-base">🔢</span><span>Doğrulama Kodu Gönder</span></span>}
+                    </Button>
                 </form>
             </div>
         );
