@@ -90,7 +90,6 @@ export default function SettingsPage() {
                     <SettingsLink href="/settings/intents" icon={Sparkles} label={t('settingsExtra.usagePreferences')} iconColor="bg-fuchsia-500" />
                     <SettingsLink href="/settings/emergency" icon={Siren} label={t('settings.emergencySettings')} iconColor="bg-red-600" />
                     <SettingsLink href="/settings/education" icon={GraduationCap} label={t('settings.educationSettings')} iconColor="bg-violet-600" />
-                    <SettingsLink href="/settings/security" icon={Shield} label={t('settings.security')} iconColor="bg-sky-500" />
                  </div>
             </CardContent>
         </Card>
