@@ -4,9 +4,11 @@ import { librarySections } from '@/lib/library';
 import type { LibrarySection } from '@/lib/library';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck, Download } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck, Download, Share2, Calendar, FileText, Languages, Tag, Building2, User as UserIcon, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useDoc, useMemoFirebase, useUser } from '@/firebase';
@@ -16,6 +18,8 @@ import { TEMPLATES_SECTION_SLUG } from '@/lib/library-templates';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { parseBookMetadata } from '@/lib/library';
+import { BookRatingStars } from '../_components/books';
+import { cn } from '@/lib/utils';
 
 // Bir içeriği ilk kez "okudum" işaretleyince verilen etki puanı (kötüye kullanım
 // engellemek için yalnızca daha önce ödüllenmemiş içeriklerde verilir).
@@ -197,6 +201,209 @@ export default function LibraryItemPage() {
   const isBook = (item?.sectionSlug || '') === 'kitaplar';
   const bookMeta = isBook && item ? parseBookMetadata(item) : null;
 
+  // "Kapağı Paylaş" — Web Share API ile (fallback: clipboard).
+  const handleShareCover = async () => {
+    if (!bookMeta) return;
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const shareText = `${bookMeta.title}${bookMeta.author ? ' — ' + bookMeta.author : ''}`;
+    try {
+      const nav = (typeof navigator !== 'undefined' ? navigator : null) as (Navigator & { share?: (data: ShareData) => Promise<void> }) | null;
+      if (nav?.share) {
+        await nav.share({ title: shareText, text: shareText, url });
+      } else if (nav?.clipboard?.writeText) {
+        await nav.clipboard.writeText(`${shareText}\n${url}`);
+      }
+      toast({ title: t('library.books.sharedTitle'), description: t('library.books.sharedDesc') });
+    } catch {
+      toast({ variant: 'destructive', title: t('library.books.shareFailed') });
+    }
+  };
+
+  // ============= BOOK DETAIL =============
+  // Kitap detayında: gradient bg + büyük kapak (300x450) + zengin metadata +
+  // 10-üzerinden puanlama + paylaş/kütüphaneye ekle.
+  if (isBook && bookMeta) {
+    const coverSrc = bookMeta.coverUrl || bookMeta.cover;
+    return (
+      <div className="relative min-h-[100dvh] animate-in fade-in-0">
+        {/* Gradient background — Liquid Glass altı */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" aria-hidden />
+        <div className="p-4 space-y-6">
+          <div className="flex items-center justify-between">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('librarySlug.backAria')}>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={handleShareCover} variant="outline" size="sm" className="gap-2">
+                <Share2 className="h-4 w-4" /> {t('library.books.shareCover')}
+              </Button>
+              <Button
+                onClick={handleToggleSave}
+                variant={isSaved ? 'default' : 'outline'}
+                size="sm"
+                disabled={busy}
+                className="gap-2"
+              >
+                {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                {isSaved ? t('library.books.addedToShelf') : t('library.books.addToShelf')}
+              </Button>
+            </div>
+          </div>
+
+          {/* Üst banner: kapak + başlık/metadata */}
+          <Card className="glass-surface rounded-3xl overflow-hidden p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-5 sm:gap-7">
+              {/* Kapak — 300x450 oranı (2:3) */}
+              <div className="mx-auto sm:mx-0">
+                <div className="relative w-[200px] h-[300px] sm:w-[240px] sm:h-[360px] md:w-[300px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+                  {coverSrc ? (
+                    <Image
+                      src={coverSrc}
+                      alt={bookMeta.title || t('library.books.coverAlt')}
+                      fill
+                      sizes="(max-width: 640px) 200px, (max-width: 768px) 240px, 300px"
+                      className="object-cover"
+                      priority
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-background flex flex-col items-center justify-center">
+                      <span className="font-black text-5xl tracking-tight text-primary">hangel</span>
+                      <span className="text-[11px] uppercase tracking-widest text-muted-foreground mt-2">
+                        {t('library.books.coverPlaceholderAlt')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0 flex flex-col gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold font-headline leading-tight">{bookMeta.title}</h1>
+                {bookMeta.author && (
+                  <p className="text-base text-muted-foreground flex items-center gap-1.5">
+                    <UserIcon className="h-4 w-4" />
+                    {bookMeta.author}
+                  </p>
+                )}
+
+                {/* Yıldız (ortalama puan görselleştirme) */}
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
+                      <Star
+                        key={n}
+                        className={cn(
+                          'h-4 w-4',
+                          n <= Math.round(bookMeta.rating)
+                            ? 'fill-amber-500 text-amber-500'
+                            : 'text-muted-foreground/30',
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {bookMeta.rating.toFixed(1)}{t('library.books.ratingOutOf')}
+                  </span>
+                </div>
+
+                {/* Metadata badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {bookMeta.publisher && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Building2 className="h-3 w-3" /> {bookMeta.publisher}
+                    </Badge>
+                  )}
+                  {bookMeta.year > 0 && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Calendar className="h-3 w-3" /> {bookMeta.year}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="gap-1 font-normal">
+                    <FileText className="h-3 w-3" /> {bookMeta.pages} {t('library.books.pages')}
+                  </Badge>
+                  {bookMeta.language && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Languages className="h-3 w-3" /> {bookMeta.language}
+                    </Badge>
+                  )}
+                  {bookMeta.category && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Tag className="h-3 w-3" /> {bookMeta.category}
+                    </Badge>
+                  )}
+                </div>
+
+                {bookMeta.shortDescription && (
+                  <p className="text-sm text-muted-foreground leading-relaxed pt-1">
+                    {bookMeta.shortDescription}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Synopsis */}
+          {bookMeta.synopsis && bookMeta.synopsis !== bookMeta.shortDescription && (
+            <Card className="glass-surface rounded-3xl p-5 sm:p-6">
+              <h2 className="text-lg font-semibold mb-3">{t('library.books.synopsisTitle')}</h2>
+              <p className="text-sm sm:text-base leading-relaxed whitespace-pre-line text-foreground/90">
+                {bookMeta.synopsis}
+              </p>
+            </Card>
+          )}
+
+          {/* 10-üzerinden puan ver */}
+          <Card className="glass-surface rounded-3xl p-5 sm:p-6">
+            <h2 className="text-lg font-semibold mb-3">{t('library.books.rateOutOfTen')}</h2>
+            <BookRatingStars
+              value={bookRating}
+              average={bookMeta.rating}
+              onRate={handleBookRate}
+              label={t('library.books.yourRating')}
+              hint={t('library.books.tapToRate')}
+            />
+            <div className="mt-5 pt-5 border-t flex items-center justify-between gap-3 flex-wrap">
+              <p className="font-medium flex items-center gap-2 text-sm">
+                <CompletionIcon className="h-5 w-5 text-muted-foreground" />
+                {t('librarySlug.completedQuestion')}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant={isRead ? 'default' : 'outline'}
+                  onClick={handleToggleComplete}
+                  disabled={busy}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : (isRead && <Check className="h-4 w-4" />)}
+                  {completionText}
+                </Button>
+                <Button
+                  variant={recommendation === 'up' ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleRecommend('up')}
+                  aria-label={t('librarySlug.helpful')}
+                >
+                  <ThumbsUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={recommendation === 'down' ? 'destructive' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleRecommend('down')}
+                  aria-label={t('librarySlug.notHelpful')}
+                >
+                  <ThumbsDown className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ============= DEFAULT (films / templates / glossary / etc.) =============
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
       <div className="flex items-center justify-between mb-2">

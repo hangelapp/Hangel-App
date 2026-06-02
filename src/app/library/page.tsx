@@ -9,7 +9,7 @@
  * ekle, (2) aşağıdaki `SECTIONS` listesine ekle.
  *
  * Bölüm sırası (talep):
- *  1. Kütüphane Asistanı (AI sohbet — FAB & CTA)
+ *  1. Kütüphane AI Asistanı (AI sohbet — FAB & CTA)
  *  2. Proje Yazma AI Asistanı (STK admin — FAB & CTA)
  *  3. hangel Sosyal Etki Envanteri
  *  4. Şablonlar & Araçlar (STK admin gate)

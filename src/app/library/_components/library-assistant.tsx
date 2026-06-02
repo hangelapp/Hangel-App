@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Bölüm 1 — Kütüphane Asistanı (AI sohbet).
+ * Bölüm 1 — Kütüphane AI Asistanı (AI sohbet).
  *
  * Backend endpoint: `/api/library/chat`. Route yoksa kullanıcıya toast ile graceful
  * degrade gösterilir. localStorage'da sohbet geçmişi tutulur.

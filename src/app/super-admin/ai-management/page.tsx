@@ -62,7 +62,7 @@ interface AssistantConfig {
 const DEFAULT_CONFIG: Record<AssistantKind, AssistantConfig> = {
   library: {
     systemPrompt:
-      'Sen hangel Kütüphane Asistanısın. SADECE kütüphanedeki seçili dokümanları kullanarak cevap ver. ' +
+      'Sen hangel Kütüphane AI Asistanısın. SADECE kütüphanedeki seçili dokümanları kullanarak cevap ver. ' +
       'Dokümanlarda olmayan bilgileri uydurma; bilmiyorsan "Bu konuda kütüphanede içerik bulamadım." de.',
     knowledgeSourceSlugs: [],
     model: 'gemini-2.5-pro',
@@ -166,7 +166,7 @@ function AssistantEditor({
       );
       toast({
         title: 'Kaydedildi',
-        description: `${kind === 'library' ? 'Kütüphane Asistanı' : 'Proje Yazma Asistanı'} ayarları güncellendi.`,
+        description: `${kind === 'library' ? 'Kütüphane AI Asistanı' : 'Proje Yazma Asistanı'} ayarları güncellendi.`,
       });
     } catch (err) {
       toast({
@@ -674,7 +674,7 @@ export default function AIManagementPage() {
           Yapay Zeka Yönetimi
         </h1>
         <p className="text-muted-foreground text-sm font-medium">
-          Kütüphane Asistanı ve Proje Yazma Asistanı yapay zekalarının sistem prompt&apos;unu,
+          Kütüphane AI Asistanı ve Proje Yazma Asistanı yapay zekalarının sistem prompt&apos;unu,
           bilgi tabanını ve model parametrelerini buradan eğitin.
         </p>
       </div>
@@ -696,7 +696,7 @@ export default function AIManagementPage() {
             <Tabs defaultValue="library">
               <TabsList className="grid grid-cols-3 w-full max-w-2xl">
                 <TabsTrigger value="library" className="flex items-center gap-2">
-                  <Bot className="h-4 w-4" /> Kütüphane Asistanı
+                  <Bot className="h-4 w-4" /> Kütüphane AI Asistanı
                 </TabsTrigger>
                 <TabsTrigger value="project" className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" /> Proje Yazma Asistanı

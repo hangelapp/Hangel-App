@@ -18,8 +18,14 @@ export interface LibraryItem {
   rating?: number;
   /** Kısa açıklama (cards'da 2 satır truncate). */
   description?: string;
-  /** Kapak görseli URL (yoksa avatar fallback). */
+  /** Eski alan — geri uyum için tutuldu. Yeni kullanım: `coverUrl`. */
   cover?: string;
+  /** Kapak görseli URL (Next/Image ile detay sayfasında 300x450). */
+  coverUrl?: string;
+  /** Kart için kısa tanıtım (1-2 satır). */
+  shortDescription?: string;
+  /** Detay sayfası için uzun tanıtım (paragraf). */
+  synopsis?: string;
 }
 
 /**
@@ -45,6 +51,12 @@ export interface BookMetadata {
   rating: number;
   description: string;
   cover?: string;
+  /** Kapak görseli URL (cover ile aynı; yeni alan adı). */
+  coverUrl?: string;
+  /** Kart için kısa tanıtım. */
+  shortDescription: string;
+  /** Detay sayfası için uzun tanıtım (synopsis). */
+  synopsis: string;
 }
 
 function stripTags(html: string): string {
@@ -96,6 +108,16 @@ export function parseBookMetadata(item: LibraryItem): BookMetadata {
   const pages = item.pages ?? (120 + (h % 401)); // 120-520
   const rating = item.rating ?? Number((6.5 + ((h >> 3) % 31) / 10).toFixed(1)); // 6.5-9.5
   const description = item.description || extractDescription(content) || '';
+  const shortDescription = item.shortDescription || description;
+  // Synopsis: explicit > content'in tüm <p> bloklarının text birleşimi > description.
+  let synopsis = item.synopsis || '';
+  if (!synopsis) {
+    const paragraphs = Array.from(content.matchAll(/<p>([\s\S]*?)<\/p>/g))
+      .map(m => stripTags(m[1]))
+      .filter(Boolean);
+    synopsis = paragraphs.join('\n\n') || description;
+  }
+  const coverUrl = item.coverUrl || item.cover;
 
   return {
     title: titleOnly,
@@ -108,7 +130,10 @@ export function parseBookMetadata(item: LibraryItem): BookMetadata {
     pages,
     rating,
     description,
-    cover: item.cover,
+    cover: coverUrl,
+    coverUrl,
+    shortDescription,
+    synopsis,
   };
 }
 

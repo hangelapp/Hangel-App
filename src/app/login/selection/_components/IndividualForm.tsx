@@ -787,7 +787,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                         disabled={isLoading || !allIndividualAgreementsAccepted}
                         onClick={handleSendWhatsAppCode}
                     >
-                        {isLoading ? <Loader2 className="animate-spin" /> : <span className="flex items-center gap-2"><span className="text-base">🔢</span><span>Doğrulama Kodu Gönder</span></span>}
+                        {isLoading ? <Loader2 className="animate-spin" /> : 'Doğrulama Kodu Gönder'}
                     </Button>
                 </form>
             </div>
