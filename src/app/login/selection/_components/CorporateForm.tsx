@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { allCountries, allSdgs, neighborhoodsData } from '@/lib/data';
 import { COUNTRY_PHONE_CODES } from '@/lib/phone-codes';
+import { LocationFields } from '@/components/shared/location-fields';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
@@ -997,46 +998,39 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* Adres — herbiri tek satır */}
+                    {/* Adres — LocationFields (cascading dropdown + bayraklı ülke + İstanbul/Ankara/İzmir pinned).
+                        addressLine→openAddress mapping korunur ki Firestore shape değişmesin. */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>ADRES BİLGİLERİ</SectionTitle>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <FormLabel required>İl</FormLabel>
-                                <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('city'))}><SelectValue placeholder="İl seç..." /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {allProvinces.map(il => <SelectItem key={il} value={il}>{il}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel required>İlçe</FormLabel>
-                                <Select value={formData.district} onValueChange={v => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
-                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('district'))}><SelectValue placeholder={formData.city ? 'İlçe seç...' : 'Önce il seçin'} /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {formData.city && neighborhoodsData[formData.city] && Object.keys(neighborhoodsData[formData.city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Mahalle</FormLabel>
-                                <Select value={formData.neighborhood} onValueChange={v => setFormData({...formData, neighborhood: v})} disabled={!formData.district}>
-                                    <SelectTrigger className={cn("h-12 rounded-xl bg-card border-none", autoFillCls('neighborhood'))}><SelectValue placeholder={formData.district ? 'Mahalle seç...' : 'Önce ilçe seçin'} /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Açık Adres</FormLabel>
-                                <FormInput placeholder="Sokak, cadde, bina adı" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} className={autoFillCls('addressLine')} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Kapı No</FormLabel>
-                                <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} className={autoFillCls('doorNo')} />
-                            </div>
-                        </div>
+                        <LocationFields
+                            value={{
+                                country: formData.country || 'Türkiye',
+                                city: formData.city,
+                                district: formData.district,
+                                neighborhood: formData.neighborhood,
+                                openAddress: formData.addressLine,
+                                doorNo: formData.doorNo,
+                            }}
+                            onChange={(next) => setFormData(prev => ({
+                                ...prev,
+                                country: next.country ?? prev.country,
+                                city: next.city ?? '',
+                                district: next.district ?? '',
+                                neighborhood: next.neighborhood ?? '',
+                                addressLine: next.openAddress ?? prev.addressLine,
+                                doorNo: next.doorNo ?? prev.doorNo,
+                            }))}
+                            showCountry={false}
+                            showOpenAddress
+                            showDoorNo
+                            required
+                            autoFilledFields={(() => {
+                                // addressLine (Firestore field adı) → openAddress (component prop adı) eşle.
+                                const s = new Set(autoFilled);
+                                if (autoFilled.has('addressLine')) s.add('openAddress');
+                                return s;
+                            })()}
+                        />
                     </div>
 
                     {/* İletişim & Sosyal Medya — her biri tek satır, sıra: Telefon/Mail/Web/IG/X/LinkedIn/+Ekle */}
@@ -1436,46 +1430,32 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     )}
 
-                    {/* Adres — her biri tek satır */}
+                    {/* Adres — LocationFields (cascading + bayraklı). addressLine alanı openAddress'e map'lenir. */}
                     <div className="space-y-6">
                         <SectionTitle icon={MapPin}>ADRES BİLGİLERİ</SectionTitle>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <FormLabel required>İl</FormLabel>
-                                <Select value={formData.city} onValueChange={v => setFormData({...formData, city: v, district: '', neighborhood: ''})}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder="İl seç..." /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {allProvinces.map(il => <SelectItem key={il} value={il}>{il}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel required>İlçe</FormLabel>
-                                <Select value={formData.district} onValueChange={v => setFormData({...formData, district: v, neighborhood: ''})} disabled={!formData.city}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.city ? 'İlçe seç...' : 'Önce il seçin'} /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {formData.city && neighborhoodsData[formData.city] && Object.keys(neighborhoodsData[formData.city]).sort((a, b) => a.localeCompare(b, 'tr')).map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Mahalle</FormLabel>
-                                <Select value={formData.neighborhood} onValueChange={v => setFormData({...formData, neighborhood: v})} disabled={!formData.district}>
-                                    <SelectTrigger className="h-12 rounded-xl bg-card border-none"><SelectValue placeholder={formData.district ? 'Mahalle seç...' : 'Önce ilçe seçin'} /></SelectTrigger>
-                                    <SelectContent className="max-h-60">
-                                        {formData.city && formData.district && (neighborhoodsData[formData.city]?.[formData.district] || []).map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Açık Adres</FormLabel>
-                                <FormInput placeholder="Sokak, cadde, bina adı" value={formData.addressLine} onChange={e => setFormData({...formData, addressLine: e.target.value})} />
-                            </div>
-                            <div className="space-y-2">
-                                <FormLabel>Kapı No</FormLabel>
-                                <FormInput placeholder="Bina/Daire no" value={formData.doorNo} onChange={e => setFormData({...formData, doorNo: e.target.value})} />
-                            </div>
-                        </div>
+                        <LocationFields
+                            value={{
+                                country: formData.country || 'Türkiye',
+                                city: formData.city,
+                                district: formData.district,
+                                neighborhood: formData.neighborhood,
+                                openAddress: formData.addressLine,
+                                doorNo: formData.doorNo,
+                            }}
+                            onChange={(next) => setFormData(prev => ({
+                                ...prev,
+                                country: next.country ?? prev.country,
+                                city: next.city ?? '',
+                                district: next.district ?? '',
+                                neighborhood: next.neighborhood ?? '',
+                                addressLine: next.openAddress ?? prev.addressLine,
+                                doorNo: next.doorNo ?? prev.doorNo,
+                            }))}
+                            showCountry={false}
+                            showOpenAddress
+                            showDoorNo
+                            required
+                        />
                     </div>
 
                     {/* E-TİCARET / SHOP — sadece Kooperatif, Sosyal İşletme, İktisadi İşletme */}

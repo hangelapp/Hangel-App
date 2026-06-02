@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { LocationFields } from '@/components/shared/location-fields';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -160,6 +161,7 @@ export default function EventManagementPage() {
     const [evName, setEvName] = useState('');
     const [evDate, setEvDate] = useState('');
     const [evCity, setEvCity] = useState('');
+    const [evDistrict, setEvDistrict] = useState('');
     const [evAddress, setEvAddress] = useState('');
     const [evDescription, setEvDescription] = useState('');
 
@@ -167,6 +169,7 @@ export default function EventManagementPage() {
         setEvName('');
         setEvDate('');
         setEvCity('');
+        setEvDistrict('');
         setEvAddress('');
         setEvDescription('');
     };
@@ -204,7 +207,7 @@ export default function EventManagementPage() {
                     type: 'Fiziksel' as const,
                     address: evAddress.trim(),
                     city: evCity.trim(),
-                    district: '',
+                    district: evDistrict.trim(),
                 },
                 description: evDescription.trim(),
                 status: 'Beklemede' as EventStatus,
@@ -416,20 +419,23 @@ export default function EventManagementPage() {
                             <Label htmlFor="ev-name">{t('ngo_admin_events.labelName')}</Label>
                             <Input id="ev-name" value={evName} onChange={(e) => setEvName(e.target.value)} placeholder={t('ngo_admin_events.placeholderName')} required />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="ev-date">{t('ngo_admin_events.labelDate')}</Label>
-                                <Input id="ev-date" type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} required />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ev-city">{t('ngo_admin_events.labelCity')}</Label>
-                                <Input id="ev-city" value={evCity} onChange={(e) => setEvCity(e.target.value)} placeholder={t('ngo_admin_events.placeholderCity')} />
-                            </div>
-                        </div>
                         <div className="space-y-2">
-                            <Label htmlFor="ev-address">{t('ngo_admin_events.labelAddress')}</Label>
-                            <Input id="ev-address" value={evAddress} onChange={(e) => setEvAddress(e.target.value)} placeholder={t('ngo_admin_events.placeholderAddress')} />
+                            <Label htmlFor="ev-date">{t('ngo_admin_events.labelDate')}</Label>
+                            <Input id="ev-date" type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} required />
                         </div>
+                        <LocationFields
+                            value={{ country: 'Türkiye', city: evCity, district: evDistrict, openAddress: evAddress }}
+                            onChange={(next) => {
+                                setEvCity(next.city ?? '');
+                                setEvDistrict(next.district ?? '');
+                                setEvAddress(next.openAddress ?? '');
+                            }}
+                            showCountry={false}
+                            showNeighborhood={false}
+                            showOpenAddress
+                            labelCity={t('ngo_admin_events.labelCity')}
+                            labelOpenAddress={t('ngo_admin_events.labelAddress')}
+                        />
                         <div className="space-y-2">
                             <Label htmlFor="ev-desc">{t('ngo_admin_events.labelDescription')}</Label>
                             <Textarea id="ev-desc" rows={3} value={evDescription} onChange={(e) => setEvDescription(e.target.value)} placeholder={t('ngo_admin_events.placeholderDescription')} />

@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, X } from 'lucide-react';
 import { useTranslation } from '@/components/providers/language-provider';
+import { LocationFields } from '@/components/shared/location-fields';
 
 export type ListingFormValues = {
   title: string;
@@ -160,25 +161,18 @@ export function ListingForm({ initialValues, onSubmit, onCancel, submitting }: P
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="listing-city">{t('ngo_admin_volunteering.form.cityLabel')}</Label>
-          <Input
-            id="listing-city"
-            value={values.city}
-            onChange={(e) => update('city', e.target.value)}
-            placeholder={t('ngo_admin_volunteering.form.cityPlaceholder')}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="listing-district">{t('ngo_admin_volunteering.form.districtLabel')}</Label>
-          <Input
-            id="listing-district"
-            value={values.district}
-            onChange={(e) => update('district', e.target.value)}
-            placeholder={t('ngo_admin_volunteering.form.districtPlaceholder')}
-          />
-        </div>
+      <div className="space-y-3">
+        <LocationFields
+          value={{ country: 'Türkiye', city: values.city, district: values.district }}
+          onChange={(next) => {
+            update('city', next.city ?? '');
+            update('district', next.district ?? '');
+          }}
+          showCountry={false}
+          showNeighborhood={false}
+          labelCity={t('ngo_admin_volunteering.form.cityLabel')}
+          labelDistrict={t('ngo_admin_volunteering.form.districtLabel')}
+        />
         <div className="space-y-2">
           <Label htmlFor="listing-cap">{t('ngo_admin_volunteering.form.capacityLabel')}</Label>
           <Input

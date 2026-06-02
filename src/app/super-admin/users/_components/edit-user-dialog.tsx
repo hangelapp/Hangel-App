@@ -21,13 +21,12 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { ShieldAlert, Loader2, Plus, Trash2, Upload } from 'lucide-react';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Timestamp, deleteField } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getApp } from 'firebase/app';
-import { Country, State, City } from 'country-state-city';
-import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
+import { LocationFields } from '@/components/shared/location-fields';
 import type { UserRow } from './types';
 
 type EducationRow = { level: string; school: string };
@@ -103,50 +102,8 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { toast } = useToast();
 
-  // Ülke / İl / İlçe / Mahalle — kademeli select kaynakları
-  const isTurkey = country === 'Türkiye' || country === 'Turkey' || country === 'TR';
-  const allCountries = useMemo(
-    () => Country.getAllCountries().map(c => ({ name: c.name, code: c.isoCode })).sort((a, b) => a.name.localeCompare(b.name)),
-    [],
-  );
-  const countryISO = useMemo(() => {
-    if (!country) return null;
-    if (isTurkey) return 'TR';
-    return Country.getAllCountries().find(c => c.name === country || c.isoCode === country)?.isoCode || null;
-  }, [country, isTurkey]);
-  const cityOptions = useMemo(() => {
-    if (isTurkey) return [...allProvinces].sort((a, b) => a.localeCompare(b, 'tr'));
-    if (!countryISO) return [];
-    const states = State.getStatesOfCountry(countryISO).map(s => s.name);
-    if (states.length > 0) return states.sort((a, b) => a.localeCompare(b));
-    return City.getCitiesOfCountry(countryISO)?.map(c => c.name).sort((a, b) => a.localeCompare(b)) || [];
-  }, [isTurkey, countryISO]);
-  const districtOptions = useMemo(() => {
-    if (!city) return [];
-    if (isTurkey) return (districtsData[city] || []).slice().sort((a, b) => a.localeCompare(b, 'tr'));
-    if (!countryISO) return [];
-    const stateObj = State.getStatesOfCountry(countryISO).find(s => s.name === city);
-    if (!stateObj) return [];
-    return (City.getCitiesOfState(countryISO, stateObj.isoCode) || [])
-      .map(c => c.name)
-      .sort((a, b) => a.localeCompare(b));
-  }, [isTurkey, countryISO, city]);
-  const neighborhoodOptions = useMemo(() => {
-    if (!isTurkey || !city || !district) return [];
-    const nb = (neighborhoodsData as Record<string, Record<string, string[]>>)?.[city]?.[district] || [];
-    return [...nb].sort((a, b) => a.localeCompare(b, 'tr'));
-  }, [isTurkey, city, district]);
-
-  // Alt seçimler üst değiştiğinde temizlensin
-  React.useEffect(() => {
-    if (city && !cityOptions.includes(city)) setCity('');
-  }, [cityOptions, city]);
-  React.useEffect(() => {
-    if (district && !districtOptions.includes(district)) setDistrict('');
-  }, [districtOptions, district]);
-  React.useEffect(() => {
-    if (neighborhood && neighborhoodOptions.length > 0 && !neighborhoodOptions.includes(neighborhood)) setNeighborhood('');
-  }, [neighborhoodOptions, neighborhood]);
+  // Ülke / İl / İlçe / Mahalle: LocationFields cascading bileşeni içeride yönetir
+  // (parent değişince child reset).
 
   const handleAvatarFile = async (file: File) => {
     if (!user?.id) return;
@@ -556,58 +513,29 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
             </div>
           </div>
 
-          {/* Adres */}
+          {/* Adres — LocationFields (cascading + bayraklı ülke + İstanbul/Ankara/İzmir pinned).
+              fullAddress (sokak/açık adres) ayrı text input olarak korunur. */}
           <div className="space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adres</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <Label>Ülke</Label>
-                <Select value={country || undefined} onValueChange={(v) => setCountry(v)}>
-                  <SelectTrigger className="rounded-xl"><SelectValue placeholder="Seçiniz" /></SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    <SelectItem value="Türkiye">Türkiye</SelectItem>
-                    {allCountries.filter(c => c.name !== 'Turkey' && c.name !== 'Türkiye').map(c => (
-                      <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>İl</Label>
-                <Select value={city || undefined} onValueChange={(v) => setCity(v)} disabled={!country || cityOptions.length === 0}>
-                  <SelectTrigger className="rounded-xl"><SelectValue placeholder={!country ? 'Önce ülke' : (cityOptions.length === 0 ? 'Liste yok' : 'Seçiniz')} /></SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>İlçe</Label>
-                <Select value={district || undefined} onValueChange={(v) => setDistrict(v)} disabled={!city || districtOptions.length === 0}>
-                  <SelectTrigger className="rounded-xl"><SelectValue placeholder={!city ? 'Önce il' : (districtOptions.length === 0 ? 'Liste yok' : 'Seçiniz')} /></SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Mahalle</Label>
-                {isTurkey && neighborhoodOptions.length > 0 ? (
-                  <Select value={neighborhood || undefined} onValueChange={(v) => setNeighborhood(v)} disabled={!district}>
-                    <SelectTrigger className="rounded-xl"><SelectValue placeholder={!district ? 'Önce ilçe' : 'Seçiniz'} /></SelectTrigger>
-                    <SelectContent className="max-h-72">
-                      {neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} className="rounded-xl" placeholder={isTurkey ? 'Mahalle adı' : 'Bölge / mahalle'} />
-                )}
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label>Açık Adres</Label>
-                <Input value={fullAddress} onChange={e => setFullAddress(e.target.value)} placeholder="Sokak, No, Daire" className="rounded-xl" />
-              </div>
-            </div>
+            <LocationFields
+              value={{
+                country: country || 'Türkiye',
+                city,
+                district,
+                neighborhood,
+                openAddress: fullAddress,
+              }}
+              onChange={(next) => {
+                setCountry(next.country ?? '');
+                setCity(next.city ?? '');
+                setDistrict(next.district ?? '');
+                setNeighborhood(next.neighborhood ?? '');
+                setFullAddress(next.openAddress ?? '');
+              }}
+              showCountry
+              showOpenAddress
+              labelOpenAddress="Açık Adres"
+            />
           </div>
 
           {/* Sosyal Medya */}
