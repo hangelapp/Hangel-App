@@ -3739,7 +3739,7 @@ export const translations: Record<Language, any> = {
       toastPermDeniedDesc: 'Sunucu izin vermedi. Yetkilerinizi kontrol edin.',
       toastGenericErrDesc: 'Beklenmeyen bir hata oluştu.',
       toastHelpReceivedTitle: 'Yardım Talebi Alındı',
-      toastHelpReceivedDescPrefix: 'için yardım talebiniz onaylandı. Koordinasyon ekibi sizinle iletişime geçecek.',
+      toastHelpReceivedDescPrefix: 'Desteğin çok kıymetli. İlgili bilgileri hemen seninle paylaşıyorum. 🧡',
       toastHelpSendFailedDesc: 'Yardım talebiniz gönderilemedi. Lütfen tekrar deneyin.',
       activeCallsTitle: 'Aktif Acil Çağrılar',
       liveBadge: 'Canlı',

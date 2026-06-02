@@ -99,6 +99,10 @@ export async function POST(req: NextRequest) {
   const hospitalPhone = s('hospitalPhone');
   const bloodType = s('bloodType');
   const patientName = s('patientName') || 'Hasta';
+  const patientAgeRaw = d['patientAge'] ?? d['age'];
+  const patientAge = typeof patientAgeRaw === 'number'
+    ? String(patientAgeRaw)
+    : typeof patientAgeRaw === 'string' ? patientAgeRaw.trim() : '';
   const contactName = s('contactName') || s('requestedByName') || 'İrtibat kişisi';
   const contactPhone = s('contactPhone');
   const hospitalLocation = [hospitalDistrict, hospitalCity].filter(Boolean).join(', ');
@@ -126,51 +130,57 @@ export async function POST(req: NextRequest) {
   const contactTelHref = telUri(contactPhone);
   const hospitalTelHref = telUri(hospitalPhone);
 
+  // Patient detail string: "Kemal (45 yaş)" or just "Kemal"
+  const patientDetail = patientAge ? `${patientName} (${patientAge} yaş)` : patientName;
+
   // ── Mesaj template (plain text — fallback, ve eski client'lar için) ───────
   const messageContent = `Merhaba ${callerDisplayName},
 
-"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an o hastanın tek umudu senin gibi birinin gelmesi.
+"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an ${hospital}'deki ${patientDetail} hastanın tek umudu senin gibi birinin gelmesi.
 
 İşte bilmen gerekenler:
 🩸 Kan Grubu: ${bloodType} (kan verebilen gruplar: ${compatibleStr})
-🏥 Hastane: ${hospital}
-👤 Hasta: ${patientName}
-📞 İrtibat: ${contactName}${contactPhone ? `\n☎️ Telefon: ${contactPhone}` : ''}${hospitalPhone ? `\n📞 Hastane Tel: ${hospitalPhone}` : ''}
+Hastane: ${hospital}
+Hasta: ${patientDetail}
+İrtibat: ${contactName}${contactPhone ? `\nTelefon: ${contactPhone}` : ''}${hospitalPhone ? `\nHastane Tel: ${hospitalPhone}` : ''}
 📍 Adres: ${fullAddress || hospital}
 
 Gitmeden önce:
 Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu süre zarfında sigara içme. Yola çıkmadan irtibat kişisini ara — seni bekliyor olacaklar.
 
-Teşekkürler. 🙏`;
+Teşekkürler. 🧡`;
 
   // ── Rich HTML — message detail sayfası dangerouslySetInnerHTML + sanitize ─
   // Telefon `tel:` ile arama açar; adres Apple Maps'te konum açar (iOS native;
   // Android/web maps.apple.com → maps.google.com'a yönlendirir).
   const contactPhoneHtml = contactPhone
     ? (contactTelHref
-        ? `<br/>☎️ Telefon: <a href="${esc(contactTelHref)}">${esc(contactPhone)}</a>`
-        : `<br/>☎️ Telefon: ${esc(contactPhone)}`)
+        ? `<br/>Telefon: <a href="${esc(contactTelHref)}">${esc(contactPhone)}</a>`
+        : `<br/>Telefon: ${esc(contactPhone)}`)
     : '';
   const hospitalPhoneHtml = hospitalPhone
     ? (hospitalTelHref
-        ? `<br/>📞 Hastane Tel: <a href="${esc(hospitalTelHref)}">${esc(hospitalPhone)}</a>`
-        : `<br/>📞 Hastane Tel: ${esc(hospitalPhone)}`)
+        ? `<br/>Hastane Tel: <a href="${esc(hospitalTelHref)}">${esc(hospitalPhone)}</a>`
+        : `<br/>Hastane Tel: ${esc(hospitalPhone)}`)
     : '';
   const addressHtml = mapsHref
     ? `<a href="${esc(mapsHref)}" target="_blank" rel="noopener noreferrer">${esc(addressForMap)}</a>`
     : esc(addressForMap);
+  const hospitalMapHref = `https://maps.apple.com/?q=${encodeURIComponent(hospital)}`;
+  const hospitalHtml = `<a href="${esc(hospitalMapHref)}" target="_blank" rel="noopener noreferrer">${esc(hospital)}</a>`;
+  const patientDetailHtml = patientAge ? `${esc(patientName)} (${esc(patientAge)} yaş)` : esc(patientName);
 
   const messageContentHtml = `<p>Merhaba ${esc(callerDisplayName)},</p>
-<p>"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an o hastanın tek umudu senin gibi birinin gelmesi.</p>
+<p>"Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an <strong>${esc(hospital)}</strong>'deki ${patientDetailHtml} hastanın tek umudu senin gibi birinin gelmesi.</p>
 <p><strong>İşte bilmen gerekenler:</strong><br/>
 🩸 Kan Grubu: ${esc(bloodType)} (kan verebilen gruplar: ${esc(compatibleStr)})<br/>
-🏥 Hastane: ${esc(hospital)}<br/>
-👤 Hasta: ${esc(patientName)}<br/>
-📞 İrtibat: ${esc(contactName)}${contactPhoneHtml}${hospitalPhoneHtml}<br/>
+Hastane: ${hospitalHtml}<br/>
+Hasta: ${patientDetailHtml}<br/>
+İrtibat: ${esc(contactName)}${contactPhoneHtml}${hospitalPhoneHtml}<br/>
 📍 Adres: ${addressHtml}</p>
 <p><strong>Gitmeden önce:</strong><br/>
 Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu süre zarfında sigara içme. Yola çıkmadan irtibat kişisini ara — seni bekliyor olacaklar.</p>
-<p>Teşekkürler. 🙏</p>`;
+<p>Teşekkürler. 🧡</p>`;
 
   // ── Notification body (push'a sığar) ──────────────────────────────────────
   const shortBody = `${hospital} • ${bloodType} • ${contactName}${contactPhone ? ` (${contactPhone})` : ''}`;
@@ -193,24 +203,10 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
       relatedRequestId: requestId,
     });
 
-    // 2) Notification — push trigger, telefon ekranına banner
-    //    Cloud Function onNotificationCreated otomatik FCM push yollar.
-    await fs.collection(COLLECTIONS.notifications).add({
-      userId: caller.uid,
-      type: 'emergency-blood-confirmation',
-      title: `🩸 Kan Talebi — ${hospital}`,
-      body: shortBody,
-      data: {
-        type: 'emergency_blood_confirmation',
-        requestId,
-        link: '/messages', // tıklayınca /messages'a yönlendirsin
-        clickAction: '/messages',
-      },
-      read: false,
-      pushSent: false, // Cloud Function gönderir
-      createdAt: FieldValue.serverTimestamp(),
-      createdBy: 'hangel-system',
-    });
+    // Notification yok — kullanıcı isteği: bilgiler bildirim yerine mesajla
+    // gelmeli. Mesaj (yukarıdaki step 1) Mesajlarım sayfasında listelenir.
+    // shortBody artık kullanılmıyor (ileride lazım olursa diye satır içi tutuldu).
+    void shortBody;
 
     return NextResponse.json({ ok: true });
   } catch (err) {
