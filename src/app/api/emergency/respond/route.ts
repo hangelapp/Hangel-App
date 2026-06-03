@@ -133,7 +133,21 @@ export async function POST(req: NextRequest) {
   // Patient detail string: "Kemal (45 yaş)" or just "Kemal"
   const patientDetail = patientAge ? `${patientName} (${patientAge} yaş)` : patientName;
 
+  // Telefon formatla: 5384009090 → 0538 400 90 90 (WhatsApp/SMS clientları auto-link yapar)
+  const formatPhone = (raw: string): string => {
+    if (!raw) return '';
+    const digits = raw.replace(/[^\d]/g, '');
+    if (digits.length === 10 && digits.startsWith('5')) return `0${digits.slice(0,3)} ${digits.slice(3,6)} ${digits.slice(6,8)} ${digits.slice(8,10)}`;
+    if (digits.length === 11 && digits.startsWith('05')) return `${digits.slice(0,4)} ${digits.slice(4,7)} ${digits.slice(7,9)} ${digits.slice(9,11)}`;
+    return raw;
+  };
+  const contactPhoneFmt = formatPhone(contactPhone);
+  const hospitalPhoneFmt = formatPhone(hospitalPhone);
+  // Google Maps + Apple Maps universal link: WhatsApp/SMS clientları auto-link yapar
+  const mapsUrlPlain = addressForMap ? `https://maps.google.com/?q=${encodeURIComponent(addressForMap)}` : '';
+
   // ── Mesaj template (plain text — fallback, ve eski client'lar için) ───────
+  // Telefon ve URL'ler WhatsApp/SMS/Gmail tarafından otomatik tıklanabilir hâle getirilir.
   const messageContent = `Merhaba ${callerDisplayName},
 
 "Yardım edebilirim" dediğin için teşekkürler. Kan, laboratuvarda üretilemeyen tek kaynak — yani şu an ${hospital}'deki ${patientDetail} hastanın tek umudu senin gibi birinin gelmesi.
@@ -142,8 +156,8 @@ export async function POST(req: NextRequest) {
 🩸 Kan Grubu: ${bloodType} (kan verebilen gruplar: ${compatibleStr})
 Hastane: ${hospital}
 Hasta: ${patientDetail}
-İrtibat: ${contactName}${contactPhone ? `\nTelefon: ${contactPhone}` : ''}${hospitalPhone ? `\nHastane Tel: ${hospitalPhone}` : ''}
-📍 Adres: ${fullAddress || hospital}
+İrtibat: ${contactName}${contactPhoneFmt ? `\n📞 Telefon: ${contactPhoneFmt}` : ''}${hospitalPhoneFmt ? `\n📞 Hastane Tel: ${hospitalPhoneFmt}` : ''}
+📍 Adres: ${fullAddress || hospital}${mapsUrlPlain ? `\n🗺️ Yol tarifi: ${mapsUrlPlain}` : ''}
 
 Gitmeden önce:
 Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu süre zarfında sigara içme. Yola çıkmadan irtibat kişisini ara — seni bekliyor olacaklar.
