@@ -146,7 +146,6 @@ export function logHangelEvent(name: HangelEventName, params?: EventParams): voi
     if (!analytics || !logEventFn) {
         // Dev'de loglayalım ki trigger noktası kontrol edilebilsin.
         if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
             console.debug('[analytics:queued]', name, params);
         }
         return;
@@ -180,7 +179,6 @@ export function logRawEvent(name: string, params?: EventParams): void {
     const analytics = analyticsInstance;
     if (!analytics || !logEventFn) {
         if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
             console.debug('[analytics:queued:raw]', name, params);
         }
         return;
