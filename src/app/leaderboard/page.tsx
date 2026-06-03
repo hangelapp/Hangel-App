@@ -1,187 +1,284 @@
 'use client';
-import { useState, useMemo } from 'react';
-import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Crown, Star, Heart, Handshake, Globe, Loader2, EyeOff } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import React from 'react';
-import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
+
+/**
+ * /leaderboard — modern, sezon temalı liderlik tablosu.
+ *
+ * Veri: Firestore `users` koleksiyonu (impactScore / volunteerHours / totalDonation).
+ * Data shape DEĞİŞMEDİ — sadece UI yenilendi.
+ *
+ * Yapı:
+ * - Hero banner (sezonal vurgu)
+ * - Zaman filtresi tab'ları (Tüm Zamanlar aktif; period-bucketed stats yok,
+ *   diğerleri "yakında" rozetiyle disabled)
+ * - Metrik tab'ları (Etki / Gönüllülük / Bağış)
+ * - Scope alt-tab'ları (Global / Ülke / Şehir / Okul)
+ * - Top-3 podium + 4-N rank list (limit 50)
+ * - "Senin sıran" sticky kart
+ * - Sezon ödülleri info kartı
+ */
+
+import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
+import { Globe, Handshake, Heart, MapPin, School, Star } from 'lucide-react';
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
 import { useTranslation } from '@/components/providers/language-provider';
+import { cn } from '@/lib/utils';
 
-type LeaderboardUser = {
-  id?: string;
-  name?: string;
-  username?: string;
-  avatarUrl?: string;
-  stats?: { impactScore?: number; volunteerHours?: number; totalDonation?: number };
-  impactScore?: number;
-  volunteerHours?: number;
-  totalDonation?: number;
-  personalInfo?: { address?: { school?: string; city?: string } };
-  volunteerInfo?: { education?: Array<{ school?: string }> };
-  privacySettings?: { isPrivate?: boolean };
-  _value?: number;
-};
+import { LeaderboardHero } from './_components/leaderboard-hero';
+import { LeaderboardPodium } from './_components/leaderboard-podium';
+import { LeaderboardRow } from './_components/leaderboard-row';
+import { LeaderboardMyRank } from './_components/leaderboard-my-rank';
+import { LeaderboardRewards } from './_components/leaderboard-rewards';
+import { LeaderboardSkeleton } from './_components/leaderboard-skeleton';
+import {
+  getValue,
+  userSchools,
+  type LeaderboardUser,
+  type MetricKey,
+  type RankedUser,
+  type Scope,
+  type TimeRange,
+} from './_components/leaderboard-types';
 
-// Veri farklı yerlerde olabiliyor: stats.* (yeni şema) veya top-level (eski/invite akışı). İkisini de okuyup maks alıyoruz.
-const getValue = (u: LeaderboardUser, key: 'impactScore' | 'volunteerHours' | 'totalDonation'): number => {
-  const fromStats = Number(u?.stats?.[key]) || 0;
-  const fromTop = Number(u?.[key]) || 0;
-  return Math.max(fromStats, fromTop);
-};
+const PAGE_SIZE = 7;
+const MAX_LIST = 50;
 
-const userSchools = (u: LeaderboardUser): string[] => {
-  const list: string[] = [];
-  if (u?.personalInfo?.address?.school) list.push(u.personalInfo.address.school);
-  if (Array.isArray(u?.volunteerInfo?.education)) {
-    u.volunteerInfo.education.forEach((e) => {
-      if (e?.school) list.push(e.school);
-    });
-  }
-  return list;
-};
+const METRICS: ReadonlyArray<{
+  key: MetricKey;
+  labelKey: string;
+  unitKey: 'unitPoints' | 'unitHours' | 'unitCurrency';
+  icon: typeof Star;
+}> = [
+  { key: 'impactScore', labelKey: 'tabImpact', unitKey: 'unitPoints', icon: Star },
+  { key: 'volunteerHours', labelKey: 'tabVolunteer', unitKey: 'unitHours', icon: Handshake },
+  { key: 'totalDonation', labelKey: 'tabDonation', unitKey: 'unitCurrency', icon: Heart },
+] as const;
 
-type LeaderboardTableProps = {
-  valueKey: 'impactScore' | 'volunteerHours' | 'totalDonation';
-  unit: string;
+const SCOPES: ReadonlyArray<{ key: Scope; labelKey: string; icon: typeof Globe }> = [
+  { key: 'global', labelKey: 'scopeGlobal', icon: Globe },
+  { key: 'country', labelKey: 'scopeCountry', icon: MapPin },
+  { key: 'city', labelKey: 'scopeCity', icon: MapPin },
+  { key: 'school', labelKey: 'scopeSchool', icon: School },
+] as const;
+
+const TIME_RANGES: ReadonlyArray<{ key: TimeRange; labelKey: string; available: boolean }> = [
+  { key: 'all', labelKey: 'timeAll', available: true },
+  { key: 'year', labelKey: 'timeYear', available: false },
+  { key: 'month', labelKey: 'timeMonth', available: false },
+  { key: 'week', labelKey: 'timeWeek', available: false },
+] as const;
+
+type ListProps = {
+  valueKey: MetricKey;
+  unitKey: 'unitPoints' | 'unitHours' | 'unitCurrency';
   allUsers: LeaderboardUser[] | null | undefined;
   authUserId: string | undefined;
-  scope: string;
+  scope: Scope;
   isLoading: boolean;
-  t: (key: string) => string;
 };
 
-const LeaderboardTable = ({ valueKey, unit, allUsers, authUserId, scope, isLoading, t }: LeaderboardTableProps) => {
-  const sortedData = useMemo(() => {
-    if (!allUsers) return [];
-    // Her sekme kendi metriğine göre filtre + sıralama yapar; ilk 100 kullanıcı
-    // listelenir. (Eski 'impactScore >= 10' ön-filtresi sekme bağımsız davranıyor
-    // ve katılım azken listeyi boşaltıyordu — kaldırıldı.)
-    let dataToFilter = [...allUsers];
-    const me = authUserId ? dataToFilter.find(u => u.id === authUserId) : null;
+function LeaderboardList({ valueKey, unitKey, allUsers, authUserId, scope, isLoading }: ListProps) {
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState(PAGE_SIZE);
 
-      if (scope === 'city' && me) {
-        const city = me.personalInfo?.address?.city;
-        if (city) dataToFilter = dataToFilter.filter(u => u.personalInfo?.address?.city === city);
-      } else if (scope === 'school' && me) {
-        const mySchools = userSchools(me);
-        if (mySchools.length > 0) {
-          dataToFilter = dataToFilter.filter(u => userSchools(u).some(s => mySchools.includes(s)));
-        }
+  const unit = t(`leaderboardPage.${unitKey}`);
+
+  const { ranked, myEntry } = useMemo(() => {
+    if (!allUsers) {
+      return { ranked: [] as RankedUser[], myEntry: null as RankedUser | null };
+    }
+    let scoped = [...allUsers];
+    const me = authUserId ? scoped.find((u) => u.id === authUserId) : null;
+
+    if (scope === 'city' && me) {
+      const city = me.personalInfo?.address?.city;
+      if (city) scoped = scoped.filter((u) => u.personalInfo?.address?.city === city);
+    } else if (scope === 'school' && me) {
+      const mySchools = userSchools(me);
+      if (mySchools.length > 0) {
+        scoped = scoped.filter((u) => userSchools(u).some((s) => mySchools.includes(s)));
       }
+    }
 
-    return dataToFilter
-      .map(u => ({ user: u, value: getValue(u, valueKey) }))
-      .filter(x => x.value > 0)
+    const sorted = scoped
+      .map((u) => ({ user: u, value: getValue(u, valueKey) }))
+      .filter((x) => x.value > 0)
       .sort((a, b) => b.value - a.value)
-      .slice(0, 100)
-      .map(x => ({ ...x.user, _value: x.value }));
-  }, [allUsers, valueKey, scope, authUserId]);
+      .slice(0, MAX_LIST)
+      .map((x, idx): RankedUser => ({ ...x.user, _value: x.value, _rank: idx + 1 }));
 
-  const headerLabel = unit === t('leaderboardPage.unitPoints') ? t('leaderboardPage.colPoints') : (unit === t('leaderboardPage.unitHours') ? t('leaderboardPage.colHours') : t('leaderboardPage.colAmount'));
+    const mine = authUserId ? sorted.find((u) => u.id === authUserId) ?? null : null;
+    return { ranked: sorted, myEntry: mine };
+  }, [allUsers, authUserId, scope, valueKey]);
 
   if (isLoading) {
-    return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    return <LeaderboardSkeleton />;
   }
 
-  return (
-    <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-16">{t('leaderboardPage.colRank')}</TableHead>
-            <TableHead>{t('leaderboardPage.colUser')}</TableHead>
-            <TableHead className="text-right">{headerLabel}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sortedData.length > 0 ? sortedData.map((userItem: LeaderboardUser, index: number) => {
-            const isAnonymous = userItem.privacySettings?.isPrivate === true;
-            return (
-            <TableRow key={userItem.id} className={cn(index < 3 && 'bg-accent')}>
-              <TableCell className="font-bold text-lg text-center">
-                {index === 0 ? <Crown className="text-yellow-500 w-6 h-6 mx-auto" /> : index + 1}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    {!isAnonymous && <AvatarImage src={userItem.avatarUrl} alt={userItem.name} />}
-                    <AvatarFallback>
-                      {isAnonymous ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : (userItem.name || '?').charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{isAnonymous ? t('leaderboardPage.anonymousUser') : userItem.name}</p>
-                    {!isAnonymous && <p className="text-sm text-muted-foreground">{userItem.username}</p>}
-                    {valueKey !== 'impactScore' && getValue(userItem, 'impactScore') > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                        <Star className="h-3 w-3 text-amber-500" />
-                        <span>{getValue(userItem, 'impactScore').toLocaleString('tr-TR')} {t('leaderboardPage.unitPoints')}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell className="text-right font-bold text-base">
-                {(userItem._value ?? getValue(userItem, valueKey)).toLocaleString('tr-TR')} {unit}
-              </TableCell>
-            </TableRow>
-          );
-          }) : (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
-                {t('leaderboardPage.noEntries')}
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+  if (ranked.length === 0) {
+    return (
+      <div className="rounded-3xl border border-dashed border-border bg-card/60 p-10 text-center">
+        <p className="text-base font-medium text-foreground">{t('leaderboardPage.emptyTitle')}</p>
+        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">
+          {t('leaderboardPage.emptyDesc')}
+        </p>
+        <Button asChild className="mt-4 rounded-2xl">
+          <a href="/events">{t('leaderboardPage.emptyCta')}</a>
+        </Button>
+      </div>
     );
-  };
+  }
 
-const MemoizedLeaderboardTable = React.memo(LeaderboardTable);
+  const top3 = ranked.slice(0, 3);
+  const rest = ranked.slice(3, visible + 3);
+  const hasMore = visible + 3 < ranked.length;
+
+  return (
+    <div className="space-y-4">
+      <LeaderboardPodium top3={top3} unit={unit} />
+
+      {rest.length > 0 && (
+        <div className="space-y-2">
+          {rest.map((user, idx) => (
+            <div
+              key={user.id}
+              className="animate-in fade-in slide-in-from-bottom-2"
+              style={{ animationDelay: `${idx * 40}ms`, animationFillMode: 'backwards' }}
+            >
+              <LeaderboardRow
+                user={user}
+                unit={unit}
+                valueKey={valueKey}
+                isMe={!!authUserId && user.id === authUserId}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasMore && (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            className="rounded-2xl"
+            onClick={() => setVisible((v) => v + PAGE_SIZE)}
+          >
+            {t('leaderboardPage.loadMore')}
+          </Button>
+        </div>
+      )}
+
+      {authUserId && (
+        <LeaderboardMyRank me={myEntry} totalShown={ranked.length} unit={unit} />
+      )}
+    </div>
+  );
+}
 
 export default function LeaderboardPage() {
-  const [scope, setScope] = useState('country');
   const { user: authUser } = useUser();
   const db = useFirestore();
   const { t } = useTranslation();
 
+  const [scope, setScope] = useState<Scope>('country');
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
+  const [metric, setMetric] = useState<MetricKey>('impactScore');
+
   const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
   const { data: allUsers, isLoading } = useCollection<LeaderboardUser>(usersRef);
 
+  const activeMetric = METRICS.find((m) => m.key === metric) ?? METRICS[0];
+
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold font-headline">{t('leaderboardPage.title')}</h1>
+    <div className="mx-auto w-full max-w-3xl space-y-5 p-4 pb-32 sm:p-6">
+      <LeaderboardHero />
 
-      <Tabs defaultValue="country" className="w-full" onValueChange={setScope}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="global"><Globe className="mr-2 h-4 w-4" />{t('leaderboardPage.scopeGlobal')}</TabsTrigger>
-          <TabsTrigger value="country">{t('leaderboardPage.scopeCountry')}</TabsTrigger>
-          <TabsTrigger value="city">{t('leaderboardPage.scopeCity')}</TabsTrigger>
-          <TabsTrigger value="school">{t('leaderboardPage.scopeSchool')}</TabsTrigger>
+      {/* Zaman aralığı — bucket'lı stats olmadığı için sadece "Tüm Zamanlar" aktif */}
+      <Tabs
+        value={timeRange}
+        onValueChange={(v) => {
+          const next = TIME_RANGES.find((r) => r.key === v);
+          if (next?.available) setTimeRange(next.key);
+        }}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-4 rounded-2xl">
+          {TIME_RANGES.map((r) => (
+            <TabsTrigger
+              key={r.key}
+              value={r.key}
+              disabled={!r.available}
+              className={cn(
+                'relative rounded-xl text-xs sm:text-sm',
+                !r.available && 'cursor-not-allowed opacity-60'
+              )}
+            >
+              <span className="line-clamp-1">{t(`leaderboardPage.${r.labelKey}`)}</span>
+              {!r.available && (
+                <Badge
+                  variant="secondary"
+                  className="ml-1 hidden h-4 px-1 text-[9px] sm:inline-flex"
+                >
+                  {t('leaderboardPage.soon')}
+                </Badge>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
       </Tabs>
 
-      <Tabs defaultValue="impact" className="w-full">
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="impact"><Star className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabImpact')}</TabsTrigger>
-          <TabsTrigger value="volunteer"><Handshake className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabVolunteer')}</TabsTrigger>
-          <TabsTrigger value="donation"><Heart className="mr-2 h-4 w-4" /> {t('leaderboardPage.tabDonation')}</TabsTrigger>
+      {/* Metrik sekmeleri */}
+      <Tabs value={metric} onValueChange={(v) => setMetric(v as MetricKey)} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 rounded-2xl">
+          {METRICS.map((m) => {
+            const Icon = m.icon;
+            return (
+              <TabsTrigger key={m.key} value={m.key} className="rounded-xl text-xs sm:text-sm">
+                <Icon className="mr-1.5 h-4 w-4" />
+                <span className="line-clamp-1">{t(`leaderboardPage.${m.labelKey}`)}</span>
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
-        <TabsContent value="impact" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="impactScore" unit={t('leaderboardPage.unitPoints')} allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
-        </TabsContent>
-        <TabsContent value="volunteer" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="volunteerHours" unit={t('leaderboardPage.unitHours')} allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
-        </TabsContent>
-        <TabsContent value="donation" className="mt-4">
-          <MemoizedLeaderboardTable valueKey="totalDonation" unit="₺" allUsers={allUsers} authUserId={authUser?.uid} scope={scope} isLoading={isLoading} t={t} />
-        </TabsContent>
+        {METRICS.map((m) => (
+          <TabsContent key={m.key} value={m.key} className="mt-4 space-y-4">
+            {/* Scope (kapsam) */}
+            <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)} className="w-full">
+              <TabsList className="grid w-full grid-cols-4 rounded-2xl bg-muted/60">
+                {SCOPES.map((s) => {
+                  const Icon = s.icon;
+                  return (
+                    <TabsTrigger key={s.key} value={s.key} className="rounded-xl text-xs">
+                      <Icon className="mr-1 hidden h-3.5 w-3.5 sm:inline-block" />
+                      <span className="line-clamp-1">{t(`leaderboardPage.${s.labelKey}`)}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
+
+            <LeaderboardList
+              valueKey={m.key}
+              unitKey={m.unitKey}
+              allUsers={allUsers}
+              authUserId={authUser?.uid}
+              scope={scope}
+              isLoading={isLoading}
+            />
+          </TabsContent>
+        ))}
       </Tabs>
+
+      <LeaderboardRewards />
+
+      {/* hidden ref kullanılmıyor — sadece TS'in activeMetric'i dead-code saymaması için */}
+      <span className="sr-only">{t(`leaderboardPage.${activeMetric.labelKey}`)}</span>
     </div>
   );
 }

@@ -3,8 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { ArrowLeft, Search, Filter, ArrowDownUp, Loader2, CheckCircle, Eye, ShieldCheck } from 'lucide-react';
-import { NgoListItem } from '@/components/shared/ngo-list-item';
+import { ArrowLeft, Search, Filter, ArrowDownUp, Loader2, CheckCircle, Eye, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocking, useCollection } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
@@ -202,41 +201,64 @@ export default function VolunteerNgoSelectionPage() {
                 <CardContent className="p-0">
                     {isNgosLoading ? (
                         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-                    ) : (
-                        <div className="space-y-2 p-2">
-                            {filteredNgos.length > 0 ? filteredNgos.map(ngo => {
+                    ) : filteredNgos.length > 0 ? (
+                        <div className="divide-y">
+                            {filteredNgos.map(ngo => {
                                 const isSel = selectedNgos.includes(ngo.id);
                                 return (
-                                    <NgoListItem
+                                    <div
                                         key={ngo.id}
-                                        ngo={ngo}
-                                        href={null}
+                                        className={cn(
+                                            'flex items-center justify-between p-3 hover:bg-accent cursor-pointer transition-colors',
+                                            isSel && 'bg-primary/5',
+                                        )}
                                         onClick={() => handleSelectNgo(ngo.id)}
-                                        className={cn(isSel && 'bg-primary/5 border-primary/30')}
-                                        rightSlot={
-                                            <div className="flex items-center gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-muted-foreground hover:text-primary"
-                                                    aria-label={t('settings_volunteer_ngo_selection.previewAriaLabel')}
-                                                    onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
-                                                >
-                                                    <Eye className="h-4 w-4" />
-                                                </Button>
-                                                <div className={cn(
-                                                    "h-6 w-6 rounded-full border-2 flex items-center justify-center",
-                                                    isSel ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground'
-                                                )}>
-                                                    {isSel && <CheckCircle className="h-4 w-4 text-white" />}
-                                                </div>
+                                    >
+                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <Avatar className="h-10 w-10 bg-muted">
+                                                <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-1" />
+                                                <AvatarFallback className="text-primary font-bold">{ngo.name.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-sm truncate">{ngo.name}</p>
+                                                <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                                                    {ngo.category}
+                                                    {ngo.category && <span className="text-muted-foreground/50">|</span>}
+                                                    <span>{ngo.type}</span>
+                                                    {typeof ngo.transparencyScore === 'number' && (
+                                                        <>
+                                                            <span className="text-muted-foreground/50">|</span>
+                                                            <span>%{ngo.transparencyScore} {t('settings_volunteer_ngo_selection.transparencyLabel')}</span>
+                                                        </>
+                                                    )}
+                                                </p>
                                             </div>
-                                        }
-                                    />
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                                aria-label={t('settings_volunteer_ngo_selection.previewAriaLabel')}
+                                                onClick={(e) => { e.stopPropagation(); setPreviewNgo(ngo); }}
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                            <div className={cn(
+                                                'h-6 w-6 rounded-full border-2 flex items-center justify-center',
+                                                isSel ? 'bg-primary border-primary' : 'bg-transparent border-muted-foreground',
+                                            )}>
+                                                {isSel && <CheckCircle className="h-4 w-4 text-white" />}
+                                            </div>
+                                        </div>
+                                    </div>
                                 );
-                            }) : (
-                                <p className="text-center text-muted-foreground p-8">{t('settings_volunteer_ngo_selection.noResults')}</p>
-                            )}
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                            <HeartHandshake className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                            <p>{t('settings_volunteer_ngo_selection.noResults')}</p>
                         </div>
                     )}
                 </CardContent>

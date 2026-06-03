@@ -352,6 +352,15 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    // Süper-admin kişisel panel ayarları — yalnızca super-admin kendi doc'unu okur/yazar.
+    // Path: superAdminSettings/{adminUid}. Bildirim tercihleri (notifications.*),
+    // gelecekteki başka kişisel ayarlar burada toplanır.
+    match /superAdminSettings/{adminUid} {
+      allow read, list: if isSuperAdmin() && request.auth.uid == adminUid;
+      allow create, update: if isSuperAdmin() && request.auth.uid == adminUid;
+      allow delete: if isSuperAdmin() && request.auth.uid == adminUid;
+    }
+
     // Anket cevapları (kullanıcı kendi cevabını yazar; super-admin hepsini görür)
     match /surveys/{surveyId} {
       allow list, read: if isSuperAdmin();
