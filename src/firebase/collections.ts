@@ -72,6 +72,7 @@ export const COLLECTIONS = {
   // Hukuk yönetim sistemi (super-admin/contracts)
   legislations: 'legislations',           // Mevzuatlar — kanun + risk + uyum
   contractApprovals: 'contractApprovals',  // Kullanıcı onay kayıtları (immutable log)
+  contractPublishLog: 'contractPublishLog', // Sözleşme publish/edit audit log (append-only)
   documentArchive: 'documentArchive',      // Kurum evrak arşivi (tüzük, faaliyet belgesi)
   legalChat: 'legalChat',                  // Hukuk görevlileri chat
   complianceAnalyses: 'complianceAnalyses', // Sözleşme↔mevzuat AI uyum analizi (yalnızca admin-SDK erişir)

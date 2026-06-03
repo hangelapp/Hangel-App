@@ -288,6 +288,13 @@ service cloud.firestore {
       allow read, list: if isSuperAdmin();
       allow update, delete: if false; // değiştirilemez log
     }
+    // Sözleşme publish/edit audit log (append-only, super-admin tarafından server'da yazılır).
+    // Read: super-admin (panelden geçmişi görür). Client write yasak — yalnızca
+    // /api/admin/contracts/publish (Admin SDK) yazar.
+    match /contractPublishLog/{logId} {
+      allow read, list: if isSuperAdmin();
+      allow create, update, delete: if false;
+    }
     // Evrak arşivi: kurum admin kendi evrakını yükler, super-admin tümünü görür.
     match /documentArchive/{docId} {
       allow read, list: if isSuperAdmin() || (isSignedIn() && resource.data.uploadedBy == request.auth.uid);
