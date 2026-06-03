@@ -93,6 +93,11 @@ export const COLLECTIONS = {
   bloodRequests: 'bloodRequests',
   userRequests: 'userRequests',
 
+  // Hospitals — OSM + Sağlık Bakanlığı kaynaklı hastane kataloğu (~5013 doc).
+  // Doc id prefix: `osm-` veya `sb-`. Read: super-admin (admin paneli) + Admin SDK
+  // (api/hospitals/lookup public arama). Write: super-admin (UI'den manuel düzeltme).
+  hospitals: 'hospitals',
+
   // Donations / funds / earnings
   donations: 'donations',
   funds: 'funds',

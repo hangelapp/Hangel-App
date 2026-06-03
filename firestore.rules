@@ -965,6 +965,16 @@ service cloud.firestore {
     // bu sadece smart check-in webhook için iddempotency kuralı.
     // (Mevcut events/{eventId}/checkins kuralı satır 872'de yeterli.)
 
+    // hospitals — OSM ve Sağlık Bakanlığı kaynaklı hastane kataloğu (~5013 doc).
+    // Read: super-admin (admin paneli liste/edit). Public arama
+    // (/api/hospitals/lookup) Admin SDK ile çalışır → rules bypass.
+    // Write: yalnızca super-admin (UI'den manuel düzeltme; toplu import
+    // Admin SDK ile yapılır, rules bypass).
+    match /hospitals/{hospitalId} {
+      allow read, list: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();
