@@ -13,6 +13,11 @@
  * `generateStaticParams` pre-renders one page per ContractType; jurisdiction
  * variants are served dynamically (the page reads request headers) so we
  * don't multiply the static surface area.
+ *
+ * Tasarım — hangel Liquid Glass: gradient banner, glass article container,
+ * jurisdiction switcher pill grubu. Settings (`/settings/contracts/[slug]`)
+ * detay sayfasıyla aynı dil — paylaşılan `ContractBanner` + `ContractActions`
+ * + `ContractTOC` client component'leri kullanılır.
  */
 
 import { notFound } from 'next/navigation';
@@ -36,6 +41,9 @@ import {
   type Jurisdiction,
 } from '@/lib/contracts/jurisdiction';
 import { loadContractForJurisdiction } from '@/lib/contracts/loader';
+import { ContractBanner } from '@/app/settings/contracts/[slug]/_components/contract-banner';
+import { ContractActions } from '@/app/settings/contracts/[slug]/_components/contract-actions';
+import { PublicContractBody } from './_public-body';
 
 interface SearchParams {
   j?: string;
@@ -100,36 +108,43 @@ export default async function ContractPage({ params, searchParams }: PageProps) 
   const usingFallback = !doc && !!fallback;
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 space-y-6">
-      <header className="space-y-3 border-b pb-4">
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
-        <h1 className="text-3xl font-black tracking-tight">{active.title}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="inline-flex items-center rounded-full border px-2 py-0.5">
-            {JURISDICTION_LABEL[active.jurisdiction]}
-          </span>
-          <span>v{active.version}</span>
-          {active.effectiveDate && <span>· yürürlük {active.effectiveDate}</span>}
-          {active.lastUpdated && <span>· güncellendi {active.lastUpdated}</span>}
-        </div>
-        {usingFallback && (
-          <p className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900 dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-200">
-            {JURISDICTION_LABEL[jurisdiction]} için yerelleştirilmiş sürüm henüz yayınlanmadı —
-            {JURISDICTION_LABEL[DEFAULT_JURISDICTION]} sürümü gösteriliyor.
-          </p>
-        )}
-        <JurisdictionSwitcher type={requested} active={active.jurisdiction} lang={sp.lang} />
-      </header>
+    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-10 space-y-6 contract-page">
+      <div className="flex items-center justify-between gap-2 print:hidden">
+        <Link
+          href="/contracts"
+          className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+        >
+          ← Tüm sözleşmeler
+        </Link>
+        <ContractActions title={active.title} shareText={`hangel — ${active.title}`} />
+      </div>
 
-      <article
-        className="prose prose-sm sm:prose-base dark:prose-invert max-w-none"
-        // sanitizeHtml is the project's vetted DOMPurify wrapper; renderMarkdownToSafeHtml
-        // only emits an allow-listed tag set so the sanitizer pass is a tight loop.
-        dangerouslySetInnerHTML={{ __html: html }}
+      <ContractBanner
+        title={active.title}
+        eyebrow={`hangel · ${label}`}
+        jurisdiction={JURISDICTION_LABEL[active.jurisdiction]}
+        version={active.version}
+        effectiveDate={active.effectiveDate}
+        lastUpdated={active.lastUpdated}
+        status="published"
       />
 
-      <footer className="border-t pt-4 text-xs text-muted-foreground">
-        docId: <code className="font-mono">{active.docId}</code>
+      {usingFallback && (
+        <p className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900 dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-200 print:hidden">
+          {JURISDICTION_LABEL[jurisdiction]} için yerelleştirilmiş sürüm henüz yayınlanmadı —
+          {' '}{JURISDICTION_LABEL[DEFAULT_JURISDICTION]} sürümü gösteriliyor.
+        </p>
+      )}
+
+      <JurisdictionSwitcher type={requested} active={active.jurisdiction} lang={sp.lang} />
+
+      <PublicContractBody html={html} />
+
+      <footer className="border-t pt-4 text-xs text-muted-foreground flex flex-wrap items-center gap-3 print:hidden">
+        <span>
+          docId: <code className="font-mono">{active.docId}</code>
+        </span>
+        <span>· hangel — yayında, yasal bağlayıcı sürüm</span>
       </footer>
     </main>
   );
@@ -137,7 +152,7 @@ export default async function ContractPage({ params, searchParams }: PageProps) 
 
 function JurisdictionSwitcher({ type, active, lang }: { type: ContractType; active: Jurisdiction; lang?: string }) {
   return (
-    <div className="flex flex-wrap gap-1.5 pt-1">
+    <div className="flex flex-wrap gap-1.5 print:hidden">
       {JURISDICTIONS.map(j => {
         const href = `/contracts/${type}?j=${encodeURIComponent(j)}${lang ? `&lang=${encodeURIComponent(lang)}` : ''}`;
         const isActive = j === active;
@@ -146,10 +161,10 @@ function JurisdictionSwitcher({ type, active, lang }: { type: ContractType; acti
             key={j}
             href={href}
             prefetch={false}
-            className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
               isActive
-                ? 'border-primary bg-primary text-primary-foreground'
-                : 'border-muted bg-background hover:bg-accent'
+                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                : 'border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground'
             }`}
           >
             {JURISDICTION_LABEL[j]}

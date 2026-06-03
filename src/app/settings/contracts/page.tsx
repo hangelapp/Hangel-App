@@ -1,11 +1,16 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslation } from '@/components/providers/language-provider';
+import {
+  CountryMultiSelect,
+  inferCountriesFromText,
+} from '@/components/ui/country-multi-select';
 
 const contractGroups = [
     {
@@ -120,7 +125,50 @@ const contractGroups = [
 
 export default function ContractsPage() {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { t } = useTranslation();
+
+    // hangel — URL senkron ülke süzgeci. ?countries=TR,EU,UK
+    const initialCountries = useMemo(() => {
+      const raw = searchParams?.get('countries') ?? '';
+      return raw
+        .split(',')
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean);
+    }, [searchParams]);
+    const [countryFilter, setCountryFilter] = useState<string[]>(initialCountries);
+
+    useEffect(() => {
+      const current = new URLSearchParams(searchParams?.toString() ?? '');
+      if (countryFilter.length > 0) {
+        current.set('countries', countryFilter.join(','));
+      } else {
+        current.delete('countries');
+      }
+      const qs = current.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      // searchParams kasten dışarıda: yalnızca countryFilter değişince yaz.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [countryFilter, pathname, router]);
+
+    // Ülke filtresi aktifse: her item için slug+title heuristic ile eşleştir.
+    const filteredGroups = useMemo(() => {
+      if (countryFilter.length === 0) return contractGroups;
+      return contractGroups
+        .map((group) => ({
+          ...group,
+          items: group.items.filter((item) => {
+            const codes = inferCountriesFromText(`${item.slug} ${item.title} ${group.title}`);
+            return codes.some((c) => countryFilter.includes(c));
+          }),
+        }))
+        .filter((group) => group.items.length > 0);
+    }, [countryFilter]);
+
+    const totalCount = contractGroups.reduce((n, g) => n + g.items.length, 0);
+    const visibleCount = filteredGroups.reduce((n, g) => n + g.items.length, 0);
+
   // Why: önceden min-h-screen bg-white + PublicFooter (marketing sayfası gibi)
   // kullanıyordu — uygulama içinde tutarsız hissettiriyordu. App settings
   // sayfalarının (Privacy, Notifications) görünümünü kullanıyoruz: standart
@@ -135,7 +183,23 @@ export default function ContractsPage() {
         <p className="text-muted-foreground text-sm">{t('dashboard.settingsContracts.subheading')}</p>
       </div>
 
-      {contractGroups.map(group => (
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <CountryMultiSelect
+          value={countryFilter}
+          onChange={setCountryFilter}
+          placeholder={t('dashboard.settingsContracts.countryFilterPlaceholder')}
+          triggerClassName="w-full sm:w-auto"
+        />
+        <p className="text-xs text-muted-foreground">
+          {countryFilter.length > 0
+            ? t('dashboard.settingsContracts.visibleCount')
+                .replace('{visible}', String(visibleCount))
+                .replace('{total}', String(totalCount))
+            : t('dashboard.settingsContracts.totalCount').replace('{total}', String(totalCount))}
+        </p>
+      </div>
+
+      {filteredGroups.map(group => (
         <Card key={group.title}>
           <CardHeader>
             <CardTitle className="text-base">{group.title}</CardTitle>
@@ -154,6 +218,13 @@ export default function ContractsPage() {
           </CardContent>
         </Card>
       ))}
+      {filteredGroups.length === 0 && (
+        <Card>
+          <CardContent className="p-8 text-center text-sm text-muted-foreground">
+            {t('dashboard.settingsContracts.emptyState')}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

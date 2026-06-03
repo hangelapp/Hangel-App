@@ -944,6 +944,10 @@ export const translations: Record<Language, any> = {
       settingsContracts: {
         heading: 'Sözleşmeler, Politikalar ve Beyanlar',
         subheading: 'hangel platformu kullanımına ilişkin kurumsal, yasal ve etik belgeler.',
+        countryFilterPlaceholder: 'Ülke (tümü)',
+        visibleCount: '{visible} / {total} sözleşme görüntüleniyor',
+        totalCount: 'Toplam {total} sözleşme',
+        emptyState: 'Seçilen ülke(ler) için sözleşme bulunamadı.',
       },
       settingsAppearance: {
         heading: 'Görünüm Ayarları',
@@ -5175,6 +5179,10 @@ export const translations: Record<Language, any> = {
       settingsContracts: {
         heading: 'Contracts, Policies and Declarations',
         subheading: 'Corporate, legal and ethical documents related to use of the hangel platform.',
+        countryFilterPlaceholder: 'Country (all)',
+        visibleCount: 'Showing {visible} of {total} contracts',
+        totalCount: '{total} contracts total',
+        emptyState: 'No contracts found for the selected country/countries.',
       },
       settingsAppearance: {
         heading: 'Appearance Settings',

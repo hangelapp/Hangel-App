@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CountryMultiSelect, inferCountriesFromText } from '@/components/ui/country-multi-select';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,6 +60,8 @@ type Contract = {
   riskLevel?: RiskLevel;
   language?: string;
   country?: string;
+  // hangel — opsiyonel ülke/yetki alanları, yoksa slug+başlıktan heuristic çıkarılır.
+  jurisdictions?: string[];
   updatedAt?: unknown;
   publishedAt?: string;
   updatedByName?: string;
@@ -284,11 +288,23 @@ const ContractEditDialog = ({ contract, defaultKind, onSave }: {
   );
 };
 
+// hangel — bir doc'un hangi ülke kodlarına ait olduğunu döndürür.
+// Önce explicit jurisdictions field, sonra `country`, son çare slug+başlık heuristic.
+function resolveDocCountries(c: Contract): string[] {
+  if (c.jurisdictions && c.jurisdictions.length > 0) {
+    return c.jurisdictions.map((j) => j.toUpperCase());
+  }
+  if (c.country) return [c.country.toUpperCase()];
+  return inferCountriesFromText(`${c.slug} ${c.title} ${c.group ?? ''}`);
+}
+
 // ---- Sözleşme/Politika listesi (kind'e göre filtreli) ----
-function DocList({ kind, docs, isLoading, onSave, onDelete }: {
+function DocList({ kind, docs, isLoading, countryFilter, onCountryFilterChange, onSave, onDelete }: {
   kind: DocKind;
   docs: Contract[];
   isLoading: boolean;
+  countryFilter: string[];
+  onCountryFilterChange: (next: string[]) => void;
   onSave: (c: Contract) => Promise<void>;
   onDelete: (c: Contract) => Promise<void>;
 }) {
@@ -300,6 +316,12 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
     let list = docs;
     if (statusFilter !== 'all') list = list.filter(c => c.status === statusFilter);
     if (riskFilter !== 'all') list = list.filter(c => (c.riskLevel || 'dusuk') === riskFilter);
+    if (countryFilter.length > 0) {
+      list = list.filter(c => {
+        const docCountries = resolveDocCountries(c);
+        return docCountries.some(code => countryFilter.includes(code));
+      });
+    }
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       list = list.filter(c => c.title.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q) || (c.group || '').toLowerCase().includes(q));
@@ -311,7 +333,8 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
       if (sortKey === 'risk') return (riskOrder[b.riskLevel || 'dusuk'] || 0) - (riskOrder[a.riskLevel || 'dusuk'] || 0);
       return a.title.localeCompare(b.title, 'tr');
     });
-  }, [docs, searchTerm, statusFilter, riskFilter, sortKey]);
+  }, [docs, searchTerm, statusFilter, riskFilter, countryFilter, sortKey]);
+  const isFilterActive = searchTerm.trim().length > 0 || statusFilter !== 'all' || riskFilter !== 'all' || countryFilter.length > 0;
 
   return (
     <Card>
@@ -335,6 +358,12 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
               {Object.entries(RISK_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
             </SelectContent>
           </Select>
+          <CountryMultiSelect
+            value={countryFilter}
+            onChange={onCountryFilterChange}
+            placeholder="Ülke (tümü)"
+            triggerClassName="w-full sm:w-auto"
+          />
           <Select value={sortKey} onValueChange={setSortKey}>
             <SelectTrigger className="w-40 h-10"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -345,11 +374,18 @@ function DocList({ kind, docs, isLoading, onSave, onDelete }: {
           </Select>
           <ContractEditDialog defaultKind={kind} onSave={onSave} />
         </div>
-        {kind === 'policy' && (
-          <p className="text-xs text-muted-foreground pt-2">
-            Örnek politika türleri: {POLICY_TEMPLATES.join(' · ')}
-          </p>
-        )}
+        <div className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
+          <span>
+            {isFilterActive
+              ? `${filtered.length} / ${docs.length} ${kind === 'policy' ? 'politika' : 'sözleşme'} görüntüleniyor`
+              : `Toplam ${docs.length} ${kind === 'policy' ? 'politika' : 'sözleşme'}`}
+          </span>
+          {kind === 'policy' && (
+            <span className="hidden md:inline truncate">
+              Örnek: {POLICY_TEMPLATES.slice(0, 4).join(' · ')}
+            </span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
@@ -421,6 +457,32 @@ export default function ContractsAdminPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const [activeTab, setActiveTab] = useState('genel');
+
+  // hangel — URL ile senkron ülke süzgeci: ?countries=TR,EU,UK
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const initialCountries = useMemo(() => {
+    const raw = searchParams?.get('countries') ?? '';
+    return raw
+      .split(',')
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+  }, [searchParams]);
+  const [countryFilter, setCountryFilter] = useState<string[]>(initialCountries);
+
+  useEffect(() => {
+    const current = new URLSearchParams(searchParams?.toString() ?? '');
+    if (countryFilter.length > 0) {
+      current.set('countries', countryFilter.join(','));
+    } else {
+      current.delete('countries');
+    }
+    const qs = current.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    // searchParams kasten dışarıda: yalnızca countryFilter değişince yaz.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countryFilter, pathname, router]);
 
   const contractsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.contracts), [db]);
   const { data: firestoreContracts, isLoading } = useCollection<Contract>(contractsQuery);
@@ -551,12 +613,28 @@ export default function ContractsAdminPage() {
 
         {/* 2. SÖZLEŞMELER */}
         <TabsContent value="sozlesmeler" className="mt-4">
-          <DocList kind="contract" docs={contracts} isLoading={isLoading} onSave={handleSave} onDelete={handleDelete} />
+          <DocList
+            kind="contract"
+            docs={contracts}
+            isLoading={isLoading}
+            countryFilter={countryFilter}
+            onCountryFilterChange={setCountryFilter}
+            onSave={handleSave}
+            onDelete={handleDelete}
+          />
         </TabsContent>
 
         {/* 3. POLİTİKALAR */}
         <TabsContent value="politikalar" className="mt-4">
-          <DocList kind="policy" docs={policies} isLoading={isLoading} onSave={handleSave} onDelete={handleDelete} />
+          <DocList
+            kind="policy"
+            docs={policies}
+            isLoading={isLoading}
+            countryFilter={countryFilter}
+            onCountryFilterChange={setCountryFilter}
+            onSave={handleSave}
+            onDelete={handleDelete}
+          />
         </TabsContent>
 
         {/* 4. MEVZUATLAR — fonksiyonel */}

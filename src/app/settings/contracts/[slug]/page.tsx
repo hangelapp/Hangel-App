@@ -2,15 +2,33 @@
 
 import { contractsData } from '@/lib/contracts';
 import { notFound, useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Loader2, CheckCircle2, ScrollText } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Loader2, CheckCircle2, ScrollText, ChevronLeft, ChevronRight, FileClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
+import { ContractTOC } from './_components/contract-toc';
+import { ContractActions } from './_components/contract-actions';
+import { ContractBanner } from './_components/contract-banner';
+
+interface FirestoreContract {
+  slug: string;
+  title: string;
+  content: string;
+  version?: string;
+  effectiveDate?: string | null;
+  lastUpdated?: string | null;
+  status?: 'published' | 'draft' | 'archived';
+  jurisdictionLabel?: string;
+}
+
+interface ContractCompliance {
+  percent?: number;
+}
 
 export default function ContractDetailPage() {
   const router = useRouter();
@@ -18,28 +36,49 @@ export default function ContractDetailPage() {
   const slug = params.slug as string;
   const db = useFirestore();
 
-  // Önce Firestore'dan dene (super-admin tarafından düzenlenmiş içerik)
+  // Firestore — super-admin tarafından düzenlenmiş içerik (varsa öncelik).
   const contractDocRef = useMemoFirebase(() => {
     if (!db || !slug) return null;
     return doc(db, COLLECTIONS.contracts, slug);
   }, [db, slug]);
-  const { data: firestoreContract, isLoading } = useDoc<{ slug: string; title: string; content: string }>(contractDocRef);
+  const { data: firestoreContract, isLoading } = useDoc<FirestoreContract>(contractDocRef);
 
-  // Firestore'da yoksa kod içi varsayılan içerik
+  // Compliance (opsiyonel, yoksa rozet gizlenir).
+  const complianceDocRef = useMemoFirebase(() => {
+    if (!db || !slug) return null;
+    return doc(db, 'contractCompliance', slug);
+  }, [db, slug]);
+  const { data: complianceDoc } = useDoc<ContractCompliance>(complianceDocRef);
+
+  // Code-içi fallback.
   const contract = useMemo(() => {
     if (firestoreContract && firestoreContract.content) return firestoreContract;
     return contractsData.find(c => c.slug === slug) || null;
   }, [firestoreContract, slug]);
 
-  // --- "Okudum, Onaylıyorum" (KVKK ispat kaydı → super-admin Onay Kayıtları) ---
+  // Prev/Next — kod içi master listeden derive et.
+  const { prev, next } = useMemo(() => {
+    const idx = contractsData.findIndex(c => c.slug === slug);
+    if (idx === -1) return { prev: null, next: null };
+    return {
+      prev: idx > 0 ? contractsData[idx - 1] : null,
+      next: idx < contractsData.length - 1 ? contractsData[idx + 1] : null,
+    };
+  }, [slug]);
+
+  const sanitizedHtml = useMemo(
+    () => (contract?.content ? sanitizeHtml(contract.content) : ''),
+    [contract?.content]
+  );
+
+  const articleRef = useRef<HTMLElement | null>(null);
+
+  // --- "Okudum, Onaylıyorum" KVKK ispat kaydı ---
   const { user: authUser } = useUser();
   const { toast } = useToast();
-  const version = (firestoreContract as { version?: string } | null)?.version || '1.0';
+  const version = firestoreContract?.version || '1.0';
   const [approving, setApproving] = useState(false);
   const [approved, setApproved] = useState(false);
-  // PERF: readSeconds ref'te tut, render trigger etme (sadece submit'te okunur).
-  // Önceki setInterval(setReadSeconds, 1000) her saniye re-render ediyordu —
-  // contracts sayfası uzun text ile yavaşlıyordu.
   const readSecondsRef = useRef(0);
   const scrolledRef = useRef(false);
 
@@ -86,7 +125,7 @@ export default function ContractDetailPage() {
       }
       setApproved(true);
       try { localStorage.setItem(`contract-approved-${slug}-v${version}`, new Date().toISOString()); } catch { /* noop */ }
-      toast({ title: '✅ Onaylandı', description: 'Okuduğunuz ve onayladığınız kaydedildi.' });
+      toast({ title: 'Onaylandı', description: 'Okuduğunuz ve onayladığınız kaydedildi.' });
     } catch {
       toast({ variant: 'destructive', title: 'Onaylanamadı', description: 'Bağlantı hatası.' });
     } finally {
@@ -94,8 +133,6 @@ export default function ContractDetailPage() {
     }
   };
 
-  // App settings sayfaları tasarımı: standart p-4 + Card. PublicFooter kaldırıldı
-  // (settings layout zaten footer + max-w sağlar).
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-dvh">
@@ -109,43 +146,136 @@ export default function ContractDetailPage() {
   }
 
   return (
-    <div className="p-4 space-y-6 animate-in fade-in-0">
-      <Button onClick={() => router.back()} variant="ghost" size="icon" className="mb-2 -ml-2" aria-label="Geri">
-        <ArrowLeft className="h-6 w-6" />
-      </Button>
-      <div>
-        <h1 className="text-2xl font-bold font-headline">{contract.title}</h1>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 animate-in fade-in-0 max-w-7xl mx-auto contract-page">
+      {/* Top bar — back + actions */}
+      <div className="flex items-center justify-between gap-2 print:hidden">
+        <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
+        <ContractActions title={contract.title} shareText={`hangel — ${contract.title}`} />
       </div>
-      <Card>
-        <CardContent className="pt-6">
-          <article
-            className="prose prose-sm sm:prose-base dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
-          />
-        </CardContent>
-      </Card>
 
-      {/* Okudum, Onaylıyorum — KVKK ispat kaydı (super-admin Onay Kayıtları'na düşer) */}
-      <Card className={approved ? 'border-green-500/50 bg-green-50/40 dark:bg-green-900/10' : 'border-primary/30'}>
-        <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-          {approved ? (
-            <div className="flex items-center gap-2 text-green-700 font-medium text-sm dark:text-green-300">
-              <CheckCircle2 className="h-5 w-5 shrink-0" /> Bu metni okudunuz ve onayladınız. Teşekkürler.
+      <ContractBanner
+        title={contract.title}
+        eyebrow="hangel · sözleşme"
+        jurisdiction={firestoreContract?.jurisdictionLabel || 'Türkiye (KVKK)'}
+        version={version}
+        effectiveDate={firestoreContract?.effectiveDate ?? null}
+        lastUpdated={firestoreContract?.lastUpdated ?? null}
+        status={firestoreContract?.status || 'published'}
+        compliancePercent={complianceDoc?.percent ?? null}
+      />
+
+      {/* Body grid: sidebar TOC + article */}
+      <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <ContractTOC html={sanitizedHtml} articleRef={articleRef} />
+
+        <div className="space-y-6 min-w-0">
+          <div className="glass rounded-3xl p-5 sm:p-8 shadow-glass-soft print:shadow-none print:rounded-none print:p-0 print:bg-white">
+            <article
+              ref={articleRef}
+              className="prose prose-sm sm:prose-base dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-headings:font-headline prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-pre:rounded-xl prose-table:text-sm prose-th:bg-muted/50"
+              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+            />
+          </div>
+
+          {/* Okudum, Onaylıyorum — KVKK ispat kaydı */}
+          <div
+            className={`glass-thin rounded-2xl p-4 sm:p-5 print:hidden ${
+              approved ? 'ring-1 ring-emerald-400/40' : 'ring-1 ring-primary/20'
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              {approved ? (
+                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-medium text-sm">
+                  <CheckCircle2 className="h-5 w-5 shrink-0" /> Bu metni okudunuz ve onayladınız. Teşekkürler.
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 text-sm text-muted-foreground inline-flex items-start gap-2">
+                    <ScrollText className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>
+                      Metni okuduysanız onaylayın. Onay; tarih, cihaz ve okuma süresiyle birlikte kayıt altına alınır.
+                    </span>
+                  </div>
+                  <Button onClick={handleApprove} disabled={approving} className="shrink-0">
+                    {approving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                    Okudum, Onaylıyorum
+                  </Button>
+                </>
+              )}
             </div>
-          ) : (
-            <>
-              <div className="flex-1 text-sm text-muted-foreground inline-flex items-center gap-2">
-                <ScrollText className="h-4 w-4 shrink-0" />
-                Metni okuduysanız onaylayın. (Onay; tarih, cihaz ve okuma süresiyle birlikte kayıt altına alınır.)
-              </div>
-              <Button onClick={handleApprove} disabled={approving} className="shrink-0">
-                {approving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                Okudum, Onaylıyorum
-              </Button>
-            </>
+          </div>
+
+          {/* Prev / Next nav */}
+          {(prev || next) && (
+            <nav className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:hidden">
+              {prev ? (
+                <Link
+                  href={`/settings/contracts/${prev.slug}`}
+                  className="glass-thin rounded-2xl p-4 flex items-center gap-3 hover:bg-accent/40 transition-colors"
+                >
+                  <ChevronLeft className="h-5 w-5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Önceki</div>
+                    <div className="text-sm font-medium truncate">{prev.title}</div>
+                  </div>
+                </Link>
+              ) : <div />}
+              {next ? (
+                <Link
+                  href={`/settings/contracts/${next.slug}`}
+                  className="glass-thin rounded-2xl p-4 flex items-center justify-end gap-3 text-right hover:bg-accent/40 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Sonraki</div>
+                    <div className="text-sm font-medium truncate">{next.title}</div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-primary shrink-0" />
+                </Link>
+              ) : <div />}
+            </nav>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Footer — draft/last-update + version history link */}
+          <footer className="text-xs text-muted-foreground flex flex-wrap items-center gap-3 pt-2 border-t border-border/60">
+            <span className="inline-flex items-center gap-1.5">
+              <FileClock className="h-3.5 w-3.5" />
+              {firestoreContract?.status === 'draft'
+                ? 'Bu metin taslak aşamasındadır — yayın öncesi son inceleme bekleniyor.'
+                : 'Bu metin yayınlanmış sürümdür.'}
+            </span>
+            {firestoreContract?.lastUpdated && (
+              <span>· Son güncelleme: {firestoreContract.lastUpdated}</span>
+            )}
+            <Link
+              href={`/settings/contracts/${slug}/history`}
+              className="text-primary hover:underline ml-auto print:hidden"
+              prefetch={false}
+            >
+              Sürüm geçmişi
+            </Link>
+          </footer>
+        </div>
+      </div>
+
+      {/* Print-only header — A4 friendly. */}
+      <div className="hidden print:block print:fixed print:top-0 print:left-0 print:right-0 print:text-[10px] print:text-gray-500 print:px-6 print:py-2 print:border-b">
+        hangel · {contract.title} · v{version}
+      </div>
+
+      <style jsx global>{`
+        @media print {
+          @page { size: A4; margin: 18mm 16mm; }
+          html, body { background: #ffffff !important; }
+          .contract-page { max-width: 100% !important; padding: 0 !important; }
+          .prose { color: #111 !important; }
+          .prose a { color: #111 !important; text-decoration: underline; }
+          .prose pre, .prose code { background: #f4f4f5 !important; color: #111 !important; }
+          .prose h1, .prose h2, .prose h3 { break-after: avoid; page-break-after: avoid; }
+          .prose img, .prose table, .prose pre { break-inside: avoid; page-break-inside: avoid; }
+        }
+      `}</style>
     </div>
   );
 }
