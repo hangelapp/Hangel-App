@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -12,13 +12,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import Link from 'next/link';
-import { Handshake, ChevronRight, ShieldCheck, Bell, Loader2, Save } from 'lucide-react';
+import {
+  Handshake,
+  ChevronRight,
+  ShieldCheck,
+  Bell,
+  Loader2,
+  Save,
+  Play,
+  Square,
+} from 'lucide-react';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
+import {
+  NOTIFICATION_SOUNDS,
+  SOUND_ID_DEFAULT,
+  SOUND_ID_SILENT,
+  type NotificationSound,
+} from '@/lib/notification-sounds';
 
 // Bildirim kanalları — Switch column'larında gösterilir.
 const NOTIFICATION_CHANNELS = ['inApp', 'email', 'sms'] as const;
@@ -40,6 +62,8 @@ type NotificationEventKey = (typeof NOTIFICATION_EVENTS)[number];
 
 type EventChannelMap = Record<NotificationChannel, boolean>;
 type NotificationsState = Record<NotificationEventKey, EventChannelMap>;
+// Sound preference state: event → sound id ('__silent__' | '__default__' | catalog id).
+type SoundsState = Record<NotificationEventKey, string>;
 
 // Kritik event'ler ON (yeni başvuru, ödeme başarısız, sistem hatası, acil kan);
 // informational OFF (yeni kayıt, ödeme alındı detay push, haftalık özet sadece email).
@@ -54,9 +78,26 @@ const DEFAULT_EVENT_SETTINGS: NotificationsState = {
   weekly_summary:             { inApp: false, email: true,  sms: false },
 };
 
+// Tüm event'ler için ses varsayılanı = system default. Süper-admin tek tek
+// override edebilir; "Sessiz" no-audio, catalog id specific dosya.
+const DEFAULT_SOUND_SETTINGS: SoundsState = {
+  new_ngo_application:       SOUND_ID_DEFAULT,
+  new_brand_application:     SOUND_ID_DEFAULT,
+  payment_received:          SOUND_ID_DEFAULT,
+  payment_failed:            SOUND_ID_DEFAULT,
+  system_error:              SOUND_ID_DEFAULT,
+  new_user_signup:           SOUND_ID_DEFAULT,
+  emergency_request_created: SOUND_ID_DEFAULT,
+  weekly_summary:            SOUND_ID_DEFAULT,
+};
+
 // Firestore doc shape (superAdminSettings/{adminUid}).
+// notifications.{event}.{channel} → bool (mevcut switch matrisi)
+// notifications.{event}.sound     → string|null (yeni ses tercihi, null = sessiz)
 type SuperAdminSettingsDoc = {
-  notifications?: Partial<Record<NotificationEventKey, Partial<EventChannelMap>>>;
+  notifications?: Partial<
+    Record<NotificationEventKey, Partial<EventChannelMap> & { sound?: string | null }>
+  >;
 };
 
 function mergeNotificationDefaults(
@@ -75,6 +116,37 @@ function mergeNotificationDefaults(
   return out;
 }
 
+function mergeSoundDefaults(
+  remote: SuperAdminSettingsDoc['notifications'] | undefined,
+): SoundsState {
+  const out = {} as SoundsState;
+  for (const ev of NOTIFICATION_EVENTS) {
+    const remoteSound = remote?.[ev]?.sound;
+    // null → kullanıcı bilinçli olarak "Sessiz" seçmiş; undefined → henüz set edilmemiş.
+    if (remoteSound === null) {
+      out[ev] = SOUND_ID_SILENT;
+    } else if (typeof remoteSound === 'string' && remoteSound.length > 0) {
+      out[ev] = remoteSound;
+    } else {
+      out[ev] = DEFAULT_SOUND_SETTINGS[ev];
+    }
+  }
+  return out;
+}
+
+// Catalog'da web-playable path bul. Web yoksa /sounds/{filename} dene;
+// fakat .caf gibi browser'ın çalamadığı format'ları es geç (preview disable).
+function resolveWebPath(sound: NotificationSound): string | null {
+  if (sound.paths.web && sound.paths.web.length > 0) return sound.paths.web;
+  // iOS-only .caf'lar browser'da decode edilemez; web asset eklenene dek preview yok.
+  if (!sound.filename) return null;
+  const lower = sound.filename.toLowerCase();
+  if (lower.endsWith('.caf') || lower.endsWith('.aiff') || lower.endsWith('.aif')) {
+    return null;
+  }
+  return `/sounds/${sound.filename}`;
+}
+
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -90,20 +162,89 @@ export default function SettingsPage() {
     useDoc<SuperAdminSettingsDoc>(settingsRef);
 
   const [notifications, setNotifications] = useState<NotificationsState>(DEFAULT_EVENT_SETTINGS);
+  const [sounds, setSounds] = useState<SoundsState>(DEFAULT_SOUND_SETTINGS);
   const [saving, setSaving] = useState(false);
+  // Hangi event'in preview'ı şu an oynuyor — UI feedback için.
+  const [playingEvent, setPlayingEvent] = useState<NotificationEventKey | null>(null);
+  // Tek bir paylaşılan HTMLAudioElement; preview'lar birbirini kesebilsin diye.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Hydrate from Firestore as soon as the doc resolves (covers "doc yok" case
   // by falling back to defaults).
   useEffect(() => {
     if (isSettingsLoading) return;
     setNotifications(mergeNotificationDefaults(settingsDoc?.notifications));
+    setSounds(mergeSoundDefaults(settingsDoc?.notifications));
   }, [settingsDoc, isSettingsLoading]);
+
+  // Unmount'ta playing audio'yu kes — leaked event handler / sound olmasın.
+  useEffect(() => {
+    return () => {
+      const a = audioRef.current;
+      if (a) {
+        a.pause();
+        a.src = '';
+      }
+    };
+  }, []);
 
   const handleToggle = (ev: NotificationEventKey, channel: NotificationChannel) => {
     setNotifications((prev) => ({
       ...prev,
       [ev]: { ...prev[ev], [channel]: !prev[ev][channel] },
     }));
+  };
+
+  const handleSoundChange = (ev: NotificationEventKey, soundId: string) => {
+    setSounds((prev) => ({ ...prev, [ev]: soundId }));
+    // Tercih değişti — şu an çalmakta olan preview varsa onu durdur.
+    if (playingEvent === ev && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setPlayingEvent(null);
+    }
+  };
+
+  const stopPreview = useCallback(() => {
+    const a = audioRef.current;
+    if (a) {
+      a.pause();
+      a.currentTime = 0;
+    }
+    setPlayingEvent(null);
+  }, []);
+
+  const handlePreview = (ev: NotificationEventKey) => {
+    // Aynı event'in preview'ı çalıyorsa → toggle (stop).
+    if (playingEvent === ev) {
+      stopPreview();
+      return;
+    }
+    const soundId = sounds[ev];
+    // Silent / default için preview yapma — "Sessiz" zaten ses yok, "Varsayılan"
+    // sistemin native bildirim sesi olduğu için browser'da çalabileceğimiz
+    // bir dosya yok.
+    if (soundId === SOUND_ID_SILENT || soundId === SOUND_ID_DEFAULT) return;
+
+    const sound = NOTIFICATION_SOUNDS.find((s) => s.id === soundId);
+    if (!sound) return;
+    const url = resolveWebPath(sound);
+    if (!url) return;
+
+    // Önceki preview'ı kes ve yeni source ile başlat.
+    let a = audioRef.current;
+    if (!a) {
+      a = new Audio();
+      audioRef.current = a;
+    }
+    a.pause();
+    a.src = url;
+    a.currentTime = 0;
+    // onended / onerror — playing state'i reset etmeyi unutma.
+    a.onended = () => setPlayingEvent(null);
+    a.onerror = () => setPlayingEvent(null);
+    setPlayingEvent(ev);
+    void a.play().catch(() => setPlayingEvent(null));
   };
 
   const handleSaveNotifications = async () => {
@@ -117,9 +258,22 @@ export default function SettingsPage() {
     }
     setSaving(true);
     try {
+      // Notifications switch matrisini ses tercihiyle birleştir; aynı event
+      // doc'unda { inApp, email, sms, sound } olarak yazılır. Geriye uyumlu —
+      // mevcut sender'lar sound field'ını sessizce ignore eder.
+      const payloadNotifications: Record<
+        string,
+        EventChannelMap & { sound: string | null }
+      > = {};
+      for (const ev of NOTIFICATION_EVENTS) {
+        const chosen = sounds[ev];
+        const soundValue: string | null =
+          chosen === SOUND_ID_SILENT ? null : chosen;
+        payloadNotifications[ev] = { ...notifications[ev], sound: soundValue };
+      }
       await setDoc(
         settingsRef,
-        { notifications, updatedAt: serverTimestamp() },
+        { notifications: payloadNotifications, updatedAt: serverTimestamp() },
         { merge: true },
       );
       toast({
@@ -143,6 +297,10 @@ export default function SettingsPage() {
 
   const isAuthBlocked = isUserLoading || !authUser;
   const channels = useMemo(() => NOTIFICATION_CHANNELS, []);
+  // Dropdown'da gösterilecek sıralı liste — locale'a göre name çek.
+  const soundOptions = useMemo(() => {
+    return NOTIFICATION_SOUNDS.map((s) => ({ id: s.id, label: s.name, labelEn: s.nameEn }));
+  }, []);
 
   return (
     <>
@@ -207,17 +365,31 @@ export default function SettingsPage() {
             </div>
           ) : (
             <>
-              <div className="hidden md:grid grid-cols-[1fr_repeat(3,90px)] gap-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div className="hidden md:grid grid-cols-[1fr_repeat(3,72px)_minmax(180px,1fr)] gap-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div>{t('super_admin_settings.colEvent')}</div>
                 <div className="text-center">{t('super_admin_settings.colInApp')}</div>
                 <div className="text-center">{t('super_admin_settings.colEmail')}</div>
                 <div className="text-center">{t('super_admin_settings.colSms')}</div>
+                <div>{t('super_admin_settings.colSound')}</div>
               </div>
               <div className="space-y-2">
-                {NOTIFICATION_EVENTS.map((ev) => (
+                {NOTIFICATION_EVENTS.map((ev) => {
+                  const currentSoundId = sounds[ev];
+                  const isPlaying = playingEvent === ev;
+                  // Preview disable: silent / default / catalog'da yok / web-playable
+                  // path çıkmıyorsa (ör. .caf gibi browser'ın decode edemediği format).
+                  const currentSoundEntry = NOTIFICATION_SOUNDS.find(
+                    (s) => s.id === currentSoundId,
+                  );
+                  const previewable =
+                    currentSoundId !== SOUND_ID_SILENT &&
+                    currentSoundId !== SOUND_ID_DEFAULT &&
+                    !!currentSoundEntry &&
+                    resolveWebPath(currentSoundEntry) !== null;
+                  return (
                   <div
                     key={ev}
-                    className="grid grid-cols-1 md:grid-cols-[1fr_repeat(3,90px)] gap-3 md:gap-2 items-center p-3 border rounded-lg"
+                    className="grid grid-cols-1 md:grid-cols-[1fr_repeat(3,72px)_minmax(180px,1fr)] gap-3 md:gap-2 items-center p-3 border rounded-lg"
                   >
                     <div className="space-y-0.5">
                       <Label className="font-medium text-sm">
@@ -249,8 +421,56 @@ export default function SettingsPage() {
                         />
                       </div>
                     ))}
+                    {/* Sound picker + preview — mobilde dikey stack, desktop'ta yan yana */}
+                    <div className="flex items-center gap-2 md:gap-1.5">
+                      <span className="md:hidden text-xs text-muted-foreground shrink-0">
+                        {t('super_admin_settings.colSound')}
+                      </span>
+                      <Select
+                        value={currentSoundId}
+                        onValueChange={(v) => handleSoundChange(ev, v)}
+                        disabled={saving || isSettingsLoading}
+                      >
+                        <SelectTrigger
+                          className="h-9 flex-1 text-sm"
+                          aria-label={`${ev} sound`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={SOUND_ID_SILENT}>
+                            {t('super_admin_settings.soundSilent')}
+                          </SelectItem>
+                          <SelectItem value={SOUND_ID_DEFAULT}>
+                            {t('super_admin_settings.soundDefault')}
+                          </SelectItem>
+                          {soundOptions.map((opt) => (
+                            <SelectItem key={opt.id} value={opt.id}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-9 w-9 shrink-0"
+                        onClick={() => handlePreview(ev)}
+                        disabled={!previewable || saving || isSettingsLoading}
+                        aria-label={t('super_admin_settings.previewLabel')}
+                        title={t('super_admin_settings.previewLabel')}
+                      >
+                        {isPlaying ? (
+                          <Square className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveNotifications} disabled={saving || isSettingsLoading}>

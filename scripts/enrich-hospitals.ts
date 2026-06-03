@@ -96,6 +96,29 @@ async function nominatimReverse(lat: number, lng: number): Promise<OsmTags | nul
   }
 }
 
+// Photon (komoot) — no official rate limit, OSM-based reverse geocode.
+// Used as faster parallel alternative to Nominatim.
+async function photonReverse(lat: number, lng: number): Promise<OsmTags | null> {
+  try {
+    const url = `https://photon.komoot.io/reverse?lat=${lat}&lon=${lng}&lang=default`;
+    const res = await fetch(url, { headers: { 'User-Agent': UA } });
+    if (!res.ok) return null;
+    const j = (await res.json()) as { features?: Array<{ properties?: Record<string, string> }> };
+    const p = j.features?.[0]?.properties;
+    if (!p) return null;
+    const tags: OsmTags = {};
+    if (p.street) tags['addr:street'] = p.street;
+    if (p.housenumber) tags['addr:housenumber'] = p.housenumber;
+    if (p.city || p.town || p.village) tags['addr:city'] = p.city || p.town || p.village || '';
+    if (p.district || p.county || p.suburb) tags['addr:district'] = p.district || p.county || p.suburb || '';
+    if (p.postcode) tags['addr:postcode'] = p.postcode;
+    if (p.state) tags['addr:province'] = p.state;
+    return tags;
+  } catch {
+    return null;
+  }
+}
+
 function tagsToEnrichment(tags: OsmTags): OsmEnrichment {
   const street = tags['addr:street'] || '';
   const houseno = tags['addr:housenumber'] || '';
@@ -122,19 +145,15 @@ function mergeIntoDoc(doc: HospitalDoc, enr: OsmEnrichment): Partial<HospitalDoc
   return update;
 }
 
-async function enrichOne(doc: HospitalDoc): Promise<OsmEnrichment | null> {
-  const osm = parseOsmId(doc.id);
-  if (osm) {
-    const res = await overpassFetch(osm.id);
-    await sleep(500); // 2 req/sec Overpass
-    if (res && res.tags && Object.keys(res.tags).length > 0) {
-      const enr = tagsToEnrichment(res.tags);
-      if (enr.street || enr.city) return enr;
-    }
-  }
+async function enrichOne(doc: HospitalDoc, geocoder: 'nominatim' | 'photon'): Promise<OsmEnrichment | null> {
+  // Skip Overpass when running in parallel (use only reverse geocode for speed).
+  // Photon has no rate limit so safe for parallel workers.
   if (typeof doc.lat === 'number' && typeof doc.lng === 'number') {
-    const tags = await nominatimReverse(doc.lat, doc.lng);
-    await sleep(1100); // 1 req/sec Nominatim
+    const tags = geocoder === 'photon'
+      ? await photonReverse(doc.lat, doc.lng)
+      : await nominatimReverse(doc.lat, doc.lng);
+    if (geocoder === 'nominatim') await sleep(1100); // Nominatim 1 req/sec
+    else await sleep(120); // Photon courteous ~8 req/sec
     if (tags) {
       const enr = tagsToEnrichment(tags);
       enr.source = 'reverse';
@@ -155,8 +174,12 @@ async function main() {
   const sampleN = Number(args[args.indexOf('--sample') + 1]) || 10;
   const batchN = Number(args[args.indexOf('--batch') + 1]) || 100;
   const limit = Number(args[args.indexOf('--limit') + 1]) || 0;
+  const rangeArg = args[args.indexOf('--range') + 1];
+  const range = args.includes('--range') && rangeArg ? rangeArg.split(':').map(Number) : null;
+  const geocoder: 'nominatim' | 'photon' = args.includes('--geocoder') && args[args.indexOf('--geocoder') + 1] === 'photon' ? 'photon' : 'nominatim';
+  const tag = args[args.indexOf('--tag') + 1] || 'main';
 
-  console.log(`Mode: ${apply ? 'APPLY (writes!)' : 'DRY RUN'} | stats=${onlyStats} | sample=${sampleN} | batch=${batchN} | limit=${limit || 'unlimited'}`);
+  console.log(`[${tag}] Mode: ${apply ? 'APPLY' : 'DRY RUN'} | stats=${onlyStats} | sample=${sampleN} | batch=${batchN} | limit=${limit || 'unlimited'} | range=${range ? range.join(':') : 'all'} | geocoder=${geocoder}`);
 
   const db = getAdminFirestore();
   console.log('Fetching all hospitals...');
@@ -178,15 +201,18 @@ async function main() {
   if (onlyStats) return;
 
   const candidates = all.filter(isMissingCore);
-  const work = limit > 0 ? candidates.slice(0, limit) : candidates;
-  console.log(`Candidates (missing core): ${candidates.length} | will process: ${work.length}`);
+  let work = limit > 0 ? candidates.slice(0, limit) : candidates;
+  if (range && range.length === 2) {
+    work = work.slice(range[0], range[1]);
+  }
+  console.log(`[${tag}] Candidates (missing core): ${candidates.length} | will process: ${work.length}`);
 
   if (!apply) {
     console.log(`\n--- DRY RUN: first ${sampleN} samples ---`);
     let processed = 0;
     let enriched = 0;
     for (const doc of work.slice(0, sampleN)) {
-      const enr = await enrichOne(doc);
+      const enr = await enrichOne(doc, geocoder);
       processed++;
       if (enr) {
         enriched++;
@@ -212,11 +238,10 @@ async function main() {
   let written = 0;
   let batch = db.batch();
   let batchSize = 0;
-  let lastFlush = Date.now();
 
   for (const doc of work) {
     processed++;
-    const enr = await enrichOne(doc);
+    const enr = await enrichOne(doc, geocoder);
     if (enr) {
       const update = mergeIntoDoc(doc, enr);
       if (Object.keys(update).length > 0) {
@@ -228,20 +253,19 @@ async function main() {
     if (batchSize >= batchN) {
       await batch.commit();
       written += batchSize;
-      console.log(`[${processed}/${work.length}] flushed ${batchSize} writes (total written ${written})`);
+      console.log(`[${tag}][${processed}/${work.length}] flushed ${batchSize} writes (total written ${written})`);
       batch = db.batch();
       batchSize = 0;
-      lastFlush = Date.now();
     }
     if (processed % 50 === 0) {
-      console.log(`[${processed}/${work.length}] enriched ${enriched}, writes pending ${batchSize}`);
+      console.log(`[${tag}][${processed}/${work.length}] enriched ${enriched}, writes pending ${batchSize}`);
     }
   }
   if (batchSize > 0) {
     await batch.commit();
     written += batchSize;
   }
-  console.log(`\nDONE: processed ${processed}, enriched ${enriched}, written ${written}`);
+  console.log(`\n[${tag}] DONE: processed ${processed}, enriched ${enriched}, written ${written}`);
 }
 
 main().catch((e) => {
