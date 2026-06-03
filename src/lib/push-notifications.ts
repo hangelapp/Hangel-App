@@ -21,6 +21,12 @@
  */
 import { getAdminFirestore, getAdminMessaging } from './firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import {
+    NOTIFICATION_SOUNDS_BY_FILENAME,
+    NOTIFICATION_SOUNDS,
+    SOUND_ID_SILENT,
+    SOUND_ID_DEFAULT,
+} from './notification-sounds';
 import type { MulticastMessage } from 'firebase-admin/messaging';
 
 export interface PushPayload {
@@ -95,8 +101,114 @@ export function getSoundForNotificationType(type: string | undefined | null): st
     ) {
         return 'hangel-event.caf';
     }
+    // Super-admin event types (super-admin/settings).
+    // Maps the 8 admin event keys to the closest existing tone — keeps APNs
+    // payload graceful even if super-admin has not overridden the sound.
+    if (lower === 'payment_received') {
+        return 'hangel-volunteer.caf';
+    }
+    if (lower === 'payment_failed' || lower === 'system_error') {
+        return 'hangel-disaster.caf';
+    }
+    if (lower === 'emergency_request_created') {
+        return 'hangel-blood.caf';
+    }
+    if (
+        lower === 'new_ngo_application' ||
+        lower === 'new_brand_application' ||
+        lower === 'new_user_signup' ||
+        lower === 'weekly_summary'
+    ) {
+        return 'hangel-alert.caf';
+    }
     // Welcome / message / diğer — generic
     return 'hangel-alert.caf';
+}
+
+/**
+ * Super-admin custom sound preference resolver.
+ *
+ * Returns the APNs `sound` field value that should be put on the payload:
+ *   - `string` (e.g. `'hangel-blood.caf'`) → play that custom CAF
+ *   - `null` → silent push (caller MUST omit the `sound` field entirely)
+ *
+ * Lookup precedence (super-admin only):
+ *   1. `superAdminSettings/{uid}.notifications.{eventType}.sound` ===
+ *      `'__silent__'`  → null
+ *   2. ...                                            === `'__default__'`
+ *      → fall back to `getSoundForNotificationType(eventType)`
+ *   3. catalog id (e.g. `'blood-emergency'`)          → resolve to `.filename`
+ *   4. unknown id / unset / missing doc               → default sound
+ *
+ * For non super-admin users the default tone is returned untouched. This
+ * preserves the pre-existing behaviour for every other call-site.
+ */
+export async function resolveSoundForUser(
+    userUid: string,
+    eventType: string,
+    isSuperAdmin: boolean,
+): Promise<string | null> {
+    if (!isSuperAdmin) {
+        return getSoundForNotificationType(eventType);
+    }
+    try {
+        const db = getAdminFirestore();
+        const snap = await db
+            .collection(COLLECTIONS.superAdminSettings)
+            .doc(userUid)
+            .get();
+        if (!snap.exists) {
+            return getSoundForNotificationType(eventType);
+        }
+        const data = snap.data() as
+            | {
+                  notifications?: Record<
+                      string,
+                      { sound?: string | null } | undefined
+                  >;
+              }
+            | undefined;
+        const pref = data?.notifications?.[eventType]?.sound;
+
+        if (pref === null || pref === SOUND_ID_SILENT) {
+            return null;
+        }
+        if (typeof pref !== 'string' || pref.length === 0 || pref === SOUND_ID_DEFAULT) {
+            return getSoundForNotificationType(eventType);
+        }
+
+        // pref is either a catalog id (e.g. 'blood-emergency') or already a
+        // filename (e.g. 'hangel-blood.caf'). Resolve in that order.
+        const byId = NOTIFICATION_SOUNDS.find((s) => s.id === pref);
+        if (byId) return byId.filename;
+        if (NOTIFICATION_SOUNDS_BY_FILENAME[pref]) return pref;
+
+        // Unrecognised id → safe fallback to default.
+        return getSoundForNotificationType(eventType);
+    } catch (e) {
+        console.warn('[push] resolveSoundForUser failed, using default', e);
+        return getSoundForNotificationType(eventType);
+    }
+}
+
+/**
+ * Server-side super-admin check (claim-stamped UIDs cannot be read here —
+ * only the auth token carries the claim — so we fall back to the Firestore
+ * `users/{uid}.role` doc which the Cloud Function keeps in sync).
+ *
+ * Returns false on any error (e.g. doc missing) so non super-admin path
+ * stays the default — this preserves backward compatibility.
+ */
+async function isSuperAdminUid(uid: string): Promise<boolean> {
+    try {
+        const db = getAdminFirestore();
+        const snap = await db.collection(COLLECTIONS.users).doc(uid).get();
+        if (!snap.exists) return false;
+        const data = snap.data() as { role?: string; isSuperAdmin?: boolean } | undefined;
+        return data?.role === 'super-admin' || data?.isSuperAdmin === true;
+    } catch {
+        return false;
+    }
 }
 
 export interface PushSendResult {
@@ -142,6 +254,27 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
     }
 
     const messaging = getAdminMessaging();
+
+    // Super-admin sound override resolution. For non super-admins this is a
+    // single role-doc read + the existing default-tone lookup, mirroring the
+    // pre-existing behaviour. For super-admins the per-event sound preference
+    // (or '__silent__') in `superAdminSettings/{uid}` wins.
+    const eventType = payload.data?.type ?? '';
+    const isAdmin = await isSuperAdminUid(uid);
+    const resolvedSound = await resolveSoundForUser(uid, eventType, isAdmin);
+
+    // APS dictionary — `sound` is omitted entirely when null (silent push).
+    const aps: Record<string, unknown> = {
+        badge: 1,
+        'mutable-content': 1,
+    };
+    if (resolvedSound !== null) {
+        // Custom Hangel sound (hangel-alert/blood/disaster/volunteer.caf).
+        // Yeni build'lerde .caf bundled. Eski build'lerde iOS default
+        // tone'a graceful fallback yapar (silent fail değil — line 53-54).
+        aps.sound = resolvedSound;
+    }
+
     const message: MulticastMessage = {
         tokens,
         notification: {
@@ -169,14 +302,7 @@ export async function sendPushToUser(uid: string, payload: PushPayload): Promise
                 'apns-priority': '10',
             },
             payload: {
-                aps: {
-                    badge: 1,
-                    // Custom Hangel sound (hangel-alert/blood/disaster/volunteer.caf).
-                    // Yeni build'lerde .caf bundled. Eski build'lerde iOS default
-                    // tone'a graceful fallback yapar (silent fail değil — line 53-54).
-                    sound: getSoundForNotificationType(payload.data?.type),
-                    'mutable-content': 1,
-                },
+                aps,
             },
             fcmOptions: {
                 imageUrl: payload.imageUrl,
