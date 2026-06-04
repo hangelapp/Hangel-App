@@ -460,3 +460,11 @@ export function scoreContractAllJurisdictions(
 export function getRequiredTopicsFor(jurisdiction: ComplianceJurisdiction): ReadonlyArray<Readonly<RequiredTopic>> {
   return REQUIRED_TOPICS[jurisdiction];
 }
+
+/**
+ * Tüm jurisdiction'lar için ham `RequiredTopic` kataloğunu dışa açar.
+ * Migration script'leri (örn. `scripts/contracts-fill-templates.mjs`) topic
+ * `template` alanını okuyup eksik bölümleri contract markdown'una eklemek için
+ * kullanır. Bu export saf veridir — mutasyon önerilmez.
+ */
+export const REQUIRED_TOPICS_EXPORT = REQUIRED_TOPICS;
