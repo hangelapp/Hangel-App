@@ -132,7 +132,7 @@ export const ngoBeneficiaryOptions = [
     // Yaş grupları
     "Çocuklar", "Gençler", "Yaşlılar", "Bebek ve Aileler",
     // Toplumsal cinsiyet
-    "Kadınlar", "LGBTİ+", "Erkekler",
+    "Kadınlar", "Erkekler",
     // Eğitim
     "Öğrenciler", "Üniversite öğrencileri", "Okul öncesi çocuklar",
     // Engellilik
@@ -143,19 +143,20 @@ export const ngoBeneficiaryOptions = [
     "Şiddet mağdurları", "Sokak çocukları", "Cezaevi sonrası bireyler",
     // Göç ve afet
     "Mülteciler", "Sığınmacılar", "Göçmenler", "Afetzedeler", "Savaş mağdurları",
-    "İç göç mağdurları",
     // Etnik / dini gruplar
-    "Etnik azınlıklar", "Roman vatandaşlar", "Dini azınlıklar", "Yerli halklar",
+    "Etnik azınlıklar", "Dini azınlıklar",
     // Hak temelli
-    "Hak mücadelesi verenler", "İnsan hakları savunucuları", "Gazeteciler",
+    "Hak mücadelesi verenler", "İnsan hakları savunucuları",
     // Çevre & doğa
     "Hayvanlar", "Sokak hayvanları", "Yaban hayvanları", "Çevre", "Su kaynakları",
     "Ormanlar", "Tarım toprakları",
     // Sağlık
     "Kanser hastaları", "HIV/AIDS hastaları", "Madde bağımlıları", "Akıl sağlığı",
-    "Organ nakli bekleyenler", "Kan ihtiyacı olanlar",
+    "Organ nakli bekleyenler",
     // Bölgesel
     "Bölgesel", "Kırsal nüfus", "Kentsel yoksullar", "Deprem bölgesi",
+    // İş dünyası & ibadet yerleri
+    "İş dünyası", "Camiler", "Kiliseler", "Cemevleri", "Sinagoglar",
     // Diğer
     "Sanatçılar", "Sporcular", "Girişimciler", "Gönüllüler", "STK çalışanları",
     "Diğer",

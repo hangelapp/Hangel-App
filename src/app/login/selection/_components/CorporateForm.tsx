@@ -183,6 +183,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     };
 
     const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<string[]>([]);
+    const [otherBeneficiaryText, setOtherBeneficiaryText] = useState<string>('');
+    const [otherNetworkText, setOtherNetworkText] = useState<string>('');
     const [selectedSdgs, setSelectedSdgs] = useState<string[]>([]);
     const [selectedNetworks, setSelectedNetworks] = useState<string[]>([]);
     const [selectedClubCategories, setSelectedClubCategories] = useState<string[]>([]);
@@ -276,8 +278,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 userName: authUser?.displayName || formData.authorized?.name || '',
                 userEmail: authUser?.email || formData.authorized?.email || formData.email || '',
                 selectedBeneficiaries,
+                otherBeneficiaryText: selectedBeneficiaries.includes('Diğer') ? otherBeneficiaryText.trim() : '',
                 selectedSdgs,
                 selectedNetworks,
+                otherNetworkText: selectedNetworks.includes('Diğer') ? otherNetworkText.trim() : '',
                 selectedClubCategories,
                 categories: selectedClubCategories,
                 donationCategories,
@@ -778,9 +782,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         )}
                     </div>
 
-                    {/* Form alt kısımları — Kuruluş Türü seçildiği anda görünür. Alt türe özel alanlar
+                    {/* Form alt kısımları — Kuruluş Alt Türü seçildiği anda görünür. Alt türe özel alanlar
                         kendi isXyz koşullarıyla gösterilir / gizlenir. */}
-                    {(<>
+                    {formData.ngoSubType && (<>
                     {/* Kimlik — başlık alt türe göre değişir */}
                     <div className="space-y-6">
                         <SectionTitle icon={Building2}>{identityTitle}</SectionTitle>
@@ -910,6 +914,13 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </label>
                                     ))}
                                 </div>
+                                {selectedBeneficiaries.includes('Diğer') && (
+                                    <FormInput
+                                        placeholder="Diğer faydalanıcı grubu açıklaması..."
+                                        value={otherBeneficiaryText}
+                                        onChange={e => setOtherBeneficiaryText(e.target.value)}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}
@@ -941,6 +952,13 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 </label>
                             ))}
                         </div>
+                        {selectedNetworks.includes('Diğer') && (
+                            <FormInput
+                                placeholder="Diğer platform açıklaması..."
+                                value={otherNetworkText}
+                                onChange={e => setOtherNetworkText(e.target.value)}
+                            />
+                        )}
                         {/* Kamu Yararı Statüsü — sadece Dernek/Vakıf/Spor */}
                         {!isOzelIzinli && (
                             <label className="flex items-center gap-3 cursor-pointer p-3 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
@@ -1249,7 +1267,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     </div>
                     </>)}
 
-                    {(<>
+                    {formData.ngoSubType && (<>
                     <div className="space-y-2 pt-6 border-t border-dashed">
                         <label className="flex items-start gap-2 cursor-pointer">
                             <Checkbox
@@ -1470,6 +1488,13 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                         </label>
                                     ))}
                                 </div>
+                                {selectedBeneficiaries.includes('Diğer') && (
+                                    <FormInput
+                                        placeholder="Diğer faydalanıcı grubu açıklaması..."
+                                        value={otherBeneficiaryText}
+                                        onChange={e => setOtherBeneficiaryText(e.target.value)}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}

@@ -248,18 +248,7 @@ export function LocationFields({
         </div>
       )}
 
-      {showOpenAddress && (
-        <div className="space-y-2 md:col-span-2">
-          <Label className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {labelOpenAddress}{required && ' *'}</Label>
-          <Input
-            value={currentOpenAddress}
-            onChange={(e) => onChange({ ...value, openAddress: e.target.value })}
-            placeholder="Sokak, cadde, bina adı"
-            className={`h-11 rounded-xl ${autoCls('openAddress')}`}
-          />
-        </div>
-      )}
-
+      {/* Kapı No önce — kullanıcı talebi: Kapı No ile Açık Adres yer değiştirsin. */}
       {showDoorNo && (
         <div className="space-y-2">
           <Label>{labelDoorNo}</Label>
@@ -268,6 +257,18 @@ export function LocationFields({
             onChange={(e) => onChange({ ...value, doorNo: e.target.value })}
             placeholder="Bina / Daire no"
             className={`h-11 rounded-xl ${autoCls('doorNo')}`}
+          />
+        </div>
+      )}
+
+      {showOpenAddress && (
+        <div className="space-y-2 md:col-span-2">
+          <Label className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {labelOpenAddress}{required && ' *'}</Label>
+          <Input
+            value={currentOpenAddress}
+            onChange={(e) => onChange({ ...value, openAddress: e.target.value })}
+            placeholder="Sokak, cadde, bina adı"
+            className={`h-11 rounded-xl ${autoCls('openAddress')}`}
           />
         </div>
       )}
