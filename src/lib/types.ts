@@ -426,6 +426,46 @@ export type SchoolRepresentative = {
     faculty?: string;
 }
 
+/**
+ * Gönüllü görev tamamlama kaydı.
+ *
+ * Akış:
+ *   1. Kullanıcı tamamladığı görev için saat girer + meslek seçer (profile fallback)
+ *   2. Server `volunteerScoring` koleksiyonundan profession'a karşılık gelen
+ *      `manHourCost` (TL/saat) değerini snapshot olarak `hourlyRateAtTime`'a yazar.
+ *      hourlyRate sonradan güncellense de bu kayıttaki etki değeri değişmez.
+ *   3. STK admin onaylar → user.stats.totalImpactValue += impactValueTRY
+ *   4. Sertifika üretilir (HTML).
+ *
+ * Timestamp alanları Firestore'da `Timestamp` olarak saklanır; clientte
+ * SDK tarafından `Timestamp` objesine deserialize edilir. Type tarafında
+ * basit `unknown` yerine string|number yapmıyoruz çünkü mevcut Application
+ * tipi de timestamp alanlarını `string` ile temsil ediyor (ekrana basılırken
+ * `.toDate()` çağrısı çağrı yerinde yapılır). Bu yüzden timestamp alanlarını
+ * Firestore round-trip'inin döndürdüğü ham objeye (Firestore Timestamp) bırakıp
+ * any-cast'ten kaçınıyoruz: `{ seconds: number; nanoseconds: number }` shape.
+ */
+export type VolunteerCompletion = {
+  id: string;
+  userId: string;
+  taskId: string;            // listing (volunteering opp) veya event id
+  ngoId: string;
+  startedAt: { seconds: number; nanoseconds: number };
+  completedAt: { seconds: number; nanoseconds: number };
+  hoursLogged: number;       // user girer
+  professionId?: string;     // volunteerScoring doc id; user profile'dan default
+  professionLabel?: string;  // snapshot — sonradan rename edilse de kayıt korunur
+  hourlyRateAtTime: number;  // snapshot (TL/saat, manHourCost)
+  impactValueTRY: number;    // hoursLogged × hourlyRateAtTime
+  ngoApproved: boolean;      // STK admin onayı
+  approvedAt?: { seconds: number; nanoseconds: number };
+  approvedBy?: string;       // STK admin uid
+  adjustedHours?: number;    // STK admin saat düzeltme yaparsa orijinal hours korunur
+  notes?: string;            // kullanıcı notu
+  certificateIssued: boolean;
+  certificateUrl?: string;
+};
+
 export type Application = {
     id: string;
     userId?: string;

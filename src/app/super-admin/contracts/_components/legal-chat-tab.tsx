@@ -163,7 +163,7 @@ export function LegalChatTab({ contracts }: { contracts: ContractLite[] }) {
             <Scale className="h-4 w-4 text-primary shrink-0" />
             <span className="font-bold text-sm truncate">{activeTitle}</span>
             {room !== 'genel' && (
-              <Link href={`/settings/contracts/${room}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-primary hover:underline inline-flex items-center gap-1 shrink-0">
+              <Link href={`/settings/contracts/${room}`} className="text-[11px] text-primary hover:underline inline-flex items-center gap-1 shrink-0">
                 <Eye className="h-3 w-3" /> Önizle
               </Link>
             )}

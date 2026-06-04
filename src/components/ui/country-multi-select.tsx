@@ -20,19 +20,23 @@ export type CountryOption = {
 
 // Sabit liste — TR-EU-US ağırlıklı + GLOBAL fallback. UI'da hangel lowercase.
 export const COUNTRY_OPTIONS: CountryOption[] = [
+  { code: 'GLOBAL', name: 'Global / Tümü', flag: '🌐' },
   { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
-  { code: 'EU', name: 'AB (Avrupa Birliği)', flag: '🇪🇺' },
+  { code: 'EU', name: 'AB Geneli', flag: '🇪🇺' },
   { code: 'DE', name: 'Almanya', flag: '🇩🇪' },
   { code: 'FR', name: 'Fransa', flag: '🇫🇷' },
   { code: 'ES', name: 'İspanya', flag: '🇪🇸' },
   { code: 'IT', name: 'İtalya', flag: '🇮🇹' },
   { code: 'UK', name: 'Birleşik Krallık', flag: '🇬🇧' },
-  { code: 'US', name: 'ABD', flag: '🇺🇸' },
+  { code: 'US', name: 'ABD (CCPA)', flag: '🇺🇸' },
   { code: 'CA', name: 'Kanada', flag: '🇨🇦' },
   { code: 'AU', name: 'Avustralya', flag: '🇦🇺' },
   { code: 'JP', name: 'Japonya', flag: '🇯🇵' },
   { code: 'BR', name: 'Brezilya', flag: '🇧🇷' },
-  { code: 'GLOBAL', name: 'Global / Tümü', flag: '🌐' },
+  { code: 'CH', name: 'İsviçre', flag: '🇨🇭' },
+  { code: 'SG', name: 'Singapur', flag: '🇸🇬' },
+  { code: 'AE', name: 'BAE', flag: '🇦🇪' },
+  { code: 'SA', name: 'Suudi Arabistan', flag: '🇸🇦' },
 ];
 
 const COUNTRY_BY_CODE: Record<string, CountryOption> = Object.fromEntries(
@@ -62,6 +66,10 @@ export function inferCountriesFromText(text: string): string[] {
   if (/\b(ccpa|cpra|coppa|irs|abd|amerika|us|usa)\b/.test(lower)) set.add('US');
   if (/\b(uk|birleşik krallık|birlesik krallik)\b/.test(lower)) set.add('UK');
   if (/\b(lgpd|brezilya|brasil)\b/.test(lower)) set.add('BR');
+  if (/\b(fadp|isviçre|isvicre|switzerland)\b/.test(lower)) set.add('CH');
+  if (/\b(pdpa|singapur|singapore)\b/.test(lower)) set.add('SG');
+  if (/\b(bae|uae|emirates|emirati|dubai|abu dhabi)\b/.test(lower)) set.add('AE');
+  if (/\b(suudi|saudi|ksa|pdpl)\b/.test(lower)) set.add('SA');
 
   // Hiçbir ülke yoksa GLOBAL kabul et — filtrede "GLOBAL seçili" senaryosunda görünür.
   if (set.size === 0) set.add('GLOBAL');

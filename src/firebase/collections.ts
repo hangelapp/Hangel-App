@@ -181,6 +181,12 @@ export const COLLECTIONS = {
   // maliyeti. NGO admin ilan açarken bu katalogdan seçer; puanı el ile giremez.
   volunteerScoring: 'volunteerScoring',
 
+  // Gönüllü görev tamamlama kayıtları. Kullanıcı saat girer + meslek seçer,
+  // STK admin onaylar; onaylanan kayıt user stats.totalImpactValue ve
+  // pastVolunteering'e işlenir. hourlyRateAtTime snapshot olarak tutulur —
+  // sonradan volunteerScoring güncellense bile etki değeri sabit kalır.
+  volunteerCompletions: 'volunteerCompletions',
+
   // Süper-admin kişisel panel ayarları (Bildirim Ayarları kart vs.).
   // Doc id = adminUid. Yalnızca super-admin kendi doc'unu okur/yazar.
   // Path: superAdminSettings/{adminUid} — alanlar: notifications.{eventKey}.{channel}: boolean.

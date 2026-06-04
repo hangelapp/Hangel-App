@@ -26,6 +26,7 @@ import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useState } from 'react';
 import { useTranslation } from '@/components/providers/language-provider';
+import { ImpactSummaryCard } from '@/components/settings/impact-summary-card';
 
 const SettingsLink = ({ href, icon, label, iconColor }: { href: string, icon: React.ElementType, label: string, iconColor: string }) => {
   const Icon = icon;
@@ -77,6 +78,8 @@ export default function SettingsPage() {
       <h1 className="text-3xl font-bold font-headline">{t('settings.title')}</h1>
 
       <div className='space-y-6'>
+
+        <ImpactSummaryCard />
 
         <Card>
             <CardHeader>

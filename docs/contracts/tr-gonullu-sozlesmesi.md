@@ -75,7 +75,7 @@ arasında, Gönüllünün elektronik ortamda onayı ile akdedilmiş sayılır.
 - STK'nın tüzük/senet amaçlarına ve yürürlükteki mevzuata uygun davranmak,
 - Faaliyet sırasında öğrendiği STK iç bilgileri, yararlanıcı kişisel verileri ve operasyonel sırları **KVKK ve TCK m. 239 kapsamında gizli tutmak**,
 - Kendisine atanan görevin gerektirdiği güvenlik prosedürlerine ve mevzuata uymak (özellikle Sağlık Bakanlığı tebliğleri, gıda güvenliği, çocuk koruma vb.),
-- Hangel platformu adına ya da temsilci sıfatıyla **yetkisiz açıklama ya da bağış toplama** yapmamak.
+- hangel platformu adına ya da temsilci sıfatıyla **yetkisiz açıklama ya da bağış toplama** yapmamak.
 
 ---
 
@@ -107,4 +107,4 @@ Platform ve STK, Gönüllü verileri bakımından **müşterek veri sorumlusu** 
 
 ---
 
-*Hangel — Türkiye / Sürüm 0.1 Taslak*
+*hangel — Türkiye / Sürüm 0.1 Taslak*

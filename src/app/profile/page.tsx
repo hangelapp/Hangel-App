@@ -671,6 +671,19 @@ export default function ProfilePage() {
                             earnedBadgeCount={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length}
                             certificateCount={certificates.length}
                             impactCardTitle={t('dashboard.profile.impactCardTitle')}
+                            pastVolunteering={pastVolunteering as Array<Record<string, unknown>>}
+                            inlineCompletedTasks={
+                                Array.isArray(
+                                    (userData as { completedVolunteerTasks?: Array<Record<string, unknown>> } | null)
+                                        ?.completedVolunteerTasks,
+                                )
+                                    ? (userData as { completedVolunteerTasks?: Array<Record<string, unknown>> })
+                                          .completedVolunteerTasks
+                                    : []
+                            }
+                            fallbackProfession={currentUser.volunteerInfo?.profession ?? null}
+                            volunteerNgos={(volunteerNgosData ?? []) as Parameters<typeof EtkiTabContent>[0]['volunteerNgos']}
+                            supportedNgos={(supportedNgosData ?? []) as Parameters<typeof EtkiTabContent>[0]['supportedNgos']}
                         />
                         <Card variant="glass">
                             <CardHeader className="flex flex-row items-center justify-between">

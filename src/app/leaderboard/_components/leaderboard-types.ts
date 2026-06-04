@@ -16,10 +16,12 @@ export type LeaderboardUser = {
     impactScore?: number;
     volunteerHours?: number;
     totalDonation?: number;
+    totalImpactValue?: number;
   };
   impactScore?: number;
   volunteerHours?: number;
   totalDonation?: number;
+  totalImpactValue?: number;
   personalInfo?: { address?: { school?: string; city?: string } };
   volunteerInfo?: { education?: Array<{ school?: string }> };
   privacySettings?: { isPrivate?: boolean };
@@ -30,7 +32,7 @@ export type RankedUser = LeaderboardUser & {
   _rank: number;
 };
 
-export type MetricKey = 'impactScore' | 'volunteerHours' | 'totalDonation';
+export type MetricKey = 'impactScore' | 'volunteerHours' | 'totalDonation' | 'totalImpactValue';
 
 export type Scope = 'global' | 'country' | 'city' | 'school';
 

@@ -15,9 +15,11 @@ const ALLOWED_TAGS = [
     'hr',
     'span', 'div',
     'img',
+    // Tables — used by markdown rendering for contracts & policies.
+    'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption', 'colgroup', 'col',
 ];
 
-const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class'];
+const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'id', 'colspan', 'rowspan', 'scope', 'align'];
 
 /**
  * Sanitizes untrusted HTML strings before rendering with `dangerouslySetInnerHTML`.

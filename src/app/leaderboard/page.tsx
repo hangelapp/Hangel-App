@@ -19,7 +19,7 @@
 
 import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
-import { Globe, Handshake, Heart, MapPin, School, Star } from 'lucide-react';
+import { Globe, Handshake, Heart, MapPin, School, Sparkles, Star } from 'lucide-react';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -57,6 +57,10 @@ const METRICS: ReadonlyArray<{
   { key: 'impactScore', labelKey: 'tabImpact', unitKey: 'unitPoints', icon: Star },
   { key: 'volunteerHours', labelKey: 'tabVolunteer', unitKey: 'unitHours', icon: Handshake },
   { key: 'totalDonation', labelKey: 'tabDonation', unitKey: 'unitCurrency', icon: Heart },
+  // Sosyal Etki Mali Değeri — paylaşılan calculateImpactValue utility tarafından
+  // beslenen `stats.totalImpactValue` (cache). Etki tab + super-admin demographics
+  // ile aynı kaynak.
+  { key: 'totalImpactValue', labelKey: 'tabImpactValue', unitKey: 'unitCurrency', icon: Sparkles },
 ] as const;
 
 const SCOPES: ReadonlyArray<{ key: Scope; labelKey: string; icon: typeof Globe }> = [

@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Printer, Share2, Languages, Check } from 'lucide-react';
+import { Printer, Share2, Languages, Check, Link as LinkIcon, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

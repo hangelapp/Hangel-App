@@ -79,7 +79,7 @@ arasında, STK Üyenin elektronik ortamda onayı ve Platformun başvuruyu onayla
 
 6.1. **Temel Üyelik:** Doğrulanmış STK'lar için Platforma kayıt ve temel kampanya araçları **ücretsizdir**.
 
-6.2. **Hangel Komisyonu:** Platform; her başarılı bağış işleminden, kampanya sayfasında açıkça belirtilen oran üzerinden **hizmet bedeli/komisyon** alabilir. Mevcut oran: ödeme işlemci masrafları hariç **%[X]**. Komisyon oranı 30 gün öncesinden bildirilerek güncellenebilir.
+6.2. **hangel Komisyonu:** Platform; her başarılı bağış işleminden, kampanya sayfasında açıkça belirtilen oran üzerinden **hizmet bedeli/komisyon** alabilir. Mevcut oran: ödeme işlemci masrafları hariç **%[X]**. Komisyon oranı 30 gün öncesinden bildirilerek güncellenebilir.
 
 6.3. **Premium STK Paketi:** Gelişmiş analitik, özel destek, çoklu kullanıcı yönetimi ve API erişimi gibi ek özellikler için aylık/yıllık abonelik modeli uygulanabilir; fiyatlandırma ayrıca sunulur.
 
@@ -132,4 +132,4 @@ STK Üye; (i) siyasi parti faaliyeti, (ii) terör finansmanı/aklama riski taş�
 
 ---
 
-*Hangel — Türkiye / Sürüm 0.1 Taslak*
+*hangel — Türkiye / Sürüm 0.1 Taslak*

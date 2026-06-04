@@ -9,7 +9,7 @@
 The **Bundesdatenschutzgesetz (BDSG, 2018)** supplements the GDPR (Regulation EU 2016/679) in Germany by exercising opening clauses under GDPR Art. 6(2)–(3), 8, 9(2)(b)/(g)/(h)/(i)/(j), 10, 23, 85, 87, 88, 89, and 90. For hangel, BDSG applies when:
 - A controller or processor is **established in Germany** (BDSG §1(4) No. 1), OR
 - Processing occurs **in Germany** (No. 2), OR
-- Hangel offers goods/services to data subjects in Germany or monitors their behaviour (No. 3, mirroring GDPR Art. 3(2)).
+- hangel offers goods/services to data subjects in Germany or monitors their behaviour (No. 3, mirroring GDPR Art. 3(2)).
 
 This document does **not** restate GDPR obligations (see `eu-privacy-policy.md`); it covers German specifics only.
 

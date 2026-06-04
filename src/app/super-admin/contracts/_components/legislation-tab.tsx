@@ -501,7 +501,7 @@ export function LegislationTab() {
                     {l.relatedContracts.map(slug => {
                       const title = contractOptions.find(c => c.slug === slug)?.title || slug;
                       return (
-                        <Link key={slug} href={`/settings/contracts/${slug}`} target="_blank" rel="noopener noreferrer">
+                        <Link key={slug} href={`/settings/contracts/${slug}`}>
                           <Badge variant="secondary" className="text-[9px] gap-1 hover:bg-secondary/70"><Eye className="h-2.5 w-2.5" /> {title}</Badge>
                         </Link>
                       );

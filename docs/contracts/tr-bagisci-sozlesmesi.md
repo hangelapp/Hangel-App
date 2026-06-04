@@ -117,4 +117,4 @@ arasında, elektronik ortamda kabul edildiği anda akdedilmiş sayılır.
 
 ---
 
-*Hangel — Türkiye / Sürüm 0.1 Taslak*
+*hangel — Türkiye / Sürüm 0.1 Taslak*

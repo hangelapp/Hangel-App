@@ -12,12 +12,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Slider } from '@/components/ui/slider';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
   GitCompare, Globe, Scale, ShieldCheck, AlertTriangle, Loader2,
-  Filter, ArrowLeft,
+  Filter, ArrowLeft, Download, ArrowDownAZ, ArrowUp01,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -32,6 +33,7 @@ type Jurisdiction = {
 };
 
 type DocKind = 'contract' | 'policy' | 'beyan';
+type SortMode = 'name-asc' | 'score-asc';
 
 interface ContractDoc {
   id: string;
@@ -43,28 +45,28 @@ interface ContractDoc {
 }
 
 interface ComplianceRow {
-  id: string;          // `${slug}-${jurisdiction}`
+  id: string;
   contractSlug: string;
   jurisdiction: string;
   score: number;
-  missingSections?: string[];
-  suggestedSources?: string[];
+  missingSections?: unknown[];
+  suggestions?: unknown[];
 }
 
 // ---- Sabit ülke listesi ----
 const JURISDICTIONS: Jurisdiction[] = [
-  { code: 'TR',    label: 'Türkiye',         flag: '🇹🇷' },
-  { code: 'EU',    label: 'Avrupa Birliği',  flag: '🇪🇺' },
+  { code: 'TR',    label: 'Türkiye',          flag: '🇹🇷' },
+  { code: 'EU',    label: 'Avrupa Birliği',   flag: '🇪🇺' },
   { code: 'UK',    label: 'Birleşik Krallık', flag: '🇬🇧' },
   { code: 'US-CA', label: 'ABD (California)', flag: '🇺🇸' },
-  { code: 'DE',    label: 'Almanya',         flag: '🇩🇪' },
-  { code: 'FR',    label: 'Fransa',          flag: '🇫🇷' },
-  { code: 'ES',    label: 'İspanya',         flag: '🇪🇸' },
-  { code: 'IT',    label: 'İtalya',          flag: '🇮🇹' },
-  { code: 'CA',    label: 'Kanada',          flag: '🇨🇦' },
-  { code: 'AU',    label: 'Avustralya',      flag: '🇦🇺' },
-  { code: 'JP',    label: 'Japonya',         flag: '🇯🇵' },
-  { code: 'BR',    label: 'Brezilya',        flag: '🇧🇷' },
+  { code: 'DE',    label: 'Almanya',          flag: '🇩🇪' },
+  { code: 'FR',    label: 'Fransa',           flag: '🇫🇷' },
+  { code: 'ES',    label: 'İspanya',          flag: '🇪🇸' },
+  { code: 'IT',    label: 'İtalya',           flag: '🇮🇹' },
+  { code: 'CA',    label: 'Kanada',           flag: '🇨🇦' },
+  { code: 'AU',    label: 'Avustralya',       flag: '🇦🇺' },
+  { code: 'JP',    label: 'Japonya',          flag: '🇯🇵' },
+  { code: 'BR',    label: 'Brezilya',         flag: '🇧🇷' },
 ];
 
 const KIND_LABEL: Record<string, string> = {
@@ -93,6 +95,19 @@ function scoreColor(score: number): { bg: string; text: string; ring: string; em
   return { bg: 'bg-red-500/15', text: 'text-red-700 dark:text-red-400', ring: 'ring-red-500/40', emoji: '🔴' };
 }
 
+function avgBarColor(score: number): string {
+  if (score >= 80) return 'bg-emerald-500';
+  if (score >= 50) return 'bg-amber-500';
+  return 'bg-red-500';
+}
+
+// CSV güvenli alıntı
+function csvCell(v: string | number): string {
+  const s = String(v);
+  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
 // ---- Ana Sayfa ----
 export default function ComplianceMatrixPage() {
   const router = useRouter();
@@ -106,7 +121,7 @@ export default function ComplianceMatrixPage() {
   const { data: firestoreContracts, isLoading: loadingContracts } =
     useCollection<ContractDoc>(contractsQuery);
 
-  // 2) Compliance matris
+  // 2) Compliance matris (1344 doc beklenir: 112 sözleşme × 12 ülke)
   const complianceQuery = useMemoFirebase(
     () => collection(db, COLLECTIONS.contractCompliance),
     [db],
@@ -126,23 +141,31 @@ export default function ComplianceMatrixPage() {
     return Array.from(map.values()).sort((a, b) => a.title.localeCompare(b.title, 'tr'));
   }, [firestoreContracts]);
 
-  // Compliance lookup
+  // Compliance lookup — Firestore field bazlı, doc id formatından bağımsız
   const scoreMap = useMemo(() => {
     const map = new Map<string, ComplianceRow>();
     (complianceRows || []).forEach(r => {
-      map.set(`${r.contractSlug}-${r.jurisdiction}`, r);
+      const slug = r.contractSlug;
+      const j = r.jurisdiction;
+      if (!slug || !j) return;
+      map.set(`${slug}__${j}`, r);
     });
     return map;
   }, [complianceRows]);
 
   // ---- Filtreler ----
   const [kindFilter, setKindFilter] = useState<'all' | DocKind>('all');
-  const [jurFilter, setJurFilter] = useState<string>('all');
+  const [selectedJurs, setSelectedJurs] = useState<string[]>(
+    () => JURISDICTIONS.map(j => j.code),
+  );
+  const [scoreRange, setScoreRange] = useState<[number, number]>([0, 100]);
   const [onlyLow, setOnlyLow] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('name-asc');
 
-  const visibleJurisdictions = useMemo(() =>
-    jurFilter === 'all' ? JURISDICTIONS : JURISDICTIONS.filter(j => j.code === jurFilter),
-  [jurFilter]);
+  const visibleJurisdictions = useMemo(
+    () => JURISDICTIONS.filter(j => selectedJurs.includes(j.code)),
+    [selectedJurs],
+  );
 
   const visibleDocs = useMemo(() => {
     let list = allDocs;
@@ -152,21 +175,44 @@ export default function ComplianceMatrixPage() {
     if (onlyLow) {
       list = list.filter(d =>
         visibleJurisdictions.some(j => {
-          const r = scoreMap.get(`${d.slug}-${j.code}`);
+          const r = scoreMap.get(`${d.slug}__${j.code}`);
           return r ? r.score < 50 : false;
         }),
       );
     }
+    // Score range — bir hücresi bile aralıkta ise göster
+    if (scoreRange[0] > 0 || scoreRange[1] < 100) {
+      list = list.filter(d =>
+        visibleJurisdictions.some(j => {
+          const r = scoreMap.get(`${d.slug}__${j.code}`);
+          if (!r) return false;
+          return r.score >= scoreRange[0] && r.score <= scoreRange[1];
+        }),
+      );
+    }
+    if (sortMode === 'score-asc') {
+      // Her doc için görünen jurisdictions üzerinden ortalama
+      const avg = (d: ContractDoc): number => {
+        let sum = 0;
+        let cnt = 0;
+        visibleJurisdictions.forEach(j => {
+          const r = scoreMap.get(`${d.slug}__${j.code}`);
+          if (r) { sum += r.score; cnt += 1; }
+        });
+        return cnt > 0 ? sum / cnt : Number.POSITIVE_INFINITY;
+      };
+      list = [...list].sort((a, b) => avg(a) - avg(b));
+    }
     return list;
-  }, [allDocs, kindFilter, onlyLow, visibleJurisdictions, scoreMap]);
+  }, [allDocs, kindFilter, onlyLow, scoreRange, visibleJurisdictions, scoreMap, sortMode]);
 
-  // ---- Üst özet istatistik ----
+  // ---- Özet istatistik (tüm filtreli matris) ----
   const stats = useMemo(() => {
     let sum = 0;
     let count = 0;
     visibleDocs.forEach(d => {
       visibleJurisdictions.forEach(j => {
-        const r = scoreMap.get(`${d.slug}-${j.code}`);
+        const r = scoreMap.get(`${d.slug}__${j.code}`);
         if (r) { sum += r.score; count += 1; }
       });
     });
@@ -178,6 +224,54 @@ export default function ComplianceMatrixPage() {
       totalCells: visibleDocs.length * visibleJurisdictions.length,
     };
   }, [visibleDocs, visibleJurisdictions, scoreMap]);
+
+  // Her ülke için ortalama uyum (görünen docs üzerinden)
+  const jurAverages = useMemo(() => {
+    return visibleJurisdictions.map(j => {
+      let sum = 0;
+      let cnt = 0;
+      visibleDocs.forEach(d => {
+        const r = scoreMap.get(`${d.slug}__${j.code}`);
+        if (r) { sum += r.score; cnt += 1; }
+      });
+      return { ...j, avg: cnt > 0 ? Math.round(sum / cnt) : 0, analyzed: cnt };
+    });
+  }, [visibleJurisdictions, visibleDocs, scoreMap]);
+
+  // ---- CSV export ----
+  const handleExportCsv = () => {
+    const headers = ['slug', 'title', 'kind', ...visibleJurisdictions.map(j => j.code)];
+    const lines = [headers.map(csvCell).join(',')];
+    visibleDocs.forEach(d => {
+      const row: (string | number)[] = [
+        d.slug,
+        d.title,
+        KIND_LABEL[inferKind(d)] || inferKind(d),
+      ];
+      visibleJurisdictions.forEach(j => {
+        const r = scoreMap.get(`${d.slug}__${j.code}`);
+        row.push(r ? r.score : '');
+      });
+      lines.push(row.map(csvCell).join(','));
+    });
+    const csv = lines.join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hangel-uyum-matrisi-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const toggleJur = (code: string) => {
+    setSelectedJurs(prev =>
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code],
+    );
+  };
+  const allJursSelected = selectedJurs.length === JURISDICTIONS.length;
 
   const isLoading = loadingContracts || loadingCompliance;
 
@@ -193,13 +287,22 @@ export default function ComplianceMatrixPage() {
           </div>
           <h1 className="text-3xl font-black tracking-tighter">Uyumluluk Matrisi</h1>
           <p className="text-muted-foreground text-sm">
-            Her sözleşme/politikanın 12 ülke mevzuatına göre uyum yüzdesi.
+            hangel sözleşme ve politikalarının 12 ülke mevzuatına göre uyum yüzdesi.
             Hücreye tıkla → detay, eksik bölümler, mevzuat önerileri.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportCsv}
+          disabled={isLoading || visibleDocs.length === 0}
+          className="rounded-2xl gap-1.5"
+        >
+          <Download className="h-4 w-4" /> CSV indir
+        </Button>
       </div>
 
-      {/* Sekmeler — ana sayfayla tutarlı görünüm */}
+      {/* Sekmeler */}
       <Tabs defaultValue="matris" className="w-full">
         <TabsList className="rounded-2xl p-1">
           <TabsTrigger value="matris" className="gap-1.5 rounded-xl">
@@ -212,13 +315,13 @@ export default function ComplianceMatrixPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <SummaryCard
               icon={Scale}
-              label="Toplam Belge"
+              label="Görünen Belge"
               value={stats.docCount}
               accent="primary"
             />
             <SummaryCard
               icon={Globe}
-              label="Ülke / Yargı"
+              label="Görünen Ülke"
               value={stats.jurCount}
               accent="primary"
             />
@@ -236,50 +339,164 @@ export default function ComplianceMatrixPage() {
             />
           </div>
 
+          {/* Ülke ortalamaları — bar chart */}
+          <Card className="rounded-3xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" /> Ülke Ortalamaları
+              </CardTitle>
+              <CardDescription>
+                Görünen belgeler üzerinden her yargı bölgesinin ortalama uyum yüzdesi.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {jurAverages.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic">
+                  Filtreyle eşleşen ülke yok.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {jurAverages.map(j => (
+                    <div key={j.code} className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 w-32 shrink-0">
+                        <span className="text-base leading-none">{j.flag}</span>
+                        <span className="text-xs font-semibold">{j.label}</span>
+                      </div>
+                      <div className="flex-1 h-3 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={cn('h-full rounded-full transition-all', avgBarColor(j.avg))}
+                          style={{ width: `${j.avg}%` }}
+                        />
+                      </div>
+                      <span className="w-16 text-right text-xs font-mono font-bold">
+                        %{j.avg}
+                      </span>
+                      <span className="w-20 text-right text-[10px] text-muted-foreground">
+                        {j.analyzed} analiz
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Filtreler */}
           <Card className="rounded-3xl">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-muted-foreground" />
-                <CardTitle className="text-base">Filtre</CardTitle>
+                <CardTitle className="text-base">Filtre ve Sıralama</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="flex items-end gap-3 flex-wrap">
-              <div className="space-y-1.5 min-w-[160px]">
-                <Label className="text-xs">Belge Tipi</Label>
-                <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as 'all' | DocKind)}>
-                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="policy">Politika</SelectItem>
-                    <SelectItem value="contract">Sözleşme</SelectItem>
-                    <SelectItem value="beyan">Beyan</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <CardContent className="space-y-4">
+              <div className="flex items-end gap-3 flex-wrap">
+                <div className="space-y-1.5 min-w-[160px]">
+                  <Label className="text-xs">Belge Tipi</Label>
+                  <Select value={kindFilter} onValueChange={(v) => setKindFilter(v as 'all' | DocKind)}>
+                    <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tümü</SelectItem>
+                      <SelectItem value="policy">Politika</SelectItem>
+                      <SelectItem value="contract">Sözleşme</SelectItem>
+                      <SelectItem value="beyan">Beyan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-1.5 min-w-[200px]">
-                <Label className="text-xs">Yargı Bölgesi</Label>
-                <Select value={jurFilter} onValueChange={setJurFilter}>
-                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tüm Ülkeler</SelectItem>
-                    {JURISDICTIONS.map(j => (
-                      <SelectItem key={j.code} value={j.code}>
-                        {j.flag} {j.label}
+                <div className="space-y-1.5 min-w-[180px]">
+                  <Label className="text-xs">Sırala</Label>
+                  <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+                    <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name-asc">
+                        <span className="inline-flex items-center gap-2">
+                          <ArrowDownAZ className="h-3.5 w-3.5" /> İsim (A→Z)
+                        </span>
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      <SelectItem value="score-asc">
+                        <span className="inline-flex items-center gap-2">
+                          <ArrowUp01 className="h-3.5 w-3.5" /> En düşük skor önce
+                        </span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <label className="flex items-center gap-2 text-xs cursor-pointer h-10 px-3 rounded-xl border bg-card">
+                  <Checkbox
+                    checked={onlyLow}
+                    onCheckedChange={(c) => setOnlyLow(c === true)}
+                  />
+                  <span>Sadece &lt;%50 olanlar</span>
+                </label>
               </div>
 
-              <label className="flex items-center gap-2 text-xs cursor-pointer h-10 px-3 rounded-xl border bg-card">
-                <Checkbox
-                  checked={onlyLow}
-                  onCheckedChange={(c) => setOnlyLow(c === true)}
-                />
-                <span>Sadece &lt;%50 olanlar</span>
-              </label>
+              {/* Skor aralığı */}
+              <div className="space-y-2 max-w-md">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Skor aralığı (en az)</Label>
+                  <span className="text-xs font-mono font-bold text-primary">
+                    %{scoreRange[0]} – %{scoreRange[1]}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <Slider
+                    value={[scoreRange[0]]}
+                    onValueChange={(v) => setScoreRange([v[0] ?? 0, Math.max(v[0] ?? 0, scoreRange[1])])}
+                    min={0}
+                    max={100}
+                    step={5}
+                    aria-label="Minimum skor"
+                  />
+                  <Slider
+                    value={[scoreRange[1]]}
+                    onValueChange={(v) => setScoreRange([Math.min(scoreRange[0], v[0] ?? 100), v[0] ?? 100])}
+                    min={0}
+                    max={100}
+                    step={5}
+                    aria-label="Maksimum skor"
+                  />
+                </div>
+              </div>
+
+              {/* Jurisdiction multi-select */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Yargı Bölgeleri ({selectedJurs.length}/{JURISDICTIONS.length})</Label>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setSelectedJurs(
+                      allJursSelected ? [] : JURISDICTIONS.map(j => j.code),
+                    )}
+                  >
+                    {allJursSelected ? 'Hiçbiri' : 'Tümünü seç'}
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {JURISDICTIONS.map(j => {
+                    const active = selectedJurs.includes(j.code);
+                    return (
+                      <button
+                        key={j.code}
+                        type="button"
+                        onClick={() => toggleJur(j.code)}
+                        className={cn(
+                          'flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold border transition-colors',
+                          active
+                            ? 'bg-primary/10 text-primary border-primary/40 ring-1 ring-primary/30'
+                            : 'bg-card text-muted-foreground border-border hover:bg-accent/40',
+                        )}
+                      >
+                        <span className="text-sm leading-none">{j.flag}</span>
+                        <span>{j.code}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -298,16 +515,16 @@ export default function ComplianceMatrixPage() {
                 <div className="flex justify-center py-16">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : visibleDocs.length === 0 ? (
+              ) : visibleDocs.length === 0 || visibleJurisdictions.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground italic py-16">
-                  Filtreyle eşleşen belge bulunamadı.
+                  Filtreyle eşleşen kayıt bulunamadı.
                 </p>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
                   <table className="w-full text-xs border-t">
-                    <thead className="bg-muted/40 sticky top-0">
+                    <thead className="bg-muted/40 sticky top-0 z-20">
                       <tr>
-                        <th className="text-left p-3 font-bold sticky left-0 bg-muted/40 z-10 min-w-[220px] border-r">
+                        <th className="text-left p-3 font-bold sticky left-0 bg-muted/40 z-30 min-w-[220px] border-r">
                           Belge
                         </th>
                         {visibleJurisdictions.map(j => (
@@ -337,7 +554,7 @@ export default function ComplianceMatrixPage() {
                               </div>
                             </td>
                             {visibleJurisdictions.map(j => {
-                              const row = scoreMap.get(`${doc.slug}-${j.code}`);
+                              const row = scoreMap.get(`${doc.slug}__${j.code}`);
                               return (
                                 <td key={j.code} className="p-1.5 text-center">
                                   <ComplianceCell
@@ -407,6 +624,7 @@ function ComplianceCell({
     );
   }
   const c = scoreColor(row.score);
+  const missingCount = Array.isArray(row.missingSections) ? row.missingSections.length : 0;
   return (
     <button
       onClick={onClick}
@@ -414,12 +632,12 @@ function ComplianceCell({
         'w-full h-10 rounded-lg flex flex-col items-center justify-center gap-0 font-bold transition-all hover:scale-105 hover:ring-2',
         c.bg, c.text, c.ring,
       )}
-      title={`${row.score}% uyum — ${row.missingSections?.length || 0} eksik bölüm`}
+      title={`${row.score}% uyum — ${missingCount} eksik bölüm`}
     >
       <span className="text-sm leading-none">%{row.score}</span>
-      {row.missingSections && row.missingSections.length > 0 && (
+      {missingCount > 0 && (
         <span className="text-[8px] font-normal opacity-80 leading-none mt-0.5">
-          {row.missingSections.length} eksik
+          {missingCount} eksik
         </span>
       )}
     </button>

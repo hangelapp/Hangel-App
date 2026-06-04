@@ -53,6 +53,8 @@ interface DemoUser {
     followedBrands?: string[];
     joinedClubs?: string[];
     managedNgoId?: string;
+    /** Sosyal Etki Mali Değeri — paylaşılan utility cache'i (lib/volunteer/impact-value). */
+    stats?: { totalImpactValue?: number; volunteerHours?: number };
     [key: string]: unknown;
 }
 
@@ -87,6 +89,9 @@ const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
     const followedBrandNames: Record<string, number> = {};
     const secondaryNgo: Record<string, number> = {};
     let ageSum = 0, ageCount = 0, withVolunteer = 0, withBlood = 0, supporters = 0, volunteers = 0, withCity = 0;
+    // Sosyal Etki Mali Değeri toplamı — `stats.totalImpactValue` (lib/volunteer/impact-value cache'i).
+    let totalImpactValueTRY = 0;
+    let totalVolunteerHours = 0;
 
     users.forEach(u => {
         const pi = u?.personalInfo || {};
@@ -100,6 +105,12 @@ const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
         if ((u.supportedNgos || []).length > 0) supporters++;
         if ((u.volunteerNgos || []).length > 0) volunteers++;
         { const r = (u.role as string) || 'user'; role[r] = (role[r] || 0) + 1; }
+
+        const st = u.stats || {};
+        const tiv = Number(st.totalImpactValue);
+        if (Number.isFinite(tiv) && tiv > 0) totalImpactValueTRY += tiv;
+        const vh = Number(st.volunteerHours);
+        if (Number.isFinite(vh) && vh > 0) totalVolunteerHours += vh;
 
         if (pi.gender) gender[pi.gender] = (gender[pi.gender] || 0) + 1;
         if (pi.bloodType) blood[pi.bloodType] = (blood[pi.bloodType] || 0) + 1;
@@ -148,6 +159,8 @@ const computeStats = (users: DemoUser[], nameMaps: NameMaps) => {
         languages: toArr(languages, 10),
         avgAge: ageCount ? Math.round(ageSum / ageCount) : 0,
         withVolunteer, withBlood, withCity, supporters, volunteers,
+        totalImpactValueTRY,
+        totalVolunteerHours,
         roleDist: toArr(role, 8).map(r => ({ name: ROLE_LABELS[r.name] || r.name, value: r.value })),
         district: toArr(district, 12),
         neighborhood: toArr(neighborhood, 12),
@@ -351,8 +364,8 @@ export default function DemographicsPage() {
                     { label: 'Ortalama Yaş', value: stats.avgAge || '—', icon: Cake },
                     { label: 'Gönüllü Profili', value: stats.withVolunteer.toLocaleString('tr-TR'), icon: UserCheck },
                     { label: 'STK Destekçisi', value: stats.supporters.toLocaleString('tr-TR'), icon: HandHeart },
-                    { label: 'Kan Grubu Beyanı', value: stats.withBlood.toLocaleString('tr-TR'), icon: Heart },
-                    { label: 'Konum Beyanı', value: stats.withCity.toLocaleString('tr-TR'), icon: MapPin },
+                    { label: 'Toplam Gönüllü Saati', value: `${stats.totalVolunteerHours.toLocaleString('tr-TR')} Saat`, icon: Activity },
+                    { label: 'Sosyal Etki Mali Değeri', value: `${stats.totalImpactValueTRY.toLocaleString('tr-TR')} ₺`, icon: Sparkles },
                 ].map(kpi => {
                     const Icon = kpi.icon;
                     return (

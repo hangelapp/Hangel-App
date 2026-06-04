@@ -39,6 +39,7 @@ import { ApprovalsTab } from './_components/approvals-tab';
 import { PublishTab } from './_components/publish-tab';
 import { ComplianceTab } from './_components/compliance-tab';
 import { LegalChatTab } from './_components/legal-chat-tab';
+import { StatisticsSection } from './_components/statistics-section';
 
 // ---- Tipler ----
 type DocStatus = 'taslak' | 'incelemede' | 'yayinlandi' | 'arsivlendi';
@@ -337,22 +338,28 @@ function DocList({ kind, docs, isLoading, countryFilter, onCountryFilterChange, 
   const isFilterActive = searchTerm.trim().length > 0 || statusFilter !== 'all' || riskFilter !== 'all' || countryFilter.length > 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[180px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Başlık / slug / grup ara..." className="pl-10 h-10" />
+    <Card className="overflow-hidden">
+      <CardHeader className="space-y-3">
+        {/* hangel — filtre satırı: grid bazlı, dar ekranda dikey stack, geniş ekranda tek satır. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto_auto] gap-2 items-stretch">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="Başlık / slug / grup ara..."
+              className="pl-10 h-10 rounded-2xl"
+            />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36 h-10"><SelectValue placeholder="Durum" /></SelectTrigger>
+            <SelectTrigger className="h-10 rounded-2xl lg:w-36"><SelectValue placeholder="Durum" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tüm Durumlar</SelectItem>
               {Object.entries(STATUS_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={riskFilter} onValueChange={setRiskFilter}>
-            <SelectTrigger className="w-32 h-10"><SelectValue placeholder="Risk" /></SelectTrigger>
+            <SelectTrigger className="h-10 rounded-2xl lg:w-32"><SelectValue placeholder="Risk" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tüm Riskler</SelectItem>
               {Object.entries(RISK_META).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
@@ -362,26 +369,28 @@ function DocList({ kind, docs, isLoading, countryFilter, onCountryFilterChange, 
             value={countryFilter}
             onChange={onCountryFilterChange}
             placeholder="Ülke (tümü)"
-            triggerClassName="w-full sm:w-auto"
+            triggerClassName="h-10 rounded-2xl w-full lg:w-auto"
           />
           <Select value={sortKey} onValueChange={setSortKey}>
-            <SelectTrigger className="w-40 h-10"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-10 rounded-2xl lg:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="title">Ada Göre (A-Z)</SelectItem>
               <SelectItem value="date">Tarihe Göre (Yeni)</SelectItem>
               <SelectItem value="risk">Riske Göre (Yüksek)</SelectItem>
             </SelectContent>
           </Select>
-          <ContractEditDialog defaultKind={kind} onSave={onSave} />
+          <div className="col-span-1 sm:col-span-2 lg:col-span-1 lg:justify-self-end">
+            <ContractEditDialog defaultKind={kind} onSave={onSave} />
+          </div>
         </div>
-        <div className="flex items-center justify-between gap-2 pt-2 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>
             {isFilterActive
               ? `${filtered.length} / ${docs.length} ${kind === 'policy' ? 'politika' : 'sözleşme'} görüntüleniyor`
               : `Toplam ${docs.length} ${kind === 'policy' ? 'politika' : 'sözleşme'}`}
           </span>
           {kind === 'policy' && (
-            <span className="hidden md:inline truncate">
+            <span className="hidden md:inline truncate min-w-0">
               Örnek: {POLICY_TEMPLATES.slice(0, 4).join(' · ')}
             </span>
           )}
@@ -391,62 +400,155 @@ function DocList({ kind, docs, isLoading, countryFilter, onCountryFilterChange, 
         {isLoading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (
-          <div className="divide-y border-t">
-            {filtered.map(c => (
-              <div key={c.slug} className="p-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <FileText className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div className="min-w-0 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-bold truncate">{c.title}</p>
-                      {c.version && <Badge variant="outline" className="text-[9px]">v{c.version}</Badge>}
-                      {c.status && <Badge className={cn('text-[9px] uppercase tracking-widest', STATUS_META[c.status].cls)}>{STATUS_META[c.status].label}</Badge>}
-                      {c.riskLevel && c.riskLevel !== 'dusuk' && <Badge className={cn('text-[9px]', RISK_META[c.riskLevel].cls)}>{RISK_META[c.riskLevel].label}</Badge>}
-                      {c.source === 'seed' && <Badge variant="outline" className="text-[9px] uppercase">Varsayılan</Badge>}
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono truncate">/{c.slug}</p>
-                    <div className="flex items-center gap-2 flex-wrap text-[10px] text-muted-foreground">
-                      {c.approvalType && <span className="inline-flex items-center gap-1"><ClipboardCheck className="h-3 w-3" /> {APPROVAL_LABELS[c.approvalType]}</span>}
-                      {c.targetGroups && c.targetGroups.length > 0 && (
-                        <span className="truncate">🎯 {c.targetGroups.slice(0, 3).join(', ')}{c.targetGroups.length > 3 ? ` +${c.targetGroups.length - 3}` : ''}</span>
-                      )}
-                      {c.publishedAt && (
-                        <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Yayın: {fmtDateShort(c.publishedAt)}</span>
-                      )}
-                      {!c.publishedAt && typeof c.updatedAt === 'string' && (
-                        <span className="inline-flex items-center gap-1"><CalendarDays className="h-3 w-3" /> Güncelleme: {fmtDateShort(c.updatedAt as string)}</span>
-                      )}
-                      {c.group && <Badge variant="secondary" className="text-[9px]">{c.group}</Badge>}
+          <ul className="divide-y border-t">
+            {filtered.map(c => {
+              const docCountries = resolveDocCountries(c);
+              return (
+                <li
+                  key={c.slug}
+                  className="group relative p-4 flex flex-col sm:flex-row sm:items-start gap-3 transition-colors hover:bg-accent/40 focus-within:bg-accent/40 focus-within:ring-2 focus-within:ring-primary/30"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <span className="h-10 w-10 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                      <FileText className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      {/* Başlık + meta pill'ler */}
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <p
+                          className="font-bold text-sm leading-snug min-w-0 [display:-webkit-box] [-webkit-line-clamp:2] [-webkit-box-orient:vertical] overflow-hidden break-words"
+                          title={c.title}
+                        >
+                          {c.title}
+                        </p>
+                      </div>
+                      {/* Slug */}
+                      <p
+                        className="text-[11px] text-muted-foreground font-mono truncate"
+                        title={`/${c.slug}`}
+                      >
+                        /{c.slug}
+                      </p>
+                      {/* Durum / versiyon / risk / jurisdiction badges */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {c.version && (
+                          <Badge variant="outline" className="text-[10px] rounded-full px-2 py-0">
+                            v{c.version}
+                          </Badge>
+                        )}
+                        {c.status && (
+                          <Badge className={cn('text-[10px] rounded-full px-2 py-0 font-semibold', STATUS_META[c.status].cls)}>
+                            {STATUS_META[c.status].label}
+                          </Badge>
+                        )}
+                        {c.riskLevel && c.riskLevel !== 'dusuk' && (
+                          <Badge className={cn('text-[10px] rounded-full px-2 py-0 font-semibold', RISK_META[c.riskLevel].cls)}>
+                            {RISK_META[c.riskLevel].label}
+                          </Badge>
+                        )}
+                        {docCountries.slice(0, 4).map((code) => (
+                          <Badge
+                            key={code}
+                            variant="glass"
+                            className="text-[10px] rounded-full px-2 py-0 font-mono tracking-wide"
+                            title={`Yetki alanı: ${code}`}
+                          >
+                            {code}
+                          </Badge>
+                        ))}
+                        {docCountries.length > 4 && (
+                          <Badge variant="glass" className="text-[10px] rounded-full px-2 py-0">
+                            +{docCountries.length - 4}
+                          </Badge>
+                        )}
+                        {c.source === 'seed' && (
+                          <Badge variant="outline" className="text-[10px] rounded-full px-2 py-0 uppercase tracking-wide">
+                            Varsayılan
+                          </Badge>
+                        )}
+                      </div>
+                      {/* Alt satır: onay tipi, hedef kitle, tarih, grup */}
+                      <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-[11px] text-muted-foreground">
+                        {c.approvalType && (
+                          <span className="inline-flex items-center gap-1">
+                            <ClipboardCheck className="h-3 w-3" />
+                            {APPROVAL_LABELS[c.approvalType]}
+                          </span>
+                        )}
+                        {c.targetGroups && c.targetGroups.length > 0 && (
+                          <span
+                            className="inline-flex items-center gap-1 truncate max-w-[260px]"
+                            title={c.targetGroups.join(', ')}
+                          >
+                            <span aria-hidden>•</span>
+                            {c.targetGroups.slice(0, 3).join(', ')}
+                            {c.targetGroups.length > 3 ? ` +${c.targetGroups.length - 3}` : ''}
+                          </span>
+                        )}
+                        {c.publishedAt && (
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" /> Yayın: {fmtDateShort(c.publishedAt)}
+                          </span>
+                        )}
+                        {!c.publishedAt && typeof c.updatedAt === 'string' && (
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" /> Güncelleme: {fmtDateShort(c.updatedAt as string)}
+                          </span>
+                        )}
+                        {c.group && (
+                          <Badge variant="secondary" className="text-[10px] rounded-full px-2 py-0">
+                            {c.group}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button variant="ghost" size="sm" asChild className="gap-1.5">
-                    <Link href={`/settings/contracts/${c.slug}`} target="_blank" rel="noopener noreferrer"><Eye className="h-4 w-4" /> Önizle</Link>
-                  </Button>
-                  <ContractEditDialog contract={c} defaultKind={kind} onSave={onSave} />
-                  {c.source === 'firestore' && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/10" aria-label="Sil"><Trash2 className="h-4 w-4" /></Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Silinsin mi?</AlertDialogTitle>
-                          <AlertDialogDescription>"{c.title}" Firestore kaydı silinecek.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                          <AlertDialogAction className={cn(buttonVariants({ variant: 'destructive' }))} onClick={() => onDelete(c)}>Sil</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-              </div>
-            ))}
-            {filtered.length === 0 && <p className="text-center text-muted-foreground italic p-12">Sonuç bulunamadı.</p>}
-          </div>
+                  {/* Aksiyonlar: mobilde tam genişlik, sm+ ekranda sağda */}
+                  <div className="flex items-center gap-1 shrink-0 self-start flex-wrap sm:flex-nowrap">
+                    <Button variant="ghost" size="sm" asChild className="gap-1.5 rounded-full focus-visible:ring-2 focus-visible:ring-primary">
+                      <Link href={`/settings/contracts/${c.slug}`}>
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Önizle</span>
+                      </Link>
+                    </Button>
+                    <ContractEditDialog contract={c} defaultKind={kind} onSave={onSave} />
+                    {c.source === 'firestore' && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full text-destructive hover:bg-destructive/10 focus-visible:ring-2 focus-visible:ring-destructive"
+                            aria-label="Sil"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Silinsin mi?</AlertDialogTitle>
+                            <AlertDialogDescription>&ldquo;{c.title}&rdquo; Firestore kaydı silinecek.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Vazgeç</AlertDialogCancel>
+                            <AlertDialogAction
+                              className={cn(buttonVariants({ variant: 'destructive' }))}
+                              onClick={() => onDelete(c)}
+                            >
+                              Sil
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+            {filtered.length === 0 && (
+              <li className="text-center text-muted-foreground italic p-12">Sonuç bulunamadı.</li>
+            )}
+          </ul>
         )}
       </CardContent>
     </Card>
@@ -554,7 +656,7 @@ export default function ContractsAdminPage() {
     <div className="space-y-6 animate-in fade-in-0">
       <div className="space-y-1">
         <h1 className="text-3xl font-black tracking-tighter">Sözleşmeler ve Politikalar Yönetimi</h1>
-        <p className="text-muted-foreground text-sm">Hukuk ve uyumluluk merkezi — sözleşmeler, politikalar, mevzuatlar, onay süreçleri.</p>
+        <p className="text-muted-foreground text-sm">hangel hukuk ve uyumluluk merkezi — sözleşmeler, politikalar, mevzuatlar, onay süreçleri.</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -609,6 +711,9 @@ export default function ContractsAdminPage() {
               })}
             </CardContent>
           </Card>
+
+          {/* hangel — Hızlı Erişim altı: anlık istatistik özet (chart + tablo). */}
+          <StatisticsSection contracts={allContracts} isLoading={isLoading} language="tr" />
         </TabsContent>
 
         {/* 2. SÖZLEŞMELER */}

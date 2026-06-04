@@ -935,6 +935,41 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // Gönüllü görev tamamlama kayıtları (Ajan 4/4 — saat + meslek + etki değeri).
+    // Akış: kullanıcı kendi adına 'pending' (ngoApproved: false) kayıt açar →
+    //       STK admin onaylar (ngoApproved: true) → user stats + sertifika.
+    //
+    // Read: kayıt sahibi, kaydın bağlı olduğu STK'nın admin'i veya super-admin.
+    // Create: yalnızca kullanıcı kendi adına; ngoApproved zorunlu olarak false
+    //         (otomatik self-approve engeli).
+    // Update: STK admin (managedNgoId == doc.ngoId) veya super-admin.
+    // Delete: yalnızca super-admin (audit trail korunur).
+    match /volunteerCompletions/{completionId} {
+      function isCompletionOwner() {
+        return isSignedIn() && resource.data.userId == request.auth.uid;
+      }
+      function isManagingNgoAdmin() {
+        return isSignedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId;
+      }
+      allow read: if isSuperAdmin() || isCompletionOwner() || isManagingNgoAdmin();
+      allow list: if isSuperAdmin() || (isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId)
+      ));
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.ngoApproved == false;
+      allow update: if isSuperAdmin() || (
+        isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.managedNgoId == resource.data.ngoId
+      );
+      allow delete: if isSuperAdmin();
+    }
+
     // bloodCalls — Acil kan/trombosit/kök hücre ilanları
     // Read: imzalı kullanıcılar görebilir (yardım çağrısı public)
     // Write: sadece NGO admin (managedNgoId == ngoId) veya super-admin

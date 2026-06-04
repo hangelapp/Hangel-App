@@ -20,7 +20,9 @@
  *   0 success
  *   1 herhangi bir hata (env, admin SDK, write)
  */
-import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
+import fs from 'node:fs';
+import path from 'node:path';
+import { initializeApp, applicationDefault, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
 import {
@@ -68,13 +70,24 @@ function stripHtml(s: string): string {
     .replace(/[ \t]+/g, ' ');
 }
 
-async function main(): Promise<void> {
+function initAdmin(): void {
+  if (getApps().length > 0) return;
   const credsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (!credsPath || credsPath.trim() === '') {
-    console.error('[contracts-score-all] HATA: GOOGLE_APPLICATION_CREDENTIALS tanımlı değil.');
-    process.exit(1);
+  if (credsPath && fs.existsSync(credsPath)) {
+    const sa = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+    initializeApp({ credential: cert(sa), projectId: sa.project_id });
+    return;
   }
+  const local = path.join(process.cwd(), '.firebase-service-account.json');
+  if (fs.existsSync(local)) {
+    const sa = JSON.parse(fs.readFileSync(local, 'utf8'));
+    initializeApp({ credential: cert(sa), projectId: sa.project_id });
+    return;
+  }
+  initializeApp({ credential: applicationDefault() });
+}
 
+async function main(): Promise<void> {
   const args = parseArgs(process.argv);
   console.log('[contracts-score-all] başlıyor', {
     dryRun: args.dryRun,
@@ -83,9 +96,7 @@ async function main(): Promise<void> {
     jurisdictions: COMPLIANCE_JURISDICTIONS.length,
   });
 
-  if (getApps().length === 0) {
-    initializeApp({ credential: applicationDefault() });
-  }
+  initAdmin();
   const db = getFirestore();
 
   const startMs = Date.now();
@@ -150,6 +161,25 @@ async function main(): Promise<void> {
     docsWritten: args.dryRun ? 0 : totalDocsWritten,
     docsWouldWrite: args.dryRun ? totalDocsWritten : undefined,
     elapsedSec,
+  });
+
+  // Global istatistikler.
+  const allScoreNums: number[] = [];
+  let lowDocCount = 0; // ortalama skor ≤ 30 olan contract sayısı
+  let zeroScoreCount = 0; // herhangi bir jurisdiction'da skor === 0 olan (slug, juris) çifti
+  for (const row of perContractSummary) {
+    allScoreNums.push(row.avg);
+    if (row.avg <= 30) lowDocCount += 1;
+    if (row.min === 0) zeroScoreCount += 1;
+  }
+  const globalAvg = allScoreNums.length === 0
+    ? 0
+    : Math.round(allScoreNums.reduce((a, b) => a + b, 0) / allScoreNums.length);
+  console.log('[contracts-score-all] GLOBAL ÖZET', {
+    contracts: allScoreNums.length,
+    globalAvg,
+    lowDocsLte30: lowDocCount,
+    contractsWithAnyZero: zeroScoreCount,
   });
 
   // En kritik 10 contract: en düşük ortalama skor.

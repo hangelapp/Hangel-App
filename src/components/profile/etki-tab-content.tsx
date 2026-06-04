@@ -1,12 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
+import { collection } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Award, BarChart3, CheckCircle, ChevronRight, DollarSign, FileText,
     HandCoins, Handshake, Hourglass, Sparkles, Target, TrendingUp,
 } from 'lucide-react';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import {
+    calculateImpactValue,
+    normalizeCompletedTask,
+    type ProfessionScoringRow,
+} from '@/lib/volunteer/impact-value';
+import { CompletedVolunteerTasks } from '@/components/profile/completed-volunteer-tasks';
 
 type UserStats = {
     totalDonation: number;
@@ -26,11 +35,27 @@ type EtkiUser = {
     stats: UserStats;
 };
 
+type NgoLite = {
+    id: string;
+    name?: string;
+    avatarUrl?: string;
+    logoUrl?: string;
+    files?: { logo?: string };
+};
+
 export type EtkiTabContentProps = {
     user: EtkiUser;
     earnedBadgeCount: number;
     certificateCount: number;
     impactCardTitle: string;
+    /** Bundle'dan veya parent'tan gelen kayıtlar — kanonik mali değer için. */
+    pastVolunteering?: Array<Record<string, unknown>>;
+    /** users/{uid}.completedVolunteerTasks (yeni şema). */
+    inlineCompletedTasks?: Array<Record<string, unknown>>;
+    /** Kayıtlarda profession yoksa fallback. */
+    fallbackProfession?: string | null;
+    volunteerNgos?: NgoLite[];
+    supportedNgos?: NgoLite[];
 };
 
 const InfoRow = ({ icon: Icon, label, value, href }: { icon: React.ElementType; label: string; value?: string | number | null; href?: string }) => {
@@ -64,8 +89,66 @@ const StatCard = ({ icon: Icon, value, label }: { icon: React.ElementType; value
     </div>
 );
 
-export function EtkiTabContent({ user, earnedBadgeCount, certificateCount, impactCardTitle }: EtkiTabContentProps) {
+export function EtkiTabContent({
+    user,
+    earnedBadgeCount,
+    certificateCount,
+    impactCardTitle,
+    pastVolunteering = [],
+    inlineCompletedTasks = [],
+    fallbackProfession,
+    volunteerNgos = [],
+    supportedNgos = [],
+}: EtkiTabContentProps) {
     const stats = user.stats;
+    const db = useFirestore();
+
+    // Kanonik mali değer: süper-admin volunteerScoring kataloğu × tamamlanmış
+    // saatler. stats.totalImpactValue cache'lenmiş; canlı hesap > cache.
+    const catalogRef = useMemoFirebase(
+        () => (db ? collection(db, COLLECTIONS.volunteerScoring) : null),
+        [db],
+    );
+    const { data: catalogData } = useCollection<ProfessionScoringRow>(catalogRef);
+    const catalog = useMemo<ProfessionScoringRow[]>(
+        () =>
+            (catalogData ?? []).map((row) => ({
+                id: row.id,
+                taskType: String(row.taskType ?? ''),
+                manHourCost: Number(row.manHourCost) || 0,
+                pointsPerHour: Number(row.pointsPerHour) || 0,
+                isActive: row.isActive !== false,
+            })),
+        [catalogData],
+    );
+
+    const liveImpactValue = useMemo(() => {
+        const tasks = [
+            ...inlineCompletedTasks
+                .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+                .map((r, i) => {
+                    const n = normalizeCompletedTask(r, `inline-${i}`);
+                    if (!n.professionId && fallbackProfession) n.professionId = fallbackProfession;
+                    return n;
+                }),
+            ...pastVolunteering
+                .filter((r): r is Record<string, unknown> => !!r && typeof r === 'object')
+                .map((r, i) => {
+                    const n = normalizeCompletedTask(
+                        r,
+                        String((r as { id?: string }).id ?? `pv-${i}`),
+                    );
+                    if (!n.professionId && fallbackProfession) n.professionId = fallbackProfession;
+                    return n;
+                }),
+        ];
+        return calculateImpactValue(tasks, catalog).totalTRY;
+    }, [inlineCompletedTasks, pastVolunteering, catalog, fallbackProfession]);
+
+    // Live > cache; ikisi de 0 ise 0 göster.
+    const displayImpactValue =
+        liveImpactValue > 0 ? liveImpactValue : Number(stats.totalImpactValue ?? 0) || 0;
+
     return (
         <div className="space-y-3">
             <Card className="text-center">
@@ -84,13 +167,21 @@ export function EtkiTabContent({ user, earnedBadgeCount, certificateCount, impac
                 <CardHeader><CardTitle>Özet İstatistikler</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <StatCard icon={HandCoins} value={`${(stats.totalDonation ?? 0).toLocaleString('tr-TR')} ₺`} label="Toplam Bağış" />
-                    <StatCard icon={Sparkles} value={`${(stats.totalImpactValue ?? 0).toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
+                    <StatCard icon={Sparkles} value={`${displayImpactValue.toLocaleString('tr-TR')} ₺`} label="Sosyal Etki Mali Değeri" />
                     <StatCard icon={Handshake} value={`${stats.volunteerHours ?? 0} Saat`} label="Gönüllülük" />
                     <StatCard icon={Award} value={earnedBadgeCount} label="Kazanılan Rozet" />
                     <StatCard icon={FileText} value={certificateCount} label="Sertifika" />
                     <StatCard icon={BarChart3} value={stats.volunteerRank?.country ?? '-'} label="Türkiye Sıralaması" />
                 </CardContent>
             </Card>
+
+            <CompletedVolunteerTasks
+                pastVolunteering={pastVolunteering}
+                inlineCompletedTasks={inlineCompletedTasks}
+                fallbackProfession={fallbackProfession}
+                volunteerNgos={volunteerNgos}
+                supportedNgos={supportedNgos}
+            />
 
             <Card>
                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5 text-primary" />Gönüllülük İstatistikleri</CardTitle></CardHeader>
