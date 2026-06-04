@@ -16,7 +16,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { HangelLogo } from '@/components/icons';
 import {
-  Apple, Smartphone, Globe, Watch, Monitor,
+  Apple, Smartphone, Globe, Watch, Monitor, Laptop, Chrome,
   Instagram, Linkedin, Twitter, Youtube, Facebook, MessageCircle,
   Mail, Send, Music2, ExternalLink, QrCode,
 } from 'lucide-react';
@@ -77,6 +77,15 @@ const STORE_PLATFORMS: PlatformCard[] = [
     iconColor: 'text-foreground',
   },
   {
+    name: 'Mac App',
+    description: 'macOS 11+ — Mac Catalyst (iOS app Mac\'te çalışır)',
+    icon: Laptop,
+    href: 'https://apps.apple.com/tr/app/hangel/id6664058822',
+    badge: 'beta',
+    available: true,
+    iconColor: 'text-foreground',
+  },
+  {
     name: 'Apple Vision',
     description: 'visionOS — uzamsal arayüz',
     icon: Watch,
@@ -93,6 +102,15 @@ const STORE_PLATFORMS: PlatformCard[] = [
     badge: 'PWA',
     available: true,
     iconColor: 'text-blue-600',
+  },
+  {
+    name: 'Chrome Web App',
+    description: 'Chrome / Edge — "Yükle" butonu ile masaüstüne ekle',
+    icon: Chrome,
+    href: 'https://hangel.org.tr/',
+    badge: 'PWA',
+    available: true,
+    iconColor: 'text-amber-600',
   },
 ];
 
