@@ -30,7 +30,9 @@ import {
 import {
   BarChart3, ChevronDown, ChevronUp, RefreshCw, Loader2,
   AlertTriangle, Clock, FileText, Globe, Layers, Scale,
-  ShieldCheck, ListOrdered,
+  ShieldCheck, ListOrdered, ThumbsUp, ThumbsDown, Users,
+  Building2, Monitor, Smartphone, CheckCircle2, XCircle,
+  TrendingUp, Eye, Percent, Calendar,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -64,6 +66,26 @@ interface ComplianceDoc {
   score?: number;
 }
 
+// Onay kaydı şeması — /api/contracts/approve route'undan yazılır
+interface ApprovalDoc {
+  id?: string;
+  contractSlug?: string;
+  contractTitle?: string;
+  decision?: 'approved' | 'rejected';
+  userId?: string;
+  userName?: string;
+  userType?: string;      // 'user', 'ngo', 'brand', 'super-admin' vb.
+  approvedAt?: unknown;   // serverTimestamp
+  device?: string;        // 'desktop', 'mobile', 'tablet'
+  browser?: string;
+  os?: string;
+  country?: string | null;
+  method?: string;        // 'popup', 'inline', 'banner'
+  readSeconds?: number;
+  scrollCompleted?: boolean;
+  version?: string;
+}
+
 type Lang = 'tr' | 'en';
 
 interface Props {
@@ -72,7 +94,7 @@ interface Props {
   language?: Lang;
 }
 
-// ---- i18n (10 key) ----
+// ---- i18n ----
 const T = {
   tr: {
     title: 'İstatistikler',
@@ -94,6 +116,37 @@ const T = {
     none: '—',
     open: 'Aç',
     close: 'Gizle',
+    // Approval section
+    approvalsTitle: 'Onay İstatistikleri',
+    approvalsSubtitle: 'Sözleşme & politika onaylarının kullanıcı, kurum ve cihaz dağılımı.',
+    totalApprovals: 'Toplam Onay Kaydı',
+    approvedByUsers: 'Kullanıcı Onayı',
+    approvedByOrgs: 'Kurum Onayı',
+    approvedBySuperAdmin: 'Süper Admin Onayı',
+    rejectionRate: 'Red Oranı',
+    avgReadSec: 'Ort. Okuma Süresi',
+    scrollCompletionRate: 'Sayfa Sonuna İnen %',
+    decisionDist: 'Onay / Red Dağılımı',
+    userTypeDist: 'Onaylayan Tipi',
+    deviceDist: 'Cihaz Dağılımı',
+    methodDist: 'Onay Yöntemi',
+    countryDist: 'Ülke Dağılımı',
+    topApproved: 'En Çok Onaylanan (10 doc)',
+    last30days: 'Son 30 Gün Onay Aktivitesi',
+    approved: 'Onaylandı',
+    rejected: 'Reddedildi',
+    user: 'Kullanıcı',
+    ngo: 'STK / Kurum',
+    brand: 'Marka',
+    superAdmin: 'Süper Admin',
+    other: 'Diğer',
+    desktop: 'Masaüstü',
+    mobile: 'Mobil',
+    tablet: 'Tablet',
+    popup: 'Popup',
+    inline: 'Inline',
+    banner: 'Banner',
+    seconds: 'sn',
   },
   en: {
     title: 'Statistics',
@@ -115,8 +168,53 @@ const T = {
     none: '—',
     open: 'Open',
     close: 'Hide',
+    approvalsTitle: 'Approval Statistics',
+    approvalsSubtitle: 'User, organization and device breakdown of contract & policy approvals.',
+    totalApprovals: 'Total Approval Records',
+    approvedByUsers: 'User Approvals',
+    approvedByOrgs: 'Organization Approvals',
+    approvedBySuperAdmin: 'Super Admin Approvals',
+    rejectionRate: 'Rejection Rate',
+    avgReadSec: 'Avg Read Time',
+    scrollCompletionRate: 'Read-to-End Rate',
+    decisionDist: 'Approval / Rejection',
+    userTypeDist: 'Approver Type',
+    deviceDist: 'Device Distribution',
+    methodDist: 'Approval Method',
+    countryDist: 'Country Distribution',
+    topApproved: 'Most Approved (top 10)',
+    last30days: 'Last 30 Days Activity',
+    approved: 'Approved',
+    rejected: 'Rejected',
+    user: 'User',
+    ngo: 'NGO',
+    brand: 'Brand',
+    superAdmin: 'Super Admin',
+    other: 'Other',
+    desktop: 'Desktop',
+    mobile: 'Mobile',
+    tablet: 'Tablet',
+    popup: 'Popup',
+    inline: 'Inline',
+    banner: 'Banner',
+    seconds: 's',
   },
 } as const;
+
+const USER_TYPE_COLOR: Record<string, string> = {
+  user: '#0ea5e9',
+  ngo: '#16a34a',
+  brand: '#f59e0b',
+  'super-admin': '#a855f7',
+  other: '#94a3b8',
+};
+const DECISION_COLOR = { approved: '#16a34a', rejected: '#dc2626' } as const;
+const DEVICE_COLOR: Record<string, string> = {
+  desktop: '#042654',
+  mobile: '#f34723',
+  tablet: '#a855f7',
+  other: '#94a3b8',
+};
 
 const STATUS_LABEL: Record<DocStatus, { tr: string; en: string; color: string }> = {
   taslak: { tr: 'Taslak', en: 'Draft', color: '#94a3b8' },

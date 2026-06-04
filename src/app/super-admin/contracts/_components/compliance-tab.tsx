@@ -19,10 +19,53 @@ import { collection } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { cn } from '@/lib/utils';
 
-interface ContractLite { slug: string; title: string; content: string; kind?: string; jurisdictions?: string[]; }
+interface ContractLite {
+  slug: string;
+  title: string;
+  content: string;
+  kind?: string;
+  jurisdictions?: string[];
+  riskLevel?: string;
+  status?: string;
+}
 
 // Resmi 12 jurisdiction kodu — `compliance-engine.ts` ile birebir hizalı.
 const OFFICIAL_JURISDICTIONS = ['TR','EU','UK','DE','FR','IT','ES','US-CA','CA','AU','JP','BR'] as const;
+
+const JURISDICTION_LABEL: Record<string, string> = {
+  TR: '🇹🇷 Türkiye',
+  EU: '🇪🇺 Avrupa Birliği',
+  UK: '🇬🇧 Birleşik Krallık',
+  DE: '🇩🇪 Almanya',
+  FR: '🇫🇷 Fransa',
+  IT: '🇮🇹 İtalya',
+  ES: '🇪🇸 İspanya',
+  'US-CA': '🇺🇸 ABD (California)',
+  CA: '🇨🇦 Kanada',
+  AU: '🇦🇺 Avustralya',
+  JP: '🇯🇵 Japonya',
+  BR: '🇧🇷 Brezilya',
+};
+
+const RISK_LABEL: Record<string, string> = {
+  low: 'Düşük',
+  medium: 'Orta',
+  high: 'Yüksek',
+  critical: 'Kritik',
+};
+
+const KIND_LABEL: Record<string, string> = {
+  contract: 'Sözleşme',
+  policy: 'Politika',
+  beyan: 'Beyan',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  taslak: 'Taslak',
+  incelemede: 'İncelemede',
+  yayinlandi: 'Yayında',
+  arsivlendi: 'Arşivlendi',
+};
 interface LegislationLite {
   id: string; name: string; number?: string; articleText?: string;
   interpretation?: string; hangelSubject?: string;
@@ -139,6 +182,11 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
 
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<OverviewSort>('score-desc');
+  const [countryFilter, setCountryFilter] = useState<string[]>([]); // çoklu
+  const [riskFilter, setRiskFilter] = useState<string>('all');
+  const [kindFilter, setKindFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [scoreBucket, setScoreBucket] = useState<string>('all'); // green / yellow / red / nodata
 
   // slug__jurisdiction → score lookup
   const scoreMap = useMemo(() => {
@@ -168,6 +216,9 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
         declared,
         scores,
         avg,
+        kind: c.kind || 'contract',
+        riskLevel: c.riskLevel || '',
+        status: c.status || '',
       };
     });
   }, [contracts, scoreMap]);
@@ -175,9 +226,31 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
   // Filtre + sıralama
   const visible = useMemo(() => {
     const lower = query.trim().toLowerCase();
-    let list = rows.filter(r =>
-      lower === '' || r.title.toLowerCase().includes(lower) || r.slug.toLowerCase().includes(lower),
-    );
+    let list = rows.filter(r => {
+      if (lower !== '' && !(r.title.toLowerCase().includes(lower) || r.slug.toLowerCase().includes(lower))) {
+        return false;
+      }
+      if (countryFilter.length > 0 && !r.declared.some(j => countryFilter.includes(j))) {
+        return false;
+      }
+      if (riskFilter !== 'all' && r.riskLevel !== riskFilter) {
+        return false;
+      }
+      if (kindFilter !== 'all' && r.kind !== kindFilter) {
+        return false;
+      }
+      if (statusFilter !== 'all' && r.status !== statusFilter) {
+        return false;
+      }
+      if (scoreBucket !== 'all') {
+        const a = r.avg;
+        if (scoreBucket === 'nodata' && a !== null) return false;
+        if (scoreBucket === 'green' && (a === null || a < 90)) return false;
+        if (scoreBucket === 'yellow' && (a === null || a < 60 || a >= 90)) return false;
+        if (scoreBucket === 'red' && (a === null || a >= 60)) return false;
+      }
+      return true;
+    });
     list = [...list].sort((a, b) => {
       if (sort === 'title-asc') return a.title.localeCompare(b.title, 'tr');
       const av = a.avg ?? -1;
@@ -186,7 +259,24 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
       return bv - av;
     });
     return list;
-  }, [rows, query, sort]);
+  }, [rows, query, sort, countryFilter, riskFilter, kindFilter, statusFilter, scoreBucket]);
+
+  const activeFilterCount =
+    (query ? 1 : 0) +
+    (countryFilter.length > 0 ? 1 : 0) +
+    (riskFilter !== 'all' ? 1 : 0) +
+    (kindFilter !== 'all' ? 1 : 0) +
+    (statusFilter !== 'all' ? 1 : 0) +
+    (scoreBucket !== 'all' ? 1 : 0);
+
+  const clearAll = () => {
+    setQuery('');
+    setCountryFilter([]);
+    setRiskFilter('all');
+    setKindFilter('all');
+    setStatusFilter('all');
+    setScoreBucket('all');
+  };
 
   // Headline istatistikleri — tüm contractlar üzerinden
   const stats = useMemo(() => {
@@ -251,7 +341,7 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
           </p>
         )}
 
-        {/* Toolbar */}
+        {/* Toolbar: arama + sıralama */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative flex-1 min-w-[180px]">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -267,12 +357,95 @@ function ContractsComplianceOverview({ contracts }: { contracts: ContractLite[] 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="score-desc"><ArrowUp01 className="h-3.5 w-3.5 mr-2 inline" /> Uyum %: Yüksek → Düşük</SelectItem>
-              <SelectItem value="score-asc"><ArrowUp01 className="h-3.5 w-3.5 mr-2 inline" /> Uyum %: Düşük → Yüksek</SelectItem>
-              <SelectItem value="title-asc"><ArrowDownAZ className="h-3.5 w-3.5 mr-2 inline" /> Başlık (A-Z)</SelectItem>
+              <SelectItem value="score-desc">Uyum %: Yüksek → Düşük</SelectItem>
+              <SelectItem value="score-asc">Uyum %: Düşük → Yüksek</SelectItem>
+              <SelectItem value="title-asc">Başlık (A-Z)</SelectItem>
             </SelectContent>
           </Select>
           <Badge variant="secondary" className="text-[11px]">{visible.length}/{stats.total}</Badge>
+        </div>
+
+        {/* Filtre satırı: Ülke / Risk / Tür / Durum / Skor */}
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          {/* Ülke (jurisdiction) — multi-select dropdown */}
+          <Select
+            value={countryFilter.length === 0 ? '__all__' : countryFilter.join(',')}
+            onValueChange={v => {
+              if (v === '__all__') setCountryFilter([]);
+              else setCountryFilter([v]);
+            }}
+          >
+            <SelectTrigger className="h-9 w-[180px] text-xs">
+              <SelectValue placeholder="Ülke / Jurisdiction" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">Tüm ülkeler</SelectItem>
+              {OFFICIAL_JURISDICTIONS.map(j => (
+                <SelectItem key={j} value={j}>{JURISDICTION_LABEL[j]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Risk */}
+          <Select value={riskFilter} onValueChange={setRiskFilter}>
+            <SelectTrigger className="h-9 w-[140px] text-xs">
+              <SelectValue placeholder="Risk" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm risk</SelectItem>
+              <SelectItem value="critical">Kritik</SelectItem>
+              <SelectItem value="high">Yüksek</SelectItem>
+              <SelectItem value="medium">Orta</SelectItem>
+              <SelectItem value="low">Düşük</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Tür */}
+          <Select value={kindFilter} onValueChange={setKindFilter}>
+            <SelectTrigger className="h-9 w-[130px] text-xs">
+              <SelectValue placeholder="Tür" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm tür</SelectItem>
+              <SelectItem value="contract">Sözleşme</SelectItem>
+              <SelectItem value="policy">Politika</SelectItem>
+              <SelectItem value="beyan">Beyan</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Durum (status) */}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-9 w-[140px] text-xs">
+              <SelectValue placeholder="Durum" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm durum</SelectItem>
+              <SelectItem value="yayinlandi">Yayında</SelectItem>
+              <SelectItem value="taslak">Taslak</SelectItem>
+              <SelectItem value="incelemede">İncelemede</SelectItem>
+              <SelectItem value="arsivlendi">Arşivlendi</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Skor bucket */}
+          <Select value={scoreBucket} onValueChange={setScoreBucket}>
+            <SelectTrigger className="h-9 w-[160px] text-xs">
+              <SelectValue placeholder="Uyum seviyesi" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tüm uyum</SelectItem>
+              <SelectItem value="green">🟢 Yüksek (≥90)</SelectItem>
+              <SelectItem value="yellow">🟡 Kısmi (60-89)</SelectItem>
+              <SelectItem value="red">🔴 Düşük (&lt;60)</SelectItem>
+              <SelectItem value="nodata">— Kapsam Dışı</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {activeFilterCount > 0 && (
+            <Button variant="ghost" size="sm" className="h-9 text-xs" onClick={clearAll}>
+              <XCircle className="h-3.5 w-3.5 mr-1" /> Filtreleri Temizle ({activeFilterCount})
+            </Button>
+          )}
         </div>
 
         {/* Liste — 144 contract, scrollable */}
