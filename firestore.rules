@@ -307,6 +307,12 @@ service cloud.firestore {
       allow delete: if false;
       allow update: if isSuperAdmin(); // düzenleme loglu (içerik koru, edited flag)
     }
+    // Sözleşme×ülke uyum matrisi (1344 doc beklenir: 112 sözleşme × 12 ülke).
+    // Read: super-admin (matris panelden okunur). Write: super-admin (AI flow tetikler).
+    match /contractCompliance/{rowId} {
+      allow read, list: if isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin();
+    }
 
     // Hibe programları ve fonlar (super-admin yönetir, herkes okur)
     match /funds/{fundId} {

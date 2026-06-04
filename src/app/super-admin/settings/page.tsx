@@ -238,6 +238,7 @@ export default function SettingsPage() {
       audioRef.current = a;
     }
     a.pause();
+    // eslint-disable-next-line react-hooks/immutability -- audio element ref; preview UX requires source swap on toggle
     a.src = url;
     a.currentTime = 0;
     // onended / onerror — playing state'i reset etmeyi unutma.
