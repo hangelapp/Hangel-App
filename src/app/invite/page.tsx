@@ -262,7 +262,20 @@ export default function InvitePage() {
     const handleInvitePhone = async (name: string, phone?: string) => {
         if (phone && inviteLink) {
             const msg = encodeURIComponent(inviteMessage);
-            window.open(`sms:${phone}?&body=${msg}`, '_blank');
+            const nav = typeof navigator !== 'undefined' ? navigator : null;
+            const ua = nav?.userAgent ?? '';
+            const isMobileUA = /(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/i.test(ua);
+            const hasTouch = (nav?.maxTouchPoints ?? 0) > 0;
+            const isDesktop = !isNativeApp() && !isMobileUA && !hasTouch;
+            if (isDesktop) {
+                const digits = (phone || '').replace(/\D/g, '');
+                const waUrl = digits
+                    ? `https://wa.me/${digits}?text=${msg}`
+                    : `https://wa.me/?text=${msg}`;
+                window.open(waUrl, '_blank', 'noopener,noreferrer');
+            } else {
+                window.open(`sms:${phone}?&body=${msg}`, '_blank');
+            }
         }
         const awarded = await recordInvite(name, phone, null);
         toast({
@@ -328,8 +341,12 @@ export default function InvitePage() {
         try {
             const subject = encodeURIComponent('hangel daveti');
             const body = encodeURIComponent(inviteMessage);
-            const bcc = encodeURIComponent(emailList.join(','));
-            window.open(`mailto:?bcc=${bcc}&subject=${subject}&body=${body}`, '_blank');
+            if (emailList.length === 1) {
+                window.open(`mailto:${encodeURIComponent(emailList[0])}?subject=${subject}&body=${body}`, '_blank');
+            } else {
+                const bcc = encodeURIComponent(emailList.join(','));
+                window.open(`mailto:?bcc=${bcc}&subject=${subject}&body=${body}`, '_blank');
+            }
 
             let total = 0;
             for (const email of emailList) {
@@ -480,15 +497,16 @@ export default function InvitePage() {
         { name: 'SMS', icon: Smartphone, href: `sms:?&body=${encodeURIComponent(inviteMessage)}` },
         { name: 'Telegram', icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteMessage)}` },
         { name: 'E-posta', icon: Mail, href: `mailto:?subject=${encodeURIComponent('hangel daveti')}&body=${encodeURIComponent(inviteMessage)}` },
-        { name: 'X (Twitter)', icon: Twitter, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'X (Twitter)', icon: Twitter, href: `https://x.com/intent/tweet?text=${encodeURIComponent(inviteMessage)}` },
         { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent(inviteMessage)}` },
     ];
 
     const sortedPhoneContacts = useMemo(() => {
-        const onPlatform = phoneContacts.filter(c => c.onPlatform);
-        const offPlatform = phoneContacts.filter(c => !c.onPlatform);
+        const byName = (a: PhoneContact, b: PhoneContact) => a.name.localeCompare(b.name, 'tr');
+        const onPlatform = phoneContacts.filter(c => c.onPlatform).sort(byName);
+        const offPlatform = phoneContacts.filter(c => !c.onPlatform).sort(byName);
         const sorted = [...onPlatform, ...offPlatform];
-        if (sortCriteria === 'alphabetical') sorted.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+        if (sortCriteria === 'alphabetical') sorted.sort(byName);
         return sorted;
     }, [phoneContacts, sortCriteria]);
 
@@ -505,8 +523,10 @@ export default function InvitePage() {
                 title: 'Tarayıcı rehber erişimini desteklemiyor',
                 description: 'Mobil uygulamayı kullanın veya vCard/CSV dosyası yükleyin (otomatik açıldı).',
             });
-            // Email provider dialog'unu aç — vCard/CSV upload kısmı orada
-            setEmailProviderDialogOpen(true);
+            // vCard/CSV dosya seçiciyi doğrudan tetikle (e-posta dialog'u açmak yerine).
+            if (typeof document !== 'undefined') {
+                (document.getElementById('main-vcard-csv-upload') as HTMLInputElement | null)?.click();
+            }
             return;
         }
         await handlePhoneSync();
@@ -536,6 +556,15 @@ export default function InvitePage() {
                     title: provider === 'google' ? 'Gmail bağlantısı henüz aktif değil' : 'Outlook bağlantısı henüz aktif değil',
                     description: 'Şimdilik kişilerini Gmail/Outlook\'tan vCard (.vcf) veya CSV olarak indir ve aşağıdan yükle.',
                 });
+                if (provider === 'microsoft') {
+                    toast({
+                        title: 'Outlook kişilerini dışa aktar',
+                        description: 'outlook.live.com → People → Manage → Export',
+                    });
+                }
+                if (typeof document !== 'undefined') {
+                    (document.getElementById('email-vcard-csv-upload') as HTMLInputElement | null)?.click();
+                }
                 return;
             }
             toast({
@@ -558,6 +587,9 @@ export default function InvitePage() {
             title: 'IMAP ile kişi içe aktarma yok',
             description: 'Kurumsal/özel maillerde kişileri vCard (.vcf) veya CSV olarak dışa aktarıp aşağıdan yükleyin.',
         });
+        if (typeof document !== 'undefined') {
+            (document.getElementById('email-vcard-csv-upload') as HTMLInputElement | null)?.click();
+        }
     };
 
     // OAuth popup'tan dönen kişileri mevcut davet listelerine besle.
