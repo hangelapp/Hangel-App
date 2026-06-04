@@ -34,21 +34,23 @@ import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 
 const InfoRow = ({ icon: Icon, label, children, href }: { icon: React.ElementType; label: string; children: React.ReactNode, href?: string }) => {
-    
+
     const content = (
-        <div className="flex items-start gap-4 text-sm py-4">
-            <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-                <p className="font-semibold text-foreground">{label}</p>
-                <div className="text-muted-foreground font-medium mt-1">{children}</div>
+        <div className="flex items-start gap-4 text-sm py-4 px-4 sm:px-6">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">{label}</p>
+                <div className="text-foreground font-medium mt-1">{children}</div>
             </div>
         </div>
     );
 
     if (href) {
-        return <Link href={href} className="hover:bg-accent/50 -mx-4 px-4 block">{content}</Link>;
+        return <Link href={href} className="hover:bg-primary/5 block transition-colors">{content}</Link>;
     }
-    
+
     return content;
 };
 
@@ -269,31 +271,93 @@ export default function EventDetailPage() {
     : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
 
   return (
-    <div className="animate-in fade-in-0 w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pb-28">
-        <div className="pt-3 pb-4 sm:pt-4 sm:pb-6">
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-                <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label="Geri">
-                    <ArrowLeft className="h-6 w-6" />
-                </Button>
-                <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} buttonClassName="border-border text-foreground hover:bg-accent"/>
+    <div className="animate-in fade-in-0 w-full pb-32">
+        {/* ===== HERO: Tam genişlik poster + gradient overlay + başlık üst üste ===== */}
+        <div className="relative w-full">
+            <div className="relative aspect-[16/9] sm:aspect-[21/9] max-h-[480px] w-full overflow-hidden">
+                <Image
+                    src={safeImageUrl}
+                    alt={event.name}
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="100vw"
+                    data-ai-hint="event hero banner"
+                />
+                {/* Gradient overlay: alt karanlık → üst saydam */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
+                {/* Üst sol: Geri butonu */}
+                <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 h-10 w-10" aria-label="Geri">
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                </div>
+                {/* Üst sağ: Share */}
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
+                    <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-black/40 backdrop-blur-md text-white border-white/10 hover:bg-black/60 h-10 w-10" />
+                </div>
+                {/* Alt: başlık + organizer + chip'ler */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 space-y-2 sm:space-y-3 max-w-6xl mx-auto">
+                    <div className="flex flex-wrap gap-2">
+                        <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
+                        {organizerCategory && (
+                            <Badge variant="outline" className="bg-white/15 backdrop-blur-md text-white border-white/20 text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
+                        )}
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold font-headline leading-tight text-white drop-shadow-lg break-words max-w-3xl">{event.name}</h1>
+                    <p className="text-sm sm:text-base font-medium text-white/90">
+                        <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
+                    </p>
+                </div>
             </div>
-            <div className="space-y-1.5">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold font-headline leading-tight break-words">{event.name}</h1>
-              <p className="text-base sm:text-lg font-bold text-primary">{event.organizer}</p>
+
+            {/* Quick info chips — hero altında, hangel orange accent */}
+            <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 -mt-4 sm:-mt-6 relative z-10">
+                <div className="glass-surface rounded-3xl shadow-xl border border-white/40 p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {formatDateTime(event.startDate).split(',')[0]}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
+                        <Clock className="h-3.5 w-3.5" />
+                        {formatDateTime(event.startDate).split(',')[1]?.trim() || '—'}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
+                        <MapPin className="h-3.5 w-3.5" />
+                        {event.location.type === 'Online' ? 'Online' : `${event.location.district}, ${event.location.city}`}
+                    </div>
+                    {event.capacity?.max > 0 && (
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
+                            <Users className="h-3.5 w-3.5" />
+                            {event.capacity.current}/{event.capacity.max}
+                        </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-muted">
+                        <Languages className="h-3.5 w-3.5" />
+                        {event.language}
+                    </div>
+                    {event.providesCertificate && (
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                            <CheckCircle className="h-3.5 w-3.5" />
+                            Sertifika
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
 
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
       <div className="space-y-6 sm:space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4 sm:gap-6 lg:gap-8">
-            {/* Info Section (Left or Top) */}
-            <div className="md:col-span-3 lg:col-span-5 space-y-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            {/* Hero zaten poster'ı içeriyor; içerik alanı tek kolon (geniş okuma) */}
+            <div className="space-y-6">
                 <Tabs defaultValue="details" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl bg-muted/50 p-1">
-                        <TabsTrigger value="details" className="rounded-xl font-bold">Etkinlik Detayları</TabsTrigger>
-                        <TabsTrigger value="organization" className="rounded-xl font-bold">Kuruluş Hakkında</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-12 rounded-2xl glass-surface border border-white/40 p-1">
+                        <TabsTrigger value="details" className="rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Etkinlik Detayları</TabsTrigger>
+                        <TabsTrigger value="organization" className="rounded-xl font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Kuruluş Hakkında</TabsTrigger>
                     </TabsList>
                     <TabsContent value="details" className="mt-6 space-y-6">
-                        <Card className="rounded-[2rem] border-black/5 shadow-sm">
+                        <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
                         <CardHeader>
                             <CardTitle className="text-xl">Etkinlik Bilgileri</CardTitle>
                         </CardHeader>
@@ -339,7 +403,7 @@ export default function EventDetailPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="rounded-[2rem] border-black/5 shadow-sm">
+                        <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
                             <CardHeader>
                                 <CardTitle>Açıklama</CardTitle>
                             </CardHeader>
@@ -349,7 +413,7 @@ export default function EventDetailPage() {
                         </Card>
 
                         <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="rules" className="border-none bg-muted/30 rounded-2xl px-4">
+                            <AccordionItem value="rules" className="border-none glass-surface rounded-3xl px-4 sm:px-6">
                                 <AccordionTrigger className="hover:no-underline font-bold text-sm">Etkinlik Kuralları</AccordionTrigger>
                                 <AccordionContent>
                                 <ul className="space-y-2 text-xs text-muted-foreground list-disc pl-5 font-medium leading-relaxed">
@@ -368,7 +432,7 @@ export default function EventDetailPage() {
                         </Accordion>
                     </TabsContent>
                     <TabsContent value="organization" className="mt-6">
-                        <Card className="rounded-[2rem] border-black/5 shadow-sm overflow-hidden">
+                        <Card className="glass-surface rounded-3xl border-white/40 shadow-sm overflow-hidden">
                             <CardHeader className="bg-muted/30 pb-6 border-b">
                                 <CardTitle className="text-lg flex items-center gap-3">
                                     <Building className="h-5 w-5 text-primary" />
@@ -392,35 +456,22 @@ export default function EventDetailPage() {
                 </Tabs>
             </div>
 
-            {/* Poster Section (Right on desktop, top-ish on mobile when reordered) */}
-            <div className="md:col-span-2 lg:col-span-2 order-first md:order-last">
-                <div className="relative aspect-[210/297] w-full max-w-xs sm:max-w-sm md:max-w-none mx-auto rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl border border-black/5 bg-muted md:sticky md:top-20">
-                    <Image
-                        src={safeImageUrl}
-                        alt={event.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 40vw, 30vw"
-                        priority
-                        data-ai-hint="event poster a4 portrait"
-                    />
-                </div>
-            </div>
         </div>
 
         {/* FEAT-EVENT-RSVP — capacity progress */}
         {event.capacity?.max > 0 && (
-          <div>
-            <div className="flex items-center justify-between text-xs font-bold text-muted-foreground mb-1">
-              <span>Kapasite</span>
-              <span>{event.capacity.current} / {event.capacity.max}</span>
+          <div className="glass-surface rounded-2xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="text-muted-foreground">Kapasite</span>
+              <span className="text-primary">{event.capacity.current} / {event.capacity.max}</span>
             </div>
             <Progress value={Math.min(100, (event.capacity.current / event.capacity.max) * 100)} className="h-2 rounded-full" />
           </div>
         )}
       </div>
+      </div>{/* end max-w-6xl wrapper */}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-lg p-3 sm:p-4 border-t z-20">
+      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl p-3 sm:p-4 border-t border-white/30 shadow-2xl shadow-black/10 z-20">
         <div className="max-w-6xl mx-auto flex gap-2 sm:gap-3">
             {isGoing ? (
               <>
