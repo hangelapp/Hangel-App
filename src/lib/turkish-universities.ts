@@ -2,6 +2,7 @@
 // Profil eğitim bölümünde dropdown için.
 
 export const TURKISH_UNIVERSITIES: string[] = [
+  "hangel Üniversitesi",
   "Abdullah Gül Üniversitesi",
   "Acıbadem Mehmet Ali Aydınlar Üniversitesi",
   "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",

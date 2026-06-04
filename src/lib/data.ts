@@ -192,6 +192,7 @@ export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Ad�
 export const years = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
 
 export const allUniversities: string[] = [
+    'hangel Üniversitesi',
     'Boğaziçi Üniversitesi',
     'Orta Doğu Teknik Üniversitesi',
     'İstanbul Teknik Üniversitesi',
