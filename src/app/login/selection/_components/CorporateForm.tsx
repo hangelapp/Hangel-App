@@ -221,16 +221,60 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 entityType === 'BRAND' ? 'Marka' :
                 entityType === 'CLUB' ? 'Kulüpler' : 'Kurumsal Başvuru';
 
+            // Website normalize — "stkadi.org" gibi protokolsüz girişleri https:// ekle
+            const normalizedWebsite = (() => {
+                const w = (formData.website || '').trim();
+                if (!w) return '';
+                if (/^https?:\/\//i.test(w)) return w;
+                return `https://${w.replace(/^\/+/, '')}`;
+            })();
+
+            // Yetkili kişi için kullanıcı kaydı: e-posta verilmişse server'a sor
+            //   → varsa application'a userId bağla
+            //   → yoksa yeni user oluştur (Firebase Auth + Firestore users doc) + setup e-postası gönder
+            let linkedUserId: string | null = authUser?.uid || null;
+            const authorizedEmail = (formData.authorized?.email || '').trim().toLowerCase();
+            if (authorizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authorizedEmail)) {
+                try {
+                    const linkRes = await fetch('/api/auth/link-or-create-authorized', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: authorizedEmail,
+                            name: formData.authorized?.name || '',
+                            phone: formData.authorized?.phone || '',
+                            phoneCountryCode: formData.authorized?.phoneCountryCode || '+90',
+                            role: formData.authorized?.role || '',
+                            entityType,
+                            orgName: formData.name || '',
+                        }),
+                    });
+                    if (linkRes.ok) {
+                        const data = await linkRes.json().catch(() => null) as { userId?: string; created?: boolean } | null;
+                        if (data?.userId) {
+                            linkedUserId = data.userId;
+                            if (data.created) {
+                                toast({ title: 'Yetkili kişi hesabı oluşturuldu', description: 'Şifre belirleme bağlantısı e-posta ile gönderildi.' });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    reportNonFatalError('authorized_link_create', e, { entityType });
+                }
+            }
+
             await addDoc(collection(db, COLLECTIONS.applications), {
                 ...formData,
+                website: normalizedWebsite,
+                authorizedUserId: linkedUserId,
+                userId: linkedUserId,
                 entityType,
                 type: tabType,
                 title: formData.name || 'Kurumsal Başvuru',
                 org: formData.name || '',
                 location: [formData.city, formData.country].filter(Boolean).join(', ') || '',
-                userId: authUser?.uid || null, // Login'liyse /my-applications'da görünür
                 userName: authUser?.displayName || formData.authorized?.name || '',
-                userEmail: authUser?.email || formData.email || '',
+                userEmail: authUser?.email || formData.authorized?.email || formData.email || '',
                 selectedBeneficiaries,
                 selectedSdgs,
                 selectedNetworks,
@@ -875,7 +919,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         <div className="space-y-6">
                             <SectionTitle icon={Target}>Sürdürülebilir Kalkınma Amaçlarını kapsamaktadır? (Birden fazla seçebilirsiniz)</SectionTitle>
                             <div className="grid grid-cols-1 gap-2 p-4 border rounded-2xl bg-card">
-                                {allSdgs.slice(0, 8).map(item => (
+                                {allSdgs.map(item => (
                                     <label key={item} className="flex items-center gap-2 cursor-pointer group">
                                         <Checkbox checked={selectedSdgs.includes(item)} onCheckedChange={checked => setSelectedSdgs(prev => checked ? [...prev, item] : prev.filter(i => i !== item))} />
                                         <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
@@ -1065,7 +1109,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Web Sitesi</FormLabel>
-                                <IconInput icon={Globe} type="url" placeholder="https://kurum.org" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                                <IconInput icon={Globe} type="text" placeholder="kurum.org" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Instagram</FormLabel>
@@ -1544,7 +1588,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Web Sitesi</FormLabel>
-                                <IconInput icon={Globe} type="url" placeholder="https://marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
+                                <IconInput icon={Globe} type="text" placeholder="marka.com" value={formData.website} onChange={e => setFormData({...formData, website: e.target.value})} />
                             </div>
                             <div className="space-y-2">
                                 <FormLabel>Instagram</FormLabel>

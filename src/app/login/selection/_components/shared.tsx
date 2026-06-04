@@ -129,9 +129,36 @@ export const ngoPlatformOptions = [
 ];
 
 export const ngoBeneficiaryOptions = [
-    "Çocuklar", "Hak mücadelesi verenler", "Afetzedeler", "Hayvanlar", "Yaşlılar",
-    "Engelliler", "Öğrenciler", "Mülteciler", "Gençler", "Çevre", "Kadınlar",
-    "Yoksullar", "Bölgesel", "Diğer",
+    // Yaş grupları
+    "Çocuklar", "Gençler", "Yaşlılar", "Bebek ve Aileler",
+    // Toplumsal cinsiyet
+    "Kadınlar", "LGBTİ+", "Erkekler",
+    // Eğitim
+    "Öğrenciler", "Üniversite öğrencileri", "Okul öncesi çocuklar",
+    // Engellilik
+    "Engelliler", "Görme engelliler", "İşitme engelliler", "Zihinsel engelliler",
+    "Otizm Spektrumu", "Kronik hastalar", "Nadir hastalıklar",
+    // Sosyal dezavantaj
+    "Yoksullar", "Evsizler", "İşsizler", "Tek ebeveynli aileler",
+    "Şiddet mağdurları", "Sokak çocukları", "Cezaevi sonrası bireyler",
+    // Göç ve afet
+    "Mülteciler", "Sığınmacılar", "Göçmenler", "Afetzedeler", "Savaş mağdurları",
+    "İç göç mağdurları",
+    // Etnik / dini gruplar
+    "Etnik azınlıklar", "Roman vatandaşlar", "Dini azınlıklar", "Yerli halklar",
+    // Hak temelli
+    "Hak mücadelesi verenler", "İnsan hakları savunucuları", "Gazeteciler",
+    // Çevre & doğa
+    "Hayvanlar", "Sokak hayvanları", "Yaban hayvanları", "Çevre", "Su kaynakları",
+    "Ormanlar", "Tarım toprakları",
+    // Sağlık
+    "Kanser hastaları", "HIV/AIDS hastaları", "Madde bağımlıları", "Akıl sağlığı",
+    "Organ nakli bekleyenler", "Kan ihtiyacı olanlar",
+    // Bölgesel
+    "Bölgesel", "Kırsal nüfus", "Kentsel yoksullar", "Deprem bölgesi",
+    // Diğer
+    "Sanatçılar", "Sporcular", "Girişimciler", "Gönüllüler", "STK çalışanları",
+    "Diğer",
 ];
 
 export const clubCategoryGroups: { group: string; items: string[] }[] = [
