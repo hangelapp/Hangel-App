@@ -1,5 +1,11 @@
-// Türkiye'deki üniversiteler (YÖK kaynaklı, devlet + vakıf, alfabetik)
-// Profil eğitim bölümünde dropdown için.
+// Türkiye'deki üniversiteler + vakıf meslek yüksekokulları (YÖK kaynaklı,
+// devlet + vakıf, alfabetik). Profil eğitim bölümü + kulüp başvuru formu
+// "Bağlı olduğunuz Üniversite" dropdown'u için.
+//
+// YÖK 2024 datası — 129 devlet + 78 vakıf üniversitesi + 5 vakıf MYO.
+// Devlet MYO'ları kendi üniversitelerine bağlı olduğundan standalone değil
+// (örn. "Marmara Üniversitesi Sosyal Bilimler MYO"); ana üniversitesi
+// seçilmelidir. hangel Üniversitesi platformun resmi üniversitesidir.
 
 export const TURKISH_UNIVERSITIES: string[] = [
   "hangel Üniversitesi",
@@ -70,6 +76,7 @@ export const TURKISH_UNIVERSITIES: string[] = [
   "Erzurum Teknik Üniversitesi",
   "Eskişehir Osmangazi Üniversitesi",
   "Eskişehir Teknik Üniversitesi",
+  "Faruk Saraç Tasarım Meslek Yüksekokulu",
   "Fatih Sultan Mehmet Vakıf Üniversitesi",
   "Fenerbahçe Üniversitesi",
   "Fırat Üniversitesi",
@@ -153,6 +160,7 @@ export const TURKISH_UNIVERSITIES: string[] = [
   "Manisa Celal Bayar Üniversitesi",
   "Mardin Artuklu Üniversitesi",
   "Marmara Üniversitesi",
+  "Marmara Sağlık Hizmetleri Meslek Yüksekokulu",
   "MEF Üniversitesi",
   "Mersin Üniversitesi",
   "Mimar Sinan Güzel Sanatlar Üniversitesi",
@@ -170,6 +178,7 @@ export const TURKISH_UNIVERSITIES: string[] = [
   "Özyeğin Üniversitesi",
   "Pamukkale Üniversitesi",
   "Piri Reis Üniversitesi",
+  "Plato Meslek Yüksekokulu",
   "Recep Tayyip Erdoğan Üniversitesi",
   "Sabancı Üniversitesi",
   "Sağlık Bilimleri Üniversitesi",
