@@ -86,7 +86,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                 {/* Breadcrumb Navigation */}
                 <div className="flex items-center gap-2 text-[12px] text-[#1d1d1f]/60 mb-10 px-1">
                     <Link href="/login" className="hover:text-[#1d1d1f] transition-colors">
-                        <HangelLogo className="text-base" />
+                        <HangelLogo className="text-base" href={null} />
                     </Link>
                     {currentPageLabel && (
                         <>

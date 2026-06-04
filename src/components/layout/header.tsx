@@ -66,7 +66,7 @@ export default function AppHeader({ onMenuClick }: { onMenuClick: () => void }) 
                 <Menu className="h-6 w-6" />
             </Button>
             <Link href="/home" className="flex items-center">
-              <HangelLogo className="text-xl" />
+              <HangelLogo className="text-xl" href={null} />
             </Link>
           </div>
 

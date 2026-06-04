@@ -521,7 +521,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         <div className="p-4 border-b border-glass-black-8 dark:border-glass-white-8 sticky top-0 z-10 glass">
                             <div className="flex justify-between items-center mb-6">
                                 <Link href="/login" onClick={() => setDrawerOpen(false)}>
-                                    <HangelLogo className="text-2xl" />
+                                    <HangelLogo className="text-2xl" href={null} />
                                 </Link>
                                 <SheetClose>
                                     <X className="h-6 w-6 text-muted-foreground" />

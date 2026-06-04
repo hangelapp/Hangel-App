@@ -116,7 +116,7 @@ export function SideNav({ mainItems, navItems, userItems, secondaryItems }: Side
       <div className="flex grow flex-col overflow-y-auto px-4 pb-4 pt-8">
         <div className="h-12 mb-8 px-2">
           <Link href="/home">
-            <HangelLogo className="text-2xl" />
+            <HangelLogo className="text-2xl" href={null} />
           </Link>
         </div>
         <nav className="flex flex-1 flex-col space-y-4">
