@@ -30,9 +30,7 @@ import {
 import {
   BarChart3, ChevronDown, ChevronUp, RefreshCw, Loader2,
   AlertTriangle, Clock, FileText, Globe, Layers, Scale,
-  ShieldCheck, ListOrdered, ThumbsUp, ThumbsDown, Users,
-  Building2, Monitor, Smartphone, CheckCircle2, XCircle,
-  TrendingUp, Eye, Percent, Calendar,
+  ShieldCheck, ListOrdered,
 } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';

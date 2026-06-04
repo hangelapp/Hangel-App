@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   Loader2, GitCompare, Sparkles, CheckCircle2, AlertTriangle, XCircle,
   Lightbulb, Scale, ShieldCheck, History, ListChecks, Search, ArrowRight,
-  ArrowDownAZ, ArrowUp01,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useUser, useMemoFirebase } from '@/firebase';
