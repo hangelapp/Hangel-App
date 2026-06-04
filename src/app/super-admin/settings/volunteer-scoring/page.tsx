@@ -75,14 +75,10 @@ const SEED_DATA: FormData[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Profession catalog (ISCO-08) — soft fallback inline.
-// TODO: Bu blok, C1 ajanı `src/lib/volunteer/professions.ts` dosyasını
-// yayınladığında o modülden import edilmeli:
-//   import { PROFESSIONS, CATEGORY_LABELS, type Profession,
-//            type ProfessionCategory } from '@/lib/volunteer/professions';
-// Şu anda dosya henüz yok; ajan C1 paralel olarak üretiyor.
-// Burada minimal, çalışan bir fallback tutuyoruz (boş değil — UI test edilebilir kalsın).
+// Profession catalog (ISCO-08) — `src/lib/volunteer/professions.ts`'ten alınır
+// ve bu sayfanın local Profession type'ına map edilir.
 // ---------------------------------------------------------------------------
+import { PROFESSIONS as CATALOG_PROFESSIONS } from '@/lib/volunteer/professions';
 
 type ProfessionCategory =
   | 'managers'
@@ -120,10 +116,6 @@ const CATEGORY_LABELS: Record<ProfessionCategory, { tr: string; en: string }> = 
   other:         { tr: 'Diğer',                           en: 'Other' },
 };
 
-// Fallback PROFESSIONS — C1 tamamlandığında üstteki import devreye girer,
-// bu sabit silinir. Liste boş bırakılırsa UI "veri kaynağı eksik" uyarısı verir.
-const FALLBACK_PROFESSIONS: Profession[] = [];
-
 // ---------------------------------------------------------------------------
 // Override doc shape: volunteerScoring/professions
 //   { rates: { [professionId]: number }, updatedAt: Timestamp }
@@ -132,7 +124,32 @@ type ProfessionOverridesDoc = {
   rates?: Record<string, number>;
 };
 
-const PROFESSIONS: Profession[] = FALLBACK_PROFESSIONS;
+// Catalog → page-local Profession map.
+// C1 categories: manager/professional/technician/.../armed/special
+// Bu sayfa categories: managers/professionals/technicians/.../military/other
+const CATEGORY_MAP: Record<string, ProfessionCategory> = {
+  manager: 'managers',
+  professional: 'professionals',
+  technician: 'technicians',
+  clerical: 'clerical',
+  service: 'services',
+  sales: 'services',
+  agriculture: 'agriculture',
+  craft: 'craft',
+  plant: 'plant',
+  elementary: 'elementary',
+  armed: 'military',
+  special: 'other',
+};
+
+const PROFESSIONS: Profession[] = CATALOG_PROFESSIONS.map((p) => ({
+  id: p.id,
+  nameTr: p.name,
+  nameEn: p.nameEn || p.name,
+  iscoCode: p.isco,
+  category: CATEGORY_MAP[p.category] || 'other',
+  defaultRate: p.hourlyRateTRY,
+}));
 
 // ---------------------------------------------------------------------------
 // Editor for task-type catalog (mevcut, dokunulmadı)
