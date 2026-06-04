@@ -128,6 +128,28 @@ export const ngoPlatformOptions = [
     "Idealist", "gonulluyuzbiz.gov.tr", "TGSP", "Diğer",
 ];
 
+// Kulüp etkinlik türleri — Düzenli Etkinlik Yapıyor musunuz? sorusunun şıkları
+// (faydalanıcılar gibi multi-select checkbox grid).
+export const clubEventFrequencyOptions = [
+    "Haftalık etkinlik",
+    "Aylık etkinlik",
+    "Dönemsel etkinlik",
+    "Yıllık büyük etkinlik",
+    "Konferans / Seminer",
+    "Atölye / Workshop",
+    "Yarışma / Turnuva",
+    "Gezi / Saha çıkışı",
+    "Sosyal sorumluluk projesi",
+    "Sportif aktivite",
+    "Sanat / Kültür etkinliği",
+    "Kampüs içi tanıtım / Stand",
+    "Topluluk buluşması",
+    "Online webinar / Live stream",
+    "Hackathon / Bootcamp",
+    "Mentor / Networking buluşması",
+    "Diğer",
+];
+
 export const ngoBeneficiaryOptions = [
     // Yaş grupları
     "Çocuklar", "Gençler", "Yaşlılar", "Bebek ve Aileler",

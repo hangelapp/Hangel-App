@@ -43,6 +43,7 @@ import {
     ngoPlatformOptions,
     ngoBeneficiaryOptions,
     clubCategoryGroups,
+    clubEventFrequencyOptions,
     yearOptions,
 } from './shared';
 import { reportNonFatalError } from '@/lib/telemetry';
@@ -98,7 +99,9 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
         pixelScript: '',
         // CLUB-specific yeni alanlar
         clubShortDescription: '',
-        clubEventFrequency: '', // Haftalık / Aylık / Dönemsel / Düzensiz
+        clubEventFrequency: '', // Eski string alanı — geri uyumluluk için tutuluyor (kullanılmıyor)
+        clubEventTypes: [] as string[], // Multi-select etkinlik türleri (yeni — faydalanıcılar pattern)
+        clubEventTypesOther: '', // 'Diğer' seçildiğinde custom metin
         clubContactPhone: '',
         clubContactPhoneCountryCode: '+90',
         clubContactEmail: '',
@@ -231,11 +234,30 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 return `https://${w.replace(/^\/+/, '')}`;
             })();
 
-            // Yetkili kişi için kullanıcı kaydı: e-posta verilmişse server'a sor
+            // Yetkili kişi / Kulüp Başkanı için kullanıcı kaydı: e-posta verilmişse server'a sor
             //   → varsa application'a userId bağla
             //   → yoksa yeni user oluştur (Firebase Auth + Firestore users doc) + setup e-postası gönder
+            // Kulüp formunda yetkili kişi = clubPresident; STK/marka için = formData.authorized
+            const isClubForm = entityType === 'CLUB';
+            const authorizedEmail = (
+                isClubForm
+                    ? (formData.clubPresidentEmail || '')
+                    : (formData.authorized?.email || '')
+            ).trim().toLowerCase();
+            const authorizedName = isClubForm
+                ? (formData.clubPresidentName || '')
+                : (formData.authorized?.name || '');
+            const authorizedPhone = isClubForm
+                ? (formData.clubPresidentPhone || '')
+                : (formData.authorized?.phone || '');
+            const authorizedPhoneCC = isClubForm
+                ? (formData.clubPresidentPhoneCountryCode || '+90')
+                : (formData.authorized?.phoneCountryCode || '+90');
+            const authorizedRole = isClubForm
+                ? 'Kulüp Başkanı'
+                : (formData.authorized?.role || '');
+
             let linkedUserId: string | null = authUser?.uid || null;
-            const authorizedEmail = (formData.authorized?.email || '').trim().toLowerCase();
             if (authorizedEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authorizedEmail)) {
                 try {
                     const linkRes = await fetch('/api/auth/link-or-create-authorized', {
@@ -243,10 +265,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             email: authorizedEmail,
-                            name: formData.authorized?.name || '',
-                            phone: formData.authorized?.phone || '',
-                            phoneCountryCode: formData.authorized?.phoneCountryCode || '+90',
-                            role: formData.authorized?.role || '',
+                            name: authorizedName,
+                            phone: authorizedPhone,
+                            phoneCountryCode: authorizedPhoneCC,
+                            role: authorizedRole,
                             entityType,
                             orgName: formData.name || '',
                         }),
@@ -256,7 +278,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         if (data?.userId) {
                             linkedUserId = data.userId;
                             if (data.created) {
-                                toast({ title: 'Yetkili kişi hesabı oluşturuldu', description: 'Şifre belirleme bağlantısı e-posta ile gönderildi.' });
+                                toast({ title: isClubForm ? 'Başkan hesabı oluşturuldu' : 'Yetkili kişi hesabı oluşturuldu', description: 'Şifre belirleme bağlantısı e-posta ile gönderildi.' });
                             }
                         }
                     }
@@ -265,8 +287,13 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 }
             }
 
+            // Firestore rules: application için email ZORUNLU (anonim CLUB/NGO/BRAND kayıtları).
+            // Kulüp formu formData.email kullanmıyor → clubPresidentEmail veya authorized email'den resolve.
+            const resolvedEmail = (formData.email || authorizedEmail || formData.authorized?.email || '').trim();
+
             await addDoc(collection(db, COLLECTIONS.applications), {
                 ...formData,
+                email: resolvedEmail,
                 website: normalizedWebsite,
                 authorizedUserId: linkedUserId,
                 userId: linkedUserId,
@@ -275,8 +302,8 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 title: formData.name || 'Kurumsal Başvuru',
                 org: formData.name || '',
                 location: [formData.city, formData.country].filter(Boolean).join(', ') || '',
-                userName: authUser?.displayName || formData.authorized?.name || '',
-                userEmail: authUser?.email || formData.authorized?.email || formData.email || '',
+                userName: authUser?.displayName || authorizedName || '',
+                userEmail: authUser?.email || resolvedEmail,
                 selectedBeneficiaries,
                 otherBeneficiaryText: selectedBeneficiaries.includes('Diğer') ? otherBeneficiaryText.trim() : '',
                 selectedSdgs,
@@ -1956,26 +1983,32 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                             />
                         </div>
 
-                        {/* Etkinlik sıklığı */}
-                        <div className="space-y-2">
-                            <FormLabel required>Düzenli Etkinlik Yapıyor musunuz?</FormLabel>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {['Haftalık', 'Aylık', 'Dönemsel', 'Düzensiz'].map(opt => (
-                                    <button
-                                        key={opt}
-                                        type="button"
-                                        onClick={() => setFormData({...formData, clubEventFrequency: opt})}
-                                        className={cn(
-                                            'h-12 rounded-xl border px-3 text-sm font-bold transition-colors',
-                                            formData.clubEventFrequency === opt
-                                                ? 'bg-primary text-primary-foreground border-primary'
-                                                : 'bg-card hover:bg-accent border-transparent'
-                                        )}
-                                    >
-                                        {opt}
-                                    </button>
+                        {/* Etkinlik türleri — multi-select (faydalanıcılar gibi checkbox grid) */}
+                        <div className="space-y-3">
+                            <FormLabel required>Düzenli Etkinlik Yapıyor musunuz? (Birden fazla seçebilirsiniz)</FormLabel>
+                            <div className="grid grid-cols-2 gap-2 p-4 border rounded-2xl bg-card">
+                                {clubEventFrequencyOptions.map(item => (
+                                    <label key={item} className="flex items-center gap-2 cursor-pointer group">
+                                        <Checkbox
+                                            checked={formData.clubEventTypes.includes(item)}
+                                            onCheckedChange={checked => setFormData(prev => ({
+                                                ...prev,
+                                                clubEventTypes: checked
+                                                    ? [...prev.clubEventTypes, item]
+                                                    : prev.clubEventTypes.filter(i => i !== item),
+                                            }))}
+                                        />
+                                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground">{item}</span>
+                                    </label>
                                 ))}
                             </div>
+                            {formData.clubEventTypes.includes('Diğer') && (
+                                <FormInput
+                                    placeholder="Diğer etkinlik türü açıklaması..."
+                                    value={formData.clubEventTypesOther}
+                                    onChange={e => setFormData({...formData, clubEventTypesOther: e.target.value})}
+                                />
+                            )}
                         </div>
                     </div>
 
