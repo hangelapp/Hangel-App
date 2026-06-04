@@ -375,7 +375,7 @@ export function BooksComponent() {
 
   return (
     <Card className="overflow-hidden rounded-2xl">
-      <Accordion type="single" collapsible defaultValue={SLUG}>
+      <Accordion type="single" collapsible>
         <AccordionItem value={SLUG} className="border-b-0">
           <AccordionTrigger className="p-3 hover:no-underline">
             <div className="flex items-center gap-3">

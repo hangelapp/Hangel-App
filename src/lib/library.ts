@@ -26,6 +26,16 @@ export interface LibraryItem {
   shortDescription?: string;
   /** Detay sayfası için uzun tanıtım (paragraf). */
   synopsis?: string;
+  /** Film posteri URL (kitaplarda coverUrl'in muadili). */
+  posterUrl?: string;
+  /** Film süresi (dakika). */
+  durationMinutes?: number;
+  /** Film yönetmeni. */
+  director?: string;
+  /** Film türü (drama, komedi, vb.). */
+  genre?: string;
+  /** Yapım ülkesi. */
+  country?: string;
 }
 
 /**

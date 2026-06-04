@@ -1,11 +1,11 @@
 'use client';
 
 import { librarySections } from '@/lib/library';
-import type { LibrarySection } from '@/lib/library';
+import type { LibrarySection, LibraryItem } from '@/lib/library';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck, Download, Share2, Calendar, FileText, Languages, Tag, Building2, User as UserIcon, Star } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Book, Film, Check, Loader2, BookOpen, Bookmark, BookmarkCheck, Download, Share2, Calendar, FileText, Languages, Tag, Building2, User as UserIcon, Star, Clock, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,13 +45,20 @@ export default function LibraryItemPage() {
 
   const itemWithSection = useMemo(() => {
     const fsMap = new Map((fsSections ?? []).map(s => [s.slug, s]));
-    // Statik section'ları Firestore extra item'larıyla zenginleştir
+    // Statik section'ları Firestore verisiyle zenginleştir: aynı slug'lı item'larda
+    // Firestore alanları statik alanları override eder (per-field merge), Firestore'da
+    // olup statikte olmayan item'lar da eklenir.
     const merged: LibrarySection[] = librarySections.map(staticSec => {
       const fsSec = fsMap.get(staticSec.slug);
       if (!fsSec) return staticSec;
+      const fsByslug = new Map((fsSec.items ?? []).map(i => [i.slug, i]));
+      const mergedItems = staticSec.items.map(s => {
+        const fs = fsByslug.get(s.slug);
+        return fs ? { ...s, ...fs } : s; // Firestore wins per field
+      });
       const staticSlugs = new Set(staticSec.items.map(i => i.slug));
       const extra = (fsSec.items ?? []).filter(i => !staticSlugs.has(i.slug));
-      return { ...staticSec, items: [...staticSec.items, ...extra] };
+      return { ...staticSec, items: [...mergedItems, ...extra] };
     });
     const staticSlugs = new Set(librarySections.map(s => s.slug));
     const extraSections = (fsSections ?? []).filter(s => !staticSlugs.has(s.slug));
@@ -405,7 +412,215 @@ export default function LibraryItemPage() {
     );
   }
 
-  // ============= DEFAULT (films / templates / glossary / etc.) =============
+  // ============= FILM DETAIL =============
+  // Filmler bölümünde: poster + başlık + yıl + süre/dil/ülke/tür/kategori
+  // badge'leri + synopsis. posterUrl/description/durationMinutes Firestore'dan
+  // gelir; eksikse content HTML'inden extract edilir.
+  const isFilm = sectionSlugLower.includes('film') || sectionSlugLower === 'filmler';
+  if (isFilm) {
+    // Yeni alanlar henüz LibraryItem interface'inde tanımlı değil; type-safe okuma.
+    const filmFields = item as LibraryItem & {
+      posterUrl?: string;
+      durationMinutes?: number;
+      country?: string;
+      genre?: string;
+    };
+    const content = item.content || '';
+    // Poster: posterUrl > coverUrl > cover (eski alan)
+    const rawPosterSrc = filmFields.posterUrl || item.coverUrl || item.cover;
+    const posterSrc = isAllowedImageHost(rawPosterSrc) ? rawPosterSrc : undefined;
+
+    // Yıl: explicit > title'dan 4 haneli yıl > content'ten
+    let filmYear = item.year ?? 0;
+    if (!filmYear) {
+      const m = `${item.title} ${content.replace(/<[^>]*>/g, ' ')}`.match(/\b(19[2-9]\d|20[0-4]\d)\b/);
+      if (m) filmYear = Number(m[1]);
+    }
+
+    // Açıklama: explicit > content'in ilk <p> bloğu
+    const filmDescription = (() => {
+      if (item.description) return item.description;
+      const m = content.match(/<p>([\s\S]*?)<\/p>/);
+      if (!m) return '';
+      return m[1].replace(/<[^>]*>/g, ' ').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    })();
+
+    // Süre: durationMinutes (sayı) → "X sa Y dk" veya "Z dk"
+    const formatDuration = (mins: number | undefined): string => {
+      if (!mins || mins <= 0) return '';
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      if (h > 0 && m > 0) return `${h} sa ${m} dk`;
+      if (h > 0) return `${h} sa`;
+      return `${m} dk`;
+    };
+
+    // Etiketli alanlardan (Süre, Dil, Ülke, Tür, Kategori) extract
+    const extractLabel = (label: string): string => {
+      const re = new RegExp(`<strong>\\s*${label}\\s*:?\\s*</strong>\\s*([^<]+)`, 'i');
+      const mm = content.match(re);
+      return mm ? mm[1].trim().replace(/[,;.]$/, '') : '';
+    };
+
+    const durationText = formatDuration(filmFields.durationMinutes) || extractLabel('Süre');
+    const filmLanguage = item.language || extractLabel('Dil');
+    const filmCountry = filmFields.country || extractLabel('Ülke');
+    const filmGenre = filmFields.genre || extractLabel('Tür') || item.topic || '';
+    const filmCategory = item.category || extractLabel('Kategori');
+
+    // Title'dan yıl parantezini ayır (örn "Selma (2014)")
+    const titleClean = item.title.replace(/\s*\(\d{4}\)\s*$/, '').trim();
+
+    return (
+      <div className="relative min-h-[100dvh] animate-in fade-in-0">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" aria-hidden />
+        <div className="p-4 space-y-6">
+          <div className="flex items-center justify-between">
+            <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('librarySlug.backAria')}>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleToggleSave}
+                variant={isSaved ? 'default' : 'outline'}
+                size="sm"
+                disabled={busy}
+                className="gap-2"
+              >
+                {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                {isSaved ? t('librarySlug.saved') : t('librarySlug.save')}
+              </Button>
+            </div>
+          </div>
+
+          {/* Üst banner: poster + başlık/metadata */}
+          <Card className="glass-surface rounded-3xl overflow-hidden p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-5 sm:gap-7">
+              {/* Poster — 2:3 oranı (240x360 mobile, 300x450 desktop) */}
+              <div className="mx-auto sm:mx-0">
+                <div className="relative w-[200px] h-[300px] sm:w-[240px] sm:h-[360px] md:w-[300px] md:h-[450px] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
+                  {posterSrc ? (
+                    <Image
+                      src={posterSrc}
+                      alt={titleClean || t('librarySlug.backAria')}
+                      fill
+                      sizes="(max-width: 640px) 200px, (max-width: 768px) 240px, 300px"
+                      className="object-cover"
+                      priority
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-background flex flex-col items-center justify-center">
+                      <Film className="h-14 w-14 text-primary/70" />
+                      <span className="text-[11px] uppercase tracking-widest text-muted-foreground mt-2">
+                        hangel
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 min-w-0 flex flex-col gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold font-headline leading-tight">{titleClean}</h1>
+                {filmYear > 0 && (
+                  <p className="text-base text-muted-foreground flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
+                    {filmYear}
+                  </p>
+                )}
+
+                {/* Metadata badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {durationText && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Clock className="h-3 w-3" /> {durationText}
+                    </Badge>
+                  )}
+                  {filmLanguage && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Languages className="h-3 w-3" /> {filmLanguage}
+                    </Badge>
+                  )}
+                  {filmCountry && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Globe2 className="h-3 w-3" /> {filmCountry}
+                    </Badge>
+                  )}
+                  {filmGenre && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Tag className="h-3 w-3" /> {filmGenre}
+                    </Badge>
+                  )}
+                  {filmCategory && filmCategory !== filmGenre && (
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <Tag className="h-3 w-3" /> {filmCategory}
+                    </Badge>
+                  )}
+                </div>
+
+                {filmDescription && (
+                  <p className="text-sm text-muted-foreground leading-relaxed pt-1 line-clamp-4">
+                    {filmDescription}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Synopsis */}
+          {filmDescription && (
+            <Card className="glass-surface rounded-3xl p-5 sm:p-6">
+              <h2 className="text-lg font-semibold mb-3">{t('library.books.synopsisTitle')}</h2>
+              <p className="text-sm sm:text-base leading-relaxed whitespace-pre-line text-foreground/90">
+                {filmDescription}
+              </p>
+            </Card>
+          )}
+
+          {/* Tamamlandı + tavsiye */}
+          <Card className="glass-surface rounded-3xl p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="font-medium flex items-center gap-2 text-sm">
+                <CompletionIcon className="h-5 w-5 text-muted-foreground" />
+                {t('librarySlug.completedQuestion')}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant={isRead ? 'default' : 'outline'}
+                  onClick={handleToggleComplete}
+                  disabled={busy}
+                  size="sm"
+                  className="gap-2"
+                >
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : (isRead && <Check className="h-4 w-4" />)}
+                  {completionText}
+                </Button>
+                <Button
+                  variant={recommendation === 'up' ? 'default' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleRecommend('up')}
+                  aria-label={t('librarySlug.helpful')}
+                >
+                  <ThumbsUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={recommendation === 'down' ? 'destructive' : 'outline'}
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleRecommend('down')}
+                  aria-label={t('librarySlug.notHelpful')}
+                >
+                  <ThumbsDown className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ============= DEFAULT (templates / glossary / etc.) =============
   return (
     <div className="p-4 space-y-6 animate-in fade-in-0">
       <div className="flex items-center justify-between mb-2">

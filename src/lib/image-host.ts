@@ -23,6 +23,16 @@ const ALLOWED_HOSTS: ReadonlyArray<string> = [
   'firebasestorage.googleapis.com',
   'storage.googleapis.com',
   'lh3.googleusercontent.com',
+  'covers.openlibrary.org',
+  'books.google.com',
+  'books.googleusercontent.com',
+  'image.tmdb.org',
+  'upload.wikimedia.org',
+  'm.media-amazon.com',
+  'i.gr-assets.com',
+  'ia.media-imdb.com',
+  'resizing.flixster.com',
+  'www.themoviedb.org',
 ];
 
 function parseHostname(url: string): string | undefined {
