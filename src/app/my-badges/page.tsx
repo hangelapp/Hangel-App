@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { X as XIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Star, Milestone, CheckCircle, Lock, Award, FileText, LogIn, Download, Share2, MessageCircle, Linkedin, Mail, Instagram, Eye } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -280,37 +282,35 @@ export default function MyBadgesPage() {
         // Title
         pdf.setFontSize(32);
         pdf.setTextColor(234, 88, 12);
-        pdf.text(t('dashboard.badges.certificateWord').toLocaleUpperCase('tr'), pageW / 2, 45, { align: 'center' });
+        pdf.text(t('dashboard.badges.certificateWord').toLocaleUpperCase('tr'), pageW / 2, 48, { align: 'center' });
 
-        pdf.setFontSize(12);
-        pdf.setTextColor(80, 80, 80);
-        pdf.text(t('dashboard.badges.certIssuedBy'), pageW / 2, 58, { align: 'center' });
+        pdf.setFontSize(11);
+        pdf.setTextColor(110, 110, 110);
+        pdf.text(t('dashboard.badges.certIssuedBy'), pageW / 2, 60, { align: 'center' });
 
-        // Recipient
-        pdf.setFontSize(14);
-        pdf.setTextColor(60, 60, 60);
-        pdf.text(t('dashboard.badges.certForPerson'), pageW / 2, 78, { align: 'center' });
-
+        // Recipient — "Sayın {ad}" tek satır.
         pdf.setFontSize(22);
         pdf.setTextColor(20, 20, 20);
-        pdf.text(recipientName, pageW / 2, 92, { align: 'center' });
+        pdf.text(`${t('dashboard.badges.certForPerson')} ${recipientName}`, pageW / 2, 86, { align: 'center', maxWidth: pageW - 60 });
 
-        // Body
+        // Body — "{STK} tarafından düzenlenen aşağıdaki çalışmayı başarıyla tamamlamıştır:"
         pdf.setFontSize(13);
         pdf.setTextColor(60, 60, 60);
         const body = `${cert.organization} ${t('dashboard.badges.certCompletion')}`;
-        pdf.text(body, pageW / 2, 108, { align: 'center', maxWidth: pageW - 60 });
+        const bodyLines = pdf.splitTextToSize(body, pageW - 60);
+        pdf.text(bodyLines, pageW / 2, 108, { align: 'center' });
 
-        // Title of cert
+        // Title of cert — vurgulu
         pdf.setFontSize(20);
-        pdf.setTextColor(20, 20, 20);
-        pdf.text(cert.title, pageW / 2, 130, { align: 'center', maxWidth: pageW - 60 });
+        pdf.setTextColor(234, 88, 12);
+        const titleLines = pdf.splitTextToSize(cert.title, pageW - 60);
+        pdf.text(titleLines, pageW / 2, 132, { align: 'center' });
 
         // Date / org footer
         pdf.setFontSize(11);
         pdf.setTextColor(80, 80, 80);
-        pdf.text(`${t('dashboard.badges.certIssuer')}: ${cert.organization}`, pageW / 2, 160, { align: 'center' });
-        pdf.text(`${t('dashboard.badges.certDate')}: ${cert.date}`, pageW / 2, 168, { align: 'center' });
+        pdf.text(`${t('dashboard.badges.certIssuer')}: ${cert.organization}`, pageW / 2, 162, { align: 'center' });
+        pdf.text(`${t('dashboard.badges.certDate')}: ${cert.date}`, pageW / 2, 170, { align: 'center' });
 
         pdf.setFontSize(9);
         pdf.setTextColor(120, 120, 120);
@@ -357,7 +357,10 @@ export default function MyBadgesPage() {
         }
     };
 
-    // Native: write temp + open via Browser; Web: bloburl + window.open.
+    // Modal popup preview için cert PDF blob URL'i ve seçili cert.
+    const [previewState, setPreviewState] = useState<{ url: string; cert: { title: string; organization: string; date: string } } | null>(null);
+
+    // Native: write temp + open via Browser; Web: iframe preview modal.
     const handleViewCertificate = async (cert: { title: string; organization: string; date: string }) => {
         try {
             const pdf = await buildCertificatePdf(cert);
@@ -374,15 +377,24 @@ export default function MyBadgesPage() {
                 await Browser.open({ url: written.uri });
                 return;
             }
-            const blobUrl = pdf.output('bloburl');
-            const opened = window.open(blobUrl, '_blank', 'noopener,noreferrer');
-            if (!opened) {
-                toast({ variant: 'destructive', title: t('dashboard.badges.certOpenFailTitle'), description: t('dashboard.badges.certOpenBlockedDesc') });
+            // Web: iframe modal preview (popup yerine in-app dialog).
+            const blobUrl = pdf.output('bloburl') as unknown as string;
+            // Önceki blob'u serbest bırak (memory leak önle).
+            if (previewState?.url) {
+                try { URL.revokeObjectURL(previewState.url); } catch { /* ignore */ }
             }
+            setPreviewState({ url: blobUrl, cert });
         } catch (error) {
             console.error('Certificate PDF view failed:', error);
             toast({ variant: 'destructive', title: t('dashboard.badges.certOpenFailTitle'), description: t('dashboard.badges.certPdfFailDesc') });
         }
+    };
+
+    const closePreview = () => {
+        if (previewState?.url) {
+            try { URL.revokeObjectURL(previewState.url); } catch { /* ignore */ }
+        }
+        setPreviewState(null);
     };
 
     const buildShareText = (certTitle: string) => `${certTitle} ${t('dashboard.badges.shareCertEarned')}`;
@@ -756,6 +768,34 @@ export default function MyBadgesPage() {
                     )}
                 </TabsContent>
             </Tabs>
+
+            {/* Sertifika önizleme modal — popup yerine in-app dialog */}
+            <Dialog open={!!previewState} onOpenChange={(open) => { if (!open) closePreview(); }}>
+                <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col rounded-3xl overflow-hidden p-0">
+                    <DialogHeader className="px-6 py-3 border-b flex flex-row items-center justify-between space-y-0 gap-3">
+                        <DialogTitle className="text-base font-semibold truncate flex-1">
+                            {previewState?.cert.title ?? ''}
+                        </DialogTitle>
+                        <Button variant="ghost" size="icon" onClick={closePreview} aria-label="Kapat">
+                            <XIcon className="h-5 w-5" />
+                        </Button>
+                    </DialogHeader>
+                    {previewState?.url && (
+                        <iframe
+                            src={previewState.url}
+                            title={previewState.cert.title}
+                            className="flex-1 w-full border-0 bg-muted"
+                        />
+                    )}
+                    <DialogFooter className="px-6 py-3 border-t gap-2 sm:gap-2">
+                        {previewState && (
+                            <Button onClick={() => handleDownloadCertificate(previewState.cert)} className="gap-2">
+                                <Download className="h-4 w-4" /> {t('dashboard.badges.downloadPdf') || 'PDF İndir'}
+                            </Button>
+                        )}
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
