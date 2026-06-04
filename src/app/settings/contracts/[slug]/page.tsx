@@ -9,6 +9,7 @@ import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize-html';
+import { looksLikeHtml, renderMarkdownToSafeHtml } from '@/lib/contracts/markdown';
 import { useToast } from '@/hooks/use-toast';
 import { COLLECTIONS } from '@/firebase/collections';
 import { ContractTOC } from './_components/contract-toc';
@@ -50,9 +51,19 @@ export default function ContractDetailPage() {
   }, [db, slug]);
   const { data: complianceDoc } = useDoc<ContractCompliance>(complianceDocRef);
 
-  // Code-içi fallback.
+  // Code-içi fallback. Firestore doc'u varsa (içerik boş bile olsa) onu
+  // kullan — başlık + banner + empty-state göster. 112 sözleşmenin çoğu
+  // master-sync ile yazıldı, slug'lar `contractsData` ile birebir uyuşmuyor;
+  // önce Firestore mevcudiyetine bakıp aksi halde lokal seed'e düş.
   const contract = useMemo(() => {
-    if (firestoreContract && firestoreContract.content) return firestoreContract;
+    if (firestoreContract) {
+      if (firestoreContract.content) return firestoreContract;
+      // Doc var ama content henüz yazılmadı — seed fallback'ı dene, yoksa
+      // yine de Firestore meta'sıyla (title vb.) banner'ı göstermek için
+      // bu objeyi döndür.
+      const seed = contractsData.find(c => c.slug === slug);
+      return seed ?? firestoreContract;
+    }
     return contractsData.find(c => c.slug === slug) || null;
   }, [firestoreContract, slug]);
 
@@ -66,10 +77,16 @@ export default function ContractDetailPage() {
     };
   }, [slug]);
 
-  const sanitizedHtml = useMemo(
-    () => (contract?.content ? sanitizeHtml(contract.content) : ''),
-    [contract?.content]
-  );
+  // Firestore'da (master-sync ile) `content` raw markdown olarak duruyor; eski
+  // `contractsData` fallback'i ise HTML. Markdown gelirse önce HTML'e çevir,
+  // sonra her durumda sanitize edip render et — aksi halde markdown sentaksı
+  // (#, |, **) plain text olarak görünüp sayfa "boş" izlenimi veriyordu.
+  const sanitizedHtml = useMemo(() => {
+    const raw = contract?.content;
+    if (!raw) return '';
+    const html = looksLikeHtml(raw) ? raw : renderMarkdownToSafeHtml(raw);
+    return sanitizeHtml(html);
+  }, [contract?.content]);
 
   const articleRef = useRef<HTMLElement | null>(null);
 
@@ -172,11 +189,22 @@ export default function ContractDetailPage() {
 
         <div className="space-y-6 min-w-0">
           <div className="glass rounded-3xl p-5 sm:p-8 shadow-glass-soft print:shadow-none print:rounded-none print:p-0 print:bg-white">
-            <article
-              ref={articleRef}
-              className="prose prose-sm sm:prose-base dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-headings:font-headline prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-pre:rounded-xl prose-table:text-sm prose-th:bg-muted/50"
-              dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-            />
+            {sanitizedHtml ? (
+              <article
+                ref={articleRef}
+                className="prose prose-sm sm:prose-base dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-headings:font-headline prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-pre:rounded-xl prose-table:text-sm prose-th:bg-muted/50"
+                dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+              />
+            ) : (
+              // Doc Firestore'da var ama content boş — admin metni eklemeden
+              // yayına aldığında 404 yerine açıklayıcı durum göster.
+              <div className="text-center py-12 space-y-2">
+                <FileClock className="h-8 w-8 mx-auto text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Bu sözleşmenin içeriği henüz yüklenmedi. Hukuk ekibi en kısa sürede yayınlayacaktır.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Okudum, Onaylıyorum — KVKK ispat kaydı */}
