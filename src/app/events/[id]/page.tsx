@@ -272,43 +272,46 @@ export default function EventDetailPage() {
 
   return (
     <div className="animate-in fade-in-0 w-full pb-32">
-        {/* ===== HERO: Tam genişlik poster + gradient overlay + başlık üst üste ===== */}
-        <div className="relative w-full">
-            <div className="relative aspect-[16/9] sm:aspect-[21/9] max-h-[480px] w-full overflow-hidden">
-                <Image
-                    src={safeImageUrl}
-                    alt={event.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="100vw"
-                    data-ai-hint="event hero banner"
-                />
-                {/* Gradient overlay: alt karanlık → üst saydam */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none" />
-                {/* Üst sol: Geri butonu */}
-                <div className="absolute top-3 left-3 sm:top-4 sm:left-4">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 h-10 w-10" aria-label="Geri">
+        {/* ===== HERO: A4 portre poster (210/297) + başlık üzerinde, kulüp afişleri için optimize ===== */}
+        <div className="relative w-full bg-muted/30">
+            <div className="max-w-md mx-auto pt-3 pb-4 sm:pt-4 px-3 sm:px-0 relative">
+                {/* Üst sol: Geri butonu (poster dışında, üstte) */}
+                <div className="absolute top-2 left-2 sm:left-0 z-20">
+                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" aria-label="Geri">
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                 </div>
                 {/* Üst sağ: Share */}
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4">
-                    <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-black/40 backdrop-blur-md text-white border-white/10 hover:bg-black/60 h-10 w-10" />
+                <div className="absolute top-2 right-2 sm:right-0 z-20">
+                    <ShareButtons url={profileUrl} title={`${event.name} — hangel etkinliği`} buttonClassName="rounded-full bg-white/80 backdrop-blur-md text-foreground hover:bg-white shadow-md h-10 w-10" />
                 </div>
-                {/* Alt: başlık + organizer + chip'ler */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 space-y-2 sm:space-y-3 max-w-6xl mx-auto">
-                    <div className="flex flex-wrap gap-2">
-                        <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
-                        {organizerCategory && (
-                            <Badge variant="outline" className="bg-white/15 backdrop-blur-md text-white border-white/20 text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
-                        )}
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold font-headline leading-tight text-white drop-shadow-lg break-words max-w-3xl">{event.name}</h1>
-                    <p className="text-sm sm:text-base font-medium text-white/90">
-                        <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
-                    </p>
+
+                {/* A4 portre poster — 210/297 oranı, kulüp afişleri için ideal */}
+                <div className="relative aspect-[210/297] w-full rounded-3xl overflow-hidden shadow-2xl border border-black/5 bg-muted">
+                    <Image
+                        src={safeImageUrl}
+                        alt={event.name}
+                        fill
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 768px) 100vw, 448px"
+                        data-ai-hint="event poster a4 portrait"
+                    />
                 </div>
+            </div>
+
+            {/* Başlık + organizer + tür/kategori — poster altında */}
+            <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 pb-3 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                    <Badge className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-3 py-1">{event.type}</Badge>
+                    {organizerCategory && (
+                        <Badge variant="outline" className="text-[10px] font-medium rounded-full px-3 py-1">{organizerCategory}</Badge>
+                    )}
+                </div>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold font-headline leading-tight break-words">{event.name}</h1>
+                <p className="text-sm sm:text-base font-bold text-primary">
+                    <Link href={organizerLink} className="hover:underline">{event.organizer}</Link>
+                </p>
             </div>
 
             {/* Quick info chips — hero altında, hangel orange accent */}

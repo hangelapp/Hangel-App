@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
+import NextImage from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import {
     ArrowLeft,
     Calendar,
@@ -24,6 +26,8 @@ import {
     Loader2,
     Hourglass,
     XCircle,
+    Upload,
+    Trash2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -164,6 +168,24 @@ export default function EventManagementPage() {
     const [evDistrict, setEvDistrict] = useState('');
     const [evAddress, setEvAddress] = useState('');
     const [evDescription, setEvDescription] = useState('');
+    const [evPosterFile, setEvPosterFile] = useState<File | null>(null);
+    const [evPosterPreview, setEvPosterPreview] = useState<string | null>(null);
+    const [evPosterUploading, setEvPosterUploading] = useState(false);
+    const posterInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePosterFile = (file: File | null) => {
+        if (!file) {
+            setEvPosterFile(null);
+            setEvPosterPreview(null);
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'Afiş en fazla 5 MB olmalı.' });
+            return;
+        }
+        setEvPosterFile(file);
+        setEvPosterPreview(URL.createObjectURL(file));
+    };
 
     const resetForm = () => {
         setEvName('');
@@ -172,6 +194,10 @@ export default function EventManagementPage() {
         setEvDistrict('');
         setEvAddress('');
         setEvDescription('');
+        if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
+        setEvPosterFile(null);
+        setEvPosterPreview(null);
+        if (posterInputRef.current) posterInputRef.current.value = '';
     };
 
     const handleCreateEvent = async (e: React.FormEvent) => {
@@ -194,10 +220,30 @@ export default function EventManagementPage() {
                 .replace(/[^a-z0-9]+/g, '-')
                 .replace(/(^-|-$)/g, '');
 
+            const finalSlug = `${slug}-${Date.now().toString(36)}`;
+
+            // Afiş upload (varsa) — Firebase Storage'a yükle
+            let posterUrl = '';
+            if (evPosterFile) {
+                setEvPosterUploading(true);
+                try {
+                    const storage = getStorage();
+                    const ext = (evPosterFile.name.split('.').pop() || 'jpg').toLowerCase();
+                    const r = storageRef(storage, `event-posters/${activeEntity.data.id}/${finalSlug}.${ext}`);
+                    await uploadBytes(r, evPosterFile, { contentType: evPosterFile.type });
+                    posterUrl = await getDownloadURL(r);
+                } catch (uploadErr) {
+                    console.error('Poster upload failed', uploadErr);
+                    toast({ variant: 'destructive', title: 'Afiş yüklenemedi', description: 'Etkinlik afişsiz kaydedildi; sonra düzenleyebilirsin.' });
+                } finally {
+                    setEvPosterUploading(false);
+                }
+            }
+
             // Force status='Beklemede' regardless of any other inputs
             await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
-                slug: `${slug}-${Date.now().toString(36)}`,
+                slug: finalSlug,
                 organizer: activeEntity.data.name || t('ngo_admin_events.defaultOrganizer'),
                 organizerId: activeEntity.data.id,
                 organizerKind: 'club',
@@ -210,6 +256,7 @@ export default function EventManagementPage() {
                     district: evDistrict.trim(),
                 },
                 description: evDescription.trim(),
+                imageUrl: posterUrl,
                 status: 'Beklemede' as EventStatus,
                 createdAt: Date.now(),
                 createdBy: authUser?.uid || null,
@@ -415,6 +462,45 @@ export default function EventManagementPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <form onSubmit={handleCreateEvent} className="space-y-4">
+                        {/* Afiş yükleme — A4 portre (210/297) preview + dosya seçici */}
+                        <div className="space-y-2">
+                            <Label>Etkinlik Afişi (A4 portre önerilir)</Label>
+                            <input
+                                ref={posterInputRef}
+                                type="file"
+                                accept="image/png,image/jpeg,image/webp"
+                                className="hidden"
+                                onChange={(e) => handlePosterFile(e.target.files?.[0] || null)}
+                            />
+                            {evPosterPreview ? (
+                                <div className="relative">
+                                    <div className="relative aspect-[210/297] max-w-[200px] mx-auto rounded-2xl overflow-hidden border bg-muted shadow-md">
+                                        <NextImage src={evPosterPreview} alt="Afiş önizleme" fill className="object-cover" unoptimized />
+                                    </div>
+                                    <div className="flex items-center justify-center gap-2 mt-2">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => posterInputRef.current?.click()} disabled={evPosterUploading || submitting}>
+                                            <Upload className="h-3.5 w-3.5 mr-1.5" /> Değiştir
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => handlePosterFile(null)} disabled={evPosterUploading || submitting}>
+                                            <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Kaldır
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => posterInputRef.current?.click()}
+                                    disabled={submitting}
+                                    className="w-full aspect-[210/297] max-w-[200px] mx-auto rounded-2xl border-2 border-dashed border-muted-foreground/30 hover:border-primary hover:bg-primary/5 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary"
+                                >
+                                    <Upload className="h-8 w-8" />
+                                    <span className="text-xs font-medium">Afiş yükle</span>
+                                    <span className="text-[10px] text-muted-foreground/70">PNG / JPG / WEBP · max 5 MB</span>
+                                    <span className="text-[10px] text-muted-foreground/60 px-3 text-center">A4 portre tasarladığın dosyayı direkt yükle</span>
+                                </button>
+                            )}
+                        </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="ev-name">{t('ngo_admin_events.labelName')}</Label>
                             <Input id="ev-name" value={evName} onChange={(e) => setEvName(e.target.value)} placeholder={t('ngo_admin_events.placeholderName')} required />
@@ -441,9 +527,11 @@ export default function EventManagementPage() {
                             <Textarea id="ev-desc" rows={3} value={evDescription} onChange={(e) => setEvDescription(e.target.value)} placeholder={t('ngo_admin_events.placeholderDescription')} />
                         </div>
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting}>{t('ngo_admin_events.cancelBtn')}</Button>
-                            <Button type="submit" disabled={submitting}>
-                                {submitting ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('ngo_admin_events.submitting')}</>) : t('ngo_admin_events.submitBtn')}
+                            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading}>{t('ngo_admin_events.cancelBtn')}</Button>
+                            <Button type="submit" disabled={submitting || evPosterUploading}>
+                                {(submitting || evPosterUploading)
+                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {evPosterUploading ? 'Afiş yükleniyor...' : t('ngo_admin_events.submitting')}</>
+                                    : t('ngo_admin_events.submitBtn')}
                             </Button>
                         </DialogFooter>
                     </form>
