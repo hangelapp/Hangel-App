@@ -21,6 +21,7 @@ import { ThemeApplier } from '@/components/shared/theme-applier';
 import { LocationPermissionPrompt } from '@/components/shared/location-permission-prompt';
 import { CookieBanner } from '@/components/shared/cookie-banner';
 import { WebVitalsTracker } from '@/components/shared/web-vitals-tracker';
+import { FirstVisitDownloadPopup } from '@/components/marketing/first-visit-download-popup';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -118,6 +119,7 @@ export default function RootLayout({
             <LocationPermissionPrompt />
             <CookieBanner />
             <WebVitalsTracker />
+            <FirstVisitDownloadPopup />
             <Toaster />
           </LanguageProvider>
         </FirebaseClientProvider>
