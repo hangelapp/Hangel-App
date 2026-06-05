@@ -62,12 +62,13 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
     ];
     
     const socialLinks = [
-        { label: 'Facebook', href: '#' },
-        { label: 'Instagram', href: '#' },
-        { label: 'X.com', href: '#' },
-        { label: 'YouTube', href: '#' },
-        { label: 'LinkedIn', href: '#' },
-        { label: 'TikTok', href: '#' }
+        { label: 'Facebook', href: 'https://facebook.com/hangelorg' },
+        { label: 'Instagram', href: 'https://instagram.com/hangelorg' },
+        { label: 'X.com', href: 'https://x.com/hangelorg' },
+        { label: 'YouTube', href: 'https://youtube.com/@hangelorg' },
+        { label: 'LinkedIn', href: 'https://linkedin.com/company/hangelorg' },
+        { label: 'TikTok', href: 'https://tiktok.com/@hangelorg' },
+        { label: 'Next Sosyal', href: 'https://nextsosyal.com/@hangelorg' },
     ];
 
     const policyLinks = [

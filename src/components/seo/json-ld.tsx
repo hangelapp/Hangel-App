@@ -196,6 +196,15 @@ export function HangelOrgSchema() {
                     'https://hangel.org.tr',
                     'https://apps.apple.com/in/app/hangel-app/id6664058822',
                     'https://play.google.com/store/apps/details?id=com.hangel.app',
+                    'https://instagram.com/hangelorg',
+                    'https://x.com/hangelorg',
+                    'https://linkedin.com/company/hangelorg',
+                    'https://youtube.com/@hangelorg',
+                    'https://facebook.com/hangelorg',
+                    'https://tiktok.com/@hangelorg',
+                    'https://threads.net/@hangelorg',
+                    'https://t.me/hangelorg',
+                    'https://nextsosyal.com/@hangelorg',
                 ],
             }}
         />

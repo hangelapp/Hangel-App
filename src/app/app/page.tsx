@@ -18,7 +18,7 @@ import { HangelLogo } from '@/components/icons';
 import {
   Apple, Smartphone, Globe, Watch, Monitor, Laptop, Chrome,
   Instagram, Linkedin, Twitter, Youtube, Facebook, MessageCircle,
-  Mail, Send, Music2, ExternalLink, QrCode,
+  Mail, Send, Music2, ExternalLink, QrCode, AtSign,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -161,78 +161,98 @@ interface SocialChannel {
   iconColor: string;
 }
 
+// Tüm sosyal medya hesapları @hangelorg handle'ı ile yayında.
+// Tek tutarlı isim — kullanıcı her platformda kolayca bulur, brand tanınırlığı maksimum.
+const SOCIAL_HANDLE = 'hangelorg';
+
 const SOCIALS: SocialChannel[] = [
   {
     name: 'Instagram',
-    handle: '@hangel.org',
-    href: 'https://instagram.com/hangel.org',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://instagram.com/${SOCIAL_HANDLE}`,
     icon: Instagram,
     iconBg: 'bg-pink-500/10',
     iconColor: 'text-pink-600',
   },
   {
     name: 'LinkedIn',
-    handle: '/company/hangel',
-    href: 'https://linkedin.com/company/hangel',
+    handle: `/company/${SOCIAL_HANDLE}`,
+    href: `https://linkedin.com/company/${SOCIAL_HANDLE}`,
     icon: Linkedin,
     iconBg: 'bg-blue-500/10',
     iconColor: 'text-blue-700',
   },
   {
     name: 'X (Twitter)',
-    handle: '@hangel_org',
-    href: 'https://x.com/hangel_org',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://x.com/${SOCIAL_HANDLE}`,
     icon: Twitter,
     iconBg: 'bg-foreground/10',
     iconColor: 'text-foreground',
   },
   {
     name: 'YouTube',
-    handle: '@hangel',
-    href: 'https://youtube.com/@hangel',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://youtube.com/@${SOCIAL_HANDLE}`,
     icon: Youtube,
     iconBg: 'bg-red-500/10',
     iconColor: 'text-red-600',
   },
   {
     name: 'Facebook',
-    handle: '/hangel.org.tr',
-    href: 'https://facebook.com/hangel.org.tr',
+    handle: `/${SOCIAL_HANDLE}`,
+    href: `https://facebook.com/${SOCIAL_HANDLE}`,
     icon: Facebook,
     iconBg: 'bg-blue-600/10',
     iconColor: 'text-blue-700',
   },
   {
     name: 'TikTok',
-    handle: '@hangel',
-    href: 'https://tiktok.com/@hangel',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://tiktok.com/@${SOCIAL_HANDLE}`,
     icon: Music2,
     iconBg: 'bg-foreground/10',
     iconColor: 'text-foreground',
   },
   {
     name: 'WhatsApp Kanal',
-    handle: 'hangel duyuruları',
-    href: 'https://whatsapp.com/channel/0029Va_hangel',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: 'https://whatsapp.com/channel/0029Va_hangelorg',
     icon: MessageCircle,
     iconBg: 'bg-emerald-500/10',
     iconColor: 'text-emerald-600',
   },
   {
     name: 'Telegram',
-    handle: '@hangel_org',
-    href: 'https://t.me/hangel_org',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://t.me/${SOCIAL_HANDLE}`,
     icon: Send,
     iconBg: 'bg-sky-500/10',
     iconColor: 'text-sky-600',
   },
   {
     name: 'Threads',
-    handle: '@hangel.org',
-    href: 'https://threads.net/@hangel.org',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://threads.net/@${SOCIAL_HANDLE}`,
     icon: MessageCircle,
     iconBg: 'bg-foreground/10',
     iconColor: 'text-foreground',
+  },
+  {
+    name: 'Pinterest',
+    handle: `/${SOCIAL_HANDLE}`,
+    href: `https://pinterest.com/${SOCIAL_HANDLE}`,
+    icon: AtSign,
+    iconBg: 'bg-red-600/10',
+    iconColor: 'text-red-700',
+  },
+  {
+    name: 'Next Sosyal',
+    handle: `@${SOCIAL_HANDLE}`,
+    href: `https://nextsosyal.com/@${SOCIAL_HANDLE}`,
+    icon: AtSign,
+    iconBg: 'bg-red-500/10',
+    iconColor: 'text-red-600',
   },
   {
     name: 'E-posta',
