@@ -14,6 +14,7 @@ import { HangelLogo } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { useWebContent } from '@/hooks/use-site-content';
 import { useTranslation } from '@/components/providers/language-provider';
+import { PublicStatsRow, STAT_FORMATTERS } from '@/components/marketing/public-stats-row';
 
 const AppleSection = ({ 
     title, 
@@ -170,27 +171,17 @@ export default function AboutPage() {
                 imageHint="people discussing business strategy"
             />
 
-            {/* Impact Numbers */}
+            {/* Impact Numbers — gerçek rakamlar /api/public/stats'tan. 0 olan kartlar gizli. */}
             <section className="bg-white py-32 text-center border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-6xl">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-16">
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">2.5M+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statUsersLabel')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">1.2K+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statNgosLabel')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">500+</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statBrandsLabel')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">12.5M ₺</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{t('marketing.about.statDonationsLabel')}</p>
-                        </div>
-                    </div>
+                    <PublicStatsRow
+                        items={[
+                            { key: 'users', label: t('marketing.about.statUsersLabel'), format: STAT_FORMATTERS.count },
+                            { key: 'ngos', label: t('marketing.about.statNgosLabel'), format: STAT_FORMATTERS.count },
+                            { key: 'brands', label: t('marketing.about.statBrandsLabel'), format: STAT_FORMATTERS.count },
+                            { key: 'donationVolume', label: t('marketing.about.statDonationsLabel'), format: STAT_FORMATTERS.currency },
+                        ]}
+                    />
                 </div>
             </section>
 

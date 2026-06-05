@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useTranslation } from '@/components/providers/language-provider';
+import { PublicStatsRow, STAT_FORMATTERS } from '@/components/marketing/public-stats-row';
 
 const AssociationHeader = ({ currentPage }: { currentPage: string }) => {
     const router = useRouter();
@@ -105,28 +106,20 @@ export default function AssociationAboutPage() {
                 imageHint="volunteers holding hands"
             />
 
-            {/* Metrics */}
+            {/* Metrics — gerçek rakamlar /api/public/stats'tan. 0 olan kartlar gizli. */}
             <section className="bg-[#f5f5f7] py-32 text-center border-b border-black/5">
                 <div className="container mx-auto px-6 max-w-5xl">
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-20 text-[#1d1d1f]">{t('associationAbout.metricsTitle')}</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16">
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">54</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationAbout.metricCountries')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">632</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationAbout.metricInitiatives')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">15K+</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationAbout.metricReach')}</p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-6xl font-black tracking-tighter text-primary">126</p>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60">{t('associationAbout.metricEvents')}</p>
-                        </div>
-                    </div>
+                    <PublicStatsRow
+                        items={[
+                            { key: 'ngos', label: t('associationAbout.metricInitiatives'), format: STAT_FORMATTERS.count },
+                            { key: 'users', label: t('associationAbout.metricReach'), format: STAT_FORMATTERS.count },
+                            { key: 'brands', label: t('associationAbout.metricEvents'), format: STAT_FORMATTERS.count },
+                            { key: 'donationVolume', label: 'Toplam Bağış', format: STAT_FORMATTERS.currency },
+                        ]}
+                        containerClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16"
+                        labelClassName="text-[10px] font-bold uppercase tracking-widest text-[#1d1d1f]/60"
+                    />
                 </div>
             </section>
 

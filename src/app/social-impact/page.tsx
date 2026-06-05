@@ -174,13 +174,21 @@ export default function SocialImpactPage() {
         };
     }, [db]);
 
-    // While loading (null) show "..."; once resolved show the real figure (or 0).
+    // While loading (null) hide the stat entirely; show only when there's a
+    // real positive value. Zero or null → stat omitted, section still renders
+    // with title/subtitle (no fake numbers).
     const peopleReachedStat =
-        metrics.peopleReached === null ? '…' : formatCompactCount(metrics.peopleReached);
+        metrics.peopleReached && metrics.peopleReached > 0
+            ? formatCompactCount(metrics.peopleReached)
+            : undefined;
     const donationVolumeStat =
-        metrics.donationVolume === null ? '…' : formatCompactCurrency(metrics.donationVolume);
+        metrics.donationVolume && metrics.donationVolume > 0
+            ? formatCompactCurrency(metrics.donationVolume)
+            : undefined;
     const volunteerHoursStat =
-        metrics.volunteerHours === null ? '…' : formatCompactCount(metrics.volunteerHours);
+        metrics.volunteerHours && metrics.volunteerHours > 0
+            ? formatCompactCount(metrics.volunteerHours)
+            : undefined;
 
     return (
         <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
