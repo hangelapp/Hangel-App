@@ -240,6 +240,15 @@ service cloud.firestore {
     match /registryDernekler/{id} { allow read, list: if true; allow write: if false; }
     match /registryVakiflar/{id} { allow read, list: if true; allow write: if false; }
 
+    // Outreach / Tanıtım kontak veritabanı. Super-admin yazar (manuel ekleme +
+    // CSV import), super-admin okur. registry koleksiyonlarından farklı —
+    // sivil toplum müdürlüğü, kargo şirketleri, mail hizmet sağlayıcıları
+    // gibi resmi kütükte olmayan kuruluşlar burada tutulur.
+    match /outreachContacts/{id} {
+      allow read, list: if isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
     // Wave 6A / PDF-72: AI Asistanı promptları/ayarları.
     // /super-admin/ai-management/page.tsx setDoc(doc(db, 'aiAssistantConfig', kind), ...)
     // ile yazıyor. Secret içermez (model adı + persona prompt'u), ancak yine de

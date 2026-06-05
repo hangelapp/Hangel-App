@@ -195,6 +195,15 @@ export const COLLECTIONS = {
   // Path: superAdminSettings/{adminUid} — alanlar: notifications.{eventKey}.{channel}: boolean.
   superAdminSettings: 'superAdminSettings',
 
+  // Outreach / Tanıtım kontak veritabanı. Sivil Toplum Müdürlükleri, kargo
+  // şirketleri, mail hizmet sağlayıcıları, manuel eklenen STK/vakıf vd. için
+  // outreach kayıtları. registryDernekler + registryVakiflar zaten resmi
+  // kütükten geldiği için outreach hub'da ayrıca okunur ve burada tutulmaz.
+  // Alanlar: name, type, city, district, phone, email, website, address,
+  // tags, notes, lastContactedAt, status (active/contacted/converted/declined),
+  // source (manual/csv/imported), addedBy (adminUid), createdAt, updatedAt.
+  outreachContacts: 'outreachContacts',
+
   // Internal / dev only
   _devOutbox: '_devOutbox',
 } as const;

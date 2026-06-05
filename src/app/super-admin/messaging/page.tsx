@@ -19,6 +19,7 @@ import {
   MessageCircle,
   Coins,
   Wallet,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -34,6 +35,7 @@ interface CampaignRow {
 }
 
 const NAV = [
+  { href: '/super-admin/outreach', icon: Megaphone, color: 'bg-pink-500', label: 'Outreach / Tanıtım Veritabanı', desc: '6.680 vakıf + 100.967 dernek + manuel kontaklar. Hangel\'i tanıştırmak için toplu mail / SMS.' },
   { href: '/super-admin/messaging/campaigns', icon: Send, color: 'bg-violet-500', label: 'Kampanyalar', desc: 'Yeni kampanya oluştur, geçmişi gör, detay analitiği incele.' },
   { href: '/super-admin/messaging/templates', icon: FileText, color: 'bg-sky-500', label: 'Şablonlar', desc: 'Tekrar kullanılabilir SMS / e-posta şablonları.' },
   { href: '/super-admin/messaging/whatsapp/templates', icon: MessageCircle, color: 'bg-emerald-600', label: 'WhatsApp Şablonları', desc: 'Meta-onaylı WhatsApp template\'leri.' },
