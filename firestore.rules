@@ -191,6 +191,13 @@ service cloud.firestore {
       allow create, update, delete: if isSignedIn() && isOwner(userId);
     }
 
+    match /eventVenues/{venueId} {
+      allow read, list: if true; // Public — mekanlar admin panelinde listelenir
+      allow create: if isSignedIn(); // Kulüp/STK admin'i mekan ekleyebilir
+      allow update, delete: if isSuperAdmin() ||
+        (isSignedIn() && resource.data.createdBy == request.auth.uid);
+    }
+
     match /events/{eventId} {
       allow read, list: if true; // Public event listings
       // Öğrenci kulüpleri kendi etkinliklerini oluşturabilir (status='Beklemede')

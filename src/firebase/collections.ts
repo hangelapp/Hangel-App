@@ -55,6 +55,9 @@ export const COLLECTIONS = {
   // evolve (e.g. multi-device pairing) without touching the welcome chain.
   deviceLinks: 'device_links',
   events: 'events',
+  // Etkinlik mekanları (salon/yerleşke) — kulüp/STK admin'leri ekler, super-admin
+  // veya oluşturan düzenler/siler. Rezervasyon e-posta (mailto) ya da link olabilir.
+  eventVenues: 'eventVenues',
   // Sub-collection under events/{eventId}/rsvps — see FEAT-EVENT-RSVP.
   // Doc id = userId; { userId, status: 'going' | 'cancelled', createdAt }.
   eventRsvps: 'rsvps',

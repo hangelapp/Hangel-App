@@ -13,15 +13,9 @@ import {
     ArrowLeft,
     Calendar,
     Plus,
-    Users,
-    MapPin,
     Landmark,
-    Store,
-    Building2,
     Info,
     CheckCircle2,
-    ChevronRight,
-    Building,
     ShieldAlert,
     Loader2,
     Hourglass,
@@ -32,9 +26,8 @@ import {
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { LocationFields } from '@/components/shared/location-fields';
+import { VenueManager } from './_components/venue-manager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     Dialog,
     DialogContent,
@@ -77,58 +70,6 @@ interface ClubEventDoc {
 
 const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
 const EVENT_LANGUAGE_OPTIONS = ['Türkçe', 'İngilizce', 'Türkçe + İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İşaret Dili', 'Diğer'];
-
-interface VenueHall {
-    id: string;
-    name: string;
-    type: string;
-    fee: string;
-    icon: React.ComponentType<{ className?: string }>;
-    capacity: number;
-    description?: string;
-}
-
-interface VenueOrg {
-    id: string;
-    name: string;
-    type: string;
-    logo: string;
-    city: string;
-    address?: string;
-    hours?: string;
-    reservationEmail?: string;
-    venues: VenueHall[];
-}
-
-const organizations: VenueOrg[] = [
-    {
-        id: 'karsiyaka-stk',
-        name: 'Karşıyaka Belediyesi Sancar Maruflu Sivil Toplum Yerleşkesi',
-        type: 'Belediye · STK Yerleşkesi',
-        logo: 'https://www.google.com/s2/favicons?domain=karsiyaka.bel.tr&sz=128',
-        city: 'İzmir',
-        address: 'Bahriye Üçok Mah. Doç. Dr. Bahriye Üçok Bul. No:5, 35580 Karşıyaka / İzmir (Bahçelievler Katlı Pazar Yeri, 1. kat)',
-        hours: 'Haftanın 7 günü 10:00 – 22:00',
-        reservationEmail: 'karsiyaka.stk@karsiyaka.bel.tr',
-        venues: [
-            { id: 'ksk-salon-1', name: 'Salon 1', type: 'Konferans Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 150, description: 'STK etkinlikleri, konferans ve panel için en büyük salon.' },
-            { id: 'ksk-salon-2', name: 'Salon 2', type: 'Seminer Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 100, description: 'Orta ölçekli seminer ve eğitimler için.' },
-            { id: 'ksk-salon-3', name: 'Salon 3', type: 'Toplantı Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 60, description: 'Toplantı ve atölye çalışmaları için.' },
-            { id: 'ksk-fuaye', name: 'Sergi ve Fuaye Alanı', type: 'Sergi / Fuaye', fee: 'Ücretsiz', icon: Store, capacity: 60, description: 'Sergi, stant ve karşılama etkinlikleri için fuaye alanı.' },
-        ],
-    },
-    {
-        id: 'org2',
-        name: 'hangel A.Ş.',
-        type: 'İş Ortağı',
-        logo: '',
-        city: 'İstanbul',
-        venues: [
-            { id: 'v2', name: 'Levent Ortak Çalışma Alanı', type: 'Toplantı Odası', fee: 'Ücretsiz', icon: Building2, capacity: 20 },
-            { id: 'v6', name: 'Moda İmece Ofisi', type: 'Workshop Alanı', fee: 'Ücretsiz', icon: Building2, capacity: 15 },
-        ],
-    },
-];
 
 function StatusBadge({ status }: { status?: EventStatus }) {
     const { t } = useTranslation();
@@ -186,7 +127,6 @@ export default function EventManagementPage() {
     // ---- New event dialog state ----
     const [createOpen, setCreateOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [venueDetail, setVenueDetail] = useState<{ org: VenueOrg; venue: VenueHall } | null>(null);
     const [evName, setEvName] = useState('');
     const [evDate, setEvDate] = useState('');
     const [evCity, setEvCity] = useState('');
@@ -338,33 +278,6 @@ export default function EventManagementPage() {
         }
     };
 
-    // Salon rezervasyon talebi — reservationEmail varsa mailto ile mail taslağı açar.
-    const reserveVenue = (org: VenueOrg, venue: VenueHall) => {
-        if (!org.reservationEmail) {
-            toast({ title: t('ngo_admin_events.reservationRequestToast'), description: `${org.name}${t('ngo_admin_events.reservationRequestDescSuffix')}` });
-            return;
-        }
-        const subject = `Salon Rezervasyon Talebi — ${venue.name} (${org.name})`;
-        const body = [
-            'Merhaba,',
-            '',
-            `"${venue.name}" (${venue.type}, ${venue.capacity} kişilik) salonu için rezervasyon talep ediyoruz.`,
-            '',
-            `Kuruluş: ${activeEntity?.data?.name || ''}`,
-            'Etkinlik adı: ',
-            'Etkinlik tarihi / saati: ',
-            'Tahmini katılımcı sayısı: ',
-            'İletişim (telefon / e-posta): ',
-            '',
-            'Teşekkürler.',
-        ].join('\n');
-        if (typeof window !== 'undefined') {
-            // Not: window.location.href ATAMASI react-hooks/immutability ile build'i
-            // kırıyor; method çağrısı .assign() güvenli ve mailto için eşdeğer.
-            window.location.assign(`mailto:${org.reservationEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
-        }
-    };
-
     return (
         <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
             <div className="flex items-center justify-between">
@@ -404,55 +317,7 @@ export default function EventManagementPage() {
                 </TabsList>
 
                 <TabsContent value="venues" className="mt-6 space-y-8">
-                    {organizations.map((org) => (
-                        <Card key={org.id} className="overflow-hidden border-2 shadow-sm">
-                            <CardHeader className="bg-muted/30 border-b p-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-12 w-12 border">
-                                            <AvatarImage src={org.logo} />
-                                            <AvatarFallback><Building className="h-6 w-6" /></AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <CardTitle className="text-lg">{org.name}</CardTitle>
-                                            <CardDescription className="text-xs font-bold text-primary uppercase tracking-widest">{org.type}</CardDescription>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="sm" className="text-primary font-bold">{t('ngo_admin_events.viewAll')} <ChevronRight className="ml-1 h-4 w-4"/></Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-4 bg-background">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {org.venues.map((venue) => (
-                                        <Card key={venue.id} onClick={() => setVenueDetail({ org, venue })} className="hover:border-primary transition-all hover:shadow-md cursor-pointer group">
-                                            <CardContent className="p-4 space-y-3">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                                        <venue.icon className="h-5 w-5" />
-                                                    </div>
-                                                    <Badge variant="outline" className={cn(
-                                                        "text-[10px] font-bold",
-                                                        venue.fee === 'Ücretsiz' ? "bg-green-100 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"
-                                                    )}>
-                                                        {venue.fee}
-                                                    </Badge>
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-bold text-sm leading-tight group-hover:text-primary transition-colors">{venue.name}</h4>
-                                                    <p className="text-xs text-muted-foreground mt-1">{venue.type}</p>
-                                                </div>
-                                                <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-2 border-t">
-                                                    <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {venue.capacity} {t('ngo_admin_events.peopleSuffix')}</span>
-                                                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {org.city}</span>
-                                                </div>
-                                                <Button size="sm" className="w-full text-xs h-8" onClick={(e) => { e.stopPropagation(); reserveVenue(org, venue); }}>{t('ngo_admin_events.reserveBtn')}</Button>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                    <VenueManager activeEntityName={activeEntity?.data?.name} />
 
                     <Card className="bg-primary/5 border-primary/20">
                         <CardHeader className="p-4 pb-2">
@@ -677,50 +542,6 @@ export default function EventManagementPage() {
                             </Button>
                         </DialogFooter>
                     </form>
-                </DialogContent>
-            </Dialog>
-
-            {/* Salon detay modalı — pencereye (karta) tıklayınca açılır */}
-            <Dialog open={!!venueDetail} onOpenChange={(o) => { if (!o) setVenueDetail(null); }}>
-                <DialogContent className="sm:max-w-md rounded-2xl">
-                    {venueDetail && (
-                        <>
-                            <DialogHeader>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-                                        <venueDetail.venue.icon className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <DialogTitle className="font-bold">{venueDetail.venue.name}</DialogTitle>
-                                        <DialogDescription className="text-xs">{venueDetail.venue.type} · {venueDetail.org.name}</DialogDescription>
-                                    </div>
-                                </div>
-                            </DialogHeader>
-                            <div className="space-y-3 text-sm">
-                                {venueDetail.venue.description && (
-                                    <p className="text-muted-foreground">{venueDetail.venue.description}</p>
-                                )}
-                                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> {venueDetail.venue.capacity} kişi kapasiteli</div>
-                                <div>
-                                    <Badge variant="outline" className={cn('text-[10px] font-bold', venueDetail.venue.fee === 'Ücretsiz' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200')}>{venueDetail.venue.fee}</Badge>
-                                </div>
-                                {venueDetail.org.address && (
-                                    <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" /> <span className="text-muted-foreground">{venueDetail.org.address}</span></div>
-                                )}
-                                {venueDetail.org.hours && (
-                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> <span className="text-muted-foreground">{venueDetail.org.hours}</span></div>
-                                )}
-                                {venueDetail.org.address && (
-                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueDetail.org.address as string)}`; if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener,noreferrer'); }}>
-                                        <MapPin className="h-4 w-4 mr-1.5" /> Google Maps'te aç
-                                    </Button>
-                                )}
-                            </div>
-                            <DialogFooter>
-                                <Button className="w-full" onClick={() => reserveVenue(venueDetail.org, venueDetail.venue)}>{t('ngo_admin_events.reserveBtn')}</Button>
-                            </DialogFooter>
-                        </>
-                    )}
                 </DialogContent>
             </Dialog>
         </div>
