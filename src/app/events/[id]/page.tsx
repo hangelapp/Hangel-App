@@ -567,11 +567,11 @@ export default function EventDetailPage() {
             ) : (
               <Button
                 size="lg"
-                disabled={isRsvpLoading || !authUser}
+                disabled={isRsvpLoading}
                 onClick={() => submitRsvp('going')}
                 className="flex-1 h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
               >
-                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Katıl'}
+                {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Etkinliğe Katıl'}
               </Button>
             )}
             <AlertDialog>

@@ -46,6 +46,11 @@ export default function AppBottomNav() {
   const isAppPath = appPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
   if (!isAppPath) return null;
 
+  // Etkinlik detay sayfasının kendi alt aksiyon barı (Katıl / Yaka Kartı) var;
+  // bottom-nav (z-40) onu örtmesin diye detay sayfasında gizlenir.
+  const isEventDetail = /^\/events\/[^/]+/.test(pathname);
+  if (isEventDetail) return null;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 glass-prominent border-t border-glass-black-8 dark:border-glass-white-8 pb-[env(safe-area-inset-bottom)]">
       {/* Why: h-16 (64px) - pt-1 (4px) - pb-2 (8px) = 52px content area > 44px Apple touch target.

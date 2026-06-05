@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { VenueManager } from '@/app/ngo-admin/events/_components/venue-manager';
+import { EventAttendees } from '@/components/events/event-attendees';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -745,6 +746,7 @@ export default function SuperAdminEventsPage() {
           ) : (
             grouped.pending.map((event) => (
               <EventRow key={event.id} event={event}>
+                <EventAttendees eventId={event.id} />
                 <Button
                   size="sm"
                   className="flex-1 sm:flex-grow-0 rounded-xl font-bold bg-green-600 hover:bg-green-700 text-white"
@@ -808,6 +810,7 @@ export default function SuperAdminEventsPage() {
           ) : (
             grouped.published.map((event) => (
               <EventRow key={event.id} event={event}>
+                <EventAttendees eventId={event.id} />
                 {editButton(event)}
                 {deactivateButton(event)}
                 {deleteButton(event)}
@@ -827,6 +830,7 @@ export default function SuperAdminEventsPage() {
           ) : (
             grouped.passive.map((event) => (
               <EventRow key={event.id} event={event}>
+                <EventAttendees eventId={event.id} />
                 {editButton(event)}
                 {deactivateButton(event)}
                 {deleteButton(event)}
@@ -846,6 +850,7 @@ export default function SuperAdminEventsPage() {
           ) : (
             grouped.rejected.map((event) => (
               <EventRow key={event.id} event={event}>
+                <EventAttendees eventId={event.id} />
                 <Button
                   size="sm"
                   variant="outline"

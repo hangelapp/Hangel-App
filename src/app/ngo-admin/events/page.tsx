@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { LocationFields } from '@/components/shared/location-fields';
 import { VenueManager } from './_components/venue-manager';
+import { EventAttendees } from '@/components/events/event-attendees';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Dialog,
@@ -383,6 +384,7 @@ export default function EventManagementPage() {
                                                     {event.location?.city ? ` • ${event.location.city}` : ''}
                                                 </p>
                                             </div>
+                                            <EventAttendees eventId={event.id} />
                                         </div>
                                     ))}
                                 </div>
