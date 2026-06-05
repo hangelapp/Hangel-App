@@ -28,6 +28,30 @@ import { COLLECTIONS } from '@/firebase/collections';
 // `status` field — is treated as a publicly visible (active) event.
 const HIDDEN_EVENT_STATUSES = new Set(['Beklemede', 'Reddedildi', 'Pasif']);
 
+// Etkinlik startDate/endDate alanları "yyyy-MM-dd HH:mm", saatsiz "yyyy-MM-dd"
+// veya (eski/legacy kayıtlarda) boş/undefined gelebilir. Güvenli parse: önce
+// saatli, olmazsa saatsiz, olmazsa native Date dener; hiçbiri tutmazsa null döner.
+// Böylece format() asla Invalid Date ile çağrılıp sayfayı çökertmez.
+function parseEventDate(s?: string): Date | null {
+  if (!s || typeof s !== 'string') return null;
+  const trimmed = s.trim();
+  if (!trimmed) return null;
+  let d = parse(trimmed, 'yyyy-MM-dd HH:mm', new Date());
+  if (isNaN(d.getTime())) d = parse(trimmed, 'yyyy-MM-dd', new Date());
+  if (isNaN(d.getTime())) {
+    const native = new Date(trimmed);
+    return isNaN(native.getTime()) ? null : native;
+  }
+  return d;
+}
+
+function formatEventDate(s?: string): string {
+  const d = parseEventDate(s);
+  if (!d) return '—';
+  const hasTime = typeof s === 'string' && /\d{1,2}:\d{2}/.test(s);
+  return format(d, hasTime ? 'dd MMM yy, HH:mm' : 'dd MMM yy', { locale: tr });
+}
+
 function EventsPageContent() {
   const searchParams = useSearchParams();
   const db = useFirestore();
@@ -110,7 +134,10 @@ function EventsPageContent() {
         });
     }
     if (monthParam) {
-        eventsToFilter = eventsToFilter.filter(event => format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM') === monthParam);
+        eventsToFilter = eventsToFilter.filter(event => {
+          const d = parseEventDate(event.startDate);
+          return d ? format(d, 'yyyy-MM') === monthParam : false;
+        });
     }
 
     // Filter by event type
@@ -132,15 +159,15 @@ function EventsPageContent() {
     if (dateFrom) {
       const from = startOfDay(new Date(dateFrom));
       eventsToFilter = eventsToFilter.filter(event => {
-        const eventDate = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
-        return !isBefore(eventDate, from);
+        const eventDate = parseEventDate(event.startDate);
+        return eventDate ? !isBefore(eventDate, from) : false;
       });
     }
     if (dateTo) {
       const to = endOfDay(new Date(dateTo));
       eventsToFilter = eventsToFilter.filter(event => {
-        const eventDate = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
-        return !isAfter(eventDate, to);
+        const eventDate = parseEventDate(event.startDate);
+        return eventDate ? !isAfter(eventDate, to) : false;
       });
     }
 
@@ -150,11 +177,11 @@ function EventsPageContent() {
             return a.name.localeCompare(b.name);
         }
         if (sortKey === 'capacity') {
-            return (b.capacity.max - b.capacity.current) - (a.capacity.max - a.capacity.current);
+            return ((b.capacity?.max ?? 0) - (b.capacity?.current ?? 0)) - ((a.capacity?.max ?? 0) - (a.capacity?.current ?? 0));
         }
         // Default sort by date
-        const dateA = parse(a.startDate, 'yyyy-MM-dd HH:mm', new Date()).getTime();
-        const dateB = parse(b.startDate, 'yyyy-MM-dd HH:mm', new Date()).getTime();
+        const dateA = parseEventDate(a.startDate)?.getTime() ?? 0;
+        const dateB = parseEventDate(b.startDate)?.getTime() ?? 0;
         return dateB - dateA;
     });
   }, [sortKey, searchTerm, categoryParam, monthParam, tagParam, typeFilter, locationTypeFilter, cityFilter, dateFrom, dateTo, events]);
@@ -335,7 +362,7 @@ function EventsPageContent() {
                   <div className="space-y-1 pt-1 border-t border-dashed">
                     <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
                         <Calendar className='h-3 w-3 text-primary'/>
-                        <span>{format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'dd MMM yy, HH:mm', {locale: tr})}</span>
+                        <span>{formatEventDate(event.startDate)}</span>
                     </div>
                     <div className="text-[9px] text-muted-foreground font-bold flex items-center gap-1.5">
                         <MapPin className='h-3 w-3 text-primary'/>

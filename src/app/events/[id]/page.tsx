@@ -257,14 +257,32 @@ export default function EventDetailPage() {
     }
   })();
   
-  const formatDateTime = (dateStr: string) => {
+  const formatDateTime = (dateStr?: string) => {
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return '—';
     try {
-        const date = parse(dateStr, 'yyyy-MM-dd HH:mm', new Date());
+        let date = parse(dateStr, 'yyyy-MM-dd HH:mm', new Date());
+        if (isNaN(date.getTime())) {
+            date = parse(dateStr, 'yyyy-MM-dd', new Date());
+            if (isNaN(date.getTime())) return dateStr;
+            return format(date, 'dd MMMM yyyy', { locale: tr });
+        }
         return format(date, 'dd MMMM yyyy, HH:mm', { locale: tr });
     } catch {
         return dateStr;
     }
   };
+
+  // /events?month=YYYY-MM linki için güvenli ay parametresi (saatsiz/boş tarihte null).
+  const eventMonthParam = (() => {
+    if (!event.startDate) return null;
+    try {
+      let d = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
+      if (isNaN(d.getTime())) d = parse(event.startDate, 'yyyy-MM-dd', new Date());
+      return isNaN(d.getTime()) ? null : format(d, 'yyyy-MM');
+    } catch {
+      return null;
+    }
+  })();
 
   const safeImageUrl = event.imageUrl && event.imageUrl.trim().length > 0
     ? event.imageUrl
@@ -365,7 +383,7 @@ export default function EventDetailPage() {
                             <CardTitle className="text-xl">Etkinlik Bilgileri</CardTitle>
                         </CardHeader>
                         <CardContent className="divide-y p-0">
-                                <InfoRow icon={Calendar} label="Başlangıç" href={`/events?month=${format(parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date()), 'yyyy-MM')}`}>{formatDateTime(event.startDate)}</InfoRow>
+                                <InfoRow icon={Calendar} label="Başlangıç" href={eventMonthParam ? `/events?month=${eventMonthParam}` : '/events'}>{formatDateTime(event.startDate)}</InfoRow>
                                 <InfoRow icon={Clock} label="Bitiş">{formatDateTime(event.endDate)}</InfoRow>
                                 <InfoRow icon={MapPin} label="Adres">
                                     <div className="flex flex-col gap-2">
@@ -382,7 +400,7 @@ export default function EventDetailPage() {
                                         <Badge variant="secondary" className="font-bold hover:bg-primary/10 transition-colors">{event.language}</Badge>
                                     </Link>
                                 </InfoRow>
-                                <InfoRow icon={Users} label="Kapasite">{event.capacity.current} / {event.capacity.max}</InfoRow>
+                                <InfoRow icon={Users} label="Kapasite">{event.capacity?.current ?? 0} / {event.capacity?.max ?? 0}</InfoRow>
                                 <InfoRow icon={UserCheck} label="Katılım Koşulu">{event.participationCondition}</InfoRow>
                                 <InfoRow icon={CheckCircle} label="Sertifika">{event.providesCertificate ? `Veriliyor (${event.location.type}, ${event.language})` : 'Verilmiyor'}</InfoRow>
                                 
