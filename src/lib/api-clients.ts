@@ -48,6 +48,71 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
   return fallback;
 };
 
+// ── Denied/pending offer blocklist ──────────────────────────────────────────
+// HasOffers API'leri "status=active" filter'ı uygulansa da affiliate hesabımız
+// için reddedilmiş (denied/pending) offer'ları da listeliyor — bu offer'lara
+// tıklayan kullanıcı kırık tracking link görüyor. Panel'deki "Canlı Teklifler"
+// (approved) listesi ile karşılaştırılarak elde edildi (2026-06-05).
+// Kaynak: scripts/affiliate-panel-deep-scrape.ts + scripts/affiliate-panel-reklamaction-only.ts
+const DENIED_OFFER_IDS_BY_NETWORK: Record<string, Set<string>> = {
+  reklamaction: new Set([
+    '580',   // Modanisa Kuponlu Takip
+    '1603',  // Sportive.com.tr
+    '2487',  // Columbia
+    '2541',  // D&R
+    '3678',  // Colins
+    '4363',  // Saat ve Saat
+    '5533',  // Koton
+    '5951',  // Linens
+    '8937',  // Koçtaş
+    '9555',  // Banggood
+    '12435', // Touristica
+    '12437', // Beymen
+    '55899', // GAP
+    '56329', // Marks & Spencer
+    '56351', // PUMA
+    '56601', // Taç
+    '57791', // Toyzz Shop
+    '59527', // S Sport Plus
+    '60315', // Hotiç
+    '60536', // Sporthink
+    '60598', // havhav.com.tr
+    '60810', // Supplementler
+    '60816', // Vitaminler
+    '61267', // DAGİ
+    '61275', // Fitmoda
+    '61440', // Tatildekirala.com
+    '61532', // miyav.com.tr
+    '61589', // Kuponkod.com Promo Landers
+    '62180', // I Find Location
+    '62356', // Idefix AndroidIos
+    '62369', // Portfun
+    '62372', // Chat Fun
+    '62374', // Flo Influencer Install+Satis
+    '62412', // Modanisa JO+GCC+UAESA
+    '62504', // LG Coupon Attribution
+  ]),
+  affocean: new Set([
+    '621',  // Network
+    '623',  // Divarese
+    '1246', // Media Markt
+    '1688', // Arçelik
+    '2032', // Nautica
+    '2036', // Gant
+    '2040', // Occasion
+    '2136', // Yargıcı
+    '2228', // Benetton
+    '2284', // Bloom and Fresh
+    '2294', // SPX
+    '2398', // SuperStep
+    '2546', // Beko
+    '2697', // Suwen
+    '2720', // Bilişim HR
+    '2723', // Bitcointr PN
+  ]),
+  gelirortaklari: new Set<string>(),
+};
+
 // ── Generic HasOffers/Tune API ───────────────────────────────────────────────
 interface HasOffersConfig {
   apiKey: string;
@@ -124,9 +189,15 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
     const offerEntries = Object.values(pageData) as OfferEntry[];
     if (offerEntries.length === 0) break;
 
+    const deniedSet = DENIED_OFFER_IDS_BY_NETWORK[config.network];
+
     for (const entry of offerEntries) {
       const offer = entry?.Offer;
       if (!offer || !offer.name) continue;
+
+      // Affiliate panel'inde denied/pending olan offer'lar — tracking link
+      // kırık çalışır, kullanıcıya hata gösterir. Listeye eklenmez.
+      if (offer.id && deniedSet?.has(String(offer.id))) continue;
 
       const name = cleanBrandName(offer.name);
       if (!name) continue;
