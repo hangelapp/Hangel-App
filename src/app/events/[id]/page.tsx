@@ -289,7 +289,7 @@ export default function EventDetailPage() {
     : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
 
   return (
-    <div className="animate-in fade-in-0 w-full pb-32">
+    <div className="animate-in fade-in-0 w-full pb-8">
         {/* ===== HERO: A4 portre poster (210/297) + başlık üzerinde, kulüp afişleri için optimize ===== */}
         <div className="relative w-full bg-muted/30">
             <div className="max-w-md mx-auto pt-3 pb-4 sm:pt-4 px-3 sm:px-0 relative">
@@ -365,6 +365,19 @@ export default function EventDetailPage() {
                     )}
                 </div>
             </div>
+        </div>
+
+        {/* PRIMARY RSVP CTA — sabit bar yerine sayfa akışında, posterin hemen altında (her zaman görünür) */}
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 mt-4">
+          <Button
+            size="lg"
+            disabled={isRsvpLoading}
+            onClick={() => submitRsvp(isGoing ? 'cancel' : 'going')}
+            variant={isGoing ? 'outline' : 'default'}
+            className="w-full h-14 rounded-2xl text-lg font-black shadow-xl shadow-primary/20"
+          >
+            {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : (isGoing ? 'Katıldın ✓ — Vazgeç' : 'Etkinliğe Katıl')}
+          </Button>
         </div>
 
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 pt-6 sm:pt-8">
@@ -492,8 +505,8 @@ export default function EventDetailPage() {
       </div>
       </div>{/* end max-w-6xl wrapper */}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl p-3 sm:p-4 border-t border-white/30 shadow-2xl shadow-black/10 z-20">
-        <div className="max-w-6xl mx-auto flex gap-2 sm:gap-3">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 mt-2 pb-10">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
             {isGoing ? (
               <>
               <Button
