@@ -353,7 +353,9 @@ export default function EventManagementPage() {
             'Teşekkürler.',
         ].join('\n');
         if (typeof window !== 'undefined') {
-            window.location.href = `mailto:${org.reservationEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // Not: window.location.href ATAMASI react-hooks/immutability ile build'i
+            // kırıyor; method çağrısı .assign() güvenli ve mailto için eşdeğer.
+            window.location.assign(`mailto:${org.reservationEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
         }
     };
 
