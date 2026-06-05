@@ -25,6 +25,7 @@ import {
   HeartHandshake,
   CircleHelp,
   MessageCircle,
+  Smartphone,
 } from 'lucide-react';
 import type { SideNavItem } from '@/lib/types';
 import { HangelLogo } from '@/components/icons';
@@ -53,6 +54,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   HeartHandshake: HeartHandshake,
   'circle-help': CircleHelp,
   'message-circle': MessageCircle,
+  smartphone: Smartphone,
 };
 
 const iconColorMap: { [key: string]: string } = {
@@ -75,6 +77,7 @@ const iconColorMap: { [key: string]: string } = {
   'HeartHandshake': 'bg-rose-500',
   'circle-help': 'bg-teal-500',
   'message-circle': 'bg-emerald-500',
+  smartphone: 'bg-violet-500',
 };
 
 const NavLink = ({ item, isLast }: { item: SideNavItem; isLast: boolean }) => {

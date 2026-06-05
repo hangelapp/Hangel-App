@@ -33,6 +33,7 @@ import {
   Zap,
   HeartHandshake,
   CircleHelp,
+  Smartphone,
 } from 'lucide-react';
 
 // P2-4: Replaces `import * as Icons from 'lucide-react'`. Only the icons used
@@ -59,6 +60,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   HeartHandshake: HeartHandshake,
   'circle-help': CircleHelp,
   'message-circle': MessageCircle,
+  smartphone: Smartphone,
 };
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
@@ -103,8 +105,7 @@ const group4Items: SideNavItem[] = [
   { href: '/settings', label: 'nav.settings', icon: 'settings' },
   { href: '/about', label: 'nav.about', icon: 'info' },
   { href: '/?welcome=1', label: 'nav.website', icon: 'globe' },
-  { href: '/login/selection?action=register&type=corporate&entity=BRAND', label: 'nav.merchant', icon: 'zap' },
-  { href: '/login/selection?action=register&type=corporate&entity=NGO', label: 'nav.ngoOnboarding', icon: 'HeartHandshake' },
+  { href: '/app', label: 'nav.ourApps', icon: 'smartphone' },
   { href: '/support/app-support', label: 'nav.support', icon: 'circle-help' },
 ];
 
@@ -129,6 +130,7 @@ const iconColorMap: { [key: string]: string } = {
   'HeartHandshake': 'bg-rose-500',
   'circle-help': 'bg-teal-500',
   'message-circle': 'bg-emerald-500',
+  smartphone: 'bg-violet-500',
 };
 
 const MobileNavLink = ({ item, onClick: _onClick }: { item: SideNavItem; onClick: () => void }) => {
@@ -467,6 +469,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const publicWebsitePaths = [
         '/',
         '/home',
+        '/app',
         '/onboarding',
         '/about',
         '/press',

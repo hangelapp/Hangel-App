@@ -34,6 +34,7 @@ export const translations: Record<Language, any> = {
       about: 'Hakkımızda',
       merchant: 'Üye İşyeri',
       ngoOnboarding: 'STK Başvurusu',
+      ourApps: 'Uygulamalarımız',
       support: 'Destek',
       logout: 'Çıkış Yap',
       emergency: 'Acil Durum',
