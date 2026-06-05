@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VenueManager } from '@/app/ngo-admin/events/_components/venue-manager';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -700,7 +701,7 @@ export default function SuperAdminEventsPage() {
       </div>
 
       <Tabs defaultValue="published" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl gap-1.5 sm:gap-0">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto sm:h-14 rounded-2xl bg-muted/50 p-1.5 backdrop-blur-xl gap-1.5 sm:gap-0">
           <TabsTrigger
             value="published"
             className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
@@ -724,6 +725,12 @@ export default function SuperAdminEventsPage() {
             className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
           >
             <XCircle className="mr-2 h-4 w-4" /> Reddedilenler ({grouped.rejected.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="venues"
+            className="rounded-xl font-bold data-[state=active]:bg-background data-[state=active]:shadow-lg"
+          >
+            <MapPin className="mr-2 h-4 w-4" /> Mekanlar
           </TabsTrigger>
         </TabsList>
 
@@ -858,6 +865,10 @@ export default function SuperAdminEventsPage() {
               </EventRow>
             ))
           )}
+        </TabsContent>
+
+        <TabsContent value="venues" className="mt-8">
+          <VenueManager />
         </TabsContent>
       </Tabs>
 
