@@ -192,6 +192,8 @@ export default function EventManagementPage() {
     const [evCity, setEvCity] = useState('');
     const [evDistrict, setEvDistrict] = useState('');
     const [evAddress, setEvAddress] = useState('');
+    const [evLat, setEvLat] = useState('');
+    const [evLon, setEvLon] = useState('');
     const [evDescription, setEvDescription] = useState('');
     const [evPosterFile, setEvPosterFile] = useState<File | null>(null);
     const [evPosterPreview, setEvPosterPreview] = useState<string | null>(null);
@@ -225,6 +227,8 @@ export default function EventManagementPage() {
         setEvCity('');
         setEvDistrict('');
         setEvAddress('');
+        setEvLat('');
+        setEvLon('');
         setEvDescription('');
         setEvStartTime('');
         setEvEndDate('');
@@ -306,6 +310,8 @@ export default function EventManagementPage() {
                     address: evAddress.trim(),
                     city: evCity.trim(),
                     district: evDistrict.trim(),
+                    lat: evLat || '',
+                    lon: evLon || '',
                 },
                 description: evDescription.trim(),
                 imageUrl: posterUrl,
@@ -605,11 +611,13 @@ export default function EventManagementPage() {
                             </div>
                         </div>
                         <LocationFields
-                            value={{ country: 'Türkiye', city: evCity, district: evDistrict, openAddress: evAddress }}
+                            value={{ country: 'Türkiye', city: evCity, district: evDistrict, openAddress: evAddress, lat: evLat, lon: evLon }}
                             onChange={(next) => {
                                 setEvCity(next.city ?? '');
                                 setEvDistrict(next.district ?? '');
                                 setEvAddress(next.openAddress ?? '');
+                                setEvLat(next.lat ?? '');
+                                setEvLon(next.lon ?? '');
                             }}
                             showCountry={false}
                             showNeighborhood={false}

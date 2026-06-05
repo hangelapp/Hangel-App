@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, MapPin } from 'lucide-react';
+import { PlaceAutocomplete } from '@/components/shared/place-autocomplete';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,6 +114,8 @@ function NewOpportunityForm() {
   const [districts, setDistricts] = useState<string[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<string[]>([]);
   const [meetingAddress, setMeetingAddress] = useState('');
+  const [meetingLat, setMeetingLat] = useState('');
+  const [meetingLon, setMeetingLon] = useState('');
   const [applicationEnd, setApplicationEnd] = useState('');
   const [applicationEndTime, setApplicationEndTime] = useState('');
   const [eventStart, setEventStart] = useState('');
@@ -265,6 +268,8 @@ function NewOpportunityForm() {
           district: districts.join(', '),
           neighborhood: neighborhoods.join(', '),
           address: meetingAddress.trim(),
+          lat: meetingLat || '',
+          lon: meetingLon || '',
           cities,
           districts,
           neighborhoods,
@@ -446,32 +451,21 @@ function NewOpportunityForm() {
                 </div>
               )}
             </div>
-            {/* Adres / Buluşma Noktası — Google Maps ikonu ile konum bul; elle de yazılabilir */}
+            {/* Adres / Buluşma Noktası — harita araması: ikona tıkla, yerler listelensin, seçince otomatik dolsun */}
             <div className="space-y-2">
-              <Label htmlFor="meetingAddress" className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Adres / Buluşma Noktası</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="meetingAddress"
-                  value={meetingAddress}
-                  onChange={e => setMeetingAddress(e.target.value)}
-                  placeholder="Sokak, cadde, bina veya buluşma noktası"
-                  className="flex-1"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    const q = [meetingAddress, neighborhoods[0], districts[0], cities[0], country]
-                      .map(s => (s || '').trim()).filter(Boolean).join(' ');
-                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q || cities[0] || 'Türkiye')}`;
-                    if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener,noreferrer');
-                  }}
-                  title="Google Maps'te konumu bul"
-                  aria-label="Google Maps'te konumu bul"
-                  className="h-10 w-10 shrink-0 rounded-md bg-card border flex items-center justify-center hover:bg-accent transition-colors"
-                >
-                  <MapPin className="h-5 w-5 text-primary" />
-                </button>
-              </div>
+              <Label className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Adres / Buluşma Noktası</Label>
+              <PlaceAutocomplete
+                value={meetingAddress}
+                onTextChange={setMeetingAddress}
+                onSelect={(sel) => {
+                  setMeetingAddress(sel.address || sel.display);
+                  setMeetingLat(sel.lat);
+                  setMeetingLon(sel.lon);
+                  if (sel.city && cities.length === 0) setCities([sel.city]);
+                  if (sel.district && districts.length === 0) setDistricts([sel.district]);
+                }}
+              />
+              <p className="text-[11px] text-muted-foreground">Adresi yazıp harita ikonuna tıklayın; eşleşen yerler listelenir, seçince konum kaydedilir.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
