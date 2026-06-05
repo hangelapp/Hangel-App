@@ -46,6 +46,7 @@ import {
     yearOptions,
 } from './shared';
 import { TURKISH_UNIVERSITIES } from '@/lib/turkish-universities';
+import { SearchableSelect } from './searchable-select';
 import { reportNonFatalError } from '@/lib/telemetry';
 
 // CorporateForm — extracted verbatim from login/selection/page.tsx (P2-6c).
@@ -1931,20 +1932,16 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         {formData.clubType === 'Üniversite' && (
                             <div className="space-y-2">
                                 <FormLabel>Bağlı olduğunuz Üniversite</FormLabel>
-                                {/* Native HTML datalist combobox — 210+ üniversite + MYO için yazılırken filtre */}
-                                <input
-                                    list="hangel-university-list"
+                                {/* Aramalı dropdown — 210+ üniversite + MYO; açılan listenin başında arama barı */}
+                                <SearchableSelect
+                                    options={TURKISH_UNIVERSITIES}
                                     value={formData.clubAffiliation}
-                                    onChange={e => setFormData({...formData, clubAffiliation: e.target.value, universityName: e.target.value})}
-                                    placeholder="Üniversite veya Meslek Yüksekokulu adı yazın (örn. Boğaziçi)"
-                                    className="w-full h-12 rounded-xl bg-card border-none px-4 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                    autoComplete="off"
+                                    onValueChange={v => setFormData({...formData, clubAffiliation: v, universityName: v})}
+                                    placeholder="Üniversite Seçin"
+                                    searchPlaceholder="Üniversite ara... (örn. Boğaziçi)"
                                 />
-                                <datalist id="hangel-university-list">
-                                    {TURKISH_UNIVERSITIES.map(u => <option key={u} value={u} />)}
-                                </datalist>
                                 <p className="text-[10px] text-muted-foreground ml-1">
-                                    {TURKISH_UNIVERSITIES.length} üniversite + vakıf meslek yüksekokulu (YÖK kaynaklı). Listede yoksa elle yazabilirsin.
+                                    {TURKISH_UNIVERSITIES.length} üniversite + vakıf meslek yüksekokulu (YÖK kaynaklı).
                                 </p>
                             </div>
                         )}
