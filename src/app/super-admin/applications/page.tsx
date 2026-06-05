@@ -354,6 +354,8 @@ export default function ApplicationsPage() {
           category: app.clubCategory || '',
           members: 0,
           points: 0,
+          // Kayıt formunda başkan olarak başvuran kullanıcı kulübün doğal yöneticisi.
+          adminUserId: app.userId || '',
         });
         return ref.id;
       }
@@ -406,6 +408,37 @@ export default function ApplicationsPage() {
           } catch {
             // Hata durumunda yine de ngo-admin yap (eski davranış)
             updateDocumentNonBlocking(userRef, { role: 'ngo-admin' });
+          }
+        }
+
+        // Kulüp başvurusu: başkan olarak kayıt olan kullanıcıyı kulübün doğal
+        // yöneticisi (Kulüp Başkanı) yap. adminUserId zaten club doc'unda set edildi;
+        // burada userInvitations kaydı + kullanıcı doc rol başlığı yazılır.
+        // Super-admin bu rolü /super-admin/clubs üzerinden sonradan değiştirebilir.
+        if (entityId && app.entityType === 'CLUB' && userId) {
+          const presidentName =
+            (app as { clubPresidentName?: string }).clubPresidentName ||
+            app.authorized?.name ||
+            app.name ||
+            'Kulüp Başkanı';
+          try {
+            await addDoc(collection(db, COLLECTIONS.userInvitations), {
+              clubId: entityId,
+              inviteeUserId: userId,
+              inviteeName: presidentName,
+              role: 'Kulüp Başkanı',
+              status: 'accepted',
+              invitedBy: 'system-approval',
+              invitedAt: serverTimestamp(),
+              autoAcceptedBy: 'system-approval',
+            });
+            updateDocumentNonBlocking(doc(db, COLLECTIONS.users, userId), {
+              managedClubId: entityId,
+              clubRoleTitle: 'Kulüp Başkanı',
+              roleTitle: 'Kulüp Başkanı',
+            });
+          } catch (e) {
+            console.error('Kulüp başkanı atama başarısız:', e);
           }
         }
 
