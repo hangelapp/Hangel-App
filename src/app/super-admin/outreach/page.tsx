@@ -307,27 +307,35 @@ export default function OutreachHubPage() {
           </Card>
 
           {/* Bulk action bar */}
-          {selectedIds.size > 0 && (
-            <Card className="border-primary/40 bg-primary/5">
-              <CardContent className="p-3 flex items-center justify-between flex-wrap gap-2">
-                <div className="text-sm">
-                  <span className="font-bold">{selectedIds.size} seçili</span>
-                  <span className="text-muted-foreground ml-3">
-                    📧 {selectedWithEmail} email · 📱 {selectedWithPhone} telefon
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Temizle</Button>
-                  <Button size="sm" disabled={selectedWithEmail === 0}>
-                    <Mail className="h-4 w-4 mr-1" /> Email Kampanyası ({selectedWithEmail})
-                  </Button>
-                  <Button size="sm" disabled={selectedWithPhone === 0}>
-                    <MessageSquare className="h-4 w-4 mr-1" /> SMS Kampanyası ({selectedWithPhone})
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {selectedIds.size > 0 && (() => {
+            const sourceCol = activeTab === 'vakiflar' ? 'registryVakiflar'
+              : activeTab === 'dernekler' ? 'registryDernekler'
+              : 'outreachContacts';
+            const idList = Array.from(selectedIds).join(',');
+            const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
+            const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
+            return (
+              <Card className="border-primary/40 bg-primary/5">
+                <CardContent className="p-3 flex items-center justify-between flex-wrap gap-2">
+                  <div className="text-sm">
+                    <span className="font-bold">{selectedIds.size} seçili</span>
+                    <span className="text-muted-foreground ml-3">
+                      📧 {selectedWithEmail} email · 📱 {selectedWithPhone} telefon
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Temizle</Button>
+                    <Button asChild size="sm" disabled={selectedWithEmail === 0}>
+                      <Link href={emailHref}><Mail className="h-4 w-4 mr-1" /> Email Gönder ({selectedWithEmail})</Link>
+                    </Button>
+                    <Button asChild size="sm" disabled={selectedWithPhone === 0}>
+                      <Link href={smsHref}><MessageSquare className="h-4 w-4 mr-1" /> SMS Gönder ({selectedWithPhone})</Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
 
           {/* Tablo */}
           <Card>
