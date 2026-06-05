@@ -104,12 +104,15 @@ const STORE_PLATFORMS: PlatformCard[] = [
     iconColor: 'text-blue-600',
   },
   {
-    name: 'Chrome Web App',
-    description: 'Chrome / Edge — "Yükle" butonu ile masaüstüne ekle',
+    // Rakuten Cashback benzeri tarayıcı eklentisi — alışverişte otomatik STK desteği.
+    // Yayınlanınca: href'e Chrome Web Store linki girilecek, available: true yapılıp
+    // 'yakında' badge'i kaldırılacak.
+    name: 'Chrome Uzantısı',
+    description: 'Chrome / Edge — alışverişte otomatik STK desteği',
     icon: Chrome,
-    href: 'https://hangel.org.tr/',
-    badge: 'PWA',
-    available: true,
+    href: '#',
+    badge: 'yakında',
+    available: false,
     iconColor: 'text-amber-600',
   },
 ];
