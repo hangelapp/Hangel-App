@@ -133,22 +133,28 @@ export default function ClubProfilePage() {
         });
         toast({ title: 'Kulüpten çıktın' });
       } else {
-        const userSchools = (userData?.volunteerInfo?.education ?? [])
-          .map(e => (e.school ?? '').trim())
-          .filter(s => s.length > 0);
-        const loweredSchools = userSchools.map(s => s.toLowerCase());
-        const clubSchool = (club.university ?? '').trim().toLowerCase();
-        if (!clubSchool || !loweredSchools.includes(clubSchool)) {
-          toast({
-            title:
-              userSchools.length === 0
-                ? 'Bu kulübe katılmak için önce profilinde okulunu belirtmelisin'
-                : `Bu kulübe yalnızca ${club.university} öğrencileri katılabilir. Profilindeki okulunu güncelle.`,
-            description: 'Okul bilgini düzenleme sayfasına yönlendiriliyorsun.',
-            variant: 'destructive',
-          });
-          router.push('/settings/profile');
-          return;
+        // hangel Club herkese açıktır — okul gate'i atlanır. Diğer tüm kulüplere
+        // yalnızca eğitim geçmişinde o okul bulunan kullanıcılar katılabilir.
+        const clubName = (club.name ?? '').trim().toLocaleLowerCase('tr');
+        const isOpenToAll = clubName === 'hangel club' || (club as { openToAll?: boolean }).openToAll === true;
+        if (!isOpenToAll) {
+          const userSchools = (userData?.volunteerInfo?.education ?? [])
+            .map(e => (e.school ?? '').trim())
+            .filter(s => s.length > 0);
+          const loweredSchools = userSchools.map(s => s.toLowerCase());
+          const clubSchool = (club.university ?? '').trim().toLowerCase();
+          if (!clubSchool || !loweredSchools.includes(clubSchool)) {
+            toast({
+              title:
+                userSchools.length === 0
+                  ? 'Bu kulübe katılmak için önce eğitim geçmişine okulunu eklemelisin'
+                  : `Bu kulübe yalnızca ${club.university} öğrencileri katılabilir. Eğitim geçmişini güncelle.`,
+              description: 'Eğitim geçmişi sayfasına yönlendiriliyorsun.',
+              variant: 'destructive',
+            });
+            router.push('/settings/education');
+            return;
+          }
         }
         await updateDoc(doc(db, COLLECTIONS.users, authUser.uid), {
           joinedClubs: arrayUnion(club.id),
