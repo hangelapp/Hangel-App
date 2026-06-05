@@ -48,6 +48,8 @@ import { addDoc, collection, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useTranslation } from '@/components/providers/language-provider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -73,36 +75,58 @@ interface ClubEventDoc {
     createdAt?: number;
 }
 
-const organizations = [
+const EVENT_TYPE_OPTIONS = ['Seminer', 'Atölye', 'Konferans', 'Panel', 'Söyleşi', 'Konser', 'Sergi', 'Gezi / Tur', 'Turnuva', 'Yarışma', 'Eğitim', 'Buluşma', 'Gönüllülük', 'Bağış Kampanyası', 'Diğer'];
+const EVENT_LANGUAGE_OPTIONS = ['Türkçe', 'İngilizce', 'Türkçe + İngilizce', 'Almanca', 'Fransızca', 'Arapça', 'İşaret Dili', 'Diğer'];
+
+interface VenueHall {
+    id: string;
+    name: string;
+    type: string;
+    fee: string;
+    icon: React.ComponentType<{ className?: string }>;
+    capacity: number;
+    description?: string;
+}
+
+interface VenueOrg {
+    id: string;
+    name: string;
+    type: string;
+    logo: string;
+    city: string;
+    address?: string;
+    hours?: string;
+    reservationEmail?: string;
+    venues: VenueHall[];
+}
+
+const organizations: VenueOrg[] = [
     {
-        id: 'org1',
-        name: 'Kadıköy Belediyesi',
-        type: 'Belediye',
-        logo: 'https://www.google.com/s2/favicons?domain=kadikoy.bel.tr&sz=128',
+        id: 'karsiyaka-stk',
+        name: 'Karşıyaka Belediyesi Sancar Maruflu Sivil Toplum Yerleşkesi',
+        type: 'Belediye · STK Yerleşkesi',
+        logo: 'https://www.google.com/s2/favicons?domain=karsiyaka.bel.tr&sz=128',
+        city: 'İzmir',
+        address: 'Bahriye Üçok Mah. Doç. Dr. Bahriye Üçok Bul. No:5, 35580 Karşıyaka / İzmir (Bahçelievler Katlı Pazar Yeri, 1. kat)',
+        hours: 'Haftanın 7 günü 10:00 – 22:00',
+        reservationEmail: 'karsiyaka.stk@karsiyaka.bel.tr',
         venues: [
-            { id: 'v1', name: 'Barış Manço Kültür Merkezi', type: 'Konferans Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 250 },
-            { id: 'v4', name: 'Kozyatağı Kültür Merkezi', type: 'Tiyatro Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 400 },
-            { id: 'v5', name: 'Caddebostan Kültür Merkezi', type: 'Çok Amaçlı Salon', fee: 'İndirimli', icon: Landmark, capacity: 600 },
-        ]
+            { id: 'ksk-salon-1', name: 'Salon 1', type: 'Konferans Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 150, description: 'STK etkinlikleri, konferans ve panel için en büyük salon.' },
+            { id: 'ksk-salon-2', name: 'Salon 2', type: 'Seminer Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 100, description: 'Orta ölçekli seminer ve eğitimler için.' },
+            { id: 'ksk-salon-3', name: 'Salon 3', type: 'Toplantı Salonu', fee: 'Ücretsiz', icon: Landmark, capacity: 60, description: 'Toplantı ve atölye çalışmaları için.' },
+            { id: 'ksk-fuaye', name: 'Sergi ve Fuaye Alanı', type: 'Sergi / Fuaye', fee: 'Ücretsiz', icon: Store, capacity: 60, description: 'Sergi, stant ve karşılama etkinlikleri için fuaye alanı.' },
+        ],
     },
     {
         id: 'org2',
         name: 'hangel A.Ş.',
         type: 'İş Ortağı',
         logo: '',
+        city: 'İstanbul',
         venues: [
             { id: 'v2', name: 'Levent Ortak Çalışma Alanı', type: 'Toplantı Odası', fee: 'Ücretsiz', icon: Building2, capacity: 20 },
             { id: 'v6', name: 'Moda İmece Ofisi', type: 'Workshop Alanı', fee: 'Ücretsiz', icon: Building2, capacity: 15 },
-        ]
-    },
-    {
-        id: 'org3',
-        name: 'X Teknoloji Şirketi',
-        type: 'Kurumsal Destekçi',
-        logo: 'https://www.google.com/s2/favicons?domain=google.com&sz=128',
-        venues: [
-            { id: 'v3', name: 'Maslak Oditoryum', type: 'Seminer Salonu', fee: 'İndirimli', icon: Store, capacity: 150 },
-        ]
+        ],
     },
 ];
 
@@ -162,6 +186,7 @@ export default function EventManagementPage() {
     // ---- New event dialog state ----
     const [createOpen, setCreateOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [venueDetail, setVenueDetail] = useState<{ org: VenueOrg; venue: VenueHall } | null>(null);
     const [evName, setEvName] = useState('');
     const [evDate, setEvDate] = useState('');
     const [evCity, setEvCity] = useState('');
@@ -171,6 +196,13 @@ export default function EventManagementPage() {
     const [evPosterFile, setEvPosterFile] = useState<File | null>(null);
     const [evPosterPreview, setEvPosterPreview] = useState<string | null>(null);
     const [evPosterUploading, setEvPosterUploading] = useState(false);
+    const [evStartTime, setEvStartTime] = useState('');
+    const [evEndDate, setEvEndDate] = useState('');
+    const [evEndTime, setEvEndTime] = useState('');
+    const [evTypes, setEvTypes] = useState<string[]>([]);
+    const [evCapacity, setEvCapacity] = useState('');
+    const [evLanguage, setEvLanguage] = useState('Türkçe');
+    const [evCertificate, setEvCertificate] = useState(false);
     const posterInputRef = useRef<HTMLInputElement>(null);
 
     const handlePosterFile = (file: File | null) => {
@@ -194,6 +226,13 @@ export default function EventManagementPage() {
         setEvDistrict('');
         setEvAddress('');
         setEvDescription('');
+        setEvStartTime('');
+        setEvEndDate('');
+        setEvEndTime('');
+        setEvTypes([]);
+        setEvCapacity('');
+        setEvLanguage('Türkçe');
+        setEvCertificate(false);
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
         setEvPosterPreview(null);
@@ -240,6 +279,11 @@ export default function EventManagementPage() {
                 }
             }
 
+            const startDateStr = evStartTime ? `${evDate} ${evStartTime}` : evDate;
+            const endDateStr = evEndDate
+                ? (evEndTime ? `${evEndDate} ${evEndTime}` : evEndDate)
+                : '';
+
             // Force status='Beklemede' regardless of any other inputs
             await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
@@ -248,7 +292,15 @@ export default function EventManagementPage() {
                 organizerId: activeEntity.data.id,
                 organizerKind: 'club',
                 date: evDate,
-                startDate: evDate,
+                startDate: startDateStr,
+                endDate: endDateStr,
+                time: evStartTime || '',
+                type: evTypes[0] || '',
+                tags: evTypes,
+                language: evLanguage,
+                capacity: { current: 0, max: Number(evCapacity) || 0 },
+                participationCondition: 'Herkese Açık' as const,
+                providesCertificate: evCertificate,
                 location: {
                     type: 'Fiziksel' as const,
                     address: evAddress.trim(),
@@ -277,6 +329,31 @@ export default function EventManagementPage() {
             });
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    // Salon rezervasyon talebi — reservationEmail varsa mailto ile mail taslağı açar.
+    const reserveVenue = (org: VenueOrg, venue: VenueHall) => {
+        if (!org.reservationEmail) {
+            toast({ title: t('ngo_admin_events.reservationRequestToast'), description: `${org.name}${t('ngo_admin_events.reservationRequestDescSuffix')}` });
+            return;
+        }
+        const subject = `Salon Rezervasyon Talebi — ${venue.name} (${org.name})`;
+        const body = [
+            'Merhaba,',
+            '',
+            `"${venue.name}" (${venue.type}, ${venue.capacity} kişilik) salonu için rezervasyon talep ediyoruz.`,
+            '',
+            `Kuruluş: ${activeEntity?.data?.name || ''}`,
+            'Etkinlik adı: ',
+            'Etkinlik tarihi / saati: ',
+            'Tahmini katılımcı sayısı: ',
+            'İletişim (telefon / e-posta): ',
+            '',
+            'Teşekkürler.',
+        ].join('\n');
+        if (typeof window !== 'undefined') {
+            window.location.href = `mailto:${org.reservationEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         }
     };
 
@@ -339,7 +416,7 @@ export default function EventManagementPage() {
                             <CardContent className="p-4 bg-background">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {org.venues.map((venue) => (
-                                        <Card key={venue.id} className="hover:border-primary transition-all hover:shadow-md cursor-pointer group">
+                                        <Card key={venue.id} onClick={() => setVenueDetail({ org, venue })} className="hover:border-primary transition-all hover:shadow-md cursor-pointer group">
                                             <CardContent className="p-4 space-y-3">
                                                 <div className="flex items-start justify-between">
                                                     <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -358,9 +435,9 @@ export default function EventManagementPage() {
                                                 </div>
                                                 <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-2 border-t">
                                                     <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {venue.capacity} {t('ngo_admin_events.peopleSuffix')}</span>
-                                                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {t('ngo_admin_events.cityIstanbul')}</span>
+                                                    <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {org.city}</span>
                                                 </div>
-                                                <Button size="sm" className="w-full text-xs h-8" onClick={() => toast({title: t('ngo_admin_events.reservationRequestToast'), description: `${org.name}${t('ngo_admin_events.reservationRequestDescSuffix')}`})}>{t('ngo_admin_events.reserveBtn')}</Button>
+                                                <Button size="sm" className="w-full text-xs h-8" onClick={(e) => { e.stopPropagation(); reserveVenue(org, venue); }}>{t('ngo_admin_events.reserveBtn')}</Button>
                                             </CardContent>
                                         </Card>
                                     ))}
@@ -505,9 +582,25 @@ export default function EventManagementPage() {
                             <Label htmlFor="ev-name">{t('ngo_admin_events.labelName')}</Label>
                             <Input id="ev-name" value={evName} onChange={(e) => setEvName(e.target.value)} placeholder={t('ngo_admin_events.placeholderName')} required />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="ev-date">{t('ngo_admin_events.labelDate')}</Label>
-                            <Input id="ev-date" type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} required />
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-date">{t('ngo_admin_events.labelDate')}</Label>
+                                <Input id="ev-date" type="date" value={evDate} onChange={(e) => setEvDate(e.target.value)} required />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-start-time">Başlangıç Saati</Label>
+                                <Input id="ev-start-time" type="time" value={evStartTime} onChange={(e) => setEvStartTime(e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-end-date">Bitiş Tarihi</Label>
+                                <Input id="ev-end-date" type="date" value={evEndDate} onChange={(e) => setEvEndDate(e.target.value)} min={evDate || undefined} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-end-time">Bitiş Saati (tercihen)</Label>
+                                <Input id="ev-end-time" type="time" value={evEndTime} onChange={(e) => setEvEndTime(e.target.value)} />
+                            </div>
                         </div>
                         <LocationFields
                             value={{ country: 'Türkiye', city: evCity, district: evDistrict, openAddress: evAddress }}
@@ -526,6 +619,45 @@ export default function EventManagementPage() {
                             <Label htmlFor="ev-desc">{t('ngo_admin_events.labelDescription')}</Label>
                             <Textarea id="ev-desc" rows={3} value={evDescription} onChange={(e) => setEvDescription(e.target.value)} placeholder={t('ngo_admin_events.placeholderDescription')} />
                         </div>
+
+                        {/* Etkinlik Türü — çoktan seçmeli */}
+                        <div className="space-y-2">
+                            <Label>Etkinlik Türü (birden fazla seçebilirsiniz)</Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 border rounded-xl bg-card max-h-44 overflow-y-auto">
+                                {EVENT_TYPE_OPTIONS.map((opt) => (
+                                    <label key={opt} className="flex items-center gap-2 text-sm cursor-pointer">
+                                        <Checkbox
+                                            checked={evTypes.includes(opt)}
+                                            onCheckedChange={(c) => setEvTypes((prev) => (c === true ? [...prev, opt] : prev.filter((x) => x !== opt)))}
+                                        />
+                                        <span>{opt}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-capacity">Kapasite (kişi)</Label>
+                                <Input id="ev-capacity" type="number" min={0} inputMode="numeric" value={evCapacity} onChange={(e) => setEvCapacity(e.target.value)} placeholder="Örn. 100" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ev-language">Etkinlik Dili</Label>
+                                <Select value={evLanguage} onValueChange={setEvLanguage}>
+                                    <SelectTrigger id="ev-language"><SelectValue placeholder="Dil seçin" /></SelectTrigger>
+                                    <SelectContent>
+                                        {EVENT_LANGUAGE_OPTIONS.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Sertifika */}
+                        <label className="flex items-center gap-2 text-sm cursor-pointer p-3 border rounded-xl bg-card">
+                            <Checkbox checked={evCertificate} onCheckedChange={(c) => setEvCertificate(c === true)} />
+                            <span>Bu etkinlik katılımcılara <strong>sertifika</strong> veriyor</span>
+                        </label>
+
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading}>{t('ngo_admin_events.cancelBtn')}</Button>
                             <Button type="submit" disabled={submitting || evPosterUploading}>
@@ -535,6 +667,50 @@ export default function EventManagementPage() {
                             </Button>
                         </DialogFooter>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Salon detay modalı — pencereye (karta) tıklayınca açılır */}
+            <Dialog open={!!venueDetail} onOpenChange={(o) => { if (!o) setVenueDetail(null); }}>
+                <DialogContent className="sm:max-w-md rounded-2xl">
+                    {venueDetail && (
+                        <>
+                            <DialogHeader>
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                                        <venueDetail.venue.icon className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <DialogTitle className="font-bold">{venueDetail.venue.name}</DialogTitle>
+                                        <DialogDescription className="text-xs">{venueDetail.venue.type} · {venueDetail.org.name}</DialogDescription>
+                                    </div>
+                                </div>
+                            </DialogHeader>
+                            <div className="space-y-3 text-sm">
+                                {venueDetail.venue.description && (
+                                    <p className="text-muted-foreground">{venueDetail.venue.description}</p>
+                                )}
+                                <div className="flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> {venueDetail.venue.capacity} kişi kapasiteli</div>
+                                <div>
+                                    <Badge variant="outline" className={cn('text-[10px] font-bold', venueDetail.venue.fee === 'Ücretsiz' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200')}>{venueDetail.venue.fee}</Badge>
+                                </div>
+                                {venueDetail.org.address && (
+                                    <div className="flex items-start gap-2"><MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" /> <span className="text-muted-foreground">{venueDetail.org.address}</span></div>
+                                )}
+                                {venueDetail.org.hours && (
+                                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> <span className="text-muted-foreground">{venueDetail.org.hours}</span></div>
+                                )}
+                                {venueDetail.org.address && (
+                                    <Button variant="outline" size="sm" className="w-full" onClick={() => { const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueDetail.org.address as string)}`; if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener,noreferrer'); }}>
+                                        <MapPin className="h-4 w-4 mr-1.5" /> Google Maps'te aç
+                                    </Button>
+                                )}
+                            </div>
+                            <DialogFooter>
+                                <Button className="w-full" onClick={() => reserveVenue(venueDetail.org, venueDetail.venue)}>{t('ngo_admin_events.reserveBtn')}</Button>
+                            </DialogFooter>
+                        </>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>
