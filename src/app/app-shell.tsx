@@ -469,7 +469,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     const publicWebsitePaths = [
         '/',
         '/home',
-        '/app',
         '/onboarding',
         '/about',
         '/press',
@@ -498,7 +497,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const isPublicPage = publicWebsitePaths.some(path => pathname === path || (path !== '/' && pathname.startsWith(path + '/')));
 
-    if (isPreviewPage || isSuperAdminPage || isPublicPage) {
+    // /app (indirme/QR hub'ı): giriş YAPMAMIŞ ziyaretçiye web görünümü — app chrome'suz
+    // standalone public sayfa. Giriş YAPMIŞ kullanıcıya app görünümü — SideNav + header.
+    // Public paylaşım linki olduğu için ziyaretçilerin çoğu anonim; auth çözülürken
+    // (authUser henüz yok) web görünümü gösterilir, flash minimumda kalır.
+    const isAppHubPage = pathname === '/app' || pathname.startsWith('/app/');
+
+    if (isPreviewPage || isSuperAdminPage || isPublicPage || (isAppHubPage && !authUser)) {
         return <div className="min-h-dvh bg-background">{children}</div>;
     }
 
