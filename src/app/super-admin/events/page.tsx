@@ -868,7 +868,7 @@ export default function SuperAdminEventsPage() {
         </TabsContent>
 
         <TabsContent value="venues" className="mt-8">
-          <VenueManager />
+          <VenueManager manageable />
         </TabsContent>
       </Tabs>
 
