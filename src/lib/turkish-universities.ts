@@ -8,7 +8,6 @@
 // seçilmelidir. hangel Üniversitesi platformun resmi üniversitesidir.
 
 export const TURKISH_UNIVERSITIES: string[] = [
-  "hangel Üniversitesi",
   "Abdullah Gül Üniversitesi",
   "Acıbadem Mehmet Ali Aydınlar Üniversitesi",
   "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
@@ -212,6 +211,8 @@ export const TURKISH_UNIVERSITIES: string[] = [
   "Yıldız Teknik Üniversitesi",
   "Yozgat Bozok Üniversitesi",
   "Zonguldak Bülent Ecevit Üniversitesi",
+  // hangel Üniversitesi — platformun resmi üniversitesi; listenin en sonunda.
+  "hangel Üniversitesi",
 ];
 
 export const EDUCATION_LEVELS = [
