@@ -264,12 +264,33 @@ export function LocationFields({
       {showOpenAddress && (
         <div className="space-y-2 md:col-span-2">
           <Label className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {labelOpenAddress}{required && ' *'}</Label>
-          <Input
-            value={currentOpenAddress}
-            onChange={(e) => onChange({ ...value, openAddress: e.target.value })}
-            placeholder="Sokak, cadde, bina adı"
-            className={`h-11 rounded-xl ${autoCls('openAddress')}`}
-          />
+          <div className="flex gap-2">
+            <Input
+              value={currentOpenAddress}
+              onChange={(e) => onChange({ ...value, openAddress: e.target.value })}
+              placeholder="Sokak, cadde, bina adı"
+              className={`h-11 rounded-xl flex-1 ${autoCls('openAddress')}`}
+            />
+            {/* Google Maps'te konumu bul — yazılan adresi Maps aramasında açar.
+                Tıklamazsa kullanıcı adresi elle yazmış olur (zorunlu değil). */}
+            <button
+              type="button"
+              onClick={() => {
+                const q = [currentOpenAddress, currentNeighborhood, currentDistrict, currentCity, isTurkey ? 'Türkiye' : currentCountry]
+                  .map(s => (s || '').trim())
+                  .filter(Boolean)
+                  .join(' ');
+                const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q || currentCity || 'Türkiye')}`;
+                if (typeof window !== 'undefined') window.open(url, '_blank', 'noopener,noreferrer');
+              }}
+              title="Google Maps'te konumu bul"
+              aria-label="Google Maps'te konumu bul"
+              className="h-11 w-11 shrink-0 rounded-xl bg-card border flex items-center justify-center hover:bg-accent transition-colors"
+            >
+              <MapPin className="h-5 w-5 text-primary" />
+            </button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Adresi yazıp Google Maps ikonuna tıklayarak konumu haritada görebilirsiniz; ya da elle yazabilirsiniz.</p>
         </div>
       )}
 
