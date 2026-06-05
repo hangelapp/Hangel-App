@@ -18,7 +18,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,7 +31,6 @@ import { ArrowLeft, Mail, MessageSquare, Send, Loader2, CheckCircle2, AlertCircl
 const VARIABLES_HELP = '{{name}} — kuruluş adı için kullanılabilir.';
 
 export default function OutreachSendPage() {
-  const router = useRouter();
   const sp = useSearchParams();
   const { toast } = useToast();
 

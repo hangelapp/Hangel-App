@@ -56,41 +56,28 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
 // Kaynak: scripts/affiliate-panel-deep-scrape.ts + scripts/affiliate-panel-reklamaction-only.ts
 const DENIED_OFFER_IDS_BY_NETWORK: Record<string, Set<string>> = {
   reklamaction: new Set([
-    '580',   // Modanisa Kuponlu Takip
-    '1603',  // Sportive.com.tr
-    '2487',  // Columbia
-    '2541',  // D&R
-    '3678',  // Colins
-    '4363',  // Saat ve Saat
-    '5533',  // Koton
-    '5951',  // Linens
-    '8937',  // Koçtaş
-    '9555',  // Banggood
-    '12435', // Touristica
-    '12437', // Beymen
-    '55899', // GAP
-    '56329', // Marks & Spencer
-    '56351', // PUMA
-    '56601', // Taç
-    '57791', // Toyzz Shop
-    '59527', // S Sport Plus
-    '60315', // Hotiç
-    '60536', // Sporthink
-    '60598', // havhav.com.tr
-    '60810', // Supplementler
-    '60816', // Vitaminler
-    '61267', // DAGİ
-    '61275', // Fitmoda
-    '61440', // Tatildekirala.com
-    '61532', // miyav.com.tr
-    '61589', // Kuponkod.com Promo Landers
-    '62180', // I Find Location
-    '62356', // Idefix AndroidIos
-    '62369', // Portfun
-    '62372', // Chat Fun
-    '62374', // Flo Influencer Install+Satis
-    '62412', // Modanisa JO+GCC+UAESA
-    '62504', // LG Coupon Attribution
+    // 2026-06-05 RA yanıtı: 17 marka açıldı (Sportive, Columbia, D&R, Colins,
+    // Saat ve Saat, Koton, Linens, Koçtaş, Touristica, GAP, M&S, PUMA, Taç,
+    // Toyzz Shop, Hotiç, Sporthink, DAGİ) — blocklist'ten çıkarıldı.
+    // Aşağıdaki 15 RA tarafından "açmayalım" dendi + 3 cevap gelmedi → kalır.
+    '580',   // Modanisa Kuponlu Takip (cevap gelmedi, takip)
+    '9555',  // Banggood (açmayalım)
+    '12437', // Beymen (açmayalım)
+    '59527', // S Sport Plus (açmayalım)
+    '60598', // havhav.com.tr (açmayalım)
+    '60810', // Supplementler (açmayalım)
+    '60816', // Vitaminler (açmayalım)
+    '61275', // Fitmoda (açmayalım)
+    '61440', // Tatildekirala.com (açmayalım)
+    '61532', // miyav.com.tr (açmayalım)
+    '61589', // Kuponkod.com Promo Landers (cevap gelmedi, takip)
+    '62180', // I Find Location (açmayalım)
+    '62356', // Idefix AndroidIos (açmayalım)
+    '62369', // Portfun (açmayalım)
+    '62372', // Chat Fun (açmayalım)
+    '62374', // Flo Influencer Install+Satis (açmayalım)
+    '62412', // Modanisa JO+GCC+UAESA (açmayalım)
+    '62504', // LG Coupon Attribution (cevap gelmedi, takip)
   ]),
   affocean: new Set([
     '621',  // Network
