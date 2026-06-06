@@ -8,6 +8,7 @@ import { Globe, MapPin } from 'lucide-react';
 import { neighborhoodsData } from '@/lib/data';
 import { Country, State, City } from 'country-state-city';
 import { PlaceAutocomplete } from '@/components/shared/place-autocomplete';
+import { SearchableSelect } from '@/components/shared/searchable-select';
 
 export type LocationValue = {
   country?: string;
@@ -48,6 +49,26 @@ type Props = {
 
 // Türkiye'de pinned (top of list) iller. Kullanıcının çoğu büyük 3 ilden.
 const PINNED_TR_CITIES = ['İstanbul', 'Ankara', 'İzmir'];
+
+// Nominatim'den gelen il/ilçe adını dropdown seçeneğine eşle (tr-aware, diakritik
+// duyarsız; tam eşleşme yoksa içeren/içerilen eşleşme dener). Eşleşme yoksa '' döner.
+const normTr = (s: string) => (s || '').trim().toLocaleLowerCase('tr');
+function matchTrCity(raw: string): string {
+  const n = normTr(raw);
+  if (!n) return '';
+  const cities = Object.keys(neighborhoodsData);
+  return cities.find(c => normTr(c) === n)
+    || cities.find(c => { const cn = normTr(c); return cn.includes(n) || n.includes(cn); })
+    || '';
+}
+function matchTrDistrict(city: string, raw: string): string {
+  const n = normTr(raw);
+  if (!city || !n || !neighborhoodsData[city]) return '';
+  const ds = Object.keys(neighborhoodsData[city]);
+  return ds.find(d => normTr(d) === n)
+    || ds.find(d => { const dn = normTr(d); return dn.includes(n) || n.includes(dn); })
+    || '';
+}
 
 // iso2 → bayrak emoji türetme. Regional indicator symbols (U+1F1E6..1F1FF).
 const isoToFlag = (iso2: string): string => {
@@ -202,13 +223,14 @@ export function LocationFields({
       <div className="space-y-2">
         <Label>{cityLabel}{required && ' *'}</Label>
         {cityOptions.length > 0 ? (
-          <Select
-            value={currentCity || ''}
+          <SearchableSelect
+            options={cityOptions}
+            value={currentCity}
             onValueChange={(v) => onChange({ ...value, city: v, district: '', neighborhood: '' })}
-          >
-            <SelectTrigger className={`h-11 rounded-xl ${autoCls('city')}`}><SelectValue placeholder={`${cityLabel} seçin...`} /></SelectTrigger>
-            <SelectContent className="max-h-60">{cityOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-          </Select>
+            placeholder={`${cityLabel} seçin...`}
+            searchPlaceholder={`${cityLabel} ara...`}
+            triggerClassName={`h-11 rounded-xl border bg-background px-3 ${autoCls('city')}`}
+          />
         ) : (
           <Input value={currentCity} onChange={(e) => onChange({ ...value, city: e.target.value })} placeholder={cityLabel} className={`h-11 rounded-xl ${autoCls('city')}`} />
         )}
@@ -217,16 +239,15 @@ export function LocationFields({
       <div className="space-y-2">
         <Label>{districtLabel}{required && ' *'}</Label>
         {isTurkey || districtOptions.length > 0 ? (
-          <Select
-            value={currentDistrict || ''}
+          <SearchableSelect
+            options={districtOptions}
+            value={currentDistrict}
             onValueChange={(v) => onChange({ ...value, district: v, neighborhood: '' })}
+            placeholder={!currentCity ? `Önce ${cityLabel.toLowerCase()} seçin` : `${districtLabel} seçin...`}
+            searchPlaceholder={`${districtLabel} ara...`}
             disabled={!currentCity || districtOptions.length === 0}
-          >
-            <SelectTrigger className={`h-11 rounded-xl ${autoCls('district')}`}>
-              <SelectValue placeholder={!currentCity ? `Önce ${cityLabel.toLowerCase()} seçin` : `${districtLabel} seçin...`} />
-            </SelectTrigger>
-            <SelectContent className="max-h-60">{districtOptions.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-          </Select>
+            triggerClassName={`h-11 rounded-xl border bg-background px-3 ${autoCls('district')}`}
+          />
         ) : (
           <Input value={currentDistrict} onChange={(e) => onChange({ ...value, district: e.target.value })} placeholder={districtLabel} className={`h-11 rounded-xl ${autoCls('district')}`} />
         )}
@@ -236,16 +257,15 @@ export function LocationFields({
         <div className="space-y-2">
           <Label>{labelNeighborhood}{required && ' *'}</Label>
           {isTurkey && neighborhoodOptions.length > 0 ? (
-            <Select
-              value={currentNeighborhood || ''}
+            <SearchableSelect
+              options={neighborhoodOptions}
+              value={currentNeighborhood}
               onValueChange={(v) => onChange({ ...value, neighborhood: v })}
+              placeholder={!currentDistrict ? 'Önce ilçe seçin' : 'Mahalle seçin...'}
+              searchPlaceholder="Mahalle ara..."
               disabled={!currentDistrict}
-            >
-              <SelectTrigger className={`h-11 rounded-xl ${autoCls('neighborhood')}`}>
-                <SelectValue placeholder={!currentDistrict ? 'Önce ilçe seçin' : 'Mahalle seçin...'} />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">{neighborhoodOptions.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}</SelectContent>
-            </Select>
+              triggerClassName={`h-11 rounded-xl border bg-background px-3 ${autoCls('neighborhood')}`}
+            />
           ) : (
             <Input value={currentNeighborhood} onChange={(e) => onChange({ ...value, neighborhood: e.target.value })} placeholder={labelNeighborhood} className={`h-11 rounded-xl ${autoCls('neighborhood')}`} />
           )}
@@ -271,14 +291,27 @@ export function LocationFields({
           <PlaceAutocomplete
             value={currentOpenAddress}
             onTextChange={(text) => onChange({ ...value, openAddress: text })}
-            onSelect={(sel) => onChange({
-              ...value,
-              openAddress: sel.address || sel.display,
-              city: sel.city || currentCity,
-              district: sel.district || currentDistrict,
-              lat: sel.lat,
-              lon: sel.lon,
-            })}
+            onSelect={(sel) => {
+              // Nominatim il/ilçe adını dropdown seçeneğine eşle (TR için), böylece
+              // seçince il/ilçe dropdown'ları doğru değeri gösterir.
+              let nextCity = currentCity;
+              let nextDistrict = currentDistrict;
+              if (isTurkey) {
+                nextCity = matchTrCity(sel.city) || currentCity;
+                nextDistrict = matchTrDistrict(nextCity, sel.district) || '';
+              } else if (sel.city) {
+                nextCity = sel.city;
+                nextDistrict = sel.district || '';
+              }
+              onChange({
+                ...value,
+                openAddress: sel.address || sel.display,
+                city: nextCity,
+                district: nextDistrict,
+                lat: sel.lat,
+                lon: sel.lon,
+              });
+            }}
           />
           <p className="text-[11px] text-muted-foreground">Adresi yazıp harita ikonuna tıklayın; eşleşen yerler listelenir, seçince il/ilçe ve konum otomatik dolar. Elle de yazabilirsiniz.</p>
         </div>
