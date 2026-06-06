@@ -141,6 +141,41 @@ export function OutreachDashboard({ user }: Props) {
           )}
           {stats && (
             <>
+              {/* GRAND TOTAL — Vakıf + Dernek + Kulüp + Federasyon + Manuel toplam */}
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30">
+                <CardContent className="p-4 flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-primary/70">Outreach Veritabanı Toplamı</p>
+                    <p className="text-4xl font-black tabular-nums leading-none mt-1">
+                      {formatN(stats.byCollection.registryVakiflar + stats.byCollection.registryDernekler + stats.byCollection.outreachContacts)}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-1">tüm kayıtlar (vakıf + dernek + kulüp + federasyon + müdürlük + manuel)</p>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <div className="text-center">
+                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Vakıf</p>
+                      <p className="text-base font-black tabular-nums">{formatN(stats.byCollection.registryVakiflar)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Dernek</p>
+                      <p className="text-base font-black tabular-nums">{formatN(stats.byCollection.registryDernekler)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Federasyon</p>
+                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.Federasyon || 0)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Spor Kulübü</p>
+                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.SporKulübü || 0)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Sivil Toplum</p>
+                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.SivilToplumMüdürlüğü || 0)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* 4 ana KPI */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <KPI label="Vakıflar" value={formatN(stats.byCollection.registryVakiflar)} icon={Users} color="bg-amber-500" />

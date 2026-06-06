@@ -188,15 +188,22 @@ export async function GET(req: NextRequest) {
   let q: FirebaseFirestore.Query = db.collection(source);
 
   // Source-specific filters
+  // KRİTİK: search varsa Firestore PREFIX query kullan (nameLower >= search
+  // AND nameLower < search + ''). 100K dernek arasında 100 batch'lik
+  // client-side post-filter ile bulamıyorduk — server-side prefix indekslemesi
+  // ile native search.
+  const searchPrefix = search.trim();
   if (source === 'registryVakiflar') {
     if (city) q = q.where('il', '==', city);
+    if (searchPrefix) {
+      q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
+    }
     q = q.orderBy('nameLower');
   } else if (source === 'registryDernekler') {
-    // ÖNEMLİ: doc id format "01-001-023" (Adana=01) → __name__ ile sıralayınca
-    // ilk 100 hep Adana çıkıyordu. nameLower ile alfabetik sırala.
-    // city filter yoksa il alanı olmayan eski dernek kayıtları için fallback yok;
-    // alfabetik sıralama tüm illeri eşit dağıtır.
     if (city) q = q.where('il', '==', city);
+    if (searchPrefix) {
+      q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
+    }
     q = q.orderBy('nameLower');
   } else {
     q = q.orderBy('createdAt', 'desc').limit(limitNum);
