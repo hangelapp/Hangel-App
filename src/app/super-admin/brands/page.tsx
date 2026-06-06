@@ -5,15 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, getDocs, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, doc, query, where, updateDoc, getDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getApp } from 'firebase/app';
 import { Loader2, Inbox } from 'lucide-react';
 import type { Brand } from "@/lib/types";
-import seedBrands from '../../../../docs/database-exports/brands.json';
 import { COLLECTIONS } from '@/firebase/collections';
 
-import { BrandBulkToolsCard } from './_components/brand-bulk-tools-card';
 import { BrandFiltersCard } from './_components/brand-filters-card';
 import { BrandListRow } from './_components/brand-list-row';
 import { BrandStatsCards } from './_components/brand-stats-cards';
@@ -37,7 +35,6 @@ export default function BrandsPage() {
     const [sortBy, setSortBy] = useState<SortOption>('default');
     const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
     const [editFormData, setEditFormData] = useState<EditFormData>({});
-    const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding' | 'deleting-demo'>('idle');
     const [logoUploading, setLogoUploading] = useState(false);
 
     // Load approved brands
@@ -356,121 +353,6 @@ export default function BrandsPage() {
         }
     };
 
-    const handleClearAll = async () => {
-        setBulkOp('clearing');
-        try {
-            const snap = await getDocs(collection(db, COLLECTIONS.brands));
-            const batches: ReturnType<typeof writeBatch>[] = [];
-            let current = writeBatch(db);
-            let count = 0;
-            snap.docs.forEach(d => {
-                current.delete(d.ref);
-                count += 1;
-                if (count >= 450) {
-                    batches.push(current);
-                    current = writeBatch(db);
-                    count = 0;
-                }
-            });
-            if (count > 0) batches.push(current);
-            await Promise.all(batches.map(b => b.commit()));
-            toast({
-                variant: 'destructive',
-                title: 'Marka Listesi Temizlendi',
-                description: `${snap.size} marka kaydı silindi.`,
-            });
-        } catch (e) {
-            console.error('Clear all brands failed:', e);
-            const code = (e as { code?: string } | null)?.code;
-            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-            toast({
-                variant: 'destructive',
-                title: 'Temizleme başarısız',
-                description: code === 'permission-denied'
-                    ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : message,
-            });
-        } finally {
-            setBulkOp('idle');
-        }
-    };
-
-    const handleSeed = async () => {
-        setBulkOp('seeding');
-        try {
-            let count = 0;
-            for (const b of (seedBrands as Array<{ id: string } & Record<string, unknown>>)) {
-                await setDoc(doc(db, COLLECTIONS.brands, b.id), { ...b, status: 'Aktif' }, { merge: true });
-                count += 1;
-            }
-            toast({
-                title: 'Marka Verisi Yüklendi',
-                description: `${count} marka Firestore'a aktarıldı (mevcut kayıtların üzerine yazıldı).`,
-            });
-        } catch (e) {
-            console.error('Seed brands failed:', e);
-            const code = (e as { code?: string } | null)?.code;
-            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-            toast({
-                variant: 'destructive',
-                title: 'Yükleme başarısız',
-                description: code === 'permission-denied'
-                    ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : message,
-            });
-        } finally {
-            setBulkOp('idle');
-        }
-    };
-
-    const handleResetAndSeed = async () => {
-        await handleClearAll();
-        await handleSeed();
-    };
-
-    // Seed JSON'daki marka id'lerini hedef alır; super-admin'in elle eklediği
-    // veya başvuru üzerinden onaylanmış gerçek markaları DOKUNULMADAN bırakır.
-    const handleDeleteDemoBrands = async () => {
-        setBulkOp('deleting-demo');
-        try {
-            const demoIds = (seedBrands as Array<{ id: string }>).map(b => b.id).filter(Boolean);
-            const batches: ReturnType<typeof writeBatch>[] = [];
-            let current = writeBatch(db);
-            let pending = 0;
-            let attempted = 0;
-            for (const id of demoIds) {
-                current.delete(doc(db, COLLECTIONS.brands, id));
-                pending += 1;
-                attempted += 1;
-                if (pending >= 450) {
-                    batches.push(current);
-                    current = writeBatch(db);
-                    pending = 0;
-                }
-            }
-            if (pending > 0) batches.push(current);
-            await Promise.all(batches.map(b => b.commit()));
-            toast({
-                variant: 'destructive',
-                title: 'Demo Markalar Silindi',
-                description: `${attempted} demo marka kaydı silindi (varsa). Gerçek markalar dokunulmadı.`,
-            });
-        } catch (e) {
-            console.error('Delete demo brands failed:', e);
-            const code = (e as { code?: string } | null)?.code;
-            const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-            toast({
-                variant: 'destructive',
-                title: 'Demo silme başarısız',
-                description: code === 'permission-denied'
-                    ? 'Bu işlem için super-admin yetkisi gerekli.'
-                    : message,
-            });
-        } finally {
-            setBulkOp('idle');
-        }
-    };
-
     const handleStartEdit = (brand: BrandItem) => {
         setEditingBrand(brand);
         const b = brand as BrandExtra;
@@ -679,15 +561,6 @@ export default function BrandsPage() {
                 <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Marka Yönetimi</h1>
                 <p className="text-muted-foreground text-sm font-medium">İş ortağı markaları, bağış oranlarını, onay durumlarını ve detaylarını yönetin.</p>
             </div>
-
-            <BrandBulkToolsCard
-                bulkOp={bulkOp}
-                seedCount={(seedBrands as unknown[]).length}
-                onClearAll={handleClearAll}
-                onSeed={handleSeed}
-                onResetAndSeed={handleResetAndSeed}
-                onDeleteDemoOnly={handleDeleteDemoBrands}
-            />
 
             <BrandStatsCards stats={stats} onStatusFilterChange={setStatusFilter} />
 
