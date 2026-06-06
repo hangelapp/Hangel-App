@@ -7,9 +7,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { COLLECTIONS } from '@/firebase/collections';
+import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,7 +28,7 @@ const TYPES = [
 
 export default function NewOutreachContactPage() {
   const router = useRouter();
-  const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -47,15 +45,20 @@ export default function NewOutreachContactPage() {
       toast({ title: 'Ad zorunlu', variant: 'destructive' });
       return;
     }
+    if (!user) {
+      toast({ title: 'Giriş gerekli', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
-      await addDoc(collection(db, COLLECTIONS.outreachContacts), {
-        ...form,
-        status: 'active',
-        source: 'manual',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+      const token = await user.getIdToken();
+      const res = await fetch('/api/super-admin/outreach/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(form),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || 'Kayıt eklenemedi');
       toast({ title: 'Kontak eklendi' });
       router.push('/super-admin/outreach');
     } catch (e) {
