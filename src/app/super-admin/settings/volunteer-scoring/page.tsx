@@ -1212,16 +1212,43 @@ export default function VolunteerScoringPage() {
             </CardContent>
           </Card>
 
-          {/* Yardım kartı */}
+          {/* Yardım kartı — kolon hesap mantığı */}
           <Card className="bg-sky-50/40 border-sky-200">
             <CardContent className="p-4 flex items-start gap-3">
               <Info className="h-5 w-5 text-sky-600 mt-0.5 shrink-0" />
-              <div className="text-sm space-y-1">
-                <p className="font-bold">Adam-saat hesabı nasıl çalışır?</p>
+              <div className="text-sm space-y-3">
+                <div className="space-y-1">
+                  <p className="font-bold">Değerler nasıl hesaplanıyor?</p>
+                  <p className="text-muted-foreground">
+                    Tablodaki dört sütunun mali değer (₺) ve etki puanı kolları birbirinden bağımsızdır:
+                  </p>
+                </div>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li>
+                    <span className="font-medium text-foreground">Default (₺/sa)</span> — Mesleğin
+                    2026 brüt ortalama saatlik kazancı. Kaynak: TÜİK Hanehalkı İşgücü Anketi 2024
+                    yıllık ortalama brüt saatlik kazanç + 2025-2026 enflasyon ayarı (~%55).
+                    Meslek seçilmemişse taban 150 ₺/sa (asgari ücret 2026 saatlik brüt) kullanılır.
+                  </li>
+                  <li>
+                    <span className="font-medium text-foreground">Default (Puan/sa)</span> — Saat başı
+                    Sosyal Etki Puanı; uzmanlık + topluma katkı endeksli. Formül:
+                    <span className="font-mono text-xs"> clamp(round(₺sa ÷ 5), 20, 200)</span>,
+                    kategoriye göre ince ayar. Yani kabaca 1 puan ≈ 5 ₺ mali değere denk gelir;
+                    düşük nitelikli mesleklerde alt sınır 20, en üst sınır 200 puandır.
+                    Meslek seçilmemişse taban 30 puan/sa kullanılır.
+                  </li>
+                  <li>
+                    <span className="font-medium text-foreground">Override (₺/sa)</span> ve{' '}
+                    <span className="font-medium text-foreground">Override (Puan/sa)</span> — Super-admin&apos;in
+                    o meslek için elle girdiği değerler. Firestore&apos;da{' '}
+                    <span className="font-mono text-xs">volunteerScoring/professions</span> doc&apos;una yazılır.
+                    Boş bırakılan satırda default geçerlidir. Etkin değer = Override varsa Override, yoksa Default.
+                  </li>
+                </ul>
                 <p className="text-muted-foreground">
-                  Gönüllülük süresi × meslek saatlik ücreti = Sosyal Etki Mali Değeri.
-                  Default değerler TÜİK İşgücü Anketi 2024 verisi baz alınarak ve 2026 enflasyon ayarı uygulanarak hesaplanmıştır.
-                  Override yazılan meslekler için Firestore&apos;daki değer kullanılır; boş bırakılırsa default geçerlidir.
+                  <span className="font-medium text-foreground">Kullanım:</span> Gönüllülük süresi (saat)
+                  × etkin ₺/sa = Sosyal Etki Mali Değeri; gönüllülük süresi × etkin Puan/sa = Sosyal Etki Puanı.
                 </p>
               </div>
             </CardContent>
