@@ -52,26 +52,101 @@ type ScoringItem = {
 type FormData = Omit<ScoringItem, 'id'>;
 
 const SEED_DATA: FormData[] = [
+  // ── Eğitim & Mentorluk ─────────────────────────────────────────────────
   { taskType: 'Öğretmenlik / Eğitim Verme', pointsPerHour: 100, manHourCost: 200, isActive: true, order: 1, description: 'Çocuklara/yetişkinlere ders, atölye, kurs verme.' },
-  { taskType: 'Danışmanlık', pointsPerHour: 80, manHourCost: 250, isActive: true, order: 2, description: 'Mesleki/uzman danışmanlık desteği.' },
-  { taskType: 'Tercümanlık / Çeviri', pointsPerHour: 70, manHourCost: 180, isActive: true, order: 3, description: 'Yazılı veya sözlü çeviri desteği.' },
-  { taskType: 'Hukuki Destek', pointsPerHour: 100, manHourCost: 300, isActive: true, order: 4, description: 'Pro-bono hukuki danışmanlık ve süreç yönetimi.' },
-  { taskType: 'Sağlık Desteği', pointsPerHour: 90, manHourCost: 220, isActive: true, order: 5, description: 'Sağlık taramaları, ilk yardım, hemşirelik desteği.' },
-  { taskType: 'Mentorluk / Koçluk', pointsPerHour: 80, manHourCost: 200, isActive: true, order: 6, description: 'Genç/girişimci mentorluğu, kariyer koçluğu.' },
-  { taskType: 'Web / Yazılım Desteği', pointsPerHour: 80, manHourCost: 200, isActive: true, order: 7, description: 'STK web sitesi, dijital araç ve sistem desteği.' },
-  { taskType: 'Tasarım / Görsel İletişim', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 8, description: 'Logo, afiş, sosyal medya görselleri.' },
-  { taskType: 'Sosyal Medya / İletişim', pointsPerHour: 50, manHourCost: 100, isActive: true, order: 9, description: 'İçerik üretimi, hesap yönetimi, paylaşım planlama.' },
-  { taskType: 'Etkinlik Organizasyonu', pointsPerHour: 50, manHourCost: 100, isActive: true, order: 10, description: 'Etkinlik koordinasyonu, lojistik, saha düzeni.' },
-  { taskType: 'Anlık Müdahale (Afet)', pointsPerHour: 100, manHourCost: 250, isActive: true, order: 11, description: 'Afet bölgesinde acil müdahale, arama-kurtarma desteği.' },
-  { taskType: 'Yardım Dağıtımı', pointsPerHour: 30, manHourCost: 50, isActive: true, order: 12, description: 'Gıda, giysi, kit dağıtımı saha çalışması.' },
-  { taskType: 'Boyama / Tadilat', pointsPerHour: 50, manHourCost: 80, isActive: true, order: 13, description: 'Okul, barınak vb. mekan boyama, küçük tadilat.' },
-  { taskType: 'Temizlik', pointsPerHour: 30, manHourCost: 60, isActive: true, order: 14, description: 'Mekan temizliği veya çevre temizliği.' },
-  { taskType: 'Doğa / Çevre Çalışması', pointsPerHour: 40, manHourCost: 70, isActive: true, order: 15, description: 'Ağaçlandırma, sahil temizliği, biyoçeşitlilik.' },
-  { taskType: 'Hayvan Bakımı', pointsPerHour: 40, manHourCost: 70, isActive: true, order: 16, description: 'Sokak/barınak hayvanlarına bakım, mama dağıtımı.' },
-  { taskType: 'Yaşlı Bakımı', pointsPerHour: 50, manHourCost: 90, isActive: true, order: 17, description: 'Refakat, sosyal aktivite, evde destek.' },
-  { taskType: 'Çocuk Bakımı / Refakat', pointsPerHour: 50, manHourCost: 90, isActive: true, order: 18, description: 'Çocuk refakatı, hastane, etkinlik desteği.' },
-  { taskType: 'Veri Girişi / Arşivleme', pointsPerHour: 25, manHourCost: 50, isActive: true, order: 19, description: 'Form girişi, veri tabanı düzenleme, arşivleme.' },
-  { taskType: 'Saha Görevlisi (Genel)', pointsPerHour: 30, manHourCost: 60, isActive: true, order: 20, description: 'Genel saha desteği, görev rotasyonu.' },
+  { taskType: 'Akademik Ders Desteği (LGS/YKS/KPSS)', pointsPerHour: 110, manHourCost: 220, isActive: true, order: 2, description: 'Sınav hazırlık dersleri ve bireysel destek.' },
+  { taskType: 'Yabancı Dil Eğitimi', pointsPerHour: 90, manHourCost: 180, isActive: true, order: 3, description: 'İngilizce/Almanca/Arapça vb. dil dersleri.' },
+  { taskType: 'Okuma-Yazma Öğretimi', pointsPerHour: 90, manHourCost: 150, isActive: true, order: 4, description: 'Yetişkin okuryazarlık ve göçmen okuryazarlık desteği.' },
+  { taskType: 'Mentorluk / Koçluk', pointsPerHour: 80, manHourCost: 200, isActive: true, order: 5, description: 'Genç/girişimci mentorluğu, kariyer koçluğu.' },
+  { taskType: 'Atölye / Workshop Yürütücülüğü', pointsPerHour: 70, manHourCost: 150, isActive: true, order: 6, description: 'Sanat, kodlama, müzik, drama atölyeleri.' },
+  { taskType: 'Sahne Sanatları Eğitimi', pointsPerHour: 60, manHourCost: 130, isActive: true, order: 7, description: 'Drama, müzik, dans eğitimi.' },
+
+  // ── Sağlık & Psikososyal Destek ────────────────────────────────────────
+  { taskType: 'Sağlık Desteği / Saha Hemşireliği', pointsPerHour: 90, manHourCost: 220, isActive: true, order: 10, description: 'Sağlık taramaları, ilk yardım, hemşirelik desteği.' },
+  { taskType: 'Doktor Konsültasyonu (Pro-bono)', pointsPerHour: 130, manHourCost: 600, isActive: true, order: 11, description: 'Mülteci, evsiz, kırsal bölge için ücretsiz doktor desteği.' },
+  { taskType: 'Diş Hekimi Tarama (Pro-bono)', pointsPerHour: 120, manHourCost: 500, isActive: true, order: 12, description: 'Pro-bono diş sağlığı tarama ve tedavi.' },
+  { taskType: 'Psikolojik Destek / Görüşme', pointsPerHour: 100, manHourCost: 320, isActive: true, order: 13, description: 'Travma sonrası, kriz, aile danışmanlığı.' },
+  { taskType: 'Psikososyal Destek (Çocuk/Genç)', pointsPerHour: 90, manHourCost: 200, isActive: true, order: 14, description: 'Yetiştirme yurdu, hastane, sığınma evi çocuk-genç programları.' },
+  { taskType: 'Bağımlılıkla Mücadele Desteği', pointsPerHour: 80, manHourCost: 180, isActive: true, order: 15, description: 'Madde, alkol, kumar bağımlılığında rehberlik ve destek.' },
+  { taskType: 'Beslenme Danışmanlığı', pointsPerHour: 70, manHourCost: 220, isActive: true, order: 16, description: 'Diyetisyen pro-bono danışmanlık.' },
+  { taskType: 'Fizyoterapi / Rehabilitasyon Desteği', pointsPerHour: 90, manHourCost: 280, isActive: true, order: 17, description: 'Engelli, yaşlı, post-trauma rehabilitasyon.' },
+
+  // ── Uzman Danışmanlık ─────────────────────────────────────────────────
+  { taskType: 'Genel Mesleki Danışmanlık', pointsPerHour: 80, manHourCost: 250, isActive: true, order: 20, description: 'STK proje, iş geliştirme, strateji.' },
+  { taskType: 'Hukuki Destek (Pro-bono)', pointsPerHour: 110, manHourCost: 400, isActive: true, order: 21, description: 'Pro-bono hukuki danışmanlık ve süreç yönetimi.' },
+  { taskType: 'Mali Müşavirlik / Muhasebe', pointsPerHour: 90, manHourCost: 300, isActive: true, order: 22, description: 'STK muhasebe, vergi, denetim desteği.' },
+  { taskType: 'İK / Personel Danışmanlığı', pointsPerHour: 70, manHourCost: 220, isActive: true, order: 23, description: 'İşe alım, performans, organizasyon yapısı.' },
+  { taskType: 'Strateji ve Yönetim Danışmanlığı', pointsPerHour: 90, manHourCost: 350, isActive: true, order: 24, description: 'STK iş planı, kurumsal kapasite gelişimi.' },
+  { taskType: 'Fon Geliştirme / Fundraising', pointsPerHour: 90, manHourCost: 280, isActive: true, order: 25, description: 'Hibe yazımı, bağışçı ilişkileri, kampanya.' },
+
+  // ── Dijital & Yaratıcı ───────────────────────────────────────────────
+  { taskType: 'Web / Yazılım Geliştirme', pointsPerHour: 100, manHourCost: 350, isActive: true, order: 30, description: 'STK web sitesi, dijital araç ve sistem geliştirme.' },
+  { taskType: 'Mobil Uygulama Geliştirme', pointsPerHour: 110, manHourCost: 380, isActive: true, order: 31, description: 'iOS/Android STK uygulamaları.' },
+  { taskType: 'UX / UI Tasarım', pointsPerHour: 90, manHourCost: 280, isActive: true, order: 32, description: 'Kullanıcı arayüzü ve deneyim tasarımı.' },
+  { taskType: 'Grafik Tasarım / Görsel İletişim', pointsPerHour: 70, manHourCost: 180, isActive: true, order: 33, description: 'Logo, afiş, broşür, sosyal medya görselleri.' },
+  { taskType: 'Video Prodüksiyon / Editing', pointsPerHour: 80, manHourCost: 220, isActive: true, order: 34, description: 'Tanıtım filmi, sosyal medya videosu, belgesel.' },
+  { taskType: 'Fotoğrafçılık', pointsPerHour: 70, manHourCost: 180, isActive: true, order: 35, description: 'Etkinlik, portre, kampanya fotoğrafları.' },
+  { taskType: 'Veri Bilimi / Analiz', pointsPerHour: 100, manHourCost: 350, isActive: true, order: 36, description: 'STK için veri görselleştirme, ML modeli, dashboard.' },
+  { taskType: 'Siber Güvenlik Denetimi', pointsPerHour: 120, manHourCost: 450, isActive: true, order: 37, description: 'STK altyapı güvenlik analizi.' },
+  { taskType: 'IT Destek / Sistem Yönetimi', pointsPerHour: 70, manHourCost: 200, isActive: true, order: 38, description: 'Bilgisayar bakım, ağ kurulumu, kullanıcı desteği.' },
+
+  // ── İletişim & Medya ─────────────────────────────────────────────────
+  { taskType: 'Sosyal Medya / Topluluk Yönetimi', pointsPerHour: 50, manHourCost: 120, isActive: true, order: 40, description: 'İçerik üretimi, hesap yönetimi, paylaşım planlama.' },
+  { taskType: 'İçerik Üreticiliği / Yazı', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 41, description: 'Blog, basın bülteni, e-bülten yazımı.' },
+  { taskType: 'Halkla İlişkiler / Basın', pointsPerHour: 80, manHourCost: 220, isActive: true, order: 42, description: 'Basın bülteni, gazeteci ilişkileri, kampanya iletişimi.' },
+  { taskType: 'Tercümanlık (Yazılı)', pointsPerHour: 70, manHourCost: 180, isActive: true, order: 43, description: 'Yazılı çeviri — rapor, sözleşme, web içeriği.' },
+  { taskType: 'Tercümanlık (Sözlü / Eşzamanlı)', pointsPerHour: 90, manHourCost: 280, isActive: true, order: 44, description: 'Toplantı, konferans, mülteci hizmetlerinde sözlü çeviri.' },
+  { taskType: 'Podcast / Radyo Prodüksiyon', pointsPerHour: 70, manHourCost: 200, isActive: true, order: 45, description: 'STK temalı podcast, radyo programı hazırlama.' },
+
+  // ── Saha & Operasyon ────────────────────────────────────────────────
+  { taskType: 'Etkinlik Organizasyonu', pointsPerHour: 50, manHourCost: 130, isActive: true, order: 50, description: 'Etkinlik koordinasyonu, lojistik, saha düzeni.' },
+  { taskType: 'Fuar / Stant Görevi', pointsPerHour: 40, manHourCost: 100, isActive: true, order: 51, description: 'STK tanıtım stantında görevlilik.' },
+  { taskType: 'Kayıt / Karşılama / Misafir Yönlendirme', pointsPerHour: 35, manHourCost: 80, isActive: true, order: 52, description: 'Etkinliklerde kayıt masası, karşılama, yönlendirme.' },
+  { taskType: 'Saha Koordinasyonu', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 53, description: 'Saha ekibi sevk-yönetim, lojistik koordinasyon.' },
+  { taskType: 'Yardım Dağıtımı', pointsPerHour: 30, manHourCost: 80, isActive: true, order: 54, description: 'Gıda, giysi, kit dağıtımı saha çalışması.' },
+  { taskType: 'Saha Görevlisi (Genel)', pointsPerHour: 30, manHourCost: 80, isActive: true, order: 55, description: 'Genel saha desteği, görev rotasyonu.' },
+  { taskType: 'Ulaşım / Şoförlük', pointsPerHour: 40, manHourCost: 110, isActive: true, order: 56, description: 'Yardım malzemesi/gönüllü taşıma.' },
+
+  // ── Afet & Acil Durum ───────────────────────────────────────────────
+  { taskType: 'Anlık Müdahale (Afet)', pointsPerHour: 120, manHourCost: 280, isActive: true, order: 60, description: 'Afet bölgesinde acil müdahale, arama-kurtarma desteği.' },
+  { taskType: 'Arama-Kurtarma (Eğitimli)', pointsPerHour: 130, manHourCost: 350, isActive: true, order: 61, description: 'AKUT, AFAD eğitimli arama-kurtarma.' },
+  { taskType: 'Acil Sağlık Desteği', pointsPerHour: 110, manHourCost: 250, isActive: true, order: 62, description: 'Paramedik, ilk yardım eğitimli müdahale.' },
+  { taskType: 'Lojistik Depo Yönetimi (Acil)', pointsPerHour: 60, manHourCost: 130, isActive: true, order: 63, description: 'Afet bölgesi depo ve lojistik koordinasyon.' },
+
+  // ── Bakım & Refakat ─────────────────────────────────────────────────
+  { taskType: 'Yaşlı Bakım & Refakat', pointsPerHour: 50, manHourCost: 110, isActive: true, order: 70, description: 'Refakat, sosyal aktivite, evde destek.' },
+  { taskType: 'Çocuk Bakımı / Refakat', pointsPerHour: 55, manHourCost: 110, isActive: true, order: 71, description: 'Çocuk refakatı, hastane, etkinlik desteği.' },
+  { taskType: 'Engelli Bakım & Refakat', pointsPerHour: 60, manHourCost: 130, isActive: true, order: 72, description: 'Engelli birey eşliği, sosyalleşme, gezi.' },
+  { taskType: 'Hayvan Bakımı (Barınak)', pointsPerHour: 40, manHourCost: 90, isActive: true, order: 73, description: 'Sokak/barınak hayvanlarına bakım, mama dağıtımı.' },
+  { taskType: 'Sokak Hayvanı Beslenme/Tedavi', pointsPerHour: 45, manHourCost: 100, isActive: true, order: 74, description: 'Mama dağıtımı, basit yara müdahalesi, kısırlaştırma takibi.' },
+
+  // ── Çevre & Sürdürülebilirlik ───────────────────────────────────────
+  { taskType: 'Doğa / Çevre Çalışması', pointsPerHour: 40, manHourCost: 80, isActive: true, order: 80, description: 'Ağaçlandırma, sahil temizliği, biyoçeşitlilik.' },
+  { taskType: 'Ağaçlandırma & Fidan Dikimi', pointsPerHour: 50, manHourCost: 100, isActive: true, order: 81, description: 'Toplu fidan dikim etkinlikleri.' },
+  { taskType: 'Geri Dönüşüm / Atık Toplama', pointsPerHour: 35, manHourCost: 70, isActive: true, order: 82, description: 'Şehir, sahil, doğa alanı temizlik kampanyaları.' },
+  { taskType: 'Biyoçeşitlilik İzleme', pointsPerHour: 60, manHourCost: 140, isActive: true, order: 83, description: 'Sayım, gözlem, raporlama (kuşlar, denizler, vd.).' },
+
+  // ── Fiziksel İş & Tadilat ──────────────────────────────────────────
+  { taskType: 'Boyama / Tadilat', pointsPerHour: 50, manHourCost: 110, isActive: true, order: 90, description: 'Okul, barınak vb. mekan boyama, küçük tadilat.' },
+  { taskType: 'Marangoz / Mobilya Onarımı', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 91, description: 'Okul/yurt mobilya onarım, basit ahşap işleri.' },
+  { taskType: 'Elektrik / Tesisat Onarımı', pointsPerHour: 70, manHourCost: 170, isActive: true, order: 92, description: 'Basit elektrik tesisat, su tesisat onarımı.' },
+  { taskType: 'Bahçıvanlık / Peyzaj', pointsPerHour: 40, manHourCost: 90, isActive: true, order: 93, description: 'Okul, hastane, park bakım.' },
+  { taskType: 'Temizlik', pointsPerHour: 30, manHourCost: 70, isActive: true, order: 94, description: 'Mekan temizliği veya çevre temizliği.' },
+  { taskType: 'İnşaat Saha Yardımı', pointsPerHour: 45, manHourCost: 110, isActive: true, order: 95, description: 'Habitat for Humanity tipi ev yapım yardımı.' },
+
+  // ── Spor & Sağlıklı Yaşam ──────────────────────────────────────────
+  { taskType: 'Spor Eğitmenliği / Antrenörlük', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 100, description: 'Çocuk-genç-engelli spor antrenmanları.' },
+  { taskType: 'Yoga / Pilates / Hareket Eğitimi', pointsPerHour: 60, manHourCost: 160, isActive: true, order: 101, description: 'Yetiştirme yurdu, kadın sığınma evi gibi yerlerde.' },
+
+  // ── Veri & Arşiv ──────────────────────────────────────────────────
+  { taskType: 'Veri Girişi / Arşivleme', pointsPerHour: 25, manHourCost: 60, isActive: true, order: 110, description: 'Form girişi, veri tabanı düzenleme, arşivleme.' },
+  { taskType: 'Anket Saha Görevlisi', pointsPerHour: 30, manHourCost: 80, isActive: true, order: 111, description: 'Saha anketi, veri toplama.' },
+  { taskType: 'Araştırma / Literatür Tarama', pointsPerHour: 60, manHourCost: 150, isActive: true, order: 112, description: 'STK projesi için akademik araştırma desteği.' },
+  { taskType: 'Çağrı Merkezi Desteği', pointsPerHour: 35, manHourCost: 80, isActive: true, order: 113, description: 'Yardım hattı, bilgilendirme hattı görevlisi.' },
+
+  // ── Mutfak & İkram ──────────────────────────────────────────────
+  { taskType: 'Aşçılık / Mutfak Yardımı', pointsPerHour: 45, manHourCost: 110, isActive: true, order: 120, description: 'Aşevi, hayır mutfağı yemek hazırlığı.' },
+  { taskType: 'Gıda Bankası Sıralama', pointsPerHour: 30, manHourCost: 70, isActive: true, order: 121, description: 'Gıda bankasında toplama, sıralama, paketleme.' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -100,6 +175,8 @@ type Profession = {
   iscoCode: string;
   category: ProfessionCategory;
   defaultRate: number;
+  /** Saat başı Sosyal Etki Puanı — yeni alan. */
+  defaultPoints: number;
 };
 
 const CATEGORY_LABELS: Record<ProfessionCategory, { tr: string; en: string }> = {
@@ -118,10 +195,12 @@ const CATEGORY_LABELS: Record<ProfessionCategory, { tr: string; en: string }> = 
 
 // ---------------------------------------------------------------------------
 // Override doc shape: volunteerScoring/professions
-//   { rates: { [professionId]: number }, updatedAt: Timestamp }
+//   { rates: { [professionId]: number }, points: { [professionId]: number }, updatedAt: Timestamp }
 // ---------------------------------------------------------------------------
 type ProfessionOverridesDoc = {
   rates?: Record<string, number>;
+  /** Saat başı puan override'ları — Sosyal Etki Puanı hesabı için. */
+  points?: Record<string, number>;
 };
 
 // Catalog → page-local Profession map.
@@ -149,6 +228,7 @@ const PROFESSIONS: Profession[] = CATALOG_PROFESSIONS.map((p) => ({
   iscoCode: p.isco,
   category: CATEGORY_MAP[p.category] || 'other',
   defaultRate: p.hourlyRateTRY,
+  defaultPoints: p.pointsPerHour,
 }));
 
 // ---------------------------------------------------------------------------
@@ -267,13 +347,20 @@ const csvEscape = (s: string): string => {
 
 const buildProfessionsCsv = (
   rows: Profession[],
-  effective: (id: string) => number,
-  overrideOf: (id: string) => number | undefined,
+  effectiveRate: (id: string) => number,
+  effectivePoints: (id: string) => number,
+  overrideRateOf: (id: string) => number | undefined,
+  overridePointsOf: (id: string) => number | undefined,
 ): string => {
-  const head = ['id', 'isco', 'nameTr', 'nameEn', 'category', 'defaultRate', 'overrideRate', 'effectiveRate'];
+  const head = [
+    'id', 'isco', 'nameTr', 'nameEn', 'category',
+    'defaultRate', 'overrideRate', 'effectiveRate',
+    'defaultPoints', 'overridePoints', 'effectivePoints',
+  ];
   const lines = [head.join(',')];
   for (const p of rows) {
-    const ov = overrideOf(p.id);
+    const ovR = overrideRateOf(p.id);
+    const ovP = overridePointsOf(p.id);
     lines.push([
       csvEscape(p.id),
       csvEscape(p.iscoCode),
@@ -281,19 +368,22 @@ const buildProfessionsCsv = (
       csvEscape(p.nameEn),
       csvEscape(p.category),
       String(p.defaultRate),
-      ov === undefined ? '' : String(ov),
-      String(effective(p.id)),
+      ovR === undefined ? '' : String(ovR),
+      String(effectiveRate(p.id)),
+      String(p.defaultPoints),
+      ovP === undefined ? '' : String(ovP),
+      String(effectivePoints(p.id)),
     ].join(','));
   }
   return lines.join('\n');
 };
 
-const parseProfessionsCsv = (csv: string): Record<string, number> => {
-  // Beklenen kolonlar: id, ...., overrideRate (sondan ikinci sütun beklenir).
-  // Header'a göre dinamik bulunur.
-  const out: Record<string, number> = {};
+const parseProfessionsCsv = (csv: string): { rates: Record<string, number>; points: Record<string, number> } => {
+  // Beklenen kolonlar: id, overrideRate, overridePoints (header'a göre dinamik bulunur).
+  const outRates: Record<string, number> = {};
+  const outPoints: Record<string, number> = {};
   const lines = csv.split(/\r?\n/).filter(l => l.trim().length > 0);
-  if (lines.length === 0) return out;
+  if (lines.length === 0) return { rates: outRates, points: outPoints };
   const splitLine = (line: string): string[] => {
     const cells: string[] = [];
     let cur = '';
@@ -315,19 +405,32 @@ const parseProfessionsCsv = (csv: string): Record<string, number> => {
   };
   const header = splitLine(lines[0]).map(c => c.trim());
   const idIdx = header.indexOf('id');
-  const ovIdx = header.indexOf('overrideRate');
+  const ovRateIdx = header.indexOf('overrideRate');
+  const ovPointsIdx = header.indexOf('overridePoints');
   if (idIdx === -1) throw new Error('CSV "id" sütunu eksik.');
-  if (ovIdx === -1) throw new Error('CSV "overrideRate" sütunu eksik.');
+  if (ovRateIdx === -1 && ovPointsIdx === -1) {
+    throw new Error('CSV "overrideRate" veya "overridePoints" sütunu eksik.');
+  }
   for (let r = 1; r < lines.length; r++) {
     const cells = splitLine(lines[r]);
     const id = (cells[idIdx] || '').trim();
-    const raw = (cells[ovIdx] || '').trim();
-    if (!id || raw === '') continue;
-    const num = Number(raw.replace(',', '.'));
-    if (!Number.isFinite(num) || num < 0) continue;
-    out[id] = Math.round(num * 100) / 100;
+    if (!id) continue;
+    if (ovRateIdx !== -1) {
+      const raw = (cells[ovRateIdx] || '').trim();
+      if (raw !== '') {
+        const num = Number(raw.replace(',', '.'));
+        if (Number.isFinite(num) && num >= 0) outRates[id] = Math.round(num * 100) / 100;
+      }
+    }
+    if (ovPointsIdx !== -1) {
+      const raw = (cells[ovPointsIdx] || '').trim();
+      if (raw !== '') {
+        const num = Number(raw.replace(',', '.'));
+        if (Number.isFinite(num) && num >= 0) outPoints[id] = Math.round(num * 100) / 100;
+      }
+    }
   }
-  return out;
+  return { rates: outRates, points: outPoints };
 };
 
 // ---------------------------------------------------------------------------
@@ -434,15 +537,23 @@ export default function VolunteerScoringPage() {
     () => (overridesDoc?.rates && typeof overridesDoc.rates === 'object' ? { ...overridesDoc.rates } : {}),
     [overridesDoc],
   );
+  const persistedPointOverrides = useMemo<Record<string, number>>(
+    () => (overridesDoc?.points && typeof overridesDoc.points === 'object' ? { ...overridesDoc.points } : {}),
+    [overridesDoc],
+  );
 
   // Local draft overrides (kullanıcı edit eder, "Tümünü kaydet" ile flush edilir).
   const [draftOverrides, setDraftOverrides] = useState<Record<string, number | undefined>>({});
+  const [draftPointOverrides, setDraftPointOverrides] = useState<Record<string, number | undefined>>({});
   const [savingOverrides, setSavingOverrides] = useState(false);
 
-  // Persisted → draft senkronizasyonu (sadece persistedOverrides değiştiğinde reset).
+  // Persisted → draft senkronizasyonu.
   useEffect(() => {
     setDraftOverrides({});
   }, [persistedOverrides]);
+  useEffect(() => {
+    setDraftPointOverrides({});
+  }, [persistedPointOverrides]);
 
   const effectiveRate = (p: Profession): number => {
     const draft = draftOverrides[p.id];
@@ -451,23 +562,35 @@ export default function VolunteerScoringPage() {
     return typeof ov === 'number' ? ov : p.defaultRate;
   };
 
+  const effectivePoints = (p: Profession): number => {
+    const draft = draftPointOverrides[p.id];
+    if (draft !== undefined) return draft;
+    const ov = persistedPointOverrides[p.id];
+    return typeof ov === 'number' ? ov : p.defaultPoints;
+  };
+
   const overrideOf = (p: Profession): number | undefined => {
     const draft = draftOverrides[p.id];
     if (draft !== undefined) return draft;
     return typeof persistedOverrides[p.id] === 'number' ? persistedOverrides[p.id] : undefined;
   };
 
+  const overridePointsOf = (p: Profession): number | undefined => {
+    const draft = draftPointOverrides[p.id];
+    if (draft !== undefined) return draft;
+    return typeof persistedPointOverrides[p.id] === 'number' ? persistedPointOverrides[p.id] : undefined;
+  };
+
   const isDirty = (p: Profession): boolean => {
-    if (!(p.id in draftOverrides)) return false;
-    const draft = draftOverrides[p.id];
-    const persisted = persistedOverrides[p.id];
-    return draft !== persisted;
+    const rateChanged = (p.id in draftOverrides) && draftOverrides[p.id] !== persistedOverrides[p.id];
+    const pointChanged = (p.id in draftPointOverrides) && draftPointOverrides[p.id] !== persistedPointOverrides[p.id];
+    return rateChanged || pointChanged;
   };
 
   const dirtyCount = useMemo(
     () => PROFESSIONS.filter((p) => isDirty(p)).length,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [draftOverrides, persistedOverrides],
+    [draftOverrides, draftPointOverrides, persistedOverrides, persistedPointOverrides],
   );
 
   // Profession filters & paging
@@ -497,7 +620,6 @@ export default function VolunteerScoringPage() {
   const setRowRate = (id: string, raw: string) => {
     const v = raw.trim();
     if (v === '') {
-      // boş → override'ı kaldır (default'a dönüş)
       setDraftOverrides((d) => ({ ...d, [id]: undefined }));
       return;
     }
@@ -506,26 +628,48 @@ export default function VolunteerScoringPage() {
     setDraftOverrides((d) => ({ ...d, [id]: Math.round(num * 100) / 100 }));
   };
 
+  const setRowPoints = (id: string, raw: string) => {
+    const v = raw.trim();
+    if (v === '') {
+      setDraftPointOverrides((d) => ({ ...d, [id]: undefined }));
+      return;
+    }
+    const num = Number(v.replace(',', '.'));
+    if (!Number.isFinite(num) || num < 0) return;
+    setDraftPointOverrides((d) => ({ ...d, [id]: Math.round(num * 100) / 100 }));
+  };
+
   const resetRow = (p: Profession) => {
     setDraftOverrides((d) => {
       const next = { ...d };
-      if (p.id in persistedOverrides) next[p.id] = undefined; // kalıcı override'ı silmek için
+      if (p.id in persistedOverrides) next[p.id] = undefined;
+      else delete next[p.id];
+      return next;
+    });
+    setDraftPointOverrides((d) => {
+      const next = { ...d };
+      if (p.id in persistedPointOverrides) next[p.id] = undefined;
       else delete next[p.id];
       return next;
     });
   };
 
-  const persistOverrides = async (nextRates: Record<string, number>) => {
+  const persistOverrides = async (nextRates: Record<string, number>, nextPoints: Record<string, number>) => {
     if (!db) return;
     if (!overridesRef) return;
     setSavingOverrides(true);
     try {
       await setDoc(
         overridesRef,
-        { rates: nextRates, updatedAt: serverTimestamp() },
+        { rates: nextRates, points: nextPoints, updatedAt: serverTimestamp() },
         { merge: true },
       );
-      toast({ title: 'Override\'lar kaydedildi', description: `${Object.keys(nextRates).length} kalem aktif.` });
+      const rateCount = Object.keys(nextRates).length;
+      const pointCount = Object.keys(nextPoints).length;
+      toast({
+        title: 'Override\'lar kaydedildi',
+        description: `${rateCount} ücret + ${pointCount} puan override aktif.`,
+      });
     } catch (e) {
       const err = e as { code?: string; message?: string };
       toast({
@@ -541,16 +685,21 @@ export default function VolunteerScoringPage() {
   };
 
   const handleSaveAll = async () => {
-    const merged: Record<string, number> = { ...persistedOverrides };
+    const mergedRates: Record<string, number> = { ...persistedOverrides };
     for (const [id, val] of Object.entries(draftOverrides)) {
-      if (val === undefined) delete merged[id];
-      else merged[id] = val;
+      if (val === undefined) delete mergedRates[id];
+      else mergedRates[id] = val;
     }
-    await persistOverrides(merged);
+    const mergedPoints: Record<string, number> = { ...persistedPointOverrides };
+    for (const [id, val] of Object.entries(draftPointOverrides)) {
+      if (val === undefined) delete mergedPoints[id];
+      else mergedPoints[id] = val;
+    }
+    await persistOverrides(mergedRates, mergedPoints);
   };
 
   const handleResetAllToDefault = async () => {
-    await persistOverrides({});
+    await persistOverrides({}, {});
   };
 
   // Bulk adjust (% inflation)
@@ -586,9 +735,18 @@ export default function VolunteerScoringPage() {
         return p ? effectiveRate(p) : 0;
       },
       (id) => {
+        const p = PROFESSIONS.find((x) => x.id === id);
+        return p ? effectivePoints(p) : 0;
+      },
+      (id) => {
         const draft = draftOverrides[id];
         if (draft !== undefined) return draft;
         return typeof persistedOverrides[id] === 'number' ? persistedOverrides[id] : undefined;
+      },
+      (id) => {
+        const draft = draftPointOverrides[id];
+        if (draft !== undefined) return draft;
+        return typeof persistedPointOverrides[id] === 'number' ? persistedPointOverrides[id] : undefined;
       },
     );
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -606,16 +764,28 @@ export default function VolunteerScoringPage() {
     try {
       const text = await file.text();
       const parsed = parseProfessionsCsv(text);
-      const draft: Record<string, number | undefined> = { ...draftOverrides };
-      let touched = 0;
-      for (const [id, val] of Object.entries(parsed)) {
+      const draftR: Record<string, number | undefined> = { ...draftOverrides };
+      const draftP: Record<string, number | undefined> = { ...draftPointOverrides };
+      let touchedR = 0;
+      let touchedP = 0;
+      for (const [id, val] of Object.entries(parsed.rates)) {
         if (PROFESSIONS.some((p) => p.id === id)) {
-          draft[id] = val;
-          touched++;
+          draftR[id] = val;
+          touchedR++;
         }
       }
-      setDraftOverrides(draft);
-      toast({ title: 'CSV içe aktarıldı', description: `${touched} kalem değişti. Kaydetmeyi unutmayın.` });
+      for (const [id, val] of Object.entries(parsed.points)) {
+        if (PROFESSIONS.some((p) => p.id === id)) {
+          draftP[id] = val;
+          touchedP++;
+        }
+      }
+      setDraftOverrides(draftR);
+      setDraftPointOverrides(draftP);
+      toast({
+        title: 'CSV içe aktarıldı',
+        description: `${touchedR} ücret + ${touchedP} puan değişti. Kaydetmeyi unutmayın.`,
+      });
     } catch (e) {
       const err = e as { message?: string };
       toast({ variant: 'destructive', title: 'CSV okunamadı', description: err.message || 'Beklenmeyen hata.' });
@@ -929,10 +1099,12 @@ export default function VolunteerScoringPage() {
                         <TableRow>
                           <TableHead className="w-12">#</TableHead>
                           <TableHead>Meslek</TableHead>
-                          <TableHead className="w-24">ISCO</TableHead>
-                          <TableHead className="w-40">Kategori</TableHead>
-                          <TableHead className="text-right w-32">Default (₺/sa)</TableHead>
-                          <TableHead className="text-right w-40">Override (₺/sa)</TableHead>
+                          <TableHead className="w-20">ISCO</TableHead>
+                          <TableHead className="w-32">Kategori</TableHead>
+                          <TableHead className="text-right w-24">Default (₺/sa)</TableHead>
+                          <TableHead className="text-right w-32">Override (₺/sa)</TableHead>
+                          <TableHead className="text-right w-24">Default (Puan/sa)</TableHead>
+                          <TableHead className="text-right w-32">Override (Puan/sa)</TableHead>
                           <TableHead className="text-center w-20">Durum</TableHead>
                           <TableHead className="text-right w-16">Sıfırla</TableHead>
                         </TableRow>
@@ -940,8 +1112,9 @@ export default function VolunteerScoringPage() {
                       <TableBody>
                         {pageRows.map((p, idx) => {
                           const ov = overrideOf(p);
+                          const ovP = overridePointsOf(p);
                           const dirty = isDirty(p);
-                          const overridden = ov !== undefined;
+                          const overridden = ov !== undefined || ovP !== undefined;
                           return (
                             <TableRow key={p.id} className={dirty ? 'bg-amber-50/60' : undefined}>
                               <TableCell className="text-muted-foreground tabular-nums">
@@ -965,6 +1138,20 @@ export default function VolunteerScoringPage() {
                                   value={ov === undefined ? '' : String(ov)}
                                   placeholder={p.defaultRate.toLocaleString('tr-TR')}
                                   onChange={(e) => setRowRate(p.id, e.target.value)}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums text-muted-foreground">
+                                {p.defaultPoints.toLocaleString('tr-TR')}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step="1"
+                                  className="h-8 text-right tabular-nums"
+                                  value={ovP === undefined ? '' : String(ovP)}
+                                  placeholder={p.defaultPoints.toLocaleString('tr-TR')}
+                                  onChange={(e) => setRowPoints(p.id, e.target.value)}
                                 />
                               </TableCell>
                               <TableCell className="text-center">
