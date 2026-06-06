@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, AlertCircle, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink, Plus, Download, X as XIcon, ChevronDown } from 'lucide-react';
+import { CheckCircle, AlertCircle, Clock, Upload, Link as LinkIcon, Eye, Loader2, FileText, Trash2, ExternalLink, Plus, Download, X as XIcon, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
   DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator,
@@ -34,6 +34,10 @@ interface CriteriaItem {
   selectedOptions?: string[];
   options?: string[];
   updatedAt?: string;
+  // Onay durumu: STK belge/bilgi girince 'pending' (turuncu "Onaya gönderildi"),
+  // super-admin onaylayınca 'approved' (yeşil). Eski tamamlanmış kayıtlar (undefined)
+  // onaylı sayılır (geriye dönük uyumluluk).
+  status?: 'pending' | 'approved';
 }
 
 const MEMBERSHIP_OPTIONS = [
@@ -135,7 +139,7 @@ export default function TransparencyPage() {
 
       const next = activeCriteria.map(item =>
         item.id === itemId
-          ? { ...item, isCompleted: true, fileName: file.name, fileUrl, storagePath, updatedAt: new Date().toISOString() }
+          ? { ...item, isCompleted: true, status: 'pending' as const, fileName: file.name, fileUrl, storagePath, updatedAt: new Date().toISOString() }
           : item,
       );
       persistCriteria(next);
@@ -183,7 +187,7 @@ export default function TransparencyPage() {
 
     const next = activeCriteria.map(item =>
       item.id === itemId
-        ? { ...item, isCompleted: false, fileName: undefined, fileUrl: undefined, storagePath: undefined, linkUrl: undefined, textValue: undefined, selectedOptions: [], updatedAt: new Date().toISOString() }
+        ? { ...item, isCompleted: false, status: undefined, fileName: undefined, fileUrl: undefined, storagePath: undefined, linkUrl: undefined, textValue: undefined, selectedOptions: [], updatedAt: new Date().toISOString() }
         : item,
     );
     persistCriteria(next);
@@ -217,6 +221,7 @@ export default function TransparencyPage() {
         ? {
           ...c,
           isCompleted: true,
+          status: 'pending' as const,
           linkUrl: isLinkType ? val : c.linkUrl,
           textValue: item.type === 'text' ? val : c.textValue,
           updatedAt: new Date().toISOString(),
@@ -239,6 +244,7 @@ export default function TransparencyPage() {
           ...c,
           selectedOptions: nextSelected,
           isCompleted: nextSelected.length > 0,
+          status: (nextSelected.length > 0 ? 'pending' : undefined) as 'pending' | undefined,
           updatedAt: new Date().toISOString(),
         }
         : c,
@@ -285,12 +291,16 @@ export default function TransparencyPage() {
               return (
               <div key={item.id} className={cn(
                 'p-4 border rounded-lg',
-                item.isCompleted ? 'border-green-500/30 bg-green-500/5' : 'border-border',
+                item.isCompleted
+                  ? (item.status === 'pending' ? 'border-amber-500/40 bg-amber-500/5' : 'border-green-500/30 bg-green-500/5')
+                  : 'border-border',
               )}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     {item.isCompleted ? (
-                      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      item.status === 'pending'
+                        ? <Clock className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        : <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                     ) : (
                       <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                     )}
@@ -298,10 +308,17 @@ export default function TransparencyPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{item.name}</p>
                         {item.isCompleted ? (
-                          <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            {item.type === 'document' || (item.type === 'document-link' && item.fileName) ? t('ngo_admin_transparency.badgeUploaded') : t('ngo_admin_transparency.badgeCompleted')}
-                          </Badge>
+                          item.status === 'pending' ? (
+                            <Badge className="text-[10px] bg-amber-500 hover:bg-amber-500 gap-1">
+                              <Clock className="h-3 w-3" />
+                              Onaya gönderildi
+                            </Badge>
+                          ) : (
+                            <Badge className="text-[10px] bg-green-600 hover:bg-green-600 gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              Onaylandı
+                            </Badge>
+                          )
                         ) : (
                           <>
                             {(item.type === 'document' || item.type === 'document-link') && (

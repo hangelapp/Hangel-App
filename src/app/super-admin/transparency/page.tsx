@@ -10,9 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox } from 'lucide-react';
+import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox, CheckCircle, Clock } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -133,6 +133,49 @@ export default function TransparencyPage() {
   const criteriaQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.transparencyCriteria) : null), [db]);
   const { data: criteria, isLoading: critLoading } = useCollection<TransparencyCriterion>(criteriaQuery);
 
+  // Onay bekleyen şeffaflık belgeleri — STK'ların transparency/{adminUid} kayıtları.
+  const { user: authUser } = useUser();
+  const transparencyQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.transparency) : null), [db]);
+  type TItem = { id: number; name: string; points: number; isCompleted?: boolean; status?: string };
+  const { data: transparencyDocs, isLoading: tLoading } = useCollection<{ id: string; criteria?: TItem[] }>(transparencyQuery);
+  const [approvingKey, setApprovingKey] = useState<string | null>(null);
+
+  const ngoByAdmin = useMemo(() => {
+    const m = new Map<string, NGORow>();
+    (ngos || []).forEach(n => { const a = (n as { adminUserId?: string }).adminUserId; if (a) m.set(a, n); });
+    return m;
+  }, [ngos]);
+
+  const pendingQueue = useMemo(() => {
+    return (transparencyDocs || [])
+      .map(td => {
+        const items = (td.criteria || []).filter(c => c.isCompleted && c.status === 'pending');
+        if (items.length === 0) return null;
+        return { ownerUid: td.id, ngo: ngoByAdmin.get(td.id), items };
+      })
+      .filter(Boolean) as { ownerUid: string; ngo?: NGORow; items: TItem[] }[];
+  }, [transparencyDocs, ngoByAdmin]);
+
+  const approveItem = async (ownerUid: string, itemId: number, approved: boolean) => {
+    if (!authUser) return;
+    setApprovingKey(`${ownerUid}:${itemId}`);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/super-admin/transparency/approve', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerUid, itemId, approved }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || 'Onaylanamadı');
+      toast({ title: approved ? 'Onaylandı' : 'Onay geri alındı', description: body.ngoUpdated ? `STK şeffaflık puanı: ${body.approvedScore}` : 'Kaydedildi (eşleşen STK bulunamadı).' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'İşlem başarısız', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setApprovingKey(null);
+    }
+  };
+
   const filteredNgos = useMemo(() => {
     const list = (ngos || []).filter(n => n.status !== 'Pasif');
     if (!search.trim()) return list;
@@ -213,11 +256,50 @@ export default function TransparencyPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="ngos" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+      <Tabs defaultValue="approvals" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="approvals">Onay Bekleyenler ({pendingQueue.reduce((s, p) => s + p.items.length, 0)})</TabsTrigger>
           <TabsTrigger value="ngos">STK Şeffaflık Profilleri</TabsTrigger>
           <TabsTrigger value="index">Endeks Maddeleri ({criteria?.length || 0})</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="approvals" className="space-y-4">
+          {tLoading ? (
+            <div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+          ) : pendingQueue.length === 0 ? (
+            <Card className="rounded-2xl"><CardContent className="p-16 flex flex-col items-center text-center gap-2">
+              <CheckCircle className="h-10 w-10 text-green-500/40" />
+              <p className="text-muted-foreground italic">Onay bekleyen belge yok. Tümü güncel.</p>
+            </CardContent></Card>
+          ) : (
+            <div className="space-y-4">
+              {pendingQueue.map(p => (
+                <Card key={p.ownerUid} className="rounded-2xl border-amber-300/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-amber-500" />
+                      {p.ngo?.name || `STK (admin: ${p.ownerUid.slice(0, 6)}…)`}
+                    </CardTitle>
+                    <CardDescription>{p.items.length} belge/bilgi onay bekliyor</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {p.items.map(it => (
+                      <div key={it.id} className="flex items-center justify-between gap-3 p-2.5 rounded-xl border bg-amber-500/5">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium truncate">{it.name}</p>
+                          <p className="text-[11px] text-muted-foreground">+{it.points} puan</p>
+                        </div>
+                        <Button size="sm" disabled={approvingKey === `${p.ownerUid}:${it.id}`} onClick={() => approveItem(p.ownerUid, it.id, true)} className="bg-green-600 hover:bg-green-700">
+                          {approvingKey === `${p.ownerUid}:${it.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 mr-1.5" /> Onayla</>}
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
         <TabsContent value="ngos" className="space-y-4">
           <div className="relative max-w-md">
