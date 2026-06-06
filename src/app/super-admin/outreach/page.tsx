@@ -34,6 +34,7 @@ import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
 import { SearchableSelect } from '@/components/shared/searchable-select';
 import { neighborhoodsData } from '@/lib/data';
+import { OutreachDashboard } from './_components/OutreachDashboard';
 
 interface OutreachRow {
   id: string;
@@ -456,6 +457,9 @@ export default function OutreachHubPage() {
           </Button>
         </div>
       </div>
+
+      {/* Dashboard — analytics özet */}
+      <OutreachDashboard user={user} />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {CATEGORY_CARDS.map((cat) => {
