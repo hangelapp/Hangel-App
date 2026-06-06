@@ -28,9 +28,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Truck, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
+  ChevronDown, X,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
+import { SearchableSelect } from '@/components/shared/searchable-select';
+import { neighborhoodsData } from '@/lib/data';
 
 interface OutreachRow {
   id: string;
@@ -61,12 +64,29 @@ const CATEGORY_CARDS = [
   { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları', icon: Server, color: 'bg-violet-500', count: 0 },
 ];
 
+function DetailField({ label, value, onChange, wide }: { label: string; value?: string; onChange: (v: string) => void; wide?: boolean }) {
+  return (
+    <div className={cn('space-y-1', wide && 'sm:col-span-2 lg:col-span-3')}>
+      <label className="text-[11px] font-medium text-muted-foreground">{label}</label>
+      <Input value={value || ''} onChange={(e) => onChange(e.target.value)} className="h-9" />
+    </div>
+  );
+}
+
 export default function OutreachHubPage() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabKey>('vakiflar');
   const [searchTerm, setSearchTerm] = useState('');
-  const [cityFilter, setCityFilter] = useState<string>('all');
+  // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
+  // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
+  // metni + alanlar üzerinde diakritik duyarsız eşleşme ile tutarlı süzme).
+  const [ilFilter, setIlFilter] = useState('');
+  const [ilceFilter, setIlceFilter] = useState('');
+  const [mahalleFilter, setMahalleFilter] = useState('');
   const [emailOnly, setEmailOnly] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<(OutreachRow & { neighborhood?: string }) | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const [rows, setRows] = useState<OutreachRow[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -89,7 +109,6 @@ export default function OutreachHubPage() {
       });
       if (nextCursor) params.set('cursor', nextCursor);
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
-      if (cityFilter !== 'all') params.set('city', cityFilter);
       if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
@@ -107,7 +126,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, cityFilter, emailOnly]);
+  }, [user, activeTab, searchTerm, emailOnly]);
 
   // İlk yükleme + filter değişimi
   useEffect(() => {
@@ -118,13 +137,35 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, cityFilter, emailOnly, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, fetchPage]);
 
-  const cityOptions = useMemo(() => {
-    const set = new Set<string>();
-    rows.forEach((r) => { if (r.city) set.add(r.city); });
-    return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
-  }, [rows]);
+  // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
+  const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);
+  const ilceOptions = useMemo(
+    () => (ilFilter && neighborhoodsData[ilFilter] ? Object.keys(neighborhoodsData[ilFilter]).sort((a, b) => a.localeCompare(b, 'tr')) : []),
+    [ilFilter],
+  );
+  const mahalleOptions = useMemo(
+    () => (ilFilter && ilceFilter && neighborhoodsData[ilFilter]?.[ilceFilter] ? neighborhoodsData[ilFilter][ilceFilter].slice().sort((a, b) => a.localeCompare(b, 'tr')) : []),
+    [ilFilter, ilceFilter],
+  );
+
+  // İl/İlçe/Mahalle client-side süzme (yüklü satırlarda). İl ismi kütükte farklı
+  // formatta olabildiği (İstanbul "(Avrupa)") için alanlar + adres metninde
+  // diakritik duyarsız includes ile eşleşir.
+  const norm = (s: string) => (s || '').toLocaleLowerCase('tr');
+  const filteredRows = useMemo(() => {
+    const ilQ = norm(ilFilter), ilceQ = norm(ilceFilter), mahQ = norm(mahalleFilter);
+    if (!ilQ && !ilceQ && !mahQ) return rows;
+    return rows.filter((r) => {
+      const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
+      const nb = norm((r as { neighborhood?: string }).neighborhood || '');
+      if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
+      if (ilceQ && !(dist === ilceQ || dist.includes(ilceQ) || addr.includes(ilceQ))) return false;
+      if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
+      return true;
+    });
+  }, [rows, ilFilter, ilceFilter, mahalleFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -136,8 +177,35 @@ export default function OutreachHubPage() {
   }
 
   function toggleSelectAll() {
-    if (selectedIds.size === rows.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(rows.map((r) => r.id)));
+    if (selectedIds.size === filteredRows.length && filteredRows.length > 0) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filteredRows.map((r) => r.id)));
+  }
+
+  function openDetail(r: OutreachRow) {
+    if (expandedId === r.id) { setExpandedId(null); setEditData(null); }
+    else { setExpandedId(r.id); setEditData({ ...r }); }
+  }
+
+  async function saveDetail() {
+    if (!user || !editData) return;
+    setSavingId(editData.id);
+    setError(null);
+    try {
+      const token = await user.getIdToken();
+      const { id, name, city, district, neighborhood, phone, email, website, address, type, status } = editData;
+      const res = await fetch('/api/super-admin/outreach/update', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: SOURCE_MAP[activeTab], id, patch: { name, city, district, neighborhood, phone, email, website, address, type, status } }),
+      });
+      if (!res.ok) throw new Error((await res.json())?.message || 'Kaydedilemedi');
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, name: name || r.name, city, district, phone, email, website, address, type, status } : r)));
+      setExpandedId(null); setEditData(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Kaydetme hatası');
+    } finally {
+      setSavingId(null);
+    }
   }
 
   const selectedRows = rows.filter((r) => selectedIds.has(r.id));
@@ -217,15 +285,27 @@ export default function OutreachHubPage() {
                 />
               </div>
 
-              {cityOptions.length > 0 && (
-                <select
-                  value={cityFilter}
-                  onChange={(e) => setCityFilter(e.target.value)}
-                  className="h-10 rounded-md border bg-background px-3 text-sm"
-                >
-                  <option value="all">Tüm iller</option>
-                  {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+              <div className="w-36">
+                <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
+                  onValueChange={(v) => { setIlFilter(v); setIlceFilter(''); setMahalleFilter(''); }}
+                  triggerClassName="h-10 rounded-md border bg-background px-3" />
+              </div>
+              <div className="w-36">
+                <SearchableSelect options={ilceOptions} value={ilceFilter} placeholder="İlçe" searchPlaceholder="İlçe ara..."
+                  disabled={!ilFilter}
+                  onValueChange={(v) => { setIlceFilter(v); setMahalleFilter(''); }}
+                  triggerClassName="h-10 rounded-md border bg-background px-3" />
+              </div>
+              <div className="w-36">
+                <SearchableSelect options={mahalleOptions} value={mahalleFilter} placeholder="Mahalle" searchPlaceholder="Mahalle ara..."
+                  disabled={!ilceFilter}
+                  onValueChange={setMahalleFilter}
+                  triggerClassName="h-10 rounded-md border bg-background px-3" />
+              </div>
+              {(ilFilter || ilceFilter || mahalleFilter) && (
+                <Button variant="ghost" size="sm" onClick={() => { setIlFilter(''); setIlceFilter(''); setMahalleFilter(''); }}>
+                  <X className="h-4 w-4 mr-1" /> Temizle
+                </Button>
               )}
 
               {activeTab === 'vakiflar' && (
@@ -236,7 +316,9 @@ export default function OutreachHubPage() {
               )}
 
               <div className="text-xs text-muted-foreground ml-auto">
-                {loading ? 'Yükleniyor...' : `${rows.length.toLocaleString('tr-TR')} kayıt yüklü${hasMore ? '+' : ''}`}
+                {loading ? 'Yükleniyor...' : (ilFilter || ilceFilter || mahalleFilter)
+                  ? `${filteredRows.length.toLocaleString('tr-TR')} / ${rows.length.toLocaleString('tr-TR')} kayıt (süzülü)`
+                  : `${rows.length.toLocaleString('tr-TR')} kayıt yüklü${hasMore ? '+' : ''}`}
               </div>
             </CardContent>
           </Card>
@@ -278,7 +360,7 @@ export default function OutreachHubPage() {
                   <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
                     <th className="px-3 py-2 w-10">
                       <Checkbox
-                        checked={selectedIds.size > 0 && selectedIds.size === rows.length}
+                        checked={filteredRows.length > 0 && selectedIds.size === filteredRows.length}
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
@@ -287,43 +369,74 @@ export default function OutreachHubPage() {
                     <th className="px-3 py-2 hidden lg:table-cell">Telefon</th>
                     <th className="px-3 py-2 hidden lg:table-cell">Email</th>
                     <th className="px-3 py-2 hidden xl:table-cell">Adres</th>
+                    <th className="px-3 py-2 w-20 text-right">Detay</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={6} className="text-center py-12"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></td></tr>
-                  ) : rows.length === 0 ? (
-                    <tr><td colSpan={6} className="text-center py-12 text-sm text-muted-foreground">
+                    <tr><td colSpan={7} className="text-center py-12"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></td></tr>
+                  ) : filteredRows.length === 0 ? (
+                    <tr><td colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
                       <AlertCircle className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                      Kayıt bulunamadı. {activeTab === 'outreach' && 'Yeni kontak ekle veya CSV içe aktar.'}
+                      {rows.length === 0
+                        ? <>Kayıt bulunamadı. {activeTab === 'outreach' && 'Yeni kontak ekle veya CSV içe aktar.'}</>
+                        : 'Süzgece uyan kayıt yok.'}
                     </td></tr>
                   ) : (
-                    rows.map((r) => (
-                      <tr key={r.id} className="border-b hover:bg-muted/20 transition-colors">
-                        <td className="px-3 py-2">
-                          <Checkbox
-                            checked={selectedIds.has(r.id)}
-                            onCheckedChange={() => toggleSelect(r.id)}
-                          />
-                        </td>
-                        <td className="px-3 py-2 max-w-[300px]">
-                          <p className="font-medium truncate">{r.name}</p>
-                          {r.type && <p className="text-[10px] text-muted-foreground">{r.type}</p>}
-                        </td>
-                        <td className="px-3 py-2 hidden md:table-cell text-xs">
-                          {r.city && <p className="font-medium">{r.city}</p>}
-                          {r.district && <p className="text-muted-foreground">{r.district}</p>}
-                        </td>
-                        <td className="px-3 py-2 hidden lg:table-cell text-xs font-mono">
-                          {r.phone ? <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{r.phone}</span> : <span className="text-muted-foreground/50">—</span>}
-                        </td>
-                        <td className="px-3 py-2 hidden lg:table-cell text-xs">
-                          {r.email ? <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{r.email}</span> : <span className="text-muted-foreground/50">—</span>}
-                        </td>
-                        <td className="px-3 py-2 hidden xl:table-cell max-w-[250px]">
-                          {r.address && <span className="flex items-start gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3 mt-0.5 shrink-0" /><span className="truncate">{r.address}</span></span>}
-                        </td>
-                      </tr>
+                    filteredRows.map((r) => (
+                      <React.Fragment key={r.id}>
+                        <tr className="border-b hover:bg-muted/20 transition-colors">
+                          <td className="px-3 py-2">
+                            <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleSelect(r.id)} />
+                          </td>
+                          <td className="px-3 py-2 max-w-[300px]">
+                            <p className="font-medium truncate">{r.name}</p>
+                            {r.type && <p className="text-[10px] text-muted-foreground">{r.type}</p>}
+                          </td>
+                          <td className="px-3 py-2 hidden md:table-cell text-xs">
+                            {r.city && <p className="font-medium">{r.city}</p>}
+                            {r.district && <p className="text-muted-foreground">{r.district}</p>}
+                          </td>
+                          <td className="px-3 py-2 hidden lg:table-cell text-xs font-mono">
+                            {r.phone ? <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{r.phone}</span> : <span className="text-muted-foreground/50">—</span>}
+                          </td>
+                          <td className="px-3 py-2 hidden lg:table-cell text-xs">
+                            {r.email ? <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{r.email}</span> : <span className="text-muted-foreground/50">—</span>}
+                          </td>
+                          <td className="px-3 py-2 hidden xl:table-cell max-w-[250px]">
+                            {r.address && <span className="flex items-start gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3 mt-0.5 shrink-0" /><span className="truncate">{r.address}</span></span>}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openDetail(r)}>
+                              Detay <ChevronDown className={cn('h-3.5 w-3.5 ml-1 transition-transform', expandedId === r.id && 'rotate-180')} />
+                            </Button>
+                          </td>
+                        </tr>
+                        {expandedId === r.id && editData && (
+                          <tr className="bg-muted/20 border-b">
+                            <td colSpan={7} className="px-4 py-4">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <DetailField label="Ad" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
+                                <DetailField label="İl" value={editData.city} onChange={(v) => setEditData({ ...editData, city: v })} />
+                                <DetailField label="İlçe" value={editData.district} onChange={(v) => setEditData({ ...editData, district: v })} />
+                                <DetailField label="Mahalle" value={editData.neighborhood} onChange={(v) => setEditData({ ...editData, neighborhood: v })} />
+                                <DetailField label="Telefon" value={editData.phone} onChange={(v) => setEditData({ ...editData, phone: v })} />
+                                <DetailField label="E-posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
+                                <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
+                                {activeTab === 'outreach' && <DetailField label="Tür" value={editData.type} onChange={(v) => setEditData({ ...editData, type: v })} />}
+                                {activeTab === 'outreach' && <DetailField label="Durum" value={editData.status} onChange={(v) => setEditData({ ...editData, status: v })} />}
+                                <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
+                              </div>
+                              <div className="flex justify-end gap-2 mt-3">
+                                <Button variant="outline" size="sm" onClick={() => { setExpandedId(null); setEditData(null); }}>İptal</Button>
+                                <Button size="sm" onClick={saveDetail} disabled={savingId === r.id}>
+                                  {savingId === r.id ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Kaydediliyor</> : 'Kaydet'}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                   )}
                 </tbody>
