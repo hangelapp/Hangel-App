@@ -42,6 +42,7 @@ interface StatsResp {
       emailPct: number;
       phonePct: number;
     };
+    kamuYarariDernekler?: number;
   };
   unsubscribed: {
     vakiflar: number;
@@ -172,6 +173,12 @@ export function OutreachDashboard({ user }: Props) {
                       <p className="text-[9px] uppercase font-bold text-muted-foreground">Sivil Toplum</p>
                       <p className="text-base font-black tabular-nums">{formatN(stats.byType.SivilToplumMüdürlüğü || 0)}</p>
                     </div>
+                    {stats.coverage.kamuYarariDernekler !== undefined && stats.coverage.kamuYarariDernekler > 0 && (
+                      <div className="text-center border-l border-emerald-300 pl-3">
+                        <p className="text-[9px] uppercase font-bold text-emerald-700">🏛 Kamu Yararı</p>
+                        <p className="text-base font-black tabular-nums text-emerald-700">{formatN(stats.coverage.kamuYarariDernekler)}</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

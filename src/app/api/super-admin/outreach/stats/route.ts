@@ -69,9 +69,10 @@ const computeStats = unstable_cache(
     fedCatArr.forEach((x) => { federasyonByCategory[x.category] = x.count; });
 
     // ─── Email/telefon coverage (vakıflar — emaili olanlar) ────────────
-    const [emailDolu, telDolu] = await Promise.all([
+    const [emailDolu, telDolu, kamuYarariCount] = await Promise.all([
       db.collection('registryVakiflar').where('ePosta', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryVakiflar').where('telefon1', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
+      db.collection('registryDernekler').where('isKamuYarari', '==', true).count().get().then((s) => s.data().count).catch(() => 0),
     ]);
 
     // ─── Unsubscribed count (all 3 collections) ───────────────────────
@@ -165,6 +166,7 @@ const computeStats = unstable_cache(
           emailPct: vakifTotal?.data().count ? Math.round((emailDolu / vakifTotal.data().count) * 100) : 0,
           phonePct: vakifTotal?.data().count ? Math.round((telDolu / vakifTotal.data().count) * 100) : 0,
         },
+        kamuYarariDernekler: kamuYarariCount,
       },
       unsubscribed,
       sends: {

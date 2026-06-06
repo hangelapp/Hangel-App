@@ -55,6 +55,9 @@ interface OutreachRow {
   detayliFaaliyetAlani?: string;
   kutukNo?: string;
   kurulusTarihi?: string;
+  isKamuYarari?: boolean;
+  kamuYariNo?: string;
+  kamuYariTarihi?: string;
 }
 
 type TabKey = 'vakiflar' | 'dernekler' | 'outreach';
@@ -207,6 +210,7 @@ export default function OutreachHubPage() {
   const [pageSize, setPageSize] = useState<PageSize>(100);
   const [showUnsubscribed, setShowUnsubscribed] = useState(false);
   const [faaliyetAlaniFilter, setFaaliyetAlaniFilter] = useState('');
+  const [kamuYarariOnly, setKamuYarariOnly] = useState(false);
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
   // metni + alanlar üzerinde diakritik duyarsız eşleşme ile tutarlı süzme).
@@ -329,6 +333,7 @@ export default function OutreachHubPage() {
     return rows.filter((r) => {
       if (tQ && r.type !== tQ) return false;
       if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
+      if (kamuYarariOnly && !r.isKamuYarari) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
       const nb = norm(r.neighborhood || '');
       if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
@@ -336,7 +341,7 @@ export default function OutreachHubPage() {
       if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
       return true;
     });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter]);
+  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter, kamuYarariOnly]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -548,6 +553,18 @@ export default function OutreachHubPage() {
                 </div>
               )}
 
+              {/* Dernekler tab'da Kamu Yararı filter butonu */}
+              {activeTab === 'dernekler' && (
+                <Button
+                  variant={kamuYarariOnly ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setKamuYarariOnly((v) => !v)}
+                  title="Kamu Yararına Çalışan Dernek statüsü olanlar (326 dernek)"
+                >
+                  🏛 Kamu Yararı{kamuYarariOnly ? ' (filtrede)' : ''}
+                </Button>
+              )}
+
               <div className="w-36">
                 <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
                   onValueChange={(v) => { setIlFilter(v); setIlceFilter(''); setMahalleFilter(''); }}
@@ -678,10 +695,17 @@ export default function OutreachHubPage() {
                         {expandedId === r.id && editData && (
                           <tr className="bg-muted/20 border-b">
                             <td colSpan={7} className="px-4 py-4 space-y-3">
-                              {/* Sıra No + status badge */}
+                              {/* Sıra No + status badge + Kamu Yararı */}
                               <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2 flex-wrap">
                                 <span>Sıra No: <span className="font-mono">#{filteredRows.indexOf(r) + 1}</span></span>
                                 {activeTab !== 'outreach' && r.kutukNo && <span>Kütük No: <span className="font-mono">{r.kutukNo}</span></span>}
+                                {r.isKamuYarari && (
+                                  <Badge className="text-[9px] bg-emerald-600 hover:bg-emerald-700">
+                                    🏛 KAMU YARARINA ÇALIŞAN DERNEK
+                                    {r.kamuYariNo && ` · ${r.kamuYariNo}`}
+                                    {r.kamuYariTarihi && ` · ${r.kamuYariTarihi}`}
+                                  </Badge>
+                                )}
                                 {r.status === 'unsubscribed' && (
                                   <Badge variant="destructive" className="text-[9px]">
                                     LİSTEDEN ÇIKMIŞ — mail/sms gönderilmez

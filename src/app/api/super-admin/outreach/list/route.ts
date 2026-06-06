@@ -51,6 +51,10 @@ interface OutreachRow {
   detayliFaaliyetAlani?: string;  // dernek
   kutukNo?: string;               // dernek/vakıf
   kurulusTarihi?: string;         // dernek
+  // Kamu Yararına Çalışan Dernek statüsü (T.C. siviltoplum.gov.tr listesinden)
+  isKamuYarari?: boolean;
+  kamuYariNo?: string;
+  kamuYariTarihi?: string;
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -143,6 +147,9 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       kutukNo: data.kutukNo,
       kurulusTarihi: data.kurulusTarihi,
       status: data.status,
+      isKamuYarari: data.isKamuYarari === true,
+      kamuYariNo: data.kamuYariNo,
+      kamuYariTarihi: data.kamuYariTarihi,
     };
   }
   return {
