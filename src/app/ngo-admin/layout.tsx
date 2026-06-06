@@ -497,7 +497,7 @@ function EntityIdentityBanner() {
 
   const Icon = KIND_ICON[current.kind];
   const publicHref =
-    current.kind === 'ngo' ? `/ngos/profile/${current.id}` :
+    current.kind === 'ngo' ? `/ngos/${current.id}` :
     current.kind === 'brand' ? `/market/${current.id}` :
     `/clubs/profile/${current.id}`;
 
