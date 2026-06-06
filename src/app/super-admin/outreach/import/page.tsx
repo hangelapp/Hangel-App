@@ -27,7 +27,7 @@ import {
 
 const TARGET_FIELDS = [
   { key: 'name', label: 'Ad *', required: true },
-  { key: 'type', label: 'Tür (Vakıf/Dernek/SivilToplumMüdürlüğü/Kargo/MailHizmet/Diğer)' },
+  { key: 'type', label: 'Tür (Vakıf/Dernek/SivilToplumMüdürlüğü/SporKulübü/MailHizmet/Diğer)' },
   { key: 'city', label: 'İl' },
   { key: 'district', label: 'İlçe' },
   { key: 'phone', label: 'Telefon' },
@@ -222,7 +222,7 @@ export default function OutreachImportPage() {
             <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto">
 {`name,type,city,district,phone,email,website,address,tags,notes
 Kadıköy İl Sivil Toplum Müdürlüğü,SivilToplumMüdürlüğü,İstanbul,Kadıköy,02165550000,info@example.gov.tr,,Bağdat Cad. No:1,,
-Yurtiçi Kargo,Kargo,İstanbul,,02124440080,kurumsal@yurticikargo.com,https://yurticikargo.com,,kurumsal,`}
+Galatasaray Spor Kulübü,SporKulübü,İstanbul,,02124440080,bilgi@galatasaray.org,https://galatasaray.org,,kurumsal,`}
             </pre>
           </CardContent>
         </Card>

@@ -19,9 +19,14 @@ const VALID_SOURCES = ['registryVakiflar', 'registryDernekler', 'outreachContact
 type Source = typeof VALID_SOURCES[number];
 
 interface NormalizedPatch {
-  name?: string; city?: string; district?: string; neighborhood?: string;
-  phone?: string; email?: string; website?: string; address?: string;
+  name?: string; shortName?: string;
+  city?: string; district?: string; neighborhood?: string;
+  phone?: string; phone2?: string;
+  email?: string; etebligat?: string;
+  website?: string; address?: string;
   type?: string; status?: string;
+  faaliyetAlani?: string; detayliFaaliyetAlani?: string;
+  kutukNo?: string; kurulusTarihi?: string;
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -44,23 +49,37 @@ function toDocFields(source: Source, p: NormalizedPatch): Record<string, unknown
   const has = (k: keyof NormalizedPatch) => p[k] !== undefined;
   if (source === 'registryVakiflar') {
     set(has('name'), 'name', p.name, o); if (has('name')) o.nameLower = (p.name || '').toLocaleLowerCase('tr');
+    set(has('shortName'), 'kisaAd', p.shortName, o);
     set(has('city'), 'il', p.city, o);
     set(has('district'), 'ilce', p.district, o);
+    set(has('neighborhood'), 'mahalle', p.neighborhood, o);
     set(has('phone'), 'telefon1', p.phone, o);
+    set(has('phone2'), 'telefon2', p.phone2, o);
     set(has('email'), 'ePosta', p.email, o);
+    set(has('etebligat'), 'eTebligat', p.etebligat, o);
     set(has('website'), 'webSite', p.website, o);
     set(has('address'), 'adres', p.address, o);
+    set(has('faaliyetAlani'), 'faaliyetAlani', p.faaliyetAlani, o);
+    set(has('kutukNo'), 'kutukNo', p.kutukNo, o);
   } else if (source === 'registryDernekler') {
     set(has('name'), 'name', p.name, o); if (has('name')) o.nameLower = (p.name || '').toLocaleLowerCase('tr');
+    set(has('shortName'), 'kisaAd', p.shortName, o);
     set(has('city'), 'il', p.city, o);
     set(has('district'), 'ilce', p.district, o);
+    set(has('neighborhood'), 'mahalle', p.neighborhood, o);
     set(has('phone'), 'telefon1', p.phone, o);
     set(has('email'), 'ePosta', p.email, o);
     set(has('website'), 'webSite', p.website, o);
     set(has('address'), 'adres', p.address, o);
+    set(has('faaliyetAlani'), 'faaliyetAlani', p.faaliyetAlani, o);
+    set(has('detayliFaaliyetAlani'), 'detayliFaaliyetAlani', p.detayliFaaliyetAlani, o);
+    set(has('kutukNo'), 'kutukNo', p.kutukNo, o);
+    set(has('kurulusTarihi'), 'kurulusTarihi', p.kurulusTarihi, o);
   } else {
     // outreachContacts — alan adları zaten normalize ile birebir
-    (['name', 'city', 'district', 'neighborhood', 'phone', 'email', 'website', 'address', 'type', 'status'] as const)
+    (['name', 'shortName', 'city', 'district', 'neighborhood', 'phone', 'phone2',
+      'email', 'etebligat', 'website', 'address', 'type', 'status',
+      'faaliyetAlani'] as const)
       .forEach((k) => set(has(k), k, p[k], o));
   }
   return o;

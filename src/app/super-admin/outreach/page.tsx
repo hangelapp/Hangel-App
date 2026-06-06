@@ -27,7 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
-  Building2, Heart, Truck, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
+  Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
   ChevronDown, X,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
@@ -38,14 +38,22 @@ import { neighborhoodsData } from '@/lib/data';
 interface OutreachRow {
   id: string;
   name: string;
+  shortName?: string;
   type?: string;
   city?: string;
   district?: string;
+  neighborhood?: string;
   phone?: string;
+  phone2?: string;
   email?: string;
+  etebligat?: string;
   website?: string;
   address?: string;
   status?: string;
+  faaliyetAlani?: string;
+  detayliFaaliyetAlani?: string;
+  kutukNo?: string;
+  kurulusTarihi?: string;
 }
 
 type TabKey = 'vakiflar' | 'dernekler' | 'outreach';
@@ -56,12 +64,22 @@ const SOURCE_MAP: Record<TabKey, string> = {
 };
 const PAGE_LIMIT = 100;
 
-const CATEGORY_CARDS = [
-  { key: 'vakiflar', label: 'Vakıflar', icon: Landmark, color: 'bg-amber-500', count: 6680 },
-  { key: 'dernekler', label: 'Dernekler', icon: Heart, color: 'bg-rose-500', count: 100967 },
-  { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri', icon: Building2, color: 'bg-blue-500', count: 0 },
-  { key: 'kargo', label: 'Kargo Şirketleri', icon: Truck, color: 'bg-orange-500', count: 0 },
-  { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları', icon: Server, color: 'bg-violet-500', count: 0 },
+// Kategori kartları: tıklayınca ilgili tab'a/filtreye geçiş.
+// `targetTab` + `typeFilter` her kart için aksiyon tanımlar.
+const CATEGORY_CARDS: Array<{
+  key: string;
+  label: string;
+  icon: React.ElementType;
+  color: string;
+  count: number;
+  targetTab: TabKey;
+  typeFilter?: string;
+}> = [
+  { key: 'vakiflar',     label: 'Vakıflar',                       icon: Landmark,  color: 'bg-amber-500',  count: 6680,    targetTab: 'vakiflar' },
+  { key: 'dernekler',    label: 'Dernekler',                      icon: Heart,     color: 'bg-rose-500',   count: 100967,  targetTab: 'dernekler' },
+  { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 0,       targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
+  { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 0,       targetTab: 'outreach', typeFilter: 'SporKulübü' },
+  { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları',    icon: Server,    color: 'bg-violet-500', count: 0,       targetTab: 'outreach', typeFilter: 'MailHizmet' },
 ];
 
 function DetailField({ label, value, onChange, wide }: { label: string; value?: string; onChange: (v: string) => void; wide?: boolean }) {
@@ -76,6 +94,7 @@ function DetailField({ label, value, onChange, wide }: { label: string; value?: 
 export default function OutreachHubPage() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabKey>('vakiflar');
+  const [typeFilter, setTypeFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
@@ -156,16 +175,18 @@ export default function OutreachHubPage() {
   const norm = (s: string) => (s || '').toLocaleLowerCase('tr');
   const filteredRows = useMemo(() => {
     const ilQ = norm(ilFilter), ilceQ = norm(ilceFilter), mahQ = norm(mahalleFilter);
-    if (!ilQ && !ilceQ && !mahQ) return rows;
+    const tQ = typeFilter;
+    if (!ilQ && !ilceQ && !mahQ && !tQ) return rows;
     return rows.filter((r) => {
+      if (tQ && r.type !== tQ) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
-      const nb = norm((r as { neighborhood?: string }).neighborhood || '');
+      const nb = norm(r.neighborhood || '');
       if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
       if (ilceQ && !(dist === ilceQ || dist.includes(ilceQ) || addr.includes(ilceQ))) return false;
       if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
       return true;
     });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter]);
+  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -192,14 +213,23 @@ export default function OutreachHubPage() {
     setError(null);
     try {
       const token = await user.getIdToken();
-      const { id, name, city, district, neighborhood, phone, email, website, address, type, status } = editData;
+      const {
+        id, name, shortName, city, district, neighborhood,
+        phone, phone2, email, etebligat, website, address, type, status,
+        faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
+      } = editData;
+      const patch = {
+        name, shortName, city, district, neighborhood,
+        phone, phone2, email, etebligat, website, address, type, status,
+        faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
+      };
       const res = await fetch('/api/super-admin/outreach/update', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source: SOURCE_MAP[activeTab], id, patch: { name, city, district, neighborhood, phone, email, website, address, type, status } }),
+        body: JSON.stringify({ source: SOURCE_MAP[activeTab], id, patch }),
       });
       if (!res.ok) throw new Error((await res.json())?.message || 'Kaydedilemedi');
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, name: name || r.name, city, district, phone, email, website, address, type, status } : r)));
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch, name: name || r.name } : r)));
       setExpandedId(null); setEditData(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Kaydetme hatası');
@@ -240,9 +270,21 @@ export default function OutreachHubPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {CATEGORY_CARDS.map((cat) => {
           const Icon = cat.icon;
+          const isActive = activeTab === cat.targetTab && (cat.typeFilter ? typeFilter === cat.typeFilter : !typeFilter || cat.targetTab !== 'outreach');
           return (
-            <Card key={cat.key} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => {
+                setActiveTab(cat.targetTab);
+                setTypeFilter(cat.typeFilter || '');
+              }}
+              className={cn(
+                'text-left rounded-xl border bg-card transition-all hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary',
+                isActive && 'ring-2 ring-primary border-primary shadow-md',
+              )}
+            >
+              <div className="p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center', cat.color)}>
                     <Icon className="h-4 w-4 text-white" />
@@ -251,13 +293,13 @@ export default function OutreachHubPage() {
                 </div>
                 <p className="text-2xl font-black tabular-nums">{cat.count.toLocaleString('tr-TR')}</p>
                 <p className="text-[10px] text-muted-foreground mt-1">{cat.count > 0 ? 'kayıt' : 'henüz eklenmedi'}</p>
-              </CardContent>
-            </Card>
+              </div>
+            </button>
           );
         })}
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabKey); setTypeFilter(''); }}>
         <TabsList>
           <TabsTrigger value="vakiflar">
             <Landmark className="h-4 w-4 mr-1" /> Vakıflar
@@ -414,18 +456,93 @@ export default function OutreachHubPage() {
                         </tr>
                         {expandedId === r.id && editData && (
                           <tr className="bg-muted/20 border-b">
-                            <td colSpan={7} className="px-4 py-4">
+                            <td colSpan={7} className="px-4 py-4 space-y-3">
+                              {/* Sıra No (read-only) */}
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                                Sıra No: <span className="font-mono">#{filteredRows.indexOf(r) + 1}</span>
+                                {activeTab !== 'outreach' && r.kutukNo && <span className="ml-3">Kütük No: <span className="font-mono">{r.kutukNo}</span></span>}
+                              </p>
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <DetailField label="Ad" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
-                                <DetailField label="İl" value={editData.city} onChange={(v) => setEditData({ ...editData, city: v })} />
-                                <DetailField label="İlçe" value={editData.district} onChange={(v) => setEditData({ ...editData, district: v })} />
-                                <DetailField label="Mahalle" value={editData.neighborhood} onChange={(v) => setEditData({ ...editData, neighborhood: v })} />
-                                <DetailField label="Telefon" value={editData.phone} onChange={(v) => setEditData({ ...editData, phone: v })} />
-                                <DetailField label="E-posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
-                                <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
-                                {activeTab === 'outreach' && <DetailField label="Tür" value={editData.type} onChange={(v) => setEditData({ ...editData, type: v })} />}
-                                {activeTab === 'outreach' && <DetailField label="Durum" value={editData.status} onChange={(v) => setEditData({ ...editData, status: v })} />}
-                                <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
+                                {/* Vakıf detayı */}
+                                {activeTab === 'vakiflar' && (
+                                  <>
+                                    <DetailField label="Vakıf Adı" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
+                                    <DetailField label="Vakfın Kısa Adı" value={editData.shortName} onChange={(v) => setEditData({ ...editData, shortName: v })} />
+                                    <DetailField label="Faaliyet Alanı" value={editData.faaliyetAlani} onChange={(v) => setEditData({ ...editData, faaliyetAlani: v })} wide />
+                                    <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İl</label>
+                                      <SearchableSelect options={ilOptions} value={editData.city || ''} placeholder="İl seç..." searchPlaceholder="İl ara..." onValueChange={(v) => setEditData({ ...editData, city: v, district: '', neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İlçe</label>
+                                      <SearchableSelect options={editData.city && neighborhoodsData[editData.city] ? Object.keys(neighborhoodsData[editData.city]).sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.district || ''} placeholder="İlçe seç..." searchPlaceholder="İlçe ara..." disabled={!editData.city} onValueChange={(v) => setEditData({ ...editData, district: v, neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">Mahalle</label>
+                                      <SearchableSelect options={editData.city && editData.district && neighborhoodsData[editData.city]?.[editData.district] ? neighborhoodsData[editData.city][editData.district].slice().sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.neighborhood || ''} placeholder="Mahalle seç..." searchPlaceholder="Mahalle ara..." disabled={!editData.district} onValueChange={(v) => setEditData({ ...editData, neighborhood: v })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <DetailField label="Telefon-1" value={editData.phone} onChange={(v) => setEditData({ ...editData, phone: v })} />
+                                    <DetailField label="Telefon-2" value={editData.phone2} onChange={(v) => setEditData({ ...editData, phone2: v })} />
+                                    <DetailField label="E-Tebligat Adresi" value={editData.etebligat} onChange={(v) => setEditData({ ...editData, etebligat: v })} />
+                                    <DetailField label="E-Posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
+                                    <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} wide />
+                                  </>
+                                )}
+                                {/* Dernek detayı */}
+                                {activeTab === 'dernekler' && (
+                                  <>
+                                    <DetailField label="Derneğin Adı" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
+                                    <DetailField label="Kısa Adı" value={editData.shortName} onChange={(v) => setEditData({ ...editData, shortName: v })} />
+                                    <DetailField label="Faaliyet Alanı" value={editData.faaliyetAlani} onChange={(v) => setEditData({ ...editData, faaliyetAlani: v })} wide />
+                                    <DetailField label="Detaylı Faaliyet Alanı" value={editData.detayliFaaliyetAlani} onChange={(v) => setEditData({ ...editData, detayliFaaliyetAlani: v })} wide />
+                                    <DetailField label="Kütük No" value={editData.kutukNo} onChange={(v) => setEditData({ ...editData, kutukNo: v })} />
+                                    <DetailField label="Kuruluş Tarihi" value={editData.kurulusTarihi} onChange={(v) => setEditData({ ...editData, kurulusTarihi: v })} />
+                                    <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
+                                    <DetailField label="E-Posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
+                                    <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İl</label>
+                                      <SearchableSelect options={ilOptions} value={editData.city || ''} placeholder="İl seç..." searchPlaceholder="İl ara..." onValueChange={(v) => setEditData({ ...editData, city: v, district: '', neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İlçe</label>
+                                      <SearchableSelect options={editData.city && neighborhoodsData[editData.city] ? Object.keys(neighborhoodsData[editData.city]).sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.district || ''} placeholder="İlçe seç..." searchPlaceholder="İlçe ara..." disabled={!editData.city} onValueChange={(v) => setEditData({ ...editData, district: v, neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">Mahalle</label>
+                                      <SearchableSelect options={editData.city && editData.district && neighborhoodsData[editData.city]?.[editData.district] ? neighborhoodsData[editData.city][editData.district].slice().sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.neighborhood || ''} placeholder="Mahalle seç..." searchPlaceholder="Mahalle ara..." disabled={!editData.district} onValueChange={(v) => setEditData({ ...editData, neighborhood: v })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                  </>
+                                )}
+                                {/* Outreach (manuel) — tüm alanlar */}
+                                {activeTab === 'outreach' && (
+                                  <>
+                                    <DetailField label="Ad" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
+                                    <DetailField label="Kısa Ad" value={editData.shortName} onChange={(v) => setEditData({ ...editData, shortName: v })} />
+                                    <DetailField label="Tür" value={editData.type} onChange={(v) => setEditData({ ...editData, type: v })} />
+                                    <DetailField label="Faaliyet Alanı" value={editData.faaliyetAlani} onChange={(v) => setEditData({ ...editData, faaliyetAlani: v })} wide />
+                                    <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İl</label>
+                                      <SearchableSelect options={ilOptions} value={editData.city || ''} placeholder="İl seç..." searchPlaceholder="İl ara..." onValueChange={(v) => setEditData({ ...editData, city: v, district: '', neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">İlçe</label>
+                                      <SearchableSelect options={editData.city && neighborhoodsData[editData.city] ? Object.keys(neighborhoodsData[editData.city]).sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.district || ''} placeholder="İlçe seç..." searchPlaceholder="İlçe ara..." disabled={!editData.city} onValueChange={(v) => setEditData({ ...editData, district: v, neighborhood: '' })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <label className="text-[11px] font-medium text-muted-foreground">Mahalle</label>
+                                      <SearchableSelect options={editData.city && editData.district && neighborhoodsData[editData.city]?.[editData.district] ? neighborhoodsData[editData.city][editData.district].slice().sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.neighborhood || ''} placeholder="Mahalle seç..." searchPlaceholder="Mahalle ara..." disabled={!editData.district} onValueChange={(v) => setEditData({ ...editData, neighborhood: v })} triggerClassName="h-9 rounded-md border bg-background px-3" />
+                                    </div>
+                                    <DetailField label="Telefon-1" value={editData.phone} onChange={(v) => setEditData({ ...editData, phone: v })} />
+                                    <DetailField label="Telefon-2" value={editData.phone2} onChange={(v) => setEditData({ ...editData, phone2: v })} />
+                                    <DetailField label="E-Posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
+                                    <DetailField label="E-Tebligat" value={editData.etebligat} onChange={(v) => setEditData({ ...editData, etebligat: v })} />
+                                    <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
+                                    <DetailField label="Durum" value={editData.status} onChange={(v) => setEditData({ ...editData, status: v })} />
+                                  </>
+                                )}
                               </div>
                               <div className="flex justify-end gap-2 mt-3">
                                 <Button variant="outline" size="sm" onClick={() => { setExpandedId(null); setEditData(null); }}>İptal</Button>

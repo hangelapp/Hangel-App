@@ -35,14 +35,22 @@ type Source = typeof VALID_SOURCES[number];
 interface OutreachRow {
   id: string;
   name: string;
+  shortName?: string;             // kisaAd
   type?: string;
   city?: string;
   district?: string;
+  neighborhood?: string;
   phone?: string;
+  phone2?: string;                // vakıf telefon2
   email?: string;
+  etebligat?: string;             // vakıf e-tebligat
   website?: string;
   address?: string;
   status?: string;
+  faaliyetAlani?: string;
+  detayliFaaliyetAlani?: string;  // dernek
+  kutukNo?: string;               // dernek/vakıf
+  kurulusTarihi?: string;         // dernek
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -58,40 +66,101 @@ async function isSuperAdmin(req: NextRequest): Promise<boolean> {
   } catch { return false; }
 }
 
+/**
+ * Türkçe adresten "İl / İlçe / Mahalle" çıkar — basit heuristik.
+ * Tipik formatlar:
+ *   "ÖZGÜR MAH. ... YÜREĞİR / ADANA"  → mahalle=ÖZGÜR, ilçe=YÜREĞİR, il=ADANA
+ *   "BAĞDAT CAD. KADIKÖY/İSTANBUL"    → ilçe=KADIKÖY, il=İSTANBUL
+ *   "NO:1 KAT:3 BEYOĞLU İSTANBUL"     → ilçe=BEYOĞLU, il=İSTANBUL
+ */
+function parseAddress(addr: string | undefined): { city?: string; district?: string; neighborhood?: string } {
+  if (!addr) return {};
+  const a = addr.toUpperCase().replace(/İ/g, 'I');
+  const out: { city?: string; district?: string; neighborhood?: string } = {};
+
+  // Mahalle yakalama: "X MAH." veya "X MAHALLESİ"
+  const mahMatch = addr.match(/\b([A-ZÇĞİÖŞÜ][\wÇĞİÖŞÜçğıöşü\.-]+?)\s+MAH(ALLESİ|\.|ALLE)/i);
+  if (mahMatch) out.neighborhood = mahMatch[1].trim().replace(/\.$/, '');
+
+  // Slash split — son segment = il, ondan önceki = ilçe
+  const slashParts = addr.split('/').map((s) => s.trim()).filter(Boolean);
+  if (slashParts.length >= 2) {
+    out.city = slashParts[slashParts.length - 1].split(/\s+/).pop();
+    const beforeSlash = slashParts[slashParts.length - 2];
+    if (beforeSlash) {
+      const words = beforeSlash.split(/\s+/);
+      out.district = words[words.length - 1];
+    }
+  }
+  // City fallback — adres sonunda büyük il adı varsa
+  if (!out.city) {
+    const cities = ['ANKARA','İSTANBUL','IZMIR','BURSA','ANTALYA','ADANA','KONYA','GAZIANTEP','MERSIN','KAYSERI','DIYARBAKIR','SAMSUN','ESKISEHIR','TRABZON','SAKARYA','MALATYA','VAN','ERZURUM','HATAY','MANISA'];
+    const match = cities.find((c) => a.includes(c));
+    if (match) out.city = match;
+  }
+  return out;
+}
+
 function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot): OutreachRow {
   const data = doc.data();
   if (source === 'registryVakiflar') {
     return {
       id: doc.id,
       name: data.name || '',
+      shortName: data.kisaAd,
       type: 'Vakıf',
       city: data.il,
       district: data.ilce,
-      phone: data.telefon1 || data.telefon2,
+      neighborhood: data.mahalle,
+      phone: data.telefon1,
+      phone2: data.telefon2,
       email: data.ePosta,
+      etebligat: data.eTebligat,
+      website: data.webSite || data.website,
       address: data.adres,
+      faaliyetAlani: data.faaliyetAlani,
+      kutukNo: data.kutukNo,
     };
   }
   if (source === 'registryDernekler') {
+    // Dernek koleksiyonunda il/ilçe/mahalle alanları çoğunlukla yok.
+    // Yoksa adresten parse et — kullanıcı sonra detay'da elle de düzeltebilir.
+    const parsed = !data.il && !data.ilce && !data.mahalle
+      ? parseAddress(data.adres)
+      : {};
     return {
       id: doc.id,
       name: data.name || '',
+      shortName: data.kisaAd,
       type: 'Dernek',
+      city: data.il || parsed.city,
+      district: data.ilce || parsed.district,
+      neighborhood: data.mahalle || parsed.neighborhood,
+      email: data.ePosta || data.email,
+      website: data.webSite || data.website,
       address: data.adres,
-      website: data.webSite,
+      faaliyetAlani: data.faaliyetAlani,
+      detayliFaaliyetAlani: data.detayliFaaliyetAlani,
+      kutukNo: data.kutukNo,
+      kurulusTarihi: data.kurulusTarihi,
     };
   }
   return {
     id: doc.id,
     name: data.name || '',
+    shortName: data.shortName,
     type: data.type,
     city: data.city,
     district: data.district,
+    neighborhood: data.neighborhood,
     phone: data.phone,
+    phone2: data.phone2,
     email: data.email,
+    etebligat: data.etebligat,
     website: data.website,
     address: data.address,
     status: data.status,
+    faaliyetAlani: data.faaliyetAlani,
   };
 }
 
