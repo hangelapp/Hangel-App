@@ -65,6 +65,25 @@ const SOURCE_MAP: Record<TabKey, string> = {
 const PAGE_SIZE_OPTIONS = [100, 250, 500, 1000] as const;
 type PageSize = typeof PAGE_SIZE_OPTIONS[number];
 
+// Spor branşları — Spor Kulüpleri filter dropdown'ı için.
+// Kaynak: TSGM resmi federasyon kategorileri + popüler diğer branşlar.
+const SPOR_FAALIYET_ALANLARI: readonly string[] = [
+  'Futbol', 'Basketbol', 'Voleybol', 'Hentbol', 'Tenis', 'Masa Tenisi', 'Badminton',
+  'Atletizm', 'Yüzme', 'Sutopu', 'Kürek', 'Kano',
+  'Güreş', 'Judo', 'Karate', 'Taekwondo', 'Boks', 'Kick Boks', 'Wushu', 'Muay Thai',
+  'Halter', 'Cimnastik', 'Vücut Geliştirme & Fitness',
+  'Bisiklet', 'Yelken', 'Kayak', 'Buz Pateni', 'Buz Hokeyi', 'Snowboard',
+  'Okçuluk', 'Atıcılık', 'Binicilik', 'Modern Pentatlon', 'Triatlon',
+  'Eskrim', 'Bocce/Bowling/Dart', 'Bilardo', 'Golf', 'Satranç', 'Briç',
+  'Dağcılık', 'Sualtı Sporları', 'Hava Sporları', 'Otomobil Sporları', 'Motosiklet',
+  'Beyzbol/Softbol', 'Korumalı Futbol/Ragbi', 'Çim Hokeyi', 'Hokey',
+  'Dans Sporları', 'Halk Oyunları', 'Geleneksel Spor Dalları (Yağlı Güreş)',
+  'İzcilik', 'Kaykay', 'E-Spor',
+  'Bedensel Engelliler', 'Görme Engelliler', 'İşitme Engelliler', 'Özel Sporcular',
+  'Üniversite Sporları', 'Okul Sporları',
+  'Herkes İçin Spor', 'Spor Kulübü (Çok Branşlı)',
+] as const;
+
 // Kategori kartları: tıklayınca ilgili tab'a/filtreye geçiş.
 // `targetTab` + `typeFilter` her kart için aksiyon tanımlar.
 const CATEGORY_CARDS: Array<{
@@ -186,6 +205,7 @@ export default function OutreachHubPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<PageSize>(100);
   const [showUnsubscribed, setShowUnsubscribed] = useState(false);
+  const [faaliyetAlaniFilter, setFaaliyetAlaniFilter] = useState('');
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
   // metni + alanlar üzerinde diakritik duyarsız eşleşme ile tutarlı süzme).
@@ -303,9 +323,11 @@ export default function OutreachHubPage() {
   const filteredRows = useMemo(() => {
     const ilQ = norm(ilFilter), ilceQ = norm(ilceFilter), mahQ = norm(mahalleFilter);
     const tQ = typeFilter;
-    if (!ilQ && !ilceQ && !mahQ && !tQ) return rows;
+    const fQ = faaliyetAlaniFilter;
+    if (!ilQ && !ilceQ && !mahQ && !tQ && !fQ) return rows;
     return rows.filter((r) => {
       if (tQ && r.type !== tQ) return false;
+      if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
       const nb = norm(r.neighborhood || '');
       if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
@@ -313,7 +335,7 @@ export default function OutreachHubPage() {
       if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
       return true;
     });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter]);
+  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -446,6 +468,7 @@ export default function OutreachHubPage() {
               onClick={() => {
                 setActiveTab(cat.targetTab);
                 setTypeFilter(cat.typeFilter || '');
+                setFaaliyetAlaniFilter('');  // kategori değişince spor branş filtresi sıfırla
               }}
               className={cn(
                 'text-left rounded-xl border bg-card transition-all hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary',
@@ -467,7 +490,7 @@ export default function OutreachHubPage() {
         })}
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabKey); setTypeFilter(''); }}>
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabKey); setTypeFilter(''); setFaaliyetAlaniFilter(''); }}>
         <TabsList>
           <TabsTrigger value="vakiflar">
             <Landmark className="h-4 w-4 mr-1" /> Vakıflar
@@ -506,6 +529,20 @@ export default function OutreachHubPage() {
                   ? <><EyeOff className="h-4 w-4 mr-1" /> Çıkanları Gösteriyorum</>
                   : <><EyeOff className="h-4 w-4 mr-1" /> Listeden Çıkanlar</>}
               </Button>
+
+              {/* Spor Kulüpleri için Faaliyet Alanı (branş) filtresi */}
+              {typeFilter === 'SporKulübü' && (
+                <div className="w-48">
+                  <SearchableSelect
+                    options={SPOR_FAALIYET_ALANLARI.slice()}
+                    value={faaliyetAlaniFilter}
+                    placeholder="Faaliyet Alanı"
+                    searchPlaceholder="Branş ara..."
+                    onValueChange={setFaaliyetAlaniFilter}
+                    triggerClassName="h-10 rounded-md border bg-background px-3"
+                  />
+                </div>
+              )}
 
               <div className="w-36">
                 <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
@@ -706,7 +743,21 @@ export default function OutreachHubPage() {
                                     <DetailField label="Ad" value={editData.name} onChange={(v) => setEditData({ ...editData, name: v })} wide />
                                     <DetailField label="Kısa Ad" value={editData.shortName} onChange={(v) => setEditData({ ...editData, shortName: v })} />
                                     <DetailField label="Tür" value={editData.type} onChange={(v) => setEditData({ ...editData, type: v })} />
-                                    <DetailField label="Faaliyet Alanı" value={editData.faaliyetAlani} onChange={(v) => setEditData({ ...editData, faaliyetAlani: v })} wide />
+                                    {editData.type === 'SporKulübü' ? (
+                                      <div className="space-y-1 sm:col-span-2 lg:col-span-3">
+                                        <label className="text-[11px] font-medium text-muted-foreground">Faaliyet Alanı (Branş)</label>
+                                        <SearchableSelect
+                                          options={SPOR_FAALIYET_ALANLARI.slice()}
+                                          value={editData.faaliyetAlani || ''}
+                                          placeholder="Branş seç..."
+                                          searchPlaceholder="Ara..."
+                                          onValueChange={(v) => setEditData({ ...editData, faaliyetAlani: v })}
+                                          triggerClassName="h-9 rounded-md border bg-background px-3"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <DetailField label="Faaliyet Alanı" value={editData.faaliyetAlani} onChange={(v) => setEditData({ ...editData, faaliyetAlani: v })} wide />
+                                    )}
                                     <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
                                     <div className="space-y-1">
                                       <label className="text-[11px] font-medium text-muted-foreground">İl</label>
