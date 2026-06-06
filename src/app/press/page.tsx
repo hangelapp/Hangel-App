@@ -15,9 +15,6 @@ import { HangelLogo } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeHtml } from '@/lib/sanitize-html';
 import { useTranslation } from '@/components/providers/language-provider';
-import { useFirestore } from '@/firebase';
-import { collection, getCountFromServer } from 'firebase/firestore';
-import { COLLECTIONS } from '@/firebase/collections';
 
 const PRESS_EMAIL = 'turkiye@hangel.org';
 
@@ -266,34 +263,27 @@ export default function PressPage() {
     const cms = useWebPage('press');
     const { toast } = useToast();
     const { t } = useTranslation();
-    const db = useFirestore();
     const [counts, setCounts] = useState<{ users: number; ngos: number; brands: number; events: number } | null>(null);
 
-    // Stats: Firestore'dan canlı sayılar; 0 ise gizle.
+    // Stats: /api/public/stats endpoint'inden çek (server-side aggregation,
+    // anonymous accessible). Önceden client-side getCountFromServer kullanılıyordu
+    // ama users/events koleksiyonları unauth user'a kapalı → permission-denied.
     useEffect(() => {
         let cancelled = false;
-        (async () => {
-            if (!db) return;
-            try {
-                const [users, ngos, brands, events] = await Promise.all([
-                    getCountFromServer(collection(db, COLLECTIONS.users)).catch(() => null),
-                    getCountFromServer(collection(db, COLLECTIONS.ngos)).catch(() => null),
-                    getCountFromServer(collection(db, COLLECTIONS.brands)).catch(() => null),
-                    getCountFromServer(collection(db, COLLECTIONS.events)).catch(() => null),
-                ]);
-                if (cancelled) return;
+        fetch('/api/public/stats')
+            .then((r) => r.ok ? r.json() : null)
+            .then((data) => {
+                if (cancelled || !data) return;
                 setCounts({
-                    users: users?.data().count ?? 0,
-                    ngos: ngos?.data().count ?? 0,
-                    brands: brands?.data().count ?? 0,
-                    events: events?.data().count ?? 0,
+                    users: data.users ?? 0,
+                    ngos: data.ngos ?? 0,
+                    brands: data.brands ?? 0,
+                    events: 0,  // events henüz endpoint'te yok, gerekirse eklenir
                 });
-            } catch {
-                if (!cancelled) setCounts({ users: 0, ngos: 0, brands: 0, events: 0 });
-            }
-        })();
+            })
+            .catch(() => { if (!cancelled) setCounts({ users: 0, ngos: 0, brands: 0, events: 0 }); });
         return () => { cancelled = true; };
-    }, [db]);
+    }, []);
 
     const visibleStats = useMemo(() => {
         if (!counts) return [];
