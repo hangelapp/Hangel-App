@@ -38,7 +38,6 @@ import {
 import {
   resolvePointsPerHour,
   resolveHourlyRate,
-  DEFAULT_POINTS_PER_HOUR,
 } from '@/lib/volunteer/professions';
 import { sendPushToUser } from '@/lib/push-notifications';
 
