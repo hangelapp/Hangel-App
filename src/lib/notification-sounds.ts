@@ -148,6 +148,29 @@ export const NOTIFICATION_SOUNDS: readonly NotificationSound[] = [
         ],
     },
     {
+        id: 'cash-coins',
+        name: 'Kağıt Para & Demir Para Şıngırtısı',
+        nameEn: 'Cash & Coins Jingle',
+        filename: 'hangel-cash.caf',
+        paths: {
+            ios: 'ios/App/App/hangel-cash.caf',
+            web: '/sounds/hangel-cash.m4a',
+        },
+        duration: 3,
+        category: 'success',
+        description: 'Bağış / ödeme bildirimi — kağıt para hışırtısı + demir para şıngırtısı.',
+        description_en: 'Donation / payment notification — paper cash rustle + coin jingle.',
+        // NOT: ses dosyası (hangel-cash.caf / hangel-cash.m4a) henüz bundle'da yok;
+        // eklenince önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
+        triggerTypes: [
+            'payment_received',
+            'payment-received',
+            'donation',
+            'donation_added',
+            'donation_transferred',
+        ],
+    },
+    {
         id: 'alert-default',
         name: 'Genel Bildirim',
         nameEn: 'Generic Alert',

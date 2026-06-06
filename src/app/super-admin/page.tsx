@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { useSuperAdminPermissions, slugFromPath } from '@/hooks/use-super-admin-permissions';
 // P2-4: closed icon set for superAdminNavItems lookup — replaces `import * as Icons`.
 import {
   Activity,
@@ -269,6 +270,12 @@ export default function SuperAdminDashboard() {
   const appsLoading = countsLoading;
   const pendingAppsCount = counts.pendingApps ?? 0;
 
+  // Granular yetki: kısıtlı super-admin yalnızca izinli modülleri görür.
+  const { slugAllowed } = useSuperAdminPermissions();
+  const visibleSections = superAdminNavSections
+    .map((s) => ({ ...s, items: s.items.filter((it) => slugAllowed(slugFromPath(it.href))) }))
+    .filter((s) => s.items.length > 0);
+
   return (
     <div className="space-y-8 animate-in fade-in-0 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
@@ -338,7 +345,7 @@ export default function SuperAdminDashboard() {
                 <CardDescription>Platformun teknik ve içerik operasyonlarını buradan yönetin.</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
-                {superAdminNavSections.map(section => (
+                {visibleSections.map(section => (
                     <div key={section.title}>
                         <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-black/5">
                             <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{section.title}</p>

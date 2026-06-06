@@ -13,6 +13,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useSuperAdminPermissions, slugFromPath } from '@/hooks/use-super-admin-permissions';
 
 export default function SuperAdminLayout({
   children,
@@ -63,6 +64,10 @@ export default function SuperAdminLayout({
     return claimsRole === 'super-admin';
   }, [authUser, claimsRole]);
 
+  // Granular yetki — kısıtlı super-admin yalnızca izinli sayfaları görür/açar.
+  const { slugAllowed, loading: permsLoading } = useSuperAdminPermissions();
+  const pageAllowed = slugAllowed(slugFromPath(pathname));
+
   // While we still don't know who the user is, keep waiting (no admin shell flash).
   const isAuthResolving = isUserLoading || (!!authUser && isUserDocLoading && !userData);
 
@@ -77,8 +82,15 @@ export default function SuperAdminLayout({
 
     if (!isSuperAdmin) {
       router.replace('/market');
+      return;
     }
-  }, [isAuthResolving, authUser, isSuperAdmin, pathname, router]);
+
+    // Granular yetki: kısıtlı super-admin izinsiz bir alt sayfaya doğrudan
+    // gitmeye çalışırsa panel ana sayfasına geri al.
+    if (!permsLoading && !pageAllowed) {
+      router.replace('/super-admin');
+    }
+  }, [isAuthResolving, authUser, isSuperAdmin, permsLoading, pageAllowed, pathname, router]);
 
   const handleBackClick = () => {
     if (pathname === '/super-admin') {
