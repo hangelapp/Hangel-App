@@ -1,10 +1,10 @@
 /**
  * Notification sound manifest — hangel push bildirim ses kataloğu.
  *
- * Mevcut durum (2026-06-03 itibarıyla):
- *   - iOS: 5 adet .caf bundle dosyası (`ios/App/App/hangel-*.caf`)
+ * Mevcut durum (2026-06-06 itibarıyla):
+ *   - iOS: 7 adet .caf bundle dosyası (`ios/App/App/hangel-*.caf`), pbxproj'a kayıtlı
  *   - Android: ses dosyası YOK (`android/app/src/main/res/raw/` klasörü mevcut değil)
- *   - Web: ses dosyası YOK (`public/sounds/`, `public/notifications/` klasörü mevcut değil)
+ *   - Web: 7 adet .m4a (`public/sounds/hangel-*.m4a`)
  *
  * Kod referansları:
  *   - `src/lib/push-notifications.ts` → `getSoundForNotificationType(type)` notification
@@ -158,10 +158,8 @@ export const NOTIFICATION_SOUNDS: readonly NotificationSound[] = [
         },
         duration: 2,
         category: 'success',
-        description: 'Bağış sisteme eklendi bildirimi — kağıt para hışırtısı (2 sn).',
-        description_en: 'Donation-added notification — paper cash rustle (2s).',
-        // NOT: ses dosyası (hangel-paper-money.*) henüz bundle'da yok; eklenince
-        // (2 sn) önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
+        description: 'Bağış sisteme eklendi bildirimi — kağıt para hışırtısı (~1.8 sn).',
+        description_en: 'Donation-added notification — paper cash rustle (~1.8s).',
         triggerTypes: [
             'payment_received',
             'payment-received',
@@ -180,10 +178,8 @@ export const NOTIFICATION_SOUNDS: readonly NotificationSound[] = [
         },
         duration: 2,
         category: 'success',
-        description: 'Bağış STK hesabına geçti bildirimi — demir para şıngırtısı (2 sn).',
-        description_en: 'Donation-transferred notification — coin jingle (2s).',
-        // NOT: ses dosyası (hangel-coins.*) henüz bundle'da yok; eklenince (2 sn)
-        // önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
+        description: 'Bağış STK hesabına geçti bildirimi — demir para şıngırtısı (~1.9 sn).',
+        description_en: 'Donation-transferred notification — coin jingle (~1.9s).',
         triggerTypes: [
             'donation_transferred',
             'payment-coins',

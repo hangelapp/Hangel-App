@@ -47,6 +47,8 @@
 		C11C0A002000000000000004 /* ClipAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000004 /* ClipAPI.swift */; };
 		C11C0A002000000000000005 /* HangelAppClip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = C11C0A001000000000000007 /* HangelAppClip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */ = {isa = PBXBuildFile; fileRef = A2D314B5559DF9C5592F9987 /* hangel-alert.caf */; };
+		C55EAFEB4894A83EEB0CAEFF /* hangel-coins.caf in Resources */ = {isa = PBXBuildFile; fileRef = 9974EFD3DD471FD38C9436E1 /* hangel-coins.caf */; };
+		9ED5AFAB7AB1E781E94FB0C5 /* hangel-paper-money.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4D457655089F46718B999F80 /* hangel-paper-money.caf */; };
 		DFD0509AE42360A94E96CB85 /* Icon-167.png in Resources */ = {isa = PBXBuildFile; fileRef = 1AA2CE06417B635B52B94AED /* Icon-167.png */; };
 		EF6FFE7E5B04A5CB4DBE7253 /* Icon-76.png in Resources */ = {isa = PBXBuildFile; fileRef = 3FA6378DDB8C7CDDDEB075AB /* Icon-76.png */; };
 		F03D14A3A2840DE723C46630 /* VolunteerTaskLiveActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E38822D5DBC2513C97982415 /* VolunteerTaskLiveActivity.swift */; };
@@ -150,6 +152,8 @@
 		99089A8CC1A95EB64A153AB1 /* Icon-120.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "Icon-120.png"; sourceTree = "<group>"; };
 		A11E1EFE2F7B89030085F789 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A2D314B5559DF9C5592F9987 /* hangel-alert.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-alert.caf"; sourceTree = "<group>"; };
+		9974EFD3DD471FD38C9436E1 /* hangel-coins.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-coins.caf"; sourceTree = "<group>"; };
+		4D457655089F46718B999F80 /* hangel-paper-money.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = "hangel-paper-money.caf"; sourceTree = "<group>"; };
 		B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppleSignInPlugin.swift; sourceTree = "<group>"; };
 		BB36A98EDADDAD874D502BC4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C11C0A001000000000000001 /* HangelAppClipApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HangelAppClipApp.swift; sourceTree = "<group>"; };
@@ -247,6 +251,8 @@
 				B2B0A676355D1A052ACE0815 /* HangelAppleSignInPlugin.swift */,
 				9126E71704A029EA9CEDBCAF /* HangelWatchConnectivityPlugin.swift */,
 				A2D314B5559DF9C5592F9987 /* hangel-alert.caf */,
+				9974EFD3DD471FD38C9436E1 /* hangel-coins.caf */,
+				4D457655089F46718B999F80 /* hangel-paper-money.caf */,
 				E0B2E906FB4B13498C7AB6F9 /* hangel-blood.caf */,
 				5B3494FF82985F9D859D1918 /* hangel-disaster.caf */,
 				ECCA3FFA16A3E96671733288 /* hangel-volunteer.caf */,
@@ -472,6 +478,8 @@
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				A11E1EFF2F7B89030085F789 /* GoogleService-Info.plist in Resources */,
 				DE5FC5EA8EA5E1D57D821A6E /* hangel-alert.caf in Resources */,
+				C55EAFEB4894A83EEB0CAEFF /* hangel-coins.caf in Resources */,
+				9ED5AFAB7AB1E781E94FB0C5 /* hangel-paper-money.caf in Resources */,
 				285DDDBB68D9B0D3D3DCE1F2 /* hangel-blood.caf in Resources */,
 				3C133BBEF396A43210F27B39 /* hangel-disaster.caf in Resources */,
 				F88FD8F6163EAE4939DE3EEF /* hangel-volunteer.caf in Resources */,
