@@ -173,8 +173,8 @@ export async function POST(req: NextRequest) {
 
   if (channel === 'email') {
     const provider = getEmailProvider();
-    const from = body.fromEmail || 'merhaba@hangel.org';
-    const fromName = body.fromName || 'hangel';
+    const from = body.fromEmail || process.env.RESEND_FROM_EMAIL || 'merhaba@hangel.org';
+    const fromName = body.fromName || process.env.RESEND_FROM_NAME || 'hangel';
     for (const c of contacts) {
       if (!c.email) {
         skipped++;

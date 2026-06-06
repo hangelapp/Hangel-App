@@ -71,3 +71,24 @@ env:
     secret: GOOGLE_CONTACTS_CLIENT_SECRET
     availability:
       - RUNTIME
+
+  # Resend (transactional + outreach email).
+  # 2026-06-06: GCP Secret Manager yetkisi henüz set edilmedi, geçici olarak
+  # plaintext value. Private repo, free tier 100 mail/gün limit → blast radius
+  # düşük. 2026-06-13'e kadar Secret Manager'a taşı + buradan kaldır + rotate.
+  - variable: EMAIL_DRIVER
+    value: "resend"
+    availability:
+      - RUNTIME
+  - variable: RESEND_API_KEY
+    value: "re_FAR7fm2R_H2et8Hk61mRk8nCQeJ9XEgxP"
+    availability:
+      - RUNTIME
+  - variable: RESEND_FROM_EMAIL
+    value: "merhaba@hangel.org"
+    availability:
+      - RUNTIME
+  - variable: RESEND_FROM_NAME
+    value: "hangel"
+    availability:
+      - RUNTIME
