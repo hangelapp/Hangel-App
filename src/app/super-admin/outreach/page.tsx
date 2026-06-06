@@ -515,6 +515,36 @@ export default function OutreachHubPage() {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4 mt-4">
+          {/* Search'te il adı tespit edilirse otomatik öneri kartı.
+              Örnek: "Tekirdağ" yazınca → "Tekirdağ ili dernekleri" filtreye dönüştür. */}
+          {(() => {
+            const sl = searchTerm.trim().toLocaleLowerCase('tr');
+            if (sl.length < 3) return null;
+            const ilMatch = ilOptions.find((il) => il.toLocaleLowerCase('tr') === sl);
+            if (!ilMatch || ilFilter === ilMatch) return null;
+            return (
+              <Card className="border-blue-200 bg-blue-50/50">
+                <CardContent className="p-2.5 flex items-center justify-between gap-2 text-xs">
+                  <span>
+                    💡 <strong>&quot;{searchTerm}&quot;</strong> bir il adı — bu ildeki TÜM kayıtları görmek için il filtresine dönüştür.
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      setIlFilter(ilMatch);
+                      setIlceFilter('');
+                      setMahalleFilter('');
+                      setSearchTerm('');
+                    }}
+                  >
+                    {ilMatch} İlini Filtrele
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })()}
           <Card>
             <CardContent className="p-4 flex flex-wrap items-center gap-3">
               <div className="relative flex-1 min-w-[200px]">
@@ -522,7 +552,7 @@ export default function OutreachHubPage() {
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Ad veya adres ile ara..."
+                  placeholder="Ad ile ara (il bazlı arama için İl dropdown'unu kullan)"
                   className="pl-9"
                 />
               </div>
