@@ -148,26 +148,45 @@ export const NOTIFICATION_SOUNDS: readonly NotificationSound[] = [
         ],
     },
     {
-        id: 'cash-coins',
-        name: 'Kağıt Para & Demir Para Şıngırtısı',
-        nameEn: 'Cash & Coins Jingle',
-        filename: 'hangel-cash.caf',
+        id: 'paper-money',
+        name: 'Kağıt Para',
+        nameEn: 'Paper Money',
+        filename: 'hangel-paper-money.caf',
         paths: {
-            ios: 'ios/App/App/hangel-cash.caf',
-            web: '/sounds/hangel-cash.m4a',
+            ios: 'ios/App/App/hangel-paper-money.caf',
+            web: '/sounds/hangel-paper-money.m4a',
         },
-        duration: 3,
+        duration: 2,
         category: 'success',
-        description: 'Bağış / ödeme bildirimi — kağıt para hışırtısı + demir para şıngırtısı.',
-        description_en: 'Donation / payment notification — paper cash rustle + coin jingle.',
-        // NOT: ses dosyası (hangel-cash.caf / hangel-cash.m4a) henüz bundle'da yok;
-        // eklenince önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
+        description: 'Bağış sisteme eklendi bildirimi — kağıt para hışırtısı (2 sn).',
+        description_en: 'Donation-added notification — paper cash rustle (2s).',
+        // NOT: ses dosyası (hangel-paper-money.*) henüz bundle'da yok; eklenince
+        // (2 sn) önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
         triggerTypes: [
             'payment_received',
             'payment-received',
             'donation',
             'donation_added',
+        ],
+    },
+    {
+        id: 'coin-jingle',
+        name: 'Demir Para Şıngırtısı',
+        nameEn: 'Coin Jingle',
+        filename: 'hangel-coins.caf',
+        paths: {
+            ios: 'ios/App/App/hangel-coins.caf',
+            web: '/sounds/hangel-coins.m4a',
+        },
+        duration: 2,
+        category: 'success',
+        description: 'Bağış STK hesabına geçti bildirimi — demir para şıngırtısı (2 sn).',
+        description_en: 'Donation-transferred notification — coin jingle (2s).',
+        // NOT: ses dosyası (hangel-coins.*) henüz bundle'da yok; eklenince (2 sn)
+        // önizleme + push sesi çalışır. Şimdilik liste seçeneği olarak görünür.
+        triggerTypes: [
             'donation_transferred',
+            'payment-coins',
         ],
     },
     {
