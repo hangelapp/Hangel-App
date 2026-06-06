@@ -35,6 +35,11 @@ import {
   findProfessionByLabel,
   type ProfessionRate,
 } from '@/lib/volunteer-impact';
+import {
+  resolvePointsPerHour,
+  resolveHourlyRate,
+  DEFAULT_POINTS_PER_HOUR,
+} from '@/lib/volunteer/professions';
 import { sendPushToUser } from '@/lib/push-notifications';
 
 export const runtime = 'nodejs';
@@ -172,8 +177,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // 5) Etki değeri (snapshot) — C3 utility
-  const impactValueTRY = calculateUserImpactValue(hoursLogged, profession.hourlyRate);
+  // 5a) İş kalemi (taskType) kaynaklı puan + ₺
+  //     `profession.hourlyRate` aslında volunteerScoring katalog'undaki
+  //     iş kaleminin manHourCost'u. `pointsPerHour` da iş kaleminden gelir.
+  const taskPointsPerHour = profession.pointsPerHour ?? 0;
+  const taskImpactValueTRY = calculateUserImpactValue(hoursLogged, profession.hourlyRate);
+  const taskImpactPoints = Math.round(hoursLogged * taskPointsPerHour);
+
+  // 5b) Gönüllünün KENDİ MESLEĞİNE göre profession-override puan + ₺
+  //     User profile'ından profession id'sini çek, override doc'tan çöz.
+  let userProfessionId: string | null = null;
+  let userProfessionPointsPerHour = 0;
+  let userProfessionHourlyRate = 0;
+  let userProfessionImpactPoints = 0;
+  let userProfessionImpactValueTRY = 0;
+  try {
+    const userSnap = await db.collection(COLLECTIONS.users).doc(uid).get();
+    const u = userSnap.data() as { volunteerInfo?: { professionId?: string } } | undefined;
+    userProfessionId = u?.volunteerInfo?.professionId ?? null;
+    if (userProfessionId) {
+      // Override docs (volunteerScoring/professions) — { rates, points }
+      const ovSnap = await db.collection(COLLECTIONS.volunteerScoring).doc('professions').get();
+      const ov = ovSnap.exists ? (ovSnap.data() as { rates?: Record<string, number>; points?: Record<string, number> }) : {};
+      userProfessionHourlyRate = resolveHourlyRate(userProfessionId, ov.rates);
+      userProfessionPointsPerHour = resolvePointsPerHour(userProfessionId, ov.points);
+      userProfessionImpactPoints = Math.round(hoursLogged * userProfessionPointsPerHour);
+      userProfessionImpactValueTRY = Math.round(hoursLogged * userProfessionHourlyRate);
+    }
+  } catch {
+    // Sessizce devam — task-only hesap kalır.
+  }
+
+  // 5c) Toplam etki: iş kalemi + meslek bileşeni TOPLANIR.
+  //     Mali değer hesabı için sadece ADAM-SAAT (iş kalemi manHourCost) baz alınır
+  //     (kullanıcı talebi 2026-06-06). Meslek puan ise EK puan olarak eklenir.
+  const impactValueTRY = taskImpactValueTRY;
+  const impactPointsTotal = taskImpactPoints + userProfessionImpactPoints;
 
   // 6) Completion doc yaz (pending)
   const completionRef = db.collection(COLLECTIONS.volunteerCompletions).doc();
@@ -186,10 +225,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     startedAt: startedAtFromApp ?? FieldValue.serverTimestamp(),
     completedAt: FieldValue.serverTimestamp(),
     hoursLogged,
+    // İş kalemi snapshot (taskType)
     professionId: profession.id,
     professionLabel: profession.label,
     hourlyRateAtTime: profession.hourlyRate,
+    pointsPerHourAtTime: taskPointsPerHour,
+    taskImpactPoints,
+    taskImpactValueTRY,
+    // Gönüllü mesleği snapshot (yeni — opsiyonel)
+    userProfessionId,
+    userProfessionPointsPerHour,
+    userProfessionHourlyRate,
+    userProfessionImpactPoints,
+    userProfessionImpactValueTRY,
+    // Toplam etki — adam-saat baz mali değer; puan = task + meslek
     impactValueTRY,
+    impactPointsTotal,
     ngoApproved: false,
     certificateIssued: false,
     ...(notes ? { notes } : {}),

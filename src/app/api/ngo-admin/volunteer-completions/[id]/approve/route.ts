@@ -89,6 +89,9 @@ export async function PATCH(
     hoursLogged?: number;
     hourlyRateAtTime?: number;
     impactValueTRY?: number;
+    impactPointsTotal?: number;
+    pointsPerHourAtTime?: number;
+    userProfessionPointsPerHour?: number;
     professionLabel?: string;
     ngoApproved?: boolean;
   };
@@ -172,6 +175,15 @@ export async function PATCH(
     ? calculateUserImpactValue(finalHours, finalRate)
     : completion.impactValueTRY ?? 0;
 
+  // PUAN — adjustedHours varsa task + meslek puanı yeniden hesapla.
+  // İş kaleminin saat başı puanı + gönüllünün mesleğine göre puan,
+  // ikisi de TOPLANARAK kullanıcının Sosyal Etki Puanı'na eklenir.
+  const taskPph = completion.pointsPerHourAtTime ?? 0;
+  const userProfPph = completion.userProfessionPointsPerHour ?? 0;
+  const finalImpactPoints = adjustedHours !== undefined
+    ? Math.round(finalHours * (taskPph + userProfPph))
+    : completion.impactPointsTotal ?? Math.round(finalHours * (taskPph + userProfPph));
+
   // Sertifika HTML üret (in-memory; storage upload opsiyonel — şimdilik URL boş)
   // certificateUrl ileride storage'a upload edilirse doldurulur; mevcut akışta
   // istemci `volunteerCompletions/{id}` üzerinden HTML'i render eder.
@@ -196,7 +208,9 @@ export async function PATCH(
     ngoApproved: true,
     approvedAt: FieldValue.serverTimestamp(),
     approvedBy: actor.uid,
-    ...(adjustedHours !== undefined ? { adjustedHours, impactValueTRY: finalImpactValue } : {}),
+    ...(adjustedHours !== undefined
+      ? { adjustedHours, impactValueTRY: finalImpactValue, impactPointsTotal: finalImpactPoints }
+      : {}),
     certificateIssued: true,
     status: 'approved',
   });
@@ -207,6 +221,7 @@ export async function PATCH(
     {
       stats: {
         totalImpactValue: FieldValue.increment(finalImpactValue),
+        totalImpactPoints: FieldValue.increment(finalImpactPoints),
         volunteerHours: FieldValue.increment(finalHours),
         completedProjects: FieldValue.increment(1),
       },
@@ -223,6 +238,7 @@ export async function PATCH(
     completionId,
     hoursLogged: finalHours,
     impactValueTRY: finalImpactValue,
+    impactPointsTotal: finalImpactPoints,
     completedAt: FieldValue.serverTimestamp(),
   });
 

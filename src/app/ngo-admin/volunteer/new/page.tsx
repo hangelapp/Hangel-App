@@ -616,17 +616,24 @@ function NewOpportunityForm() {
                 </div>
               </div>
               {selectedTask && hoursNum > 0 && (
-                <div className="grid grid-cols-2 gap-3 p-3 bg-primary/5 rounded-lg">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Kazanılacak Etki Puanı</p>
-                    <p className="text-2xl font-black text-primary tabular-nums">{computedPoints.toLocaleString('tr-TR')}</p>
-                    <p className="text-[10px] text-muted-foreground">{selectedTask.pointsPerHour} × {hoursNum} saat</p>
+                <div className="space-y-2 p-3 bg-primary/5 rounded-lg">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">İş Kalemi Puanı (taban)</p>
+                      <p className="text-2xl font-black text-primary tabular-nums">{computedPoints.toLocaleString('tr-TR')}</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedTask.pointsPerHour} pt × {hoursNum} saat</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sosyal Etki Mali Değeri</p>
+                      <p className="text-2xl font-black text-primary tabular-nums">{computedMHValue.toLocaleString('tr-TR')} ₺</p>
+                      <p className="text-[10px] text-muted-foreground">{selectedTask.manHourCost} ₺ × {hoursNum} saat (adam-saat)</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Adam-Saat Değeri</p>
-                    <p className="text-2xl font-black text-primary tabular-nums">{computedMHValue.toLocaleString('tr-TR')} ₺</p>
-                    <p className="text-[10px] text-muted-foreground">{selectedTask.manHourCost} ₺ × {hoursNum} saat</p>
-                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed border-t pt-2">
+                    <strong>Not:</strong> Gönüllünün <strong>kendi mesleğine</strong> göre ek puan otomatik eklenir
+                    (örn. doktor ekstra <strong>+150 pt/saat</strong>, öğrenci <strong>+25 pt/saat</strong>).
+                    Mali değer hesabında sadece iş kaleminin adam-saat değeri baz alınır.
+                  </p>
                 </div>
               )}
               {activeScoringItems.length === 0 && (
