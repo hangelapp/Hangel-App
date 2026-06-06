@@ -178,13 +178,15 @@ export default function OutreachSendPage() {
         </CardContent>
       </Card>
 
-      <Card className="border-amber-200 bg-amber-50/50">
+      <Card className="border-emerald-200 bg-emerald-50/50">
         <CardContent className="p-3 text-xs">
           <p>
-            <strong>Önemli:</strong> Bu maille toplu tanıtım gönderiyoruz — KVKK ticari elektronik
-            ileti açık rıza kapsamında. Mail içinde "İletişim listesinden çıkmak için yanıtlayın"
-            ifadesi olmalı. Şu an provider: <code>process.env.EMAIL_DRIVER</code>
-            (mock değilse gerçekten gönderilir).
+            <strong>✓ KVKK uyumu otomatik:</strong> Bu maille toplu tanıtım gönderiliyor —
+            Ticari Elektronik İleti Yönetmeliği uyarınca. Her mailin altına otomatik olarak{' '}
+            <strong>"İletişim listesinden çıkmak için 'ÇIKAR' yazarak yanıtlayın"</strong> footer'ı
+            eklenir, Reply-To gönderen adresine ayarlanır. Bu maile "ÇIKAR" yazıp yanıtlayan kayıtları
+            outreach panelinden manuel olarak listeden çıkarabilirsin (Detay → Listeden Çıkar).
+            Şu anki provider: <code>process.env.EMAIL_DRIVER</code> (mock değilse gerçekten gönderilir).
           </p>
         </CardContent>
       </Card>

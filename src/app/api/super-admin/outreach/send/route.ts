@@ -171,6 +171,14 @@ export async function POST(req: NextRequest) {
   let skipped = 0;
   const errors: string[] = [];
 
+  // KVKK uyumu — TÜM toplu outreach maillerine otomatik unsubscribe footer eklenir.
+  // Bu footer kullanıcı body'sinde olsun olmasın HER zaman eklenir; yinelenmesi sorun değil.
+  function addUnsubscribeFooter(html: string, text: string, replyTo: string): { html: string; text: string } {
+    const htmlFooter = `<hr style="margin:24px 0 12px;border:none;border-top:1px solid #e5e5e5"><p style="font-size:11px;color:#666;font-family:system-ui,sans-serif;line-height:1.5">Bu e-postayı, hangel.org tanıtım iletişimi kapsamında aldınız. <strong>İletişim listesinden çıkmak için</strong> bu maile "ÇIKAR" yazarak yanıtlayın (Reply-To: <a href="mailto:${replyTo}" style="color:#666">${replyTo}</a>). Kaydınız 7 iş günü içinde kapatılır. — KVKK Ticari Elektronik İleti Yönetmeliği uyarınca.</p>`;
+    const textFooter = `\n\n---\nBu e-postayı, hangel.org tanıtım iletişimi kapsamında aldınız.\nİletişim listesinden çıkmak için bu maile "ÇIKAR" yazarak yanıtlayın (${replyTo}).\nKaydınız 7 iş günü içinde kapatılır. — KVKK Ticari Elektronik İleti Yönetmeliği uyarınca.`;
+    return { html: html + htmlFooter, text: text + textFooter };
+  }
+
   if (channel === 'email') {
     const provider = getEmailProvider();
     const from = body.fromEmail || process.env.RESEND_FROM_EMAIL || 'merhaba@hangel.org';
@@ -182,14 +190,16 @@ export async function POST(req: NextRequest) {
       }
       const personalizedSubject = interpolate(body.subject || '', { name: c.name });
       const personalizedBody = interpolate(body.body, { name: c.name });
+      const withFooter = addUnsubscribeFooter(plainToHtml(personalizedBody), personalizedBody, from);
       try {
         await provider.send({
           to: c.email,
           subject: personalizedSubject,
-          html: plainToHtml(personalizedBody),
-          text: personalizedBody,
+          html: withFooter.html,
+          text: withFooter.text,
           fromEmail: from,
           fromName,
+          replyTo: from,  // Yanıt aynı adrese — "ÇIKAR" yanıtlarını okumak için
           useCase: 'marketing',
         });
         sent++;

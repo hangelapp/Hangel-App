@@ -120,11 +120,10 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       address: data.adres,
       faaliyetAlani: data.faaliyetAlani,
       kutukNo: data.kutukNo,
+      status: data.status,
     };
   }
   if (source === 'registryDernekler') {
-    // Dernek koleksiyonunda il/ilçe/mahalle alanları çoğunlukla yok.
-    // Yoksa adresten parse et — kullanıcı sonra detay'da elle de düzeltebilir.
     const parsed = !data.il && !data.ilce && !data.mahalle
       ? parseAddress(data.adres)
       : {};
@@ -143,6 +142,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       detayliFaaliyetAlani: data.detayliFaaliyetAlani,
       kutukNo: data.kutukNo,
       kurulusTarihi: data.kurulusTarihi,
+      status: data.status,
     };
   }
   return {
@@ -180,6 +180,9 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get('search') || '').toLowerCase().trim();
   const city = searchParams.get('city') || null;
   const emailOnly = searchParams.get('emailOnly') === 'true';
+  // Default: aktif kayıtlar gösterilir (status != 'unsubscribed').
+  // showUnsubscribed=true → sadece listeden çıkanlar gösterilir.
+  const showUnsubscribed = searchParams.get('showUnsubscribed') === 'true';
 
   const db = getAdminFirestore();
   let q: FirebaseFirestore.Query = db.collection(source);
@@ -231,6 +234,10 @@ export async function GET(req: NextRequest) {
 
     for (const doc of snap.docs) {
       const row = normalize(source, doc);
+      // Status filter: unsubscribed kayıtlar default gizlenir; toggle ile sadece onlar gösterilir.
+      const isUnsubscribed = row.status === 'unsubscribed';
+      if (showUnsubscribed && !isUnsubscribed) continue;
+      if (!showUnsubscribed && isUnsubscribed) continue;
       if (emailOnly && !row.email) continue;
       if (search && !(row.name.toLowerCase().includes(search) || (row.address || '').toLowerCase().includes(search))) continue;
       finalRows.push(row);

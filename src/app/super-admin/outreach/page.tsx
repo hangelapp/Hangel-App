@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
-  ChevronDown, X, FileSpreadsheet,
+  ChevronDown, X, FileSpreadsheet, UserMinus, EyeOff,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
@@ -185,6 +185,7 @@ export default function OutreachHubPage() {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<PageSize>(100);
+  const [showUnsubscribed, setShowUnsubscribed] = useState(false);
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
   // metni + alanlar üzerinde diakritik duyarsız eşleşme ile tutarlı süzme).
@@ -218,6 +219,7 @@ export default function OutreachHubPage() {
       if (nextCursor) params.set('cursor', nextCursor);
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
       if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
+      if (showUnsubscribed) params.set('showUnsubscribed', 'true');
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -244,7 +246,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -281,7 +283,7 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);
@@ -371,6 +373,33 @@ export default function OutreachHubPage() {
   const idList = Array.from(selectedIds).join(',');
   const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
   const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
+
+  // "Listeden Çıkar / Geri Al" — status alanını flip eder ve API'ye gönderir.
+  async function toggleUnsubscribe(r: OutreachRow) {
+    if (!user) return;
+    const willUnsub = r.status !== 'unsubscribed';
+    const newStatus = willUnsub ? 'unsubscribed' : 'active';
+    setSavingId(r.id);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/super-admin/outreach/update', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: SOURCE_MAP[activeTab], id: r.id, patch: { status: newStatus } }),
+      });
+      if (!res.ok) throw new Error((await res.json())?.message || 'Güncelleme başarısız');
+      // Görünüm: aktif listede iken unsub yapılırsa satır gizlenir; tersi de geçerli.
+      setRows((prev) => prev.map((row) => row.id === r.id ? { ...row, status: newStatus } : row));
+      if (editData?.id === r.id) setEditData({ ...editData, status: newStatus });
+      if (showUnsubscribed !== (newStatus === 'unsubscribed')) {
+        setRows((prev) => prev.filter((row) => row.id !== r.id));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Hata');
+    } finally {
+      setSavingId(null);
+    }
+  }
 
   function handleExport() {
     // Seçili varsa onları, yoksa görünür satırların tümünü indir.
@@ -465,6 +494,18 @@ export default function OutreachHubPage() {
                   className="pl-9"
                 />
               </div>
+              <Button
+                variant={showUnsubscribed ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowUnsubscribed((v) => !v)}
+                title={showUnsubscribed
+                  ? 'Aktif kayıtlara dön'
+                  : 'Listeden çıkmış (unsubscribed) kayıtları göster'}
+              >
+                {showUnsubscribed
+                  ? <><EyeOff className="h-4 w-4 mr-1" /> Çıkanları Gösteriyorum</>
+                  : <><EyeOff className="h-4 w-4 mr-1" /> Listeden Çıkanlar</>}
+              </Button>
 
               <div className="w-36">
                 <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
@@ -596,10 +637,15 @@ export default function OutreachHubPage() {
                         {expandedId === r.id && editData && (
                           <tr className="bg-muted/20 border-b">
                             <td colSpan={7} className="px-4 py-4 space-y-3">
-                              {/* Sıra No (read-only) */}
-                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                                Sıra No: <span className="font-mono">#{filteredRows.indexOf(r) + 1}</span>
-                                {activeTab !== 'outreach' && r.kutukNo && <span className="ml-3">Kütük No: <span className="font-mono">{r.kutukNo}</span></span>}
+                              {/* Sıra No + status badge */}
+                              <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2 flex-wrap">
+                                <span>Sıra No: <span className="font-mono">#{filteredRows.indexOf(r) + 1}</span></span>
+                                {activeTab !== 'outreach' && r.kutukNo && <span>Kütük No: <span className="font-mono">{r.kutukNo}</span></span>}
+                                {r.status === 'unsubscribed' && (
+                                  <Badge variant="destructive" className="text-[9px]">
+                                    LİSTEDEN ÇIKMIŞ — mail/sms gönderilmez
+                                  </Badge>
+                                )}
                               </p>
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {/* Vakıf detayı */}
@@ -683,11 +729,23 @@ export default function OutreachHubPage() {
                                   </>
                                 )}
                               </div>
-                              <div className="flex justify-end gap-2 mt-3">
-                                <Button variant="outline" size="sm" onClick={() => { setExpandedId(null); setEditData(null); }}>İptal</Button>
-                                <Button size="sm" onClick={saveDetail} disabled={savingId === r.id}>
-                                  {savingId === r.id ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Kaydediliyor</> : 'Kaydet'}
+                              <div className="flex items-center justify-between mt-3 gap-2 flex-wrap">
+                                <Button
+                                  variant={r.status === 'unsubscribed' ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => toggleUnsubscribe(r)}
+                                  disabled={savingId === r.id}
+                                  className={r.status === 'unsubscribed' ? '' : 'border-rose-300 text-rose-700 hover:bg-rose-50'}
+                                >
+                                  <UserMinus className="h-4 w-4 mr-1" />
+                                  {r.status === 'unsubscribed' ? 'Listeye Geri Al' : 'Listeden Çıkar'}
                                 </Button>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" size="sm" onClick={() => { setExpandedId(null); setEditData(null); }}>İptal</Button>
+                                  <Button size="sm" onClick={saveDetail} disabled={savingId === r.id}>
+                                    {savingId === r.id ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Kaydediliyor</> : 'Kaydet'}
+                                  </Button>
+                                </div>
                               </div>
                             </td>
                           </tr>
