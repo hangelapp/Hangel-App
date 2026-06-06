@@ -10,7 +10,7 @@ runConfig:
   minInstances: 1
   maxInstances: 10
   concurrency: 60      # Next.js SSR ağır — OOM önle
-  memoryMiB: 1024      # 512 yetmiyor (Firestore + Genkit + Next)
+  memoryMiB: 2048      # 1024 yetmedi (2026-06-06): yeni outreach route'lar build sırasında OOM
   cpu: 1
   timeoutSeconds: 120  # Yavaş Firestore aggregation için
 

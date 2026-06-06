@@ -12,6 +12,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const VALID_SOURCES = ['registryVakiflar', 'registryDernekler', 'outreachContacts'] as const;
 type Source = typeof VALID_SOURCES[number];
 

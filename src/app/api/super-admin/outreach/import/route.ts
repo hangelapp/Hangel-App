@@ -29,6 +29,9 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const MAX_ROWS = 5000;
 const BATCH_SIZE = 450;
 const VALID_TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Kargo', 'MailHizmet', 'Diğer'];

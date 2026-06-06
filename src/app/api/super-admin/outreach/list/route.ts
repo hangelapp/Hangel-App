@@ -24,6 +24,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 const MAX_LIMIT = 500;
 const DEFAULT_LIMIT = 100;
 const VALID_SOURCES = ['registryVakiflar', 'registryDernekler', 'outreachContacts'] as const;
