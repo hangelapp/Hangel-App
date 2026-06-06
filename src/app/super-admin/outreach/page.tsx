@@ -583,6 +583,20 @@ export default function OutreachHubPage() {
                 </div>
               )}
 
+              {/* Federasyonlar için Faaliyet Alanı (Spor/STK/Mesleki) filtresi */}
+              {typeFilter === 'Federasyon' && (
+                <div className="w-48">
+                  <SearchableSelect
+                    options={['Spor', 'STK', 'Mesleki']}
+                    value={faaliyetAlaniFilter}
+                    placeholder="Faaliyet Alanı"
+                    searchPlaceholder="Kategori ara..."
+                    onValueChange={setFaaliyetAlaniFilter}
+                    triggerClassName="h-10 rounded-md border bg-background px-3"
+                  />
+                </div>
+              )}
+
               {/* Dernekler tab'da Kamu Yararı filter butonu */}
               {activeTab === 'dernekler' && (
                 <Button
