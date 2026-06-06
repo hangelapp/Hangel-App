@@ -186,21 +186,18 @@ export async function GET(req: NextRequest) {
 
   // Source-specific filters
   if (source === 'registryVakiflar') {
+    if (city) q = q.where('il', '==', city);
     q = q.orderBy('nameLower');
-    if (emailOnly) {
-      // emailOnly + orderBy('ePosta', '!=', ''): zorunlu inequality order önce
-      // Bunun yerine emailOnly filter'ını client-side post-filter yapıyoruz.
-    }
-    if (city) {
-      q = q.where('il', '==', city);
-    }
   } else if (source === 'registryDernekler') {
-    q = q.orderBy('__name__');
+    // ÖNEMLİ: doc id format "01-001-023" (Adana=01) → __name__ ile sıralayınca
+    // ilk 100 hep Adana çıkıyordu. nameLower ile alfabetik sırala.
+    // city filter yoksa il alanı olmayan eski dernek kayıtları için fallback yok;
+    // alfabetik sıralama tüm illeri eşit dağıtır.
+    if (city) q = q.where('il', '==', city);
+    q = q.orderBy('nameLower');
   } else {
     q = q.orderBy('createdAt', 'desc').limit(limitNum);
-    if (city) {
-      q = q.where('city', '==', city);
-    }
+    if (city) q = q.where('city', '==', city);
   }
 
   // Cursor
