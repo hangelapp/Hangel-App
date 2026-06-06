@@ -536,10 +536,11 @@ function NgoAdminLayoutInner({ children }: { children: React.ReactNode }) {
   // Show back button on all ngo admin pages, including the dashboard
   const showBackButton = true;
 
-  // Dashboard sayfasında SideMenu gizli — dashboard kendi içinde Hızlı Başlangıç
-  // + kategori bazlı kart navigasyonunu zaten gösteriyor, mükerrer menüyü
-  // (outer hangel sidebar + iç SideMenu) sade tutmak için.
-  const hideSideMenu = pathname === '/ngo-admin/dashboard';
+  // SideMenu, Dashboard ve /ngo-admin landing sayfalarında gizli.
+  // Landing'de "Yönettiklerin" kart listesi + Yeni Kurum ekleme CTA'sı var,
+  // Dashboard'da Hızlı Başlangıç + kategori kart navigasyonu var; her ikisi de
+  // kendi içinde tam navigasyon sunduğu için zeminsiz sol menüye gerek yok.
+  const hideSideMenu = pathname === '/ngo-admin/dashboard' || pathname === '/ngo-admin';
 
   return (
     <div className="min-h-dvh">
