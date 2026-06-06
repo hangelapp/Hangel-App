@@ -8,30 +8,28 @@
  * ve SMS göndermek için kullanılan merkezi panel.
  *
  * Veri kaynakları:
- *   - registryVakiflar (6,680) — T.C. Vakıflar Genel Müdürlüğü, %88 emaili dolu
- *   - registryDernekler (100,967) — T.C. Dernekler Dairesi, email yok
- *   - outreachContacts — manuel eklenen diğer kategoriler
+ *   - registryVakiflar (6,680) — T.C. Vakıflar Genel Müdürlüğü
+ *   - registryDernekler (100,967) — T.C. Dernekler Dairesi
+ *   - outreachContacts — manuel + CSV import edilen diğer kategoriler
  *
- * Bulk send mevcut /super-admin/messaging/campaigns infra'sına bağlanır:
- *   "Kampanyaya Ekle" → selected ID'ler query param ile new campaign sayfasına.
+ * Server-side cursor-based pagination (/api/super-admin/outreach/list) ile
+ * 100K kayıt arasında verimli gezilebilir. "Daha fazla yükle" butonu ile
+ * sayfa sayfa eklenir.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Truck, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
 } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, orderBy } from 'firebase/firestore';
-import { COLLECTIONS } from '@/firebase/collections';
+import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
 
 interface OutreachRow {
@@ -45,86 +43,15 @@ interface OutreachRow {
   website?: string;
   address?: string;
   status?: string;
-  lastContactedAt?: { toDate?: () => Date } | null;
-  source: 'registryVakiflar' | 'registryDernekler' | 'outreachContacts';
 }
 
-interface VakifDoc {
-  id: string;
-  name?: string;
-  il?: string;
-  ilce?: string;
-  telefon1?: string;
-  telefon2?: string;
-  ePosta?: string;
-  adres?: string;
-  type?: string;
-}
-
-interface DernekDoc {
-  id: string;
-  name?: string;
-  adres?: string;
-  webSite?: string;
-  faaliyetAlani?: string;
-  kutukNo?: string;
-}
-
-interface OutreachContactDoc {
-  id: string;
-  name?: string;
-  type?: string;
-  city?: string;
-  district?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  address?: string;
-  status?: string;
-}
-
+type TabKey = 'vakiflar' | 'dernekler' | 'outreach';
+const SOURCE_MAP: Record<TabKey, string> = {
+  vakiflar: 'registryVakiflar',
+  dernekler: 'registryDernekler',
+  outreach: 'outreachContacts',
+};
 const PAGE_LIMIT = 100;
-
-function normalizeVakif(v: VakifDoc): OutreachRow {
-  return {
-    id: v.id,
-    name: v.name || '',
-    type: 'Vakıf',
-    city: v.il,
-    district: v.ilce,
-    phone: v.telefon1 || v.telefon2,
-    email: v.ePosta,
-    address: v.adres,
-    source: 'registryVakiflar',
-  };
-}
-
-function normalizeDernek(d: DernekDoc): OutreachRow {
-  return {
-    id: d.id,
-    name: d.name || '',
-    type: 'Dernek',
-    address: d.adres,
-    website: d.webSite,
-    source: 'registryDernekler',
-  };
-}
-
-function normalizeOutreach(o: OutreachContactDoc): OutreachRow {
-  return {
-    id: o.id,
-    name: o.name || '',
-    type: o.type,
-    city: o.city,
-    district: o.district,
-    phone: o.phone,
-    email: o.email,
-    website: o.website,
-    address: o.address,
-    status: o.status,
-    source: 'outreachContacts',
-  };
-}
 
 const CATEGORY_CARDS = [
   { key: 'vakiflar', label: 'Vakıflar', icon: Landmark, color: 'bg-amber-500', count: 6680 },
@@ -135,57 +62,68 @@ const CATEGORY_CARDS = [
 ];
 
 export default function OutreachHubPage() {
-  const db = useFirestore();
-  const [activeTab, setActiveTab] = useState<'vakiflar' | 'dernekler' | 'outreach'>('vakiflar');
+  const { user } = useUser();
+  const [activeTab, setActiveTab] = useState<TabKey>('vakiflar');
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [emailOnly, setEmailOnly] = useState(false);
+
+  const [rows, setRows] = useState<OutreachRow[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // --- Vakıflar query (registryVakiflar) ---
-  const vakifQuery = useMemoFirebase(() => {
-    if (activeTab !== 'vakiflar') return null;
-    const base = collection(db, COLLECTIONS.registryVakiflar);
-    if (emailOnly) return query(base, where('ePosta', '!=', ''), limit(PAGE_LIMIT));
-    return query(base, orderBy('nameLower'), limit(PAGE_LIMIT));
-  }, [db, activeTab, emailOnly]);
-  const { data: vakifData, isLoading: vakifLoading } = useCollection<VakifDoc>(vakifQuery);
+  const fetchPage = useCallback(async (nextCursor: string | null, append: boolean) => {
+    if (!user) return;
+    if (append) setLoadingMore(true); else setLoading(true);
+    setError(null);
+    try {
+      const token = await user.getIdToken();
+      const params = new URLSearchParams({
+        source: SOURCE_MAP[activeTab],
+        limit: String(PAGE_LIMIT),
+      });
+      if (nextCursor) params.set('cursor', nextCursor);
+      if (searchTerm.trim()) params.set('search', searchTerm.trim());
+      if (cityFilter !== 'all') params.set('city', cityFilter);
+      if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
 
-  // --- Dernekler query (registryDernekler) ---
-  const dernekQuery = useMemoFirebase(() => {
-    if (activeTab !== 'dernekler') return null;
-    return query(collection(db, COLLECTIONS.registryDernekler), limit(PAGE_LIMIT));
-  }, [db, activeTab]);
-  const { data: dernekData, isLoading: dernekLoading } = useCollection<DernekDoc>(dernekQuery);
+      const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error((await res.json())?.message || 'Yükleme hatası');
+      const data: { rows: OutreachRow[]; nextCursor: string | null } = await res.json();
+      setRows((prev) => append ? [...prev, ...data.rows] : data.rows);
+      setCursor(data.nextCursor);
+      setHasMore(!!data.nextCursor);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Hata');
+      if (!append) setRows([]);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [user, activeTab, searchTerm, cityFilter, emailOnly]);
 
-  // --- Manuel outreachContacts ---
-  const outreachQuery = useMemoFirebase(() => {
-    if (activeTab !== 'outreach') return null;
-    return query(collection(db, COLLECTIONS.outreachContacts), limit(PAGE_LIMIT));
-  }, [db, activeTab]);
-  const { data: outreachData, isLoading: outreachLoading } = useCollection<OutreachContactDoc>(outreachQuery);
-
-  const rows: OutreachRow[] = useMemo(() => {
-    if (activeTab === 'vakiflar') return (vakifData || []).map(normalizeVakif);
-    if (activeTab === 'dernekler') return (dernekData || []).map(normalizeDernek);
-    return (outreachData || []).map(normalizeOutreach);
-  }, [activeTab, vakifData, dernekData, outreachData]);
-
-  const filteredRows = useMemo(() => {
-    const term = searchTerm.toLowerCase().trim();
-    return rows.filter((r) => {
-      if (term && !r.name.toLowerCase().includes(term) && !(r.address || '').toLowerCase().includes(term)) return false;
-      if (cityFilter !== 'all' && r.city !== cityFilter) return false;
-      return true;
-    });
-  }, [rows, searchTerm, cityFilter]);
-
-  const isLoading = vakifLoading || dernekLoading || outreachLoading;
+  // İlk yükleme + filter değişimi
+  useEffect(() => {
+    setRows([]);
+    setCursor(null);
+    setSelectedIds(new Set());
+    if (user) {
+      const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
+      return () => clearTimeout(t);
+    }
+  }, [user, activeTab, searchTerm, cityFilter, emailOnly, fetchPage]);
 
   const cityOptions = useMemo(() => {
     const set = new Set<string>();
     rows.forEach((r) => { if (r.city) set.add(r.city); });
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
   }, [rows]);
 
   function toggleSelect(id: string) {
@@ -198,16 +136,18 @@ export default function OutreachHubPage() {
   }
 
   function toggleSelectAll() {
-    if (selectedIds.size === filteredRows.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredRows.map((r) => r.id)));
-    }
+    if (selectedIds.size === rows.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(rows.map((r) => r.id)));
   }
 
-  const selectedRows = filteredRows.filter((r) => selectedIds.has(r.id));
+  const selectedRows = rows.filter((r) => selectedIds.has(r.id));
   const selectedWithEmail = selectedRows.filter((r) => r.email).length;
   const selectedWithPhone = selectedRows.filter((r) => r.phone).length;
+
+  const sourceCol = SOURCE_MAP[activeTab];
+  const idList = Array.from(selectedIds).join(',');
+  const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
+  const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
@@ -229,7 +169,6 @@ export default function OutreachHubPage() {
         </div>
       </div>
 
-      {/* Kategori özet kartları */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {CATEGORY_CARDS.map((cat) => {
           const Icon = cat.icon;
@@ -250,8 +189,7 @@ export default function OutreachHubPage() {
         })}
       </div>
 
-      {/* Veri kaynağı tab'ları */}
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as 'vakiflar' | 'dernekler' | 'outreach'); setSelectedIds(new Set()); }}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)}>
         <TabsList>
           <TabsTrigger value="vakiflar">
             <Landmark className="h-4 w-4 mr-1" /> Vakıflar
@@ -262,12 +200,11 @@ export default function OutreachHubPage() {
             <Badge variant="secondary" className="ml-2 text-[10px]">100.967</Badge>
           </TabsTrigger>
           <TabsTrigger value="outreach">
-            <Building2 className="h-4 w-4 mr-1" /> Diğer (Manuel)
+            <Building2 className="h-4 w-4 mr-1" /> Diğer (Manuel/CSV)
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4 mt-4">
-          {/* Filter bar */}
           <Card>
             <CardContent className="p-4 flex flex-wrap items-center gap-3">
               <div className="relative flex-1 min-w-[200px]">
@@ -281,15 +218,14 @@ export default function OutreachHubPage() {
               </div>
 
               {cityOptions.length > 0 && (
-                <Select value={cityFilter} onValueChange={setCityFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Tüm iller" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tüm iller</SelectItem>
-                    {cityOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={cityFilter}
+                  onChange={(e) => setCityFilter(e.target.value)}
+                  className="h-10 rounded-md border bg-background px-3 text-sm"
+                >
+                  <option value="all">Tüm iller</option>
+                  {cityOptions.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
               )}
 
               {activeTab === 'vakiflar' && (
@@ -300,44 +236,41 @@ export default function OutreachHubPage() {
               )}
 
               <div className="text-xs text-muted-foreground ml-auto">
-                {isLoading ? 'Yükleniyor...' : `${filteredRows.length} kayıt`}
-                {' · ilk ' + PAGE_LIMIT + ' gösteriliyor'}
+                {loading ? 'Yükleniyor...' : `${rows.length.toLocaleString('tr-TR')} kayıt yüklü${hasMore ? '+' : ''}`}
               </div>
             </CardContent>
           </Card>
 
-          {/* Bulk action bar */}
-          {selectedIds.size > 0 && (() => {
-            const sourceCol = activeTab === 'vakiflar' ? 'registryVakiflar'
-              : activeTab === 'dernekler' ? 'registryDernekler'
-              : 'outreachContacts';
-            const idList = Array.from(selectedIds).join(',');
-            const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
-            const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
-            return (
-              <Card className="border-primary/40 bg-primary/5">
-                <CardContent className="p-3 flex items-center justify-between flex-wrap gap-2">
-                  <div className="text-sm">
-                    <span className="font-bold">{selectedIds.size} seçili</span>
-                    <span className="text-muted-foreground ml-3">
-                      📧 {selectedWithEmail} email · 📱 {selectedWithPhone} telefon
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Temizle</Button>
-                    <Button asChild size="sm" disabled={selectedWithEmail === 0}>
-                      <Link href={emailHref}><Mail className="h-4 w-4 mr-1" /> Email Gönder ({selectedWithEmail})</Link>
-                    </Button>
-                    <Button asChild size="sm" disabled={selectedWithPhone === 0}>
-                      <Link href={smsHref}><MessageSquare className="h-4 w-4 mr-1" /> SMS Gönder ({selectedWithPhone})</Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })()}
+          {selectedIds.size > 0 && (
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="p-3 flex items-center justify-between flex-wrap gap-2">
+                <div className="text-sm">
+                  <span className="font-bold">{selectedIds.size} seçili</span>
+                  <span className="text-muted-foreground ml-3">
+                    📧 {selectedWithEmail} email · 📱 {selectedWithPhone} telefon
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>Temizle</Button>
+                  <Button asChild size="sm" disabled={selectedWithEmail === 0}>
+                    <Link href={emailHref}><Mail className="h-4 w-4 mr-1" /> Email Gönder ({selectedWithEmail})</Link>
+                  </Button>
+                  <Button asChild size="sm" disabled={selectedWithPhone === 0}>
+                    <Link href={smsHref}><MessageSquare className="h-4 w-4 mr-1" /> SMS Gönder ({selectedWithPhone})</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Tablo */}
+          {error && (
+            <Card className="border-rose-300 bg-rose-50">
+              <CardContent className="p-3 text-sm text-rose-700 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" /> {error}
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardContent className="p-0 overflow-x-auto">
               <table className="w-full text-sm">
@@ -345,7 +278,7 @@ export default function OutreachHubPage() {
                   <tr className="text-left text-xs uppercase tracking-wider text-muted-foreground">
                     <th className="px-3 py-2 w-10">
                       <Checkbox
-                        checked={selectedIds.size > 0 && selectedIds.size === filteredRows.length}
+                        checked={selectedIds.size > 0 && selectedIds.size === rows.length}
                         onCheckedChange={toggleSelectAll}
                       />
                     </th>
@@ -357,15 +290,15 @@ export default function OutreachHubPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoading ? (
+                  {loading ? (
                     <tr><td colSpan={6} className="text-center py-12"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></td></tr>
-                  ) : filteredRows.length === 0 ? (
+                  ) : rows.length === 0 ? (
                     <tr><td colSpan={6} className="text-center py-12 text-sm text-muted-foreground">
                       <AlertCircle className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                      Kayıt bulunamadı. {activeTab === 'outreach' && 'Yeni kontak ekleyerek başlayabilirsin.'}
+                      Kayıt bulunamadı. {activeTab === 'outreach' && 'Yeni kontak ekle veya CSV içe aktar.'}
                     </td></tr>
                   ) : (
-                    filteredRows.map((r) => (
+                    rows.map((r) => (
                       <tr key={r.id} className="border-b hover:bg-muted/20 transition-colors">
                         <td className="px-3 py-2">
                           <Checkbox
@@ -398,15 +331,22 @@ export default function OutreachHubPage() {
             </CardContent>
           </Card>
 
-          {/* Sayfalama notu */}
-          <Card className="border-amber-200 bg-amber-50/50">
+          {hasMore && rows.length > 0 && (
+            <div className="flex justify-center">
+              <Button onClick={() => fetchPage(cursor, true)} disabled={loadingMore} variant="outline">
+                {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Daha Fazla Yükle ({PAGE_LIMIT}'er)
+              </Button>
+            </div>
+          )}
+
+          <Card className="border-emerald-200 bg-emerald-50/50">
             <CardContent className="p-3 flex items-center gap-2 text-xs">
-              <CheckCircle2 className="h-4 w-4 text-amber-600 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
               <p>
-                <strong>MVP:</strong> şu an her tab'da ilk {PAGE_LIMIT} kayıt gösteriliyor.
-                Tam liste için server-side pagination ve "Tümünü seç (X bin)" ekleyeceğiz.
-                Bulk send butonları henüz <strong>messaging campaign sistemine bağlanmadı</strong> —
-                bir sonraki adımda /super-admin/messaging/campaigns/new'e selected ID'leri query param ile aktaracağız.
+                <strong>Server-side pagination aktif.</strong> Sayfada her seferinde {PAGE_LIMIT} kayıt yüklenir,
+                "Daha Fazla Yükle" ile sonraki sayfa eklenir. Arama ve il filtresi server tarafında uygulanır.
+                Email kampanyası butonları seçilen kontakları /send sayfasına aktarır.
               </p>
             </CardContent>
           </Card>
