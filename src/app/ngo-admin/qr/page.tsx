@@ -15,16 +15,19 @@ import {
   BookUser,
   AtSign,
   Upload,
+  CheckCircle2,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useTranslation } from '@/components/providers/language-provider';
+import { hashPhoneForMatch } from '@/lib/native-contacts';
+import { canonicalPhone } from '@/lib/phone-normalize';
 
 interface ImportedContact {
   id: string;
@@ -151,11 +154,112 @@ export default function QrPage() {
   const [imported, setImported] = useState<ImportedContact[]>([]);
   const [importLoading, setImportLoading] = useState(false);
   const [manualEmail, setManualEmail] = useState('');
+  // hangel'de kayıtlı kişiler: contact.id → { userId, name?, avatarUrl? }
+  const [matchInfo, setMatchInfo] = useState<Record<string, { userId: string; name?: string; avatarUrl?: string }>>({});
+  const [matching, setMatching] = useState(false);
+
+  // İçe aktarılan kişileri hangel kullanıcılarıyla eşleştir (telefon hash + e-posta).
+  // Kayıtlılar yeşil görünür; kayıtlı olmayanlara toplu davet gönderilir.
+  const matchContacts = async (contacts: ImportedContact[]) => {
+    setMatchInfo({});
+    if (!authUser) return;
+    const phoneHashToIds = new Map<string, string[]>();
+    const emailToIds = new Map<string, string[]>();
+    const hashes: string[] = [];
+    const emails: string[] = [];
+    const addHash = (h: string, id: string) => {
+      if (!h) return;
+      if (!phoneHashToIds.has(h)) { phoneHashToIds.set(h, []); hashes.push(h); }
+      phoneHashToIds.get(h)!.push(id);
+    };
+    for (const c of contacts) {
+      for (const raw of c.phones) {
+        // Hem yerel format (0555…) hem ülke kodlu (90555…) varyantını hash'le —
+        // kayıt sırasında numara canonicalPhone(local) olarak saklanıyor.
+        const variants = new Set([canonicalPhone(raw), canonicalPhone(raw, '90')].filter(Boolean));
+        for (const v of variants) addHash(await hashPhoneForMatch(v), c.id);
+      }
+      for (const e of c.emails) {
+        const em = e.trim().toLowerCase();
+        if (!em) continue;
+        if (!emailToIds.has(em)) { emailToIds.set(em, []); emails.push(em); }
+        emailToIds.get(em)!.push(c.id);
+      }
+    }
+    if (hashes.length === 0 && emails.length === 0) return;
+    setMatching(true);
+    try {
+      const idToken = await authUser.getIdToken();
+      const res = await fetch('/api/contacts/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ hashes, emails }),
+      });
+      const data = (await res.json().catch(() => null)) as {
+        matches?: Array<{ hash: string; userId: string; name?: string; avatarUrl?: string }>;
+        emailMatches?: Array<{ email: string; userId: string; name?: string; avatarUrl?: string }>;
+      } | null;
+      if (!res.ok || !data) return;
+      const next: Record<string, { userId: string; name?: string; avatarUrl?: string }> = {};
+      for (const m of data.matches || []) {
+        for (const id of phoneHashToIds.get(m.hash) || []) {
+          next[id] = next[id] || { userId: m.userId, name: m.name, avatarUrl: m.avatarUrl };
+        }
+      }
+      for (const m of data.emailMatches || []) {
+        for (const id of emailToIds.get((m.email || '').toLowerCase()) || []) {
+          next[id] = next[id] || { userId: m.userId, name: m.name, avatarUrl: m.avatarUrl };
+        }
+      }
+      setMatchInfo(next);
+    } catch {
+      // Eşleştirme başarısızsa kişiler kayıtsız varsayılır — davet akışı çalışmaya devam eder.
+    } finally {
+      setMatching(false);
+    }
+  };
+
+  // Kayıtlı olmayan kişiler + toplu davet için e-posta/telefon listeleri.
+  const inviteStats = useMemo(() => {
+    const unregistered = imported.filter((c) => !matchInfo[c.id]);
+    const emails = Array.from(new Set(unregistered.flatMap((c) => c.emails.map((e) => e.trim()).filter(Boolean))));
+    const phones = Array.from(new Set(unregistered.flatMap((c) => c.phones.map((p) => p.trim()).filter(Boolean))));
+    return { unregisteredCount: unregistered.length, registeredCount: imported.length - unregistered.length, emails, phones };
+  }, [imported, matchInfo]);
+
+  // Kayıtlı olmayanların hepsine tek seferde e-posta daveti (mailto, virgülle ayrılmış alıcı).
+  const sendBulkEmailInvite = () => {
+    if (inviteStats.emails.length === 0) {
+      toast({ variant: 'destructive', title: t('ngo_admin_qr.toastNoBulkEmailTitle'), description: t('ngo_admin_qr.toastNoBulkEmailDesc') });
+      return;
+    }
+    const to = inviteStats.emails.slice(0, 200).join(',');
+    window.open(`mailto:${to}?subject=${encodeURIComponent(inviteSubject)}&body=${encodeURIComponent(inviteBody)}`, '_blank');
+    toast({ title: t('ngo_admin_qr.toastBulkEmailOpenedTitle'), description: `${inviteStats.emails.length} ${t('ngo_admin_qr.toastBulkEmailOpenedDescSuffix')}` });
+  };
+
+  // Kayıtlı olmayan telefonlara toplu SMS (sms: çoklu alıcı; cihaz SMS uygulamasını açar).
+  const sendBulkSmsInvite = () => {
+    if (inviteStats.phones.length === 0) {
+      toast({ variant: 'destructive', title: t('ngo_admin_qr.toastNoBulkSmsTitle'), description: t('ngo_admin_qr.toastNoBulkSmsDesc') });
+      return;
+    }
+    const to = inviteStats.phones.slice(0, 50).join(',');
+    window.open(`sms:${to}?&body=${encodeURIComponent(inviteBody)}`, '_blank');
+    toast({ title: t('ngo_admin_qr.toastBulkSmsOpenedTitle'), description: `${inviteStats.phones.length} ${t('ngo_admin_qr.toastBulkSmsOpenedDescSuffix')}` });
+  };
 
   const inviteSubject = activeEntity ? `${t('ngo_admin_qr.shareSubjectPrefix')} ${entityName}${t('ngo_admin_qr.shareSubjectSuffix')}` : t('ngo_admin_qr.inviteSubjectFallback');
   const inviteBody = activeEntity
     ? `${entityName} ${t('ngo_admin_qr.shareMessageMiddle')} ${inviteUrl}`
     : `${t('ngo_admin_qr.inviteBodyFallback')} ${inviteUrl}`;
+
+  // İçe aktarılan kişiler değiştikçe hangel kaydı eşleştirmesini tetikle.
+  useEffect(() => {
+    if (imported.length > 0) void matchContacts(imported);
+    // matchContacts kasıtlı dışarıda — her render'da değişiyor, imported tetikleyici yeterli.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imported, authUser]);
 
   const handleContactsConnect = async () => {
     const nav = typeof navigator !== 'undefined'
@@ -498,23 +602,57 @@ export default function QrPage() {
             <DialogTitle className="flex items-center gap-2"><BookUser className="h-5 w-5 text-primary" /> {t('ngo_admin_qr.importedDialogTitle')}</DialogTitle>
             <DialogDescription>{t('ngo_admin_qr.importedDialogDescPrefix')} {entityTypeLabel} {t('ngo_admin_qr.importedDialogDescSuffix')}</DialogDescription>
           </DialogHeader>
+          {imported.length > 0 && (
+            <div className="space-y-2 rounded-xl border bg-muted/40 p-3">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> {inviteStats.registeredCount} {t('ngo_admin_qr.matchRegisteredCount')}
+                </span>
+                <span className="text-muted-foreground">
+                  {matching ? (<span className="flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> {t('ngo_admin_qr.matchChecking')}</span>) : `${inviteStats.unregisteredCount} ${t('ngo_admin_qr.matchUnregisteredCount')}`}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-tight">{t('ngo_admin_qr.bulkInviteHint')}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button size="sm" variant="outline" className="font-bold" onClick={sendBulkEmailInvite} disabled={inviteStats.emails.length === 0}>
+                  <Mail className="mr-1 h-3.5 w-3.5" /> {t('ngo_admin_qr.bulkEmailBtn')} ({inviteStats.emails.length})
+                </Button>
+                <Button size="sm" variant="outline" className="font-bold" onClick={sendBulkSmsInvite} disabled={inviteStats.phones.length === 0}>
+                  <MessageSquare className="mr-1 h-3.5 w-3.5" /> {t('ngo_admin_qr.bulkSmsBtn')} ({inviteStats.phones.length})
+                </Button>
+              </div>
+            </div>
+          )}
           <div className="max-h-80 overflow-y-auto space-y-2">
             {imported.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-6">{t('ngo_admin_qr.importedEmpty')}</p>
-            ) : imported.map((c) => (
-              <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border bg-background">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="h-8 w-8"><AvatarFallback>{c.name[0]}</AvatarFallback></Avatar>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium truncate">{c.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
+            ) : imported.map((c) => {
+              const m = matchInfo[c.id];
+              return (
+                <div key={c.id} className={`flex items-center justify-between p-2 rounded-lg border ${m ? 'border-green-500/40 bg-green-500/5' : 'bg-background'}`}>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Avatar className="h-8 w-8">
+                      {m?.avatarUrl ? <AvatarImage src={m.avatarUrl} alt={c.name} /> : null}
+                      <AvatarFallback className={m ? 'bg-green-500/15 text-green-700' : ''}>{c.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate flex items-center gap-1">
+                        {c.name}
+                        {m && <CheckCircle2 className="h-3.5 w-3.5 text-green-600 flex-shrink-0" />}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
+                    </div>
                   </div>
+                  {m ? (
+                    <span className="text-[11px] font-bold text-green-600 whitespace-nowrap flex-shrink-0 pl-2">{t('ngo_admin_qr.matchRegisteredBadge')}</span>
+                  ) : (
+                    <Button size="sm" onClick={() => sendInviteToContact(c)} disabled={!c.emails[0] && !c.phones[0]}>
+                      <Send className="mr-1 h-3 w-3" /> {t('ngo_admin_qr.sendInvite')}
+                    </Button>
+                  )}
                 </div>
-                <Button size="sm" onClick={() => sendInviteToContact(c)} disabled={!c.emails[0] && !c.phones[0]}>
-                  <Send className="mr-1 h-3 w-3" /> {t('ngo_admin_qr.sendInvite')}
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </DialogContent>
       </Dialog>
