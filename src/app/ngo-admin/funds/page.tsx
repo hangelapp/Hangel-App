@@ -109,7 +109,7 @@ export default function FundsPage() {
     // Filtering and Sorting States
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [areaFilters, setAreaFilters] = useState<string[]>([]);
-    const [sortConfig, setSortConfig] = useState<{ key: 'deadline' | 'name', direction: 'asc' | 'desc' }>({ key: 'deadline', direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState<{ key: 'deadline' | 'name' | 'compat', direction: 'asc' | 'desc' }>({ key: 'deadline', direction: 'asc' });
 
     // Firestore'dan fon listesi (super-admin tarafından yönetilen).
     // orderBy uygulamıyoruz; deadline alanı eksik olan dokümanlar listede yer alsın.
@@ -179,11 +179,17 @@ export default function FundsPage() {
                     ? a.name.localeCompare(b.name, 'tr')
                     : b.name.localeCompare(a.name, 'tr');
             }
+            if (sortConfig.key === 'compat') {
+                const sa = compatScore(a) ?? -1;
+                const sb = compatScore(b) ?? -1;
+                return sortConfig.direction === 'asc' ? sa - sb : sb - sa;
+            }
             return 0;
         });
 
         return result;
-    }, [searchTerm, statusFilter, areaFilters, sortConfig, funds]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchTerm, statusFilter, areaFilters, sortConfig, funds, ngoAreas]);
 
     const handleOpenDetails = (fund: typeof funds[0]) => {
         router.push(`/ngo-admin/funds/${fund.id}`);
@@ -297,6 +303,9 @@ export default function FundsPage() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setSortConfig({ key: 'name', direction: 'desc' })}>
                                 {t('ngo_admin_funds.sortNameDesc')} {sortConfig.key === 'name' && sortConfig.direction === 'desc' && '✓'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setSortConfig({ key: 'compat', direction: 'desc' })}>
+                                Uyuma Göre Sırala (yüksek → düşük) {sortConfig.key === 'compat' && '✓'}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
