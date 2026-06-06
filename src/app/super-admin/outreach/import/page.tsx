@@ -27,7 +27,7 @@ import {
 
 const TARGET_FIELDS = [
   { key: 'name', label: 'Ad *', required: true },
-  { key: 'type', label: 'Tür (Vakıf/Dernek/SivilToplumMüdürlüğü/SporKulübü/MailHizmet/Diğer)' },
+  { key: 'type', label: 'Tür (Vakıf/Dernek/SivilToplumMüdürlüğü/Federasyon/SporKulübü/MailHizmet/Diğer)' },
   { key: 'city', label: 'İl' },
   { key: 'district', label: 'İlçe' },
   { key: 'phone', label: 'Telefon' },

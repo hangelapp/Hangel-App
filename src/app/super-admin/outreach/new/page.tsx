@@ -21,6 +21,7 @@ const TYPES = [
   { value: 'Vakıf', label: 'Vakıf' },
   { value: 'Dernek', label: 'Dernek' },
   { value: 'SivilToplumMüdürlüğü', label: 'İl Sivil Toplum Müdürlüğü' },
+  { value: 'Federasyon', label: 'Federasyon' },
   { value: 'SporKulübü', label: 'Spor Kulübü' },
   { value: 'MailHizmet', label: 'Mail / SMS Hizmet Sağlayıcısı' },
   { value: 'Diğer', label: 'Diğer' },

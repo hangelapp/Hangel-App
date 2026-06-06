@@ -79,6 +79,7 @@ const CATEGORY_CARDS: Array<{
   { key: 'vakiflar',     label: 'Vakıflar',                       icon: Landmark,  color: 'bg-amber-500',  count: 6680,    targetTab: 'vakiflar' },
   { key: 'dernekler',    label: 'Dernekler',                      icon: Heart,     color: 'bg-rose-500',   count: 100967,  targetTab: 'dernekler' },
   { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 81,      targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
+  { key: 'federasyonlar', label: 'Federasyonlar',                 icon: Landmark,  color: 'bg-emerald-500', count: 98,      targetTab: 'outreach', typeFilter: 'Federasyon' },
   { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 0,       targetTab: 'outreach', typeFilter: 'SporKulübü' },
   { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları',    icon: Server,    color: 'bg-violet-500', count: 0,       targetTab: 'outreach', typeFilter: 'MailHizmet' },
 ];
@@ -205,7 +206,7 @@ export default function OutreachHubPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const fetchPage = useCallback(async (nextCursor: string | null, append: boolean) => {
-    if (!user) return;
+    if (!user) return { rows: [] as OutreachRow[], nextCursor: null as string | null };
     if (append) setLoadingMore(true); else setLoading(true);
     setError(null);
     try {
@@ -221,24 +222,60 @@ export default function OutreachHubPage() {
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // 410 CURSOR_INVALID — sıfırla ve baştan yükle
+      if (res.status === 410) {
+        setCursor(null);
+        setHasMore(true);
+        setRows([]);
+        // Re-fetch otomatik tetiklenmesi için cursor temizleyip dön
+        return { rows: [], nextCursor: null };
+      }
       if (!res.ok) throw new Error((await res.json())?.message || 'Yükleme hatası');
       const data: { rows: OutreachRow[]; nextCursor: string | null } = await res.json();
       setRows((prev) => append ? [...prev, ...data.rows] : data.rows);
       setCursor(data.nextCursor);
       setHasMore(!!data.nextCursor);
+      return data;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Hata');
       if (!append) setRows([]);
+      return { rows: [], nextCursor: null };
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, [user, activeTab, searchTerm, emailOnly, pageSize]);
 
-  // İlk yükleme + filter değişimi
+  // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
+  // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
+  const [loadAllProgress, setLoadAllProgress] = useState<{ loaded: number; total?: number } | null>(null);
+  const loadAllRef = React.useRef(false);
+  const loadAll = useCallback(async () => {
+    if (loadAllRef.current) return;
+    loadAllRef.current = true;
+    setLoadAllProgress({ loaded: rows.length });
+    let currentCursor = cursor;
+    let totalLoaded = rows.length;
+    try {
+      for (let i = 0; i < 1000 && currentCursor; i++) {
+        const r = await fetchPage(currentCursor, true);
+        if (!r || r.rows.length === 0) break;
+        totalLoaded += r.rows.length;
+        currentCursor = r.nextCursor;
+        setLoadAllProgress({ loaded: totalLoaded });
+        if (!currentCursor) break;
+      }
+    } finally {
+      loadAllRef.current = false;
+      setLoadAllProgress(null);
+    }
+  }, [cursor, rows.length, fetchPage]);
+
+  // İlk yükleme + filter değişimi — hasMore ve cursor TAM reset edilir.
   useEffect(() => {
     setRows([]);
     setCursor(null);
+    setHasMore(true);  // pageSize/filter değişince hasMore kalıntısını sıfırla
     setSelectedIds(new Set());
     if (user) {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
@@ -369,7 +406,7 @@ export default function OutreachHubPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {CATEGORY_CARDS.map((cat) => {
           const Icon = cat.icon;
           const isActive = activeTab === cat.targetTab && (cat.typeFilter ? typeFilter === cat.typeFilter : !typeFilter || cat.targetTab !== 'outreach');
@@ -678,19 +715,35 @@ export default function OutreachHubPage() {
                 </Button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel uyumlu CSV indir">
                 <FileSpreadsheet className="h-4 w-4 mr-1" />
                 İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
               </Button>
               {hasMore && rows.length > 0 && (
-                <Button onClick={() => fetchPage(cursor, true)} disabled={loadingMore} variant="outline" size="sm">
-                  {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Daha Fazla Yükle ({pageSize}'er)
-                </Button>
+                <>
+                  <Button onClick={() => fetchPage(cursor, true)} disabled={loadingMore || !!loadAllProgress} variant="outline" size="sm">
+                    {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                    Daha Fazla Yükle ({pageSize}'er)
+                  </Button>
+                  <Button onClick={loadAll} disabled={loadingMore || !!loadAllProgress} variant="default" size="sm" title="Tüm kalan kayıtları batch'ler halinde yükle">
+                    {loadAllProgress
+                      ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Yükleniyor... {loadAllProgress.loaded.toLocaleString('tr-TR')}</>
+                      : 'Tümünü Yükle'}
+                  </Button>
+                </>
               )}
             </div>
           </div>
+          {/* Büyük dataset uyarısı: vakıflar 6.680, dernekler 100.967 — "Tümünü Yükle" zaman alır */}
+          {hasMore && rows.length > 0 && activeTab === 'dernekler' && !loadAllProgress && (
+            <Card className="border-amber-200 bg-amber-50/50">
+              <CardContent className="p-2 flex items-center gap-2 text-[11px] text-amber-800">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>Dernekler toplamı 100.967 — "Tümünü Yükle" 5-15 dakika ve ~100 MB veri çekebilir. İl filtresiyle daraltmak daha hızlı.</span>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="border-emerald-200 bg-emerald-50/50">
             <CardContent className="p-3 flex items-center gap-2 text-xs">

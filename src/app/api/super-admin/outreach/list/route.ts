@@ -200,38 +200,55 @@ export async function GET(req: NextRequest) {
     if (city) q = q.where('city', '==', city);
   }
 
-  // Cursor
+  // Cursor — bulunamazsa CURSOR_INVALID dön (silent skip yerine)
   if (cursor) {
     const cursorDoc = await db.collection(source).doc(cursor).get();
-    if (cursorDoc.exists) {
-      q = q.startAfter(cursorDoc);
+    if (!cursorDoc.exists) {
+      return NextResponse.json(
+        { errorCode: 'CURSOR_INVALID', message: 'Pagination süresi doldu, baştan başla' },
+        { status: 410 },
+      );
     }
+    q = q.startAfter(cursorDoc);
   }
 
-  // Limit (post-filter olabileceği için biraz daha fazla çek)
-  const fetchLimit = emailOnly || search ? Math.min(MAX_LIMIT, limitNum * 3) : limitNum;
-  q = q.limit(fetchLimit);
+  // Post-filter çok agresif olabilir (özellikle emailOnly + city filtre kombinasyonunda).
+  // Loop ile yeterli sonuç toplanana kadar fetch et (max 5 iterasyon = 5x multiplier güvence).
+  const finalRows: OutreachRow[] = [];
+  let lastCursorDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+  let fetched = 0;
+  const baseLimit = limitNum;
+  const perFetch = emailOnly || search ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
 
-  const snap = await q.get();
-  let rows = snap.docs.map((d) => normalize(source, d));
+  for (let iter = 0; iter < 5 && finalRows.length < baseLimit; iter++) {
+    let iterQ = q;
+    if (lastCursorDoc) iterQ = iterQ.startAfter(lastCursorDoc);
+    iterQ = iterQ.limit(perFetch);
 
-  // Post-filter (search, emailOnly — Firestore inequality limitleri için)
-  if (emailOnly) rows = rows.filter((r) => !!r.email);
-  if (search) {
-    rows = rows.filter((r) =>
-      r.name.toLowerCase().includes(search) || (r.address || '').toLowerCase().includes(search),
-    );
+    const snap = await iterQ.get();
+    fetched += snap.docs.length;
+    if (snap.empty) break;
+
+    for (const doc of snap.docs) {
+      const row = normalize(source, doc);
+      if (emailOnly && !row.email) continue;
+      if (search && !(row.name.toLowerCase().includes(search) || (row.address || '').toLowerCase().includes(search))) continue;
+      finalRows.push(row);
+      if (finalRows.length >= baseLimit) break;
+    }
+    lastCursorDoc = snap.docs[snap.docs.length - 1];
+    if (snap.docs.length < perFetch) break; // sonuna geldik
   }
 
-  // Limit'e gore kes
-  const finalRows = rows.slice(0, limitNum);
-  const nextCursor = snap.docs.length === fetchLimit && finalRows.length > 0
-    ? snap.docs[snap.docs.length - 1].id
+  // KRİTİK: nextCursor son RETURNED row'un id'si olmalı, son fetched doc DEĞİL.
+  // Aksi halde post-filter ile elenen doc'lar arasından "atlama" olur.
+  const nextCursor = finalRows.length === baseLimit && finalRows.length > 0
+    ? finalRows[finalRows.length - 1].id
     : null;
 
   return NextResponse.json({
     rows: finalRows,
     nextCursor,
-    fetched: snap.docs.length,
+    fetched,
   });
 }
