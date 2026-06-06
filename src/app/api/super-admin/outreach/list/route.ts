@@ -27,7 +27,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const MAX_LIMIT = 500;
+const MAX_LIMIT = 1000;
 const DEFAULT_LIMIT = 100;
 const VALID_SOURCES = ['registryVakiflar', 'registryDernekler', 'outreachContacts'] as const;
 type Source = typeof VALID_SOURCES[number];

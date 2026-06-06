@@ -28,7 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
-  ChevronDown, X,
+  ChevronDown, X, FileSpreadsheet,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,8 @@ const SOURCE_MAP: Record<TabKey, string> = {
   dernekler: 'registryDernekler',
   outreach: 'outreachContacts',
 };
-const PAGE_LIMIT = 100;
+const PAGE_SIZE_OPTIONS = [100, 250, 500, 1000] as const;
+type PageSize = typeof PAGE_SIZE_OPTIONS[number];
 
 // Kategori kartları: tıklayınca ilgili tab'a/filtreye geçiş.
 // `targetTab` + `typeFilter` her kart için aksiyon tanımlar.
@@ -77,10 +78,96 @@ const CATEGORY_CARDS: Array<{
 }> = [
   { key: 'vakiflar',     label: 'Vakıflar',                       icon: Landmark,  color: 'bg-amber-500',  count: 6680,    targetTab: 'vakiflar' },
   { key: 'dernekler',    label: 'Dernekler',                      icon: Heart,     color: 'bg-rose-500',   count: 100967,  targetTab: 'dernekler' },
-  { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 0,       targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
+  { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 81,      targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
   { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 0,       targetTab: 'outreach', typeFilter: 'SporKulübü' },
   { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları',    icon: Server,    color: 'bg-violet-500', count: 0,       targetTab: 'outreach', typeFilter: 'MailHizmet' },
 ];
+
+// CSV utilities — Excel uyumlu (UTF-8 BOM + tırnaklama).
+function csvEscape(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  const s = String(value);
+  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function buildCsv(rows: OutreachRow[], tab: TabKey): string {
+  // Alanlar sekmeye göre değişir — kullanıcının istediği tüm bilgiler.
+  let headers: Array<{ key: keyof OutreachRow | 'siraNo'; label: string }>;
+  if (tab === 'vakiflar') {
+    headers = [
+      { key: 'siraNo', label: 'Sıra No' },
+      { key: 'name', label: 'Vakıf Adı' },
+      { key: 'shortName', label: 'Kısa Ad' },
+      { key: 'faaliyetAlani', label: 'Faaliyet Alanı' },
+      { key: 'address', label: 'Adres' },
+      { key: 'city', label: 'İl' },
+      { key: 'district', label: 'İlçe' },
+      { key: 'neighborhood', label: 'Mahalle' },
+      { key: 'phone', label: 'Telefon-1' },
+      { key: 'phone2', label: 'Telefon-2' },
+      { key: 'etebligat', label: 'E-Tebligat' },
+      { key: 'email', label: 'E-Posta' },
+      { key: 'website', label: 'Web Sitesi' },
+      { key: 'kutukNo', label: 'Kütük No' },
+    ];
+  } else if (tab === 'dernekler') {
+    headers = [
+      { key: 'siraNo', label: 'Sıra No' },
+      { key: 'name', label: 'Derneğin Adı' },
+      { key: 'shortName', label: 'Kısa Adı' },
+      { key: 'faaliyetAlani', label: 'Faaliyet Alanı' },
+      { key: 'detayliFaaliyetAlani', label: 'Detaylı Faaliyet Alanı' },
+      { key: 'kutukNo', label: 'Kütük No' },
+      { key: 'kurulusTarihi', label: 'Kuruluş Tarihi' },
+      { key: 'website', label: 'Web Sitesi' },
+      { key: 'email', label: 'E-Posta' },
+      { key: 'address', label: 'Adres' },
+      { key: 'city', label: 'İl' },
+      { key: 'district', label: 'İlçe' },
+      { key: 'neighborhood', label: 'Mahalle' },
+    ];
+  } else {
+    headers = [
+      { key: 'siraNo', label: 'Sıra No' },
+      { key: 'name', label: 'Ad' },
+      { key: 'shortName', label: 'Kısa Ad' },
+      { key: 'type', label: 'Tür' },
+      { key: 'faaliyetAlani', label: 'Faaliyet Alanı' },
+      { key: 'address', label: 'Adres' },
+      { key: 'city', label: 'İl' },
+      { key: 'district', label: 'İlçe' },
+      { key: 'neighborhood', label: 'Mahalle' },
+      { key: 'phone', label: 'Telefon-1' },
+      { key: 'phone2', label: 'Telefon-2' },
+      { key: 'etebligat', label: 'E-Tebligat' },
+      { key: 'email', label: 'E-Posta' },
+      { key: 'website', label: 'Web Sitesi' },
+      { key: 'status', label: 'Durum' },
+    ];
+  }
+  const lines = [headers.map((h) => csvEscape(h.label)).join(',')];
+  rows.forEach((r, idx) => {
+    const cells = headers.map((h) => {
+      if (h.key === 'siraNo') return csvEscape(idx + 1);
+      return csvEscape((r as unknown as Record<string, unknown>)[h.key as string]);
+    });
+    lines.push(cells.join(','));
+  });
+  return '﻿' + lines.join('\r\n'); // BOM Excel için
+}
+
+function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 function DetailField({ label, value, onChange, wide }: { label: string; value?: string; onChange: (v: string) => void; wide?: boolean }) {
   return (
@@ -96,6 +183,7 @@ export default function OutreachHubPage() {
   const [activeTab, setActiveTab] = useState<TabKey>('vakiflar');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState<PageSize>(100);
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
   // metni + alanlar üzerinde diakritik duyarsız eşleşme ile tutarlı süzme).
@@ -124,7 +212,7 @@ export default function OutreachHubPage() {
       const token = await user.getIdToken();
       const params = new URLSearchParams({
         source: SOURCE_MAP[activeTab],
-        limit: String(PAGE_LIMIT),
+        limit: String(pageSize),
       });
       if (nextCursor) params.set('cursor', nextCursor);
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
@@ -145,7 +233,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize]);
 
   // İlk yükleme + filter değişimi
   useEffect(() => {
@@ -156,7 +244,7 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);
@@ -247,6 +335,16 @@ export default function OutreachHubPage() {
   const emailHref = `/super-admin/outreach/send?source=${sourceCol}&channel=email&ids=${encodeURIComponent(idList)}`;
   const smsHref = `/super-admin/outreach/send?source=${sourceCol}&channel=sms&ids=${encodeURIComponent(idList)}`;
 
+  function handleExport() {
+    // Seçili varsa onları, yoksa görünür satırların tümünü indir.
+    const exportRows = selectedIds.size > 0 ? filteredRows.filter((r) => selectedIds.has(r.id)) : filteredRows;
+    if (exportRows.length === 0) return;
+    const csv = buildCsv(exportRows, activeTab);
+    const ts = new Date().toISOString().slice(0, 10);
+    const tabName = activeTab === 'vakiflar' ? 'vakiflar' : activeTab === 'dernekler' ? 'dernekler' : 'outreach';
+    downloadCsv(`hangel-outreach-${tabName}-${ts}.csv`, csv);
+  }
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -258,6 +356,10 @@ export default function OutreachHubPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel uyumlu CSV indir">
+            <FileSpreadsheet className="h-4 w-4 mr-1" />
+            İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/super-admin/outreach/import"><Upload className="h-4 w-4 mr-1" /> CSV İçe Aktar</Link>
           </Button>
@@ -561,20 +663,40 @@ export default function OutreachHubPage() {
             </CardContent>
           </Card>
 
-          {hasMore && rows.length > 0 && (
-            <div className="flex justify-center">
-              <Button onClick={() => fetchPage(cursor, true)} disabled={loadingMore} variant="outline">
-                {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Daha Fazla Yükle ({PAGE_LIMIT}'er)
-              </Button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs">
+              <label className="text-muted-foreground font-medium">Sayfa boyutu:</label>
+              {PAGE_SIZE_OPTIONS.map((opt) => (
+                <Button
+                  key={opt}
+                  size="sm"
+                  variant={pageSize === opt ? 'default' : 'outline'}
+                  className="h-8 px-3 tabular-nums"
+                  onClick={() => setPageSize(opt)}
+                >
+                  {opt}
+                </Button>
+              ))}
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel uyumlu CSV indir">
+                <FileSpreadsheet className="h-4 w-4 mr-1" />
+                İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
+              </Button>
+              {hasMore && rows.length > 0 && (
+                <Button onClick={() => fetchPage(cursor, true)} disabled={loadingMore} variant="outline" size="sm">
+                  {loadingMore && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Daha Fazla Yükle ({pageSize}'er)
+                </Button>
+              )}
+            </div>
+          </div>
 
           <Card className="border-emerald-200 bg-emerald-50/50">
             <CardContent className="p-3 flex items-center gap-2 text-xs">
               <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
               <p>
-                <strong>Server-side pagination aktif.</strong> Sayfada her seferinde {PAGE_LIMIT} kayıt yüklenir,
+                <strong>Server-side pagination aktif.</strong> Sayfada her seferinde {pageSize} kayıt yüklenir,
                 "Daha Fazla Yükle" ile sonraki sayfa eklenir. Arama ve il filtresi server tarafında uygulanır.
                 Email kampanyası butonları seçilen kontakları /send sayfasına aktarır.
               </p>
