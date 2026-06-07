@@ -290,6 +290,11 @@ export default function OutreachHubPage() {
       if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
       if (showUnsubscribed) params.set('showUnsubscribed', 'true');
       if (kamuYarariOnly && activeTab === 'dernekler') params.set('kamuYarariOnly', 'true');
+      // İl filtresi server-side. Dernekler için `il` alanı backfill ile dolduruldu
+      // (kütükNo plate code → neighborhoodsData key formatında, ör. "Tekirdağ").
+      if (ilFilter && (activeTab === 'vakiflar' || activeTab === 'dernekler')) {
+        params.set('city', ilFilter);
+      }
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -316,7 +321,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -353,7 +358,7 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);

@@ -555,7 +555,7 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
             const snap = await getDocs(query(
                 collection(db, COLLECTIONS.registryVakiflar),
                 where('nameLower', '>=', q),
-                where('nameLower', '<=', q + ''),
+                where('nameLower', '<=', q + ''),
                 orderBy('nameLower'),
                 limit(8),
             ));

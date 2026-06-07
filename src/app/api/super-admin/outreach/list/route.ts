@@ -189,7 +189,7 @@ export async function GET(req: NextRequest) {
 
   const limitNum = Math.min(MAX_LIMIT, Math.max(1, parseInt(searchParams.get('limit') || String(DEFAULT_LIMIT), 10)));
   const cursor = searchParams.get('cursor') || null;
-  const search = (searchParams.get('search') || '').toLowerCase().trim();
+  const search = (searchParams.get('search') || '').toLocaleLowerCase('tr').trim();
   const city = searchParams.get('city') || null;
   const emailOnly = searchParams.get('emailOnly') === 'true';
   // Default: aktif kayıtlar gösterilir (status != 'unsubscribed').
@@ -261,7 +261,7 @@ export async function GET(req: NextRequest) {
       if (showUnsubscribed && !isUnsubscribed) continue;
       if (!showUnsubscribed && isUnsubscribed) continue;
       if (emailOnly && !row.email) continue;
-      if (search && !(row.name.toLowerCase().includes(search) || (row.address || '').toLowerCase().includes(search))) continue;
+      if (search && !(row.name.toLocaleLowerCase('tr').includes(search) || (row.address || '').toLocaleLowerCase('tr').includes(search))) continue;
       finalRows.push(row);
       if (finalRows.length >= baseLimit) break;
     }

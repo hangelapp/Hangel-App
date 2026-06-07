@@ -23,6 +23,39 @@
         { "fieldPath": "broadcastId", "order": "ASCENDING" },
         { "fieldPath": "read", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "registryDernekler",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "il", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registryDernekler",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isKamuYarari", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registryDernekler",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "il", "order": "ASCENDING" },
+        { "fieldPath": "isKamuYarari", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "registryVakiflar",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "il", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
