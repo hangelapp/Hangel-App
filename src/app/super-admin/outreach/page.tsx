@@ -463,8 +463,6 @@ export default function OutreachHubPage() {
         </div>
       </div>
 
-      {/* Dashboard — analytics özet */}
-      <OutreachDashboard user={user} />
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {CATEGORY_CARDS.map((cat) => {
@@ -498,6 +496,9 @@ export default function OutreachHubPage() {
           );
         })}
       </div>
+
+      {/* Dashboard — analytics özet (kategori kartlarından sonra, listenin hemen üstünde) */}
+      <OutreachDashboard user={user} />
 
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabKey); setTypeFilter(''); setFaaliyetAlaniFilter(''); }}>
         <TabsList>
