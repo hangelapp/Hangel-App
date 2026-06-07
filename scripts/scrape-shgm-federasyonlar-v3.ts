@@ -54,8 +54,9 @@ async function discoverAjaxEndpoint(page: Page): Promise<string | null> {
 
   if (foundEndpoint) {
     // Body'yi de kaydet — debugging için
-    fs.writeFileSync('/tmp/shgm-probe-body.html', foundBody || '');
-    console.log(`[v3] Probe body saved → /tmp/shgm-probe-body.html (${foundBody?.length || 0} char)`);
+    const body: string = foundBody ?? '';
+    fs.writeFileSync('/tmp/shgm-probe-body.html', body);
+    console.log(`[v3] Probe body saved → /tmp/shgm-probe-body.html (${body.length} char)`);
   }
   return foundEndpoint;
 }
