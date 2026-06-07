@@ -134,6 +134,72 @@ const computeStats = unstable_cache(
       .slice(0, 10)
       .map(([city, count]) => ({ city, count }));
 
+    // ─── Kategori detay (outreachContacts type bazlı) ─────────────────
+    // Tek equality filtre + örneklem okuması → composite index gerekmez.
+    // Sample ≤2000 doc; total ≤ sample ise kapsama oranları KESİN, total > sample
+    // ise ÖRNEKLEME dayalı tahmindir (UI 'sample < total' ile bunu işaretler).
+    async function outreachTypeDetail(type: string, total: number) {
+      const snap = await db.collection('outreachContacts')
+        .where('type', '==', type).limit(2000).get().catch(() => null);
+      let email = 0, phone = 0, unsub = 0;
+      const cc: Record<string, number> = {};
+      if (snap) {
+        snap.docs.forEach((d) => {
+          const x = d.data() as { email?: string; phone?: string; status?: string; city?: string; il?: string };
+          if (x.email && String(x.email).trim()) email += 1;
+          if (x.phone && String(x.phone).trim()) phone += 1;
+          if (x.status === 'unsubscribed') unsub += 1;
+          const city = (x.city || x.il || 'Bilinmiyor').trim() || 'Bilinmiyor';
+          cc[city] = (cc[city] || 0) + 1;
+        });
+      }
+      const sample = snap ? snap.size : 0;
+      const topCitiesCat = Object.entries(cc).sort((a, b) => b[1] - a[1]).slice(0, 10)
+        .map(([city, count]) => ({ city, count }));
+      return {
+        total,
+        sample,
+        email,
+        phone,
+        emailPct: sample ? Math.round((email / sample) * 100) : 0,
+        phonePct: sample ? Math.round((phone / sample) * 100) : 0,
+        unsubscribed: unsub,
+        topCities: topCitiesCat,
+      };
+    }
+
+    const [federasyonDetail, kulupDetail, ilMudurlukDetail] = await Promise.all([
+      outreachTypeDetail('Federasyon', byType.Federasyon || 0),
+      outreachTypeDetail('SporKulübü', byType.SporKulübü || 0),
+      outreachTypeDetail('SivilToplumMüdürlüğü', byType.SivilToplumMüdürlüğü || 0),
+    ]);
+
+    const vakifTotalCount = vakifTotal?.data().count ?? 0;
+    const dernekTotalCount = dernekTotal?.data().count ?? 0;
+    const categories = {
+      vakif: {
+        label: 'Vakıf',
+        total: vakifTotalCount,
+        email: emailDolu,
+        phone: telDolu,
+        emailPct: vakifTotalCount ? Math.round((emailDolu / vakifTotalCount) * 100) : 0,
+        phonePct: vakifTotalCount ? Math.round((telDolu / vakifTotalCount) * 100) : 0,
+        unsubscribed: unsubscribed.vakiflar,
+        topCities,
+      },
+      // Dernek: registryDernekler kayıt-başı email/telefon tutmaz (send route da
+      // dernekler için sadece 'name' okur) → email/telefon kapsama hesaplanmaz.
+      dernek: {
+        label: 'Dernek',
+        total: dernekTotalCount,
+        unsubscribed: unsubscribed.dernekler,
+        kamuYarari: kamuYarariCount,
+      },
+      kulup: { label: 'Spor Kulübü', ...kulupDetail },
+      ilMudurluk: { label: 'İl Müdürlükleri', ...ilMudurlukDetail },
+      federasyon: { label: 'Federasyon', ...federasyonDetail, byCategory: federasyonByCategory },
+    };
+
     // ─── Recent updates ───────────────────────────────────────────────
     const updatesSnap = await db.collection('outreachUpdates')
       .orderBy('createdAt', 'desc').limit(5).get().catch(() => null);
@@ -180,6 +246,7 @@ const computeStats = unstable_cache(
       },
       topCities,
       recentUpdates,
+      categories,
     };
   },
   ['outreach-stats'],
