@@ -93,6 +93,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
+      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone },
     ],
   },
   {
@@ -134,7 +135,6 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare, comingSoon: true },
       { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, comingSoon: true },
       { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, comingSoon: true },
-      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, comingSoon: true },
       { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Send, comingSoon: true },
     ],
   },

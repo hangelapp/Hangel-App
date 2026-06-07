@@ -1,191 +1,361 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+/**
+ * /ngo-admin/ads — STK "Reklam Yönetimi" (Google Ad Grants).
+ *
+ * Faz 0: kullanımı çok kolay sihirbaz —
+ *   1) Durum stepper: web sitesi → Google başvurusu → hesap bağlama
+ *   2) Başvuru: "Web siten var mı?" — yoksa önce /ngo-admin/website ile ücretsiz
+ *      site kur (DNS ~24s), sonra Google'da başvur.
+ *   3) Yapay zeka 5 reklam önerisi (kurum adı + faaliyet alanından; 3 strateji
+ *      + hangel bağış + hangel imece gönüllülük).
+ *
+ * Google Ads API entegrasyonu (hesap bağlama, yayınlama) Faz 1.
+ * Tasarım: Apple iOS dili + hangel renkleri.
+ */
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+    Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
+    Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2,
+} from 'lucide-react';
+import { useUser } from '@/firebase';
+import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Megaphone, Target, Globe, ShieldCheck, KeyRound, CheckCircle2, Loader2, RefreshCw, Layers } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useRouter } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/components/providers/language-provider';
 
-export default function AdsManagementPage() {
+interface EntityDoc {
+    name?: string;
+    faaliyetAlani?: string;
+    category?: string;
+    il?: string;
+    city?: string;
+    website?: string;
+    shortLink?: string;
+}
+
+type ProposalKind = 'search-donation' | 'search-awareness' | 'search-beneficiary' | 'hangel-donation' | 'hangel-volunteer';
+interface AdProposal {
+    kind: ProposalKind;
+    title: string;
+    goal: string;
+    landing: 'kurum-sitesi' | 'hangel-bagis' | 'hangel-gonulluluk';
+    keywords: string[];
+    headlines: string[];
+    descriptions: string[];
+    regions: string[];
+    estReach: string;
+}
+
+const KIND_META: Record<ProposalKind, { label: string; icon: React.ElementType; tint: string }> = {
+    'search-donation': { label: 'Bağış Topla', icon: HandCoins, tint: 'bg-rose-500/10 text-rose-600' },
+    'search-awareness': { label: 'Bilinirlik', icon: Megaphone, tint: 'bg-blue-500/10 text-blue-600' },
+    'search-beneficiary': { label: 'Yararlanıcıya Ulaş', icon: Users, tint: 'bg-amber-500/10 text-amber-600' },
+    'hangel-donation': { label: 'hangel Bağış Sayfası', icon: Heart, tint: 'bg-primary/10 text-primary' },
+    'hangel-volunteer': { label: 'hangel İmece Gönüllülük', icon: Sparkles, tint: 'bg-emerald-500/10 text-emerald-600' },
+};
+const LANDING_LABEL: Record<AdProposal['landing'], string> = {
+    'kurum-sitesi': 'Açılış: kurum siteniz',
+    'hangel-bagis': 'Açılış: hangel bağış sayfası',
+    'hangel-gonulluluk': 'Açılış: hangel gönüllülük',
+};
+
+const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
+
+export default function AdsPage() {
+    const { user } = useUser();
+    const { id: entityId, kind: entityKind, isLoading } = useActiveEntity();
+    const { data: activeDoc } = useActiveEntityDoc<EntityDoc>();
     const { toast } = useToast();
-    const router = useRouter();
-    const { t } = useTranslation();
-    const [isSaving, setIsSaving] = useState(false);
-    const [isTesting, setIsTesting] = useState(false);
 
-    const agencies = [
-        { id: 'go', name: t('ngoAdminAds.agency1'), key: '891bae...9cd3', status: t('ngoAdminAds.statusActive'), color: 'bg-orange-600' },
-        { id: 'ao', name: t('ngoAdminAds.agency2'), key: '942147...48d48', status: t('ngoAdminAds.statusActive'), color: 'bg-blue-500' },
-        { id: 'ra', name: t('ngoAdminAds.agency3'), key: '2ae3a9...bb54', status: t('ngoAdminAds.statusActive'), color: 'bg-red-600' }
-    ];
+    const [origin, setOrigin] = useState('');
+    useEffect(() => { if (typeof window !== 'undefined') setOrigin(window.location.origin); }, []);
 
-    const handleSaveIntegration = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            toast({
-                title: t('ngoAdminAds.toastSavedTitle'),
-                description: t('ngoAdminAds.toastSavedDesc')
+    // Web sitesi dallanması (Faz 0: yerel state; web sitesi yönetimi entegrasyonu sonra)
+    const [hasWebsite, setHasWebsite] = useState<'unknown' | 'yes' | 'no'>('unknown');
+    const [domain, setDomain] = useState('');
+
+    // AI öneriler
+    const [loading, setLoading] = useState(false);
+    const [proposals, setProposals] = useState<AdProposal[]>([]);
+    const [selected, setSelected] = useState<Set<ProposalKind>>(new Set());
+
+    const entityName = activeDoc?.name || 'Kuruluşunuz';
+    const faaliyetAlani = activeDoc?.faaliyetAlani || activeDoc?.category || '';
+    const city = activeDoc?.il || activeDoc?.city || '';
+    const orgType = entityKind === 'ngo' ? 'STK (Dernek/Vakıf)' : entityKind === 'club' ? 'Kulüp' : 'Marka';
+
+    const profilePath = useMemo(() => {
+        if (!entityId || !entityKind) return '';
+        if (entityKind === 'ngo') return `/ngos/${entityId}`;
+        if (entityKind === 'brand') return `/market/${entityId}`;
+        return `/clubs/profile/${entityId}`;
+    }, [entityId, entityKind]);
+    const hangelDonationUrl = origin && profilePath ? `${origin}${profilePath}` : '';
+    const hangelVolunteerUrl = origin ? `${origin}/volunteering` : '';
+
+    // Site var mı → activeDoc.website varsa otomatik "var" say.
+    useEffect(() => {
+        if (activeDoc?.website && hasWebsite === 'unknown') {
+            setHasWebsite('yes');
+            setDomain(activeDoc.website);
+        }
+    }, [activeDoc?.website, hasWebsite]);
+
+    const websiteReady = hasWebsite === 'yes' && domain.trim().length > 3;
+
+    const generate = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setLoading(true);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ads/plan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({
+                    orgName: entityName,
+                    orgType,
+                    faaliyetAlani,
+                    city,
+                    hangelDonationUrl,
+                    hangelVolunteerUrl,
+                    website: websiteReady ? domain.trim() : '',
+                }),
             });
-            setIsSaving(false);
-        }, 1500);
+            const data = (await res.json().catch(() => null)) as { proposals?: AdProposal[]; message?: string } | null;
+            if (!res.ok || !data?.proposals) {
+                throw new Error(data?.message || 'Plan oluşturulamadı.');
+            }
+            setProposals(data.proposals);
+            toast({ title: 'Reklam planın hazır', description: `${data.proposals.length} öneri oluşturuldu.` });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Bir hata oluştu.' });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleTestConnection = () => {
-        setIsTesting(true);
-        setTimeout(() => {
-            toast({
-                title: t('ngoAdminAds.toastConnectionOkTitle'),
-                description: t('ngoAdminAds.toastConnectionOkDesc'),
-            });
-            setIsTesting(false);
-        }, 2000);
+    const chooseProposal = (p: AdProposal) => {
+        setSelected((prev) => new Set(prev).add(p.kind));
+        toast({
+            title: 'Taslağın kaydedildi',
+            description: `"${p.title}" — Google hesabın bağlanınca yayına alınacak.`,
+        });
     };
 
-    return (
-        <div className="space-y-6 animate-in fade-in-0 max-w-5xl mx-auto p-4 sm:p-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button onClick={() => router.back()} variant="ghost" size="icon" className="-ml-2" aria-label={t('ngoAdminAds.backAria')}>
-                        <ArrowLeft className="h-6 w-6" />
-                    </Button>
-                    <div>
-                        <h1 className="text-2xl font-bold font-headline">{t('ngoAdminAds.title')}</h1>
-                        <p className="text-muted-foreground text-sm">{t('ngoAdminAds.subtitle')}</p>
-                    </div>
+    if (isLoading) {
+        return <div className="min-h-[40vh] flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    }
+    if (!entityId || !entityKind) {
+        return (
+            <div className="p-4 sm:p-6">
+                <div className="rounded-3xl bg-card border border-border/60 shadow-sm py-12 text-center space-y-2">
+                    <Megaphone className="h-10 w-10 text-muted-foreground mx-auto" />
+                    <p className="font-semibold">Aktif kurum bulunamadı</p>
+                    <p className="text-sm text-muted-foreground">Reklam yönetimi için üstteki kurum seçiciden bir kurum seçin.</p>
                 </div>
             </div>
+        );
+    }
 
-            <Tabs defaultValue="integration">
-                <TabsList className="grid w-full grid-cols-3 max-w-lg">
-                    <TabsTrigger value="marketplace"><Globe className="mr-2 h-4 w-4" /> {t('ngoAdminAds.tabMarketplace')}</TabsTrigger>
-                    <TabsTrigger value="campaigns"><Megaphone className="mr-2 h-4 w-4" /> {t('ngoAdminAds.tabCampaigns')}</TabsTrigger>
-                    <TabsTrigger value="integration"><KeyRound className="mr-2 h-4 w-4" /> {t('ngoAdminAds.tabIntegration')}</TabsTrigger>
-                </TabsList>
+    return (
+        <div className="min-h-dvh bg-[#f5f5f7]">
+            <div className="mx-auto w-full max-w-2xl px-4 sm:px-5 py-6 space-y-6 animate-in fade-in-0 duration-300">
 
-                <TabsContent value="marketplace" className="mt-6 space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('ngoAdminAds.partnerSlotsTitle')}</CardTitle>
-                            <CardDescription>{t('ngoAdminAds.partnerSlotsDesc')}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {[
-                                { site: 'haberler.com', slot: t('ngoAdminAds.slotHeadline'), type: t('ngoAdminAds.typeFree'), reach: '100k/Gün' },
-                                { site: 'alisveris-sitesi.tr', slot: t('ngoAdminAds.slotCart'), type: t('ngoAdminAds.typeDiscount'), reach: '25k/Gün' },
-                                { site: 'blog-portali.net', slot: t('ngoAdminAds.slotPost'), type: t('ngoAdminAds.typeFree'), reach: '10k/Gün' }
-                            ].map((partner, i) => (
-                                <div key={i} className="p-4 border rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary transition-colors bg-background shadow-sm">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2 rounded-lg bg-muted"><Globe className="h-5 w-5" /></div>
-                                        <div>
-                                            <h4 className="font-bold text-sm">{partner.site}</h4>
-                                            <p className="text-xs text-muted-foreground">{partner.slot} • {partner.reach}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <Badge variant="outline" className={cn(partner.type === t('ngoAdminAds.typeFree') ? "bg-green-100 text-green-700" : "bg-blue-50 text-blue-700")}>{partner.type}</Badge>
-                                        <Button size="sm" onClick={() => toast({title: t('ngoAdminAds.toastApplied'), description: t('ngoAdminAds.toastAppliedDesc')})}>{t('ngoAdminAds.requestSlotBtn')}</Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                {/* HERO */}
+                <div className="text-center space-y-3 pt-2">
+                    <span className="inline-flex h-[76px] w-[76px] items-center justify-center rounded-[24px] bg-gradient-to-br from-primary to-[#ff7a55] shadow-[0_10px_30px_-8px_rgba(243,71,35,0.5)]">
+                        <Megaphone className="h-9 w-9 text-white" strokeWidth={1.8} />
+                    </span>
+                    <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-foreground leading-[1.1]">Google Reklam Hakkın</h1>
+                    <p className="text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                        Uygun STK&apos;lara Google&apos;dan <span className="font-semibold text-foreground">ayda 10.000 USD</span> ücretsiz reklam hakkı. hangel senin için planlar, sen sadece seçersin.
+                    </p>
+                </div>
 
-                <TabsContent value="campaigns" className="mt-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <Card className="bg-primary/5 border-primary/20 shadow-sm">
-                            <CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('ngoAdminAds.metricReach')}</CardTitle></CardHeader>
-                            <CardContent><p className="text-2xl font-bold">125,400</p></CardContent>
-                        </Card>
-                        <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('ngoAdminAds.metricCtr')}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">3.2%</p></CardContent></Card>
-                        <Card className="shadow-sm"><CardHeader className="pb-2"><CardTitle className="text-sm font-medium">{t('ngoAdminAds.metricActive')}</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">4</p></CardContent></Card>
+                {/* DURUM STEPPER */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Durumun</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm divide-y divide-border/50 overflow-hidden">
+                        <StepRow n={1} title="Web sitesi"
+                            state={websiteReady ? 'done' : hasWebsite === 'no' ? 'pending' : 'todo'}
+                            note={websiteReady ? domain : hasWebsite === 'no' ? 'Ücretsiz hangel sitesi kurulacak' : 'Aşağıdan belirt'} />
+                        <StepRow n={2} title="Google başvurusu" state="todo" note="Web sitesi hazır olunca" />
+                        <StepRow n={3} title="Hesabı bağla & yayınla" state="todo" note="Onaydan sonra" />
                     </div>
-                </TabsContent>
+                </section>
 
-                <TabsContent value="integration" className="mt-6 space-y-6">
-                    <Card className="border-primary/30 bg-primary/5 shadow-md">
-                        <CardHeader>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Target className="h-5 w-5 text-primary" /> {t('ngoAdminAds.triplePoolTitle')}
-                                    </CardTitle>
-                                    <CardDescription>{t('ngoAdminAds.triplePoolDesc')}</CardDescription>
-                                </div>
-                                <Badge className="bg-green-600 text-white">{t('ngoAdminAds.activeStatus')}</Badge>
+                {/* BAŞVURU — web sitesi dallanması */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Reklam Hakkına Başvur</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+                        <div>
+                            <p className="text-[15px] font-semibold text-foreground">Web siteniz var mı?</p>
+                            <p className="text-[13px] text-muted-foreground">Google Ad Grants için kuruma ait çalışan bir web sitesi şarttır.</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <button onClick={() => setHasWebsite('yes')}
+                                className={cn('rounded-2xl border p-4 text-left active:scale-[0.97] transition',
+                                    hasWebsite === 'yes' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/60 bg-muted/30')}>
+                                <Globe className="h-5 w-5 text-primary mb-1.5" />
+                                <p className="text-[14px] font-semibold text-foreground">Evet, var</p>
+                                <p className="text-[11px] text-muted-foreground">Domainimi gireyim</p>
+                            </button>
+                            <button onClick={() => setHasWebsite('no')}
+                                className={cn('rounded-2xl border p-4 text-left active:scale-[0.97] transition',
+                                    hasWebsite === 'no' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border/60 bg-muted/30')}>
+                                <Wand2 className="h-5 w-5 text-primary mb-1.5" />
+                                <p className="text-[14px] font-semibold text-foreground">Hayır, yok</p>
+                                <p className="text-[11px] text-muted-foreground">hangel ücretsiz kursun</p>
+                            </button>
+                        </div>
+
+                        {hasWebsite === 'yes' && (
+                            <div className="space-y-3 pt-1">
+                                <input
+                                    value={domain}
+                                    onChange={(e) => setDomain(e.target.value)}
+                                    placeholder="ornekstk.org.tr"
+                                    className="w-full h-11 rounded-2xl bg-muted border border-border/60 px-4 text-[14px] outline-none focus:ring-2 focus:ring-primary/40"
+                                />
+                                <a href={GOOGLE_NONPROFITS_URL} target="_blank" rel="noopener noreferrer"
+                                    className={cn('w-full h-12 rounded-2xl flex items-center justify-center gap-2 text-[15px] font-semibold transition active:scale-[0.98]',
+                                        websiteReady ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground pointer-events-none')}>
+                                    Google&apos;da Başvur <ExternalLink className="h-4 w-4" />
+                                </a>
+                                <p className="text-[11px] text-muted-foreground text-center">Yeni sekmede Google for Nonprofits açılır; Goodstack doğrulaması ile tamamlanır.</p>
                             </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 gap-3">
-                                {agencies.map((agency) => (
-                                    <div key={agency.id} className="flex items-center justify-between p-4 bg-background border rounded-xl shadow-sm">
-                                        <div className="flex items-center gap-3">
-                                            <div className={cn("p-2 rounded-lg text-white", agency.color)}>
-                                                <Target className="h-4 w-4" />
+                        )}
+
+                        {hasWebsite === 'no' && (
+                            <div className="space-y-3 pt-1">
+                                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3 flex items-start gap-2">
+                                    <Clock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                    <p className="text-[12px] text-amber-800 leading-relaxed">
+                                        Önce ücretsiz hangel web siteni kur. DNS ayarları nedeniyle siten <span className="font-semibold">~24 saat içinde</span> yayına girer. Yayınlanınca buraya dönüp Google başvurusunu yap.
+                                    </p>
+                                </div>
+                                <Link href="/ngo-admin/website"
+                                    className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition">
+                                    <Globe className="h-[18px] w-[18px]" /> Ücretsiz Web Sitesi Kur
+                                </Link>
+                                <div className="w-full h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center gap-2 text-[15px] font-semibold">
+                                    <AlertTriangle className="h-4 w-4" /> Google&apos;da Başvur (site yayınlanınca açılır)
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* AI ÖNERİLER */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Yapay Zeka Reklam Planı</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+                        {proposals.length === 0 ? (
+                            <div className="text-center space-y-3 py-2">
+                                <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-primary/10">
+                                    <Wand2 className="h-7 w-7 text-primary" strokeWidth={1.8} />
+                                </span>
+                                <div className="space-y-1">
+                                    <p className="font-semibold text-[15px] text-foreground">Sana özel 5 reklam önerisi</p>
+                                    <p className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                                        <span className="font-medium text-foreground">{entityName}</span>{faaliyetAlani ? ` · ${faaliyetAlani}` : ''} için yapay zeka hazır kampanyalar kurgular — bağış, bilinirlik, gönüllülük. Sen sadece beğendiğini seç.
+                                    </p>
+                                </div>
+                                <button onClick={generate} disabled={loading}
+                                    className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                                    {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Hazırlanıyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> Reklam Planımı Oluştur</>}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-[13px] text-muted-foreground">{proposals.length} öneri · beğendiğini kur</p>
+                                    <button onClick={generate} disabled={loading} className="text-[13px] font-semibold text-primary inline-flex items-center gap-1">
+                                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Yenile
+                                    </button>
+                                </div>
+                                {proposals.map((p, i) => {
+                                    const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                                    const Icon = meta.icon;
+                                    const isSel = selected.has(p.kind);
+                                    return (
+                                        <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
+                                            <div className="flex items-start gap-3">
+                                                <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
+                                                    <Icon className="h-5 w-5" />
+                                                </span>
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <p className="text-[15px] font-semibold text-foreground">{p.title}</p>
+                                                        <span className="text-[10px] font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{meta.label}</span>
+                                                    </div>
+                                                    <p className="text-[13px] text-muted-foreground leading-relaxed mt-0.5">{p.goal}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold">{agency.name}</p>
-                                                <p className="text-[10px] font-mono text-muted-foreground">{agency.key}</p>
+
+                                            {p.keywords?.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {p.keywords.slice(0, 8).map((k) => (
+                                                        <span key={k} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 px-2.5 py-1 text-[11px] text-foreground">
+                                                            <Search className="h-3 w-3 text-muted-foreground" /> {k}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {p.headlines?.[0] && (
+                                                <div className="rounded-xl bg-card border border-border/50 p-2.5">
+                                                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Örnek reklam</p>
+                                                    <p className="text-[13px] font-semibold text-[#1a0dab] mt-0.5">{p.headlines[0]}</p>
+                                                    {p.descriptions?.[0] && <p className="text-[12px] text-muted-foreground">{p.descriptions[0]}</p>}
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                <div className="text-[11px] text-muted-foreground">
+                                                    <span>{LANDING_LABEL[p.landing]}</span>
+                                                    {p.estReach && <span> · {p.estReach}</span>}
+                                                </div>
+                                                <button onClick={() => chooseProposal(p)}
+                                                    className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
+                                                        isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
+                                                    {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
+                                                </button>
                                             </div>
                                         </div>
-                                        <Badge className="bg-green-100 text-green-700 border-green-200">{t('ngoAdminAds.connectedBadge')}</Badge>
-                                    </div>
-                                ))}
+                                    );
+                                })}
+                                <p className="text-[11px] text-muted-foreground text-center pt-1">
+                                    Seçtiğin kampanyalar Google hesabın bağlandığında otomatik yayına alınır (yakında).
+                                </p>
                             </div>
-                            <div className="flex items-center gap-3 p-3 bg-blue-100/50 rounded-xl border border-blue-200 text-blue-800 text-[11px] font-medium leading-relaxed">
-                                <Layers className="h-4 w-4 shrink-0" />
-                                <p>{t('ngoAdminAds.poolDescription')}</p>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="bg-background/50 border-t p-4 flex justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={handleTestConnection} disabled={isTesting}>
-                                {isTesting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                                {t('ngoAdminAds.testAllBtn')}
-                            </Button>
-                            <Button size="sm" onClick={handleSaveIntegration} disabled={isSaving}>
-                                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                                {t('ngoAdminAds.saveBtn')}
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                        )}
+                    </div>
+                </section>
+            </div>
+        </div>
+    );
+}
 
-                    <Card className="shadow-sm">
-                        <CardHeader>
-                            <CardTitle>{t('ngoAdminAds.conversionTitle')}</CardTitle>
-                            <CardDescription>{t('ngoAdminAds.conversionDesc')}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>{t('ngoAdminAds.metaPixelLabel')}</Label>
-                                    <Input placeholder="123456789012345" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>{t('ngoAdminAds.googleAdsLabel')}</Label>
-                                    <Input placeholder="AW-123456789" />
-                                </div>
-                            </div>
-                            <div className="p-4 border rounded-xl bg-blue-50 text-blue-800 text-xs flex items-center gap-3">
-                                <ShieldCheck className="h-5 w-5 shrink-0" />
-                                <p>{t('ngoAdminAds.conversionBanner')}</p>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="border-t bg-muted/10 p-4 flex justify-end">
-                            <Button onClick={handleSaveIntegration} disabled={isSaving}>
-                                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t('ngoAdminAds.savingEllipsis')}</> : t('ngoAdminAds.saveBtn')}
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+function StepRow({ n, title, state, note }: { n: number; title: string; state: 'done' | 'pending' | 'todo'; note: string }) {
+    return (
+        <div className="flex items-center gap-3 px-4 py-3">
+            <span className={cn('h-8 w-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0',
+                state === 'done' ? 'bg-emerald-500/15 text-emerald-600'
+                    : state === 'pending' ? 'bg-amber-500/15 text-amber-600'
+                        : 'bg-secondary text-muted-foreground')}>
+                {state === 'done' ? <Check className="h-4 w-4" /> : state === 'pending' ? <Clock className="h-4 w-4" /> : n}
+            </span>
+            <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-medium text-foreground leading-tight">{title}</p>
+                <p className="text-[12px] text-muted-foreground truncate">{note}</p>
+            </div>
         </div>
     );
 }
