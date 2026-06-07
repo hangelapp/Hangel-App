@@ -55,6 +55,8 @@ interface OutreachRow {
   isKamuYarari?: boolean;
   kamuYariNo?: string;
   kamuYariTarihi?: string;
+  // Kayıtlı olduğu sivil toplum platformları (Afet Platformu, Açık Açık, Tüsev vs.)
+  platforms?: string[];
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -125,6 +127,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       faaliyetAlani: data.faaliyetAlani,
       kutukNo: data.kutukNo,
       status: data.status,
+      platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
     };
   }
   if (source === 'registryDernekler') {
@@ -150,6 +153,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       isKamuYarari: data.isKamuYarari === true,
       kamuYariNo: data.kamuYariNo,
       kamuYariTarihi: data.kamuYariTarihi,
+      platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
     };
   }
   return {
@@ -168,6 +172,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
     address: data.address,
     status: data.status,
     faaliyetAlani: data.faaliyetAlani,
+    platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
   };
 }
 
@@ -190,6 +195,8 @@ export async function GET(req: NextRequest) {
   // Default: aktif kayıtlar gösterilir (status != 'unsubscribed').
   // showUnsubscribed=true → sadece listeden çıkanlar gösterilir.
   const showUnsubscribed = searchParams.get('showUnsubscribed') === 'true';
+  // Sadece Kamu Yararına Çalışan Dernekler (326 doc) — server-side filter.
+  const kamuYarariOnly = searchParams.get('kamuYarariOnly') === 'true';
 
   const db = getAdminFirestore();
   let q: FirebaseFirestore.Query = db.collection(source);
@@ -208,6 +215,7 @@ export async function GET(req: NextRequest) {
     q = q.orderBy('nameLower');
   } else if (source === 'registryDernekler') {
     if (city) q = q.where('il', '==', city);
+    if (kamuYarariOnly) q = q.where('isKamuYarari', '==', true);
     if (searchPrefix) {
       q = q.where('nameLower', '>=', searchPrefix).where('nameLower', '<=', searchPrefix + '');
     }

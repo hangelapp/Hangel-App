@@ -27,6 +27,8 @@ interface NormalizedPatch {
   type?: string; status?: string;
   faaliyetAlani?: string; detayliFaaliyetAlani?: string;
   kutukNo?: string; kurulusTarihi?: string;
+  isKamuYarari?: boolean; kamuYariNo?: string; kamuYariTarihi?: string;
+  platforms?: string[];
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -62,6 +64,7 @@ function toDocFields(source: Source, p: NormalizedPatch): Record<string, unknown
     set(has('faaliyetAlani'), 'faaliyetAlani', p.faaliyetAlani, o);
     set(has('kutukNo'), 'kutukNo', p.kutukNo, o);
     set(has('status'), 'status', p.status, o);     // unsubscribed/active flag
+    set(has('platforms'), 'platforms', p.platforms, o);
   } else if (source === 'registryDernekler') {
     set(has('name'), 'name', p.name, o); if (has('name')) o.nameLower = (p.name || '').toLocaleLowerCase('tr');
     set(has('shortName'), 'kisaAd', p.shortName, o);
@@ -77,11 +80,15 @@ function toDocFields(source: Source, p: NormalizedPatch): Record<string, unknown
     set(has('kutukNo'), 'kutukNo', p.kutukNo, o);
     set(has('kurulusTarihi'), 'kurulusTarihi', p.kurulusTarihi, o);
     set(has('status'), 'status', p.status, o);     // unsubscribed/active flag
+    set(has('isKamuYarari'), 'isKamuYarari', p.isKamuYarari, o);
+    set(has('kamuYariNo'), 'kamuYariNo', p.kamuYariNo, o);
+    set(has('kamuYariTarihi'), 'kamuYariTarihi', p.kamuYariTarihi, o);
+    set(has('platforms'), 'platforms', p.platforms, o);
   } else {
     // outreachContacts — alan adları zaten normalize ile birebir
     (['name', 'shortName', 'city', 'district', 'neighborhood', 'phone', 'phone2',
       'email', 'etebligat', 'website', 'address', 'type', 'status',
-      'faaliyetAlani'] as const)
+      'faaliyetAlani', 'platforms'] as const)
       .forEach((k) => set(has(k), k, p[k], o));
   }
   return o;

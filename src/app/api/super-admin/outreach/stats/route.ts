@@ -50,7 +50,7 @@ const computeStats = unstable_cache(
     ]);
 
     // ─── outreachContacts type breakdown ──────────────────────────────
-    const TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'MailHizmet', 'Diğer'] as const;
+    const TYPES = ['Vakıf', 'Dernek', 'SivilToplumMüdürlüğü', 'Federasyon', 'SporKulübü', 'GencSporMudurlugu', 'MailHizmet', 'Diğer'] as const;
     const byTypeArr = await Promise.all(
       TYPES.map((t) => db.collection('outreachContacts').where('type', '==', t).count().get().then((s) => ({ type: t, count: s.data().count })).catch(() => ({ type: t, count: 0 }))),
     );
@@ -168,15 +168,29 @@ const computeStats = unstable_cache(
       };
     }
 
-    const [federasyonDetail, kulupDetail, ilMudurlukDetail] = await Promise.all([
+    const [federasyonDetail, kulupDetail, ilMudurlukDetail, gencSporMudurlukDetail] = await Promise.all([
       outreachTypeDetail('Federasyon', byType.Federasyon || 0),
       outreachTypeDetail('SporKulübü', byType.SporKulübü || 0),
       outreachTypeDetail('SivilToplumMüdürlüğü', byType.SivilToplumMüdürlüğü || 0),
+      outreachTypeDetail('GencSporMudurlugu', byType.GencSporMudurlugu || 0),
     ]);
 
     const vakifTotalCount = vakifTotal?.data().count ?? 0;
     const dernekTotalCount = dernekTotal?.data().count ?? 0;
+    const outreachTotalCount = outreachTotal?.data().count ?? 0;
+    const grandTotal = vakifTotalCount + dernekTotalCount + outreachTotalCount;
     const categories = {
+      all: {
+        label: 'Tümü',
+        total: grandTotal,
+        email: emailDolu + (federasyonDetail.email || 0) + (kulupDetail.email || 0) + (ilMudurlukDetail.email || 0) + (gencSporMudurlukDetail.email || 0),
+        phone: telDolu + (federasyonDetail.phone || 0) + (kulupDetail.phone || 0) + (ilMudurlukDetail.phone || 0) + (gencSporMudurlukDetail.phone || 0),
+        emailPct: grandTotal ? Math.round(((emailDolu + (federasyonDetail.email || 0) + (kulupDetail.email || 0) + (ilMudurlukDetail.email || 0) + (gencSporMudurlukDetail.email || 0)) / grandTotal) * 100) : 0,
+        phonePct: grandTotal ? Math.round(((telDolu + (federasyonDetail.phone || 0) + (kulupDetail.phone || 0) + (ilMudurlukDetail.phone || 0) + (gencSporMudurlukDetail.phone || 0)) / grandTotal) * 100) : 0,
+        unsubscribed: unsubscribed.total,
+        kamuYarari: kamuYarariCount,
+        topCities,
+      },
       vakif: {
         label: 'Vakıf',
         total: vakifTotalCount,
@@ -196,8 +210,9 @@ const computeStats = unstable_cache(
         kamuYarari: kamuYarariCount,
       },
       kulup: { label: 'Spor Kulübü', ...kulupDetail },
-      ilMudurluk: { label: 'İl Müdürlükleri', ...ilMudurlukDetail },
+      ilMudurluk: { label: 'STİ İl Müdürlükleri', ...ilMudurlukDetail },
       federasyon: { label: 'Federasyon', ...federasyonDetail, byCategory: federasyonByCategory },
+      gencSporMudurluk: { label: 'Gençlik ve Spor İl Müdürlükleri', ...gencSporMudurlukDetail },
     };
 
     // ─── Recent updates ───────────────────────────────────────────────

@@ -24,7 +24,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
@@ -58,7 +57,23 @@ interface OutreachRow {
   isKamuYarari?: boolean;
   kamuYariNo?: string;
   kamuYariTarihi?: string;
+  platforms?: string[];
 }
+
+// Vakıf/dernek detayında "Kayıtlı Olduğu Platformlar" multi-select seçenekleri.
+const PLATFORMS = [
+  'Afet Platformu',
+  'Açık Açık',
+  'Tüsev',
+  'Adım Adım',
+  'Ability Pool',
+  'HelpSteps',
+  'Candid',
+  'Global Compact',
+  'Idealist',
+  'gonulluyuzbiz.gov.tr',
+  'TGSP',
+] as const;
 
 type TabKey = 'vakiflar' | 'dernekler' | 'outreach';
 const SOURCE_MAP: Record<TabKey, string> = {
@@ -104,7 +119,7 @@ const CATEGORY_CARDS: Array<{
   { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 81,      targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
   { key: 'federasyonlar', label: 'Federasyonlar',                 icon: Landmark,  color: 'bg-emerald-500', count: 98,      targetTab: 'outreach', typeFilter: 'Federasyon' },
   { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 0,       targetTab: 'outreach', typeFilter: 'SporKulübü' },
-  { key: 'mail-saglayici', label: 'Mail Hizmet Sağlayıcıları',    icon: Server,    color: 'bg-violet-500', count: 0,       targetTab: 'outreach', typeFilter: 'MailHizmet' },
+  { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu' },
 ];
 
 // CSV utilities — Excel uyumlu (UTF-8 BOM + tırnaklama).
@@ -202,6 +217,35 @@ function DetailField({ label, value, onChange, wide }: { label: string; value?: 
   );
 }
 
+// Vakıf/dernek detayında kayıtlı olunan sivil toplum platformlarını çoklu seçim.
+function PlatformsField({ value, onChange }: { value?: string[]; onChange: (v: string[]) => void }) {
+  const selected = new Set(value || []);
+  return (
+    <div className="space-y-2 sm:col-span-2 lg:col-span-3 rounded-md border border-blue-200 bg-blue-50/40 p-3">
+      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Kayıtlı Olduğu Platformlar</label>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+        {PLATFORMS.map((p) => {
+          const checked = selected.has(p);
+          return (
+            <label key={p} className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={checked}
+                onCheckedChange={(v) => {
+                  const next = new Set(selected);
+                  if (v) next.add(p);
+                  else next.delete(p);
+                  onChange(Array.from(next));
+                }}
+              />
+              <span>{p}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function OutreachHubPage() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState<TabKey>('vakiflar');
@@ -245,6 +289,7 @@ export default function OutreachHubPage() {
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
       if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
       if (showUnsubscribed) params.set('showUnsubscribed', 'true');
+      if (kamuYarariOnly && activeTab === 'dernekler') params.set('kamuYarariOnly', 'true');
 
       const res = await fetch(`/api/super-admin/outreach/list?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -271,7 +316,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -308,7 +353,7 @@ export default function OutreachHubPage() {
       const t = setTimeout(() => fetchPage(null, false), searchTerm ? 350 : 0);
       return () => clearTimeout(t);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, fetchPage]);
+  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, fetchPage]);
 
   // Cascading süzgeç seçenekleri (tüm Türkiye — neighborhoodsData)
   const ilOptions = useMemo(() => Object.keys(neighborhoodsData).sort((a, b) => a.localeCompare(b, 'tr')), []);
@@ -333,7 +378,6 @@ export default function OutreachHubPage() {
     return rows.filter((r) => {
       if (tQ && r.type !== tQ) return false;
       if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
-      if (kamuYarariOnly && !r.isKamuYarari) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
       const nb = norm(r.neighborhood || '');
       if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
@@ -341,7 +385,7 @@ export default function OutreachHubPage() {
       if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
       return true;
     });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter, kamuYarariOnly]);
+  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -372,11 +416,13 @@ export default function OutreachHubPage() {
         id, name, shortName, city, district, neighborhood,
         phone, phone2, email, etebligat, website, address, type, status,
         faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
+        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms,
       } = editData;
       const patch = {
         name, shortName, city, district, neighborhood,
         phone, phone2, email, etebligat, website, address, type, status,
         faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
+        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms,
       };
       const res = await fetch('/api/super-admin/outreach/update', {
         method: 'POST',
@@ -500,22 +546,8 @@ export default function OutreachHubPage() {
       {/* Dashboard — analytics özet (kategori kartlarından sonra, listenin hemen üstünde) */}
       <OutreachDashboard user={user} />
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as TabKey); setTypeFilter(''); setFaaliyetAlaniFilter(''); }}>
-        <TabsList>
-          <TabsTrigger value="vakiflar">
-            <Landmark className="h-4 w-4 mr-1" /> Vakıflar
-            <Badge variant="secondary" className="ml-2 text-[10px]">6.680</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="dernekler">
-            <Heart className="h-4 w-4 mr-1" /> Dernekler
-            <Badge variant="secondary" className="ml-2 text-[10px]">100.967</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="outreach">
-            <Building2 className="h-4 w-4 mr-1" /> Diğer (Manuel/CSV)
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="space-y-4 mt-4">
+      <div>
+        <div className="space-y-4 mt-4">
           {/* Search'te il adı tespit edilirse otomatik öneri kartı.
               Örnek: "Tekirdağ" yazınca → "Tekirdağ ili dernekleri" filtreye dönüştür. */}
           {(() => {
@@ -782,6 +814,7 @@ export default function OutreachHubPage() {
                                     <DetailField label="E-Tebligat Adresi" value={editData.etebligat} onChange={(v) => setEditData({ ...editData, etebligat: v })} />
                                     <DetailField label="E-Posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
                                     <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} wide />
+                                    <PlatformsField value={editData.platforms} onChange={(v) => setEditData({ ...editData, platforms: v })} />
                                   </>
                                 )}
                                 {/* Dernek detayı */}
@@ -808,6 +841,23 @@ export default function OutreachHubPage() {
                                       <label className="text-[11px] font-medium text-muted-foreground">Mahalle</label>
                                       <SearchableSelect options={editData.city && editData.district && neighborhoodsData[editData.city]?.[editData.district] ? neighborhoodsData[editData.city][editData.district].slice().sort((a, b) => a.localeCompare(b, 'tr')) : []} value={editData.neighborhood || ''} placeholder="Mahalle seç..." searchPlaceholder="Mahalle ara..." disabled={!editData.district} onValueChange={(v) => setEditData({ ...editData, neighborhood: v })} triggerClassName="h-9 rounded-md border bg-background px-3" />
                                     </div>
+                                    {/* Kamu Yararı (editable) — siviltoplum.gov.tr PDF listesinden seed edilir; manuel düzeltme için açık */}
+                                    <div className="space-y-1 sm:col-span-2 lg:col-span-3 rounded-md border border-emerald-200 bg-emerald-50/40 p-3">
+                                      <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer">
+                                        <Checkbox
+                                          checked={!!editData.isKamuYarari}
+                                          onCheckedChange={(v) => setEditData({ ...editData, isKamuYarari: !!v })}
+                                        />
+                                        <span>🏛 Kamu Yararına Çalışan Dernek</span>
+                                      </label>
+                                      {editData.isKamuYarari && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                                          <DetailField label="Kamu Yararı No" value={editData.kamuYariNo} onChange={(v) => setEditData({ ...editData, kamuYariNo: v })} />
+                                          <DetailField label="Kamu Yararı Tarihi" value={editData.kamuYariTarihi} onChange={(v) => setEditData({ ...editData, kamuYariTarihi: v })} />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <PlatformsField value={editData.platforms} onChange={(v) => setEditData({ ...editData, platforms: v })} />
                                   </>
                                 )}
                                 {/* Outreach (manuel) — tüm alanlar */}
@@ -937,8 +987,8 @@ export default function OutreachHubPage() {
               </p>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 }

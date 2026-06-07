@@ -39,7 +39,7 @@ interface CategoryDetail {
   byCategory?: Record<string, number>;
 }
 
-type CategoryKey = 'vakif' | 'dernek' | 'kulup' | 'ilMudurluk' | 'federasyon';
+type CategoryKey = 'all' | 'vakif' | 'dernek' | 'kulup' | 'ilMudurluk' | 'federasyon' | 'gencSporMudurluk';
 
 interface StatsResp {
   generatedAt: number;
@@ -101,8 +101,8 @@ export function OutreachDashboard({ user }: Props) {
   const [stats, setStats] = useState<StatsResp | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Aktif kategori sekmesi. 'all' = tüm kayıtların genel istatistiği (varsayılan).
-  const [activeCat, setActiveCat] = useState<'all' | CategoryKey>('all');
+  // Aktif kategori sekmesi. 'all' = tüm kayıtların aggregated istatistiği (varsayılan).
+  const [activeCat, setActiveCat] = useState<CategoryKey>('all');
 
   const fetchStats = React.useCallback(async () => {
     if (!user) return;
@@ -161,135 +161,23 @@ export function OutreachDashboard({ user }: Props) {
           )}
           {stats && (
             <>
-              {/* Kategori sekmeleri — tıklanınca o kategorinin detay istatistiği;
-                  "Tümü" (varsayılan) tüm kayıtların genel istatistiğini gösterir. */}
+              {/* Kategori sekmeleri — her sekme aynı detay paneli formatında istatistik gösterir.
+                  "Tümü" (varsayılan) tüm kayıtların aggregated istatistiğini gösterir. */}
               <div className="flex flex-wrap gap-2">
-                <CatPill active={activeCat === 'all'} onClick={() => setActiveCat('all')} label="Tümü" count={stats.byCollection.registryVakiflar + stats.byCollection.registryDernekler + stats.byCollection.outreachContacts} />
+                <CatPill active={activeCat === 'all'} onClick={() => setActiveCat('all')} label="Tümü" count={stats.categories.all.total} />
                 <CatPill active={activeCat === 'vakif'} onClick={() => setActiveCat('vakif')} label="Vakıf" count={stats.categories.vakif.total} />
                 <CatPill active={activeCat === 'dernek'} onClick={() => setActiveCat('dernek')} label="Dernek" count={stats.categories.dernek.total} />
                 <CatPill active={activeCat === 'kulup'} onClick={() => setActiveCat('kulup')} label="Kulüp" count={stats.categories.kulup.total} />
-                <CatPill active={activeCat === 'ilMudurluk'} onClick={() => setActiveCat('ilMudurluk')} label="İl Müdürlükleri" count={stats.categories.ilMudurluk.total} />
+                <CatPill active={activeCat === 'ilMudurluk'} onClick={() => setActiveCat('ilMudurluk')} label="STİ İl Müdürlükleri" count={stats.categories.ilMudurluk.total} />
                 <CatPill active={activeCat === 'federasyon'} onClick={() => setActiveCat('federasyon')} label="Federasyonlar" count={stats.categories.federasyon.total} />
+                <CatPill active={activeCat === 'gencSporMudurluk'} onClick={() => setActiveCat('gencSporMudurluk')} label="Gençlik ve Spor İl Müdürlükleri" count={stats.categories.gencSporMudurluk.total} />
               </div>
 
-              {activeCat !== 'all' && <CategoryDetailPanel cat={stats.categories[activeCat]} />}
+              <CategoryDetailPanel cat={stats.categories[activeCat]} />
             </>
           )}
           {stats && activeCat === 'all' && (
             <>
-              {/* GRAND TOTAL — Vakıf + Dernek + Kulüp + Federasyon + Manuel toplam */}
-              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30">
-                <CardContent className="p-4 flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest font-bold text-primary/70">Outreach Veritabanı Toplamı</p>
-                    <p className="text-4xl font-black tabular-nums leading-none mt-1">
-                      {formatN(stats.byCollection.registryVakiflar + stats.byCollection.registryDernekler + stats.byCollection.outreachContacts)}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground mt-1">tüm kayıtlar (vakıf + dernek + kulüp + federasyon + müdürlük + manuel)</p>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs">
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Vakıf</p>
-                      <p className="text-base font-black tabular-nums">{formatN(stats.byCollection.registryVakiflar)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Dernek</p>
-                      <p className="text-base font-black tabular-nums">{formatN(stats.byCollection.registryDernekler)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Federasyon</p>
-                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.Federasyon || 0)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Spor Kulübü</p>
-                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.SporKulübü || 0)}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[9px] uppercase font-bold text-muted-foreground">Sivil Toplum</p>
-                      <p className="text-base font-black tabular-nums">{formatN(stats.byType.SivilToplumMüdürlüğü || 0)}</p>
-                    </div>
-                    {stats.coverage.kamuYarariDernekler !== undefined && stats.coverage.kamuYarariDernekler > 0 && (
-                      <div className="text-center border-l border-emerald-300 pl-3">
-                        <p className="text-[9px] uppercase font-bold text-emerald-700">🏛 Kamu Yararı</p>
-                        <p className="text-base font-black tabular-nums text-emerald-700">{formatN(stats.coverage.kamuYarariDernekler)}</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 4 ana KPI */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <KPI label="Vakıflar" value={formatN(stats.byCollection.registryVakiflar)} icon={Users} color="bg-amber-500" />
-                <KPI label="Dernekler" value={formatN(stats.byCollection.registryDernekler)} icon={Users} color="bg-rose-500" />
-                <KPI label="Manuel/CSV" value={formatN(stats.byCollection.outreachContacts)} icon={Users} color="bg-blue-500" />
-                <KPI label="Toplam Mail" value={formatN(stats.sends.totalSent)} icon={Send} color="bg-emerald-600" sub={`${stats.sends.successRate}% başarı`} />
-              </div>
-
-              {/* Coverage */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Card className="bg-muted/30">
-                  <CardContent className="p-3">
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2 flex items-center gap-1">
-                      <Mail className="h-3 w-3" /> Vakıflar Email Kapsama
-                    </p>
-                    <div className="flex items-end justify-between">
-                      <p className="text-2xl font-black tabular-nums">{formatN(stats.coverage.vakiflar.email)}</p>
-                      <p className="text-xs text-muted-foreground">{stats.coverage.vakiflar.emailPct}% / {formatN(stats.coverage.vakiflar.total)}</p>
-                    </div>
-                    <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-emerald-500" style={{ width: `${stats.coverage.vakiflar.emailPct}%` }} />
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="bg-muted/30">
-                  <CardContent className="p-3">
-                    <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2 flex items-center gap-1">
-                      <Phone className="h-3 w-3" /> Vakıflar Telefon Kapsama
-                    </p>
-                    <div className="flex items-end justify-between">
-                      <p className="text-2xl font-black tabular-nums">{formatN(stats.coverage.vakiflar.phone)}</p>
-                      <p className="text-xs text-muted-foreground">{stats.coverage.vakiflar.phonePct}% / {formatN(stats.coverage.vakiflar.total)}</p>
-                    </div>
-                    <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500" style={{ width: `${stats.coverage.vakiflar.phonePct}%` }} />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Type breakdown — outreachContacts */}
-              <div>
-                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Manuel/CSV Kayıtların Tür Dağılımı</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                  {Object.entries(stats.byType).filter(([, c]) => c > 0).map(([t, c]) => (
-                    <Card key={t} className="bg-muted/20">
-                      <CardContent className="p-2">
-                        <p className="text-[9px] uppercase text-muted-foreground truncate">{t}</p>
-                        <p className="text-lg font-black tabular-nums">{formatN(c)}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Federasyon kategori */}
-              {Object.values(stats.federasyonByCategory).some((v) => v > 0) && (
-                <div>
-                  <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Federasyon Kategorileri</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {Object.entries(stats.federasyonByCategory).map(([cat, c]) => (
-                      <Card key={cat} className="bg-emerald-50/50 border-emerald-200">
-                        <CardContent className="p-3">
-                          <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">{cat}</p>
-                          <p className="text-2xl font-black tabular-nums">{formatN(c)}</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Send & Unsubscribed */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Card className="bg-blue-50/50 border-blue-200">
