@@ -142,6 +142,8 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       city: data.il || parsed.city,
       district: data.ilce || parsed.district,
       neighborhood: data.mahalle || parsed.neighborhood,
+      phone: data.telefon1 || data.phone,
+      phone2: data.telefon2 || data.phone2,
       email: data.ePosta || data.email,
       website: data.webSite || data.website,
       address: data.adres,

@@ -27,7 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import {
   Search, Mail, MessageSquare, Phone, MapPin, Upload, Plus,
   Building2, Heart, Trophy, Server, Landmark, Loader2, AlertCircle, CheckCircle2,
-  ChevronDown, X, FileSpreadsheet, UserMinus, EyeOff,
+  ChevronDown, X, FileSpreadsheet, UserMinus,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
@@ -122,19 +122,10 @@ const CATEGORY_CARDS: Array<{
   { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu' },
 ];
 
-// CSV utilities — Excel uyumlu (UTF-8 BOM + tırnaklama).
-function csvEscape(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  const s = String(value);
-  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
-
-function buildCsv(rows: OutreachRow[], tab: TabKey): string {
-  // Alanlar sekmeye göre değişir — kullanıcının istediği tüm bilgiler.
-  let headers: Array<{ key: keyof OutreachRow | 'siraNo'; label: string }>;
+// Export sütunları — sekmeye göre. Excel (.xlsx) çıktısında kullanılır.
+function exportColumns(tab: TabKey): Array<{ key: keyof OutreachRow | 'siraNo'; label: string }> {
   if (tab === 'vakiflar') {
-    headers = [
+    return [
       { key: 'siraNo', label: 'Sıra No' },
       { key: 'name', label: 'Vakıf Adı' },
       { key: 'shortName', label: 'Kısa Ad' },
@@ -150,8 +141,9 @@ function buildCsv(rows: OutreachRow[], tab: TabKey): string {
       { key: 'website', label: 'Web Sitesi' },
       { key: 'kutukNo', label: 'Kütük No' },
     ];
-  } else if (tab === 'dernekler') {
-    headers = [
+  }
+  if (tab === 'dernekler') {
+    return [
       { key: 'siraNo', label: 'Sıra No' },
       { key: 'name', label: 'Derneğin Adı' },
       { key: 'shortName', label: 'Kısa Adı' },
@@ -159,53 +151,55 @@ function buildCsv(rows: OutreachRow[], tab: TabKey): string {
       { key: 'detayliFaaliyetAlani', label: 'Detaylı Faaliyet Alanı' },
       { key: 'kutukNo', label: 'Kütük No' },
       { key: 'kurulusTarihi', label: 'Kuruluş Tarihi' },
-      { key: 'website', label: 'Web Sitesi' },
-      { key: 'email', label: 'E-Posta' },
-      { key: 'address', label: 'Adres' },
-      { key: 'city', label: 'İl' },
-      { key: 'district', label: 'İlçe' },
-      { key: 'neighborhood', label: 'Mahalle' },
-    ];
-  } else {
-    headers = [
-      { key: 'siraNo', label: 'Sıra No' },
-      { key: 'name', label: 'Ad' },
-      { key: 'shortName', label: 'Kısa Ad' },
-      { key: 'type', label: 'Tür' },
-      { key: 'faaliyetAlani', label: 'Faaliyet Alanı' },
-      { key: 'address', label: 'Adres' },
-      { key: 'city', label: 'İl' },
-      { key: 'district', label: 'İlçe' },
-      { key: 'neighborhood', label: 'Mahalle' },
       { key: 'phone', label: 'Telefon-1' },
       { key: 'phone2', label: 'Telefon-2' },
-      { key: 'etebligat', label: 'E-Tebligat' },
       { key: 'email', label: 'E-Posta' },
       { key: 'website', label: 'Web Sitesi' },
-      { key: 'status', label: 'Durum' },
+      { key: 'address', label: 'Adres' },
+      { key: 'city', label: 'İl' },
+      { key: 'district', label: 'İlçe' },
+      { key: 'neighborhood', label: 'Mahalle' },
     ];
   }
-  const lines = [headers.map((h) => csvEscape(h.label)).join(',')];
-  rows.forEach((r, idx) => {
-    const cells = headers.map((h) => {
-      if (h.key === 'siraNo') return csvEscape(idx + 1);
-      return csvEscape((r as unknown as Record<string, unknown>)[h.key as string]);
-    });
-    lines.push(cells.join(','));
-  });
-  return '﻿' + lines.join('\r\n'); // BOM Excel için
+  return [
+    { key: 'siraNo', label: 'Sıra No' },
+    { key: 'name', label: 'Ad' },
+    { key: 'shortName', label: 'Kısa Ad' },
+    { key: 'type', label: 'Tür' },
+    { key: 'faaliyetAlani', label: 'Faaliyet Alanı' },
+    { key: 'address', label: 'Adres' },
+    { key: 'city', label: 'İl' },
+    { key: 'district', label: 'İlçe' },
+    { key: 'neighborhood', label: 'Mahalle' },
+    { key: 'phone', label: 'Telefon-1' },
+    { key: 'phone2', label: 'Telefon-2' },
+    { key: 'etebligat', label: 'E-Tebligat' },
+    { key: 'email', label: 'E-Posta' },
+    { key: 'website', label: 'Web Sitesi' },
+    { key: 'status', label: 'Durum' },
+  ];
 }
 
-function downloadCsv(filename: string, csv: string) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+// Excel (.xlsx) dışa aktar — SheetJS. Türkçe karakter + çok sütun güvenli.
+// Dinamik import: xlsx (~900KB) sayfa bundle'ına girmez, sadece indirme anında yüklenir.
+async function exportRowsToXlsx(rows: OutreachRow[], tab: TabKey, filename: string) {
+  const XLSX = await import('xlsx');
+  const cols = exportColumns(tab);
+  const aoa: (string | number)[][] = [cols.map((c) => c.label)];
+  rows.forEach((r, idx) => {
+    aoa.push(cols.map((c) => {
+      if (c.key === 'siraNo') return idx + 1;
+      const v = (r as unknown as Record<string, unknown>)[c.key as string];
+      if (Array.isArray(v)) return v.join(', ');
+      if (typeof v === 'boolean') return v ? 'Evet' : 'Hayır';
+      return v == null ? '' : String(v);
+    }));
+  });
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = cols.map((c) => ({ wch: Math.min(45, Math.max(10, c.label.length + 6)) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Outreach');
+  XLSX.writeFile(wb, filename);
 }
 
 function DetailField({ label, value, onChange, wide }: { label: string; value?: string; onChange: (v: string) => void; wide?: boolean }) {
@@ -254,6 +248,7 @@ export default function OutreachHubPage() {
   const [pageSize, setPageSize] = useState<PageSize>(100);
   const [showUnsubscribed, setShowUnsubscribed] = useState(false);
   const [faaliyetAlaniFilter, setFaaliyetAlaniFilter] = useState('');
+  const [platformFilter, setPlatformFilter] = useState('');
   const [kamuYarariOnly, setKamuYarariOnly] = useState(false);
   // İl / İlçe / Mahalle süzgeçleri — client-side (yüklü satırlarda; kütükte il/ilçe
   // alanı her kaynakta yok, İstanbul "(Avrupa/Anadolu)" sonekli — bu yüzden adres
@@ -374,15 +369,24 @@ export default function OutreachHubPage() {
   // İl/İlçe/Mahalle client-side süzme (yüklü satırlarda). İl ismi kütükte farklı
   // formatta olabildiği (İstanbul "(Avrupa)") için alanlar + adres metninde
   // diakritik duyarsız includes ile eşleşir.
+  // Yüklü satırlardaki benzersiz Faaliyet Alanı değerleri (vakıf/dernek süzgeci için).
+  const faaliyetAlaniOptions = useMemo(() => {
+    const set = new Set<string>();
+    rows.forEach((r) => { if (r.faaliyetAlani) set.add(r.faaliyetAlani); });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'tr'));
+  }, [rows]);
+
   const norm = (s: string) => (s || '').toLocaleLowerCase('tr');
   const filteredRows = useMemo(() => {
     const ilQ = norm(ilFilter), ilceQ = norm(ilceFilter), mahQ = norm(mahalleFilter);
     const tQ = typeFilter;
     const fQ = faaliyetAlaniFilter;
-    if (!ilQ && !ilceQ && !mahQ && !tQ && !fQ) return rows;
+    const pQ = platformFilter;
+    if (!ilQ && !ilceQ && !mahQ && !tQ && !fQ && !pQ) return rows;
     return rows.filter((r) => {
       if (tQ && r.type !== tQ) return false;
       if (fQ && (r.faaliyetAlani || '') !== fQ) return false;
+      if (pQ && !(r.platforms || []).includes(pQ)) return false;
       const city = norm(r.city || ''), dist = norm(r.district || ''), addr = norm(r.address || '');
       const nb = norm(r.neighborhood || '');
       if (ilQ && !(city.includes(ilQ) || addr.includes(ilQ))) return false;
@@ -390,7 +394,7 @@ export default function OutreachHubPage() {
       if (mahQ && !(addr.includes(mahQ) || nb.includes(mahQ))) return false;
       return true;
     });
-  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter]);
+  }, [rows, ilFilter, ilceFilter, mahalleFilter, typeFilter, faaliyetAlaniFilter, platformFilter]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -480,14 +484,16 @@ export default function OutreachHubPage() {
     }
   }
 
-  function handleExport() {
-    // Seçili varsa onları, yoksa görünür satırların tümünü indir.
+  async function handleExport() {
+    // Seçili varsa onları, yoksa görünür satırların tümünü Excel (.xlsx) indir.
     const exportRows = selectedIds.size > 0 ? filteredRows.filter((r) => selectedIds.has(r.id)) : filteredRows;
     if (exportRows.length === 0) return;
-    const csv = buildCsv(exportRows, activeTab);
     const ts = new Date().toISOString().slice(0, 10);
-    const tabName = activeTab === 'vakiflar' ? 'vakiflar' : activeTab === 'dernekler' ? 'dernekler' : 'outreach';
-    downloadCsv(`hangel-outreach-${tabName}-${ts}.csv`, csv);
+    try {
+      await exportRowsToXlsx(exportRows, activeTab, `hangel-outreach-${activeTab}-${ts}.xlsx`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Excel oluşturulamadı');
+    }
   }
 
   return (
@@ -501,7 +507,7 @@ export default function OutreachHubPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel uyumlu CSV indir">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel (.xlsx) indir">
             <FileSpreadsheet className="h-4 w-4 mr-1" />
             İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
           </Button>
@@ -526,7 +532,8 @@ export default function OutreachHubPage() {
               onClick={() => {
                 setActiveTab(cat.targetTab);
                 setTypeFilter(cat.typeFilter || '');
-                setFaaliyetAlaniFilter('');  // kategori değişince spor branş filtresi sıfırla
+                setFaaliyetAlaniFilter('');  // kategori değişince faaliyet/branş filtresi sıfırla
+                setPlatformFilter('');
               }}
               className={cn(
                 'text-left rounded-xl border bg-card transition-all hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary',
@@ -596,15 +603,15 @@ export default function OutreachHubPage() {
               </div>
               <Button
                 variant={showUnsubscribed ? 'default' : 'outline'}
-                size="sm"
+                size="icon"
+                className="h-10 w-10 shrink-0"
                 onClick={() => setShowUnsubscribed((v) => !v)}
+                aria-label={showUnsubscribed ? 'Aktif kayıtlara dön' : 'Listeden çıkanları göster'}
                 title={showUnsubscribed
-                  ? 'Aktif kayıtlara dön'
-                  : 'Listeden çıkmış (unsubscribed) kayıtları göster'}
+                  ? 'Listeden Çıkanları gösteriyorsun — aktif kayıtlara dön'
+                  : 'Listeden Çıkanlar (unsubscribed) — göster'}
               >
-                {showUnsubscribed
-                  ? <><EyeOff className="h-4 w-4 mr-1" /> Çıkanları Gösteriyorum</>
-                  : <><EyeOff className="h-4 w-4 mr-1" /> Listeden Çıkanlar</>}
+                <UserMinus className="h-4 w-4" />
               </Button>
 
               {/* Spor Kulüpleri için Faaliyet Alanı (branş) filtresi */}
@@ -635,15 +642,45 @@ export default function OutreachHubPage() {
                 </div>
               )}
 
-              {/* Dernekler tab'da Kamu Yararı filter butonu */}
+              {/* Faaliyet Alanı süzgeci — vakıf/dernek (yüklü kayıtlardaki benzersiz değerler) */}
+              {(activeTab === 'vakiflar' || activeTab === 'dernekler') && faaliyetAlaniOptions.length > 0 && (
+                <div className="w-48">
+                  <SearchableSelect
+                    options={faaliyetAlaniOptions}
+                    value={faaliyetAlaniFilter}
+                    placeholder="Faaliyet Alanı"
+                    searchPlaceholder="Faaliyet alanı ara..."
+                    onValueChange={setFaaliyetAlaniFilter}
+                    triggerClassName="h-10 rounded-md border bg-background px-3"
+                  />
+                </div>
+              )}
+
+              {/* Platform süzgeci — kayıtlı olunan sivil toplum platformuna göre */}
+              <div className="w-44">
+                <SearchableSelect
+                  options={[...PLATFORMS]}
+                  value={platformFilter}
+                  placeholder="Platform"
+                  searchPlaceholder="Platform ara..."
+                  onValueChange={setPlatformFilter}
+                  triggerClassName="h-10 rounded-md border bg-background px-3"
+                />
+              </div>
+
+              {/* Dernekler tab'da Kamu Yararı filter butonu (icon-only) */}
               {activeTab === 'dernekler' && (
                 <Button
                   variant={kamuYarariOnly ? 'default' : 'outline'}
-                  size="sm"
+                  size="icon"
+                  className="h-10 w-10 shrink-0"
                   onClick={() => setKamuYarariOnly((v) => !v)}
-                  title="Kamu Yararına Çalışan Dernek statüsü olanlar (326 dernek)"
+                  aria-label="Kamu Yararına Çalışan Dernekler"
+                  title={kamuYarariOnly
+                    ? 'Kamu Yararı filtresi açık — kaldır'
+                    : 'Kamu Yararına Çalışan Dernekler — filtrele'}
                 >
-                  🏛 Kamu Yararı{kamuYarariOnly ? ' (filtrede)' : ''}
+                  <Landmark className="h-4 w-4" />
                 </Button>
               )}
 
@@ -664,8 +701,8 @@ export default function OutreachHubPage() {
                   onValueChange={setMahalleFilter}
                   triggerClassName="h-10 rounded-md border bg-background px-3" />
               </div>
-              {(ilFilter || ilceFilter || mahalleFilter) && (
-                <Button variant="ghost" size="sm" onClick={() => { setIlFilter(''); setIlceFilter(''); setMahalleFilter(''); }}>
+              {(ilFilter || ilceFilter || mahalleFilter || faaliyetAlaniFilter || platformFilter) && (
+                <Button variant="ghost" size="sm" onClick={() => { setIlFilter(''); setIlceFilter(''); setMahalleFilter(''); setFaaliyetAlaniFilter(''); setPlatformFilter(''); }}>
                   <X className="h-4 w-4 mr-1" /> Temizle
                 </Button>
               )}
@@ -953,7 +990,7 @@ export default function OutreachHubPage() {
               ))}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel uyumlu CSV indir">
+              <Button variant="outline" size="sm" onClick={handleExport} disabled={filteredRows.length === 0} title="Excel (.xlsx) indir">
                 <FileSpreadsheet className="h-4 w-4 mr-1" />
                 İndir ({selectedIds.size > 0 ? `${selectedIds.size} seçili` : `${filteredRows.length} kayıt`})
               </Button>

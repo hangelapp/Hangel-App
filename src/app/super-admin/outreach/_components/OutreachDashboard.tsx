@@ -208,7 +208,7 @@ export function OutreachDashboard({ user }: Props) {
                 <Card className="bg-muted/20">
                   <CardContent className="p-3">
                     <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> Top 10 İl (Vakıflar — örneklem 1000)
+                      <MapPin className="h-3 w-3" /> Top 10 İl (Tüm kayıtlar)
                     </p>
                     <ol className="space-y-1 text-xs">
                       {stats.topCities.map((c, i) => (

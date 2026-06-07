@@ -25,6 +25,30 @@ import { COLLECTIONS } from '@/firebase/collections';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+// Türkiye 81 il — registry `il` alanı bu proper-case formatta saklanır
+// (import + backfill-dernek-il.mjs neighborhoodsData key formatı). Top-10 il
+// count()-per-province için kullanılır.
+const IL_LIST: readonly string[] = [
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
+  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
+  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
+  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
+  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
+  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri', 'Kilis',
+  'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa',
+  'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye', 'Rize',
+  'Sakarya', 'Samsun', 'Siirt', 'Sinop', 'Sivas', 'Şanlıurfa', 'Şırnak', 'Tekirdağ', 'Tokat',
+  'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
+];
+
+// İl adını kanonikleştir — parantezli sonek ("İstanbul (Avrupa)") at, Türkçe
+// proper-case'e çevir ki farklı yazımlar tek ile gruplansın.
+function canonIl(s?: string): string {
+  const t = (s || '').replace(/\s*\(.*?\)\s*/g, ' ').trim();
+  if (!t) return '';
+  return t.charAt(0).toLocaleUpperCase('tr') + t.slice(1).toLocaleLowerCase('tr');
+}
+
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
   const authHeader = req.headers.get('authorization') || '';
   const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
@@ -68,11 +92,15 @@ const computeStats = unstable_cache(
     const federasyonByCategory: Record<string, number> = {};
     fedCatArr.forEach((x) => { federasyonByCategory[x.category] = x.count; });
 
-    // ─── Email/telefon coverage (vakıflar — emaili olanlar) ────────────
-    const [emailDolu, telDolu, kamuYarariCount] = await Promise.all([
+    // ─── Email/telefon coverage (vakıflar + dernekler) ────────────────
+    // registryDernekler de import'ta ePosta/telefon1 tutar (import-registry.mjs);
+    // dernek istatistikleri vakıf gibi email+telefon kapsama gösterir.
+    const [emailDolu, telDolu, kamuYarariCount, dernekEmail, dernekPhone] = await Promise.all([
       db.collection('registryVakiflar').where('ePosta', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryVakiflar').where('telefon1', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
       db.collection('registryDernekler').where('isKamuYarari', '==', true).count().get().then((s) => s.data().count).catch(() => 0),
+      db.collection('registryDernekler').where('ePosta', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
+      db.collection('registryDernekler').where('telefon1', '!=', '').count().get().then((s) => s.data().count).catch(() => 0),
     ]);
 
     // ─── Unsubscribed count (all 3 collections) ───────────────────────
@@ -118,21 +146,50 @@ const computeStats = unstable_cache(
       });
     }
 
-    // ─── Top 10 cities (vakıflar) ─────────────────────────────────────
-    // Aggregate by `il` field; cheap approach: read top docs and count.
-    // Daha doğrusu: count() per il but 81 il = 81 query. Bunun yerine cached sample.
-    const sampleSnap = await db.collection('registryVakiflar').limit(1000).get().catch(() => null);
-    const cityCounts: Record<string, number> = {};
-    if (sampleSnap) {
-      sampleSnap.docs.forEach((d) => {
-        const il = (d.data() as { il?: string }).il || 'Bilinmiyor';
-        cityCounts[il] = (cityCounts[il] || 0) + 1;
+    // ─── Top 10 İl — DOĞRU sayım (örneklem değil) ─────────────────────
+    // Vakıf: tüm koleksiyonu `il` projeksiyonuyla tara (~6.7K, ucuz+hızlı),
+    //   kanonik il'e göre grupla (casing/parantez varyantlarına dayanıklı).
+    // Dernek: `il` backfill ile proper-case → 81 il count() ile kesin sayım
+    //   (100K dokümanı okumadan).
+    const vakifIlCounts: Record<string, number> = {};
+    const vakifIlSnap = await db.collection('registryVakiflar').select('il').get().catch(() => null);
+    if (vakifIlSnap) {
+      vakifIlSnap.docs.forEach((d) => {
+        const il = canonIl((d.data() as { il?: string }).il);
+        if (il) vakifIlCounts[il] = (vakifIlCounts[il] || 0) + 1;
       });
     }
-    const topCities = Object.entries(cityCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([city, count]) => ({ city, count }));
+
+    const dernekIlCounts: Record<string, number> = {};
+    for (let i = 0; i < IL_LIST.length; i += 27) {
+      const slice = IL_LIST.slice(i, i + 27);
+      const res = await Promise.all(slice.map((il) =>
+        db.collection('registryDernekler').where('il', '==', il).count().get()
+          .then((s) => ({ il, c: s.data().count })).catch(() => ({ il, c: 0 }))));
+      res.forEach((r) => { if (r.c > 0) dernekIlCounts[r.il] = r.c; });
+    }
+
+    const outreachIlCounts: Record<string, number> = {};
+    const outreachIlSnap = await db.collection('outreachContacts').select('city', 'il').get().catch(() => null);
+    if (outreachIlSnap) {
+      outreachIlSnap.docs.forEach((d) => {
+        const x = d.data() as { city?: string; il?: string };
+        const il = canonIl(x.city || x.il);
+        if (il) outreachIlCounts[il] = (outreachIlCounts[il] || 0) + 1;
+      });
+    }
+
+    const top10 = (counts: Record<string, number>) =>
+      Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([city, count]) => ({ city, count }));
+    const mergeCounts = (...maps: Record<string, number>[]) => {
+      const out: Record<string, number> = {};
+      for (const m of maps) for (const [k, v] of Object.entries(m)) out[k] = (out[k] || 0) + v;
+      return out;
+    };
+    const vakifTop = top10(vakifIlCounts);
+    const dernekTop = top10(dernekIlCounts);
+    const allTop = top10(mergeCounts(vakifIlCounts, dernekIlCounts, outreachIlCounts));
+    const topCities = allTop; // top-level + 'all' kategorisi: tüm kayıtlar
 
     // ─── Kategori detay (outreachContacts type bazlı) ─────────────────
     // Tek equality filtre + örneklem okuması → composite index gerekmez.
@@ -199,15 +256,20 @@ const computeStats = unstable_cache(
         emailPct: vakifTotalCount ? Math.round((emailDolu / vakifTotalCount) * 100) : 0,
         phonePct: vakifTotalCount ? Math.round((telDolu / vakifTotalCount) * 100) : 0,
         unsubscribed: unsubscribed.vakiflar,
-        topCities,
+        topCities: vakifTop,
       },
-      // Dernek: registryDernekler kayıt-başı email/telefon tutmaz (send route da
-      // dernekler için sadece 'name' okur) → email/telefon kapsama hesaplanmaz.
+      // Dernek: registryDernekler de ePosta/telefon1 tutar → vakıf gibi
+      // email+telefon kapsama + top-10 il + kamu yararı gösterilir.
       dernek: {
         label: 'Dernek',
         total: dernekTotalCount,
+        email: dernekEmail,
+        phone: dernekPhone,
+        emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
+        phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
         unsubscribed: unsubscribed.dernekler,
         kamuYarari: kamuYarariCount,
+        topCities: dernekTop,
       },
       kulup: { label: 'Spor Kulübü', ...kulupDetail },
       ilMudurluk: { label: 'STİ İl Müdürlükleri', ...ilMudurlukDetail },
