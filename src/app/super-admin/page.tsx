@@ -143,6 +143,7 @@ const superAdminNavSections = [
         items: [
             { href: '/super-admin/donations', label: 'Bağış Yönetimi', icon: 'HandCoins', description: 'Tüm bağış işlemlerini ve STK hak edişlerini yönetin.' },
             { href: '/super-admin/funds', label: 'Fon & Hibe Programları', icon: 'HandCoins', description: 'STK\'ların başvurabileceği hibe programlarını ve fon kaynaklarını yönetin.' },
+            { href: '/super-admin/ngo-ads', label: 'STK Reklam Yönetimi', icon: 'Megaphone', description: 'STK\'ların Google Ad Grants (ayda 10.000$) ve sonraki platform reklam hesaplarını yönet — ajans paneli.' },
             { href: '/super-admin/transparency', label: 'Şeffaflık Yönetimi', icon: 'Shield', description: 'Yüklenen belgeleri kontrol et ve onayla.' },
         ],
     },
