@@ -57,6 +57,9 @@ interface OutreachRow {
   kamuYariTarihi?: string;
   // Kayıtlı olduğu sivil toplum platformları (Afet Platformu, Açık Açık, Tüsev vs.)
   platforms?: string[];
+  // Spor kulübünün kayıtlı olduğu federasyonlar (TFF, TBF, TVF vs. — bir kulüp
+  // birden çok federasyona kayıtlı olabilir; federation-scrape sonucu doldurulur)
+  federations?: string[];
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -128,6 +131,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       kutukNo: data.kutukNo,
       status: data.status,
       platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
+      federations: Array.isArray(data.federations) ? data.federations : undefined,
     };
   }
   if (source === 'registryDernekler') {
@@ -156,6 +160,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
       kamuYariNo: data.kamuYariNo,
       kamuYariTarihi: data.kamuYariTarihi,
       platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
+      federations: Array.isArray(data.federations) ? data.federations : undefined,
     };
   }
   return {
@@ -175,6 +180,7 @@ function normalize(source: Source, doc: FirebaseFirestore.QueryDocumentSnapshot)
     status: data.status,
     faaliyetAlani: data.faaliyetAlani,
     platforms: Array.isArray(data.platforms) ? data.platforms : undefined,
+    federations: Array.isArray(data.federations) ? data.federations : undefined,
   };
 }
 

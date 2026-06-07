@@ -29,6 +29,7 @@ interface NormalizedPatch {
   kutukNo?: string; kurulusTarihi?: string;
   isKamuYarari?: boolean; kamuYariNo?: string; kamuYariTarihi?: string;
   platforms?: string[];
+  federations?: string[];
 }
 
 async function isSuperAdmin(req: NextRequest): Promise<boolean> {
@@ -88,7 +89,7 @@ function toDocFields(source: Source, p: NormalizedPatch): Record<string, unknown
     // outreachContacts — alan adları zaten normalize ile birebir
     (['name', 'shortName', 'city', 'district', 'neighborhood', 'phone', 'phone2',
       'email', 'etebligat', 'website', 'address', 'type', 'status',
-      'faaliyetAlani', 'platforms'] as const)
+      'faaliyetAlani', 'platforms', 'federations'] as const)
       .forEach((k) => set(has(k), k, p[k], o));
   }
   return o;

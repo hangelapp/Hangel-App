@@ -58,6 +58,8 @@ interface OutreachRow {
   kamuYariNo?: string;
   kamuYariTarihi?: string;
   platforms?: string[];
+  // Spor Kulübü için: kayıtlı olduğu federasyonlar (TFF, TBF, TVF vs.)
+  federations?: string[];
 }
 
 // Vakıf/dernek detayında "Kayıtlı Olduğu Platformlar" multi-select seçenekleri.
@@ -73,6 +75,75 @@ const PLATFORMS = [
   'Idealist',
   'gonulluyuzbiz.gov.tr',
   'TGSP',
+] as const;
+
+// Spor Kulübü detayında "Kayıtlı Olduğu Federasyonlar" multi-select.
+// Kaynak: outreachContacts/Federasyon (faaliyetAlani='Spor') — 62 federasyon.
+// federation-scrape pipeline'ı (workflow) bu listeyi doldurur, kullanıcı UI'dan
+// düzeltebilir.
+const FEDERATIONS: readonly string[] = [
+  'Türkiye Atletizm Federasyonu',
+  'Türkiye Atıcılık ve Avcılık Federasyonu',
+  'Türkiye Badminton Federasyonu',
+  'Türkiye Basketbol Federasyonu',
+  'Türkiye Bedensel Engelliler Spor Federasyonu',
+  'Türkiye Beyzbol Softbol Korumalı Futbol ve Ragbi Federasyonu',
+  'Türkiye Bilardo Federasyonu',
+  'Türkiye Binicilik Federasyonu',
+  'Türkiye Bisiklet Federasyonu',
+  'Türkiye Bocce Bowling ve Dart Federasyonu',
+  'Türkiye Boks Federasyonu',
+  'Türkiye Briç Federasyonu',
+  'Türkiye Buz Hokeyi Federasyonu',
+  'Türkiye Buz Pateni Federasyonu',
+  'Türkiye Cimnastik Federasyonu',
+  'Türkiye Curling Federasyonu',
+  'Türkiye Dans Sporları Federasyonu',
+  'Türkiye Dağcılık Federasyonu',
+  'Türkiye E-Spor Federasyonu',
+  'Türkiye Eskrim Federasyonu',
+  'Türkiye Futbol Federasyonu',
+  'Türkiye Geleneksel Atlı Spor Dalları Federasyonu',
+  'Türkiye Geleneksel Güreşler Federasyonu',
+  'Türkiye Geleneksel Spor Dalları Federasyonu',
+  'Türkiye Geleneksel Türk Okçuluk Federasyonu',
+  'Türkiye Gelişmekte Olan Spor Branşları Federasyonu',
+  'Türkiye Golf Federasyonu',
+  'Türkiye Görme Engelliler Spor Federasyonu',
+  'Türkiye Halk Oyunları Federasyonu',
+  'Türkiye Halter Federasyonu',
+  'Türkiye Hava Sporları Federasyonu',
+  'Türkiye Hentbol Federasyonu',
+  'Türkiye Herkes İçin Spor Federasyonu',
+  'Türkiye Hokey Federasyonu',
+  'Türkiye İzcilik Federasyonu',
+  'Türkiye İşitme Engelliler Spor Federasyonu',
+  'Türkiye Judo Federasyonu',
+  'Türkiye Kano Federasyonu',
+  'Türkiye Karate Federasyonu',
+  'Türkiye Kayak Federasyonu',
+  'Türkiye Kaykay Federasyonu',
+  'Türkiye Kick Boks Federasyonu',
+  'Türkiye Kürek Federasyonu',
+  'Türkiye Masa Tenisi Federasyonu',
+  'Türkiye Modern Pentatlon Federasyonu',
+  'Türkiye Motosiklet Federasyonu',
+  'Türkiye Muay Thai Federasyonu',
+  'Türkiye Oryantiring Federasyonu',
+  'Türkiye Otomobil Sporları Federasyonu',
+  'Türkiye Satranç Federasyonu',
+  'Türkiye Sualtı Sporları Federasyonu',
+  'Türkiye Sutopu Federasyonu',
+  'Türkiye Taekwondo Federasyonu',
+  'Türkiye Tenis Federasyonu',
+  'Türkiye Triatlon Federasyonu',
+  'Türkiye Voleybol Federasyonu',
+  'Türkiye Vücut Geliştirme Fitness ve Bilek Güreşi Federasyonu',
+  'Türkiye Wushu Kung Fu Federasyonu',
+  'Türkiye Yelken Federasyonu',
+  'Türkiye Yüzme Federasyonu',
+  'Türkiye Özel Sporcular Spor Federasyonu',
+  'Türkiye Üniversite Sporları Federasyonu',
 ] as const;
 
 type TabKey = 'vakiflar' | 'dernekler' | 'outreach';
@@ -212,6 +283,39 @@ function DetailField({ label, value, onChange, wide }: { label: string; value?: 
 }
 
 // Vakıf/dernek detayında kayıtlı olunan sivil toplum platformlarını çoklu seçim.
+// Spor Kulübü detayında "Kayıtlı Olduğu Federasyonlar" multi-select (62 federasyon).
+// PlatformsField pattern'i kopya — emerald border ile ayırt edilir, 2-4 kolon grid.
+function FederationsField({ value, onChange }: { value?: string[]; onChange: (v: string[]) => void }) {
+  const selected = new Set(value || []);
+  return (
+    <div className="space-y-2 sm:col-span-2 lg:col-span-3 rounded-md border border-emerald-200 bg-emerald-50/40 p-3">
+      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+        Kayıtlı Olduğu Federasyonlar
+        {selected.size > 0 && <span className="ml-2 text-emerald-700">({selected.size} seçili)</span>}
+      </label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-64 overflow-y-auto">
+        {FEDERATIONS.map((f) => {
+          const checked = selected.has(f);
+          return (
+            <label key={f} className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox
+                checked={checked}
+                onCheckedChange={(v) => {
+                  const next = new Set(selected);
+                  if (v) next.add(f);
+                  else next.delete(f);
+                  onChange(Array.from(next));
+                }}
+              />
+              <span className="truncate" title={f}>{f.replace(/^Türkiye /, '')}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PlatformsField({ value, onChange }: { value?: string[]; onChange: (v: string[]) => void }) {
   const selected = new Set(value || []);
   return (
@@ -425,13 +529,13 @@ export default function OutreachHubPage() {
         id, name, shortName, city, district, neighborhood,
         phone, phone2, email, etebligat, website, address, type, status,
         faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
-        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms,
+        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms, federations,
       } = editData;
       const patch = {
         name, shortName, city, district, neighborhood,
         phone, phone2, email, etebligat, website, address, type, status,
         faaliyetAlani, detayliFaaliyetAlani, kutukNo, kurulusTarihi,
-        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms,
+        isKamuYarari, kamuYariNo, kamuYariTarihi, platforms, federations,
       };
       const res = await fetch('/api/super-admin/outreach/update', {
         method: 'POST',
@@ -942,6 +1046,10 @@ export default function OutreachHubPage() {
                                     <DetailField label="E-Tebligat" value={editData.etebligat} onChange={(v) => setEditData({ ...editData, etebligat: v })} />
                                     <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
                                     <DetailField label="Durum" value={editData.status} onChange={(v) => setEditData({ ...editData, status: v })} />
+                                    {/* Spor Kulübü ise federasyon multi-select. Bir kulüp birden çok federasyona kayıtlı olabilir. */}
+                                    {editData.type === 'SporKulübü' && (
+                                      <FederationsField value={editData.federations} onChange={(v) => setEditData({ ...editData, federations: v })} />
+                                    )}
                                   </>
                                 )}
                               </div>
