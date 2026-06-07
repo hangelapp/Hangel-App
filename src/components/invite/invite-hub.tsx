@@ -1,16 +1,20 @@
 'use client';
 
 /**
- * InviteHub — paylaşılan davet bileşeni.
+ * InviteHub — paylaşılan davet bileşeni (Apple iOS tasarım dili + hangel renkleri).
  *
  * İKİ sayfa da bunu kullanır (değişiklik tek yerde, iki sayfayı kapsar):
  *   - /invite                      → kullanıcı "Arkadaşını Davet Et"
  *   - /ngo-admin/community-invite  → kurumsal "Topluluğunu Davet Et"
  *
  * Fark sadece context (props): davet linki/metni, paylaşım konusu ve davet
- * kaydına eklenen alanlar (recordExtra: kind, entityId…). Rehber bağlama,
- * Gmail/Outlook OAuth, hangel kullanıcı eşleştirme (privacy-preserving hash),
- * tek tek + toplu SMS/WhatsApp daveti — hepsi burada.
+ * kaydına eklenen alanlar (recordExtra). Rehber bağlama, Gmail/Outlook OAuth,
+ * hangel kullanıcı eşleştirme (privacy-preserving hash), tek tek + toplu
+ * SMS/WhatsApp daveti — hepsi burada.
+ *
+ * Görsel dil: iOS HIG — systemGroupedBackground (#f5f5f7), beyaz inset-grouped
+ * kartlar (rounded-3xl), squircle app-icon hero, segmented control, tinted
+ * aksiyon daireleri, active:scale dokunma geri bildirimi. Aksan: hangel #f34723.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -38,31 +42,25 @@ import {
     Plus,
     X,
     Upload,
+    Check,
+    ChevronRight,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { COLLECTIONS } from '@/firebase/collections';
+import { cn } from '@/lib/utils';
 
 const INVITE_POINTS = 10;
 
 export interface InviteHubProps {
-    /** Davet linki (kullanıcı referral veya kurumsal topluluk linki). */
     inviteLink: string;
-    /** Paylaşılacak davet metni (link dahil). */
     inviteMessage: string;
-    /** Başlık (hero). */
     heroTitle: string;
-    /** Alt açıklama (hero). */
     heroSubtitle: string;
-    /** mailto konusu — varsayılan "hangel daveti". */
     shareSubject?: string;
-    /** invites doc'una eklenecek alanlar (ör. { kind:'friend' } / { kind:'community', entityId }). */
     recordExtra?: Record<string, unknown>;
-    /** Hero ikon — varsayılan Gift. */
     heroIcon?: React.ElementType;
 }
 
@@ -85,7 +83,6 @@ interface ImportedContact {
 }
 
 // wa.me için uluslararası rakam dizisi (+ ve ülke kodu dahil, '+' olmadan).
-// "+90…" zaten uluslararası → digit'leri kullan. "0…"/"5…" → TR varsay (90 ekle).
 function toIntlDigits(raw: string): string {
     const trimmed = (raw || '').trim();
     const digits = trimmed.replace(/\D/g, '');
@@ -172,7 +169,6 @@ async function getWebContacts(): Promise<PhoneContact[] | null> {
     }));
 }
 
-// vCard (.vcf) basit parse — FN/N, TEL satırları
 function parseVCard(text: string): PhoneContact[] {
     const cards = text.split(/END:VCARD/i);
     const contacts: PhoneContact[] = [];
@@ -198,7 +194,6 @@ function parseVCard(text: string): PhoneContact[] {
     return contacts;
 }
 
-// CSV: ilk satır header (name,phone veya isim,telefon vb.) — esnek
 function parseCSV(text: string): PhoneContact[] {
     const rows = text.split(/\r?\n/).map(r => r.trim()).filter(Boolean);
     if (rows.length === 0) return [];
@@ -235,6 +230,7 @@ export function InviteHub({
     const { user: authUser } = useUser();
     const db = useFirestore();
     const [sortCriteria, setSortCriteria] = useState('alphabetical');
+    const [copied, setCopied] = useState(false);
 
     const [phoneContacts, setPhoneContacts] = useState<PhoneContact[]>([]);
     const [phoneLoading, setPhoneLoading] = useState(false);
@@ -249,17 +245,18 @@ export function InviteHub({
     const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [importedContacts, setImportedContacts] = useState<ImportedContact[]>([]);
 
-    const copyToClipboard = () => {
+    const copyToClipboard = async () => {
         if (!inviteLink) return;
-        navigator.clipboard.writeText(inviteLink);
+        try { await navigator.clipboard.writeText(inviteLink); } catch { /* yoksay */ }
+        setCopied(true);
         toast({ title: 'Davet linki kopyalandı!' });
+        window.setTimeout(() => setCopied(false), 1800);
     };
 
     const recordInvite = async (recipientName: string, recipientPhone?: string | null, recipientEmail?: string | null) => {
         if (!authUser?.uid) return 0;
         try {
             await addDoc(collection(db, COLLECTIONS.invites), {
-                // firestore.rules /invites create kuralı invitedBy == auth.uid ister.
                 invitedBy: authUser.uid,
                 ...(recordExtra ?? { kind: 'friend' }),
                 recipientName,
@@ -507,12 +504,12 @@ export function InviteHub({
     };
 
     const shareOptions = [
-        { name: 'WhatsApp', icon: MessageSquare, href: `https://wa.me/?text=${encodeURIComponent(inviteMessage)}` },
-        { name: 'SMS', icon: Smartphone, href: `sms:?body=${encodeURIComponent(inviteMessage)}` },
-        { name: 'Telegram', icon: Send, href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteMessage)}` },
-        { name: 'E-posta', icon: Mail, href: `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(inviteMessage)}` },
-        { name: 'X (Twitter)', icon: Twitter, href: `https://x.com/intent/tweet?text=${encodeURIComponent(inviteMessage)}` },
-        { name: 'LinkedIn', icon: Linkedin, href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent(inviteMessage)}` },
+        { name: 'WhatsApp', icon: MessageSquare, tint: 'bg-[#25D366]/12 text-[#1c9b4b]', href: `https://wa.me/?text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'SMS', icon: Smartphone, tint: 'bg-primary/10 text-primary', href: `sms:?body=${encodeURIComponent(inviteMessage)}` },
+        { name: 'Telegram', icon: Send, tint: 'bg-[#229ED9]/12 text-[#1c86bb]', href: `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'E-posta', icon: Mail, tint: 'bg-secondary text-foreground/70', href: `mailto:?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(inviteMessage)}` },
+        { name: 'X', icon: Twitter, tint: 'bg-foreground/8 text-foreground', href: `https://x.com/intent/tweet?text=${encodeURIComponent(inviteMessage)}` },
+        { name: 'LinkedIn', icon: Linkedin, tint: 'bg-[#0A66C2]/12 text-[#0a5cb0]', href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(inviteLink)}&title=${encodeURIComponent(inviteMessage)}` },
     ];
 
     const sortedPhoneContacts = useMemo(() => {
@@ -665,137 +662,259 @@ export function InviteHub({
 
     const whatsappShareUrl = useMemo(() => `https://wa.me/?text=${encodeURIComponent(inviteMessage)}`, [inviteMessage]);
 
-    const ContactCard = ({ contact }: { contact: PhoneContact }) => (
-        <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
-            <div className="flex items-center gap-3">
-                <Avatar className="h-9 w-9">
+    const onPlatformCount = phoneContacts.filter(c => c.onPlatform).length;
+    const pendingCount = phoneContacts.filter(c => !c.onPlatform).length;
+
+    // ── iOS-stili küçük yardımcı bileşenler ────────────────────────────────
+    const QuickAction = ({ icon: Icon, label, sub, onClick, asLabel, htmlFor }: { icon: React.ElementType; label: string; sub: string; onClick?: () => void; asLabel?: boolean; htmlFor?: string }) => {
+        const inner = (
+            <>
+                <span className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                    <Icon className="h-[22px] w-[22px] text-primary" strokeWidth={1.9} />
+                </span>
+                <span className="text-[13px] font-semibold text-foreground leading-tight text-center">{label}</span>
+                <span className="text-[11px] text-muted-foreground leading-tight text-center">{sub}</span>
+            </>
+        );
+        const cls = 'flex flex-col items-center justify-start gap-2 rounded-2xl bg-card border border-border/60 px-3 py-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] active:scale-[0.96] transition disabled:opacity-50';
+        if (asLabel) {
+            return <label htmlFor={htmlFor} className={cn(cls, 'cursor-pointer')}>{inner}</label>;
+        }
+        return <button type="button" onClick={onClick} disabled={phoneLoading} className={cls}>{inner}</button>;
+    };
+
+    const ContactRow = ({ contact }: { contact: PhoneContact }) => (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+            <div className="flex items-center gap-3 min-w-0">
+                <Avatar className="h-10 w-10 ring-1 ring-border/50">
                     <AvatarImage src={contact.avatarUrl} />
-                    <AvatarFallback>{contact.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-foreground/60 text-sm font-semibold">{contact.name.charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div>
-                    <p className="font-medium text-sm">{contact.name}</p>
-                    {contact.phones[0] ? (<p className="text-xs text-muted-foreground">{contact.phones[0]}</p>) : null}
+                <div className="min-w-0">
+                    <p className="font-medium text-[15px] text-foreground truncate leading-tight">{contact.name}</p>
+                    {contact.phones[0] ? <p className="text-[13px] text-muted-foreground truncate">{contact.phones[0]}</p> : null}
                 </div>
             </div>
             {contact.onPlatform ? (
-                <Badge variant="secondary" className="font-normal">hangel&apos;da</Badge>
+                <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[12px] font-semibold text-primary">
+                    <Check className="h-3 w-3" /> hangel&apos;da
+                </span>
             ) : (
-                <div className="flex items-center gap-1.5 shrink-0">
-                    <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-700"
-                        onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'whatsapp')}
-                        disabled={!contact.phones[0]} title="WhatsApp ile davet" aria-label={`${contact.name} kişisini WhatsApp ile davet et`}>
-                        <MessageCircle className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="outline" className="h-8 w-8"
-                        onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'sms')}
-                        disabled={!contact.phones[0]} title="SMS ile davet" aria-label={`${contact.name} kişisini SMS ile davet et`}>
-                        <MessageSquare className="h-4 w-4" />
-                    </Button>
+                <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'whatsapp')} disabled={!contact.phones[0]}
+                        className="h-9 w-9 rounded-full bg-[#25D366]/12 text-[#1c9b4b] flex items-center justify-center active:scale-90 transition disabled:opacity-40"
+                        title="WhatsApp ile davet" aria-label={`${contact.name} WhatsApp daveti`}>
+                        <MessageCircle className="h-[18px] w-[18px]" />
+                    </button>
+                    <button onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'sms')} disabled={!contact.phones[0]}
+                        className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center active:scale-90 transition disabled:opacity-40"
+                        title="SMS ile davet" aria-label={`${contact.name} SMS daveti`}>
+                        <MessageSquare className="h-[18px] w-[18px]" />
+                    </button>
                 </div>
             )}
         </div>
     );
 
     return (
-        <div className="p-4 sm:p-6 space-y-8 animate-in fade-in-0">
-            <div className="text-center space-y-2">
-                <div className="inline-block bg-primary/10 p-4 rounded-full">
-                    <HeroIcon className="h-10 w-10 text-primary" />
+        <div className="min-h-dvh bg-[#f5f5f7]">
+            <div className="mx-auto w-full max-w-2xl px-4 sm:px-5 py-6 space-y-6 animate-in fade-in-0 duration-300">
+
+                {/* HERO — squircle app-icon + büyük başlık */}
+                <div className="text-center space-y-3 pt-2">
+                    <span className="inline-flex h-[76px] w-[76px] items-center justify-center rounded-[24px] bg-gradient-to-br from-primary to-[#ff7a55] shadow-[0_10px_30px_-8px_rgba(243,71,35,0.5)]">
+                        <HeroIcon className="h-9 w-9 text-white" strokeWidth={1.8} />
+                    </span>
+                    <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-foreground leading-[1.1]">{heroTitle}</h1>
+                    <p className="text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">{heroSubtitle}</p>
                 </div>
-                <h1 className="text-3xl font-bold font-headline">{heroTitle}</h1>
-                <p className="text-muted-foreground max-w-md mx-auto">{heroSubtitle}</p>
-            </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Davet Linkin</CardTitle>
-                    <CardDescription>Kişisel linkini kopyalayarak veya aşağıdaki butonlarla paylaş.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="relative flex w-full items-center">
-                        <Input value={inviteLink} readOnly className="h-12 pr-12 text-sm text-muted-foreground bg-muted border-dashed" />
-                        <Button type="button" size="icon" variant="ghost" onClick={copyToClipboard}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9" aria-label="Bağlantıyı kopyala">
-                            <Copy className="h-5 w-5" />
-                        </Button>
-                    </div>
-                    <div className="rounded-lg border bg-muted/30 p-3">
-                        <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Davet metni</p>
-                        <p className="text-sm leading-relaxed">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                        {shareOptions.map(option => (
-                            <Button key={option.name} asChild variant="outline" className="h-12">
-                                <a href={option.href} target="_blank" rel="noopener noreferrer">
-                                    <option.icon className="mr-2 h-5 w-5" /> {option.name}
+                {/* DAVET LİNKİN */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Davet Linkin</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 space-y-4">
+                        <div className="flex items-center gap-2 rounded-2xl bg-muted px-3.5 py-2.5">
+                            <Input value={inviteLink} readOnly className="h-8 border-0 bg-transparent px-0 text-[14px] text-muted-foreground shadow-none focus-visible:ring-0" />
+                            <button type="button" onClick={copyToClipboard} aria-label="Bağlantıyı kopyala"
+                                className={cn('shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 h-8 text-[13px] font-semibold transition active:scale-95',
+                                    copied ? 'bg-primary/10 text-primary' : 'bg-primary text-primary-foreground')}>
+                                {copied ? <><Check className="h-4 w-4" /> Kopyalandı</> : <><Copy className="h-4 w-4" /> Kopyala</>}
+                            </button>
+                        </div>
+                        <p className="text-[13px] leading-relaxed text-muted-foreground">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
+                        <div className="grid grid-cols-6 gap-1 pt-1">
+                            {shareOptions.map(option => (
+                                <a key={option.name} href={option.href} target="_blank" rel="noopener noreferrer"
+                                    className="flex flex-col items-center gap-1.5 group">
+                                    <span className={cn('h-12 w-12 rounded-full flex items-center justify-center transition active:scale-90 group-hover:brightness-95', option.tint)}>
+                                        <option.icon className="h-[20px] w-[20px]" />
+                                    </span>
+                                    <span className="text-[10px] text-muted-foreground truncate max-w-full">{option.name}</span>
                                 </a>
-                            </Button>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                </section>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Hızlı Davet Yolları</CardTitle>
-                    <CardDescription>Telefon rehberin, kişi dosyan, e-posta veya WhatsApp üzerinden davet et.</CardDescription>
-                </CardHeader>
-                <CardContent>
+                {/* HIZLI DAVET YOLLARI */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Hızlı Davet Yolları</h2>
                     <input type="file" accept=".vcf,.csv,text/vcard,text/csv,text/plain" id="main-vcard-csv-upload" className="sr-only" onChange={handleFileImport} />
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={handlePhoneConnect} disabled={phoneLoading}>
-                            <Smartphone className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">Telefon Rehberi</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Mobil / Chrome Android</span>
-                        </Button>
-                        <label htmlFor="main-vcard-csv-upload"
-                            className="h-auto py-4 flex flex-col items-center gap-2 cursor-pointer rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors disabled:opacity-50"
-                            aria-disabled={phoneLoading || undefined}>
-                            <Upload className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">vCard / CSV Yükle</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Tüm cihazlarda çalışır</span>
-                        </label>
-                        <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={() => setEmailProviderDialogOpen(true)}>
-                            <Mail className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">E-posta Kişileri</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Gmail / Outlook</span>
-                        </Button>
-                        <Button variant="outline" className="h-auto py-4 flex flex-col items-center gap-2" onClick={() => setWhatsappDialogOpen(true)}>
-                            <MessageSquare className="h-6 w-6 text-primary" />
-                            <span className="text-xs font-semibold">WhatsApp Davet</span>
-                            <span className="text-[10px] text-muted-foreground leading-tight">Kopyala veya paylaş</span>
-                        </Button>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <QuickAction icon={Smartphone} label="Telefon Rehberi" sub="Mobil / Chrome" onClick={handlePhoneConnect} />
+                        <QuickAction icon={Upload} label="vCard / CSV" sub="Tüm cihazlar" asLabel htmlFor="main-vcard-csv-upload" />
+                        <QuickAction icon={Mail} label="E-posta Kişileri" sub="Gmail / Outlook" onClick={() => setEmailProviderDialogOpen(true)} />
+                        <QuickAction icon={MessageSquare} label="WhatsApp" sub="Kopyala / paylaş" onClick={() => setWhatsappDialogOpen(true)} />
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-3 leading-snug">
-                        💡 <strong>iPhone / Safari kullanıcıları:</strong> Telefon Rehberini bağlamak için
-                        hangel mobil uygulamasını kullanın. Veya rehberinizi dışa aktarıp
-                        <strong className="text-foreground"> vCard / CSV </strong> ile yükleyin.
+                    <p className="px-1 text-[12px] text-muted-foreground leading-snug">
+                        iPhone / Safari&apos;de rehberi bağlamak için <span className="font-semibold text-foreground">hangel mobil uygulamasını</span> kullanın ya da rehberinizi vCard / CSV olarak yükleyin.
                     </p>
-                </CardContent>
-            </Card>
+                </section>
+
+                {/* KİŞİLERİ BUL — segmented control */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Kişilerini Bul</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4">
+                        <Tabs defaultValue="phone" className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 rounded-full bg-secondary p-1 h-11">
+                                <TabsTrigger value="phone" className="rounded-full text-[13px] font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                                    <Contact className="mr-1.5 h-4 w-4" /> Rehber
+                                </TabsTrigger>
+                                <TabsTrigger value="email" className="rounded-full text-[13px] font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+                                    <AtSign className="mr-1.5 h-4 w-4" /> Mail
+                                </TabsTrigger>
+                            </TabsList>
+
+                            {/* Rehber */}
+                            <TabsContent value="phone" className="mt-4">
+                                {!phoneSynced ? (
+                                    <div className="text-center space-y-4 py-4">
+                                        <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-primary/10">
+                                            <Contact className="h-7 w-7 text-primary" strokeWidth={1.8} />
+                                        </span>
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-[15px] text-foreground">Rehberine Erişim Ver</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                                                hangel, rehberini yalnızca kişilerini bulmak için kullanır. Hiçbir kişi bilgisi sunucularımızda saklanmaz.
+                                            </p>
+                                        </div>
+                                        <Button onClick={handlePhoneSync} disabled={phoneLoading}
+                                            className="w-full h-12 rounded-2xl text-[15px] font-semibold shadow-sm active:scale-[0.98] transition">
+                                            {phoneLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor...</> : <><Contact className="mr-2 h-[18px] w-[18px]" /> Rehberimi Bağla</>}
+                                        </Button>
+                                        <div className="flex items-center gap-3 py-1">
+                                            <div className="h-px flex-1 bg-border" />
+                                            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">veya</span>
+                                            <div className="h-px flex-1 bg-border" />
+                                        </div>
+                                        <input type="file" accept=".vcf,.csv,text/vcard,text/csv" id="vcard-csv-upload" className="hidden" onChange={handleFileImport} />
+                                        <Button asChild variant="secondary" disabled={phoneLoading}
+                                            className="w-full h-11 rounded-2xl text-[14px] font-medium bg-secondary text-foreground hover:bg-secondary/80 active:scale-[0.98] transition">
+                                            <label htmlFor="vcard-csv-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" /> vCard / CSV Yükle</label>
+                                        </Button>
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                            Masaüstünde rehbere doğrudan erişim mümkün değil. Telefonundan vCard (.vcf) ya da CSV olarak dışa aktarıp yükleyebilirsin.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="text-[13px] text-muted-foreground">
+                                                <span className="font-semibold text-primary">{onPlatformCount}</span> hangel&apos;da · <span className="font-semibold text-foreground">{pendingCount}</span> davet bekliyor
+                                            </p>
+                                            <div className="flex items-center gap-1.5">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full bg-secondary" aria-label="Sırala"><ArrowDownUp className="h-4 w-4" /></Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="rounded-2xl">
+                                                        <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => setSortCriteria('platform')}>Platformda Olanlar Önce</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                                <Button variant="ghost" size="sm" className="h-9 rounded-full px-3 text-[13px] text-primary font-semibold" onClick={() => { setPhoneSynced(false); setPhoneContacts([]); }}>Yenile</Button>
+                                            </div>
+                                        </div>
+                                        {pendingCount > 0 && (
+                                            <div className="flex gap-2">
+                                                <Button size="sm" className="flex-1 h-11 rounded-2xl text-[14px] font-semibold active:scale-[0.98] transition"
+                                                    onClick={() => handleBulkSms(phoneContacts.filter(c => !c.onPlatform).map(c => ({ name: c.name, phone: c.phones[0] })))}>
+                                                    <MessageSquare className="mr-1.5 h-4 w-4" /> Tümüne SMS ({pendingCount})
+                                                </Button>
+                                                <Button size="sm" variant="secondary" onClick={handleBulkWhatsApp}
+                                                    className="flex-1 h-11 rounded-2xl text-[14px] font-semibold bg-[#25D366]/12 text-[#1c9b4b] hover:bg-[#25D366]/20 active:scale-[0.98] transition">
+                                                    <MessageCircle className="mr-1.5 h-4 w-4" /> Tümüne WhatsApp
+                                                </Button>
+                                            </div>
+                                        )}
+                                        <div className="rounded-2xl bg-muted/40 border border-border/50 divide-y divide-border/50 overflow-hidden max-h-[26rem] overflow-y-auto">
+                                            {sortedPhoneContacts.length === 0 ? (
+                                                <p className="text-center text-muted-foreground text-[13px] py-10">Rehberinde kişi bulunamadı.</p>
+                                            ) : sortedPhoneContacts.map(c => (<ContactRow key={c.id} contact={c} />))}
+                                        </div>
+                                    </div>
+                                )}
+                            </TabsContent>
+
+                            {/* Mail */}
+                            <TabsContent value="email" className="mt-4">
+                                <div className="space-y-4">
+                                    <div className="text-center space-y-1.5 py-1">
+                                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-primary/10">
+                                            <AtSign className="h-6 w-6 text-primary" strokeWidth={1.8} />
+                                        </span>
+                                        <p className="font-semibold text-[15px] text-foreground">Mail Adresleriyle Davet</p>
+                                        <p className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                                            Davet etmek istediğin adresleri ekle. Hazır olunca varsayılan mail uygulaman açılır; metin ve link otomatik dolar.
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Input type="email" placeholder="ornek@email.com" value={emailInput}
+                                            className="h-11 rounded-2xl bg-muted border-border/60 text-[14px]"
+                                            onChange={e => setEmailInput(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEmailAdd(); } }} />
+                                        <Button type="button" variant="secondary" onClick={handleEmailAdd} className="h-11 w-11 shrink-0 rounded-2xl bg-secondary active:scale-95 transition"><Plus className="h-5 w-5" /></Button>
+                                    </div>
+                                    {emailList.length > 0 && (
+                                        <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-muted/50 border border-border/50">
+                                            {emailList.map(email => (
+                                                <span key={email} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 pl-3 pr-1.5 py-1 text-[13px] text-foreground shadow-sm">
+                                                    {email}
+                                                    <button type="button" onClick={() => handleEmailRemove(email)} className="ml-0.5 rounded-full hover:bg-muted p-0.5" aria-label={`${email} adresini kaldır`}>
+                                                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <Button onClick={handleEmailSend} disabled={emailSending || emailList.length === 0}
+                                        className="w-full h-12 rounded-2xl text-[15px] font-semibold shadow-sm active:scale-[0.98] transition">
+                                        {emailSending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor...</> : <><Send className="mr-2 h-[18px] w-[18px]" /> {emailList.length || ''} Adrese Davet Gönder</>}
+                                    </Button>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </div>
+                </section>
+            </div>
 
             {/* WhatsApp Davet Dialog */}
             <Dialog open={whatsappDialogOpen} onOpenChange={setWhatsappDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-3xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <MessageSquare className="h-5 w-5 text-primary" /> WhatsApp ile Davet
-                        </DialogTitle>
-                        <DialogDescription>Davet metnini kopyala veya doğrudan WhatsApp&apos;ta paylaş.</DialogDescription>
+                        <DialogTitle className="flex items-center gap-2 text-[17px]"><MessageCircle className="h-5 w-5 text-[#1c9b4b]" /> WhatsApp ile Davet</DialogTitle>
+                        <DialogDescription className="text-[13px]">Davet metnini kopyala veya doğrudan WhatsApp&apos;ta paylaş.</DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-3">
-                        <div className="rounded-lg border bg-muted/30 p-3">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">Davet metni</p>
-                            <p className="text-sm leading-relaxed">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
-                        </div>
+                    <div className="rounded-2xl bg-muted p-3.5">
+                        <p className="text-[13px] leading-relaxed text-foreground">{inviteMessage || 'Davet metni hazırlanıyor...'}</p>
                     </div>
                     <DialogFooter className="flex-row gap-2 sm:gap-2">
-                        <Button type="button" variant="outline" className="flex-1" onClick={handleCopyWhatsappMessage} disabled={!inviteMessage}>
-                            <Copy className="mr-2 h-4 w-4" /> Mesajı Kopyala
+                        <Button type="button" variant="secondary" className="flex-1 h-11 rounded-2xl bg-secondary active:scale-[0.98] transition" onClick={handleCopyWhatsappMessage} disabled={!inviteMessage}>
+                            <Copy className="mr-2 h-4 w-4" /> Kopyala
                         </Button>
-                        <Button asChild className="flex-1" disabled={!inviteMessage}>
+                        <Button asChild className="flex-1 h-11 rounded-2xl bg-[#25D366] hover:bg-[#1fae57] text-white active:scale-[0.98] transition" disabled={!inviteMessage}>
                             <a href={whatsappShareUrl} target="_blank" rel="noopener noreferrer" onClick={() => setWhatsappDialogOpen(false)}>
-                                <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp&apos;ta Paylaş
+                                <MessageCircle className="mr-2 h-4 w-4" /> Paylaş
                             </a>
                         </Button>
                     </DialogFooter>
@@ -804,133 +923,115 @@ export function InviteHub({
 
             {/* E-posta Sağlayıcı Dialog */}
             <Dialog open={emailProviderDialogOpen} onOpenChange={setEmailProviderDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-3xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Mail className="h-5 w-5 text-primary" /> E-posta Kişilerini İçe Aktar
-                        </DialogTitle>
-                        <DialogDescription>
-                            Mail kişilerini içe aktarmak için bir sağlayıcı seç. hangel kullananlar otomatik işaretlenir.
-                        </DialogDescription>
+                        <DialogTitle className="flex items-center gap-2 text-[17px]"><Mail className="h-5 w-5 text-primary" /> E-posta Kişilerini İçe Aktar</DialogTitle>
+                        <DialogDescription className="text-[13px]">Bir sağlayıcı seç. hangel kullananlar otomatik işaretlenir.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-2">
-                        <Button type="button" variant="outline" className="w-full justify-start h-12" onClick={() => handleEmailOAuth('google')}>
-                            <Mail className="mr-3 h-5 w-5 text-red-500" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-sm font-semibold">Gmail</span>
-                                <span className="text-[10px] text-muted-foreground">Google hesabıyla bağlan</span>
+                        {([
+                            { p: 'google' as const, label: 'Gmail', sub: 'Google hesabıyla bağlan', dot: 'text-red-500' },
+                            { p: 'microsoft' as const, label: 'Outlook / Hotmail', sub: 'Microsoft hesabıyla bağlan', dot: 'text-blue-500' },
+                        ]).map(item => (
+                            <button key={item.p} type="button" onClick={() => handleEmailOAuth(item.p)}
+                                className="w-full flex items-center gap-3 rounded-2xl bg-muted/60 border border-border/50 px-3.5 h-14 text-left active:scale-[0.98] transition hover:bg-muted">
+                                <Mail className={cn('h-5 w-5 shrink-0', item.dot)} />
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-[14px] font-semibold text-foreground">{item.label}</span>
+                                    <span className="text-[11px] text-muted-foreground">{item.sub}</span>
+                                </div>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                            </button>
+                        ))}
+                        <button type="button" onClick={handleImapNote}
+                            className="w-full flex items-center gap-3 rounded-2xl bg-muted/60 border border-border/50 px-3.5 h-14 text-left active:scale-[0.98] transition hover:bg-muted">
+                            <AtSign className="h-5 w-5 shrink-0 text-muted-foreground" />
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[14px] font-semibold text-foreground">Kurumsal / Özel IMAP</span>
+                                <span className="text-[11px] text-muted-foreground">İş veya okul mailini bağla</span>
                             </div>
-                        </Button>
-                        <Button type="button" variant="outline" className="w-full justify-start h-12" onClick={() => handleEmailOAuth('microsoft')}>
-                            <Mail className="mr-3 h-5 w-5 text-blue-500" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-sm font-semibold">Outlook / Hotmail</span>
-                                <span className="text-[10px] text-muted-foreground">Microsoft hesabıyla bağlan</span>
-                            </div>
-                        </Button>
-                        <Button type="button" variant="outline" className="w-full justify-start h-12" onClick={handleImapNote}>
-                            <AtSign className="mr-3 h-5 w-5 text-muted-foreground" />
-                            <div className="flex flex-col items-start">
-                                <span className="text-sm font-semibold">Kurumsal / Özel IMAP</span>
-                                <span className="text-[10px] text-muted-foreground">İş veya okul mailini bağla</span>
-                            </div>
-                        </Button>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </button>
 
-                        <div className="flex items-center gap-2 my-1">
+                        <div className="flex items-center gap-3 py-0.5">
                             <div className="h-px flex-1 bg-border" />
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">veya</span>
+                            <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">veya</span>
                             <div className="h-px flex-1 bg-border" />
                         </div>
 
                         <input type="file" accept=".vcf,.csv,text/vcard,text/csv" id="email-vcard-csv-upload" className="hidden"
                             onChange={(e) => { setEmailProviderDialogOpen(false); handleFileImport(e); }} />
-                        <Button asChild type="button" variant="outline" className="w-full justify-start h-12" disabled={phoneLoading}>
-                            <label htmlFor="email-vcard-csv-upload" className="cursor-pointer flex items-center w-full">
-                                <Upload className="mr-3 h-5 w-5 text-primary" />
-                                <div className="flex flex-col items-start">
-                                    <span className="text-sm font-semibold">vCard / CSV Yükle</span>
-                                    <span className="text-[10px] text-muted-foreground">Kişileri içe aktar, her birine davet gönder</span>
-                                </div>
-                            </label>
-                        </Button>
+                        <label htmlFor="email-vcard-csv-upload"
+                            className="w-full flex items-center gap-3 rounded-2xl bg-muted/60 border border-border/50 px-3.5 h-14 text-left active:scale-[0.98] transition hover:bg-muted cursor-pointer">
+                            <Upload className="h-5 w-5 shrink-0 text-primary" />
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <span className="text-[14px] font-semibold text-foreground">vCard / CSV Yükle</span>
+                                <span className="text-[11px] text-muted-foreground">Kişileri içe aktar, her birine davet gönder</span>
+                            </div>
+                        </label>
 
                         {emailList.length > 0 && (
-                            <div className="rounded-lg border bg-muted/30 p-2 space-y-1 max-h-40 overflow-y-auto">
+                            <div className="rounded-2xl bg-muted/50 border border-border/50 p-2 space-y-1 max-h-40 overflow-y-auto">
                                 {emailList.map((email) => (
-                                    <div key={email} className="flex items-center justify-between text-xs px-2 py-1">
-                                        <span className="truncate">{email}</span>
+                                    <div key={email} className="flex items-center justify-between text-[13px] px-2 py-1">
+                                        <span className="truncate text-foreground">{email}</span>
                                         <a href={`mailto:${email}?subject=${encodeURIComponent(shareSubject)}&body=${encodeURIComponent(inviteMessage)}`}
-                                            className="inline-flex items-center gap-1 text-primary hover:underline font-semibold"
-                                            onClick={() => recordInvite(email, null, email)}>
-                                            <Send className="h-3 w-3" /> Davet Gönder
+                                            className="inline-flex items-center gap-1 text-primary hover:underline font-semibold" onClick={() => recordInvite(email, null, email)}>
+                                            <Send className="h-3.5 w-3.5" /> Gönder
                                         </a>
                                     </div>
                                 ))}
                             </div>
                         )}
                     </div>
-                    <p className="text-[10px] text-muted-foreground text-center leading-relaxed pt-2 border-t">
-                        Gmail veya Outlook ile bağlanıp kişilerini içe aktar. Kişiler yalnızca davet için kullanılır; sunucularımızda saklanmaz. Kurumsal/özel mail için vCard/CSV yükle.
+                    <p className="text-[11px] text-muted-foreground text-center leading-relaxed pt-2 border-t border-border/60">
+                        Kişiler yalnızca davet için kullanılır; sunucularımızda saklanmaz.
                     </p>
                 </DialogContent>
             </Dialog>
 
             {/* İçe Aktarılan Kişiler Dialog */}
             <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-3xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            <Contact className="h-5 w-5 text-primary" /> İçe Aktarılan Kişiler
-                        </DialogTitle>
-                        <DialogDescription>
-                            İçe aktarılan kişilere davet gönder. hangel kullananlar işaretlenir;
-                            kalanlara WhatsApp, SMS veya e-posta ile davet yolla.
-                        </DialogDescription>
+                        <DialogTitle className="flex items-center gap-2 text-[17px]"><Contact className="h-5 w-5 text-primary" /> İçe Aktarılan Kişiler</DialogTitle>
+                        <DialogDescription className="text-[13px]">hangel kullananlar işaretlenir; kalanlara WhatsApp, SMS veya e-posta ile davet yolla.</DialogDescription>
                     </DialogHeader>
                     {importedContacts.some(c => !c.onPlatform && c.phones[0]) && (
-                        <Button size="sm" className="w-full"
+                        <Button size="sm" className="w-full h-11 rounded-2xl text-[14px] font-semibold active:scale-[0.98] transition"
                             onClick={() => handleBulkSms(importedContacts.filter(c => !c.onPlatform && c.phones[0]).map(c => ({ name: c.name, phone: c.phones[0] })))}>
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Telefonu olanların tümüne SMS ({importedContacts.filter(c => !c.onPlatform && c.phones[0]).length})
+                            <MessageSquare className="mr-1.5 h-4 w-4" /> Telefonu olanların tümüne SMS ({importedContacts.filter(c => !c.onPlatform && c.phones[0]).length})
                         </Button>
                     )}
-                    <div className="max-h-80 overflow-y-auto space-y-2">
+                    <div className="rounded-2xl bg-muted/40 border border-border/50 divide-y divide-border/50 overflow-hidden max-h-80 overflow-y-auto">
                         {importedContacts.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-6">Kişi bulunamadı.</p>
+                            <p className="text-[13px] text-muted-foreground text-center py-8">Kişi bulunamadı.</p>
                         ) : importedContacts.map((c) => (
-                            <div key={c.id} className="flex items-center justify-between p-2 rounded-lg border bg-background">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <Avatar className="h-8 w-8"><AvatarFallback>{c.name.charAt(0)}</AvatarFallback></Avatar>
+                            <div key={c.id} className="flex items-center justify-between gap-2 px-3 py-2.5">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <Avatar className="h-9 w-9 ring-1 ring-border/50"><AvatarFallback className="bg-secondary text-foreground/60 text-[13px] font-semibold">{c.name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium truncate">{c.name}</p>
-                                        <p className="text-xs text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
+                                        <p className="text-[14px] font-medium text-foreground truncate leading-tight">{c.name}</p>
+                                        <p className="text-[12px] text-muted-foreground truncate">{c.emails[0] || c.phones[0] || ''}</p>
                                     </div>
                                 </div>
                                 {c.onPlatform ? (
-                                    <Badge variant="secondary" className="font-normal flex-shrink-0">hangel&apos;da</Badge>
+                                    <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[12px] font-semibold text-primary"><Check className="h-3 w-3" /> hangel&apos;da</span>
                                 ) : (
                                     <div className="flex items-center gap-1.5 shrink-0">
                                         {c.phones[0] && (
                                             <>
-                                                <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-700"
-                                                    onClick={() => sendInviteToImported(c, 'whatsapp')} title="WhatsApp ile davet" aria-label={`${c.name} WhatsApp daveti`}>
-                                                    <MessageCircle className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="icon" variant="outline" className="h-8 w-8"
-                                                    onClick={() => sendInviteToImported(c, 'sms')} title="SMS ile davet" aria-label={`${c.name} SMS daveti`}>
-                                                    <MessageSquare className="h-4 w-4" />
-                                                </Button>
+                                                <button onClick={() => sendInviteToImported(c, 'whatsapp')} title="WhatsApp ile davet" aria-label={`${c.name} WhatsApp daveti`}
+                                                    className="h-9 w-9 rounded-full bg-[#25D366]/12 text-[#1c9b4b] flex items-center justify-center active:scale-90 transition"><MessageCircle className="h-[18px] w-[18px]" /></button>
+                                                <button onClick={() => sendInviteToImported(c, 'sms')} title="SMS ile davet" aria-label={`${c.name} SMS daveti`}
+                                                    className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center active:scale-90 transition"><MessageSquare className="h-[18px] w-[18px]" /></button>
                                             </>
                                         )}
                                         {c.emails[0] && (
-                                            <Button size="icon" variant="outline" className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                                                onClick={() => sendInviteToImported(c, 'email')} title="E-posta ile davet" aria-label={`${c.name} e-posta daveti`}>
-                                                <Mail className="h-4 w-4" />
-                                            </Button>
+                                            <button onClick={() => sendInviteToImported(c, 'email')} title="E-posta ile davet" aria-label={`${c.name} e-posta daveti`}
+                                                className="h-9 w-9 rounded-full bg-secondary text-foreground/70 flex items-center justify-center active:scale-90 transition"><Mail className="h-[18px] w-[18px]" /></button>
                                         )}
-                                        {!c.phones[0] && !c.emails[0] && (
-                                            <span className="text-[11px] text-muted-foreground">İletişim yok</span>
-                                        )}
+                                        {!c.phones[0] && !c.emails[0] && (<span className="text-[11px] text-muted-foreground">İletişim yok</span>)}
                                     </div>
                                 )}
                             </div>
@@ -938,122 +1039,6 @@ export function InviteHub({
                     </div>
                 </DialogContent>
             </Dialog>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Kişileri Bul</CardTitle>
-                    <CardDescription>Rehberini ya da mail adresini bağlayarak hızlıca davet gönder.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Tabs defaultValue="phone" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="phone"><Contact className="mr-2 h-4 w-4" /> Rehberini Bağla</TabsTrigger>
-                            <TabsTrigger value="email"><AtSign className="mr-2 h-4 w-4" /> Mail Adresini Bağla</TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="phone" className="mt-4">
-                            {!phoneSynced ? (
-                                <div className="text-center space-y-4 py-6">
-                                    <div className="inline-block bg-primary/10 p-4 rounded-full"><Contact className="h-8 w-8 text-primary" /></div>
-                                    <div>
-                                        <p className="font-semibold">Rehberine Erişim Ver</p>
-                                        <p className="text-sm text-muted-foreground mt-1">
-                                            hangel, rehberini yalnızca kişilerini bulmak için kullanır. Hiçbir kişi bilgisi sunucularımızda saklanmaz.
-                                        </p>
-                                    </div>
-                                    <Button onClick={handlePhoneSync} disabled={phoneLoading} className="w-full">
-                                        {phoneLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Yükleniyor...</> : <><Contact className="mr-2 h-4 w-4" /> Rehberimi Bağla</>}
-                                    </Button>
-                                    <div className="flex items-center gap-2 my-2">
-                                        <div className="h-px flex-1 bg-border" />
-                                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">veya</span>
-                                        <div className="h-px flex-1 bg-border" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <input type="file" accept=".vcf,.csv,text/vcard,text/csv" id="vcard-csv-upload" className="hidden" onChange={handleFileImport} />
-                                        <Button asChild variant="outline" disabled={phoneLoading} className="w-full">
-                                            <label htmlFor="vcard-csv-upload" className="cursor-pointer"><Upload className="mr-2 h-4 w-4" /> vCard/CSV Yükle</label>
-                                        </Button>
-                                        <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-                                            Masaüstünde rehbere doğrudan erişim mümkün değil. Telefonundan vCard (.vcf) ya da CSV olarak dışa aktarıp yükleyebilirsin.
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <p className="text-sm text-muted-foreground">
-                                            {phoneContacts.filter(c => c.onPlatform).length} kişi hangel&apos;da •{' '}
-                                            {phoneContacts.filter(c => !c.onPlatform).length} kişi davet bekliyor
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="icon" className="h-9 w-9" aria-label="Sırala"><ArrowDownUp className="h-4 w-4" /></Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => setSortCriteria('alphabetical')}>Alfabetik (A-Z)</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => setSortCriteria('platform')}>Platformda Olanlar Önce</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                            <Button variant="ghost" size="sm" onClick={() => { setPhoneSynced(false); setPhoneContacts([]); }}>Yenile</Button>
-                                        </div>
-                                    </div>
-                                    {phoneContacts.some(c => !c.onPlatform) && (
-                                        <div className="flex flex-col sm:flex-row gap-2">
-                                            <Button size="sm" className="flex-1"
-                                                onClick={() => handleBulkSms(phoneContacts.filter(c => !c.onPlatform).map(c => ({ name: c.name, phone: c.phones[0] })))}>
-                                                <MessageSquare className="mr-2 h-4 w-4" /> Tümüne SMS ({phoneContacts.filter(c => !c.onPlatform).length})
-                                            </Button>
-                                            <Button size="sm" variant="outline" className="flex-1 text-green-600 hover:text-green-700" onClick={handleBulkWhatsApp}>
-                                                <MessageCircle className="mr-2 h-4 w-4" /> Tümüne WhatsApp
-                                            </Button>
-                                        </div>
-                                    )}
-                                    <div className="space-y-3 max-h-80 overflow-y-auto">
-                                        {sortedPhoneContacts.length === 0 ? (
-                                            <p className="text-center text-muted-foreground text-sm py-8">Rehberinde kişi bulunamadı.</p>
-                                        ) : sortedPhoneContacts.map(c => (<ContactCard key={c.id} contact={c} />))}
-                                    </div>
-                                </div>
-                            )}
-                        </TabsContent>
-
-                        <TabsContent value="email" className="mt-4">
-                            <div className="space-y-4">
-                                <div className="text-center space-y-2 py-2">
-                                    <div className="inline-block bg-primary/10 p-3 rounded-full"><AtSign className="h-6 w-6 text-primary" /></div>
-                                    <p className="font-semibold text-sm">Mail Adresleriyle Davet</p>
-                                    <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                                        Davet etmek istediğin mail adreslerini ekle. Hazırlandığında varsayılan mail uygulaman açılır; davet metni ve linkin otomatik doldurulur.
-                                    </p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Input type="email" placeholder="ornek@email.com" value={emailInput}
-                                        onChange={e => setEmailInput(e.target.value)}
-                                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleEmailAdd(); } }} />
-                                    <Button type="button" variant="outline" onClick={handleEmailAdd}><Plus className="h-4 w-4" /></Button>
-                                </div>
-                                {emailList.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-muted/30">
-                                        {emailList.map(email => (
-                                            <Badge key={email} variant="secondary" className="font-normal pl-3 pr-1 py-1 gap-1">
-                                                {email}
-                                                <button type="button" onClick={() => handleEmailRemove(email)} className="ml-1 rounded-full hover:bg-muted p-0.5" aria-label={`${email} adresini kaldır`}>
-                                                    <X className="h-3 w-3" />
-                                                </button>
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                )}
-                                <Button onClick={handleEmailSend} disabled={emailSending || emailList.length === 0} className="w-full">
-                                    {emailSending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gönderiliyor...</> : <><Send className="mr-2 h-4 w-4" /> {emailList.length} Adrese Davet Gönder</>}
-                                </Button>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </CardContent>
-            </Card>
         </div>
     );
 }
