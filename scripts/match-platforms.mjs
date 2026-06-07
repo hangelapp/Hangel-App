@@ -46,6 +46,7 @@ const PLATFORMS = {
   helpsteps:     { json: '/tmp/scrape-helpsteps.json',     label: 'HelpSteps' },
   gonulluyuzbiz: { json: '/tmp/scrape-gonulluyuzbiz.json', label: 'gonulluyuzbiz.gov.tr' },
   adimadim:      { json: '/tmp/scrape-adimadim.json',      label: 'Adım Adım', optional: true },
+  tgsp:          { json: '/tmp/scrape-tgsp.json',          label: 'TGSP' },
   // Afet Platformu — manuel kısaltma map ile ayrı script (afet-platform-map.mjs)
 };
 
