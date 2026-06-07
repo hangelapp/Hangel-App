@@ -3,9 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { collection, addDoc, doc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { isNativeApp } from '@/lib/capacitor';
+import { matchHangelUsers, type MatchableContact } from '@/lib/contacts/match-hangel-users';
 
 const INVITE_POINTS = 10;
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import {
     Mail,
     Send,
     MessageSquare,
+    MessageCircle,
     Copy,
     Twitter,
     Linkedin,
@@ -56,6 +58,18 @@ interface ImportedContact {
 
 const buildInviteText = (link: string) =>
     `Bugün hiçbir ekstra ödeme yapmadan bağış yaptım. Aynısını sen de yapabilirsin. Gel birlikte büyütelim: ${link}`;
+
+// wa.me için uluslararası rakam dizisi (+ ve ülke kodu dahil, '+' olmadan).
+// "+90…" zaten uluslararası → digit'leri kullan. "0…"/"5…" → TR varsay (90 ekle).
+function toIntlDigits(raw: string): string {
+    const trimmed = (raw || '').trim();
+    const digits = trimmed.replace(/\D/g, '');
+    if (!digits) return '';
+    if (trimmed.startsWith('+')) return digits;          // zaten uluslararası
+    if (digits.startsWith('90')) return digits;
+    const noZero = digits.replace(/^0+/, '');
+    return '90' + noZero;                                  // TR varsayılan
+}
 
 interface CapacitorContact {
     contactId?: string;
@@ -217,10 +231,6 @@ export default function InvitePage() {
     const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [importedContacts, setImportedContacts] = useState<ImportedContact[]>([]);
 
-    // Platformdaki telefon eşleşmesi için (sadece "hangel'da" rozetini göstermek amacıyla)
-    const usersRef = useMemoFirebase(() => collection(db, COLLECTIONS.users), [db]);
-    const { data: allUsers } = useCollection(usersRef);
-
     useEffect(() => {
         if (typeof window !== 'undefined' && authUser?.uid) {
             // Hedef sayfa: kayıt akışını başlatan login/selection
@@ -240,7 +250,10 @@ export default function InvitePage() {
         if (!authUser?.uid) return 0;
         try {
             await addDoc(collection(db, COLLECTIONS.invites), {
-                senderId: authUser.uid,
+                // firestore.rules /invites create kuralı invitedBy == auth.uid ister.
+                // Eskiden 'senderId' yazılıyordu → kural reddediyordu (davet hiç kaydedilmiyordu).
+                invitedBy: authUser.uid,
+                kind: 'friend',
                 recipientName,
                 recipientPhone: recipientPhone || null,
                 recipientEmail: recipientEmail || null,
@@ -259,53 +272,99 @@ export default function InvitePage() {
         }
     };
 
-    const handleInvitePhone = async (name: string, phone?: string) => {
-        if (phone && inviteLink) {
-            const msg = encodeURIComponent(inviteMessage);
-            const nav = typeof navigator !== 'undefined' ? navigator : null;
-            const ua = nav?.userAgent ?? '';
-            const isMobileUA = /(Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini)/i.test(ua);
-            const hasTouch = (nav?.maxTouchPoints ?? 0) > 0;
-            const isDesktop = !isNativeApp() && !isMobileUA && !hasTouch;
-            if (isDesktop) {
-                const digits = (phone || '').replace(/\D/g, '');
-                const waUrl = digits
-                    ? `https://wa.me/${digits}?text=${msg}`
-                    : `https://wa.me/?text=${msg}`;
-                window.open(waUrl, '_blank', 'noopener,noreferrer');
-            } else {
-                window.open(`sms:${phone}?&body=${msg}`, '_blank');
-            }
+    // Telefon davetini açar — kullanıcı kanalı (SMS / WhatsApp) seçer.
+    const openInviteChannel = (phone: string, channel: 'sms' | 'whatsapp') => {
+        const msg = encodeURIComponent(inviteMessage);
+        if (channel === 'whatsapp') {
+            const intl = toIntlDigits(phone);
+            window.open(intl ? `https://wa.me/${intl}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank', 'noopener,noreferrer');
+        } else {
+            const safe = phone.replace(/[^\d+]/g, ''); // sms: URI için güvenli (RFC 3966) — rakam + opsiyonel +
+            window.open(`sms:${safe}?body=${msg}`, '_blank');
         }
+    };
+
+    const handleInvitePhone = async (name: string, phone: string | undefined, channel: 'sms' | 'whatsapp') => {
+        if (phone && inviteLink) openInviteChannel(phone, channel);
         const awarded = await recordInvite(name, phone, null);
         toast({
-            title: 'Davet Gönderildi!',
+            title: channel === 'whatsapp' ? 'WhatsApp Daveti Açıldı' : 'SMS Daveti Açıldı',
             description: awarded
-                ? `${name} kişisine davet gönderildi. +${awarded} Etki Puanı kazandınız.`
-                : `${name} kişisine hangel davetiniz gönderildi.`,
+                ? `${name} kişisine davet açıldı. +${awarded} Etki Puanı kazandınız.`
+                : `${name} kişisine hangel davetiniz açıldı.`,
         });
     };
 
-    // İçe aktarılan kişiye davet gönder — e-posta varsa mailto, yoksa SMS (ngo-admin/qr ile aynı).
-    const sendInviteToImported = async (c: ImportedContact) => {
+    // Rehber / içe aktarılan kişileri hangel kullanıcılarıyla eşleştir (sync API).
+    // onPlatform = hangel'da kayıtlı. Eşleşme yoksa (oturum/ağ hatası) sessizce
+    // tüm kişiler "davet bekliyor" olarak kalır.
+    const markOnPlatform = async <T extends MatchableContact>(list: T[]): Promise<T[]> => {
+        if (!authUser || list.length === 0) return list.map((c) => ({ ...c, onPlatform: false }));
+        try {
+            const idToken = await authUser.getIdToken();
+            const matchMap = await matchHangelUsers(
+                list.map((c) => ({ id: c.id, phones: c.phones, emails: c.emails })),
+                idToken,
+            );
+            return list.map((c) => ({ ...c, onPlatform: Boolean(matchMap[c.id]) }));
+        } catch (err) {
+            // Eşleştirme başarısızsa kişiler "davet bekliyor" kalır; sessiz kalma — logla.
+            console.error('[invite] kişi eşleştirme başarısız:', err);
+            return list.map((c) => ({ ...c, onPlatform: false }));
+        }
+    };
+
+    // Toplu davet — çok alıcılı SMS (tek composer'da tüm numaralar).
+    const handleBulkSms = async (targets: { name: string; phone?: string }[]) => {
+        const valid = targets.filter((t) => t.phone && t.phone.replace(/[^\d+]/g, ''));
+        const recipients = valid.map((t) => t.phone!.replace(/[^\d+]/g, ''));
+        if (recipients.length === 0) {
+            toast({ variant: 'destructive', title: 'Numara yok', description: 'Davet edilecek telefon numarası bulunamadı.' });
+            return;
+        }
+        const msg = encodeURIComponent(inviteMessage);
+        window.open(`sms:${recipients.join(',')}?body=${msg}`, '_blank');
+        // Kayıtları paralel yaz (sıralı await büyük listede UI'yi dondurur).
+        const awards = await Promise.all(valid.map((t) => recordInvite(t.name, t.phone, null)));
+        const total = awards.reduce<number>((a, b) => a + b, 0);
+        toast({
+            title: 'Toplu SMS Daveti Açıldı',
+            description: `${recipients.length} kişiye davet SMS'i hazırlandı.${total ? ` +${total} Etki Puanı kazandınız.` : ''}`,
+        });
+    };
+
+    // Toplu WhatsApp — WhatsApp çoklu alıcı desteklemez; mesajı panoya kopyalar
+    // ve WhatsApp paylaşım ekranını açar (kullanıcı kişi/grup seçer).
+    const handleBulkWhatsApp = async () => {
+        try { await navigator.clipboard.writeText(inviteMessage); } catch { /* clipboard izni yoksa yoksay */ }
+        window.open(`https://wa.me/?text=${encodeURIComponent(inviteMessage)}`, '_blank', 'noopener,noreferrer');
+        toast({
+            title: 'WhatsApp Paylaşımı Açıldı',
+            description: 'WhatsApp toplu alıcı desteklemez — kişi veya grup seçerek gönderin. Davet metni panoya kopyalandı.',
+        });
+    };
+
+    // İçe aktarılan kişiye davet gönder. Telefon için kanal (SMS/WhatsApp) seçilir;
+    // sadece e-postası olan kişide mailto açılır.
+    const sendInviteToImported = async (c: ImportedContact, channel: 'sms' | 'whatsapp' | 'email') => {
         const email = c.emails[0];
         const phone = c.phones[0];
-        if (email) {
+        if (channel === 'email' && email) {
             window.open(`mailto:${email}?subject=${encodeURIComponent('hangel daveti')}&body=${encodeURIComponent(inviteMessage)}`, '_blank');
             const awarded = await recordInvite(c.name, null, email);
             toast({
-                title: 'Davet Gönderildi!',
+                title: 'Mail Daveti Açıldı',
                 description: awarded
                     ? `${c.name} kişisine davet açıldı. +${awarded} Etki Puanı kazandınız.`
                     : `${c.name} kişisine hangel davetiniz açıldı.`,
             });
             return;
         }
-        if (phone) {
-            await handleInvitePhone(c.name, phone);
+        if ((channel === 'sms' || channel === 'whatsapp') && phone) {
+            await handleInvitePhone(c.name, phone, channel);
             return;
         }
-        toast({ variant: 'destructive', title: 'İletişim bilgisi yok', description: `${c.name} için e-posta veya telefon bulunamadı.` });
+        toast({ variant: 'destructive', title: 'İletişim bilgisi yok', description: `${c.name} için bu kanal kullanılamıyor.` });
     };
 
     const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
@@ -348,11 +407,9 @@ export default function InvitePage() {
                 window.open(`mailto:?bcc=${bcc}&subject=${subject}&body=${body}`, '_blank');
             }
 
-            let total = 0;
-            for (const email of emailList) {
-                const awarded = await recordInvite(email, null, email);
-                total += awarded;
-            }
+            // Kayıtları paralel yaz (sıralı await çok adreste UI'yi dondurur).
+            const awards = await Promise.all(emailList.map((email) => recordInvite(email, null, email)));
+            const total = awards.reduce<number>((a, b) => a + b, 0);
             toast({
                 title: 'Mail Davetleri Hazırlandı',
                 description: `${emailList.length} adrese davet açıldı.${total ? ` +${total} Etki Puanı kazandınız.` : ''}`,
@@ -417,15 +474,8 @@ export default function InvitePage() {
                 return;
             }
 
-            const firestorePhones = new Set(
-                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
-            );
-            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
-
-            const enriched = contacts.map(c => ({
-                ...c,
-                onPlatform: c.phones.some(p => firestorePhones.has(normalize(p))),
-            }));
+            // hangel kullanıcılarını privacy-preserving hash eşleştirmesiyle işaretle.
+            const enriched = await markOnPlatform(contacts);
 
             setPhoneContacts(enriched);
             setPhoneSynced(true);
@@ -438,9 +488,10 @@ export default function InvitePage() {
                 onPlatform: c.onPlatform,
             })));
             setImportDialogOpen(true);
+            const matchedCount = enriched.filter(c => c.onPlatform).length;
             toast({
                 title: 'Rehber Senkronize Edildi',
-                description: `${enriched.length} kişi yüklendi.`,
+                description: `${enriched.length} kişi yüklendi${matchedCount ? `, ${matchedCount} kişi hangel'da` : ''}.`,
             });
         } finally {
             setPhoneLoading(false);
@@ -465,14 +516,7 @@ export default function InvitePage() {
                 return;
             }
 
-            const firestorePhones = new Set(
-                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
-            );
-            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
-            const enriched = parsed.map(c => ({
-                ...c,
-                onPlatform: c.phones.some(p => firestorePhones.has(normalize(p))),
-            }));
+            const enriched = await markOnPlatform(parsed);
             setPhoneContacts(enriched);
             setPhoneSynced(true);
             setImportedContacts(enriched.map(c => ({
@@ -592,9 +636,9 @@ export default function InvitePage() {
         }
     };
 
-    // OAuth popup'tan dönen kişileri mevcut davet listelerine besle.
+    // OAuth popup'tan (Gmail / Outlook) dönen kişileri davet listelerine besle.
     useEffect(() => {
-        const handler = (event: MessageEvent) => {
+        const handler = async (event: MessageEvent) => {
             if (event.origin !== window.location.origin) return;
             const data = event.data as { type?: string; contacts?: Array<{ name?: string; email?: string | null; phone?: string | null }>; message?: string } | null;
             if (!data || typeof data.type !== 'string') return;
@@ -605,12 +649,6 @@ export default function InvitePage() {
             }
             if (data.type !== 'hangel-contacts' || !Array.isArray(data.contacts)) return;
 
-            const firestorePhones = new Set(
-                (allUsers || []).flatMap((u: { phoneNumber?: string; personalInfo?: { phone?: string } }) => [u.phoneNumber, u.personalInfo?.phone].filter(Boolean))
-            );
-            const normalize = (p: string) => p.replace(/[\s()-]/g, '');
-
-            const phoneEntries: PhoneContact[] = [];
             const emailEntries: string[] = [];
             const imported: ImportedContact[] = [];
             data.contacts.forEach((c, i) => {
@@ -618,25 +656,30 @@ export default function InvitePage() {
                 const phone = (c.phone || '').trim();
                 const email = (c.email || '').trim();
                 const validEmail = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : '';
-                const onPlatform = phone ? firestorePhones.has(normalize(phone)) : false;
-                if (phone) {
-                    phoneEntries.push({ id: `oauth-${i}-${name}`, name, phones: [phone], onPlatform });
-                }
-                if (validEmail) {
-                    emailEntries.push(validEmail);
-                }
+                if (validEmail) emailEntries.push(validEmail);
                 if (phone || validEmail) {
                     imported.push({
                         id: `oauth-${i}-${name}`,
                         name,
                         phones: phone ? [phone] : [],
                         emails: validEmail ? [validEmail] : [],
-                        onPlatform,
+                        onPlatform: false,
                     });
                 }
             });
 
-            // Mevcut senkronize rehberi koru — üzerine yazma, birleştir.
+            if (imported.length === 0) {
+                toast({ title: 'Kişi bulunamadı', description: 'İçe aktarılacak telefon veya e-posta bulunamadı.' });
+                return;
+            }
+
+            // hangel kullanıcılarını telefon hash + e-posta ile eşleştir.
+            const matched = await markOnPlatform(imported);
+
+            // Telefonu olanları rehber listesine de ekle (üzerine yazmadan birleştir).
+            const phoneEntries: PhoneContact[] = matched
+                .filter(c => c.phones.length > 0)
+                .map(c => ({ id: c.id, name: c.name, phones: c.phones, onPlatform: c.onPlatform }));
             if (phoneEntries.length > 0) {
                 setPhoneContacts(prev => {
                     const seen = new Set(prev.map(p => p.id));
@@ -648,20 +691,16 @@ export default function InvitePage() {
                 setEmailList(prev => Array.from(new Set([...prev, ...emailEntries])));
             }
 
-            const total = imported.length;
-            if (total > 0) {
-                // Kişiler hemen görünür ve davet edilebilir olsun diye toplu davet dialog'unu aç.
-                setImportedContacts(imported);
-                setEmailProviderDialogOpen(false);
-                setImportDialogOpen(true);
-                toast({ title: 'Kişiler içe aktarıldı', description: `${total} kişi davet listene eklendi.` });
-            } else {
-                toast({ title: 'Kişi bulunamadı', description: 'İçe aktarılacak telefon veya e-posta bulunamadı.' });
-            }
+            setImportedContacts(matched);
+            setEmailProviderDialogOpen(false);
+            setImportDialogOpen(true);
+            const matchedCount = matched.filter(c => c.onPlatform).length;
+            toast({ title: 'Kişiler içe aktarıldı', description: `${matched.length} kişi eklendi${matchedCount ? `, ${matchedCount} kişi hangel'da` : ''}.` });
         };
         window.addEventListener('message', handler);
         return () => window.removeEventListener('message', handler);
-    }, [allUsers, toast]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- markOnPlatform/toast stable enough; allUsers kaldırıldı
+    }, [authUser, toast]);
 
     // WhatsApp davet metnini kopyala
     const handleCopyWhatsappMessage = async () => {
@@ -696,9 +735,30 @@ export default function InvitePage() {
             {contact.onPlatform ? (
                 <Badge variant="secondary" className="font-normal">hangel'da</Badge>
             ) : (
-                <Button size="sm" onClick={() => handleInvitePhone(contact.name, contact.phones[0])}>
-                    Davet Et
-                </Button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8 text-green-600 hover:text-green-700"
+                        onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'whatsapp')}
+                        disabled={!contact.phones[0]}
+                        title="WhatsApp ile davet"
+                        aria-label={`${contact.name} kişisini WhatsApp ile davet et`}
+                    >
+                        <MessageCircle className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-8 w-8"
+                        onClick={() => handleInvitePhone(contact.name, contact.phones[0], 'sms')}
+                        disabled={!contact.phones[0]}
+                        title="SMS ile davet"
+                        aria-label={`${contact.name} kişisini SMS ile davet et`}
+                    >
+                        <MessageSquare className="h-4 w-4" />
+                    </Button>
+                </div>
             )}
         </div>
     );
@@ -971,9 +1031,22 @@ export default function InvitePage() {
                             <Contact className="h-5 w-5 text-primary" /> İçe Aktarılan Kişiler
                         </DialogTitle>
                         <DialogDescription>
-                            İçe aktarılan kişilere davet linkini gönder. hangel kullanan arkadaşların işaretlenir.
+                            İçe aktarılan kişilere davet gönder. hangel kullanan arkadaşların işaretlenir;
+                            kalanlara WhatsApp, SMS veya e-posta ile davet yolla.
                         </DialogDescription>
                     </DialogHeader>
+                    {importedContacts.some(c => !c.onPlatform && c.phones[0]) && (
+                        <Button
+                            size="sm"
+                            className="w-full"
+                            onClick={() => handleBulkSms(
+                                importedContacts.filter(c => !c.onPlatform && c.phones[0]).map(c => ({ name: c.name, phone: c.phones[0] }))
+                            )}
+                        >
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Telefonu olanların tümüne SMS ({importedContacts.filter(c => !c.onPlatform && c.phones[0]).length})
+                        </Button>
+                    )}
                     <div className="max-h-80 overflow-y-auto space-y-2">
                         {importedContacts.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-6">Kişi bulunamadı.</p>
@@ -989,14 +1062,39 @@ export default function InvitePage() {
                                 {c.onPlatform ? (
                                     <Badge variant="secondary" className="font-normal flex-shrink-0">hangel&apos;da</Badge>
                                 ) : (
-                                    <Button
-                                        size="sm"
-                                        onClick={() => sendInviteToImported(c)}
-                                        disabled={!c.emails[0] && !c.phones[0]}
-                                        className="flex-shrink-0"
-                                    >
-                                        <Send className="mr-1 h-3 w-3" /> Davet Gönder
-                                    </Button>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {c.phones[0] && (
+                                            <>
+                                                <Button
+                                                    size="icon" variant="outline"
+                                                    className="h-8 w-8 text-green-600 hover:text-green-700"
+                                                    onClick={() => sendInviteToImported(c, 'whatsapp')}
+                                                    title="WhatsApp ile davet" aria-label={`${c.name} WhatsApp daveti`}
+                                                >
+                                                    <MessageCircle className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    size="icon" variant="outline" className="h-8 w-8"
+                                                    onClick={() => sendInviteToImported(c, 'sms')}
+                                                    title="SMS ile davet" aria-label={`${c.name} SMS daveti`}
+                                                >
+                                                    <MessageSquare className="h-4 w-4" />
+                                                </Button>
+                                            </>
+                                        )}
+                                        {c.emails[0] && (
+                                            <Button
+                                                size="icon" variant="outline" className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                                                onClick={() => sendInviteToImported(c, 'email')}
+                                                title="E-posta ile davet" aria-label={`${c.name} e-posta daveti`}
+                                            >
+                                                <Mail className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        {!c.phones[0] && !c.emails[0] && (
+                                            <span className="text-[11px] text-muted-foreground">İletişim yok</span>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         ))}
@@ -1087,6 +1185,29 @@ export default function InvitePage() {
                                             </Button>
                                         </div>
                                     </div>
+                                    {phoneContacts.some(c => !c.onPlatform) && (
+                                        <div className="flex flex-col sm:flex-row gap-2">
+                                            <Button
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() => handleBulkSms(
+                                                    phoneContacts.filter(c => !c.onPlatform).map(c => ({ name: c.name, phone: c.phones[0] }))
+                                                )}
+                                            >
+                                                <MessageSquare className="mr-2 h-4 w-4" />
+                                                Tümüne SMS ({phoneContacts.filter(c => !c.onPlatform).length})
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1 text-green-600 hover:text-green-700"
+                                                onClick={handleBulkWhatsApp}
+                                            >
+                                                <MessageCircle className="mr-2 h-4 w-4" />
+                                                Tümüne WhatsApp
+                                            </Button>
+                                        </div>
+                                    )}
                                     <div className="space-y-3 max-h-80 overflow-y-auto">
                                         {sortedPhoneContacts.length === 0 ? (
                                             <p className="text-center text-muted-foreground text-sm py-8">Rehberinde kişi bulunamadı.</p>
