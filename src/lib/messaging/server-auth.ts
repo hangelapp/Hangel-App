@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { roleTitleHasScope, type NgoScope } from '@/lib/ngo-admin/role-scopes';
 
 export function checkMessagingKey(req: Request): NextResponse | null {
   const expected = process.env.MESSAGING_WORKER_KEY;
@@ -70,7 +71,7 @@ export interface NgoAdminContext {
  */
 export async function requireNgoAdmin(
   req: Request,
-  options?: { allowSuperAdmin?: boolean; targetNgoId?: string }
+  options?: { allowSuperAdmin?: boolean; targetNgoId?: string; scope?: NgoScope }
 ): Promise<
   | { error: NextResponse; actor?: undefined }
   | { actor: NgoAdminContext; error?: undefined }
@@ -92,7 +93,7 @@ export async function requireNgoAdmin(
   const allowSuperAdmin = options?.allowSuperAdmin ?? true;
 
   const userSnap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
-  const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string }) : null;
+  const userData = userSnap.exists ? (userSnap.data() as { role?: string; managedNgoId?: string; roleTitle?: string | null }) : null;
 
   // P0-4b: claim-only super-admin check (Firestore role-doc fallback removed).
   // NGO-admin still uses userData.managedNgoId since that's the scoped identity,
@@ -111,6 +112,11 @@ export async function requireNgoAdmin(
 
   if (userData?.role !== 'ngo-admin' || !userData.managedNgoId) {
     return { error: NextResponse.json({ error: 'NGO admin yetkisi yok' }, { status: 403 }) };
+  }
+
+  // Rol-bazlı kısıtlama: dar başlıklı yetkili istenen modüle erişemez.
+  if (options?.scope && !roleTitleHasScope(userData.roleTitle, options.scope)) {
+    return { error: NextResponse.json({ error: 'Bu işlem için yetkiniz yok (rol kısıtlaması)' }, { status: 403 }) };
   }
 
   return { actor: { uid: decoded.uid, email, ngoId: userData.managedNgoId, isSuperAdmin: false } };

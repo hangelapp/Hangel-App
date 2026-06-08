@@ -17,7 +17,7 @@ const str = (v: unknown) => (typeof v === 'string' ? v : '');
 const arr = (v: unknown) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string').slice(0, 30) as string[] : []);
 
 export async function POST(req: NextRequest) {
-  const auth = await requireNgoAdmin(req);
+  const auth = await requireNgoAdmin(req, { scope: 'ads' });
   if ('error' in auth) return auth.error;
   const { actor } = auth;
 
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = await requireNgoAdmin(req);
+  const auth = await requireNgoAdmin(req, { scope: 'ads' });
   if ('error' in auth) return auth.error;
 
   const db = getAdminFirestore();

@@ -59,9 +59,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useFirestore } from '@/firebase';
-import { collection, query, where, Timestamp, type Query, type DocumentData } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { collection, doc, query, where, Timestamp, type Query, type DocumentData } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { roleTitleHasScope, type NgoScope } from '@/lib/ngo-admin/role-scopes';
 import { useMenuBadge, type BadgeConfig } from '@/components/shared/use-menu-badge';
 import {
   ActiveEntityProvider,
@@ -78,6 +79,9 @@ type MenuItem = {
   label: string;
   icon: LucideIcon;
   comingSoon?: boolean;
+  /** Rol-bazlı kısıtlama: tanımlıysa yalnız bu kapsama yetkili roller görür
+   *  (Genel Yönetici / sahip / süper-admin her zaman görür). Tanımsız = herkese açık. */
+  scope?: NgoScope;
 };
 
 type MenuGroup = {
@@ -93,7 +97,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
-      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone },
+      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads' },
     ],
   },
   {
@@ -101,7 +105,7 @@ const NGO_MENU: MenuGroup[] = [
     items: [
       { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
-      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
+      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
       { href: '/ngo-admin/transparency', label: 'Şeffaflık Endeksi', icon: ShieldCheck },
     ],
@@ -109,15 +113,15 @@ const NGO_MENU: MenuGroup[] = [
   {
     title: 'Finans & Sosyal Etki',
     items: [
-      { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: HandCoins },
-      { href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: Banknote },
+      { href: '/ngo-admin/donations', label: 'Bağış Takibi', icon: HandCoins, scope: 'finance' },
+      { href: '/ngo-admin/funds', label: 'Hibeler ve Fonlar', icon: Banknote, scope: 'finance' },
     ],
   },
   {
     title: 'Gönüllü ve Gönüllülük Yönetimi',
     items: [
       { href: '/ngo-admin/website', label: 'Web Sitesi Yönetimi', icon: Globe },
-      { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: HeartHandshake },
+      { href: '/ngo-admin/volunteer', label: 'Gönüllülük Yönetimi', icon: HeartHandshake, scope: 'volunteer' },
       { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
     ],
   },
@@ -174,7 +178,7 @@ const BRAND_MENU: MenuGroup[] = [
     items: [
       { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
-      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
+      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
       { href: '/ngo-admin/reports', label: 'Sürdürülebilirlik ve KSS Raporları', icon: Leaf },
     ],
@@ -211,7 +215,7 @@ const CLUB_MENU: MenuGroup[] = [
     items: [
       { href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: Inbox },
       { href: '/ngo-admin/notifications', label: 'Bildirim Merkezi', icon: Bell },
-      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper },
+      { href: '/ngo-admin/posts', label: 'Gönderiler', icon: Newspaper, scope: 'posts' },
       { href: '/ngo-admin/impact-story', label: 'Etki Hikayemiz', icon: Sparkles },
       { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar },
     ],
@@ -406,6 +410,12 @@ function MenuItemLink({
 function SideMenu() {
   const pathname = usePathname();
   const { kind: entityKind, subType, withEntityParams, id: entityId } = useActiveEntity();
+  // Mevcut kullanıcının rol başlığı (rol-bazlı nav kısıtlaması için).
+  const { user } = useUser();
+  const db = useFirestore();
+  const userRef = useMemoFirebase(() => (user ? doc(db, COLLECTIONS.users, user.uid) : null), [db, user]);
+  const { data: userDoc } = useDoc<{ roleTitle?: string | null }>(userRef);
+  const roleTitle = userDoc?.roleTitle ?? null;
   // Default to NGO menu while resolving or if undetermined
   const groups = entityKind === 'brand' ? BRAND_MENU : entityKind === 'club' ? CLUB_MENU : NGO_MENU;
 
@@ -424,6 +434,10 @@ function SideMenu() {
               {group.items.map((item) => {
                 // Restrict the active events link to clubs only (disabled "Yakında" items still render)
                 if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
+                  return null;
+                }
+                // Rol-bazlı kısıtlama: dar başlıklı yetkili kapsamı dışındaki modülü görmez.
+                if (item.scope && !roleTitleHasScope(roleTitle, item.scope)) {
                   return null;
                 }
                 const Icon = item.icon;
