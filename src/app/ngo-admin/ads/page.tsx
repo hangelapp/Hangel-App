@@ -18,7 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
-    Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck,
+    Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -91,6 +91,7 @@ interface ConnectionState {
 }
 
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
+const GOOGLE_ADS_URL = 'https://ads.google.com/';
 
 export default function AdsPage() {
     const { user } = useUser();
@@ -263,6 +264,33 @@ export default function AdsPage() {
             toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
         } finally {
             setPublishingId(null);
+        }
+    };
+
+    // Planı Google Ads'e elle taşımak için panoya kopyala (credential gelene kadar
+    // Ad Grants onaylı STK'lar bu metni kendi Google Ads hesabına yapıştırır).
+    const copyPlan = async (p: AdProposal) => {
+        const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+        const text = [
+            `${entityName} — Google Ads kampanya planı`,
+            `Tür: ${meta.label}`,
+            p.goal ? `Hedef: ${p.goal}` : '',
+            p.regions?.length ? `Bölgeler: ${p.regions.join(', ')}` : '',
+            '',
+            'Anahtar Kelimeler:',
+            ...(p.keywords || []).map((k) => `- ${k}`),
+            '',
+            'Başlıklar (Headlines):',
+            ...(p.headlines || []).map((h) => `- ${h}`),
+            '',
+            'Açıklamalar (Descriptions):',
+            ...(p.descriptions || []).map((d) => `- ${d}`),
+        ].filter((l) => l !== undefined).join('\n');
+        try {
+            await navigator.clipboard.writeText(text);
+            toast({ title: 'Plan kopyalandı', description: 'Google Ads’e gir → Yeni kampanya → Arama → bu planı yapıştır.' });
+        } catch {
+            toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Tarayıcı pano erişimini engelledi; metni elle seçebilirsin.' });
         }
     };
 
@@ -569,6 +597,11 @@ export default function AdsPage() {
                                                     {p.estReach && <span> · {p.estReach}</span>}
                                                 </div>
                                                 <div className="flex items-center gap-2">
+                                                    <button onClick={() => void copyPlan(p)}
+                                                        className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-secondary text-muted-foreground active:scale-95 transition"
+                                                        title="Planı kopyala (Google Ads'e yapıştır)" aria-label="Planı kopyala">
+                                                        <Copy className="h-4 w-4" />
+                                                    </button>
                                                     {savedStatus && (
                                                         <span className={cn('h-9 rounded-full px-3 text-[12px] font-semibold inline-flex items-center', STATUS_TINT[savedStatus])}>
                                                             {STATUS_LABEL[savedStatus]}
@@ -612,13 +645,26 @@ export default function AdsPage() {
                                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                             </div>
                         ) : !connection.configured ? (
-                            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
-                                <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-                                <div className="space-y-1">
-                                    <p className="text-[14px] font-semibold text-amber-900">Yapılandırma bekleniyor</p>
-                                    <p className="text-[12px] text-amber-800 leading-relaxed">
-                                        hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında. Hazır olduğunda hesabını buradan bağlayıp onaylı kampanyalarını tek dokunuşla yayına alabileceksin.
+                            <div className="space-y-3">
+                                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
+                                    <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                    <div className="space-y-1">
+                                        <p className="text-[14px] font-semibold text-amber-900">Tek dokunuşla otomatik yayın yakında</p>
+                                        <p className="text-[12px] text-amber-800 leading-relaxed">
+                                            hangel ekibi Google Ads bağlantısını yapılandırıyor. Hazır olduğunda hesabını buradan bağlayıp kampanyalarını panelden tek dokunuşla yayına alabileceksin.
+                                        </p>
+                                    </div>
+                                </div>
+                                {/* Köprü: Ad Grants onaylı STK bugün kendi Google Ads hesabında yayınlayabilir. */}
+                                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 space-y-2.5">
+                                    <p className="text-[14px] font-semibold text-emerald-900">Reklam hakkın onaylandıysa bugün başlayabilirsin</p>
+                                    <p className="text-[12px] text-emerald-800 leading-relaxed">
+                                        Yukarıda bir reklam planı oluştur, plandaki <span className="font-semibold">Kopyala</span> simgesine dokun, sonra Google Ads hesabına gir → <span className="font-semibold">Yeni kampanya → Arama</span> → planı yapıştır. Otomatik yayın hazır olunca buradan tek dokunuşla da yapabileceksin.
                                     </p>
+                                    <a href={GOOGLE_ADS_URL} target="_blank" rel="noopener noreferrer"
+                                        className="w-full h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition">
+                                        Google Ads&apos;i Aç <ExternalLink className="h-4 w-4" />
+                                    </a>
                                 </div>
                             </div>
                         ) : !connection.connected ? (
