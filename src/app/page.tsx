@@ -525,19 +525,20 @@ export default function LoginPage() {
             </Sheet>
             <Header onMenuClick={() => setIsMenuOpen(true)} />
             <main>
-                <section className="h-screen flex flex-col justify-center items-center text-center p-6 bg-white border-b border-black/5">
-                    <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
-                    <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{get('home.heroTagline', '#wearehangel')}</p>
-                    <div className="mt-12">
-                        <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
-                            <Link href="/login/selection?action=register">{get('home.heroCta', 'Hemen Katıl')}</Link>
-                        </Button>
+                <section className="h-screen flex flex-col p-6 pb-8 bg-white border-b border-black/5">
+                    <div className="flex-1 flex flex-col justify-center items-center text-center">
+                        <h2 className="text-2xl md:text-4xl font-medium text-muted-foreground max-w-4xl">{get('home.heroSubtitle', 'Umudu Büyütüyor Toplumsal Sorunlar İçin Birlikte Çalışıyoruz.')}</h2>
+                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none text-[#1d1d1f]">{get('home.heroTitle', 'yok öyle yalnız başına mücadele etmek.')}</h1>
+                        <p className="text-2xl md:text-4xl font-medium text-muted-foreground mt-6 max-w-4xl">{get('home.heroTagline', '#wearehangel')}</p>
+                        <div className="mt-12">
+                            <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold shadow-xl shadow-primary/20">
+                                <Link href="/login/selection?action=register">{get('home.heroCta', 'Hemen Katıl')}</Link>
+                            </Button>
+                        </div>
                     </div>
+                    {/* Platformlar — ilk ekranda, ince çizginin hemen üstünde (scroll gerekmez), minimal */}
+                    <StoreBadges />
                 </section>
-
-                {/* Hero + ProductShowcase (gri) arası geçiş — platformlarımızı belirt */}
-                <StoreBadges />
 
                  <ProductShowcaseSection
                     id="bagis"

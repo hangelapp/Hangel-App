@@ -108,102 +108,61 @@ function ChromeLogo({ className }: { className?: string }) {
 
 const STATUS_BADGE: Record<Status, { label: string; cls: string } | null> = {
   live: null,
-  beta:  { label: 'Beta',    cls: 'bg-amber-500 text-black' },
-  soon:  { label: 'Yakında', cls: 'bg-white text-black ring-1 ring-black/10' },
-  pwa:   { label: 'PWA',     cls: 'bg-emerald-500 text-white' },
+  beta:  { label: 'Beta',    cls: 'bg-amber-100 text-amber-700' },
+  soon:  { label: 'Yakında', cls: 'bg-black/5 text-muted-foreground' },
+  pwa:   { label: 'PWA',     cls: 'bg-emerald-100 text-emerald-700' },
 };
 
+// Gerçek mağaza/indirme linkleri (first-visit-download-popup ile aynı kaynak).
+const STORES: Array<{ store: string; caption: string; status: Status; href: string; Logo: React.ComponentType<{ className?: string }> }> = [
+  { store: 'App Store',       caption: 'iPhone & iPad — iOS 15+',                          status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleLogo },
+  { store: 'Google Play',     caption: 'Android telefon & tablet — Android 8+',            status: 'soon', href: 'https://play.google.com/store/apps/details?id=com.hangel.app', Logo: GooglePlayLogo },
+  { store: 'AppGallery',      caption: 'Huawei cihazları — EMUI 10+',                      status: 'soon', href: 'https://appgallery.huawei.com/app/C113000000', Logo: AppGalleryLogo },
+  { store: 'Apple Watch',     caption: 'Apple Watch — watchOS 8+',                         status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleWatchLogo },
+  { store: 'Mac App',         caption: 'MacBook — macOS 11+',                              status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: MacLogo },
+  { store: 'Apple Vision',    caption: 'visionOS — uzamsal arayüz',                        status: 'soon', href: 'https://hangel.org.tr/', Logo: VisionLogo },
+  { store: 'Microsoft Store', caption: 'Windows 10/11 — PWA',                              status: 'pwa',  href: 'https://hangel.org.tr/', Logo: MicrosoftLogo },
+  { store: 'Chrome Uzantısı', caption: 'Chrome / Edge — alışverişte otomatik STK desteği', status: 'soon', href: 'https://hangel.org.tr/', Logo: ChromeLogo },
+];
+
 function StoreBadge({ store, caption, status, href, Logo }: StoreBadgeProps) {
-  const disabled = status === 'soon' && !href;
   const badgeMeta = STATUS_BADGE[status];
-  const content = (
-    <div
+  const inner = (
+    <span
+      title={caption}
       className={[
-        'group relative flex items-center gap-3 rounded-2xl px-5 py-3 transition-all',
-        'bg-black text-white min-w-[230px]',
-        disabled ? 'opacity-60' : 'hover:scale-[1.03] hover:shadow-xl',
+        'group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5',
+        'text-[13px] text-[#1d1d1f] transition-colors hover:border-black/20 hover:bg-white',
       ].join(' ')}
     >
-      <Logo className="h-9 w-9 shrink-0" />
-      <div className="text-left leading-tight">
-        <p className="text-base font-semibold leading-tight">{store}</p>
-        <p className="text-[10px] opacity-70 mt-0.5">{caption}</p>
-      </div>
+      <Logo className="h-4 w-4 shrink-0" />
+      <span className="font-medium">{store}</span>
       {badgeMeta && (
-        <span className={[
-          'absolute -top-2 -right-2 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider shadow-md',
-          badgeMeta.cls,
-        ].join(' ')}>
+        <span className={['rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide', badgeMeta.cls].join(' ')}>
           {badgeMeta.label}
         </span>
       )}
-    </div>
+    </span>
   );
-  if (disabled || !href) return <div className="cursor-default" aria-disabled>{content}</div>;
-  return <Link href={href}>{content}</Link>;
+  if (!href) return <span className="opacity-60 cursor-default" aria-disabled>{inner}</span>;
+  return (
+    <Link href={href} target="_blank" rel="noopener noreferrer" className="active:scale-95 transition-transform">
+      {inner}
+    </Link>
+  );
 }
 
 export function StoreBadges() {
   return (
-    <section className="bg-gradient-to-b from-white to-[#f1f1f1] py-12 px-6 border-b border-black/5">
-      <div className="max-w-6xl mx-auto text-center">
-        <p className="text-[11px] uppercase tracking-widest font-bold text-muted-foreground mb-1">
-          hangel her yerde
-        </p>
-        <h3 className="text-xl md:text-2xl font-medium text-[#1d1d1f] mb-6">
-          Web, mobil, masaüstü ve giyilebilir
-        </h3>
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <StoreBadge
-            store="App Store"
-            caption="iPhone & iPad — iOS 15+"
-            status="beta"
-            Logo={AppleLogo}
-          />
-          <StoreBadge
-            store="Google Play"
-            caption="Android telefon & tablet — Android 8+"
-            status="soon"
-            Logo={GooglePlayLogo}
-          />
-          <StoreBadge
-            store="AppGallery"
-            caption="Huawei cihazları — EMUI 10+"
-            status="soon"
-            Logo={AppGalleryLogo}
-          />
-          <StoreBadge
-            store="Apple Watch"
-            caption="Apple Watch — watchOS 8+"
-            status="beta"
-            Logo={AppleWatchLogo}
-          />
-          <StoreBadge
-            store="Mac App"
-            caption="MacBook — macOS 11+"
-            status="beta"
-            Logo={MacLogo}
-          />
-          <StoreBadge
-            store="Apple Vision"
-            caption="visionOS — uzamsal arayüz"
-            status="soon"
-            Logo={VisionLogo}
-          />
-          <StoreBadge
-            store="Microsoft Store"
-            caption="Windows 10/11 — PWA"
-            status="pwa"
-            Logo={MicrosoftLogo}
-          />
-          <StoreBadge
-            store="Chrome Uzantısı"
-            caption="Chrome / Edge — alışverişte otomatik STK desteği"
-            status="soon"
-            Logo={ChromeLogo}
-          />
-        </div>
+    <div className="w-full max-w-5xl mx-auto px-4 text-center">
+      <p className="text-[10px] uppercase tracking-[0.2em] font-semibold text-muted-foreground mb-2.5">
+        hangel her yerde · web · mobil · masaüstü · giyilebilir
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {STORES.map((s) => (
+          <StoreBadge key={s.store} {...s} />
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
