@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, ShieldAlert, CheckCircle2, AlertTriangle, MessageSquare, Loader2, BarChart3, TrendingUp, Users, FileText } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Heart, Info, Percent, Rss, ShieldAlert, CheckCircle2, AlertTriangle, MessageSquare, Loader2, BarChart3, TrendingUp, Users, FileText, Mail, Phone, Globe, Instagram, Linkedin, Twitter, Target } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -288,10 +288,70 @@ export default function BrandProfilePage() {
                                 <Badge key={c} variant="secondary" className="font-bold rounded-lg">{c}</Badge>
                             ));
                         })()}
+                        {(() => {
+                            const bx = brand as Brand & { sector?: string; foundedYear?: string; foundationYear?: string; brandStatus?: string };
+                            const yil = bx.foundedYear || bx.foundationYear;
+                            return (
+                                <>
+                                    {bx.sector && <Badge variant="outline" className="font-bold rounded-lg">{bx.sector}</Badge>}
+                                    {yil && <Badge variant="outline" className='text-[9px] uppercase font-black tracking-widest bg-muted/50 border-none'>Kuruluş: {yil}</Badge>}
+                                </>
+                            );
+                        })()}
                         {brand.joinDate && <Badge variant="outline" className='text-[9px] uppercase font-black tracking-widest bg-muted/50 border-none'>Katılım: {brand.joinDate}</Badge>}
                     </div>
                 </CardContent>
             </Card>
+
+            {/* İletişim & Sosyal Medya — kayıt formundaki iletişim bilgileri. */}
+            {(() => {
+                const bx = brand as unknown as {
+                    contact?: { email?: string; phone?: string; phoneCountryCode?: string; website?: string; social?: { instagram?: string; twitter?: string; linkedin?: string; facebook?: string } };
+                    socialMedia?: { instagram?: string; twitter?: string; linkedin?: string; youtube?: string };
+                    ecommerceUrl?: string;
+                };
+                const email = bx.contact?.email;
+                const phone = bx.contact?.phone;
+                const phoneCC = bx.contact?.phoneCountryCode;
+                const ig = bx.contact?.social?.instagram || bx.socialMedia?.instagram;
+                const tw = bx.contact?.social?.twitter || bx.socialMedia?.twitter;
+                const li = bx.contact?.social?.linkedin || bx.socialMedia?.linkedin;
+                const web = bx.contact?.website || bx.ecommerceUrl;
+                const hasAny = email || phone || web || ig || tw || li;
+                if (!hasAny) return null;
+                return (
+                    <Card className="rounded-[2rem] shadow-sm border-black/5">
+                        <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Mail className="h-5 w-5 text-primary"/> İletişim</CardTitle></CardHeader>
+                        <CardContent className="text-sm space-y-3 font-medium">
+                            {email && <a href={`mailto:${email}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Mail className="h-4 w-4 shrink-0"/>{email}</a>}
+                            {phone && <a href={`tel:${phoneCC || ''}${phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Phone className="h-4 w-4 shrink-0"/>{phoneCC ? `${phoneCC} ` : ''}{phone}</a>}
+                            {web && <a href={web.startsWith('http') ? web : `https://${web}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-primary"><Globe className="h-4 w-4 shrink-0"/>{web}</a>}
+                            {(ig || tw || li) && (
+                                <div className="flex items-center gap-3 pt-2 border-t border-dashed">
+                                    {ig && <a href={ig.startsWith('http') ? ig : `https://instagram.com/${ig.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Instagram className="h-5 w-5"/></a>}
+                                    {tw && <a href={tw.startsWith('http') ? tw : `https://x.com/${tw.replace('@','')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Twitter className="h-5 w-5"/></a>}
+                                    {li && <a href={li.startsWith('http') ? li : `https://linkedin.com/${li}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary"><Linkedin className="h-5 w-5"/></a>}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                );
+            })()}
+
+            {/* Desteklenen faydalanıcı gruplar (kooperatif / sosyal işletme). */}
+            {(() => {
+                const bx = brand as Brand & { beneficiaries?: string[]; beneficiaryGroups?: string[] };
+                const groups = (bx.beneficiaries && bx.beneficiaries.length ? bx.beneficiaries : bx.beneficiaryGroups) || [];
+                if (!groups.length) return null;
+                return (
+                    <Card className="rounded-[2rem] shadow-sm border-black/5">
+                        <CardHeader><CardTitle className="text-lg flex items-center gap-2 font-bold"><Target className="h-5 w-5 text-primary"/> Faydalanıcı Gruplar</CardTitle></CardHeader>
+                        <CardContent className="flex flex-wrap gap-2">
+                            {groups.map(g => <Badge key={g} variant="secondary" className="font-bold rounded-lg">{g}</Badge>)}
+                        </CardContent>
+                    </Card>
+                );
+            })()}
 
             {brand.donationRate > 0 && (
                  <Card className="rounded-[2rem] shadow-sm border-black/5 overflow-hidden">

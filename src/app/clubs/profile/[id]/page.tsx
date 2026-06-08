@@ -320,6 +320,27 @@ export default function ClubProfilePage() {
                             <span className="font-bold text-foreground">{club.eventFrequency}</span>
                         </div>
                     )}
+                    {(() => {
+                        const cx = club as typeof club & { shortName?: string; foundedYear?: string };
+                        return (
+                            <>
+                                {cx.shortName && (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Tag className="h-4 w-4 text-primary" />
+                                        <span className="text-muted-foreground">Kısa ad:</span>
+                                        <span className="font-bold text-foreground">{cx.shortName}</span>
+                                    </div>
+                                )}
+                                {cx.foundedYear && (
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <Sparkles className="h-4 w-4 text-primary" />
+                                        <span className="text-muted-foreground">Kuruluş yılı:</span>
+                                        <span className="font-bold text-foreground">{cx.foundedYear}</span>
+                                    </div>
+                                )}
+                            </>
+                        );
+                    })()}
                     {club.description && (
                         <p className="leading-relaxed">{club.description}</p>
                     )}
@@ -342,6 +363,24 @@ export default function ClubProfilePage() {
                     </CardContent>
                 </Card>
             ) : null}
+
+            {/* Etkinlik Türleri — kayıt formundaki çoktan seçmeli etkinlik türleri
+                (eventFrequency "ne sıklıkla"yı, bu "ne tür"ü gösterir). */}
+            {(() => {
+                const cx = club as typeof club & { eventTypes?: string[] };
+                const types = Array.isArray(cx.eventTypes) ? cx.eventTypes.filter(Boolean) : [];
+                if (!types.length) return null;
+                return (
+                    <Card>
+                        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Calendar className="h-5 w-5 text-primary"/> Etkinlik Türleri</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="flex flex-wrap gap-2">
+                                {types.map(tp => <Badge key={tp} variant="secondary" className="font-medium text-xs">{tp}</Badge>)}
+                            </div>
+                        </CardContent>
+                    </Card>
+                );
+            })()}
 
             {club.vision && (
                 <Card>
