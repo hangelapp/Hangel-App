@@ -419,6 +419,9 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     const handleVerifyOtp = async (e?: React.FormEvent, codeOverride?: string) => {
         if (e) e.preventDefault();
+        // Re-entrancy guard: in-flight verify çağrısı sırasında parent re-render +
+        // OtpInput onComplete tekrar tetiklenirse paralel çağrılarla toast spam'i olur.
+        if (isLoading) return;
         const code = (codeOverride ?? otpCode).trim();
         if (code.length < 6) {
             toast({ variant: 'destructive', title: 'Kod eksik', description: '6 haneli kodu girin.' });
@@ -584,6 +587,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
 
     const handleVerifyWhatsAppCode = async (e?: React.FormEvent, codeOverride?: string) => {
         if (e) e.preventDefault();
+        if (isLoading) return;  // re-entrancy guard (OtpInput auto-complete + re-render spamına karşı)
         const code = codeOverride ?? otpCode;
         const cleanPhone = phone.replace(/\D/g, '');
         if (!/^\d{6}$/.test(code)) {

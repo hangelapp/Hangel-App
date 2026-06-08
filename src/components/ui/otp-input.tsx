@@ -28,8 +28,17 @@ export function OtpInput({
     if (autoFocus) inputRefs.current[0]?.focus();
   }, [autoFocus]);
 
+  // Aynı 6-haneli kod için onComplete tek sefer ateşlensin. Parent inline arrow
+  // onComplete prop'unu her render'da yeniden yarattığı için, deps değişimi
+  // in-flight verify çağrısı sırasında effect'i tekrar tetikliyordu → toast spam.
+  // firedForRef "şu değer için zaten ateşlendi" işareti tutar.
+  const firedForRef = useRef<string | null>(null);
   useEffect(() => {
-    if (value.length === length && onComplete) onComplete(value);
+    if (value.length === length && onComplete && firedForRef.current !== value) {
+      firedForRef.current = value;
+      onComplete(value);
+    }
+    if (value.length < length) firedForRef.current = null;
   }, [value, length, onComplete]);
 
   // Web OTP API: WhatsApp/SMS otomatik kod okuma (Chrome/Safari mobile)
