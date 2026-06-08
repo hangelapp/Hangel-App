@@ -4,7 +4,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Upload, CheckCircle, X } from 'lucide-react';
+import { Upload, CheckCircle, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Shared UI primitives extracted from login/selection/page.tsx (P2-6c) ---
@@ -15,17 +15,28 @@ export const FileUpload = ({
     accept,
     hint,
     required,
+    kind,
+    draftId,
+    onUploaded,
 }: {
     label: string;
     accept?: string;
     hint?: string;
     required?: boolean;
+    /** Mantıksal dosya türü (logo / charter / activity ...) — Storage yolunu adlandırır. */
+    kind?: string;
+    /** Taslak kimliği. Verilirse dosya /api/applications/upload üzerinden GERÇEKTEN yüklenir. */
+    draftId?: string;
+    /** Yükleme tamamlanınca indirilebilir URL döner. */
+    onUploaded?: (url: string, kind: string) => void;
 }) => {
     const [fileName, setFileName] = React.useState<string | null>(null);
     const [uploadError, setUploadError] = React.useState<string | null>(null);
+    const [isUploading, setIsUploading] = React.useState(false);
+    const [uploaded, setUploaded] = React.useState(false);
     const inputId = `${label.replace(/\s+/g, '-')}-upload`;
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (accept) {
@@ -34,40 +45,72 @@ export const FileUpload = ({
             if (!allowedExts.includes(fileExt)) {
                 setUploadError(`Desteklenmeyen dosya türü. İzin verilenler: ${accept}`);
                 setFileName(null);
+                setUploaded(false);
                 e.target.value = '';
                 return;
             }
         }
         setUploadError(null);
         setFileName(file.name);
+
+        // draftId + onUploaded verilmişse dosyayı gerçekten yükle.
+        if (draftId && onUploaded) {
+            setIsUploading(true);
+            setUploaded(false);
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('kind', kind || 'document');
+                fd.append('draftId', draftId);
+                const res = await fetch('/api/applications/upload', { method: 'POST', body: fd });
+                const data = await res.json().catch(() => null) as { url?: string; message?: string } | null;
+                if (!res.ok || !data?.url) {
+                    setUploadError(data?.message || 'Yükleme başarısız oldu.');
+                    setUploaded(false);
+                } else {
+                    onUploaded(data.url, kind || 'document');
+                    setUploaded(true);
+                }
+            } catch {
+                setUploadError('Yükleme sırasında bağlantı hatası.');
+                setUploaded(false);
+            } finally {
+                setIsUploading(false);
+            }
+        } else {
+            setUploaded(true);
+        }
     };
 
-    const status = uploadError ? 'error' : fileName ? 'success' : 'idle';
+    const status = uploadError ? 'error' : isUploading ? 'uploading' : (fileName && uploaded) ? 'success' : fileName ? 'uploading' : 'idle';
 
     return (
         <div className="space-y-2 text-left">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">{label} {required && "*"}</Label>
             <div className={cn("flex items-center gap-4 p-4 border rounded-2xl border-dashed transition-all",
-                status === 'success' && "bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-600",
-                status === 'error'   && "bg-red-50 border-red-400 dark:bg-red-900/20 dark:border-red-600",
-                status === 'idle'    && "bg-muted/20 border-primary/20 hover:bg-muted/30",
+                status === 'success'   && "bg-green-50 border-green-400 dark:bg-green-900/20 dark:border-green-600",
+                status === 'error'     && "bg-red-50 border-red-400 dark:bg-red-900/20 dark:border-red-600",
+                status === 'uploading' && "bg-primary/5 border-primary/30",
+                status === 'idle'      && "bg-muted/20 border-primary/20 hover:bg-muted/30",
             )}>
-                <input id={inputId} type="file" className="hidden" accept={accept} required={required} onChange={handleChange} />
-                <Button asChild variant="outline" size="sm" className={cn("rounded-xl hover:bg-primary/5 bg-background h-10 px-4",
+                <input id={inputId} type="file" className="hidden" accept={accept} required={required} disabled={isUploading} onChange={handleChange} />
+                <Button asChild variant="outline" size="sm" disabled={isUploading} className={cn("rounded-xl hover:bg-primary/5 bg-background h-10 px-4",
                     status === 'success' && "border-green-500 text-green-700",
                     status === 'error'   && "border-red-500 text-red-700",
                     status === 'idle'    && "border-primary/20",
                 )}>
-                    <label htmlFor={inputId} className="cursor-pointer font-bold flex items-center">
-                        {status === 'success' ? <><CheckCircle className="mr-2 h-4 w-4 text-green-600" />Değiştir</> :
-                         status === 'error'   ? <><X className="mr-2 h-4 w-4 text-red-600" />Tekrar Seç</> :
+                    <label htmlFor={inputId} className={cn("font-bold flex items-center", isUploading ? "cursor-wait opacity-70" : "cursor-pointer")}>
+                        {status === 'uploading' ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Yükleniyor…</> :
+                         status === 'success'   ? <><CheckCircle className="mr-2 h-4 w-4 text-green-600" />Değiştir</> :
+                         status === 'error'     ? <><X className="mr-2 h-4 w-4 text-red-600" />Tekrar Seç</> :
                          <><Upload className="mr-2 h-4 w-4" />Belge Seç</>}
                     </label>
                 </Button>
                 <div className="flex-1">
-                    {status === 'success' && <p className="text-[11px] font-bold text-green-700 dark:text-green-400 truncate">✓ {fileName}</p>}
-                    {status === 'error'   && <p className="text-[11px] font-bold text-red-600 leading-tight">{uploadError}</p>}
-                    {status === 'idle'    && <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>}
+                    {status === 'success'   && <p className="text-[11px] font-bold text-green-700 dark:text-green-400 truncate">✓ {fileName}</p>}
+                    {status === 'uploading' && <p className="text-[11px] font-bold text-primary truncate">{fileName}</p>}
+                    {status === 'error'     && <p className="text-[11px] font-bold text-red-600 leading-tight">{uploadError}</p>}
+                    {status === 'idle'      && <p className="text-[10px] text-muted-foreground leading-tight">{hint || "Lütfen resmi formatta bir dosya yükleyin."}</p>}
                 </div>
             </div>
         </div>

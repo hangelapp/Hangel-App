@@ -2,8 +2,12 @@ import { initializeApp, getApps, cert, applicationDefault, type App } from 'fire
 import { getAuth, type Auth } from 'firebase-admin/auth';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { getMessaging, type Messaging } from 'firebase-admin/messaging';
+import { getStorage, type Storage } from 'firebase-admin/storage';
 import path from 'path';
 import fs from 'fs';
+
+// Firebase Storage bucket — client config (src/firebase/config.ts) ile aynı.
+const STORAGE_BUCKET = 'hangel-new-v18-87297865-9bcc3.firebasestorage.app';
 
 let adminApp: App | null = null;
 
@@ -42,4 +46,14 @@ export function getAdminFirestore(): Firestore {
 
 export function getAdminMessaging(): Messaging {
     return getMessaging(getAdminApp());
+}
+
+export function getAdminStorage(): Storage {
+    return getStorage(getAdminApp());
+}
+
+/** Varsayılan Storage bucket'ı (admin app config'inde set edilmemiş olabilir,
+ *  bu yüzden ismi açıkça veriyoruz). */
+export function getAdminBucket() {
+    return getAdminStorage().bucket(STORAGE_BUCKET);
 }

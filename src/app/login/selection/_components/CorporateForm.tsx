@@ -150,6 +150,21 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
     const [selectedIzinAmaclari, setSelectedIzinAmaclari] = useState<string[]>([]);
     // Spor Kulübü için kayıtlı federasyonlar (platformlar'dan ayrı)
     const [selectedSporFederasyonlari, setSelectedSporFederasyonlari] = useState<string[]>([]);
+    // Kayıt-anı dosya yüklemeleri — oturumsuz/entity-id'siz olduğu için
+    // /api/applications/upload (Admin SDK) üzerinden taslak klasöre yüklenir.
+    // draftId bir kez üretilir; logo + belgeler bu taslak altında toplanır.
+    const [draftId] = useState<string>(() => {
+        try {
+            const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
+            return c?.randomUUID?.() ?? `d-${Date.now()}`;
+        } catch { return `d-${Date.now()}`; }
+    });
+    const [logoUrl, setLogoUrl] = useState<string>('');
+    const [uploadedDocuments, setUploadedDocuments] = useState<{ kind: string; url: string }[]>([]);
+    const handleUploaded = (url: string, kind: string) => {
+        if (kind === 'logo') { setLogoUrl(url); return; }
+        setUploadedDocuments(prev => [...prev.filter(d => d.kind !== kind), { kind, url }]);
+    };
     const OZEL_IZIN_AMAC_OPTIONS = ['Yardım Toplama', 'Eğitim Faaliyeti', 'Sosyal Etkinlik', 'Afet Yardımı', 'Sağlık Destek', 'Kültürel Etkinlik', 'Diğer'];
     // Sosyal medya platform önerileri (diğer platformlar için)
     const SOCIAL_PLATFORM_OPTIONS = ['TikTok', 'YouTube', 'Facebook', 'Snapchat', 'Threads', 'Pinterest', 'Mastodon', 'Behance', 'Telegram', 'WhatsApp Kanalı', 'Diğer'];
@@ -317,6 +332,11 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                 selectedIzinAmaclari,
                 selectedSporFederasyonlari,
                 selectedProductCategories,
+                // Kayıt-anı yüklenen logo + yasal belgeler. Onayda
+                // createEntityFromApp logoUrl/avatarUrl/files.logo'ya taşır.
+                logoUrl,
+                avatarUrl: logoUrl,
+                documents: uploadedDocuments,
                 status: 'Beklemede',
                 createdAt: serverTimestamp(),
             });
@@ -1219,31 +1239,37 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                         </div>
                     </div>
 
+                    {/* KURUM LOGOSU */}
+                    <div className="space-y-3">
+                        <SectionTitle icon={Upload}>KURUM LOGOSU</SectionTitle>
+                        <FileUpload label="LOGO" accept=".png,.jpg,.jpeg,.svg,.webp" hint="PNG, JPG, SVG veya WEBP. Kamu profilinizde ve listelerde görünür." kind="logo" draftId={draftId} onUploaded={handleUploaded} />
+                    </div>
+
                     {/* YASAL BELGELER — alt türe göre */}
                     <div className="space-y-6">
                         <SectionTitle icon={Upload}>YASAL BELGELER</SectionTitle>
                         {isDernek && (
                             <>
-                                <FileUpload label="DERNEK TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış güncel dernek tüzüğü." required />
-                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış faaliyet belgesi." required />
+                                <FileUpload label="DERNEK TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış güncel dernek tüzüğü." required kind="charter" draftId={draftId} onUploaded={handleUploaded} />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="DERBİS'ten alınmış faaliyet belgesi." required kind="activityCertificate" draftId={draftId} onUploaded={handleUploaded} />
                             </>
                         )}
                         {isVakif && (
                             <>
-                                <FileUpload label="VAKIF SENEDİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış güncel vakıf senedi." required />
-                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış faaliyet belgesi." required />
+                                <FileUpload label="VAKIF SENEDİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış güncel vakıf senedi." required kind="charter" draftId={draftId} onUploaded={handleUploaded} />
+                                <FileUpload label="FAALİYET BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="VBS sisteminden alınmış faaliyet belgesi." required kind="activityCertificate" draftId={draftId} onUploaded={handleUploaded} />
                             </>
                         )}
                         {isSpor && (
                             <>
-                                <FileUpload label="SPOR KULÜBÜ TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tüzüğü." required />
-                                <FileUpload label="FAALİYET (TESCİL) BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tescil/faaliyet belgesi." required />
+                                <FileUpload label="SPOR KULÜBÜ TÜZÜĞÜ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tüzüğü." required kind="charter" draftId={draftId} onUploaded={handleUploaded} />
+                                <FileUpload label="FAALİYET (TESCİL) BELGESİ" accept=".pdf,.png,.jpg,.jpeg" hint="GSB Bakanlık sisteminden alınmış spor kulübü tescil/faaliyet belgesi." required kind="activityCertificate" draftId={draftId} onUploaded={handleUploaded} />
                             </>
                         )}
                         {isOzelIzinli && (
                             <>
-                                <FileUpload label="ÖZEL İZİNLİ KİŞİNİN FOTOĞRAFI" accept=".jpg,.jpeg,.png" hint="JPG veya PNG formatında vesikalık/portre." required />
-                                <FileUpload label="İZİN BELGESİ" accept=".pdf,.jpg,.jpeg,.png" hint="Valilik tarafından düzenlenmiş izin belgesi (PDF/JPG/PNG)." required />
+                                <FileUpload label="ÖZEL İZİNLİ KİŞİNİN FOTOĞRAFI" accept=".jpg,.jpeg,.png" hint="JPG veya PNG formatında vesikalık/portre." required kind="photo" draftId={draftId} onUploaded={handleUploaded} />
+                                <FileUpload label="İZİN BELGESİ" accept=".pdf,.jpg,.jpeg,.png" hint="Valilik tarafından düzenlenmiş izin belgesi (PDF/JPG/PNG)." required kind="permit" draftId={draftId} onUploaded={handleUploaded} />
                             </>
                         )}
                         {!ngoSub && (
@@ -1499,6 +1525,10 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                                 maxLength={ABOUT_MAX}
                                 onChange={e => setFormData({...formData, about: e.target.value})}
                             />
+                        </div>
+                        <div className="space-y-2">
+                            <FormLabel>Marka Logosu</FormLabel>
+                            <FileUpload label="LOGO" accept=".png,.jpg,.jpeg,.svg,.webp" hint="PNG, JPG, SVG veya WEBP. Markanızın profilinde ve listelerde görünür." kind="logo" draftId={draftId} onUploaded={handleUploaded} />
                         </div>
                     </div>
 
@@ -2159,18 +2189,20 @@ export const CorporateForm = ({ initialEntity }: { initialEntity: string }) => {
                     {/* Yasal Belgeler & Logolar */}
                     <div className="space-y-6">
                         <SectionTitle icon={Upload}>YASAL BELGELER & LOGOLAR</SectionTitle>
-                        <FileUpload label="KULÜP LOGOSU" accept=".png,.jpg,.jpeg,.svg" hint="PNG, JPG veya SVG formatında logonuzu yükleyin." />
+                        <FileUpload label="KULÜP LOGOSU" accept=".png,.jpg,.jpeg,.svg,.webp" hint="PNG, JPG, SVG veya WEBP. Kulübünüzün profilinde ve listelerde görünür." kind="logo" draftId={draftId} onUploaded={handleUploaded} />
                         {formData.clubType === 'Üniversite' ? (
                             <FileUpload
                                 label="SKS / ÖĞRENCİ DEKANLIĞI YAZISI"
                                 accept=".pdf,.png,.jpg,.jpeg"
                                 hint="SKS veya Öğrenci Dekanlığı'ndan kulübünüzün faal olduğuna dair yazı (PDF veya resim)."
+                                kind="activityCertificate" draftId={draftId} onUploaded={handleUploaded}
                             />
                         ) : (
                             <FileUpload
                                 label="FAALİYET BELGESİ"
                                 accept=".pdf,.png,.jpg,.jpeg"
                                 hint="Okul müdüründen kulübün faal olduğuna dair bir yazı alın ve buraya yükleyin (PDF veya resim)."
+                                kind="activityCertificate" draftId={draftId} onUploaded={handleUploaded}
                             />
                         )}
                     </div>

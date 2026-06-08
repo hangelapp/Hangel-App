@@ -105,6 +105,8 @@ interface ApplicationDoc {
   otherNetworkText?: string;
   selectedSporFederasyonlari?: string[];
   selectedIzinAmaclari?: string[];
+  // Kayıt-anı yüklenen yasal belgeler (logo hariç; o logoUrl'de).
+  documents?: Array<{ kind?: string; url?: string }>;
   authorized?: { name?: string; role?: string; email?: string; phone?: string; phoneCode?: string };
 }
 
@@ -367,8 +369,9 @@ export default function ApplicationsPage() {
       logoUrl: app.logoUrl || '',
       avatarUrl: app.avatarUrl || app.logoUrl || '',
       coverPhotoUrl: app.coverPhotoUrl || '',
-      // Logo dosyası — manage-profile `files.logo` okur.
+      // Logo + yasal belgeler — manage-profile `files.logo` okur, belgeler arşiv için.
       files: { logo: app.logoUrl || app.avatarUrl || '' },
+      documents: Array.isArray(app.documents) ? app.documents.filter(d => d?.url) : [],
       // İki şema: profil `contact.{social,address,website}`, manage-profile
       // `contact.{phoneCountryCode}` + `socialMedia.*` + `address.*` okur.
       contact: {
