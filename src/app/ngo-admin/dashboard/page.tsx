@@ -221,10 +221,10 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
         title: t('ngo_admin_dashboard.groupIntegration'),
         items: [
             { id: 'website', href: '/ngo-admin/website', label: t('ngo_admin_dashboard.itemWebsite'), icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
+            { id: 'ads', href: '/ngo-admin/ads', label: t('ngo_admin_dashboard.itemAds'), icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: false },
             { id: 'events', href: '/ngo-admin/events', label: t('ngo_admin_dashboard.itemEvents'), icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'club'], comingSoon: false },
             { id: 'sms', href: '/ngo-admin/sms', label: t('ngo_admin_dashboard.itemSms'), icon: 'message-square', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
             { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'ads', href: '/ngo-admin/ads', label: t('ngo_admin_dashboard.itemAds'), icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
             { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: t('ngo_admin_dashboard.itemOnlineMeeting'), icon: 'video', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
             { id: 'design-tools', href: '/ngo-admin/design-tools', label: t('ngo_admin_dashboard.itemDesignTools'), icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
             { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: t('ngo_admin_dashboard.itemPaymentSystems'), icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
