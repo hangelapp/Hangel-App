@@ -120,7 +120,7 @@ const STORES: Array<{ store: string; caption: string; status: Status; href: stri
   { store: 'AppGallery',      caption: 'Huawei cihazları — EMUI 10+',                      status: 'soon', href: 'https://appgallery.huawei.com/app/C113000000', Logo: AppGalleryLogo },
   { store: 'Apple Watch',     caption: 'Apple Watch — watchOS 8+',                         status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleWatchLogo },
   { store: 'Mac App',         caption: 'Apple M serisi Mac — macOS 11+',                   status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: MacLogo },
-  { store: 'Apple Vision',    caption: 'visionOS — uzamsal arayüz',                        status: 'soon', href: 'https://hangel.org.tr/', Logo: VisionLogo },
+  { store: 'Apple Vision',    caption: 'visionOS — iPad uyumlu',                           status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: VisionLogo },
   { store: 'Microsoft Store', caption: 'Windows 10/11 — PWA',                              status: 'pwa',  href: 'https://hangel.org.tr/', Logo: MicrosoftLogo },
   { store: 'Chrome Uzantısı', caption: 'Chrome / Edge — 100+',                              status: 'soon', href: 'https://hangel.org.tr/', Logo: ChromeLogo },
 ];

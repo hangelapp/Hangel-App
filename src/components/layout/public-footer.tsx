@@ -62,7 +62,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: "AppGallery",      href: "https://appgallery.huawei.com/app/C113000000", status: 'yakında' }, // Huawei
         { label: "Apple Watch",     href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (iOS app ile)
         { label: "Mac App",         href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (Apple Silicon)
-        { label: "Apple Vision",    href: "https://hangel.org.tr/", status: 'yakında' },                       // visionOS
+        { label: "Apple Vision",    href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (Vision Pro, iPad uyumlu)
         { label: "Microsoft Store", href: "https://hangel.org.tr/", status: 'PWA' },                          // Web zaten PWA
         { label: "Chrome Uzantısı", href: "https://hangel.org.tr/", status: 'yakında' },                       // Chrome Web Store pending
     ];
