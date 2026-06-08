@@ -115,10 +115,10 @@ const STATUS_BADGE: Record<Status, { label: string; cls: string } | null> = {
 
 // Gerçek mağaza/indirme linkleri (first-visit-download-popup ile aynı kaynak).
 const STORES: Array<{ store: string; caption: string; status: Status; href: string; Logo: React.ComponentType<{ className?: string }> }> = [
-  { store: 'App Store',       caption: 'iPhone & iPad — iOS 15+',                          status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleLogo },
-  { store: 'Google Play',     caption: 'Android telefon & tablet — Android 8+',            status: 'soon', href: 'https://play.google.com/store/apps/details?id=com.hangel.app', Logo: GooglePlayLogo },
+  { store: 'App Store',       caption: 'iPhone & iPad — iOS 15+',                          status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleLogo },
+  { store: 'Google Play',     caption: 'Android telefon & tablet — Android 8+',            status: 'live', href: 'https://play.google.com/store/apps/details?id=com.hangel.app', Logo: GooglePlayLogo },
   { store: 'AppGallery',      caption: 'Huawei cihazları — EMUI 10+',                      status: 'soon', href: 'https://appgallery.huawei.com/app/C113000000', Logo: AppGalleryLogo },
-  { store: 'Apple Watch',     caption: 'Apple Watch — watchOS 8+',                         status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleWatchLogo },
+  { store: 'Apple Watch',     caption: 'Apple Watch — watchOS 8+',                         status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: AppleWatchLogo },
   { store: 'Mac App',         caption: 'MacBook — macOS 11+',                              status: 'beta', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: MacLogo },
   { store: 'Apple Vision',    caption: 'visionOS — uzamsal arayüz',                        status: 'soon', href: 'https://hangel.org.tr/', Logo: VisionLogo },
   { store: 'Microsoft Store', caption: 'Windows 10/11 — PWA',                              status: 'pwa',  href: 'https://hangel.org.tr/', Logo: MicrosoftLogo },
