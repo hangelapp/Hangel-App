@@ -129,19 +129,23 @@ function StoreBadge({ store, caption, status, href, Logo }: StoreBadgeProps) {
   const badgeMeta = STATUS_BADGE[status];
   const inner = (
     <span
-      title={caption}
       className={[
-        'group inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5',
-        'text-[13px] text-[#1d1d1f] transition-colors hover:border-black/20 hover:bg-white',
+        'group flex items-center gap-2.5 rounded-2xl border border-black/10 bg-white/70 px-3.5 py-2 min-w-[185px]',
+        'transition-colors hover:border-black/20 hover:bg-white',
       ].join(' ')}
     >
-      <Logo className="h-4 w-4 shrink-0" />
-      <span className="font-medium">{store}</span>
-      {badgeMeta && (
-        <span className={['rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide', badgeMeta.cls].join(' ')}>
-          {badgeMeta.label}
+      <Logo className="h-7 w-7 shrink-0" />
+      <span className="flex flex-col text-left leading-tight min-w-0">
+        <span className="flex items-center gap-1.5">
+          <span className="text-[13px] font-semibold text-[#1d1d1f]">{store}</span>
+          {badgeMeta && (
+            <span className={['rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide shrink-0', badgeMeta.cls].join(' ')}>
+              {badgeMeta.label}
+            </span>
+          )}
         </span>
-      )}
+        <span className="text-[10px] text-muted-foreground truncate">{caption}</span>
+      </span>
     </span>
   );
   if (!href) return <span className="opacity-60 cursor-default" aria-disabled>{inner}</span>;
