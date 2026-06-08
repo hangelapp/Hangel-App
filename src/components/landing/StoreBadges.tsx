@@ -122,7 +122,7 @@ const STORES: Array<{ store: string; caption: string; status: Status; href: stri
   { store: 'Mac App',         caption: 'Apple M serisi Mac — macOS 11+',                   status: 'live', href: 'https://apps.apple.com/tr/app/hangel/id6664058822', Logo: MacLogo },
   { store: 'Apple Vision',    caption: 'visionOS — uzamsal arayüz',                        status: 'soon', href: 'https://hangel.org.tr/', Logo: VisionLogo },
   { store: 'Microsoft Store', caption: 'Windows 10/11 — PWA',                              status: 'pwa',  href: 'https://hangel.org.tr/', Logo: MicrosoftLogo },
-  { store: 'Chrome Uzantısı', caption: 'Chrome / Edge — alışverişte otomatik STK desteği', status: 'soon', href: 'https://hangel.org.tr/', Logo: ChromeLogo },
+  { store: 'Chrome Uzantısı', caption: 'Chrome / Edge — 100+',                              status: 'soon', href: 'https://hangel.org.tr/', Logo: ChromeLogo },
 ];
 
 function StoreBadge({ store, caption, status, href, Logo }: StoreBadgeProps) {
