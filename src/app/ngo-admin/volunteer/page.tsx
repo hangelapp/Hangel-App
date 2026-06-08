@@ -12,9 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import type { Volunteering, Application as UserApplication } from '@/lib/types';
-import { useSearchParams } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 
 
 const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
@@ -25,9 +25,15 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
     const opportunityIds = useMemo(() => opportunities.map(o => o.id), [opportunities]);
 
     const applicationsQuery = useMemoFirebase(() => {
-        if (opportunityIds.length === 0) return null;
-        // Firebase query 'in' limited to 10 items, but for now we query all and filter if needed or just query by type
-        return query(collection(db, COLLECTIONS.applications), where('type', '==', 'Gönüllülük'));
+        if (!db || opportunityIds.length === 0) return null;
+        // SADECE bu STK'nın ilanlarına gelen başvuruları çek. Eskiden tüm
+        // 'Gönüllülük' başvuruları çekilip client'ta filtreleniyordu — bu hem
+        // gizlilik sızıntısıydı (başka STK'ların başvuruları client'a iniyordu)
+        // hem de gereksiz okuma. Firestore 'in' en fazla 30 değer alır; tipik
+        // STK ilan sayısı bunun çok altında. 30+ ilanı olan nadir durumda
+        // ilk 30 ile sorgulanır, kalan client filtresiyle gizlenir.
+        const ids = opportunityIds.slice(0, 30);
+        return query(collection(db, COLLECTIONS.applications), where('entityId', 'in', ids));
     }, [db, opportunityIds]);
 
     const { data: allApps, isLoading } = useCollection<UserApplication>(applicationsQuery);
@@ -162,18 +168,21 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
 
 
 const VolunteerPage = () => {
-  const searchParams = useSearchParams();
-  const entityId = searchParams.get('id');
   const db = useFirestore();
-  const { user: authUser } = useUser();
+  // Aktif kurumu tek kaynaktan (ActiveEntityProvider) çöz. Eski kod
+  // `searchParams.get('id') || authUser.uid` kullanıyordu: ?id yoksa kullanıcı
+  // uid'sine düşüyor ve yanlış/boş scope üretiyordu. useActiveEntity URL →
+  // localStorage → managedNgoId → adminUserId önceliğiyle doğru STK id'sini verir,
+  // böylece STK yalnızca KENDİ ilanlarını ve onlara gelen başvuruları görür.
+  const { id: activeId, isLoading: entityLoading } = useActiveEntity();
 
   const oppsQuery = useMemoFirebase(() => {
-    const finalId = entityId || (authUser?.uid);
-    if (!db || !finalId) return null;
-    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', finalId));
-  }, [db, entityId, authUser?.uid]);
+    if (!db || !activeId) return null;
+    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', activeId));
+  }, [db, activeId]);
 
-  const { data: opportunities, isLoading } = useCollection<Volunteering>(oppsQuery);
+  const { data: opportunities, isLoading: oppsLoading } = useCollection<Volunteering>(oppsQuery);
+  const isLoading = entityLoading || oppsLoading;
 
   return (
     <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
