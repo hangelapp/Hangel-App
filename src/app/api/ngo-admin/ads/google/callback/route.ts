@@ -28,11 +28,11 @@ import {
   exchangeCodeForTokens,
   getGoogleAdsConfig,
   listAccessibleCustomers,
+  ADS_OAUTH_NGO_COOKIE,
 } from '@/lib/ads/google-ads';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
-import { ADS_OAUTH_NGO_COOKIE } from '../start/route';
 
 export const runtime = 'nodejs';
 

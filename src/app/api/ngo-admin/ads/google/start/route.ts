@@ -27,12 +27,10 @@ import {
   buildAdsAuthorizeUrl,
   getGoogleAdsConfig,
   isAdsConfigured,
+  ADS_OAUTH_NGO_COOKIE,
 } from '@/lib/ads/google-ads';
 
 export const runtime = 'nodejs';
-
-/** Second signed cookie carrying the ngoId (verifyState(signState(ngoId))). */
-export const ADS_OAUTH_NGO_COOKIE = 'ads_oauth_ngo';
 
 export async function POST(req: NextRequest) {
   const auth = await requireNgoAdmin(req, { scope: 'ads' });

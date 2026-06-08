@@ -27,6 +27,13 @@ export interface GoogleAdsConfig {
 /** Google Ads OAuth scope. */
 export const ADS_OAUTH_SCOPE = 'https://www.googleapis.com/auth/adwords';
 
+/**
+ * OAuth round-trip sırasında ngoId taşıyan ikinci imzalı cookie adı
+ * (verifyState(signState(ngoId))). Next.js route dosyaları keyfi const export
+ * EDEMEZ; bu yüzden tanım burada — start + callback route'ları buradan import eder.
+ */
+export const ADS_OAUTH_NGO_COOKIE = 'ads_oauth_ngo';
+
 /** Google Ads REST API base (v17). */
 const ADS_API_BASE = 'https://googleads.googleapis.com/v17';
 const GOOGLE_AUTHORIZE_BASE = 'https://accounts.google.com/o/oauth2/v2/auth';
