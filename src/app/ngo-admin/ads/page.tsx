@@ -14,11 +14,11 @@
  * Tasarım: Apple iOS dili + hangel renkleri.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
-    Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2,
+    Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -78,8 +78,16 @@ const STATUS_TINT: Record<PlanStatus, string> = {
 };
 
 interface SavedPlan {
+    id?: string;
+    title?: string;
     kind: ProposalKind;
     status: PlanStatus;
+}
+
+interface ConnectionState {
+    configured: boolean;
+    connected: boolean;
+    customerId?: string;
 }
 
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
@@ -105,6 +113,12 @@ export default function AdsPage() {
     // STK'nın kayıtlı planları (Google ilerleme durumu)
     const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
 
+    // Google Ads bağlantı durumu (Faz 1)
+    const [connection, setConnection] = useState<ConnectionState>({ configured: false, connected: false });
+    const [connectionLoaded, setConnectionLoaded] = useState(false);
+    const [connecting, setConnecting] = useState(false);
+    const [publishingId, setPublishingId] = useState<string | null>(null);
+
     // Kayıtlı planları çek; 'selected' Set'ini hidrate et.
     useEffect(() => {
         if (!user || !entityId) return;
@@ -118,7 +132,9 @@ export default function AdsPage() {
                 if (!res.ok) return;
                 const data = (await res.json().catch(() => null)) as { plans?: SavedPlan[] } | null;
                 if (cancelled || !data?.plans) return;
-                const plans = data.plans.filter((p) => p.kind in KIND_META);
+                const plans = data.plans
+                    .filter((p) => p.kind in KIND_META)
+                    .map((p) => ({ id: p.id, title: p.title, kind: p.kind, status: p.status }));
                 setSavedPlans(plans);
                 setSelected((prev) => {
                     const next = new Set(prev);
@@ -132,12 +148,143 @@ export default function AdsPage() {
         return () => { cancelled = true; };
     }, [user, entityId]);
 
+    // Google Ads bağlantı durumunu çek (configured/connected/customerId)
+    const refreshConnection = useCallback(async () => {
+        if (!user) return;
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/connection', {
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            if (!res.ok) return;
+            const data = (await res.json().catch(() => null)) as Partial<ConnectionState> | null;
+            if (!data) return;
+            setConnection({
+                configured: data.configured === true,
+                connected: data.connected === true,
+                customerId: typeof data.customerId === 'string' ? data.customerId : undefined,
+            });
+        } catch {
+            /* sessizce yoksay; bağlantı durumu olmadan da sayfa çalışır */
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!user || !entityId) return;
+        let cancelled = false;
+        (async () => {
+            await refreshConnection();
+            if (!cancelled) setConnectionLoaded(true);
+        })();
+        return () => { cancelled = true; };
+    }, [user, entityId, refreshConnection]);
+
+    // OAuth popup'tan postMessage dinle
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const onMessage = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) return;
+            const data = event.data as { type?: string; message?: string } | null;
+            if (!data || typeof data.type !== 'string') return;
+            if (data.type === 'hangel-ads-connected') {
+                setConnecting(false);
+                void refreshConnection();
+                toast({ title: 'Google Ads bağlandı', description: 'Hesabın başarıyla bağlandı; onaylı planlarını yayına alabilirsin.' });
+            } else if (data.type === 'hangel-ads-error') {
+                setConnecting(false);
+                toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'Google Ads hesabı bağlanamadı. Lütfen tekrar dene.' });
+            }
+        };
+        window.addEventListener('message', onMessage);
+        return () => window.removeEventListener('message', onMessage);
+    }, [refreshConnection, toast]);
+
+    const connectGoogleAds = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setConnecting(true);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/google/start', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'ADS_NOT_CONFIGURED') {
+                setConnection((prev) => ({ ...prev, configured: false }));
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (!res.ok || !data?.authorizeUrl) {
+                throw new Error(data?.message || 'Bağlantı başlatılamadı.');
+            }
+            const popup = window.open(data.authorizeUrl, 'hangel-ads-oauth', 'width=500,height=660');
+            if (!popup) {
+                throw new Error('Açılır pencere engellendi. Lütfen tarayıcı izinlerini kontrol edin.');
+            }
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Bağlanamadı', description: e instanceof Error ? e.message : 'Bir hata oluştu.' });
+        } finally {
+            setConnecting(false);
+        }
+    };
+
+    const publishPlan = async (planId: string, title?: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setPublishingId(planId);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ planId }),
+            });
+            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'ADS_NOT_CONFIGURED') {
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (res.status === 409 || data?.errorCode === 'NOT_CONNECTED') {
+                setConnection((prev) => ({ ...prev, connected: false }));
+                toast({ variant: 'destructive', title: 'Hesap bağlı değil', description: 'Önce Google Ads hesabını bağla, sonra yayına al.' });
+                return;
+            }
+            if (!res.ok || !data?.ok) {
+                throw new Error(data?.message || 'Yayınlanamadı.');
+            }
+            setSavedPlans((prev) => prev.map((p) => (p.id === planId ? { ...p, status: 'active' } : p)));
+            toast({ title: 'Kampanya yayında', description: title ? `"${title}" Google Ads üzerinde yayına alındı.` : 'Kampanya Google Ads üzerinde yayına alındı.' });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        } finally {
+            setPublishingId(null);
+        }
+    };
+
     // kind → güncel kayıtlı durum
     const savedStatusByKind = useMemo(() => {
         const m = new Map<ProposalKind, PlanStatus>();
         for (const p of savedPlans) m.set(p.kind, p.status);
         return m;
     }, [savedPlans]);
+
+    // kind → kayıtlı plan (yayınla için id'ye erişim)
+    const savedPlanByKind = useMemo(() => {
+        const m = new Map<ProposalKind, SavedPlan>();
+        for (const p of savedPlans) m.set(p.kind, p);
+        return m;
+    }, [savedPlans]);
+
+    // Yayınlanmaya hazır (onaylanmış) kayıtlı planlar
+    const approvedPlans = useMemo(
+        () => savedPlans.filter((p) => p.status === 'approved' && typeof p.id === 'string'),
+        [savedPlans],
+    );
 
     // Step2/Step3 durum hesabı (savedPlans tabanlı)
     const statuses = useMemo(() => savedPlans.map((p) => p.status), [savedPlans]);
@@ -426,11 +573,22 @@ export default function AdsPage() {
                                                             {STATUS_LABEL[savedStatus]}
                                                         </span>
                                                     )}
-                                                    <button onClick={() => chooseProposal(p)}
-                                                        className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
-                                                            isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
-                                                        {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
-                                                    </button>
+                                                    {savedStatus === 'approved' && connection.connected && savedPlanByKind.get(p.kind)?.id ? (
+                                                        <button
+                                                            onClick={() => { const sp = savedPlanByKind.get(p.kind); if (sp?.id) void publishPlan(sp.id, sp.title || p.title); }}
+                                                            disabled={publishingId === savedPlanByKind.get(p.kind)?.id}
+                                                            className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-primary text-primary-foreground disabled:opacity-60">
+                                                            {publishingId === savedPlanByKind.get(p.kind)?.id
+                                                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</>
+                                                                : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={() => chooseProposal(p)}
+                                                            className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
+                                                                isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
+                                                            {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -439,6 +597,91 @@ export default function AdsPage() {
                                 <p className="text-[11px] text-muted-foreground text-center pt-1">
                                     Seçtiğin kampanyalar Google hesabın bağlandığında otomatik yayına alınır (yakında).
                                 </p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* HESABI BAĞLA & YAYINLA (Faz 1) */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Hesabı Bağla & Yayınla</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+                        {!connectionLoaded ? (
+                            <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : !connection.configured ? (
+                            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
+                                <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                <div className="space-y-1">
+                                    <p className="text-[14px] font-semibold text-amber-900">Yapılandırma bekleniyor</p>
+                                    <p className="text-[12px] text-amber-800 leading-relaxed">
+                                        hangel ekibi Google Ads bağlantısını yapılandırıyor — çok yakında. Hazır olduğunda hesabını buradan bağlayıp onaylı kampanyalarını tek dokunuşla yayına alabileceksin.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : !connection.connected ? (
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <span className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                        <Link2 className="h-5 w-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[15px] font-semibold text-foreground">Google Ads hesabını bağla</p>
+                                        <p className="text-[13px] text-muted-foreground leading-relaxed">
+                                            Onaylanan reklam planlarını yayına almak için Google Ads hesabını hangel&apos;e bağla. Bağlantı güvenli Google ekranında yapılır.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button onClick={connectGoogleAds} disabled={connecting}
+                                    className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                                    {connecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Link2 className="h-[18px] w-[18px]" /> Google Ads Hesabını Bağla</>}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
+                                    <BadgeCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[14px] font-semibold text-emerald-900">Google Ads bağlı</p>
+                                        {connection.customerId && (
+                                            <span className="inline-flex items-center mt-0.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700">
+                                                Müşteri No: {connection.customerId}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {approvedPlans.length > 0 ? (
+                                    <div className="space-y-2.5">
+                                        <p className="text-[13px] text-muted-foreground">Onaylanan kampanyaların yayına hazır.</p>
+                                        {approvedPlans.map((p) => {
+                                            const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                                            const Icon = meta.icon;
+                                            return (
+                                                <div key={p.id} className="rounded-2xl border border-border/60 bg-muted/20 p-3.5 flex items-center gap-3">
+                                                    <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
+                                                        <Icon className="h-5 w-5" />
+                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[14px] font-semibold text-foreground truncate">{p.title || meta.label}</p>
+                                                        <p className="text-[12px] text-muted-foreground">{meta.label} · onaylandı</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => { if (p.id) void publishPlan(p.id, p.title); }}
+                                                        disabled={publishingId === p.id}
+                                                        className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-primary text-primary-foreground disabled:opacity-60 shrink-0">
+                                                        {publishingId === p.id ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</> : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-[12px] text-muted-foreground text-center">
+                                        Yayına hazır onaylı kampanyan yok. Planların hangel ekibince onaylanınca burada yayınlayabilirsin.
+                                    </p>
+                                )}
                             </div>
                         )}
                     </div>

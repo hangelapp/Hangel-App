@@ -1,0 +1,431 @@
+/**
+ * Server-only Google Ads (Faz 1) helpers — OAuth + REST v17 wrapper.
+ *
+ * KRİTİK İLKE: tüm canlı işlevler Google Ads API kimlik bilgilerine (developer
+ * token + OAuth client + MCC) GATED. `getGoogleAdsConfig()` env'lerden herhangi
+ * biri eksikse `null` döner; çağıranlar bununla nazik `ADS_NOT_CONFIGURED`
+ * (503) yanıtı verir — hiçbir şey kırılmaz, env girilince otomatik aktif olur.
+ *
+ * Bu modül contacts OAuth desenini izler: state/cookie imzalama
+ * '@/lib/contacts/oauth' içinden reuse edilir (burada YENİ HMAC yok). Bu dosya
+ * yalnız config çözümü + Google ağ I/O yapar; refreshToken / access token /
+ * secret asla loglanmaz veya client'a dönmez.
+ *
+ * Env (RUNTIME secret — yalnız okunur, eklenmez):
+ *  - GOOGLE_ADS_CLIENT_ID, GOOGLE_ADS_CLIENT_SECRET (OAuth client)
+ *  - GOOGLE_ADS_DEVELOPER_TOKEN                      (Google Ads API dev token)
+ *  - GOOGLE_ADS_LOGIN_CUSTOMER_ID                    (MCC hesap no, sadece rakam)
+ */
+
+export interface GoogleAdsConfig {
+  clientId: string;
+  clientSecret: string;
+  developerToken: string;
+  loginCustomerId: string;
+}
+
+/** Google Ads OAuth scope. */
+export const ADS_OAUTH_SCOPE = 'https://www.googleapis.com/auth/adwords';
+
+/** Google Ads REST API base (v17). */
+const ADS_API_BASE = 'https://googleads.googleapis.com/v17';
+const GOOGLE_AUTHORIZE_BASE = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+
+/** Strip everything but digits (customer ids must be digit-only for REST paths). */
+function digitsOnly(value: string): string {
+  return value.replace(/[^0-9]/g, '');
+}
+
+/**
+ * Resolve Google Ads config from env. Returns null when ANY credential is
+ * missing so callers can answer with a friendly 503 (no config leakage).
+ */
+export function getGoogleAdsConfig(): GoogleAdsConfig | null {
+  const clientId = process.env.GOOGLE_ADS_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_ADS_CLIENT_SECRET;
+  const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+  const loginCustomerId = process.env.GOOGLE_ADS_LOGIN_CUSTOMER_ID;
+  if (!clientId || !clientSecret || !developerToken || !loginCustomerId) {
+    return null;
+  }
+  return {
+    clientId,
+    clientSecret,
+    developerToken,
+    loginCustomerId: digitsOnly(loginCustomerId),
+  };
+}
+
+/** True when all Google Ads credentials are present. */
+export function isAdsConfigured(): boolean {
+  return getGoogleAdsConfig() !== null;
+}
+
+/**
+ * Build the Google OAuth authorize URL for the Ads scope. `state` and
+ * `redirectUri` are server-derived, never client input. Requests offline
+ * access + consent so we receive a durable refresh token.
+ */
+export function buildAdsAuthorizeUrl(clientId: string, redirectUri: string, state: string): string {
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    scope: ADS_OAUTH_SCOPE,
+    state,
+    access_type: 'offline',
+    prompt: 'consent',
+    include_granted_scopes: 'true',
+  });
+  return `${GOOGLE_AUTHORIZE_BASE}?${params.toString()}`;
+}
+
+/** Common headers for Google Ads REST calls. */
+function adsHeaders(config: GoogleAdsConfig, accessToken: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${accessToken}`,
+    'developer-token': config.developerToken,
+    'login-customer-id': config.loginCustomerId,
+    'content-type': 'application/json',
+  };
+}
+
+/**
+ * Exchange an authorization code for tokens. Returns refresh + access tokens
+ * (refresh may be absent if the user already granted before — caller handles).
+ * Returns null on any failure.
+ */
+export async function exchangeCodeForTokens(
+  config: GoogleAdsConfig,
+  code: string,
+  redirectUri: string
+): Promise<{ refreshToken?: string; accessToken?: string } | null> {
+  const form = new URLSearchParams({
+    code,
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    redirect_uri: redirectUri,
+    grant_type: 'authorization_code',
+  });
+  try {
+    const res = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { refresh_token?: string; access_token?: string };
+    const refreshToken =
+      typeof data.refresh_token === 'string' && data.refresh_token.length > 0
+        ? data.refresh_token
+        : undefined;
+    const accessToken =
+      typeof data.access_token === 'string' && data.access_token.length > 0
+        ? data.access_token
+        : undefined;
+    if (!refreshToken && !accessToken) return null;
+    return { refreshToken, accessToken };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Exchange a stored refresh token for a fresh access token. Returns null on
+ * failure (token revoked, network, etc.).
+ */
+export async function refreshAccessToken(
+  config: GoogleAdsConfig,
+  refreshToken: string
+): Promise<string | null> {
+  const form = new URLSearchParams({
+    client_id: config.clientId,
+    client_secret: config.clientSecret,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token',
+  });
+  try {
+    const res = await fetch(GOOGLE_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { access_token?: string };
+    return typeof data.access_token === 'string' && data.access_token.length > 0
+      ? data.access_token
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * List customer ids the authenticated user can access. Returns digit-only ids
+ * (e.g. '1234567890'). Empty array on any error.
+ */
+export async function listAccessibleCustomers(
+  accessToken: string,
+  config: GoogleAdsConfig
+): Promise<string[]> {
+  try {
+    const res = await fetch(`${ADS_API_BASE}/customers:listAccessibleCustomers`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${accessToken}`,
+        'developer-token': config.developerToken,
+      },
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as { resourceNames?: string[] };
+    const names = Array.isArray(data.resourceNames) ? data.resourceNames : [];
+    // resourceName shape: "customers/1234567890"
+    return names
+      .map((n) => digitsOnly(n.split('/').pop() ?? ''))
+      .filter((id) => id.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+export interface CampaignMetrics {
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  costMicros: number;
+}
+
+interface SearchStreamRow {
+  metrics?: {
+    impressions?: string | number;
+    clicks?: string | number;
+    ctr?: string | number;
+    costMicros?: string | number;
+  };
+}
+
+function toNumber(value: string | number | undefined): number {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (typeof value === 'string') {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
+
+/**
+ * Fetch aggregated last-30-day campaign metrics for a customer via GAQL
+ * searchStream. Returns null on any error (caller treats as "no data").
+ */
+export async function fetchCampaignMetrics(
+  config: GoogleAdsConfig,
+  refreshToken: string,
+  customerId: string
+): Promise<CampaignMetrics | null> {
+  const accessToken = await refreshAccessToken(config, refreshToken);
+  if (!accessToken) return null;
+  const id = digitsOnly(customerId);
+  if (!id) return null;
+
+  const query =
+    'SELECT metrics.impressions, metrics.clicks, metrics.ctr, metrics.cost_micros FROM campaign DURING LAST_30_DAYS';
+
+  try {
+    const res = await fetch(`${ADS_API_BASE}/customers/${id}/googleAds:searchStream`, {
+      method: 'POST',
+      headers: adsHeaders(config, accessToken),
+      body: JSON.stringify({ query }),
+    });
+    if (!res.ok) return null;
+    // searchStream returns an array of result chunks: [{ results: [...] }, ...]
+    const data = (await res.json()) as Array<{ results?: SearchStreamRow[] }>;
+    const chunks = Array.isArray(data) ? data : [];
+
+    let impressions = 0;
+    let clicks = 0;
+    let costMicros = 0;
+    for (const chunk of chunks) {
+      for (const row of chunk.results ?? []) {
+        impressions += toNumber(row.metrics?.impressions);
+        clicks += toNumber(row.metrics?.clicks);
+        costMicros += toNumber(row.metrics?.costMicros);
+      }
+    }
+    const ctr = impressions > 0 ? clicks / impressions : 0;
+    return { impressions, clicks, ctr, costMicros };
+  } catch {
+    return null;
+  }
+}
+
+export interface AdPlanForCampaign {
+  title?: string;
+  landing?: string;
+  keywords?: string[];
+  headlines?: string[];
+  descriptions?: string[];
+}
+
+/** POST a single Google Ads REST mutate and return the parsed JSON, or throw. */
+async function mutate(
+  config: GoogleAdsConfig,
+  accessToken: string,
+  customerId: string,
+  service: string,
+  operations: unknown[]
+): Promise<{ results?: Array<{ resourceName?: string }> }> {
+  const res = await fetch(`${ADS_API_BASE}/customers/${customerId}/${service}:mutate`, {
+    method: 'POST',
+    headers: adsHeaders(config, accessToken),
+    body: JSON.stringify({ operations }),
+  });
+  if (!res.ok) {
+    // Do not surface the raw provider error to callers/clients.
+    throw new Error(`ads_mutate_failed:${service}:${res.status}`);
+  }
+  return (await res.json()) as { results?: Array<{ resourceName?: string }> };
+}
+
+function firstResourceName(
+  out: { results?: Array<{ resourceName?: string }> },
+  label: string
+): string {
+  const name = out.results?.[0]?.resourceName;
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new Error(`ads_missing_resource:${label}`);
+  }
+  return name;
+}
+
+/**
+ * Create a conservative paused Search campaign for the given plan.
+ *
+ * FAZ1: canlı Google Ads hesabıyla test edilmeli — dev token gelince doğrulanacak.
+ *
+ * Chain (each step depends on the previous resourceName):
+ *   campaignBudget → campaign(PAUSED, SEARCH) → adGroup
+ *     → adGroupCriteria(keywords) → adGroupAd(responsiveSearchAd)
+ *
+ * Bu fonksiyon SADECE config mevcut VE hesap bağlıyken çağrılır. Hata atarsa
+ * çağıran 502 PUBLISH_FAILED döner (raw error sızdırmaz).
+ */
+export async function createSearchCampaign(
+  config: GoogleAdsConfig,
+  refreshToken: string,
+  customerId: string,
+  plan: AdPlanForCampaign
+): Promise<{ campaignResourceName: string }> {
+  const accessToken = await refreshAccessToken(config, refreshToken);
+  if (!accessToken) {
+    throw new Error('ads_token_refresh_failed');
+  }
+  const id = digitsOnly(customerId);
+  if (!id) {
+    throw new Error('ads_invalid_customer');
+  }
+
+  const stamp = Date.now();
+  const title = (plan.title ?? 'hangel kampanya').slice(0, 120);
+
+  // 1) Campaign budget (1 birim/gün, micros: 1_000_000 = 1 currency unit).
+  const budgetOut = await mutate(config, accessToken, id, 'campaignBudgets', [
+    {
+      create: {
+        name: `hangel-budget-${stamp}`,
+        amountMicros: '1000000',
+        deliveryMethod: 'STANDARD',
+        explicitlyShared: false,
+      },
+    },
+  ]);
+  const budgetResourceName = firstResourceName(budgetOut, 'budget');
+
+  // 2) Campaign — PAUSED start, SEARCH channel, conservative defaults.
+  const campaignOut = await mutate(config, accessToken, id, 'campaigns', [
+    {
+      create: {
+        name: `${title}-${stamp}`,
+        status: 'PAUSED',
+        advertisingChannelType: 'SEARCH',
+        manualCpc: {},
+        campaignBudget: budgetResourceName,
+        networkSettings: {
+          targetGoogleSearch: true,
+          targetSearchNetwork: false,
+          targetContentNetwork: false,
+          targetPartnerSearchNetwork: false,
+        },
+      },
+    },
+  ]);
+  const campaignResourceName = firstResourceName(campaignOut, 'campaign');
+
+  // 3) Ad group under the campaign.
+  const adGroupOut = await mutate(config, accessToken, id, 'adGroups', [
+    {
+      create: {
+        name: `hangel-adgroup-${stamp}`,
+        status: 'ENABLED',
+        campaign: campaignResourceName,
+        type: 'SEARCH_STANDARD',
+        cpcBidMicros: '1000000',
+      },
+    },
+  ]);
+  const adGroupResourceName = firstResourceName(adGroupOut, 'adGroup');
+
+  // 4) Keyword criteria (broad match). Cap at 20 to stay conservative.
+  const keywords = (plan.keywords ?? [])
+    .filter((k) => typeof k === 'string' && k.trim().length > 0)
+    .slice(0, 20);
+  if (keywords.length > 0) {
+    await mutate(
+      config,
+      accessToken,
+      id,
+      'adGroupCriteria',
+      keywords.map((kw) => ({
+        create: {
+          adGroup: adGroupResourceName,
+          status: 'ENABLED',
+          keyword: { text: kw.slice(0, 80), matchType: 'BROAD' },
+        },
+      }))
+    );
+  }
+
+  // 5) Responsive search ad. Google requires >=3 headlines and >=2 descriptions;
+  //    pad conservatively from the plan title if the plan is short.
+  const planHeadlines = (plan.headlines ?? []).filter(
+    (h) => typeof h === 'string' && h.trim().length > 0
+  );
+  const planDescriptions = (plan.descriptions ?? []).filter(
+    (d) => typeof d === 'string' && d.trim().length > 0
+  );
+  const headlines = [...planHeadlines, title, 'hangel', 'Bağış yap']
+    .slice(0, 15)
+    .map((t) => ({ text: t.slice(0, 30) }));
+  const descriptions = [...planDescriptions, 'hangel ile destek ol.', 'Şimdi katıl.']
+    .slice(0, 4)
+    .map((t) => ({ text: t.slice(0, 90) }));
+  const finalUrl = (plan.landing ?? '').trim();
+
+  await mutate(config, accessToken, id, 'adGroupAds', [
+    {
+      create: {
+        adGroup: adGroupResourceName,
+        status: 'PAUSED',
+        ad: {
+          finalUrls: finalUrl ? [finalUrl] : [],
+          responsiveSearchAd: {
+            headlines: headlines.slice(0, 15),
+            descriptions: descriptions.slice(0, 4),
+          },
+        },
+      },
+    },
+  ]);
+
+  return { campaignResourceName };
+}

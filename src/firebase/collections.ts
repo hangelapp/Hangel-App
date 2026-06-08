@@ -115,6 +115,9 @@ export const COLLECTIONS = {
   // Reklam Yönetimi — STK Google Ad Grants plan/hesap kayıtları (Admin SDK only).
   // STK panelden "Bunu Kur" → adPlans; hangel ekibi süper-admin'den görür/yayınlar.
   adPlans: 'adPlans',
+  // STK başına bağlı Google Ads hesabı (OAuth refresh token + customerId).
+  // Doc id = ngoId. SADECE Admin SDK yazar/okur (client erişmez, refreshToken secret).
+  adAccounts: 'adAccounts',
 
   // Messaging — campaigns & templating
   campaigns: 'campaigns',

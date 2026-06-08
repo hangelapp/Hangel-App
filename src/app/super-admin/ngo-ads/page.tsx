@@ -20,6 +20,7 @@ import {
     Megaphone, Landmark, Heart, Mail, Loader2, ExternalLink, Link2,
     TrendingUp, Sparkles, ShieldAlert, RefreshCw, ChevronDown,
     Check, X, Plug, Radio, Undo2, Target, Hash, Users,
+    BarChart3, Eye, MousePointerClick, Percent, Wallet,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -45,6 +46,16 @@ interface AdminPlan {
 }
 
 type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
+
+/** /api/super-admin/ngo-ads/performance metrik satırı. */
+interface PerfMetric {
+    ngoId: string;
+    customerId?: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    costMicros: number;
+}
 
 /** Mevcut status'a göre sunulacak ilerletme aksiyonları. */
 const STATUS_ACTIONS: Record<string, Array<{ to: PlanStatus; label: string; icon: React.ElementType; tone: 'primary' | 'danger' | 'neutral' }>> = {
@@ -82,6 +93,16 @@ const STATUS_LABEL: Record<string, string> = {
 
 function formatN(n: number): string { return n.toLocaleString('tr-TR'); }
 
+/** CTR fraction (clicks/impressions) → "%5,2". */
+function formatCtr(ctr: number): string {
+    return `%${(ctr * 100).toLocaleString('tr-TR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
+}
+
+/** costMicros → "1.234 ₺" (1e6 micros = 1 birim). */
+function formatCost(costMicros: number): string {
+    return `${(costMicros / 1e6).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`;
+}
+
 /** Plan listesinden status sayımlarını yeniden hesapla. */
 function recomputeCounts(list: AdminPlan[]): Record<string, number> {
     const next: Record<string, number> = {};
@@ -101,6 +122,8 @@ export default function NgoAdsAdminPage() {
     const [statusFilter, setStatusFilter] = useState<string | null>(null);
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [pendingId, setPendingId] = useState<string | null>(null);
+    const [perfConfigured, setPerfConfigured] = useState(false);
+    const [perf, setPerf] = useState<PerfMetric[]>([]);
 
     const fetchStats = useCallback(async () => {
         if (!user) return;
@@ -109,9 +132,10 @@ export default function NgoAdsAdminPage() {
         try {
             const token = await user.getIdToken();
             const headers = { Authorization: `Bearer ${token}` };
-            const [statsRes, plansRes] = await Promise.all([
+            const [statsRes, plansRes, perfRes] = await Promise.all([
                 fetch('/api/super-admin/outreach/stats', { headers }),
                 fetch('/api/super-admin/ngo-ads', { headers }),
+                fetch('/api/super-admin/ngo-ads/performance', { headers }),
             ]);
             if (!statsRes.ok) throw new Error((await statsRes.json().catch(() => null))?.message || 'Veriler yüklenemedi');
             setStats(await statsRes.json());
@@ -119,6 +143,14 @@ export default function NgoAdsAdminPage() {
                 const pd = (await plansRes.json()) as { plans?: AdminPlan[]; counts?: Record<string, number> };
                 setPlans(pd.plans ?? []);
                 setCounts(pd.counts ?? {});
+            }
+            if (perfRes.ok) {
+                const perfData = (await perfRes.json()) as { configured?: boolean; metrics?: PerfMetric[] };
+                setPerfConfigured(!!perfData.configured);
+                setPerf(perfData.metrics ?? []);
+            } else {
+                setPerfConfigured(false);
+                setPerf([]);
             }
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Hata');
@@ -170,6 +202,14 @@ export default function NgoAdsAdminPage() {
     ];
 
     const visiblePlans = statusFilter ? plans.filter((p) => p.status === statusFilter) : plans;
+
+    // ngoId → ngoName (mevcut plan listesinden türet) ve ngoId → performans satırı.
+    const ngoNameById = new Map<string, string>();
+    for (const p of plans) {
+        if (p.ngoName) ngoNameById.set(p.ngoId, p.ngoName);
+    }
+    const perfByNgoId = new Map<string, PerfMetric>();
+    for (const m of perf) perfByNgoId.set(m.ngoId, m);
 
     return (
         <div className="min-h-dvh bg-[#f5f5f7]">
@@ -296,6 +336,7 @@ export default function NgoAdsAdminPage() {
                                                 onChangeStatus={changeStatus}
                                                 pending={pendingId === p.id}
                                                 disabled={pendingId !== null}
+                                                perf={p.status === 'active' ? perfByNgoId.get(p.ngoId) : undefined}
                                             />
                                         ))}
                                     </div>
@@ -303,10 +344,56 @@ export default function NgoAdsAdminPage() {
                             </div>
                         </section>
 
-                        {/* FAZ 1 — yakında */}
+                        {/* REKLAM PERFORMANSI — yapılandırıldıysa aktif */}
+                        {perfConfigured && (
+                            <section className="space-y-2.5">
+                                <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Reklam Performansı (Son 30 gün)</h2>
+                                <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
+                                    {perf.length === 0 ? (
+                                        <div className="p-8 text-center space-y-2">
+                                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                                <BarChart3 className="h-6 w-6 text-muted-foreground" />
+                                            </span>
+                                            <p className="font-semibold text-[15px] text-foreground">Henüz performans verisi yok</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                                STK&apos;lar hesabını bağlayıp kampanya yayınladıkça gösterim/tıklama metrikleri burada görünür.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-border/50 max-h-[28rem] overflow-y-auto">
+                                            {perf.map((m) => (
+                                                <div key={m.ngoId} className="px-4 py-3 space-y-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            {m.customerId && <p className="text-[12px] text-muted-foreground truncate">Müşteri No: {m.customerId}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 ml-12">
+                                                        <PerfStat icon={Eye} label="Gösterim" value={formatN(m.impressions)} />
+                                                        <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(m.clicks)} />
+                                                        <PerfStat icon={Percent} label="CTR" value={formatCtr(m.ctr)} />
+                                                        <PerfStat icon={Wallet} label="Harcama" value={formatCost(m.costMicros)} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* FAZ 1 — yakında (performans yapılandırılınca yukarıdaki bölüm aktif olur) */}
                         <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <SoonCard icon={Sparkles} title="Toplu AI Reklam Yenileme" desc="Tüm STK'lar için kampanya metinlerini tek tıkla AI ile tazele." />
-                            <SoonCard icon={ShieldAlert} title="Uyumluluk Uyarıları" desc="CTR < %5 / askı riski olan hesapları otomatik işaretle." />
+                            <SoonCard
+                                icon={ShieldAlert}
+                                title="Uyumluluk Uyarıları"
+                                desc={perfConfigured
+                                    ? 'CTR < %5 / askı riski olan hesapları otomatik işaretle.'
+                                    : 'CTR < %5 / askı riski izleme — Google Ads bağlantısı yapılandırılınca aktif olur.'}
+                            />
                         </section>
                     </>
                 )}
@@ -328,13 +415,26 @@ function StatCard({ icon: Icon, label, value, tint, sub }: { icon: React.Element
     );
 }
 
-function PlanRow({ plan, expanded, onToggle, onChangeStatus, pending, disabled }: {
+function PerfStat({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+    return (
+        <div className="rounded-xl bg-card border border-border/60 p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <p className="text-[10px] uppercase tracking-wide font-bold text-muted-foreground truncate">{label}</p>
+            </div>
+            <p className="text-[16px] font-black tabular-nums leading-none text-foreground">{value}</p>
+        </div>
+    );
+}
+
+function PlanRow({ plan, expanded, onToggle, onChangeStatus, pending, disabled, perf }: {
     plan: AdminPlan;
     expanded: boolean;
     onToggle: () => void;
     onChangeStatus: (planId: string, status: PlanStatus) => void;
     pending: boolean;
     disabled: boolean;
+    perf?: PerfMetric;
 }) {
     const actions = STATUS_ACTIONS[plan.status] ?? [];
     const tint = STATUS_TINT[plan.status] ?? 'bg-secondary text-muted-foreground';
@@ -374,6 +474,20 @@ function PlanRow({ plan, expanded, onToggle, onChangeStatus, pending, disabled }
                             </DetailItem>
                         )}
                     </div>
+
+                    {perf && (
+                        <div className="rounded-2xl bg-emerald-500/5 border border-emerald-500/20 p-3 space-y-2">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700 flex items-center gap-1.5">
+                                <BarChart3 className="h-3.5 w-3.5" /> Performans (Son 30 gün)
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <PerfStat icon={Eye} label="Gösterim" value={formatN(perf.impressions)} />
+                                <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(perf.clicks)} />
+                                <PerfStat icon={Percent} label="CTR" value={formatCtr(perf.ctr)} />
+                                <PerfStat icon={Wallet} label="Harcama" value={formatCost(perf.costMicros)} />
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
