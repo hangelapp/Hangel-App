@@ -54,11 +54,17 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         },
     ];
 
-    const appStoreLinks = [
-        { label: "App Store", href: "#" },
-        { label: "Google Play", href: "#" },
-        { label: "AppGallery", href: "#" },
-        { label: "Chrome Store", href: "#" },
+    // 8 platform — landing'deki StoreBadges ile birebir aynı sıra/durumlar.
+    // status: live (etiket yok) | beta | yakında | PWA
+    const appStoreLinks: Array<{ label: string; href: string; status?: 'beta' | 'yakında' | 'PWA' }> = [
+        { label: "App Store",       href: "#", status: 'beta' },         // iOS — TestFlight + Apple review
+        { label: "Google Play",     href: "#", status: 'yakında' },      // Android henüz publish edilmedi
+        { label: "AppGallery",      href: "#", status: 'yakında' },      // Huawei
+        { label: "Apple Watch",     href: "#", status: 'beta' },         // iOS app ile birlikte
+        { label: "Mac App",         href: "#", status: 'yakında' },      // Catalyst pending
+        { label: "Apple Vision",    href: "#", status: 'yakında' },      // visionOS
+        { label: "Microsoft Store", href: "#", status: 'PWA' },          // Web zaten PWA olarak yüklenebilir
+        { label: "Chrome Uzantısı", href: "#", status: 'yakında' },      // Chrome Web Store pending
     ];
     
     const socialLinks = [
@@ -133,7 +139,15 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#1d1d1f]/70 font-normal">
                         {appStoreLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
-                                <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">{link.label}</Link>
+                                <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">
+                                    {link.label}
+                                    {link.status && (
+                                        <span className={[
+                                            'ml-1 text-[9px] uppercase tracking-wider align-middle',
+                                            link.status === 'beta' ? 'text-amber-600' : link.status === 'PWA' ? 'text-emerald-600' : 'text-black/40',
+                                        ].join(' ')}>{link.status}</span>
+                                    )}
+                                </Link>
                                 {index < appStoreLinks.length - 1 && <span className="text-black/20 mx-0.5">|</span>}
                             </React.Fragment>
                         ))}

@@ -157,13 +157,13 @@ export function StoreBadges() {
           <StoreBadge
             store="App Store"
             caption="iPhone & iPad — iOS 15+"
-            status="live"
+            status="beta"
             Logo={AppleLogo}
           />
           <StoreBadge
             store="Google Play"
             caption="Android telefon & tablet — Android 8+"
-            status="live"
+            status="soon"
             Logo={GooglePlayLogo}
           />
           <StoreBadge
@@ -174,13 +174,13 @@ export function StoreBadges() {
           />
           <StoreBadge
             store="Apple Watch"
-            caption="iPhone hangel app ile birlikte gelir"
+            caption="Apple Watch — watchOS 8+"
             status="beta"
             Logo={AppleWatchLogo}
           />
           <StoreBadge
             store="Mac App"
-            caption="macOS 11+ — Mac Catalyst (iOS app Mac'te çalışır)"
+            caption="MacBook — macOS 11+"
             status="beta"
             Logo={MacLogo}
           />
