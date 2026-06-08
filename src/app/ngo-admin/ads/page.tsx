@@ -61,6 +61,27 @@ const LANDING_LABEL: Record<AdProposal['landing'], string> = {
     'hangel-gonulluluk': 'Açılış: hangel gönüllülük',
 };
 
+type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
+const STATUS_LABEL: Record<PlanStatus, string> = {
+    submitted: 'Başvuruldu',
+    approved: 'Onaylandı',
+    linked: 'Bağlandı',
+    active: 'Aktif',
+    rejected: 'Reddedildi',
+};
+const STATUS_TINT: Record<PlanStatus, string> = {
+    submitted: 'bg-amber-500/10 text-amber-600',
+    approved: 'bg-blue-500/10 text-blue-600',
+    linked: 'bg-indigo-500/10 text-indigo-600',
+    active: 'bg-emerald-500/10 text-emerald-600',
+    rejected: 'bg-rose-500/10 text-rose-600',
+};
+
+interface SavedPlan {
+    kind: ProposalKind;
+    status: PlanStatus;
+}
+
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
 
 export default function AdsPage() {
@@ -80,6 +101,54 @@ export default function AdsPage() {
     const [loading, setLoading] = useState(false);
     const [proposals, setProposals] = useState<AdProposal[]>([]);
     const [selected, setSelected] = useState<Set<ProposalKind>>(new Set());
+
+    // STK'nın kayıtlı planları (Google ilerleme durumu)
+    const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
+
+    // Kayıtlı planları çek; 'selected' Set'ini hidrate et.
+    useEffect(() => {
+        if (!user || !entityId) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const idToken = await user.getIdToken();
+                const res = await fetch('/api/ngo-admin/ads/select', {
+                    headers: { Authorization: `Bearer ${idToken}` },
+                });
+                if (!res.ok) return;
+                const data = (await res.json().catch(() => null)) as { plans?: SavedPlan[] } | null;
+                if (cancelled || !data?.plans) return;
+                const plans = data.plans.filter((p) => p.kind in KIND_META);
+                setSavedPlans(plans);
+                setSelected((prev) => {
+                    const next = new Set(prev);
+                    for (const p of plans) next.add(p.kind);
+                    return next;
+                });
+            } catch {
+                /* sessizce yoksay; sayfa kayıtlı plan olmadan da çalışır */
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [user, entityId]);
+
+    // kind → güncel kayıtlı durum
+    const savedStatusByKind = useMemo(() => {
+        const m = new Map<ProposalKind, PlanStatus>();
+        for (const p of savedPlans) m.set(p.kind, p.status);
+        return m;
+    }, [savedPlans]);
+
+    // Step2/Step3 durum hesabı (savedPlans tabanlı)
+    const statuses = useMemo(() => savedPlans.map((p) => p.status), [savedPlans]);
+    const step2State: 'done' | 'pending' | 'todo' =
+        statuses.some((s) => s === 'approved' || s === 'linked' || s === 'active') ? 'done'
+            : statuses.some((s) => s === 'submitted') ? 'pending'
+                : 'todo';
+    const step3State: 'done' | 'pending' | 'todo' =
+        statuses.some((s) => s === 'linked' || s === 'active') ? 'done'
+            : statuses.some((s) => s === 'approved') ? 'pending'
+                : 'todo';
 
     const entityName = activeDoc?.name || 'Kuruluşunuz';
     const faaliyetAlani = activeDoc?.faaliyetAlani || activeDoc?.category || '';
@@ -204,8 +273,16 @@ export default function AdsPage() {
                         <StepRow n={1} title="Web sitesi"
                             state={websiteReady ? 'done' : hasWebsite === 'no' ? 'pending' : 'todo'}
                             note={websiteReady ? domain : hasWebsite === 'no' ? 'Ücretsiz hangel sitesi kurulacak' : 'Aşağıdan belirt'} />
-                        <StepRow n={2} title="Google başvurusu" state="todo" note="Web sitesi hazır olunca" />
-                        <StepRow n={3} title="Hesabı bağla & yayınla" state="todo" note="Onaydan sonra" />
+                        <StepRow n={2} title="Google başvurusu"
+                            state={step2State}
+                            note={step2State === 'done' ? 'Başvurun hangel tarafından onaylandı'
+                                : step2State === 'pending' ? 'Başvurun hangel ekibinde incelemede'
+                                    : 'Web sitesi hazır olunca'} />
+                        <StepRow n={3} title="Hesabı bağla & yayınla"
+                            state={step3State}
+                            note={step3State === 'done' ? 'Google hesabın bağlandı, yayında'
+                                : step3State === 'pending' ? 'Onaylandı, hesap bağlanıyor'
+                                    : 'Onaydan sonra'} />
                     </div>
                 </section>
 
@@ -304,6 +381,7 @@ export default function AdsPage() {
                                     const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
                                     const Icon = meta.icon;
                                     const isSel = selected.has(p.kind);
+                                    const savedStatus = savedStatusByKind.get(p.kind);
                                     return (
                                         <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
                                             <div className="flex items-start gap-3">
@@ -342,11 +420,18 @@ export default function AdsPage() {
                                                     <span>{LANDING_LABEL[p.landing]}</span>
                                                     {p.estReach && <span> · {p.estReach}</span>}
                                                 </div>
-                                                <button onClick={() => chooseProposal(p)}
-                                                    className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
-                                                        isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
-                                                    {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    {savedStatus && (
+                                                        <span className={cn('h-9 rounded-full px-3 text-[12px] font-semibold inline-flex items-center', STATUS_TINT[savedStatus])}>
+                                                            {STATUS_LABEL[savedStatus]}
+                                                        </span>
+                                                    )}
+                                                    <button onClick={() => chooseProposal(p)}
+                                                        className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
+                                                            isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
+                                                        {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     );

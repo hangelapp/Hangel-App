@@ -18,9 +18,11 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
     Megaphone, Landmark, Heart, Mail, Loader2, ExternalLink, Link2,
-    TrendingUp, Sparkles, ShieldAlert, RefreshCw,
+    TrendingUp, Sparkles, ShieldAlert, RefreshCw, ChevronDown,
+    Check, X, Plug, Radio, Undo2, Target, Hash, Users,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface StatsResp {
@@ -37,7 +39,32 @@ interface AdminPlan {
     landing: string;
     status: string;
     createdAt: number | null;
+    estReach?: number;
+    keywords?: string[];
+    goal?: string;
 }
+
+type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
+
+/** Mevcut status'a göre sunulacak ilerletme aksiyonları. */
+const STATUS_ACTIONS: Record<string, Array<{ to: PlanStatus; label: string; icon: React.ElementType; tone: 'primary' | 'danger' | 'neutral' }>> = {
+    submitted: [
+        { to: 'approved', label: 'Onayla', icon: Check, tone: 'primary' },
+        { to: 'rejected', label: 'Reddet', icon: X, tone: 'danger' },
+    ],
+    approved: [{ to: 'linked', label: 'Bağlandı', icon: Plug, tone: 'primary' }],
+    linked: [{ to: 'active', label: 'Aktif', icon: Radio, tone: 'primary' }],
+    rejected: [{ to: 'submitted', label: 'Geri Al', icon: Undo2, tone: 'neutral' }],
+};
+
+/** Durum rozeti renkleri. */
+const STATUS_TINT: Record<string, string> = {
+    submitted: 'bg-blue-500/10 text-blue-600',
+    approved: 'bg-violet-500/10 text-violet-600',
+    linked: 'bg-amber-500/10 text-amber-600',
+    active: 'bg-emerald-500/10 text-emerald-600',
+    rejected: 'bg-rose-500/10 text-rose-600',
+};
 
 const PLATFORMS = [
     { key: 'google', label: 'Google Ads', active: true },
@@ -50,19 +77,30 @@ const KIND_LABEL: Record<string, string> = {
     'hangel-donation': 'hangel Bağış', 'hangel-volunteer': 'hangel Gönüllülük',
 };
 const STATUS_LABEL: Record<string, string> = {
-    submitted: 'Başvurdu', approved: 'Onaylandı', linked: 'Bağlı', active: 'Aktif',
+    submitted: 'Başvurdu', approved: 'Onaylandı', linked: 'Bağlı', active: 'Aktif', rejected: 'Reddedildi',
 };
 
 function formatN(n: number): string { return n.toLocaleString('tr-TR'); }
 
+/** Plan listesinden status sayımlarını yeniden hesapla. */
+function recomputeCounts(list: AdminPlan[]): Record<string, number> {
+    const next: Record<string, number> = {};
+    for (const p of list) next[p.status] = (next[p.status] ?? 0) + 1;
+    return next;
+}
+
 export default function NgoAdsAdminPage() {
     const { user } = useUser();
+    const { toast } = useToast();
     const [stats, setStats] = useState<StatsResp | null>(null);
     const [plans, setPlans] = useState<AdminPlan[]>([]);
     const [counts, setCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [platform, setPlatform] = useState<'google' | 'meta' | 'tiktok'>('google');
+    const [statusFilter, setStatusFilter] = useState<string | null>(null);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [pendingId, setPendingId] = useState<string | null>(null);
 
     const fetchStats = useCallback(async () => {
         if (!user) return;
@@ -91,18 +129,47 @@ export default function NgoAdsAdminPage() {
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
 
+    const changeStatus = useCallback(async (planId: string, status: PlanStatus) => {
+        if (!user || pendingId) return;
+        setPendingId(planId);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/status', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ planId, status }),
+            });
+            if (!res.ok) {
+                const msg = (await res.json().catch(() => null))?.message || 'Durum güncellenemedi';
+                throw new Error(msg);
+            }
+            setPlans((prev) => {
+                const next = prev.map((p) => (p.id === planId ? { ...p, status } : p));
+                setCounts(recomputeCounts(next));
+                return next;
+            });
+            toast({ title: 'Durum güncellendi', description: STATUS_LABEL[status] || status });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Güncellenemedi', description: e instanceof Error ? e.message : 'Hata' });
+        } finally {
+            setPendingId(null);
+        }
+    }, [user, pendingId, toast]);
+
     const vakif = stats?.byCollection.registryVakiflar ?? 0;
     const dernek = stats?.byCollection.registryDernekler ?? 0;
     const adayTotal = vakif + dernek;
     const reachable = (stats?.categories?.vakif?.email ?? 0) + (stats?.categories?.dernek?.email ?? 0);
 
-    const pipeline = [
-        { label: 'Aday', value: adayTotal, tint: 'bg-primary/10 text-primary' },
-        { label: 'Başvurdu', value: counts.submitted ?? 0, tint: 'bg-blue-500/10 text-blue-600' },
-        { label: 'Onaylandı', value: counts.approved ?? 0, tint: 'bg-violet-500/10 text-violet-600' },
-        { label: 'Bağlı', value: counts.linked ?? 0, tint: 'bg-amber-500/10 text-amber-600' },
-        { label: 'Aktif', value: counts.active ?? 0, tint: 'bg-emerald-500/10 text-emerald-600' },
+    const pipeline: Array<{ label: string; value: number; tint: string; status: string | null }> = [
+        { label: 'Aday', value: adayTotal, tint: 'bg-primary/10 text-primary', status: null },
+        { label: 'Başvurdu', value: counts.submitted ?? 0, tint: 'bg-blue-500/10 text-blue-600', status: 'submitted' },
+        { label: 'Onaylandı', value: counts.approved ?? 0, tint: 'bg-violet-500/10 text-violet-600', status: 'approved' },
+        { label: 'Bağlı', value: counts.linked ?? 0, tint: 'bg-amber-500/10 text-amber-600', status: 'linked' },
+        { label: 'Aktif', value: counts.active ?? 0, tint: 'bg-emerald-500/10 text-emerald-600', status: 'active' },
     ];
+
+    const visiblePlans = statusFilter ? plans.filter((p) => p.status === statusFilter) : plans;
 
     return (
         <div className="min-h-dvh bg-[#f5f5f7]">
@@ -159,17 +226,33 @@ export default function NgoAdsAdminPage() {
                             <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Süreç (Pipeline)</h2>
                             <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4">
                                 <div className="grid grid-cols-5 gap-2">
-                                    {pipeline.map((s, i) => (
-                                        <div key={s.label} className="text-center">
-                                            <div className={cn('rounded-2xl py-3', s.tint)}>
-                                                <p className="text-[18px] sm:text-[22px] font-black tabular-nums leading-none">{formatN(s.value)}</p>
-                                            </div>
-                                            <p className="text-[10px] sm:text-[11px] text-muted-foreground mt-1.5 font-medium">{i + 1}. {s.label}</p>
-                                        </div>
-                                    ))}
+                                    {pipeline.map((s, i) => {
+                                        const filterable = s.status !== null;
+                                        const isActive = filterable && statusFilter === s.status;
+                                        return (
+                                            <button
+                                                key={s.label}
+                                                type="button"
+                                                disabled={!filterable}
+                                                onClick={() => filterable && setStatusFilter((cur) => (cur === s.status ? null : s.status))}
+                                                aria-pressed={isActive}
+                                                title={filterable ? `${s.label} planlarını filtrele` : undefined}
+                                                className={cn('text-center transition rounded-2xl p-0.5 -m-0.5',
+                                                    filterable && 'active:scale-95',
+                                                    !filterable && 'cursor-default',
+                                                    isActive && 'ring-2 ring-primary ring-offset-2 ring-offset-card')}>
+                                                <div className={cn('rounded-2xl py-3', s.tint)}>
+                                                    <p className="text-[18px] sm:text-[22px] font-black tabular-nums leading-none">{formatN(s.value)}</p>
+                                                </div>
+                                                <p className={cn('text-[10px] sm:text-[11px] mt-1.5 font-medium', isActive ? 'text-primary' : 'text-muted-foreground')}>{i + 1}. {s.label}</p>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                                 <p className="text-[11px] text-muted-foreground mt-3 text-center">
-                                    Başvuru ve bağlama adımları, STK'lar panelden ilerledikçe ve Google Ads API bağlandıkça (Faz 1) dolar.
+                                    {statusFilter
+                                        ? <>Filtre aktif: <span className="font-semibold text-foreground">{STATUS_LABEL[statusFilter] || statusFilter}</span> · tekrar tıkla = tümü.</>
+                                        : <>Bir duruma dokun, aşağıdaki plan listesi o adıma göre filtrelensin.</>}
                                 </p>
                             </div>
                         </section>
@@ -178,7 +261,11 @@ export default function NgoAdsAdminPage() {
                         <section className="space-y-2.5">
                             <div className="flex items-center justify-between px-1">
                                 <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Gelen Reklam Planları</h2>
-                                {plans.length > 0 && <span className="text-[12px] text-muted-foreground">{plans.length} plan</span>}
+                                {plans.length > 0 && (
+                                    <span className="text-[12px] text-muted-foreground">
+                                        {statusFilter ? `${visiblePlans.length} / ${plans.length} plan` : `${plans.length} plan`}
+                                    </span>
+                                )}
                             </div>
                             <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
                                 {plans.length === 0 ? (
@@ -191,17 +278,25 @@ export default function NgoAdsAdminPage() {
                                             STK'lar kendi panelinden &quot;Bunu Kur&quot; dedikçe planlar burada görünür; hangel ekibi (Faz 1&apos;e kadar MCC&apos;den) yayınlar.
                                         </p>
                                     </div>
+                                ) : visiblePlans.length === 0 ? (
+                                    <div className="p-8 text-center space-y-2">
+                                        <p className="text-[13px] text-muted-foreground">
+                                            <span className="font-semibold text-foreground">{STATUS_LABEL[statusFilter ?? ''] || statusFilter}</span> durumunda plan yok.
+                                        </p>
+                                        <button type="button" onClick={() => setStatusFilter(null)} className="text-[13px] font-semibold text-primary">Filtreyi temizle</button>
+                                    </div>
                                 ) : (
                                     <div className="divide-y divide-border/50 max-h-[28rem] overflow-y-auto">
-                                        {plans.map((p) => (
-                                            <div key={p.id} className="flex items-center gap-3 px-4 py-3">
-                                                <span className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Megaphone className="h-4 w-4" /></span>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-[14px] font-medium text-foreground truncate">{p.title}</p>
-                                                    <p className="text-[12px] text-muted-foreground truncate">{p.ngoName || p.ngoId} · {KIND_LABEL[p.kind] || p.kind}</p>
-                                                </div>
-                                                <span className="text-[11px] rounded-full bg-blue-500/10 text-blue-600 px-2.5 py-1 font-semibold shrink-0">{STATUS_LABEL[p.status] || p.status}</span>
-                                            </div>
+                                        {visiblePlans.map((p) => (
+                                            <PlanRow
+                                                key={p.id}
+                                                plan={p}
+                                                expanded={expandedId === p.id}
+                                                onToggle={() => setExpandedId((cur) => (cur === p.id ? null : p.id))}
+                                                onChangeStatus={changeStatus}
+                                                pending={pendingId === p.id}
+                                                disabled={pendingId !== null}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -229,6 +324,92 @@ function StatCard({ icon: Icon, label, value, tint, sub }: { icon: React.Element
             </div>
             <p className="text-[22px] font-black tabular-nums leading-none">{value}</p>
             {sub && <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>}
+        </div>
+    );
+}
+
+function PlanRow({ plan, expanded, onToggle, onChangeStatus, pending, disabled }: {
+    plan: AdminPlan;
+    expanded: boolean;
+    onToggle: () => void;
+    onChangeStatus: (planId: string, status: PlanStatus) => void;
+    pending: boolean;
+    disabled: boolean;
+}) {
+    const actions = STATUS_ACTIONS[plan.status] ?? [];
+    const tint = STATUS_TINT[plan.status] ?? 'bg-secondary text-muted-foreground';
+    const keywords = plan.keywords?.slice(0, 5) ?? [];
+    return (
+        <div className="px-4 py-3">
+            <button type="button" onClick={onToggle} aria-expanded={expanded} className="flex items-center gap-3 w-full text-left active:opacity-70 transition">
+                <span className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Megaphone className="h-4 w-4" /></span>
+                <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-medium text-foreground truncate">{plan.title}</p>
+                    <p className="text-[12px] text-muted-foreground truncate">{plan.ngoName || plan.ngoId} · {KIND_LABEL[plan.kind] || plan.kind}</p>
+                </div>
+                <span className={cn('text-[11px] rounded-full px-2.5 py-1 font-semibold shrink-0', tint)}>{STATUS_LABEL[plan.status] || plan.status}</span>
+                <ChevronDown className={cn('h-4 w-4 text-muted-foreground shrink-0 transition-transform', expanded && 'rotate-180')} />
+            </button>
+
+            {expanded && (
+                <div className="mt-3 ml-12 space-y-2.5 animate-in fade-in-0 slide-in-from-top-1 duration-200">
+                    <div className="grid grid-cols-1 gap-1.5 rounded-2xl bg-secondary/60 p-3">
+                        <DetailItem icon={Hash} label="Tür">{KIND_LABEL[plan.kind] || plan.kind}</DetailItem>
+                        {plan.goal && <DetailItem icon={Target} label="Hedef">{plan.goal}</DetailItem>}
+                        {plan.landing && (
+                            <DetailItem icon={ExternalLink} label="Sayfa">
+                                <a href={plan.landing} target="_blank" rel="noopener noreferrer" className="text-primary font-medium break-all hover:underline">{plan.landing}</a>
+                            </DetailItem>
+                        )}
+                        {typeof plan.estReach === 'number' && (
+                            <DetailItem icon={Users} label="Tahmini Erişim">{formatN(plan.estReach)}</DetailItem>
+                        )}
+                        {keywords.length > 0 && (
+                            <DetailItem icon={Hash} label="Anahtar Kelimeler">
+                                <span className="flex flex-wrap gap-1">
+                                    {keywords.map((k) => (
+                                        <span key={k} className="text-[11px] rounded-full bg-card border border-border/60 px-2 py-0.5 text-foreground">{k}</span>
+                                    ))}
+                                </span>
+                            </DetailItem>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {actions.length > 0 && (
+                <div className="mt-3 ml-12 flex flex-wrap gap-2">
+                    {actions.map((a) => {
+                        const Icon = a.icon;
+                        return (
+                            <button
+                                key={a.to}
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => onChangeStatus(plan.id, a.to)}
+                                className={cn(
+                                    'inline-flex items-center gap-1.5 rounded-full px-3.5 h-8 text-[12px] font-semibold transition active:scale-95 disabled:opacity-50 disabled:active:scale-100',
+                                    a.tone === 'primary' && 'bg-primary text-white shadow-sm',
+                                    a.tone === 'danger' && 'bg-rose-500/10 text-rose-600',
+                                    a.tone === 'neutral' && 'bg-secondary text-foreground',
+                                )}>
+                                {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icon className="h-3.5 w-3.5" />}
+                                {a.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
+
+function DetailItem({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) {
+    return (
+        <div className="flex items-start gap-2 text-[12px]">
+            <Icon className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+            <span className="text-muted-foreground shrink-0 w-28">{label}</span>
+            <span className="text-foreground min-w-0">{children}</span>
         </div>
     );
 }
