@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc, entityPossessive } from '@/app/ngo-admin/active-entity-context';
-import { brandSectorOptions } from '@/app/login/selection/_components/shared';
+import { brandSectorOptions, ngoBeneficiaryOptions, ngoPlatformOptions } from '@/app/login/selection/_components/shared';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -35,7 +35,12 @@ const XIcon = (props: React.ComponentProps<'svg'>) => (
     </svg>
 );
 
-const allBeneficiaries = ['Çocuklar', 'Hak mücadelesi verenler', 'Afetzedeler', 'Hayvanlar', 'Yaşlılar', 'Engelliler', 'Öğrenciler', 'Mülteciler', 'Gençler', 'Çevre'];
+// Faydalanıcı ve platform listeleri kayıt formuyla AYNI kaynaktan gelir
+// (ngoBeneficiaryOptions / ngoPlatformOptions) — aksi halde kayıtta seçilen ama
+// bu kısa listede olmayan değerler edit ekranında checkbox'ı olmadığı için
+// işaretli görünmezdi.
+const allBeneficiaries = ngoBeneficiaryOptions;
+const allMemberships = ngoPlatformOptions;
 const allSdgs = [
     '1. Yoksulluğa Son',
     '2. Açlığa Son',
@@ -55,7 +60,6 @@ const allSdgs = [
     '16. Barış, Adalet ve Güçlü Kurumlar',
     '17. Amaçlar için Ortaklıklar'
 ];
-const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid'];
 const years = Array.from({ length: 2025 - 1900 }, (_, i) => (2024 - i).toString());
 
 type EntityKind = 'ngo' | 'brand' | 'club';

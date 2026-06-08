@@ -45,6 +45,7 @@ import {
   Network,
   LineChart,
   Loader2,
+  Image as ImageIcon,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -493,7 +494,7 @@ function SideMenu() {
 // Avatar + isim + tür rozeti + kamu profili linki. Henüz çözülmediyse
 // skeleton placeholder, hiç entity yoksa hiç gösterilmez.
 function EntityIdentityBanner() {
-  const { id, kind, managedList, isLoading } = useActiveEntity();
+  const { id, kind, managedList, isLoading, withEntityParams } = useActiveEntity();
 
   if (isLoading) {
     return (
@@ -518,31 +519,56 @@ function EntityIdentityBanner() {
     current.kind === 'brand' ? `/market/${current.id}` :
     `/clubs/profile/${current.id}`;
 
+  // Logosu olmayan kurumlardan logo yüklemesini iste — banner'daki logo dolana
+  // kadar görünür kalır. manage-profile'daki gerçek Storage yüklemesine yönlendirir.
+  const hasLogo = Boolean(current.logoUrl);
+
   return (
-    <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm">
-      <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
-        {current.logoUrl ? (
-           
-          <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
-        ) : (
-          <Icon className="h-6 w-6 text-primary" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
-          <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold">
-            {entityTypeLabel(current.kind, current.subType)}
-          </Badge>
+    <>
+      <div className="mb-6 rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm">
+        <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+          {hasLogo ? (
+
+            <img src={current.logoUrl} alt={current.name} className="h-full w-full object-cover" />
+          ) : (
+            <Icon className="h-6 w-6 text-primary" />
+          )}
         </div>
-        <p className="text-xs text-muted-foreground truncate">{entityPossessive(current.kind, current.subType)} Yönetim Paneli</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-base sm:text-lg font-black truncate">{current.name}</h2>
+            <Badge variant="outline" className="text-[10px] uppercase tracking-widest font-bold">
+              {entityTypeLabel(current.kind, current.subType)}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground truncate">{entityPossessive(current.kind, current.subType)} Yönetim Paneli</p>
+        </div>
+        <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
+          <Link href={publicHref} target="_blank" rel="noopener noreferrer">
+            Kamu Profili
+          </Link>
+        </Button>
       </div>
-      <Button asChild size="sm" variant="ghost" className="shrink-0 text-xs">
-        <Link href={publicHref} target="_blank" rel="noopener noreferrer">
-          Kamu Profili
-        </Link>
-      </Button>
-    </div>
+
+      {!hasLogo && (
+        <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-4 flex items-center gap-3">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
+            <ImageIcon className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold">Logonuzu yükleyin</p>
+            <p className="text-xs text-muted-foreground">
+              {entityPossessive(current.kind, current.subType)} kamu profili ve listelerde görünmesi için bir logo ekleyin.
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0 text-xs">
+            <Link href={withEntityParams('/ngo-admin/manage-profile')}>
+              Logo Yükle
+            </Link>
+          </Button>
+        </div>
+      )}
+    </>
   );
 }
 

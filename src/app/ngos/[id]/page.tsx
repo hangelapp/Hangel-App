@@ -450,7 +450,9 @@ export default function NgoProfilePage() {
                     ))}
                     <div className="pt-4 border-t text-xs text-muted-foreground space-y-1">
                         <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Türü:</span><span>{ngo.type}</span></div>
+                        {(ngo as NGO & { shortName?: string }).shortName && <div className="flex justify-between"><span className="font-medium text-foreground">Kısa Ad:</span><span>{(ngo as NGO & { shortName?: string }).shortName}</span></div>}
                         <div className="flex justify-between"><span className="font-medium text-foreground">Kategori:</span><span>{ngo.category}</span></div>
+                        {(ngo as NGO & { detayliFaaliyetAlani?: string }).detayliFaaliyetAlani && <div className="flex justify-between gap-2"><span className="font-medium text-foreground shrink-0">Faaliyet Alanı:</span><span className="text-right">{(ngo as NGO & { detayliFaaliyetAlani?: string }).detayliFaaliyetAlani}</span></div>}
                         {ngo.foundationYear && <div className="flex justify-between"><span className="font-medium text-foreground">Kuruluş Yılı:</span><span>{ngo.foundationYear}</span></div>}
                         {ngo.joinDate && <div className="flex justify-between"><span className="font-medium text-foreground">Katılım Tarihi:</span><span>{new Date(ngo.joinDate).toLocaleDateString('tr-TR')}</span></div>}
                         <div className="flex justify-between"><span className="font-medium text-foreground">İktisadi İşletme:</span><span>{ngo.economicEnterpriseStatus === 'var' ? 'Var' : 'Yok'}</span></div>

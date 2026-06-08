@@ -71,17 +71,40 @@ interface ApplicationDoc {
   communicationAddress?: string;
   sector?: string;
   category?: string;
+  detayliFaaliyetAlani?: string;
+  foundedYear?: string | number;
+  phoneCountryCode?: string;
+  instagram?: string;
+  twitter?: string;
+  linkedin?: string;
+  otherSocials?: Array<{ platform?: string; url?: string }>;
   brandStatus?: string;
   donationCategories?: Array<{ customCategory?: string; category?: string; rate?: string | number }>;
+  selectedProductCategories?: string[];
+  ecommerceUrl?: string;
   clubType?: string;
   universityName?: string;
   clubCategory?: string;
+  clubAffiliation?: string;
+  selectedClubCategories?: string[];
+  categories?: string[];
+  clubShortDescription?: string;
+  clubEventTypes?: string[];
   orgSubType?: string;
+  ngoSubType?: string;
   registryNo?: string;
   legalTitle?: string;
   slogan?: string;
+  // Kurumsal kayıt formundaki çoktan seçmeli alanlar — onayda entity doc'una
+  // taşınmazsa hem profilde görünmez hem edit ekranında işaretsiz gelir.
   selectedBeneficiaries?: string[];
+  otherBeneficiaryText?: string;
   selectedServiceAreas?: string[];
+  selectedSdgs?: string[];
+  selectedNetworks?: string[];
+  otherNetworkText?: string;
+  selectedSporFederasyonlari?: string[];
+  selectedIzinAmaclari?: string[];
   authorized?: { name?: string; role?: string; email?: string; phone?: string; phoneCode?: string };
 }
 
@@ -304,29 +327,77 @@ export default function ApplicationsPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
+  // Kurumsal kayıt alt türünü (Dernek/Vakif/SporKulubu/OzelIzinli) manage-profile
+  // select'inin beklediği lowercase değere çevir — edit ekranında doğru ön-seçili gelsin.
+  const ngoSubTypeToManaged = (sub?: string): string => {
+    switch ((sub || '').toLowerCase()) {
+      case 'vakif': return 'vakif';
+      case 'sporkulubu': case 'spor-kulubu': case 'spor': return 'spor-kulubu';
+      case 'ozelizinli': case 'ozel-izinli': return 'ozel-izinli';
+      default: return 'dernek';
+    }
+  };
+
   const createEntityFromApp = async (app: ApplicationDoc): Promise<string | null> => {
     const entityType = app.entityType;
     const name = app.name || app.org || 'Yeni Kuruluş';
 
+    // Sosyal medya: kayıt formu üst-düzey instagram/twitter/linkedin yazar; eski
+    // kayıtlar `social` objesi de taşıyabilir. İki kaynağı da birleştir.
+    const social = {
+      instagram: app.social?.instagram || app.instagram || '',
+      twitter: app.social?.twitter || app.twitter || '',
+      linkedin: app.social?.linkedin || app.linkedin || '',
+      facebook: app.social?.facebook || '',
+    };
+    const phoneCode = (app.phoneCountryCode || app.phoneCode || '+90').toString().replace('+', '');
+    const fullAddress = app.addressLine || app.communicationAddress || '';
+    const foundedYear = app.foundedYear != null ? String(app.foundedYear) : '';
+    const beneficiaries = app.selectedBeneficiaries || [];
+    const sdgs = app.selectedSdgs || [];
+    const networks = app.selectedNetworks || [];
+
     const common = {
       name,
       slug: slugify(name),
+      shortName: app.shortName || '',
       about: app.about || '',
+      foundedYear,
+      foundationYear: foundedYear, // profil sayfası bu adı okur
       logoUrl: app.logoUrl || '',
       avatarUrl: app.avatarUrl || app.logoUrl || '',
       coverPhotoUrl: app.coverPhotoUrl || '',
+      // Logo dosyası — manage-profile `files.logo` okur.
+      files: { logo: app.logoUrl || app.avatarUrl || '' },
+      // İki şema: profil `contact.{social,address,website}`, manage-profile
+      // `contact.{phoneCountryCode}` + `socialMedia.*` + `address.*` okur.
       contact: {
         email: app.email || '',
         phone: app.phone || '',
+        phoneCountryCode: phoneCode,
         website: app.website || '',
-        social: app.social || {},
+        address: fullAddress,
+        social,
+      },
+      socialMedia: {
+        instagram: social.instagram,
+        twitter: social.twitter,
+        linkedin: social.linkedin,
+        youtube: '',
+      },
+      address: {
+        country: app.country || 'Türkiye',
+        city: app.city || '',
+        district: app.district || '',
+        neighborhood: app.neighborhood || '',
+        street: fullAddress,
       },
       location: {
         country: app.country || 'Türkiye',
         city: app.city || '',
         district: app.district || '',
         neighborhood: app.neighborhood || '',
-        fullAddress: app.addressLine || app.communicationAddress || '',
+        fullAddress,
       },
       status: 'Aktif',
       createdAt: serverTimestamp(),
@@ -335,23 +406,40 @@ export default function ApplicationsPage() {
 
     try {
       if (entityType === 'BRAND') {
+        const productCats = app.selectedProductCategories || [];
         const ref = await addDoc(collection(db, COLLECTIONS.brands), {
           ...common,
           type: 'brand',
           category: app.sector || app.category || '',
+          sector: app.sector || app.category || '',
           brandStatus: app.brandStatus || '',
           donationRate: 0,
           donationCategories: app.donationCategories || [],
+          selectedProductCategories: productCats,
+          productCategories: productCats,
+          ecommerceUrl: app.ecommerceUrl || '',
+          // Marka da faydalanıcı seçebiliyor (kooperatif/sosyal/iktisadi).
+          beneficiaries,
+          beneficiaryGroups: beneficiaries,
+          selectedBeneficiaries: beneficiaries,
+          otherBeneficiaryText: app.otherBeneficiaryText || '',
           link: app.website || '',
         });
         return ref.id;
       }
       if (entityType === 'CLUB') {
+        const clubCats = app.selectedClubCategories || app.categories || [];
         const ref = await addDoc(collection(db, COLLECTIONS.clubs), {
           ...common,
           type: app.clubType || 'university',
-          university: app.universityName || '',
-          category: app.clubCategory || '',
+          university: app.universityName || app.clubAffiliation || '',
+          clubAffiliation: app.clubAffiliation || app.universityName || '',
+          // Kulüp kategorileri — profil hem `categories` hem `category` okuyabilir.
+          categories: clubCats,
+          category: app.clubCategory || clubCats[0] || '',
+          selectedClubCategories: clubCats,
+          shortDescription: app.clubShortDescription || app.about || '',
+          eventTypes: app.clubEventTypes || [],
           members: 0,
           points: 0,
           // Kayıt formunda başkan olarak başvuran kullanıcı kulübün doğal yöneticisi.
@@ -360,17 +448,37 @@ export default function ApplicationsPage() {
         return ref.id;
       }
       if (entityType === 'NGO') {
+        const feds = app.selectedSporFederasyonlari || [];
         const ref = await addDoc(collection(db, COLLECTIONS.ngos), {
           ...common,
-          type: app.orgSubType || 'Dernek',
+          type: app.orgSubType || app.ngoSubType || 'Dernek',
+          // manage-profile select'i için lowercase alt tür.
+          ngoType: ngoSubTypeToManaged(app.orgSubType || app.ngoSubType),
           category: app.sector || '',
+          sector: app.sector || '',
+          detayliFaaliyetAlani: app.detayliFaaliyetAlani || '',
           registryNo: app.registryNo || '',
           // Kanonik kütük alanı: /k/<kutukNo> kısa linki bunu sorgular.
           kutukNo: app.registryNo || '',
           legalTitle: app.legalTitle || '',
           slogan: app.slogan || '',
           transparencyScore: 0,
-          selectedBeneficiaries: app.selectedBeneficiaries || [],
+          // Faydalanıcılar — profil `beneficiaryGroups`, edit `beneficiaries` okur.
+          selectedBeneficiaries: beneficiaries,
+          beneficiaries,
+          beneficiaryGroups: beneficiaries,
+          otherBeneficiaryText: app.otherBeneficiaryText || '',
+          // SKA'lar — profil `supportedSDGs`, edit `sdgs`.
+          sdgs,
+          supportedSDGs: sdgs,
+          // Kayıtlı platformlar — profil `memberOf`, edit `memberships`.
+          memberships: networks,
+          memberOf: networks,
+          otherNetworkText: app.otherNetworkText || '',
+          // Spor federasyonları — profil `federations`, edit `sportsFederations`.
+          federations: feds,
+          sportsFederations: feds,
+          selectedIzinAmaclari: app.selectedIzinAmaclari || [],
           selectedServiceAreas: app.selectedServiceAreas || [],
           stats: { followers: 0, volunteers: 0, projects: 0 },
         });
