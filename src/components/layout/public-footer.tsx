@@ -57,14 +57,14 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
     // 8 platform — landing'deki StoreBadges ile birebir aynı sıra/durumlar.
     // status: live (etiket yok) | beta | yakında | PWA
     const appStoreLinks: Array<{ label: string; href: string; status?: 'beta' | 'yakında' | 'PWA' }> = [
-        { label: "App Store",       href: "#", status: 'beta' },         // iOS — TestFlight + Apple review
-        { label: "Google Play",     href: "#", status: 'yakında' },      // Android henüz publish edilmedi
-        { label: "AppGallery",      href: "#", status: 'yakında' },      // Huawei
-        { label: "Apple Watch",     href: "#", status: 'beta' },         // iOS app ile birlikte
-        { label: "Mac App",         href: "#", status: 'yakında' },      // Catalyst pending
-        { label: "Apple Vision",    href: "#", status: 'yakında' },      // visionOS
-        { label: "Microsoft Store", href: "#", status: 'PWA' },          // Web zaten PWA olarak yüklenebilir
-        { label: "Chrome Uzantısı", href: "#", status: 'yakında' },      // Chrome Web Store pending
+        { label: "App Store",       href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // iOS — canlı
+        { label: "Google Play",     href: "https://play.google.com/store/apps/details?id=com.hangel.app" },   // canlı
+        { label: "AppGallery",      href: "https://appgallery.huawei.com/app/C113000000", status: 'yakında' }, // Huawei
+        { label: "Apple Watch",     href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (iOS app ile)
+        { label: "Mac App",         href: "https://apps.apple.com/tr/app/hangel/id6664058822" },              // canlı (Apple Silicon)
+        { label: "Apple Vision",    href: "https://hangel.org.tr/", status: 'yakında' },                       // visionOS
+        { label: "Microsoft Store", href: "https://hangel.org.tr/", status: 'PWA' },                          // Web zaten PWA
+        { label: "Chrome Uzantısı", href: "https://hangel.org.tr/", status: 'yakında' },                       // Chrome Web Store pending
     ];
     
     const socialLinks = [
@@ -139,7 +139,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
                     <div className="flex justify-start items-center flex-wrap gap-x-2 gap-y-1 text-[12px] text-[#1d1d1f]/70 font-normal">
                         {appStoreLinks.map((link, index) => (
                             <React.Fragment key={link.label}>
-                                <Link href={link.href} className="text-[#1d1d1f]/70 hover:text-primary transition-colors">
+                                <Link href={link.href} target="_blank" rel="noopener noreferrer" className="text-[#1d1d1f]/70 hover:text-primary transition-colors">
                                     {link.label}
                                     {link.status && (
                                         <span className={[
