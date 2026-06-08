@@ -12,6 +12,7 @@ import type { Brand, Volunteering } from '@/lib/types';
 import { Card } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { StoreBadges } from '@/components/landing/StoreBadges';
 import { languages, useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -534,6 +535,9 @@ export default function LoginPage() {
                         </Button>
                     </div>
                 </section>
+
+                {/* Hero + ProductShowcase (gri) arası geçiş — platformlarımızı belirt */}
+                <StoreBadges />
 
                  <ProductShowcaseSection
                     id="bagis"
