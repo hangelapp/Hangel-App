@@ -280,9 +280,10 @@ export default function AdsPage() {
         return m;
     }, [savedPlans]);
 
-    // Yayınlanmaya hazır (onaylanmış) kayıtlı planlar
-    const approvedPlans = useMemo(
-        () => savedPlans.filter((p) => p.status === 'approved' && typeof p.id === 'string'),
+    // Yayınlanmaya hazır kayıtlı planlar — süper admin onayı GEREKMEZ; STK
+    // kurduğu (henüz yayında olmayan / reddedilmemiş) planı doğrudan yayınlar.
+    const publishablePlans = useMemo(
+        () => savedPlans.filter((p) => p.status !== 'active' && p.status !== 'rejected' && typeof p.id === 'string'),
         [savedPlans],
     );
 
@@ -573,7 +574,7 @@ export default function AdsPage() {
                                                             {STATUS_LABEL[savedStatus]}
                                                         </span>
                                                     )}
-                                                    {savedStatus === 'approved' && connection.connected && savedPlanByKind.get(p.kind)?.id ? (
+                                                    {savedStatus && savedStatus !== 'active' && savedStatus !== 'rejected' && connection.connected && savedPlanByKind.get(p.kind)?.id ? (
                                                         <button
                                                             onClick={() => { const sp = savedPlanByKind.get(p.kind); if (sp?.id) void publishPlan(sp.id, sp.title || p.title); }}
                                                             disabled={publishingId === savedPlanByKind.get(p.kind)?.id}
@@ -595,7 +596,7 @@ export default function AdsPage() {
                                     );
                                 })}
                                 <p className="text-[11px] text-muted-foreground text-center pt-1">
-                                    Seçtiğin kampanyalar Google hesabın bağlandığında otomatik yayına alınır (yakında).
+                                    Seçtiğin kampanyaları, aşağıdan Google Ads hesabını bağladıktan sonra tek dokunuşla yayına alabilirsin.
                                 </p>
                             </div>
                         )}
@@ -629,7 +630,7 @@ export default function AdsPage() {
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[15px] font-semibold text-foreground">Google Ads hesabını bağla</p>
                                         <p className="text-[13px] text-muted-foreground leading-relaxed">
-                                            Onaylanan reklam planlarını yayına almak için Google Ads hesabını hangel&apos;e bağla. Bağlantı güvenli Google ekranında yapılır.
+                                            Kurduğun reklam planlarını yayına almak için Google Ads hesabını hangel&apos;e bağla. Bağlantı güvenli Google ekranında yapılır.
                                         </p>
                                     </div>
                                 </div>
@@ -652,10 +653,10 @@ export default function AdsPage() {
                                     </div>
                                 </div>
 
-                                {approvedPlans.length > 0 ? (
+                                {publishablePlans.length > 0 ? (
                                     <div className="space-y-2.5">
-                                        <p className="text-[13px] text-muted-foreground">Onaylanan kampanyaların yayına hazır.</p>
-                                        {approvedPlans.map((p) => {
+                                        <p className="text-[13px] text-muted-foreground">Kurduğun kampanyalar yayına hazır.</p>
+                                        {publishablePlans.map((p) => {
                                             const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
                                             const Icon = meta.icon;
                                             return (
@@ -665,7 +666,7 @@ export default function AdsPage() {
                                                     </span>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-[14px] font-semibold text-foreground truncate">{p.title || meta.label}</p>
-                                                        <p className="text-[12px] text-muted-foreground">{meta.label} · onaylandı</p>
+                                                        <p className="text-[12px] text-muted-foreground">{meta.label} · {STATUS_LABEL[p.status] || 'yayına hazır'}</p>
                                                     </div>
                                                     <button
                                                         onClick={() => { if (p.id) void publishPlan(p.id, p.title); }}
@@ -679,7 +680,7 @@ export default function AdsPage() {
                                     </div>
                                 ) : (
                                     <p className="text-[12px] text-muted-foreground text-center">
-                                        Yayına hazır onaylı kampanyan yok. Planların hangel ekibince onaylanınca burada yayınlayabilirsin.
+                                        Henüz kurduğun kampanya yok. Yukarıdan bir reklam planı seç (&quot;Bunu Kur&quot;), sonra buradan tek dokunuşla yayınla.
                                     </p>
                                 )}
                             </div>

@@ -349,7 +349,7 @@ function NgoDashboardPageContent() {
         </CardHeader>
         <CardContent className="p-5 pt-0">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Link href="/ngo-admin/profile" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/manage-profile" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
                     <Building2 className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartProfileTitle')}</span>
                     <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartProfileHint')}</span>
@@ -364,7 +364,7 @@ function NgoDashboardPageContent() {
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartPostTitle')}</span>
                     <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartPostHint')}</span>
                 </Link>
-                <Link href="/ngo-admin/volunteer-portal" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
+                <Link href="/ngo-admin/volunteer/new" className="p-3 rounded-xl bg-white hover:bg-accent transition-colors border flex flex-col gap-1.5">
                     <HeartHandshake className="h-5 w-5 text-primary" />
                     <span className="text-xs font-bold leading-tight">{t('ngo_admin_dashboard.quickStartVolunteerTitle')}</span>
                     <span className="text-[10px] text-muted-foreground leading-tight">{t('ngo_admin_dashboard.quickStartVolunteerHint')}</span>
