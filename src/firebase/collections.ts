@@ -112,6 +112,10 @@ export const COLLECTIONS = {
   // Doc id = `{brandId}__{orderId}` for create-or-fail idempotency.
   affiliateConfirmations: 'affiliateConfirmations',
 
+  // Reklam Yönetimi — STK Google Ad Grants plan/hesap kayıtları (Admin SDK only).
+  // STK panelden "Bunu Kur" → adPlans; hangel ekibi süper-admin'den görür/yayınlar.
+  adPlans: 'adPlans',
+
   // Messaging — campaigns & templating
   campaigns: 'campaigns',
   // Sub-collection under campaigns/{id}/recipients

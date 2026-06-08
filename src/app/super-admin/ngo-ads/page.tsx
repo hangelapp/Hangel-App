@@ -28,17 +28,38 @@ interface StatsResp {
     categories: Record<string, { total: number; email?: number }>;
 }
 
+interface AdminPlan {
+    id: string;
+    ngoId: string;
+    ngoName: string;
+    kind: string;
+    title: string;
+    landing: string;
+    status: string;
+    createdAt: number | null;
+}
+
 const PLATFORMS = [
     { key: 'google', label: 'Google Ads', active: true },
     { key: 'meta', label: 'Meta', active: false },
     { key: 'tiktok', label: 'TikTok', active: false },
 ] as const;
 
+const KIND_LABEL: Record<string, string> = {
+    'search-donation': 'Bağış', 'search-awareness': 'Bilinirlik', 'search-beneficiary': 'Yararlanıcı',
+    'hangel-donation': 'hangel Bağış', 'hangel-volunteer': 'hangel Gönüllülük',
+};
+const STATUS_LABEL: Record<string, string> = {
+    submitted: 'Başvurdu', approved: 'Onaylandı', linked: 'Bağlı', active: 'Aktif',
+};
+
 function formatN(n: number): string { return n.toLocaleString('tr-TR'); }
 
 export default function NgoAdsAdminPage() {
     const { user } = useUser();
     const [stats, setStats] = useState<StatsResp | null>(null);
+    const [plans, setPlans] = useState<AdminPlan[]>([]);
+    const [counts, setCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [platform, setPlatform] = useState<'google' | 'meta' | 'tiktok'>('google');
@@ -49,9 +70,18 @@ export default function NgoAdsAdminPage() {
         setError(null);
         try {
             const token = await user.getIdToken();
-            const res = await fetch('/api/super-admin/outreach/stats', { headers: { Authorization: `Bearer ${token}` } });
-            if (!res.ok) throw new Error((await res.json().catch(() => null))?.message || 'Veriler yüklenemedi');
-            setStats(await res.json());
+            const headers = { Authorization: `Bearer ${token}` };
+            const [statsRes, plansRes] = await Promise.all([
+                fetch('/api/super-admin/outreach/stats', { headers }),
+                fetch('/api/super-admin/ngo-ads', { headers }),
+            ]);
+            if (!statsRes.ok) throw new Error((await statsRes.json().catch(() => null))?.message || 'Veriler yüklenemedi');
+            setStats(await statsRes.json());
+            if (plansRes.ok) {
+                const pd = (await plansRes.json()) as { plans?: AdminPlan[]; counts?: Record<string, number> };
+                setPlans(pd.plans ?? []);
+                setCounts(pd.counts ?? {});
+            }
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Hata');
         } finally {
@@ -68,10 +98,10 @@ export default function NgoAdsAdminPage() {
 
     const pipeline = [
         { label: 'Aday', value: adayTotal, tint: 'bg-primary/10 text-primary' },
-        { label: 'Başvurdu', value: 0, tint: 'bg-blue-500/10 text-blue-600' },
-        { label: 'Onaylandı', value: 0, tint: 'bg-violet-500/10 text-violet-600' },
-        { label: 'Bağlı', value: 0, tint: 'bg-amber-500/10 text-amber-600' },
-        { label: 'Aktif', value: 0, tint: 'bg-emerald-500/10 text-emerald-600' },
+        { label: 'Başvurdu', value: counts.submitted ?? 0, tint: 'bg-blue-500/10 text-blue-600' },
+        { label: 'Onaylandı', value: counts.approved ?? 0, tint: 'bg-violet-500/10 text-violet-600' },
+        { label: 'Bağlı', value: counts.linked ?? 0, tint: 'bg-amber-500/10 text-amber-600' },
+        { label: 'Aktif', value: counts.active ?? 0, tint: 'bg-emerald-500/10 text-emerald-600' },
     ];
 
     return (
@@ -144,17 +174,37 @@ export default function NgoAdsAdminPage() {
                             </div>
                         </section>
 
-                        {/* BAĞLI HESAPLAR */}
+                        {/* GELEN PLANLAR */}
                         <section className="space-y-2.5">
-                            <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Bağlı Reklam Hesapları</h2>
-                            <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-8 text-center space-y-2">
-                                <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
-                                    <Link2 className="h-6 w-6 text-muted-foreground" />
-                                </span>
-                                <p className="font-semibold text-[15px] text-foreground">Henüz bağlı hesap yok</p>
-                                <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
-                                    STK'lar kendi panelinden Google reklam hakkına başvurup hesaplarını bağladıkça (Faz 1) burada listelenecek; uyumluluk durumları ve aylık kullanım buradan izlenecek.
-                                </p>
+                            <div className="flex items-center justify-between px-1">
+                                <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Gelen Reklam Planları</h2>
+                                {plans.length > 0 && <span className="text-[12px] text-muted-foreground">{plans.length} plan</span>}
+                            </div>
+                            <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
+                                {plans.length === 0 ? (
+                                    <div className="p-8 text-center space-y-2">
+                                        <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                            <Link2 className="h-6 w-6 text-muted-foreground" />
+                                        </span>
+                                        <p className="font-semibold text-[15px] text-foreground">Henüz gelen plan yok</p>
+                                        <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                            STK'lar kendi panelinden &quot;Bunu Kur&quot; dedikçe planlar burada görünür; hangel ekibi (Faz 1&apos;e kadar MCC&apos;den) yayınlar.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-border/50 max-h-[28rem] overflow-y-auto">
+                                        {plans.map((p) => (
+                                            <div key={p.id} className="flex items-center gap-3 px-4 py-3">
+                                                <span className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"><Megaphone className="h-4 w-4" /></span>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-[14px] font-medium text-foreground truncate">{p.title}</p>
+                                                    <p className="text-[12px] text-muted-foreground truncate">{p.ngoName || p.ngoId} · {KIND_LABEL[p.kind] || p.kind}</p>
+                                                </div>
+                                                <span className="text-[11px] rounded-full bg-blue-500/10 text-blue-600 px-2.5 py-1 font-semibold shrink-0">{STATUS_LABEL[p.status] || p.status}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </section>
 

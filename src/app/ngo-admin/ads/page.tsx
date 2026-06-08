@@ -139,12 +139,32 @@ export default function AdsPage() {
         }
     };
 
-    const chooseProposal = (p: AdProposal) => {
-        setSelected((prev) => new Set(prev).add(p.kind));
-        toast({
-            title: 'Taslağın kaydedildi',
-            description: `"${p.title}" — Google hesabın bağlanınca yayına alınacak.`,
-        });
+    const chooseProposal = async (p: AdProposal) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/select', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({
+                    ngoName: entityName,
+                    kind: p.kind, title: p.title, goal: p.goal, landing: p.landing,
+                    keywords: p.keywords, headlines: p.headlines, descriptions: p.descriptions,
+                    regions: p.regions, estReach: p.estReach,
+                }),
+            });
+            if (!res.ok) throw new Error((await res.json().catch(() => null))?.message || 'Kaydedilemedi');
+            setSelected((prev) => new Set(prev).add(p.kind));
+            toast({
+                title: 'Planın hangel ekibine iletildi',
+                description: `"${p.title}" kaydedildi; Google hesabın bağlanınca yayına alınacak.`,
+            });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        }
     };
 
     if (isLoading) {
