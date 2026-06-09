@@ -416,7 +416,10 @@ export async function createSearchCampaign(
   const descriptions = [...planDescriptions, 'hangel ile destek ol.', 'Şimdi katıl.']
     .slice(0, 4)
     .map((t) => ({ text: t.slice(0, 90) }));
-  const finalUrl = (plan.landing ?? '').trim();
+  // RSA için geçerli bir mutlak URL ZORUNLU. plan.landing bir kod ('hangel-bagis')
+  // gelirse ya da boşsa, güvenli varsayılana düş (yayın boş finalUrls ile patlamasın).
+  const rawLanding = (plan.landing ?? '').trim();
+  const finalUrl = /^https?:\/\//i.test(rawLanding) ? rawLanding : 'https://hangel.org.tr';
 
   await mutate(config, accessToken, id, 'adGroupAds', [
     {
@@ -424,7 +427,7 @@ export async function createSearchCampaign(
         adGroup: adGroupResourceName,
         status: 'PAUSED',
         ad: {
-          finalUrls: finalUrl ? [finalUrl] : [],
+          finalUrls: [finalUrl],
           responsiveSearchAd: {
             headlines: headlines.slice(0, 15),
             descriptions: descriptions.slice(0, 4),

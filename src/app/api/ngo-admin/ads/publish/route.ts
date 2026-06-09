@@ -87,9 +87,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // landing bir KOD ('hangel-bagis' | 'hangel-gonulluluk' | 'kurum-sitesi') —
+  // gerçek bir finalUrl'e çevir (RSA için mutlak URL zorunlu).
+  const SITE = 'https://hangel.org.tr';
+  const profileUrl = `${SITE}/ngos/${actor.ngoId}`;
+  const landingCode = typeof plan.landing === 'string' ? plan.landing : '';
+  let landingUrl = profileUrl; // hangel-bagis + varsayılan
+  if (landingCode === 'hangel-gonulluluk') {
+    landingUrl = `${SITE}/volunteering`;
+  } else if (landingCode === 'kurum-sitesi') {
+    // STK'nın kendi sitesi; yoksa hangel profiline düş.
+    const ngoSnap = await db.collection(COLLECTIONS.ngos).doc(actor.ngoId).get().catch(() => null);
+    const website = ngoSnap?.exists ? (ngoSnap.data() as { website?: unknown } | undefined)?.website : undefined;
+    landingUrl = typeof website === 'string' && /^https?:\/\//i.test(website) ? website : profileUrl;
+  }
+
   const planForCampaign: AdPlanForCampaign = {
     title: typeof plan.title === 'string' ? plan.title : undefined,
-    landing: typeof plan.landing === 'string' ? plan.landing : undefined,
+    landing: landingUrl,
     keywords: Array.isArray(plan.keywords)
       ? plan.keywords.filter((k): k is string => typeof k === 'string')
       : undefined,
