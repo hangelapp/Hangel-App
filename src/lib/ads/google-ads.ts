@@ -410,12 +410,36 @@ export async function createSearchCampaign(
   const planDescriptions = (plan.descriptions ?? []).filter(
     (d) => typeof d === 'string' && d.trim().length > 0
   );
-  const headlines = [...planHeadlines, title, 'hangel', 'Bağış yap']
-    .slice(0, 15)
-    .map((t) => ({ text: t.slice(0, 30) }));
-  const descriptions = [...planDescriptions, 'hangel ile destek ol.', 'Şimdi katıl.']
-    .slice(0, 4)
-    .map((t) => ({ text: t.slice(0, 90) }));
+  // Google RSA: başlıklar BENZERSİZ olmalı; kırpma SONRASI dedupe et (truncation
+  // çakışmasını da yakalar). Fallback'ler min 3 başlık / 2 açıklama garanti eder.
+  const dedupeCapped = (
+    items: string[],
+    maxLen: number,
+    cap: number
+  ): Array<{ text: string }> => {
+    const seen = new Set<string>();
+    const out: Array<{ text: string }> = [];
+    for (const raw of items) {
+      const t = (typeof raw === 'string' ? raw : '').trim().slice(0, maxLen);
+      if (!t) continue;
+      const key = t.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ text: t });
+      if (out.length >= cap) break;
+    }
+    return out;
+  };
+  const headlines = dedupeCapped(
+    [...planHeadlines, title, 'hangel', 'Destek Ol', 'Bağış Yap', 'Gönüllü Ol'],
+    30,
+    15
+  );
+  const descriptions = dedupeCapped(
+    [...planDescriptions, 'hangel ile destek ol.', 'Şimdi katıl, fark yarat.', 'Bağışın hemen ulaşır.'],
+    90,
+    4
+  );
   // RSA için geçerli bir mutlak URL ZORUNLU. plan.landing bir kod ('hangel-bagis')
   // gelirse ya da boşsa, güvenli varsayılana düş (yayın boş finalUrls ile patlamasın).
   const rawLanding = (plan.landing ?? '').trim();
