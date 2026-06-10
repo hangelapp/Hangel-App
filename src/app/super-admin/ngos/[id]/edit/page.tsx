@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Country, State, City } from 'country-state-city';
-import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import TransparencyEditor from './TransparencyEditor';
 
 const MEMBERSHIP_OPTIONS = [
     'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
@@ -111,9 +112,20 @@ export default function NgoEditPage() {
     const ngoDocRef = useMemoFirebase(() => (db && id ? doc(db, COLLECTIONS.ngos, id) : null), [db, id]);
     const { data: ngo, isLoading } = useDoc<NGO>(ngoDocRef);
 
+    // Şeffaflık doc'u STK yöneticisinin uid'sine bağlı (transparency/{adminUid}).
+    // Önce ngo.adminUserId; yoksa users(managedNgoId == id) ile geri-arama.
+    const ngoAdminUid = (ngo as (NGO & { adminUserId?: string }) | null)?.adminUserId || null;
+    const ownerLookupQuery = useMemoFirebase(
+        () => (db && id && !ngoAdminUid ? query(collection(db, COLLECTIONS.users), where('managedNgoId', '==', id)) : null),
+        [db, id, ngoAdminUid],
+    );
+    const { data: ownerLookup } = useCollection<{ id: string }>(ownerLookupQuery);
+    const ownerUid = ngoAdminUid || ownerLookup?.[0]?.id || null;
+
     const [saving, setSaving] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [uploadingCover, setUploadingCover] = useState(false);
+    const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
     const [form, setForm] = useState<Partial<NGO> & Record<string, unknown>>({});
     const [initialized, setInitialized] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
@@ -252,6 +264,41 @@ export default function NgoEditPage() {
         }
     };
 
+    const handleDocUpload = async (file: File, kind: 'charter' | 'activityCertificate') => {
+        if (!file) return;
+        if (file.size > 15 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Dosya çok büyük', description: 'En fazla 15MB.' });
+            return;
+        }
+        setUploadingDoc(kind);
+        try {
+            const storage = getStorage();
+            const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `ngos/${id}/${kind}-${Date.now()}-${safe}`;
+            const r = storageRef(storage, path);
+            await uploadBytes(r, file, { contentType: file.type || 'application/octet-stream' });
+            const url = await getDownloadURL(r);
+            set(`files.${kind}`, url);
+            // Super-admin "Arşiv" sekmesine ayna (best-effort).
+            try {
+                const token = await authUser?.getIdToken();
+                if (token) {
+                    await fetch('/api/ngo/archive', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                        body: JSON.stringify({ docType: kind === 'charter' ? 'Tüzük / Senet' : 'Faaliyet Belgesi', fileUrl: url, entityType: 'ngo', entityId: id, entityName: (form.name as string) || ngo?.name || '' }),
+                    });
+                }
+            } catch { /* best-effort */ }
+            toast({ title: 'Belge yüklendi', description: 'Kaydete bastığınızda kalıcı olacak.' });
+        } catch (e) {
+            const msg = e instanceof Error ? e.message : 'Yükleme hatası';
+            toast({ variant: 'destructive', title: 'Yükleme başarısız', description: msg });
+        } finally {
+            setUploadingDoc(null);
+        }
+    };
+
     const handleSave = async () => {
         if (!ngoDocRef) return;
         setSaving(true);
@@ -306,6 +353,8 @@ export default function NgoEditPage() {
     }
 
     const s = (form.stats ?? {}) as Record<string, unknown>;
+    const files = (form.files ?? {}) as Record<string, string>;
+    const rep = (form.representative ?? {}) as Record<string, string>;
 
     return (
         <div className="space-y-6 pb-20">
@@ -383,6 +432,28 @@ export default function NgoEditPage() {
                     </Field>
                     <Field label="İktisadi İşletme URL">
                         <Input value={form.economicEnterpriseUrl ?? ''} onChange={e => set('economicEnterpriseUrl', e.target.value)} />
+                    </Field>
+                    <Field label="Kısa Link (hangel.org.tr/s/...)">
+                        <Input value={(form.shortLink as string) ?? ''} onChange={e => set('shortLink', e.target.value)} placeholder="ornek-stk" />
+                    </Field>
+                    <Field label="Sektör / Faaliyet Alanı">
+                        <Input value={(form.sector as string) ?? ''} onChange={e => set('sector', e.target.value)} />
+                    </Field>
+                    <Field label="Detaylı Faaliyet Alanı">
+                        <Input value={(form.detayliFaaliyetAlani as string) ?? ''} onChange={e => set('detayliFaaliyetAlani', e.target.value)} />
+                    </Field>
+                    <Field label="Yasal Ünvan">
+                        <Input value={(form.legalTitle as string) ?? ''} onChange={e => set('legalTitle', e.target.value)} />
+                    </Field>
+                    <Field label="Slogan">
+                        <Input value={(form.slogan as string) ?? ''} onChange={e => set('slogan', e.target.value)} />
+                    </Field>
+                    <Field label="Kütük / Sicil No">
+                        <Input
+                            value={(form.registryNo as string) ?? (form.kutukNo as string) ?? ''}
+                            onChange={e => { set('registryNo', e.target.value); set('kutukNo', e.target.value); }}
+                            placeholder="XX-XXX-XXX"
+                        />
                     </Field>
 
                     {/* Logo: file upload (jpg/png) */}
@@ -676,6 +747,50 @@ export default function NgoEditPage() {
                     ))}
                 </CardContent>
             </Card>
+
+            {/* Temsilci & Yasal Belgeler */}
+            <Card className="rounded-2xl">
+                <CardHeader><CardTitle className="text-base">Yetkili Kişi & Yasal Belgeler</CardTitle></CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="Yetkili Ad Soyad">
+                        <Input value={rep.fullName ?? ''} onChange={e => set('representative.fullName', e.target.value)} />
+                    </Field>
+                    <Field label="Görevi / Ünvanı">
+                        <Input value={rep.title ?? ''} onChange={e => set('representative.title', e.target.value)} />
+                    </Field>
+                    <Field label="Yetkili E-posta">
+                        <Input value={rep.email ?? ''} onChange={e => set('representative.email', e.target.value)} />
+                    </Field>
+                    <div className="hidden md:block" />
+
+                    {([
+                        ['charter', 'Tüzük / Vakıf Senedi'],
+                        ['activityCertificate', 'Faaliyet Belgesi'],
+                    ] as ['charter' | 'activityCertificate', string][]).map(([kind, label]) => (
+                        <Field key={kind} label={label}>
+                            <div className="flex items-center gap-2 p-3 border rounded-xl bg-muted/20 border-dashed">
+                                <input
+                                    id={`doc-${kind}`}
+                                    type="file"
+                                    accept=".pdf,.png,.jpg,.jpeg,.webp"
+                                    className="hidden"
+                                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(f, kind); e.target.value = ''; }}
+                                />
+                                <Button type="button" variant="outline" size="sm" disabled={uploadingDoc === kind} onClick={() => document.getElementById(`doc-${kind}`)?.click()}>
+                                    {uploadingDoc === kind ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                    {files[kind] ? 'Değiştir' : 'Yükle'}
+                                </Button>
+                                {files[kind] && (
+                                    <a href={files[kind]} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate">Görüntüle</a>
+                                )}
+                            </div>
+                        </Field>
+                    ))}
+                </CardContent>
+            </Card>
+
+            {/* Şeffaflık Endeksi — STK adına belge/bilgi yükle, puan otomatik hesaplanır */}
+            <TransparencyEditor ngoId={id} ownerUid={ownerUid} ngoName={ngo.name} />
 
             <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" className="rounded-xl" onClick={() => router.back()}>İptal</Button>

@@ -416,6 +416,7 @@ export default function ApplicationsPage() {
           category: app.sector || app.category || '',
           sector: app.sector || app.category || '',
           brandStatus: app.brandStatus || '',
+          adminUserId: app.userId || '',
           donationRate: 0,
           donationCategories: app.donationCategories || [],
           selectedProductCategories: productCats,
@@ -465,6 +466,8 @@ export default function ApplicationsPage() {
           kutukNo: app.registryNo || '',
           legalTitle: app.legalTitle || '',
           slogan: app.slogan || '',
+          // Şeffaflık linkajı: transparency/{adminUserId} eşleşmesi için.
+          adminUserId: app.userId || '',
           transparencyScore: 0,
           // Faydalanıcılar — profil `beneficiaryGroups`, edit `beneficiaries` okur.
           selectedBeneficiaries: beneficiaries,
