@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, CreditCard, Target, Copy, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, Target, Copy, ExternalLink, QrCode, Download } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -160,6 +160,7 @@ export default function NgoProfilePage() {
 
   const [profileUrl, setProfileUrl] = useState('');
   const [isPosInfoOpen, setIsPosInfoOpen] = useState(false);
+  const [isQrOpen, setIsQrOpen] = useState(false);
   const [donorBusy, setDonorBusy] = useState(false);
   const [volunteerBusy, setVolunteerBusy] = useState(false);
   // Gerçek (kullanıcı ilişkisi bazlı) bağışçı/gönüllü sayıları — /api/ngos/engagement.
@@ -336,6 +337,13 @@ export default function NgoProfilePage() {
   const donorsCount = realStats?.donors ?? ngo.stats?.donors ?? 0;
   const volunteersCount = realStats?.volunteers ?? ngo.stats?.volunteers ?? 0;
 
+  // Header: STK web sitesi (https:// normalize) + profil QR'ı (STK Profil QR Kodu sayfasıyla aynı).
+  const rawWebsite = (ngo.contact?.website || (ngo as { website?: string }).website || '').trim();
+  const websiteUrl = rawWebsite ? (rawWebsite.startsWith('http') ? rawWebsite : `https://${rawWebsite}`) : '';
+  const qrImageUrl = profileUrl
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(profileUrl)}`
+    : '';
+
   // Gerçek şeffaflık kriterleri (varsa). Onaylı = isCompleted && status !== 'pending'.
   const realCriteria = Array.isArray(transparencyDoc?.criteria) ? transparencyDoc!.criteria : null;
   const transparencyTotalPoints = realCriteria && realCriteria.length > 0
@@ -412,15 +420,17 @@ export default function NgoProfilePage() {
                 <Button onClick={handleStoreClick} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Mağaza">
                     <Store className="h-4 w-4" />
                 </Button>
-                <Button aria-label="POS ile ödeme" onClick={() => setIsPosInfoOpen(true)} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
-                    <CreditCard className="h-4 w-4" />
-                </Button>
                 <ShareButtons url={profileUrl} title={`hangel'deki ${ngo.name} profilini incele!`} buttonClassName="border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" />
-                <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Web sitesini görüntüle">
-                  <Link href={`/ngo-admin/website/preview`} target="_blank" rel="noopener noreferrer">
-                    <Globe className="h-4 w-4" />
-                  </Link>
+                <Button aria-label="QR Kodu" onClick={() => setIsQrOpen(true)} size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10">
+                    <QrCode className="h-4 w-4" />
                 </Button>
+                {websiteUrl && (
+                  <Button asChild size="icon" variant="outline" className="rounded-full h-9 w-9 border-primary-foreground/50 text-primary-foreground hover:bg-primary-foreground/10" aria-label="Web sitesini ziyaret et">
+                    <a href={websiteUrl} target="_blank" rel="noopener noreferrer">
+                      <Globe className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
             </div>
         </div>
       <div className="p-4 pt-4 bg-background">
@@ -770,6 +780,49 @@ export default function NgoProfilePage() {
           <DialogFooter>
             <Button variant="secondary" onClick={() => setIsPosInfoOpen(false)}>Kapat</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Profil QR Kodu önizleme — STK yönetim panelindeki "STK Profil QR Kodu" ile aynı QR + link */}
+      <Dialog open={isQrOpen} onOpenChange={setIsQrOpen}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><QrCode className="h-5 w-5 text-primary" /> Profil QR Kodu</DialogTitle>
+            <DialogDescription>Bu QR kodu okutan kişi doğrudan {ngo.name} profiline ulaşır.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            {qrImageUrl ? (
+              <div className="bg-white p-3 rounded-xl border">
+                <img src={qrImageUrl} alt={`${ngo.name} profil QR kodu`} width={240} height={240} />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-8">QR kodu hazırlanıyor…</p>
+            )}
+            <div className="w-full flex items-center gap-2 p-2 rounded-lg bg-muted">
+              <p className="text-xs font-mono break-all flex-1">{profileUrl}</p>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                aria-label="Bağlantıyı kopyala"
+                onClick={() => { if (profileUrl) { navigator.clipboard.writeText(profileUrl); toast({ title: 'Bağlantı kopyalandı' }); } }}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Button variant="outline" asChild disabled={!qrImageUrl}>
+                <a href={qrImageUrl} download={`${id}-qr-kodu.png`}>
+                  <Download className="mr-2 h-4 w-4" /> İndir
+                </a>
+              </Button>
+              <Button asChild>
+                <a href={profileUrl || `/ngos/${id}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="mr-2 h-4 w-4" /> Profili Aç
+                </a>
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
