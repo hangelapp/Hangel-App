@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, updateDoc, addDoc, deleteDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DEFAULT_CRITERIA, type CriterionType } from '@/lib/transparency';
 import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox, CheckCircle, Clock, Eye, ExternalLink, FileText, FolderOpen } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -29,7 +31,18 @@ interface TransparencyCriterion {
   description?: string;
   points: number;
   category?: string;
+  type?: CriterionType;
+  options?: string[];
+  order?: number;
 }
+
+const TYPE_LABELS: Record<CriterionType, string> = {
+  'document': 'Belge',
+  'link': 'Link',
+  'text': 'Bilgi/Metin',
+  'document-link': 'Belge veya Link',
+  'multi-select': 'Çoklu Seçim',
+};
 
 const NGO_EDIT = ({ ngo, criteria, open, onOpenChange, onSave }: {
   ngo: NGORow | null;
@@ -137,7 +150,7 @@ export default function TransparencyPage() {
   // Onay bekleyen şeffaflık belgeleri — STK'ların transparency/{adminUid} kayıtları.
   const { user: authUser } = useUser();
   const transparencyQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.transparency) : null), [db]);
-  type TItem = { id: number; name: string; points: number; isCompleted?: boolean; status?: string; type?: string; fileUrl?: string; fileName?: string; linkUrl?: string; textValue?: string; selectedOptions?: string[] };
+  type TItem = { id: number | string; name: string; points: number; isCompleted?: boolean; status?: string; type?: string; fileUrl?: string; fileName?: string; linkUrl?: string; textValue?: string; selectedOptions?: string[] };
   const { data: transparencyDocs, isLoading: tLoading } = useCollection<{ id: string; criteria?: TItem[] }>(transparencyQuery);
   const [approvingKey, setApprovingKey] = useState<string | null>(null);
   const [previewItem, setPreviewItem] = useState<TItem | null>(null);
@@ -160,7 +173,7 @@ export default function TransparencyPage() {
       .filter(Boolean) as { ownerUid: string; ngo?: NGORow; items: TItem[] }[];
   }, [transparencyDocs, ngoByAdmin]);
 
-  const approveItem = async (ownerUid: string, itemId: number, approved: boolean) => {
+  const approveItem = async (ownerUid: string, itemId: number | string, approved: boolean) => {
     if (!authUser) return;
     setApprovingKey(`${ownerUid}:${itemId}`);
     try {
@@ -206,19 +219,67 @@ export default function TransparencyPage() {
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newPoints, setNewPoints] = useState<number>(5);
+  const [newType, setNewType] = useState<CriterionType>('document');
+  const [newOptions, setNewOptions] = useState('');
   const [editingCriterion, setEditingCriterion] = useState<TransparencyCriterion | null>(null);
+  const [recalculating, setRecalculating] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  // Madde değişince TÜM STK puanlarını güncel kriterlerle yeniden hesapla + yayınla.
+  const recalcAll = useCallback(async (silent = false) => {
+    if (!authUser) return;
+    setRecalculating(true);
+    try {
+      const token = await authUser.getIdToken();
+      const res = await fetch('/api/super-admin/transparency/recalculate', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => null) as { updated?: number; message?: string } | null;
+      if (!res.ok) throw new Error(data?.message || 'Yeniden hesaplanamadı');
+      if (!silent) toast({ title: 'Puanlar yayınlandı', description: `${data?.updated ?? 0} STK şeffaflık puanı güncel kriterlere göre yeniden hesaplandı.` });
+    } catch (e) {
+      if (!silent) toast({ variant: 'destructive', title: 'Yeniden hesaplama başarısız', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setRecalculating(false);
+    }
+  }, [authUser, toast]);
+
+  // Koleksiyon boşsa 14 standart maddeyi 1..14 id'leriyle yükle (mevcut STK verisi korunur).
+  const seedDefaults = useCallback(async () => {
+    setSeeding(true);
+    try {
+      await Promise.all(DEFAULT_CRITERIA.map(c =>
+        setDoc(doc(db, COLLECTIONS.transparencyCriteria, c.id), {
+          name: c.name, description: '', points: c.points, type: c.type,
+          options: c.options || [], order: c.order, createdAt: serverTimestamp(),
+        }, { merge: true }),
+      ));
+      toast({ title: 'Standart maddeler yüklendi', description: '14 varsayılan şeffaflık kriteri eklendi.' });
+      await recalcAll(true);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Yüklenemedi', description: e instanceof Error ? e.message : '' });
+    } finally {
+      setSeeding(false);
+    }
+  }, [db, toast, recalcAll]);
 
   const handleAddCriterion = async () => {
     if (!newName.trim()) return;
     try {
+      const order = (criteria || []).reduce((max, c) => Math.max(max, c.order ?? 0), 0) + 1;
       await addDoc(collection(db, COLLECTIONS.transparencyCriteria), {
         name: newName.trim(),
         description: newDesc.trim(),
         points: newPoints,
+        type: newType,
+        options: newType === 'multi-select' ? newOptions.split(',').map(s => s.trim()).filter(Boolean) : [],
+        order,
         createdAt: serverTimestamp(),
       });
-      setNewName(''); setNewDesc(''); setNewPoints(5);
-      toast({ title: 'Kriter Eklendi', description: `"${newName}" şeffaflık endeksine eklendi.` });
+      setNewName(''); setNewDesc(''); setNewPoints(5); setNewType('document'); setNewOptions('');
+      toast({ title: 'Kriter Eklendi', description: `"${newName}" eklendi. Puanlar yeniden hesaplanıyor…` });
+      await recalcAll();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
       toast({ variant: 'destructive', title: 'Eklenemedi', description: message });
@@ -232,9 +293,12 @@ export default function TransparencyPage() {
         name: editingCriterion.name,
         description: editingCriterion.description || '',
         points: editingCriterion.points,
+        type: editingCriterion.type || 'document',
+        options: editingCriterion.options || [],
       });
-      toast({ title: 'Kriter Güncellendi' });
+      toast({ title: 'Kriter Güncellendi', description: 'Puanlar yeniden hesaplanıyor…' });
       setEditingCriterion(null);
+      await recalcAll();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
       toast({ variant: 'destructive', title: 'Güncellenemedi', description: message });
@@ -244,7 +308,8 @@ export default function TransparencyPage() {
   const handleDeleteCriterion = async (id: string) => {
     try {
       await deleteDoc(doc(db, COLLECTIONS.transparencyCriteria, id));
-      toast({ variant: 'destructive', title: 'Kriter Silindi' });
+      toast({ variant: 'destructive', title: 'Kriter Silindi', description: 'Puanlar yeniden hesaplanıyor…' });
+      await recalcAll();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Bilinmeyen hata';
       toast({ variant: 'destructive', title: 'Silinemedi', description: message });
@@ -371,6 +436,27 @@ export default function TransparencyPage() {
         </TabsContent>
 
         <TabsContent value="index" className="space-y-4">
+          <Card className="rounded-2xl border-amber-300/40 bg-amber-500/5">
+            <CardContent className="py-4 flex items-center justify-between gap-3 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Endeks maddeleri tüm STK'ların doldurduğu canlı listedir.</p>
+                <p className="text-xs text-muted-foreground">Madde ekleme/çıkarma, ad veya puan değişikliği anında her STK'nın şeffaflık endeksine yansır ve puanlar yeniden hesaplanıp yayınlanır.</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {(!criteria || criteria.length === 0) && (
+                  <Button variant="outline" className="rounded-xl" onClick={seedDefaults} disabled={seeding}>
+                    {seeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                    14 Standart Maddeyi Yükle
+                  </Button>
+                )}
+                <Button variant="outline" className="rounded-xl" onClick={() => recalcAll()} disabled={recalculating}>
+                  {recalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                  Tümünü Yeniden Hesapla
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="rounded-2xl border-black/5">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2"><Plus className="h-4 w-4" /> Yeni Kriter Ekle</CardTitle>
@@ -385,10 +471,27 @@ export default function TransparencyPage() {
                 <Label className="text-xs">Puan</Label>
                 <Input type="number" min={0} max={100} value={newPoints} onChange={e => setNewPoints(parseInt(e.target.value) || 0)} className="rounded-xl" />
               </div>
-              <div className="space-y-1.5 md:col-span-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Tür</Label>
+                <Select value={newType} onValueChange={(v) => setNewType(v as CriterionType)}>
+                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(TYPE_LABELS) as CriterionType[]).map(tk => (
+                      <SelectItem key={tk} value={tk}>{TYPE_LABELS[tk]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
                 <Label className="text-xs">Açıklama (opsiyonel)</Label>
                 <Input value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Kriterin kısa açıklaması" className="rounded-xl" />
               </div>
+              {newType === 'multi-select' && (
+                <div className="space-y-1.5 md:col-span-3">
+                  <Label className="text-xs">Seçenekler (virgülle ayır)</Label>
+                  <Input value={newOptions} onChange={e => setNewOptions(e.target.value)} placeholder="Örn: Afet Platformu, Açık Açık, Tüsev" className="rounded-xl" />
+                </div>
+              )}
               <Button onClick={handleAddCriterion} disabled={!newName.trim()} className="md:col-span-3 rounded-xl">
                 <Plus className="mr-2 h-4 w-4" /> Kriter Ekle
               </Button>
@@ -411,6 +514,7 @@ export default function TransparencyPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm">{c.name}</p>
                         {c.description && <p className="text-xs text-muted-foreground">{c.description}</p>}
+                        <Badge variant="secondary" className="text-[10px] mt-1">{TYPE_LABELS[(c.type as CriterionType) || 'document']}</Badge>
                       </div>
                       <Badge variant="outline" className="font-bold shrink-0">+{c.points}</Badge>
                       <Dialog open={editingCriterion?.id === c.id} onOpenChange={(o) => !o && setEditingCriterion(null)}>
@@ -433,10 +537,32 @@ export default function TransparencyPage() {
                                 <Label>Açıklama</Label>
                                 <Input value={editingCriterion.description || ''} onChange={e => setEditingCriterion({ ...editingCriterion, description: e.target.value })} />
                               </div>
-                              <div className="space-y-1.5">
-                                <Label>Puan</Label>
-                                <Input type="number" value={editingCriterion.points} onChange={e => setEditingCriterion({ ...editingCriterion, points: parseInt(e.target.value) || 0 })} />
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                  <Label>Puan</Label>
+                                  <Input type="number" value={editingCriterion.points} onChange={e => setEditingCriterion({ ...editingCriterion, points: parseInt(e.target.value) || 0 })} />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <Label>Tür</Label>
+                                  <Select value={editingCriterion.type || 'document'} onValueChange={(v) => setEditingCriterion({ ...editingCriterion, type: v as CriterionType })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      {(Object.keys(TYPE_LABELS) as CriterionType[]).map(tk => (
+                                        <SelectItem key={tk} value={tk}>{TYPE_LABELS[tk]}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
                               </div>
+                              {editingCriterion.type === 'multi-select' && (
+                                <div className="space-y-1.5">
+                                  <Label>Seçenekler (virgülle ayır)</Label>
+                                  <Input
+                                    value={(editingCriterion.options || []).join(', ')}
+                                    onChange={e => setEditingCriterion({ ...editingCriterion, options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                  />
+                                </div>
+                              )}
                             </div>
                             <DialogFooter>
                               <Button variant="outline" onClick={() => setEditingCriterion(null)}>Vazgeç</Button>

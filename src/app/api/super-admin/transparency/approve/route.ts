@@ -12,12 +12,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { normalizeDefs, computeScore } from '@/lib/transparency';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface CriteriaItem {
-  id: number;
+  id: number | string;
   points: number;
   isCompleted?: boolean;
   status?: 'pending' | 'approved';
@@ -40,10 +41,10 @@ export async function POST(req: NextRequest) {
   if (!(await isSuperAdmin(req))) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
   }
-  let body: { ownerUid?: string; itemId?: number; approved?: boolean };
+  let body: { ownerUid?: string; itemId?: number | string; approved?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ errorCode: 'BAD_JSON', message: 'Geçersiz JSON' }, { status: 400 }); }
   const { ownerUid, itemId, approved } = body;
-  if (!ownerUid || typeof ownerUid !== 'string' || typeof itemId !== 'number') {
+  if (!ownerUid || typeof ownerUid !== 'string' || (typeof itemId !== 'number' && typeof itemId !== 'string')) {
     return NextResponse.json({ errorCode: 'BAD_INPUT', message: 'ownerUid + itemId gerekli' }, { status: 400 });
   }
 
@@ -54,14 +55,22 @@ export async function POST(req: NextRequest) {
 
   const data = tSnap.data() as { criteria?: CriteriaItem[] } | undefined;
   const criteria = Array.isArray(data?.criteria) ? data!.criteria : [];
-  const next = criteria.map((c) => (c.id === itemId ? { ...c, status: (approved ? 'approved' : 'pending') as 'approved' | 'pending' } : c));
+  const next = criteria.map((c) => (String(c.id) === String(itemId) ? { ...c, status: (approved ? 'approved' : 'pending') as 'approved' | 'pending' } : c));
   await tRef.set({ criteria: next, updatedAt: new Date().toISOString() }, { merge: true });
 
-  // İlgili NGO'yu bul (adminUserId == ownerUid) ve onaylı puan toplamını yaz.
-  // Onaylı = isCompleted && status !== 'pending' (eski statüsüz tamamlananlar onaylı sayılır).
-  const approvedScore = next
-    .filter((c) => c.isCompleted && c.status !== 'pending')
-    .reduce((sum, c) => sum + (Number(c.points) || 0), 0);
+  // İlgili NGO'nun puanını GÜNCEL kriter tanımlarından hesapla (madde puanı değişse
+  // bile doğru). Yalnız onaylı maddeler sayılır.
+  let approvedScore: number;
+  try {
+    const critSnap = await db.collection(COLLECTIONS.transparencyCriteria).get();
+    const raw = critSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+    const defs = normalizeDefs(raw as never);
+    approvedScore = computeScore(defs, next as never, { requireApproved: true }).met;
+  } catch {
+    approvedScore = next
+      .filter((c) => c.isCompleted && c.status !== 'pending')
+      .reduce((sum, c) => sum + (Number(c.points) || 0), 0);
+  }
 
   let ngoUpdated: string | null = null;
   try {

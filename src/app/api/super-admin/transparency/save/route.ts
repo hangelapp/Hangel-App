@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { normalizeDefs, computeScore } from '@/lib/transparency';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -94,9 +95,18 @@ export async function POST(req: NextRequest) {
     updatedAt: new Date().toISOString(),
   }));
 
-  const score = normalized
-    .filter((c) => c.isCompleted)
-    .reduce((sum, c) => sum + (Number(c.points) || 0), 0);
+  // Puan, güncel kriter TANIMLARINDAN (transparencyCriteria) hesaplanır — maddenin
+  // puanı sonradan değişse bile doğru kalır.
+  let score: number;
+  try {
+    const critSnap = await db.collection(COLLECTIONS.transparencyCriteria).get();
+    const raw = critSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+    const defs = normalizeDefs(raw as never);
+    score = computeScore(defs, normalized as never, { requireApproved: true }).met;
+  } catch {
+    // Koleksiyon okunamazsa madde puanlarının toplamına düş (yedek).
+    score = normalized.filter((c) => c.isCompleted).reduce((sum, c) => sum + (Number(c.points) || 0), 0);
+  }
 
   try {
     await db.collection(COLLECTIONS.transparency).doc(ownerUid).set(

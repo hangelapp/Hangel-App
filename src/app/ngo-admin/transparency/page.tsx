@@ -14,60 +14,12 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useCallback } from 'react';
-import { useFirestore, useUser, useDoc, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
-
-interface CriteriaItem {
-  id: number;
-  name: string;
-  points: number;
-  isCompleted: boolean;
-  type: 'document' | 'link' | 'text' | 'document-link' | 'multi-select';
-  fileName?: string;
-  fileUrl?: string;
-  storagePath?: string;
-  linkUrl?: string;
-  textValue?: string;
-  selectedOptions?: string[];
-  options?: string[];
-  updatedAt?: string;
-  // Onay durumu: STK belge/bilgi girince 'pending' (turuncu "Onaya gönderildi"),
-  // super-admin onaylayınca 'approved' (yeşil). Eski tamamlanmış kayıtlar (undefined)
-  // onaylı sayılır (geriye dönük uyumluluk).
-  status?: 'pending' | 'approved';
-}
-
-const MEMBERSHIP_OPTIONS = [
-  'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
-  'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr',
-  'TGSP', 'Diğer',
-];
-
-const defaultCriteria: CriteriaItem[] = [
-  { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: false, type: 'document' },
-  { id: 2, name: 'Tüzük / Vakıf Senedi', points: 10, isCompleted: false, type: 'document' },
-  { id: 3, name: 'Yönetim Kurulu Listesi', points: 5, isCompleted: false, type: 'document-link' },
-  { id: 4, name: 'Yıllık Faaliyet Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 5, name: 'Finansal Tablolar', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 6, name: 'Bağımsız Denetim Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 7, name: 'Etki Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 8, name: 'Web Sitesi', points: 5, isCompleted: false, type: 'link' },
-  { id: 9, name: 'Posta Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 10, name: 'Ofis Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 11, name: 'E-posta Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 12, name: 'Telefon Numarası', points: 5, isCompleted: false, type: 'text' },
-  { id: 13, name: 'Açık Açık Üyeliği', points: 5, isCompleted: false, type: 'link' },
-  { id: 14, name: 'Afet Platformu Üyeliği', points: 5, isCompleted: false, type: 'multi-select', options: MEMBERSHIP_OPTIONS },
-];
-
-const mergeWithDefaults = (saved: CriteriaItem[] | undefined): CriteriaItem[] => {
-  if (!saved || saved.length === 0) return defaultCriteria;
-  const byId = new Map(saved.map(c => [c.id, c]));
-  return defaultCriteria.map(def => ({ ...def, ...(byId.get(def.id) || {}) }));
-};
+import { normalizeDefs, mergeCriteria, TRANSPARENCY_MEMBERSHIP_OPTIONS, type CriteriaItem } from '@/lib/transparency';
 
 export default function TransparencyPage() {
   const { toast } = useToast();
@@ -75,8 +27,8 @@ export default function TransparencyPage() {
   const { user: authUser } = useUser();
   const { t } = useTranslation();
 
-  const [uploadingId, setUploadingId] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [previewItem, setPreviewItem] = useState<CriteriaItem | null>(null);
 
@@ -94,9 +46,19 @@ export default function TransparencyPage() {
     return doc(firestore, COLLECTIONS.transparency, authUser.uid);
   }, [firestore, authUser?.uid]);
 
-  const { data: transparencyData, isLoading } = useDoc<{ criteria: CriteriaItem[] }>(transparencyDocRef);
+  const { data: transparencyData, isLoading: docLoading } = useDoc<{ criteria: CriteriaItem[] }>(transparencyDocRef);
 
-  const activeCriteria = mergeWithDefaults(transparencyData?.criteria);
+  // Kriter TANIMLARI canlı koleksiyondan — super-admin endeksi değiştirince STK
+  // ekranında da anında yansır (ad/puan/ekle/çıkar). Veri STK doc'undan birleştirilir.
+  const critQuery = useMemoFirebase(
+    () => (firestore ? collection(firestore, COLLECTIONS.transparencyCriteria) : null),
+    [firestore],
+  );
+  const { data: critDocs, isLoading: critLoading } = useCollection<{ id: string }>(critQuery);
+  const isLoading = docLoading || critLoading;
+  const defs = normalizeDefs(critDocs as never);
+
+  const activeCriteria = mergeCriteria(defs, transparencyData?.criteria);
 
   const totalPoints = activeCriteria.reduce((sum, item) => sum + item.points, 0);
   const currentPoints = activeCriteria.filter(item => item.isCompleted).reduce((sum, item) => sum + item.points, 0);
@@ -112,7 +74,7 @@ export default function TransparencyPage() {
     );
   }, [authUser?.uid, firestore]);
 
-  const handleFileUpload = useCallback(async (itemId: number, file: File) => {
+  const handleFileUpload = useCallback(async (itemId: string, file: File) => {
     if (!authUser?.uid) {
       toast({ variant: 'destructive', title: t('ngo_admin_transparency.toastNoSession') });
       return;
@@ -164,7 +126,7 @@ export default function TransparencyPage() {
     }
   }, [activeCriteria, authUser, persistCriteria, toast, t]);
 
-  const handleRemove = useCallback(async (itemId: number) => {
+  const handleRemove = useCallback(async (itemId: string) => {
     if (!authUser?.uid) return;
     const target = activeCriteria.find(c => c.id === itemId);
     if (!target) return;
@@ -447,7 +409,7 @@ export default function TransparencyPage() {
                         <DropdownMenuContent align="end" className="max-h-72 overflow-y-auto">
                           <DropdownMenuLabel>{t('ngo_admin_transparency.multiSelectLabel')}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          {(item.options || MEMBERSHIP_OPTIONS).map(opt => (
+                          {(item.options || TRANSPARENCY_MEMBERSHIP_OPTIONS).map(opt => (
                             <DropdownMenuCheckboxItem
                               key={opt}
                               checked={(item.selectedOptions || []).includes(opt)}

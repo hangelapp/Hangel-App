@@ -12,8 +12,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc } from 'firebase/firestore';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { doc, collection } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { COLLECTIONS } from '@/firebase/collections';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,80 +23,44 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { ShieldCheck, Upload, Loader2, ExternalLink, Save, AlertTriangle } from 'lucide-react';
-
-interface CriteriaItem {
-  id: number;
-  name: string;
-  points: number;
-  isCompleted: boolean;
-  type: 'document' | 'link' | 'text' | 'document-link' | 'multi-select';
-  fileName?: string;
-  fileUrl?: string;
-  storagePath?: string;
-  linkUrl?: string;
-  textValue?: string;
-  selectedOptions?: string[];
-  options?: string[];
-  updatedAt?: string;
-  status?: 'pending' | 'approved';
-}
-
-const MEMBERSHIP_OPTIONS = [
-  'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
-  'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr',
-  'TGSP', 'Diğer',
-];
-
-const defaultCriteria: CriteriaItem[] = [
-  { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: false, type: 'document' },
-  { id: 2, name: 'Tüzük / Vakıf Senedi', points: 10, isCompleted: false, type: 'document' },
-  { id: 3, name: 'Yönetim Kurulu Listesi', points: 5, isCompleted: false, type: 'document-link' },
-  { id: 4, name: 'Yıllık Faaliyet Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 5, name: 'Finansal Tablolar', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 6, name: 'Bağımsız Denetim Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 7, name: 'Etki Raporu', points: 10, isCompleted: false, type: 'document-link' },
-  { id: 8, name: 'Web Sitesi', points: 5, isCompleted: false, type: 'link' },
-  { id: 9, name: 'Posta Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 10, name: 'Ofis Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 11, name: 'E-posta Adresi', points: 5, isCompleted: false, type: 'text' },
-  { id: 12, name: 'Telefon Numarası', points: 5, isCompleted: false, type: 'text' },
-  { id: 13, name: 'Açık Açık Üyeliği', points: 5, isCompleted: false, type: 'link' },
-  { id: 14, name: 'Afet Platformu Üyeliği', points: 5, isCompleted: false, type: 'multi-select', options: MEMBERSHIP_OPTIONS },
-];
-
-const mergeWithDefaults = (saved: CriteriaItem[] | undefined): CriteriaItem[] => {
-  if (!saved || saved.length === 0) return defaultCriteria.map(c => ({ ...c }));
-  const byId = new Map(saved.map(c => [c.id, c]));
-  return defaultCriteria.map(def => ({ ...def, ...(byId.get(def.id) || {}) }));
-};
+import { normalizeDefs, mergeCriteria, TRANSPARENCY_MEMBERSHIP_OPTIONS, type CriteriaItem } from '@/lib/transparency';
 
 export default function TransparencyEditor({ ngoId, ownerUid, ngoName }: { ngoId: string; ownerUid: string | null; ngoName?: string }) {
   const firestore = useFirestore();
   const { user: authUser } = useUser();
   const { toast } = useToast();
 
+  // Kriter TANIMLARI canlı koleksiyondan — endeks değişince burada da yansır.
+  const critQuery = useMemoFirebase(
+    () => (firestore ? collection(firestore, COLLECTIONS.transparencyCriteria) : null),
+    [firestore],
+  );
+  const { data: critDocs, isLoading: critLoading } = useCollection<{ id: string }>(critQuery);
+  const defs = useMemo(() => normalizeDefs(critDocs as never), [critDocs]);
+
   const tRef = useMemoFirebase(
     () => (firestore && ownerUid ? doc(firestore, COLLECTIONS.transparency, ownerUid) : null),
     [firestore, ownerUid],
   );
-  const { data: tData, isLoading } = useDoc<{ criteria?: CriteriaItem[] }>(tRef);
+  const { data: tData, isLoading: tLoadingDoc } = useDoc<{ criteria?: CriteriaItem[] }>(tRef);
+  const isLoading = tLoadingDoc || critLoading;
 
-  const [criteria, setCriteria] = useState<CriteriaItem[]>(defaultCriteria);
+  const [criteria, setCriteria] = useState<CriteriaItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!hydrated && ownerUid && !isLoading) {
-      setCriteria(mergeWithDefaults(tData?.criteria));
+      setCriteria(mergeCriteria(defs, tData?.criteria));
       setHydrated(true);
     }
-  }, [hydrated, ownerUid, isLoading, tData]);
+  }, [hydrated, ownerUid, isLoading, tData, defs]);
 
   const totalPoints = useMemo(() => criteria.reduce((s, c) => s + c.points, 0), [criteria]);
   const currentPoints = useMemo(() => criteria.filter(c => c.isCompleted).reduce((s, c) => s + c.points, 0), [criteria]);
 
-  const patch = (id: number, changes: Partial<CriteriaItem>) =>
+  const patch = (id: string, changes: Partial<CriteriaItem>) =>
     setCriteria(prev => prev.map(c => (c.id === id ? { ...c, ...changes } : c)));
 
   const handleUpload = async (item: CriteriaItem, file: File) => {
@@ -182,7 +146,7 @@ export default function TransparencyEditor({ ngoId, ownerUid, ngoName }: { ngoId
                 <div className="flex items-center gap-2 min-w-0">
                   <Checkbox
                     id={`tcrit-${item.id}`}
-                    checked={item.isCompleted}
+                    checked={!!item.isCompleted}
                     onCheckedChange={(v) => patch(item.id, { isCompleted: !!v })}
                   />
                   <Label htmlFor={`tcrit-${item.id}`} className="text-sm font-semibold cursor-pointer truncate">{item.name}</Label>
@@ -229,7 +193,7 @@ export default function TransparencyEditor({ ngoId, ownerUid, ngoName }: { ngoId
                 )}
                 {isMulti && (
                   <div className="grid grid-cols-2 gap-1.5">
-                    {(item.options || MEMBERSHIP_OPTIONS).map(opt => {
+                    {(item.options || TRANSPARENCY_MEMBERSHIP_OPTIONS).map(opt => {
                       const sel = item.selectedOptions || [];
                       const checked = sel.includes(opt);
                       return (

@@ -22,10 +22,11 @@ import { doc, collection, query, where, updateDoc, increment, arrayUnion, arrayR
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
+import { normalizeDefs, mergeCriteria, computeScore } from '@/lib/transparency';
 
 // transparency/{adminUid}.criteria[] öğesi — şeffaflık sekmesinde gerçek belge/bilgi.
 interface ProfileCriteriaItem {
-  id: number;
+  id: string | number;
   name: string;
   points: number;
   isCompleted?: boolean;
@@ -146,6 +147,13 @@ export default function NgoProfilePage() {
     [db, transparencyAdminUid],
   );
   const { data: transparencyDoc } = useDoc<{ criteria?: ProfileCriteriaItem[] }>(transparencyDocRef);
+
+  // Kriter TANIMLARI canlı koleksiyondan — endeks değişince profilde de anında yansır.
+  const transparencyCritQuery = useMemoFirebase(
+    () => (db ? collection(db, COLLECTIONS.transparencyCriteria) : null),
+    [db],
+  );
+  const { data: transparencyCritDocs } = useCollection<{ id: string }>(transparencyCritQuery);
 
   // Bu STK'nın gerçek gönüllülük ilanları: volunteering koleksiyonu, ngoId == id.
   // (Eski `ngo.opportunities` alanı doldurulmuyordu.)
@@ -344,27 +352,20 @@ export default function NgoProfilePage() {
     ? `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(profileUrl)}`
     : '';
 
-  // Gerçek şeffaflık kriterleri (varsa). Onaylı = isCompleted && status !== 'pending'.
-  const realCriteria = Array.isArray(transparencyDoc?.criteria) ? transparencyDoc!.criteria : null;
-  const transparencyTotalPoints = realCriteria && realCriteria.length > 0
-    ? realCriteria.reduce((s, c) => s + (Number(c.points) || 0), 0)
-    : 100;
-  const transparencyMetPoints = realCriteria
-    ? realCriteria.filter(c => c.isCompleted && c.status !== 'pending').reduce((s, c) => s + (Number(c.points) || 0), 0)
-    : 0;
-  // Gerçek yüzde: karşılanan puan / toplam puan. Gerçek veri yoksa kayıtlı skora düş.
-  const transparencyPercent = realCriteria
-    ? Math.round((transparencyMetPoints / (transparencyTotalPoints || 100)) * 100)
-    : (ngo.transparencyScore ?? 0);
+  // Şeffaflık: kriter TANIMLARI koleksiyondan (canlı), STK VERİSİ transparency doc'undan.
+  // Onaylı = isCompleted && status !== 'pending'. Yüzde = karşılanan puan / toplam puan.
+  const transparencyDefs = normalizeDefs(transparencyCritDocs as never);
+  const hasTransparencyData = Array.isArray(transparencyDoc?.criteria) && transparencyDoc!.criteria!.length > 0;
+  const transparencyScoreInfo = computeScore(transparencyDefs, transparencyDoc?.criteria as never, { requireApproved: true });
+  const transparencyTotalPoints = transparencyScoreInfo.total;
+  const transparencyMetPoints = transparencyScoreInfo.met;
+  const transparencyPercent = transparencyScoreInfo.percent;
   const transparencyScore = transparencyPercent;
-  // Sekmede gösterilecek kriter listesi: gerçek veri varsa onu, yoksa eski türetilmiş liste.
-  const transparencyCriteria: ProfileCriteriaItem[] = realCriteria
-    ? realCriteria
-    : [
-        { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: true, status: 'approved' },
-        { id: 2, name: 'Tüzük / Vakıf Senedi', points: 10, isCompleted: true, status: 'approved' },
-        { id: 4, name: 'Yıllık Faaliyet Raporu', points: 10, isCompleted: (ngo.transparencyScore ?? 0) > 50, status: 'approved' },
-      ];
+  // Sekmede gösterilecek birleşik kriter listesi (tanım + STK verisi).
+  const realCriteria = hasTransparencyData
+    ? mergeCriteria(transparencyDefs, transparencyDoc?.criteria as never)
+    : null;
+  const transparencyCriteria: ProfileCriteriaItem[] = (realCriteria ?? mergeCriteria(transparencyDefs, undefined)) as ProfileCriteriaItem[];
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
 
