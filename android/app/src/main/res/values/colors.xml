@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AppTheme bu renklere referans veriyor (styles.xml). Bu dosya eksikti →
+         @color/colorPrimary/Dark/Accent tanımsızdı → tema inflate edilirken
+         (MainActivity launch) Resources$NotFoundException ile uygulama açılır
+         açılmaz kapanıyordu. Marka turuncusu: #F34723 (splash background ile aynı). -->
+    <color name="colorPrimary">#F34723</color>
+    <color name="colorPrimaryDark">#C8381A</color>
+    <color name="colorAccent">#F34723</color>
+</resources>
