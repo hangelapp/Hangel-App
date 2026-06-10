@@ -68,6 +68,16 @@ interface MetaPerfMetric {
     spend: number;
 }
 
+/** /api/super-admin/ngo-ads/tiktok-performance metrik satırı. */
+interface TiktokPerfMetric {
+    ngoId: string;
+    advertiserId?: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    spend: number;
+}
+
 /** Mevcut status'a göre sunulacak ilerletme aksiyonları. */
 const STATUS_ACTIONS: Record<string, Array<{ to: PlanStatus; label: string; icon: React.ElementType; tone: 'primary' | 'danger' | 'neutral' }>> = {
     submitted: [
@@ -91,7 +101,7 @@ const STATUS_TINT: Record<string, string> = {
 const PLATFORMS = [
     { key: 'google', label: 'Google Ads', active: true },
     { key: 'meta', label: 'Meta', active: true },
-    { key: 'tiktok', label: 'TikTok', active: false },
+    { key: 'tiktok', label: 'TikTok', active: true },
 ] as const;
 
 const KIND_LABEL: Record<string, string> = {
@@ -143,6 +153,9 @@ export default function NgoAdsAdminPage() {
     const [metaConfigured, setMetaConfigured] = useState(false);
     const [metaPerf, setMetaPerf] = useState<MetaPerfMetric[]>([]);
     const [metaLoading, setMetaLoading] = useState(false);
+    const [tiktokConfigured, setTiktokConfigured] = useState(false);
+    const [tiktokPerf, setTiktokPerf] = useState<TiktokPerfMetric[]>([]);
+    const [tiktokLoading, setTiktokLoading] = useState(false);
 
     const fetchStats = useCallback(async () => {
         if (!user) return;
@@ -208,6 +221,34 @@ export default function NgoAdsAdminPage() {
         if (platform === 'meta') fetchMetaPerf();
     }, [platform, fetchMetaPerf]);
 
+    const fetchTiktokPerf = useCallback(async () => {
+        if (!user) return;
+        setTiktokLoading(true);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/tiktok-performance', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = (await res.json()) as { configured?: boolean; metrics?: TiktokPerfMetric[] };
+                setTiktokConfigured(!!data.configured);
+                setTiktokPerf(data.metrics ?? []);
+            } else {
+                setTiktokConfigured(false);
+                setTiktokPerf([]);
+            }
+        } catch {
+            setTiktokConfigured(false);
+            setTiktokPerf([]);
+        } finally {
+            setTiktokLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (platform === 'tiktok') fetchTiktokPerf();
+    }, [platform, fetchTiktokPerf]);
+
     const changeStatus = useCallback(async (planId: string, status: PlanStatus) => {
         if (!user || pendingId) return;
         setPendingId(planId);
@@ -266,6 +307,17 @@ export default function NgoAdsAdminPage() {
             perfByNgoId.set(m.ngoId, {
                 ngoId: m.ngoId,
                 customerId: m.adAccountId,
+                impressions: m.impressions,
+                clicks: m.clicks,
+                ctr: m.ctr,
+                costMicros: m.spend * 1e6,
+            });
+        }
+    } else if (platform === 'tiktok') {
+        for (const m of tiktokPerf) {
+            perfByNgoId.set(m.ngoId, {
+                ngoId: m.ngoId,
+                customerId: m.advertiserId,
                 impressions: m.impressions,
                 clicks: m.clicks,
                 ctr: m.ctr,
@@ -485,6 +537,58 @@ export default function NgoAdsAdminPage() {
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
                                                             {m.adAccountId && <p className="text-[12px] text-muted-foreground truncate">Reklam Hesabı: {m.adAccountId}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 ml-12">
+                                                        <PerfStat icon={Eye} label="Gösterim" value={formatN(m.impressions)} />
+                                                        <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(m.clicks)} />
+                                                        <PerfStat icon={Percent} label="CTR" value={formatCtr(m.ctr)} />
+                                                        <PerfStat icon={Wallet} label="Harcama" value={formatSpend(m.spend)} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* TIKTOK REKLAM PERFORMANSI — tiktok sekmesi seçiliyken */}
+                        {platform === 'tiktok' && (
+                            <section className="space-y-2.5">
+                                <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok Reklam Performansı (Son 30 gün)</h2>
+                                <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
+                                    {tiktokLoading ? (
+                                        <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>
+                                    ) : !tiktokConfigured ? (
+                                        <div className="p-8 text-center space-y-2">
+                                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                                <Plug className="h-6 w-6 text-muted-foreground" />
+                                            </span>
+                                            <p className="font-semibold text-[15px] text-foreground">TikTok henüz yapılandırılmadı</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                                TikTok bağlantısı yapılandırılınca aktif olur; STK&apos;lar hesabını bağlayıp kampanya yayınladıkça metrikler burada görünür.
+                                            </p>
+                                        </div>
+                                    ) : tiktokPerf.length === 0 ? (
+                                        <div className="p-8 text-center space-y-2">
+                                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                                <BarChart3 className="h-6 w-6 text-muted-foreground" />
+                                            </span>
+                                            <p className="font-semibold text-[15px] text-foreground">Henüz performans verisi yok</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                                STK&apos;lar TikTok hesabını bağlayıp kampanya yayınladıkça gösterim/tıklama metrikleri burada görünür.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-border/50 max-h-[28rem] overflow-y-auto">
+                                            {tiktokPerf.map((m) => (
+                                                <div key={m.ngoId} className="px-4 py-3 space-y-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            {m.advertiserId && <p className="text-[12px] text-muted-foreground truncate">Reklamveren No: {m.advertiserId}</p>}
                                                         </div>
                                                     </div>
                                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 ml-12">

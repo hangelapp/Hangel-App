@@ -122,6 +122,10 @@ export const COLLECTIONS = {
   // accessToken + adAccountId). Doc id = ngoId. SADECE Admin SDK yazar/okur
   // (client erişmez, accessToken secret).
   metaAccounts: 'metaAccounts',
+  // STK başına bağlı TikTok (TikTok for Business) reklam hesabı (long-lived
+  // accessToken + advertiserId). Doc id = ngoId. SADECE Admin SDK yazar/okur
+  // (client erişmez, accessToken secret).
+  tiktokAccounts: 'tiktokAccounts',
 
   // Messaging — campaigns & templating
   campaigns: 'campaigns',

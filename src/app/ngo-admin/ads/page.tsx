@@ -19,7 +19,7 @@ import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
-    Facebook,
+    Facebook, Music2,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -97,6 +97,12 @@ interface MetaConnectionState {
     adAccountId?: string;
 }
 
+interface TiktokConnectionState {
+    configured: boolean;
+    connected: boolean;
+    advertiserId?: string;
+}
+
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
 const GOOGLE_ADS_URL = 'https://ads.google.com/';
 
@@ -132,6 +138,12 @@ export default function AdsPage() {
     const [metaConnectionLoaded, setMetaConnectionLoaded] = useState(false);
     const [metaConnecting, setMetaConnecting] = useState(false);
     const [metaPublishingId, setMetaPublishingId] = useState<string | null>(null);
+
+    // TikTok bağlantı durumu — Meta ile birebir paralel
+    const [tiktokConnection, setTiktokConnection] = useState<TiktokConnectionState>({ configured: false, connected: false });
+    const [tiktokConnectionLoaded, setTiktokConnectionLoaded] = useState(false);
+    const [tiktokConnecting, setTiktokConnecting] = useState(false);
+    const [tiktokPublishingId, setTiktokPublishingId] = useState<string | null>(null);
 
     // Kayıtlı planları çek; 'selected' Set'ini hidrate et.
     useEffect(() => {
@@ -224,6 +236,37 @@ export default function AdsPage() {
         return () => { cancelled = true; };
     }, [user, entityId, refreshMetaConnection]);
 
+    // TikTok bağlantı durumunu çek (configured/connected/advertiserId)
+    const refreshTiktokConnection = useCallback(async () => {
+        if (!user) return;
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/tiktok/connection', {
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            if (!res.ok) return;
+            const data = (await res.json().catch(() => null)) as Partial<TiktokConnectionState> | null;
+            if (!data) return;
+            setTiktokConnection({
+                configured: data.configured === true,
+                connected: data.connected === true,
+                advertiserId: typeof data.advertiserId === 'string' ? data.advertiserId : undefined,
+            });
+        } catch {
+            /* sessizce yoksay; bağlantı durumu olmadan da sayfa çalışır */
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!user || !entityId) return;
+        let cancelled = false;
+        (async () => {
+            await refreshTiktokConnection();
+            if (!cancelled) setTiktokConnectionLoaded(true);
+        })();
+        return () => { cancelled = true; };
+    }, [user, entityId, refreshTiktokConnection]);
+
     // OAuth popup'tan postMessage dinle
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -245,11 +288,18 @@ export default function AdsPage() {
             } else if (data.type === 'hangel-meta-error') {
                 setMetaConnecting(false);
                 toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'Meta reklam hesabı bağlanamadı. Lütfen tekrar dene.' });
+            } else if (data.type === 'hangel-tiktok-connected') {
+                setTiktokConnecting(false);
+                void refreshTiktokConnection();
+                toast({ title: 'TikTok bağlandı', description: 'TikTok reklam hesabın bağlandı; planlarını TikTok’ta yayına alabilirsin.' });
+            } else if (data.type === 'hangel-tiktok-error') {
+                setTiktokConnecting(false);
+                toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'TikTok reklam hesabı bağlanamadı. Lütfen tekrar dene.' });
             }
         };
         window.addEventListener('message', onMessage);
         return () => window.removeEventListener('message', onMessage);
-    }, [refreshConnection, refreshMetaConnection, toast]);
+    }, [refreshConnection, refreshMetaConnection, refreshTiktokConnection, toast]);
 
     const connectGoogleAds = async () => {
         if (!user) {
@@ -382,6 +432,73 @@ export default function AdsPage() {
             toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
         } finally {
             setMetaPublishingId(null);
+        }
+    };
+
+    const connectTiktok = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setTiktokConnecting(true);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/tiktok/start', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'TIKTOK_NOT_CONFIGURED') {
+                setTiktokConnection((prev) => ({ ...prev, configured: false }));
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi TikTok bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (!res.ok || !data?.authorizeUrl) {
+                throw new Error(data?.message || 'Bağlantı başlatılamadı.');
+            }
+            const popup = window.open(data.authorizeUrl, 'hangel-tiktok-oauth', 'width=500,height=660');
+            if (!popup) {
+                throw new Error('Açılır pencere engellendi. Lütfen tarayıcı izinlerini kontrol edin.');
+            }
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Bağlanamadı', description: e instanceof Error ? e.message : 'Bir hata oluştu.' });
+        } finally {
+            setTiktokConnecting(false);
+        }
+    };
+
+    const publishTiktokPlan = async (planId: string, title?: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setTiktokPublishingId(planId);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/tiktok/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ planId }),
+            });
+            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; campaignId?: string; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'TIKTOK_NOT_CONFIGURED') {
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi TikTok bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (res.status === 409 || data?.errorCode === 'NOT_CONNECTED') {
+                setTiktokConnection((prev) => ({ ...prev, connected: false }));
+                toast({ variant: 'destructive', title: 'Hesap bağlı değil', description: 'Önce TikTok hesabını bağla, sonra yayına al.' });
+                return;
+            }
+            if (!res.ok || !data?.ok) {
+                throw new Error(data?.message || 'Yayınlanamadı.');
+            }
+            setSavedPlans((prev) => prev.map((p) => (p.id === planId ? { ...p, status: 'active' } : p)));
+            toast({ title: 'Kampanya yayında', description: title ? `"${title}" TikTok üzerinde yayına alındı.` : 'Kampanya TikTok üzerinde yayına alındı.' });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        } finally {
+            setTiktokPublishingId(null);
         }
     };
 
@@ -946,6 +1063,106 @@ export default function AdsPage() {
                                 )}
                                 <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
                                     Not: Meta reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* TIKTOK REKLAMLARI — Meta ile simetrik */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok Reklamları</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+                        {!tiktokConnectionLoaded ? (
+                            <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : !tiktokConnection.configured ? (
+                            <div className="space-y-3">
+                                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
+                                    <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                    <div className="space-y-1">
+                                        <p className="text-[14px] font-semibold text-amber-900">hangel ekibi TikTok bağlantısını yapılandırıyor — çok yakında</p>
+                                        <p className="text-[12px] text-amber-800 leading-relaxed">
+                                            Hazır olduğunda TikTok reklam hesabını buradan bağlayıp kampanyalarını panelden tek dokunuşla yayına alabileceksin.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button disabled
+                                    className="w-full h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center gap-2 text-[15px] font-semibold cursor-not-allowed">
+                                    <Music2 className="h-[18px] w-[18px]" /> TikTok Hesabını Bağla
+                                </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: TikTok reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
+                            </div>
+                        ) : !tiktokConnection.connected ? (
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <span className="h-10 w-10 rounded-xl bg-black text-[#25F4EE] flex items-center justify-center shrink-0">
+                                        <Music2 className="h-5 w-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[15px] font-semibold text-foreground">TikTok hesabını bağla</p>
+                                        <p className="text-[13px] text-muted-foreground leading-relaxed">
+                                            Kurduğun reklam planlarını TikTok&apos;ta yayına almak için TikTok reklam hesabını hangel&apos;e bağla. Bağlantı güvenli TikTok ekranında yapılır.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button onClick={connectTiktok} disabled={tiktokConnecting}
+                                    className="w-full h-12 rounded-2xl bg-black text-[#25F4EE] flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                                    {tiktokConnecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Music2 className="h-[18px] w-[18px]" /> TikTok Hesabını Bağla</>}
+                                </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: TikTok reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
+                                    <BadgeCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[14px] font-semibold text-emerald-900">TikTok bağlı</p>
+                                        {tiktokConnection.advertiserId && (
+                                            <span className="inline-flex items-center mt-0.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700">
+                                                Reklam Hesabı: {tiktokConnection.advertiserId}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {publishablePlans.length > 0 ? (
+                                    <div className="space-y-2.5">
+                                        <p className="text-[13px] text-muted-foreground">Kurduğun kampanyalar TikTok&apos;ta yayına hazır.</p>
+                                        {publishablePlans.map((p) => {
+                                            const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                                            const Icon = meta.icon;
+                                            return (
+                                                <div key={p.id} className="rounded-2xl border border-border/60 bg-muted/20 p-3.5 flex items-center gap-3">
+                                                    <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
+                                                        <Icon className="h-5 w-5" />
+                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[14px] font-semibold text-foreground truncate">{p.title || meta.label}</p>
+                                                        <p className="text-[12px] text-muted-foreground">{meta.label} · {STATUS_LABEL[p.status] || 'yayına hazır'}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => { if (p.id) void publishTiktokPlan(p.id, p.title); }}
+                                                        disabled={tiktokPublishingId === p.id}
+                                                        className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-black text-[#25F4EE] disabled:opacity-60 shrink-0">
+                                                        {tiktokPublishingId === p.id ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</> : <>TikTok&apos;ta Yayınla <ChevronRight className="h-4 w-4" /></>}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-[12px] text-muted-foreground text-center">
+                                        Henüz kurduğun kampanya yok. Yukarıdan bir reklam planı seç (&quot;Bunu Kur&quot;), sonra buradan TikTok&apos;ta yayınla.
+                                    </p>
+                                )}
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: TikTok reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
                                 </p>
                             </div>
                         )}
