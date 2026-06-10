@@ -19,7 +19,7 @@ import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
-    Facebook, Music2, Building2,
+    Facebook, Music2, Building2, Info, Hash, Film, Target, Image as ImageIcon,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -37,16 +37,27 @@ interface EntityDoc {
 }
 
 type ProposalKind = 'search-donation' | 'search-awareness' | 'search-beneficiary' | 'hangel-donation' | 'hangel-volunteer';
+type AdPlatform = 'google' | 'meta' | 'tiktok';
 interface AdProposal {
     kind: ProposalKind;
     title: string;
     goal: string;
     landing: 'kurum-sitesi' | 'hangel-bagis' | 'hangel-gonulluluk';
-    keywords: string[];
-    headlines: string[];
-    descriptions: string[];
-    regions: string[];
+    keywords?: string[];
+    headlines?: string[];
+    descriptions?: string[];
+    regions?: string[];
     estReach: string;
+    // Meta (Facebook/Instagram) alanları — platforma özel önerilerde dolar.
+    audience?: string;
+    primaryText?: string;
+    headline?: string;
+    description?: string;
+    creativeConcept?: string;
+    // TikTok kısa video alanları — platforma özel önerilerde dolar.
+    videoConcept?: string;
+    caption?: string;
+    hashtags?: string[];
 }
 
 const KIND_META: Record<ProposalKind, { label: string; icon: React.ElementType; tint: string }> = {
@@ -119,9 +130,9 @@ export default function AdsPage() {
     const [hasWebsite, setHasWebsite] = useState<'unknown' | 'yes' | 'no'>('unknown');
     const [domain, setDomain] = useState('');
 
-    // AI öneriler
-    const [loading, setLoading] = useState(false);
-    const [proposals, setProposals] = useState<AdProposal[]>([]);
+    // AI öneriler — platforma özel (her platformun kendi öneri listesi + yükleniyor durumu)
+    const [loadingPlatform, setLoadingPlatform] = useState<AdPlatform | null>(null);
+    const [proposalsByPlatform, setProposalsByPlatform] = useState<Record<AdPlatform, AdProposal[]>>({ google: [], meta: [], tiktok: [] });
     const [selected, setSelected] = useState<Set<ProposalKind>>(new Set());
 
     // STK'nın kayıtlı planları (Google ilerleme durumu)
@@ -132,6 +143,8 @@ export default function AdsPage() {
     const [connectionLoaded, setConnectionLoaded] = useState(false);
     const [connecting, setConnecting] = useState(false);
     const [publishingId, setPublishingId] = useState<string | null>(null);
+    // "Google Ads (Ad Grants) hesabın var mı?" dallanması (bağlanabilir ama henüz bağlı değilken)
+    const [googleHasAccount, setGoogleHasAccount] = useState<'unknown' | 'yes' | 'no'>('unknown');
 
     // Meta (Facebook/Instagram) bağlantı durumu — Google ile birebir paralel
     const [metaConnection, setMetaConnection] = useState<MetaConnectionState>({ configured: false, connected: false });
@@ -589,18 +602,19 @@ export default function AdsPage() {
 
     const websiteReady = hasWebsite === 'yes' && domain.trim().length > 3;
 
-    const generate = async () => {
+    const generate = async (platform: AdPlatform) => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
             return;
         }
-        setLoading(true);
+        setLoadingPlatform(platform);
         try {
             const idToken = await user.getIdToken();
             const res = await fetch('/api/ads/plan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({
+                    platform,
                     orgName: entityName,
                     orgType,
                     faaliyetAlani,
@@ -614,16 +628,16 @@ export default function AdsPage() {
             if (!res.ok || !data?.proposals) {
                 throw new Error(data?.message || 'Plan oluşturulamadı.');
             }
-            setProposals(data.proposals);
+            setProposalsByPlatform((prev) => ({ ...prev, [platform]: data.proposals as AdProposal[] }));
             toast({ title: 'Reklam planın hazır', description: `${data.proposals.length} öneri oluşturuldu.` });
         } catch (e) {
             toast({ variant: 'destructive', title: 'Oluşturulamadı', description: e instanceof Error ? e.message : 'Bir hata oluştu.' });
         } finally {
-            setLoading(false);
+            setLoadingPlatform(null);
         }
     };
 
-    const chooseProposal = async (p: AdProposal) => {
+    const chooseProposal = async (p: AdProposal, platform: AdPlatform) => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
             return;
@@ -634,6 +648,7 @@ export default function AdsPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
                 body: JSON.stringify({
+                    platform,
                     ngoName: entityName,
                     kind: p.kind, title: p.title, goal: p.goal, landing: p.landing,
                     keywords: p.keywords, headlines: p.headlines, descriptions: p.descriptions,
@@ -643,8 +658,8 @@ export default function AdsPage() {
             if (!res.ok) throw new Error((await res.json().catch(() => null))?.message || 'Kaydedilemedi');
             setSelected((prev) => new Set(prev).add(p.kind));
             toast({
-                title: 'Planın hangel ekibine iletildi',
-                description: `"${p.title}" kaydedildi; Google hesabın bağlanınca yayına alınacak.`,
+                title: 'Planın hazır',
+                description: `"${p.title}" kaydedildi; hesabın bağlanınca yayına alınacak.`,
             });
         } catch (e) {
             toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
@@ -679,6 +694,19 @@ export default function AdsPage() {
                     <p className="text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">
                         Uygun STK&apos;lara Google&apos;dan <span className="font-semibold text-foreground">ayda 10.000 USD</span> ücretsiz reklam hakkı. hangel senin için planlar, sen sadece seçersin.
                     </p>
+                </div>
+
+                {/* YENİ BAŞLAYAN BİLGİLENDİRME */}
+                <div className="rounded-3xl bg-primary/5 border border-primary/15 p-4 flex items-start gap-3">
+                    <span className="h-9 w-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <Info className="h-5 w-5" />
+                    </span>
+                    <div className="space-y-0.5">
+                        <p className="text-[14px] font-semibold text-foreground">Hiç reklam vermediysen merak etme</p>
+                        <p className="text-[12.5px] text-muted-foreground leading-relaxed">
+                            Üç platformda da (Google, Meta, TikTok) hesabın yoksa adım adım nasıl açacağını anlatıyoruz; varsa tek dokunuşla bağlıyoruz. Yapay zeka her platform için sana özel 5 reklam önerisi hazırlar — sen sadece beğendiğini kur.
+                        </p>
+                    </div>
                 </div>
 
                 {/* DURUM STEPPER */}
@@ -764,120 +792,30 @@ export default function AdsPage() {
                     </div>
                 </section>
 
-                {/* AI ÖNERİLER */}
+                {/* GOOGLE AI ÖNERİLER */}
                 <section className="space-y-2.5">
-                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Yapay Zeka Reklam Planı</h2>
-                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
-                        {proposals.length === 0 ? (
-                            <div className="text-center space-y-3 py-2">
-                                <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-primary/10">
-                                    <Wand2 className="h-7 w-7 text-primary" strokeWidth={1.8} />
-                                </span>
-                                <div className="space-y-1">
-                                    <p className="font-semibold text-[15px] text-foreground">Sana özel 5 reklam önerisi</p>
-                                    <p className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
-                                        <span className="font-medium text-foreground">{entityName}</span>{faaliyetAlani ? ` · ${faaliyetAlani}` : ''} için yapay zeka hazır kampanyalar kurgular — bağış, bilinirlik, gönüllülük. Sen sadece beğendiğini seç.
-                                    </p>
-                                </div>
-                                <button onClick={generate} disabled={loading}
-                                    className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
-                                    {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Hazırlanıyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> Reklam Planımı Oluştur</>}
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-[13px] text-muted-foreground">{proposals.length} öneri · beğendiğini kur</p>
-                                    <button onClick={generate} disabled={loading} className="text-[13px] font-semibold text-primary inline-flex items-center gap-1">
-                                        {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Yenile
-                                    </button>
-                                </div>
-                                {proposals.map((p, i) => {
-                                    const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
-                                    const Icon = meta.icon;
-                                    const isSel = selected.has(p.kind);
-                                    const savedStatus = savedStatusByKind.get(p.kind);
-                                    return (
-                                        <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
-                                            <div className="flex items-start gap-3">
-                                                <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
-                                                    <Icon className="h-5 w-5" />
-                                                </span>
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <p className="text-[15px] font-semibold text-foreground">{p.title}</p>
-                                                        <span className="text-[10px] font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{meta.label}</span>
-                                                    </div>
-                                                    <p className="text-[13px] text-muted-foreground leading-relaxed mt-0.5">{p.goal}</p>
-                                                </div>
-                                            </div>
-
-                                            {p.keywords?.length > 0 && (
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {p.keywords.slice(0, 8).map((k) => (
-                                                        <span key={k} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 px-2.5 py-1 text-[11px] text-foreground">
-                                                            <Search className="h-3 w-3 text-muted-foreground" /> {k}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {p.headlines?.[0] && (
-                                                <div className="rounded-xl bg-card border border-border/50 p-2.5">
-                                                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Örnek reklam</p>
-                                                    <p className="text-[13px] font-semibold text-[#1a0dab] mt-0.5">{p.headlines[0]}</p>
-                                                    {p.descriptions?.[0] && <p className="text-[12px] text-muted-foreground">{p.descriptions[0]}</p>}
-                                                </div>
-                                            )}
-
-                                            <div className="flex items-center justify-between gap-2 flex-wrap">
-                                                <div className="text-[11px] text-muted-foreground">
-                                                    <span>{LANDING_LABEL[p.landing]}</span>
-                                                    {p.estReach && <span> · {p.estReach}</span>}
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button onClick={() => void copyPlan(p)}
-                                                        className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-secondary text-muted-foreground active:scale-95 transition"
-                                                        title="Planı kopyala (Google Ads'e yapıştır)" aria-label="Planı kopyala">
-                                                        <Copy className="h-4 w-4" />
-                                                    </button>
-                                                    {savedStatus && (
-                                                        <span className={cn('h-9 rounded-full px-3 text-[12px] font-semibold inline-flex items-center', STATUS_TINT[savedStatus])}>
-                                                            {STATUS_LABEL[savedStatus]}
-                                                        </span>
-                                                    )}
-                                                    {savedStatus && savedStatus !== 'active' && savedStatus !== 'rejected' && connection.connected && savedPlanByKind.get(p.kind)?.id ? (
-                                                        <button
-                                                            onClick={() => { const sp = savedPlanByKind.get(p.kind); if (sp?.id) void publishPlan(sp.id, sp.title || p.title); }}
-                                                            disabled={publishingId === savedPlanByKind.get(p.kind)?.id}
-                                                            className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-primary text-primary-foreground disabled:opacity-60">
-                                                            {publishingId === savedPlanByKind.get(p.kind)?.id
-                                                                ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</>
-                                                                : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
-                                                        </button>
-                                                    ) : (
-                                                        <button onClick={() => chooseProposal(p)}
-                                                            className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
-                                                                isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
-                                                            {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                                <p className="text-[11px] text-muted-foreground text-center pt-1">
-                                    Seçtiğin kampanyaları, aşağıdan Google Ads hesabını bağladıktan sonra tek dokunuşla yayına alabilirsin.
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Google · Yapay Zeka Reklam Planı</h2>
+                    <AiPlanBlock
+                        platform="google"
+                        proposals={proposalsByPlatform.google}
+                        loading={loadingPlatform === 'google'}
+                        onGenerate={() => void generate('google')}
+                        onChoose={(p) => void chooseProposal(p, 'google')}
+                        onCopy={(p) => void copyPlan(p)}
+                        selected={selected}
+                        savedStatusByKind={savedStatusByKind}
+                        savedPlanByKind={savedPlanByKind}
+                        connected={connection.connected}
+                        publishingId={publishingId}
+                        onPublish={(id, title) => void publishPlan(id, title)}
+                        entityName={entityName}
+                        faaliyetAlani={faaliyetAlani}
+                    />
                 </section>
 
                 {/* HESABI BAĞLA & YAYINLA (Faz 1) */}
                 <section className="space-y-2.5">
-                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Hesabı Bağla & Yayınla</h2>
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Google Hesabını Bağla & Yayınla</h2>
                     <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
                         {!connectionLoaded ? (
                             <div className="flex items-center justify-center py-6">
@@ -919,10 +857,52 @@ export default function AdsPage() {
                                         </p>
                                     </div>
                                 </div>
-                                <button onClick={connectGoogleAds} disabled={connecting}
-                                    className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
-                                    {connecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Link2 className="h-[18px] w-[18px]" /> Google Ads Hesabını Bağla</>}
-                                </button>
+                                {/* Ad Grants hesabın var mı? dallanması — Bağla butonundan önce */}
+                                {googleHasAccount === 'unknown' ? (
+                                    <div className="rounded-2xl bg-muted/40 border border-border/60 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-foreground">Google Ad Grants hesabın var mı?</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <button onClick={() => setGoogleHasAccount('yes')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Evet, var</p>
+                                            </button>
+                                            <button onClick={() => setGoogleHasAccount('no')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Hayır, yok</p>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : googleHasAccount === 'no' ? (
+                                    <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-emerald-900">Google Ad Grants başvurusu (ücretsiz)</p>
+                                        </div>
+                                        <ol className="space-y-1.5 text-[12px] text-emerald-800 leading-relaxed list-decimal list-inside">
+                                            <li>Web siten yoksa önce yukarıdan ücretsiz hangel sitesini kur.</li>
+                                            <li>google.com/nonprofits üzerinden Google for Nonprofits&apos;e başvur.</li>
+                                            <li>Onay genelde ~1-2 hafta sürer.</li>
+                                            <li>Onaylanınca buraya dön ve hesabını bağla.</li>
+                                        </ol>
+                                        <a href={GOOGLE_NONPROFITS_URL} target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition">
+                                            Google for Nonprofits&apos;i Aç <ExternalLink className="h-4 w-4" />
+                                        </a>
+                                        <p className="text-[11px] text-emerald-800 text-center">Ad Grants ile ayda 10.000 USD reklam tamamen ücretsizdir.</p>
+                                        <button onClick={() => setGoogleHasAccount('yes')}
+                                            className="w-full text-[12px] font-semibold text-emerald-900 underline underline-offset-2">
+                                            Zaten onaylandı, bağlanayım
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button onClick={connectGoogleAds} disabled={connecting}
+                                        className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                                        {connecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Link2 className="h-[18px] w-[18px]" /> Google Ads Hesabını Bağla</>}
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -973,9 +953,29 @@ export default function AdsPage() {
                     </div>
                 </section>
 
+                {/* META AI ÖNERİLER */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta · Yapay Zeka Reklam Planı</h2>
+                    <AiPlanBlock
+                        platform="meta"
+                        proposals={proposalsByPlatform.meta}
+                        loading={loadingPlatform === 'meta'}
+                        onGenerate={() => void generate('meta')}
+                        onChoose={(p) => void chooseProposal(p, 'meta')}
+                        selected={selected}
+                        savedStatusByKind={savedStatusByKind}
+                        savedPlanByKind={savedPlanByKind}
+                        connected={metaConnection.connected}
+                        publishingId={metaPublishingId}
+                        onPublish={(id, title) => void publishMetaPlan(id, title)}
+                        entityName={entityName}
+                        faaliyetAlani={faaliyetAlani}
+                    />
+                </section>
+
                 {/* META REKLAMLARI (Facebook/Instagram) — Google ile simetrik */}
                 <section className="space-y-2.5">
-                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta Reklamları (Facebook/Instagram)</h2>
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta Hesabını Bağla & Yayınla</h2>
                     <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
                         {!metaConnectionLoaded ? (
                             <div className="flex items-center justify-center py-6">
@@ -1120,9 +1120,29 @@ export default function AdsPage() {
                     </div>
                 </section>
 
+                {/* TIKTOK AI ÖNERİLER */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok · Yapay Zeka Reklam Planı</h2>
+                    <AiPlanBlock
+                        platform="tiktok"
+                        proposals={proposalsByPlatform.tiktok}
+                        loading={loadingPlatform === 'tiktok'}
+                        onGenerate={() => void generate('tiktok')}
+                        onChoose={(p) => void chooseProposal(p, 'tiktok')}
+                        selected={selected}
+                        savedStatusByKind={savedStatusByKind}
+                        savedPlanByKind={savedPlanByKind}
+                        connected={tiktokConnection.connected}
+                        publishingId={tiktokPublishingId}
+                        onPublish={(id, title) => void publishTiktokPlan(id, title)}
+                        entityName={entityName}
+                        faaliyetAlani={faaliyetAlani}
+                    />
+                </section>
+
                 {/* TIKTOK REKLAMLARI — Meta ile simetrik */}
                 <section className="space-y-2.5">
-                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok Reklamları</h2>
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok Hesabını Bağla & Yayınla</h2>
                     <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
                         {!tiktokConnectionLoaded ? (
                             <div className="flex items-center justify-center py-6">
@@ -1267,6 +1287,213 @@ export default function AdsPage() {
                     </div>
                 </section>
             </div>
+        </div>
+    );
+}
+
+/**
+ * Platforma özel AI reklam öneri bloğu (Google / Meta / TikTok).
+ * Boşken "5 öneri oluştur" CTA; doluyken o platformun çıktı alanlarına göre
+ * koşullu render. "Bunu Kur" → o platform için kaydeder; bağlıysa "Yayınla".
+ */
+function AiPlanBlock({
+    platform, proposals, loading, onGenerate, onChoose, onCopy, selected,
+    savedStatusByKind, savedPlanByKind, connected, publishingId, onPublish,
+    entityName, faaliyetAlani,
+}: {
+    platform: AdPlatform;
+    proposals: AdProposal[];
+    loading: boolean;
+    onGenerate: () => void;
+    onChoose: (p: AdProposal) => void;
+    onCopy?: (p: AdProposal) => void;
+    selected: Set<ProposalKind>;
+    savedStatusByKind: Map<ProposalKind, PlanStatus>;
+    savedPlanByKind: Map<ProposalKind, SavedPlan>;
+    connected: boolean;
+    publishingId: string | null;
+    onPublish: (id: string, title?: string) => void;
+    entityName: string;
+    faaliyetAlani: string;
+}) {
+    const platformLabel = platform === 'google' ? 'Google Arama' : platform === 'meta' ? 'Facebook/Instagram' : 'TikTok kısa video';
+    const platformHint = platform === 'google'
+        ? 'anahtar kelime, başlık ve açıklamalarla hazır Arama reklamları'
+        : platform === 'meta'
+            ? 'hedef kitle, birincil metin ve görsel/video konsepti'
+            : 'video konsepti, açıklama ve hashtag fikirleri';
+
+    return (
+        <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+            {proposals.length === 0 ? (
+                <div className="text-center space-y-3 py-2">
+                    <span className="inline-flex h-14 w-14 items-center justify-center rounded-[18px] bg-primary/10">
+                        <Wand2 className="h-7 w-7 text-primary" strokeWidth={1.8} />
+                    </span>
+                    <div className="space-y-1">
+                        <p className="font-semibold text-[15px] text-foreground">{platformLabel} için 5 reklam önerisi</p>
+                        <p className="text-[13px] text-muted-foreground max-w-sm mx-auto leading-relaxed">
+                            <span className="font-medium text-foreground">{entityName}</span>{faaliyetAlani ? ` · ${faaliyetAlani}` : ''} için yapay zeka {platformHint} hazırlar. Sen sadece beğendiğini kur.
+                        </p>
+                    </div>
+                    <button onClick={onGenerate} disabled={loading}
+                        className="w-full h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                        {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Hazırlanıyor...</> : <><Sparkles className="h-[18px] w-[18px]" /> 5 Reklam Önerisi Oluştur</>}
+                    </button>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[13px] text-muted-foreground">{proposals.length} öneri · beğendiğini kur</p>
+                        <button onClick={onGenerate} disabled={loading} className="text-[13px] font-semibold text-primary inline-flex items-center gap-1">
+                            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />} Yenile
+                        </button>
+                    </div>
+                    {proposals.map((p, i) => {
+                        const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                        const Icon = meta.icon;
+                        const isSel = selected.has(p.kind);
+                        const savedStatus = savedStatusByKind.get(p.kind);
+                        const savedId = savedPlanByKind.get(p.kind)?.id;
+                        return (
+                            <div key={`${p.kind}-${i}`} className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
+                                        <Icon className="h-5 w-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="text-[15px] font-semibold text-foreground">{p.title}</p>
+                                            <span className="text-[10px] font-semibold rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{meta.label}</span>
+                                        </div>
+                                        <p className="text-[13px] text-muted-foreground leading-relaxed mt-0.5">{p.goal}</p>
+                                    </div>
+                                </div>
+
+                                {/* GOOGLE: anahtar kelime + örnek arama reklamı */}
+                                {platform === 'google' && (p.keywords?.length ?? 0) > 0 && (
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {(p.keywords ?? []).slice(0, 8).map((k) => (
+                                            <span key={k} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 px-2.5 py-1 text-[11px] text-foreground">
+                                                <Search className="h-3 w-3 text-muted-foreground" /> {k}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {platform === 'google' && p.headlines?.[0] && (
+                                    <div className="rounded-xl bg-card border border-border/50 p-2.5">
+                                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Örnek reklam</p>
+                                        <p className="text-[13px] font-semibold text-[#1a0dab] mt-0.5">{p.headlines[0]}</p>
+                                        {p.descriptions?.[0] && <p className="text-[12px] text-muted-foreground">{p.descriptions[0]}</p>}
+                                    </div>
+                                )}
+
+                                {/* META: hedef kitle + birincil metin/başlık + görsel konsept */}
+                                {platform === 'meta' && (p.audience || p.primaryText || p.headline || p.creativeConcept) && (
+                                    <div className="space-y-2">
+                                        {p.audience && (
+                                            <div className="flex items-start gap-2 rounded-xl bg-card border border-border/50 p-2.5">
+                                                <Target className="h-4 w-4 text-[#1877f2] mt-0.5 shrink-0" />
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Hedef kitle</p>
+                                                    <p className="text-[12px] text-foreground">{p.audience}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {(p.primaryText || p.headline) && (
+                                            <div className="rounded-xl bg-card border border-border/50 p-2.5">
+                                                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Örnek reklam metni</p>
+                                                {p.headline && <p className="text-[13px] font-semibold text-foreground mt-0.5">{p.headline}</p>}
+                                                {p.primaryText && <p className="text-[12px] text-muted-foreground">{p.primaryText}</p>}
+                                                {p.description && <p className="text-[11px] text-muted-foreground mt-0.5">{p.description}</p>}
+                                            </div>
+                                        )}
+                                        {p.creativeConcept && (
+                                            <div className="flex items-start gap-2 rounded-xl bg-card border border-border/50 p-2.5">
+                                                <ImageIcon className="h-4 w-4 text-[#1877f2] mt-0.5 shrink-0" />
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Görsel/video fikri</p>
+                                                    <p className="text-[12px] text-foreground">{p.creativeConcept}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* TIKTOK: video konsepti + caption + hashtag */}
+                                {platform === 'tiktok' && (p.videoConcept || p.caption || (p.hashtags?.length ?? 0) > 0) && (
+                                    <div className="space-y-2">
+                                        {p.videoConcept && (
+                                            <div className="flex items-start gap-2 rounded-xl bg-card border border-border/50 p-2.5">
+                                                <Film className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                                                <div className="min-w-0">
+                                                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Video fikri</p>
+                                                    <p className="text-[12px] text-foreground">{p.videoConcept}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {p.caption && (
+                                            <div className="rounded-xl bg-card border border-border/50 p-2.5">
+                                                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Açıklama (caption)</p>
+                                                <p className="text-[12px] text-foreground mt-0.5">{p.caption}</p>
+                                            </div>
+                                        )}
+                                        {(p.hashtags?.length ?? 0) > 0 && (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {(p.hashtags ?? []).slice(0, 6).map((h) => (
+                                                    <span key={h} className="inline-flex items-center gap-1 rounded-full bg-card border border-border/60 px-2.5 py-1 text-[11px] text-foreground">
+                                                        <Hash className="h-3 w-3 text-muted-foreground" /> {h.replace(/^#/, '')}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="text-[11px] text-muted-foreground">
+                                        <span>{LANDING_LABEL[p.landing]}</span>
+                                        {p.estReach && <span> · {p.estReach}</span>}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {onCopy && (
+                                            <button onClick={() => onCopy(p)}
+                                                className="h-9 w-9 rounded-full inline-flex items-center justify-center bg-secondary text-muted-foreground active:scale-95 transition"
+                                                title="Planı kopyala" aria-label="Planı kopyala">
+                                                <Copy className="h-4 w-4" />
+                                            </button>
+                                        )}
+                                        {savedStatus && (
+                                            <span className={cn('h-9 rounded-full px-3 text-[12px] font-semibold inline-flex items-center', STATUS_TINT[savedStatus])}>
+                                                {STATUS_LABEL[savedStatus]}
+                                            </span>
+                                        )}
+                                        {savedStatus && savedStatus !== 'active' && savedStatus !== 'rejected' && connected && savedId ? (
+                                            <button
+                                                onClick={() => { const sp = savedPlanByKind.get(p.kind); if (sp?.id) onPublish(sp.id, sp.title || p.title); }}
+                                                disabled={publishingId === savedId}
+                                                className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-primary text-primary-foreground disabled:opacity-60">
+                                                {publishingId === savedId
+                                                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</>
+                                                    : <>Yayınla <ChevronRight className="h-4 w-4" /></>}
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => onChoose(p)}
+                                                className={cn('h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95',
+                                                    isSel ? 'bg-emerald-500/10 text-emerald-600' : 'bg-primary text-primary-foreground')}>
+                                                {isSel ? <><Check className="h-4 w-4" /> Seçildi</> : <>Bunu Kur <ChevronRight className="h-4 w-4" /></>}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                    <p className="text-[11px] text-muted-foreground text-center pt-1">
+                        Seçtiğin kampanyaları, aşağıdan {platformLabel === 'Google Arama' ? 'Google Ads' : platform === 'meta' ? 'Meta' : 'TikTok'} hesabını bağladıktan sonra tek dokunuşla yayına alabilirsin.
+                    </p>
+                </div>
+            )}
         </div>
     );
 }

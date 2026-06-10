@@ -9,7 +9,7 @@
  * Hata: { errorCode, message }.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { planAdCampaigns } from '@/ai/flows/ad-campaign-planner-flow';
+import { planAdCampaigns, AD_PLATFORMS, type AdPlatform } from '@/ai/flows/ad-campaign-planner-flow';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { getAdminAuth } from '@/lib/firebase-admin';
 
@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
   if (!orgName) {
     return NextResponse.json({ errorCode: 'MISSING_ORG', message: 'Kuruluş bilgisi eksik.' }, { status: 400 });
   }
+  const rawPlatform = str(body.platform);
+  const platform: AdPlatform = (AD_PLATFORMS as readonly string[]).includes(rawPlatform)
+    ? (rawPlatform as AdPlatform)
+    : 'google';
 
   try {
     const result = await planAdCampaigns(
@@ -47,6 +51,7 @@ export async function POST(req: NextRequest) {
         hangelDonationUrl: str(body.hangelDonationUrl),
         hangelVolunteerUrl: str(body.hangelVolunteerUrl),
         website: str(body.website),
+        platform,
       },
       idToken,
     );
