@@ -188,6 +188,7 @@ const BRAND_MENU: MenuGroup[] = [
     title: 'Finans & Sosyal Etki',
     items: [
       { href: '/ngo-admin/donations', label: 'Yapılan Bağış Takibi', icon: HandCoins },
+      { href: '/ngo-admin/brand-earnings', label: 'Bağış Kazançları', icon: Banknote },
       { href: '/ngo-admin/demographics', label: 'Demografi Analizi', icon: BarChart3 },
     ],
   },

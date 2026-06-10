@@ -35,6 +35,7 @@ export const ROUTE_KINDS: Record<string, EntityKind[]> = {
     // Marka-only menü item'lar
     '/ngo-admin/sustainability': ['brand'],
     '/ngo-admin/reports': ['brand'],
+    '/ngo-admin/brand-earnings': ['brand'],
 
     // Kulüp + STK ortak
     '/ngo-admin/events': ['ngo', 'club'],

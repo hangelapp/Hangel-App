@@ -14,6 +14,28 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+
+interface NgoSplitEntry {
+    ngoId: string;
+    ngoName: string;
+    amount: number;
+}
+
+interface DonationDoc {
+    id: string;
+    brandName?: string;
+    brand?: string;
+    purchaseAmount?: number;
+    donationAmount?: number;
+    ngoIds?: string[];
+    ngo?: string[];
+    ngoSplit?: NgoSplitEntry[];
+    status?: string;
+    period?: string;
+    date?: string;
+    payoutDate?: string;
+}
 
 interface DonationTransaction {
     id: string;
@@ -21,6 +43,7 @@ interface DonationTransaction {
     purchaseAmount: number;
     ngoShare: number;
     date: string;
+    period: string;
     status: string;
 }
 
@@ -31,10 +54,26 @@ interface MonthlyEarning {
     status: string;
 }
 
+const PAID_STATUSES = ['Yatırıldı', 'Tamamlandı'];
+const PENDING_STATUS = 'İşleme Alındı';
+
 const statusVariantMap = {
     'Tamamlandı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
+    'Yatırıldı': "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-300/50",
+    'İşleme Alındı': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
     'Beklemede': "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border-yellow-300/50",
 } as const;
+
+const TRY = (n: number) => n.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+
+/** Bu STK'nın bir bağıştaki net payını çıkarır. */
+function ngoNetShare(d: DonationDoc, ngoId: string): number {
+    const split = d.ngoSplit?.find(s => s.ngoId === ngoId);
+    if (split && typeof split.amount === 'number') return split.amount;
+    // Eski kayıtlar için fallback: net bağışı paylaşan dernek sayısına böl.
+    const divisor = d.ngo?.length || 1;
+    return (d.donationAmount || 0) / divisor;
+}
 
 const TransactionCard = ({ transaction }: { transaction: DonationTransaction }) => {
     const { t } = useTranslation();
@@ -93,24 +132,26 @@ export default function DonationsPage() {
     const firestore = useFirestore();
     const { user: authUser } = useUser();
     const { t } = useTranslation();
+    const { id: ngoId } = useActiveEntity();
+    // React 19 saflık: render içinde new Date() çağırmamak için bir kez snapshot.
+    const [nowMs] = useState(() => Date.now());
 
     useEffect(() => {
         setCurrentMonthYear(format(new Date(), 'MMMM yyyy', { locale: tr }));
     }, []);
 
-    // Load donations from Firestore
+    // Gerçek bağışlar: bu STK'nın dahil olduğu dağıtımlar.
     const donationsQuery = useMemoFirebase(() => {
-        if (!authUser?.uid) return null;
+        if (!ngoId) return null;
         return query(
             collection(firestore, COLLECTIONS.donations),
-            where('ngoId', '==', authUser.uid),
-            orderBy('date', 'desc')
+            where('ngoIds', 'array-contains', ngoId)
         );
-    }, [firestore, authUser?.uid]);
+    }, [firestore, ngoId]);
 
-    const { data: donationHistory, isLoading: isDonationsLoading } = useCollection<DonationTransaction>(donationsQuery);
+    const { data: donationDocs, isLoading: isDonationsLoading } = useCollection<DonationDoc>(donationsQuery);
 
-    // Load monthly earnings from Firestore
+    // Load monthly earnings from Firestore (yardımcı/legacy gösterim).
     const earningsQuery = useMemoFirebase(() => {
         if (!authUser?.uid) return null;
         return query(
@@ -122,14 +163,35 @@ export default function DonationsPage() {
 
     const { data: monthlyEarnings, isLoading: isEarningsLoading } = useCollection<MonthlyEarning>(earningsQuery);
 
-    const transactions = useMemo(() => donationHistory || [], [donationHistory]);
     const earnings = useMemo(() => monthlyEarnings || [], [monthlyEarnings]);
 
-    const pastTransactions = transactions.filter(tx => tx.status === 'Tamamlandı');
-    const futureTransactions = transactions.filter(tx => tx.status === 'Beklemede');
+    // Her bağışı bu STK'nın net payıyla işlem kaydına dönüştür.
+    const transactions = useMemo<DonationTransaction[]>(() => {
+        if (!ngoId) return [];
+        return (donationDocs || [])
+            .map((d) => ({
+                id: d.id,
+                brand: d.brandName || d.brand || '—',
+                purchaseAmount: d.purchaseAmount || 0,
+                ngoShare: ngoNetShare(d, ngoId),
+                date: d.date || '',
+                period: d.period || (d.date ? d.date.slice(0, 7) : ''),
+                status: d.status || PENDING_STATUS,
+            }))
+            .sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
+    }, [donationDocs, ngoId]);
+
+    const pastTransactions = transactions.filter(tx => PAID_STATUSES.includes(tx.status));
+    const futureTransactions = transactions.filter(tx => tx.status === PENDING_STATUS);
 
     const donationStats = useMemo(() => {
         const totalNgoShare = transactions.reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
+        const pendingNgoShare = transactions
+            .filter(tx => tx.status === PENDING_STATUS)
+            .reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
+        const paidNgoShare = transactions
+            .filter(tx => PAID_STATUSES.includes(tx.status))
+            .reduce((acc, tx) => acc + (tx.ngoShare || 0), 0);
         const totalTransactions = transactions.length;
         const donationsByBrand = transactions.reduce((acc, tx) => {
             if (!acc[tx.brand]) {
@@ -143,13 +205,40 @@ export default function DonationsPage() {
             .map(([name, Bağış]) => ({ name, Bağış }))
             .sort((a, b) => b.Bağış - a.Bağış);
 
+        // AYLIK kırılım: period (YYYY-MM) bazında net toplamlar.
+        const byMonth = transactions.reduce((acc, tx) => {
+            const key = tx.period || (tx.date ? tx.date.slice(0, 7) : '—');
+            acc[key] = (acc[key] || 0) + (tx.ngoShare || 0);
+            return acc;
+        }, {} as Record<string, number>);
+        const monthlyBreakdown = Object.entries(byMonth)
+            .map(([period, amount]) => ({ period, amount }))
+            .sort((a, b) => (a.period < b.period ? 1 : -1));
+
+        // GÜNLÜK kırılım: son 30 günün date bazında net toplamları.
+        const cutoff = nowMs - 30 * 24 * 60 * 60 * 1000;
+        const byDay = transactions.reduce((acc, tx) => {
+            if (!tx.date) return acc;
+            const ts = Date.parse(tx.date);
+            if (Number.isNaN(ts) || ts < cutoff) return acc;
+            acc[tx.date] = (acc[tx.date] || 0) + (tx.ngoShare || 0);
+            return acc;
+        }, {} as Record<string, number>);
+        const dailyBreakdown = Object.entries(byDay)
+            .map(([date, amount]) => ({ date, amount }))
+            .sort((a, b) => (a.date < b.date ? 1 : -1));
+
         return {
             totalNgoShare,
+            pendingNgoShare,
+            paidNgoShare,
             totalTransactions,
             averageNgoShare: totalTransactions > 0 ? totalNgoShare / totalTransactions : 0,
             brandChartData,
+            monthlyBreakdown,
+            dailyBreakdown,
         };
-    }, [transactions]);
+    }, [transactions, nowMs]);
 
     const isLoading = isDonationsLoading || isEarningsLoading;
 
@@ -167,6 +256,84 @@ export default function DonationsPage() {
         <h1 className="text-2xl font-bold">{t('ngoAdminDonations.title')}</h1>
         <p className="text-muted-foreground">{t('ngoAdminDonations.subtitle')}</p>
       </div>
+
+      {/* ANA GÖSTERİM: gerçek net hak ediş özeti */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Net Hak Ediş</CardTitle>
+          <CardDescription>Bağış dağıtım motorundan derneğinize düşen gerçek net pay.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            {transactions.length === 0 ? (
+                <EmptyState message="Henüz dağıtılmış bağış bulunmuyor." />
+            ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold text-primary">{TRY(donationStats.totalNgoShare)}</p>
+                    <p className="text-sm text-muted-foreground">Toplam Net Hak Ediş</p>
+                </div>
+                <div className="p-3 rounded-lg bg-yellow-100/60 dark:bg-yellow-900/20">
+                    <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">{TRY(donationStats.pendingNgoShare)}</p>
+                    <p className="text-sm text-muted-foreground">Bekleyen (İşleme Alındı)</p>
+                </div>
+                <div className="p-3 rounded-lg bg-green-100/60 dark:bg-green-900/20">
+                    <p className="text-2xl font-bold text-green-700 dark:text-green-400">{TRY(donationStats.paidNgoShare)}</p>
+                    <p className="text-sm text-muted-foreground">Ödenen (Yatırıldı)</p>
+                </div>
+                <div className="p-3 rounded-lg bg-muted/50">
+                    <p className="text-2xl font-bold">{donationStats.totalTransactions}</p>
+                    <p className="text-sm text-muted-foreground">İşlem Sayısı</p>
+                </div>
+            </div>
+            )}
+        </CardContent>
+      </Card>
+
+      {/* AYLIK ve GÜNLÜK periyot kırılımı */}
+      {transactions.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Aylık Periyot</CardTitle>
+            <CardDescription>Ay (YYYY-MM) bazında net hak ediş.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {donationStats.monthlyBreakdown.length === 0 ? (
+                <EmptyState message="Aylık veri yok." />
+            ) : (
+            <div className="space-y-2">
+                {donationStats.monthlyBreakdown.map(m => (
+                    <div key={m.period} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                        <p className="font-semibold">{m.period}</p>
+                        <p className="text-lg font-bold text-primary">{TRY(m.amount)}</p>
+                    </div>
+                ))}
+            </div>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Günlük Periyot</CardTitle>
+            <CardDescription>Son 30 günde gün (YYYY-MM-DD) bazında net hak ediş.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {donationStats.dailyBreakdown.length === 0 ? (
+                <EmptyState message="Son 30 günde bağış yok." />
+            ) : (
+            <div className="space-y-2">
+                {donationStats.dailyBreakdown.map(d => (
+                    <div key={d.date} className="flex justify-between items-center p-3 rounded-lg bg-muted/50">
+                        <p className="font-semibold">{d.date}</p>
+                        <p className="text-lg font-bold text-primary">{TRY(d.amount)}</p>
+                    </div>
+                ))}
+            </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+      )}
 
       <Card>
         <CardHeader>

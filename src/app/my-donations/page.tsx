@@ -16,26 +16,28 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import type { DonationTransaction } from '@/lib/types';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { normalizeRates, computeDonationSplit, type DonationRates } from '@/lib/donation-split';
+
+type NgoSplitEntry = { ngoId: string; ngoName: string; amount: number };
 
 type SortKey = 'date' | 'purchaseAmount' | 'donationAmount';
 type SortDirection = 'desc' | 'asc';
 type FilterType = 'all' | 'income' | 'expense';
 
-const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: DonationTransaction | null, open: boolean, onOpenChange: (open: boolean) => void, t: (key: string) => string }) => {
+const ReceiptDialog = ({ transaction, open, onOpenChange, t, rates }: { transaction: DonationTransaction | null, open: boolean, onOpenChange: (open: boolean) => void, t: (key: string) => string, rates: DonationRates }) => {
     const { toast } = useToast();
 
     if (!transaction) return null;
 
     const donationAmount = parseFloat(transaction.donationAmount);
-    const gelirVergisi = donationAmount * 0.20;
-    const kdv = donationAmount * 0.20;
-    const netDonationAfterTaxes = donationAmount - gelirVergisi - kdv;
-    const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
-    const hangelShare = ngoShare * 0.10;
+    const ngoSplit = (transaction as DonationTransaction & { ngoSplit?: NgoSplitEntry[] }).ngoSplit;
+    const ngoCount = transaction.ngo?.length || 2;
+    const split = computeDonationSplit(donationAmount, rates, ngoCount);
+    const fmtCurrency = (n: number) => n.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,17 +61,27 @@ const ReceiptDialog = ({ transaction, open, onOpenChange, t }: { transaction: Do
                             <h4 className="font-semibold">{t('dashboard.donations.donationDetails')}</h4>
                             <div className='flex justify-between'><span className='text-muted-foreground'>{t('dashboard.donations.totalDonation')}</span><span className='font-medium text-primary'>{transaction.donationAmount} ₺</span></div>
                             <Separator />
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.ngoShare')}</span><span>{ngoShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.incomeTax')}</span><span>{gelirVergisi.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.vat')}</span><span>{kdv.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.hangelShare')}</span><span>{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
-                            {transaction.ngo.length > 0 && <Separator />}
-                            {transaction.ngo.length > 0 && (
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.ngoShare')}</span><span>{fmtCurrency(split.ngoShareTotal)}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.incomeTax')}</span><span>{fmtCurrency(split.incomeTax)}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.vat')}</span><span>{fmtCurrency(split.vat)}</span></div>
+                            <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.hangelShare')}</span><span>{fmtCurrency(split.hangelShare)}</span></div>
+                            {((ngoSplit && ngoSplit.length > 0) || transaction.ngo.length > 0) && <Separator />}
+                            {ngoSplit && ngoSplit.length > 0 ? (
+                                <div className='space-y-1 mt-2'>
+                                    <span className='text-muted-foreground text-xs'>{t('dashboard.donations.supportedNgos')}</span>
+                                    {ngoSplit.map((entry, i) => (
+                                        <div key={entry.ngoId || `${entry.ngoName}-${i}`} className='flex justify-between items-center text-xs'>
+                                            <span className="text-right font-medium">{entry.ngoName}</span>
+                                            <span>{fmtCurrency(entry.amount)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : transaction.ngo.length > 0 ? (
                                 <div className='flex justify-between items-center text-xs mt-2'>
                                     <span className='text-muted-foreground'>{t('dashboard.donations.supportedNgos')}</span>
                                     <span className="text-right font-medium">{transaction.ngo.join(', ')}</span>
                                 </div>
-                            )}
+                            ) : null}
                         </div>
                     )}
                 </div>
@@ -102,6 +114,13 @@ export default function MyDonationsPage() {
     [db, authUser?.uid]
   );
   const { data: donationTransactions, isLoading } = useCollection<DonationTransaction>(donationsQuery);
+
+  const ratesDocRef = useMemoFirebase(
+    () => (db ? doc(db, COLLECTIONS.siteSettings, 'donationRates') : null),
+    [db]
+  );
+  const { data: ratesDoc } = useDoc<Partial<DonationRates>>(ratesDocRef);
+  const rates = useMemo(() => normalizeRates(ratesDoc), [ratesDoc]);
 
   const transactions = useMemo(() => donationTransactions || [], [donationTransactions]);
 
@@ -206,10 +225,10 @@ export default function MyDonationsPage() {
             <Accordion type="single" collapsible className="w-full">
               {sortedAndFilteredDonations.map(donation => {
                 const donationAmount = parseFloat(donation.donationAmount);
-                const gelirVergisi = donationAmount * 0.20;
-                const netDonationAfterTaxes = donationAmount - gelirVergisi;
-                const ngoShare = netDonationAfterTaxes > 0 ? netDonationAfterTaxes / 1.1 : 0;
-                const hangelShare = ngoShare * 0.10;
+                const rowSplit = computeDonationSplit(donationAmount, rates, donation.ngo?.length || 2);
+                const ngoShare = rowSplit.ngoShareTotal;
+                const gelirVergisi = rowSplit.incomeTax;
+                const hangelShare = rowSplit.hangelShare;
 
                 const status = (donation as DonationTransaction & { status?: string }).status;
                 const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
@@ -270,12 +289,31 @@ export default function MyDonationsPage() {
                           <div className='flex justify-between text-xs'><span className='text-muted-foreground'>{t('dashboard.donations.hangelShareShort')}</span><span className="font-medium text-foreground">{hangelShare.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span></div>
                         </div>
                         <Separator />
-                        {(donation.ngo || []).length > 0 && (
-                          <div className='flex justify-between items-center text-xs mt-2'>
-                            <span className='text-muted-foreground'>{t('dashboard.donations.supportedNgos')}</span>
-                            <span className="text-right font-medium">{donation.ngo.join(', ')}</span>
-                          </div>
-                        )}
+                        {(() => {
+                          const rowNgoSplit = (donation as DonationTransaction & { ngoSplit?: NgoSplitEntry[] }).ngoSplit;
+                          if (rowNgoSplit && rowNgoSplit.length > 0) {
+                            return (
+                              <div className='space-y-1 mt-2'>
+                                <span className='text-muted-foreground text-xs'>{t('dashboard.donations.supportedNgos')}</span>
+                                {rowNgoSplit.map((entry, i) => (
+                                  <div key={entry.ngoId || `${entry.ngoName}-${i}`} className='flex justify-between items-center text-xs'>
+                                    <span className="text-right font-medium">{entry.ngoName}</span>
+                                    <span>{entry.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          }
+                          if ((donation.ngo || []).length > 0) {
+                            return (
+                              <div className='flex justify-between items-center text-xs mt-2'>
+                                <span className='text-muted-foreground'>{t('dashboard.donations.supportedNgos')}</span>
+                                <span className="text-right font-medium">{donation.ngo.join(', ')}</span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
                         <div className='flex justify-between items-center text-xs'>
                           <div>
                             <span className='text-muted-foreground'>{t('dashboard.donations.transactionDate')}: </span>
@@ -296,7 +334,7 @@ export default function MyDonationsPage() {
           )}
         </CardContent>
       </Card>
-      <ReceiptDialog transaction={selectedTransaction} open={isReceiptOpen} onOpenChange={setIsReceiptOpen} t={t} />
+      <ReceiptDialog transaction={selectedTransaction} open={isReceiptOpen} onOpenChange={setIsReceiptOpen} t={t} rates={rates} />
     </div>
   );
 }
