@@ -8,7 +8,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { useUser } from '@/firebase';
-import { trackSession, logAdminActivity } from '@/lib/session-tracker';
+import { trackSession, logSessionEvent } from '@/lib/session-tracker';
 import { setAnalyticsUserId } from '@/lib/analytics';
 
 export function SessionTrackerProvider() {
@@ -31,30 +31,17 @@ export function SessionTrackerProvider() {
             void trackSession(uid);
         }
 
-        // Yönetici çalışma çizelgesi: admin ise giriş(open) + ayrılış(close) logla.
-        // Yazma hacmini sınırlamak için yalnızca admin claim'i olanlar loglanır.
-        let isAdmin = false;
-        let openLogged = false;
+        // Giriş(open) + ayrılış(close) çizelgesi — TÜM kullanıcılar için loglanır.
+        // open: oturum başına bir kez; close: visibility-hidden/beforeunload'da
+        // 60sn debounce ile. Süper-admin paneli bu olaylardan online süreyi hesaplar.
         let lastCloseAt = 0;
-        const currentUser = user;
-
-        currentUser.getIdTokenResult()
-            .then(res => {
-                const claims = res.claims as { role?: string; superAdminPermissions?: unknown };
-                isAdmin = claims.role === 'super-admin' || !!claims.superAdminPermissions;
-                if (isAdmin && !openLogged) {
-                    openLogged = true;
-                    void logAdminActivity(uid, 'open');
-                }
-            })
-            .catch(() => { /* claim okunamadı → loglama yok */ });
+        void logSessionEvent(uid, 'open');
 
         const logClose = () => {
-            if (!isAdmin) return;
             const now = Date.now();
             if (now - lastCloseAt < 60_000) return; // 60sn debounce
             lastCloseAt = now;
-            void logAdminActivity(uid, 'close');
+            void logSessionEvent(uid, 'close');
         };
         const onVisibility = () => {
             if (typeof document !== 'undefined' && document.visibilityState === 'hidden') logClose();

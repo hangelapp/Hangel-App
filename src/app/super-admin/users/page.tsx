@@ -15,6 +15,7 @@ import { useFirestore, useCollection, useMemoFirebase, useAuth, useUser, initiat
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { ProfileViewDialog } from './_components/profile-view-dialog';
+import { SessionLogDialog } from './_components/session-log-dialog';
 import { EditUserDialog } from './_components/edit-user-dialog';
 import { AssignEntityDialog } from './_components/assign-entity-dialog';
 import { BulkDeleteCard } from './_components/bulk-delete-card';
@@ -30,6 +31,7 @@ export default function UsersPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'nameAsc' | 'impactDesc' | 'role'>('newest');
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [viewingUser, setViewingUser] = useState<UserRow | null>(null);
+  const [activityUser, setActivityUser] = useState<UserRow | null>(null);
   const [assigningUser, setAssigningUser] = useState<UserRow | null>(null);
   const [permError, setPermError] = useState<string | null>(null);
 
@@ -259,44 +261,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleSendPasswordReset = async (user: UserRow) => {
-    const email = user.personalInfo?.email?.trim();
-    if (!email) {
-      toast({
-        variant: 'destructive',
-        title: 'E-posta yok',
-        description: 'Bu kullanıcının kayıtlı bir e-posta adresi olmadığı için şifre sıfırlama maili gönderilemez.',
-      });
-      return;
-    }
-    try {
-      await initiatePasswordResetEmail(auth, email);
-      try {
-        await updateDoc(doc(db, COLLECTIONS.users, user.id), {
-          passwordResetRequestedAt: new Date().toISOString(),
-        });
-      } catch (logErr) {
-        console.warn('Failed to log passwordResetRequestedAt:', logErr);
-      }
-      toast({
-        title: 'Şifre Sıfırlama Maili Gönderildi',
-        description: `${email} adresine Firebase Auth üzerinden şifre sıfırlama bağlantısı gönderildi.`,
-      });
-    } catch (e) {
-      const code = (e as { code?: string } | null)?.code;
-      const message = e instanceof Error ? e.message : 'Beklenmeyen hata.';
-      toast({
-        variant: 'destructive',
-        title: 'Sıfırlama maili gönderilemedi',
-        description: code === 'auth/user-not-found'
-          ? 'Bu e-posta ile eşleşen Firebase Auth hesabı bulunamadı.'
-          : code === 'auth/invalid-email'
-            ? 'Geçersiz e-posta adresi.'
-            : message,
-      });
-    }
-  };
-
   const handleAdminPasswordChange = (user: UserRow) => {
     // Firebase client SDK başka kullanıcının şifresini değiştiremez; admin SDK gerekir.
     toast({
@@ -400,7 +364,7 @@ export default function UsersPage() {
                 onEdit={setEditingUser}
                 onAssign={setAssigningUser}
                 onSendVerification={handleSendVerification}
-                onSendPasswordReset={handleSendPasswordReset}
+                onShowActivity={setActivityUser}
                 onAdminPasswordChange={handleAdminPasswordChange}
                 onToggleStatus={handleToggleStatus}
                 onDelete={handleDelete}
@@ -423,6 +387,11 @@ export default function UsersPage() {
         user={viewingUser}
         open={!!viewingUser}
         onOpenChange={(o) => !o && setViewingUser(null)}
+      />
+      <SessionLogDialog
+        user={activityUser}
+        open={!!activityUser}
+        onOpenChange={(o) => !o && setActivityUser(null)}
       />
       <AssignEntityDialog
         user={assigningUser}

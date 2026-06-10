@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Eye, KeyRound, MailCheck, Pencil, ShieldQuestion, Trash2, UserPlus } from 'lucide-react';
+import { Clock, Eye, MailCheck, Pencil, ShieldQuestion, Trash2, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { UserRow } from './types';
 import { roleLabel } from './types';
@@ -24,7 +24,7 @@ interface UserRowItemProps {
   onEdit: (user: UserRow) => void;
   onAssign: (user: UserRow) => void;
   onSendVerification: (user: UserRow) => void;
-  onSendPasswordReset: (user: UserRow) => void;
+  onShowActivity: (user: UserRow) => void;
   onAdminPasswordChange: (user: UserRow) => void;
   onToggleStatus: (userId: string, name: string, currentStatus: string) => void;
   onDelete: (user: UserRow) => void;
@@ -36,7 +36,7 @@ export const UserRowItem = ({
   onEdit,
   onAssign,
   onSendVerification,
-  onSendPasswordReset,
+  onShowActivity,
   onAdminPasswordChange,
   onToggleStatus,
   onDelete,
@@ -104,10 +104,10 @@ export const UserRowItem = ({
           variant="outline"
           size="sm"
           className="rounded-xl font-bold h-9 text-blue-700 border-blue-300 hover:bg-blue-50"
-          onClick={() => onSendPasswordReset(user)}
-          title="Firebase Auth üzerinden şifre sıfırlama maili gönder"
+          onClick={() => onShowActivity(user)}
+          title="Kullanıcının giriş/çıkış saatleri ve online kaldığı süre"
         >
-          <KeyRound className="mr-2 h-4 w-4" /> Şifre Sıfırla
+          <Clock className="mr-2 h-4 w-4" /> Giriş/Çıkış
         </Button>
         <Button
           variant="outline"

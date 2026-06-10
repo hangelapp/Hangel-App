@@ -133,12 +133,15 @@ export async function trackSession(uid: string): Promise<void> {
 }
 
 /**
- * Yönetici çalışma çizelgesi için giriş/çıkış olayı loglar.
+ * Giriş/çıkış olayı loglar (çalışma çizelgesi + online süre hesabı için).
  * users/{uid}/activity/{auto} — { type:'open'|'close', at, sessionId, cihaz bilgisi }.
- * Yalnızca admin kullanıcılar için çağrılır (yazma hacmini sınırlamak için).
- * Süper-admin/contracts → set-superadmin sayfasında gün gün gruplanıp gösterilir.
+ * Tüm kullanıcılar için çağrılır; close beforeunload/visibility-hidden'da debounce'lu
+ * yazılır, open ise oturum başına bir kez. Süper-admin paneli bu olayları:
+ *  - set-superadmin sayfasında gün gün gruplayarak,
+ *  - kullanıcı yönetiminde "Giriş/Çıkış" diyaloğunda oturum oturum (online dakika)
+ * gösterir.
  */
-export async function logAdminActivity(uid: string, type: 'open' | 'close'): Promise<void> {
+export async function logSessionEvent(uid: string, type: 'open' | 'close'): Promise<void> {
     if (!uid || typeof window === 'undefined') return;
     const sessionId = getSessionId();
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';

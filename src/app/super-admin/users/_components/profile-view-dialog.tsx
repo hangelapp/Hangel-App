@@ -10,15 +10,64 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Mail, Phone, MapPin, Cake, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Cake, Globe, Clock, CalendarPlus, Smartphone, Monitor } from 'lucide-react';
 import { COLLECTIONS } from '@/firebase/collections';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit, type Timestamp } from 'firebase/firestore';
 import { EntityMultiSelect } from './entity-multi-select';
 import type { UserRow } from './types';
 import { roleLabel } from './types';
 
+type SessionDoc = {
+  id: string;
+  deviceName?: string;
+  browserName?: string;
+  osName?: string;
+  deviceType?: string;
+  createdAt?: Timestamp;
+  lastActiveAt?: Timestamp;
+};
+
+// Firestore Timestamp | ISO string | millis → "10.06.2026 14:32"
+const fmtDateTime = (v: unknown): string | null => {
+  let d: Date | null = null;
+  const ts = v as { toDate?: () => Date } | null;
+  if (ts?.toDate) { try { d = ts.toDate(); } catch { d = null; } }
+  else if (typeof v === 'string') { const t = Date.parse(v); if (!Number.isNaN(t)) d = new Date(t); }
+  else if (typeof v === 'number') d = new Date(v);
+  if (!d || Number.isNaN(d.getTime())) return null;
+  return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
+
 // View (read-only) dialog
 export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow | null; open: boolean; onOpenChange: (o: boolean) => void; }) => {
+  const db = useFirestore();
+  const sessionsQuery = useMemoFirebase(
+    () => (user?.id ? query(collection(db, COLLECTIONS.users, user.id, 'sessions'), orderBy('lastActiveAt', 'desc'), limit(50)) : null),
+    [db, user?.id],
+  );
+  const { data: sessions } = useCollection<SessionDoc>(sessionsQuery);
   if (!user) return null;
+
+  // Hesap oluşturma: user.createdAt → joinDate → en eski oturum createdAt
+  const earliestSession = (sessions || []).reduce<number | null>((min, s) => {
+    const t = s.createdAt?.toDate?.()?.getTime();
+    return t == null ? min : (min == null ? t : Math.min(min, t));
+  }, null);
+  const createdAtStr =
+    fmtDateTime((user as UserRow & { createdAt?: unknown }).createdAt) ||
+    fmtDateTime((user as UserRow & { joinDate?: unknown }).joinDate) ||
+    (earliestSession != null ? fmtDateTime(earliestSession) : null);
+
+  // Son giriş / aktivite + platform (en güncel oturum)
+  const latest = (sessions || [])[0];
+  const lastLoginStr = fmtDateTime(latest?.lastActiveAt);
+  const isApp = latest?.browserName === 'Hangel App';
+  const platformLabel = !latest
+    ? null
+    : isApp
+      ? `Uygulama — ${latest.deviceName || latest.osName || 'cihaz bilinmiyor'}`
+      : `Web — ${[latest.browserName, latest.osName].filter(Boolean).join(' · ') || 'tarayıcı bilinmiyor'}`;
   const pi = (user.personalInfo || {}) as Partial<{
     email: string;
     phone: string;
@@ -65,6 +114,24 @@ export const ProfileViewDialog = ({ user, open, onOpenChange }: { user: UserRow 
             {pi.email && <div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /> {pi.email}</div>}
             {pi.phone && <div className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /> {pi.phone}</div>}
             {pi.website && <div className="flex items-center gap-2 text-sm"><Globe className="h-4 w-4 text-muted-foreground" /> <a href={pi.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{pi.website}</a></div>}
+          </div>
+          <div className="space-y-2 rounded-xl border bg-muted/20 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Hesap & Oturum</p>
+            <div className="flex items-center gap-2 text-sm">
+              <CalendarPlus className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-xs text-muted-foreground">Oluşturma:</span>
+              <span className="font-medium">{createdAtStr || 'Bilinmiyor'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-xs text-muted-foreground">Son giriş:</span>
+              <span className="font-medium">{lastLoginStr || 'Kayıt yok'}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              {isApp ? <Smartphone className="h-4 w-4 text-emerald-600 shrink-0" /> : <Monitor className="h-4 w-4 text-blue-600 shrink-0" />}
+              <span className="text-xs text-muted-foreground">Platform:</span>
+              <span className="font-medium">{platformLabel || 'Kayıt yok'}</span>
+            </div>
           </div>
           <div className="space-y-2">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Demografi</p>
