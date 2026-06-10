@@ -218,6 +218,28 @@ export default function NgoSupportPage() {
                 <Accordion type="multiple" className="w-full">
                   {section.topics.map(topic => {
                     const Icon = topic.icon;
+                    // Yakında (href yok): henüz aktif değil — gri + tıklanamaz, sadece
+                    // okunur. Kullanıcı yanlışlıkla girmeye çalışmasın diye accordion açılmaz.
+                    if (!topic.href) {
+                      return (
+                        <div
+                          key={topic.id}
+                          aria-disabled="true"
+                          className="flex items-center gap-4 p-4 border-b last:border-b-0 opacity-55 cursor-not-allowed select-none"
+                        >
+                          <div className="p-2 rounded-lg bg-muted">
+                            <Icon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-muted-foreground">{topic.label}</p>
+                            <p className="text-xs text-muted-foreground/70 font-normal mt-0.5">{topic.description}</p>
+                          </div>
+                          <span className="shrink-0 inline-flex items-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground border border-muted-foreground/30 rounded-full px-2 py-1">
+                            Yakında
+                          </span>
+                        </div>
+                      );
+                    }
                     return (
                       <AccordionItem value={topic.id} key={topic.id} className="border-b last:border-b-0">
                         <AccordionTrigger className="p-4 text-base hover:no-underline">
