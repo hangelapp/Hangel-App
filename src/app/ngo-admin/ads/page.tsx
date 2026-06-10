@@ -19,6 +19,7 @@ import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
+    Facebook,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -90,6 +91,12 @@ interface ConnectionState {
     customerId?: string;
 }
 
+interface MetaConnectionState {
+    configured: boolean;
+    connected: boolean;
+    adAccountId?: string;
+}
+
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
 const GOOGLE_ADS_URL = 'https://ads.google.com/';
 
@@ -119,6 +126,12 @@ export default function AdsPage() {
     const [connectionLoaded, setConnectionLoaded] = useState(false);
     const [connecting, setConnecting] = useState(false);
     const [publishingId, setPublishingId] = useState<string | null>(null);
+
+    // Meta (Facebook/Instagram) bağlantı durumu — Google ile birebir paralel
+    const [metaConnection, setMetaConnection] = useState<MetaConnectionState>({ configured: false, connected: false });
+    const [metaConnectionLoaded, setMetaConnectionLoaded] = useState(false);
+    const [metaConnecting, setMetaConnecting] = useState(false);
+    const [metaPublishingId, setMetaPublishingId] = useState<string | null>(null);
 
     // Kayıtlı planları çek; 'selected' Set'ini hidrate et.
     useEffect(() => {
@@ -180,6 +193,37 @@ export default function AdsPage() {
         return () => { cancelled = true; };
     }, [user, entityId, refreshConnection]);
 
+    // Meta bağlantı durumunu çek (configured/connected/adAccountId)
+    const refreshMetaConnection = useCallback(async () => {
+        if (!user) return;
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/meta/connection', {
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            if (!res.ok) return;
+            const data = (await res.json().catch(() => null)) as Partial<MetaConnectionState> | null;
+            if (!data) return;
+            setMetaConnection({
+                configured: data.configured === true,
+                connected: data.connected === true,
+                adAccountId: typeof data.adAccountId === 'string' ? data.adAccountId : undefined,
+            });
+        } catch {
+            /* sessizce yoksay; bağlantı durumu olmadan da sayfa çalışır */
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (!user || !entityId) return;
+        let cancelled = false;
+        (async () => {
+            await refreshMetaConnection();
+            if (!cancelled) setMetaConnectionLoaded(true);
+        })();
+        return () => { cancelled = true; };
+    }, [user, entityId, refreshMetaConnection]);
+
     // OAuth popup'tan postMessage dinle
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -194,11 +238,18 @@ export default function AdsPage() {
             } else if (data.type === 'hangel-ads-error') {
                 setConnecting(false);
                 toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'Google Ads hesabı bağlanamadı. Lütfen tekrar dene.' });
+            } else if (data.type === 'hangel-meta-connected') {
+                setMetaConnecting(false);
+                void refreshMetaConnection();
+                toast({ title: 'Meta bağlandı', description: 'Facebook/Instagram reklam hesabın bağlandı; planlarını Meta’da yayına alabilirsin.' });
+            } else if (data.type === 'hangel-meta-error') {
+                setMetaConnecting(false);
+                toast({ variant: 'destructive', title: 'Bağlanamadı', description: data.message || 'Meta reklam hesabı bağlanamadı. Lütfen tekrar dene.' });
             }
         };
         window.addEventListener('message', onMessage);
         return () => window.removeEventListener('message', onMessage);
-    }, [refreshConnection, toast]);
+    }, [refreshConnection, refreshMetaConnection, toast]);
 
     const connectGoogleAds = async () => {
         if (!user) {
@@ -264,6 +315,73 @@ export default function AdsPage() {
             toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
         } finally {
             setPublishingId(null);
+        }
+    };
+
+    const connectMeta = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setMetaConnecting(true);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/meta/start', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const data = (await res.json().catch(() => null)) as { authorizeUrl?: string; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'META_NOT_CONFIGURED') {
+                setMetaConnection((prev) => ({ ...prev, configured: false }));
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Meta bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (!res.ok || !data?.authorizeUrl) {
+                throw new Error(data?.message || 'Bağlantı başlatılamadı.');
+            }
+            const popup = window.open(data.authorizeUrl, 'hangel-meta-oauth', 'width=500,height=660');
+            if (!popup) {
+                throw new Error('Açılır pencere engellendi. Lütfen tarayıcı izinlerini kontrol edin.');
+            }
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Bağlanamadı', description: e instanceof Error ? e.message : 'Bir hata oluştu.' });
+        } finally {
+            setMetaConnecting(false);
+        }
+    };
+
+    const publishMetaPlan = async (planId: string, title?: string) => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Lütfen giriş yapın.' });
+            return;
+        }
+        setMetaPublishingId(planId);
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch('/api/ngo-admin/ads/meta/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ planId }),
+            });
+            const data = (await res.json().catch(() => null)) as { ok?: boolean; status?: PlanStatus; campaignId?: string; errorCode?: string; message?: string } | null;
+            if (res.status === 503 || data?.errorCode === 'META_NOT_CONFIGURED') {
+                toast({ title: 'Yapılandırma bekleniyor', description: 'hangel ekibi Meta bağlantısını yapılandırıyor — çok yakında.' });
+                return;
+            }
+            if (res.status === 409 || data?.errorCode === 'NOT_CONNECTED') {
+                setMetaConnection((prev) => ({ ...prev, connected: false }));
+                toast({ variant: 'destructive', title: 'Hesap bağlı değil', description: 'Önce Meta hesabını bağla, sonra yayına al.' });
+                return;
+            }
+            if (!res.ok || !data?.ok) {
+                throw new Error(data?.message || 'Yayınlanamadı.');
+            }
+            setSavedPlans((prev) => prev.map((p) => (p.id === planId ? { ...p, status: 'active' } : p)));
+            toast({ title: 'Kampanya yayında', description: title ? `"${title}" Meta üzerinde yayına alındı.` : 'Kampanya Meta üzerinde yayına alındı.' });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Yayınlanamadı', description: e instanceof Error ? e.message : 'Lütfen tekrar dene.' });
+        } finally {
+            setMetaPublishingId(null);
         }
     };
 
@@ -729,6 +847,106 @@ export default function AdsPage() {
                                         Henüz kurduğun kampanya yok. Yukarıdan bir reklam planı seç (&quot;Bunu Kur&quot;), sonra buradan tek dokunuşla yayınla.
                                     </p>
                                 )}
+                            </div>
+                        )}
+                    </div>
+                </section>
+
+                {/* META REKLAMLARI (Facebook/Instagram) — Google ile simetrik */}
+                <section className="space-y-2.5">
+                    <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta Reklamları (Facebook/Instagram)</h2>
+                    <div className="rounded-3xl bg-card border border-border/60 shadow-sm p-4 space-y-4">
+                        {!metaConnectionLoaded ? (
+                            <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : !metaConnection.configured ? (
+                            <div className="space-y-3">
+                                <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex items-start gap-3">
+                                    <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                    <div className="space-y-1">
+                                        <p className="text-[14px] font-semibold text-amber-900">hangel ekibi Meta bağlantısını yapılandırıyor — çok yakında</p>
+                                        <p className="text-[12px] text-amber-800 leading-relaxed">
+                                            Hazır olduğunda Facebook/Instagram reklam hesabını buradan bağlayıp kampanyalarını panelden tek dokunuşla yayına alabileceksin.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button disabled
+                                    className="w-full h-12 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center gap-2 text-[15px] font-semibold cursor-not-allowed">
+                                    <Facebook className="h-[18px] w-[18px]" /> Meta Hesabını Bağla
+                                </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: Meta reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
+                            </div>
+                        ) : !metaConnection.connected ? (
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-3">
+                                    <span className="h-10 w-10 rounded-xl bg-[#1877f2]/10 text-[#1877f2] flex items-center justify-center shrink-0">
+                                        <Facebook className="h-5 w-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[15px] font-semibold text-foreground">Meta hesabını bağla</p>
+                                        <p className="text-[13px] text-muted-foreground leading-relaxed">
+                                            Kurduğun reklam planlarını Facebook/Instagram&apos;da yayına almak için Meta reklam hesabını hangel&apos;e bağla. Bağlantı güvenli Facebook ekranında yapılır.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button onClick={connectMeta} disabled={metaConnecting}
+                                    className="w-full h-12 rounded-2xl bg-[#1877f2] text-white flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
+                                    {metaConnecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Facebook className="h-[18px] w-[18px]" /> Meta Hesabını Bağla</>}
+                                </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: Meta reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
+                                    <BadgeCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[14px] font-semibold text-emerald-900">Meta bağlı</p>
+                                        {metaConnection.adAccountId && (
+                                            <span className="inline-flex items-center mt-0.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-emerald-700">
+                                                Reklam Hesabı: {metaConnection.adAccountId}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {publishablePlans.length > 0 ? (
+                                    <div className="space-y-2.5">
+                                        <p className="text-[13px] text-muted-foreground">Kurduğun kampanyalar Meta&apos;da yayına hazır.</p>
+                                        {publishablePlans.map((p) => {
+                                            const meta = KIND_META[p.kind] ?? KIND_META['search-awareness'];
+                                            const Icon = meta.icon;
+                                            return (
+                                                <div key={p.id} className="rounded-2xl border border-border/60 bg-muted/20 p-3.5 flex items-center gap-3">
+                                                    <span className={cn('h-10 w-10 rounded-xl flex items-center justify-center shrink-0', meta.tint)}>
+                                                        <Icon className="h-5 w-5" />
+                                                    </span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-[14px] font-semibold text-foreground truncate">{p.title || meta.label}</p>
+                                                        <p className="text-[12px] text-muted-foreground">{meta.label} · {STATUS_LABEL[p.status] || 'yayına hazır'}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => { if (p.id) void publishMetaPlan(p.id, p.title); }}
+                                                        disabled={metaPublishingId === p.id}
+                                                        className="h-9 rounded-full px-4 text-[13px] font-semibold inline-flex items-center gap-1.5 transition active:scale-95 bg-[#1877f2] text-white disabled:opacity-60 shrink-0">
+                                                        {metaPublishingId === p.id ? <><Loader2 className="h-4 w-4 animate-spin" /> Yayınlanıyor</> : <>Meta&apos;da Yayınla <ChevronRight className="h-4 w-4" /></>}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <p className="text-[12px] text-muted-foreground text-center">
+                                        Henüz kurduğun kampanya yok. Yukarıdan bir reklam planı seç (&quot;Bunu Kur&quot;), sonra buradan Meta&apos;da yayınla.
+                                    </p>
+                                )}
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Not: Meta reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
+                                </p>
                             </div>
                         )}
                     </div>

@@ -118,6 +118,10 @@ export const COLLECTIONS = {
   // STK başına bağlı Google Ads hesabı (OAuth refresh token + customerId).
   // Doc id = ngoId. SADECE Admin SDK yazar/okur (client erişmez, refreshToken secret).
   adAccounts: 'adAccounts',
+  // STK başına bağlı Meta (Facebook/Instagram) reklam hesabı (long-lived
+  // accessToken + adAccountId). Doc id = ngoId. SADECE Admin SDK yazar/okur
+  // (client erişmez, accessToken secret).
+  metaAccounts: 'metaAccounts',
 
   // Messaging — campaigns & templating
   campaigns: 'campaigns',

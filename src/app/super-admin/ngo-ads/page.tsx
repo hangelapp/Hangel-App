@@ -43,6 +43,7 @@ interface AdminPlan {
     estReach?: number;
     keywords?: string[];
     goal?: string;
+    platform?: string;
 }
 
 type PlanStatus = 'submitted' | 'approved' | 'linked' | 'active' | 'rejected';
@@ -55,6 +56,16 @@ interface PerfMetric {
     clicks: number;
     ctr: number;
     costMicros: number;
+}
+
+/** /api/super-admin/ngo-ads/meta-performance metrik satırı. */
+interface MetaPerfMetric {
+    ngoId: string;
+    adAccountId?: string;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    spend: number;
 }
 
 /** Mevcut status'a göre sunulacak ilerletme aksiyonları. */
@@ -79,7 +90,7 @@ const STATUS_TINT: Record<string, string> = {
 
 const PLATFORMS = [
     { key: 'google', label: 'Google Ads', active: true },
-    { key: 'meta', label: 'Meta', active: false },
+    { key: 'meta', label: 'Meta', active: true },
     { key: 'tiktok', label: 'TikTok', active: false },
 ] as const;
 
@@ -103,6 +114,11 @@ function formatCost(costMicros: number): string {
     return `${(costMicros / 1e6).toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`;
 }
 
+/** Meta spend (hesap para biriminde, ham birim) → "1.234 ₺". */
+function formatSpend(spend: number): string {
+    return `${spend.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} ₺`;
+}
+
 /** Plan listesinden status sayımlarını yeniden hesapla. */
 function recomputeCounts(list: AdminPlan[]): Record<string, number> {
     const next: Record<string, number> = {};
@@ -124,6 +140,9 @@ export default function NgoAdsAdminPage() {
     const [pendingId, setPendingId] = useState<string | null>(null);
     const [perfConfigured, setPerfConfigured] = useState(false);
     const [perf, setPerf] = useState<PerfMetric[]>([]);
+    const [metaConfigured, setMetaConfigured] = useState(false);
+    const [metaPerf, setMetaPerf] = useState<MetaPerfMetric[]>([]);
+    const [metaLoading, setMetaLoading] = useState(false);
 
     const fetchStats = useCallback(async () => {
         if (!user) return;
@@ -160,6 +179,34 @@ export default function NgoAdsAdminPage() {
     }, [user]);
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
+
+    const fetchMetaPerf = useCallback(async () => {
+        if (!user) return;
+        setMetaLoading(true);
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/super-admin/ngo-ads/meta-performance', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = (await res.json()) as { configured?: boolean; metrics?: MetaPerfMetric[] };
+                setMetaConfigured(!!data.configured);
+                setMetaPerf(data.metrics ?? []);
+            } else {
+                setMetaConfigured(false);
+                setMetaPerf([]);
+            }
+        } catch {
+            setMetaConfigured(false);
+            setMetaPerf([]);
+        } finally {
+            setMetaLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (platform === 'meta') fetchMetaPerf();
+    }, [platform, fetchMetaPerf]);
 
     const changeStatus = useCallback(async (planId: string, status: PlanStatus) => {
         if (!user || pendingId) return;
@@ -201,15 +248,33 @@ export default function NgoAdsAdminPage() {
         { label: 'Aktif', value: counts.active ?? 0, tint: 'bg-emerald-500/10 text-emerald-600', status: 'active' },
     ];
 
-    const visiblePlans = statusFilter ? plans.filter((p) => p.status === statusFilter) : plans;
+    // Seçili platforma göre planları ayrıştır: platform alanı yoksa Google sayılır
+    // (eski Google planları geriye dönük uyumlu kalsın).
+    const platformPlans = plans.filter((p) => (p.platform ?? 'google') === platform);
+    const visiblePlans = statusFilter ? platformPlans.filter((p) => p.status === statusFilter) : platformPlans;
 
     // ngoId → ngoName (mevcut plan listesinden türet) ve ngoId → performans satırı.
     const ngoNameById = new Map<string, string>();
     for (const p of plans) {
         if (p.ngoName) ngoNameById.set(p.ngoId, p.ngoName);
     }
+    // PlanRow satır içi performans rozeti: seçili platforma göre kaynak değişir.
+    // Meta spend'i PerfMetric.costMicros formatına çevir (formatCost 1e6'ya böler).
     const perfByNgoId = new Map<string, PerfMetric>();
-    for (const m of perf) perfByNgoId.set(m.ngoId, m);
+    if (platform === 'meta') {
+        for (const m of metaPerf) {
+            perfByNgoId.set(m.ngoId, {
+                ngoId: m.ngoId,
+                customerId: m.adAccountId,
+                impressions: m.impressions,
+                clicks: m.clicks,
+                ctr: m.ctr,
+                costMicros: m.spend * 1e6,
+            });
+        }
+    } else {
+        for (const m of perf) perfByNgoId.set(m.ngoId, m);
+    }
 
     return (
         <div className="min-h-dvh bg-[#f5f5f7]">
@@ -301,14 +366,14 @@ export default function NgoAdsAdminPage() {
                         <section className="space-y-2.5">
                             <div className="flex items-center justify-between px-1">
                                 <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Gelen Reklam Planları</h2>
-                                {plans.length > 0 && (
+                                {platformPlans.length > 0 && (
                                     <span className="text-[12px] text-muted-foreground">
-                                        {statusFilter ? `${visiblePlans.length} / ${plans.length} plan` : `${plans.length} plan`}
+                                        {statusFilter ? `${visiblePlans.length} / ${platformPlans.length} plan` : `${platformPlans.length} plan`}
                                     </span>
                                 )}
                             </div>
                             <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
-                                {plans.length === 0 ? (
+                                {platformPlans.length === 0 ? (
                                     <div className="p-8 text-center space-y-2">
                                         <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
                                             <Link2 className="h-6 w-6 text-muted-foreground" />
@@ -344,8 +409,8 @@ export default function NgoAdsAdminPage() {
                             </div>
                         </section>
 
-                        {/* REKLAM PERFORMANSI — yapılandırıldıysa aktif */}
-                        {perfConfigured && (
+                        {/* GOOGLE REKLAM PERFORMANSI — yapılandırıldıysa aktif */}
+                        {platform === 'google' && perfConfigured && (
                             <section className="space-y-2.5">
                                 <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Reklam Performansı (Son 30 gün)</h2>
                                 <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
@@ -375,6 +440,58 @@ export default function NgoAdsAdminPage() {
                                                         <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(m.clicks)} />
                                                         <PerfStat icon={Percent} label="CTR" value={formatCtr(m.ctr)} />
                                                         <PerfStat icon={Wallet} label="Harcama" value={formatCost(m.costMicros)} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* META REKLAM PERFORMANSI — meta sekmesi seçiliyken */}
+                        {platform === 'meta' && (
+                            <section className="space-y-2.5">
+                                <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta Reklam Performansı (Son 30 gün)</h2>
+                                <div className="rounded-3xl bg-card border border-border/60 shadow-sm overflow-hidden">
+                                    {metaLoading ? (
+                                        <div className="flex justify-center py-10"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>
+                                    ) : !metaConfigured ? (
+                                        <div className="p-8 text-center space-y-2">
+                                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                                <Plug className="h-6 w-6 text-muted-foreground" />
+                                            </span>
+                                            <p className="font-semibold text-[15px] text-foreground">Meta henüz yapılandırılmadı</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                                Meta bağlantısı yapılandırılınca aktif olur; STK&apos;lar hesabını bağlayıp kampanya yayınladıkça metrikler burada görünür.
+                                            </p>
+                                        </div>
+                                    ) : metaPerf.length === 0 ? (
+                                        <div className="p-8 text-center space-y-2">
+                                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-[16px] bg-secondary mx-auto">
+                                                <BarChart3 className="h-6 w-6 text-muted-foreground" />
+                                            </span>
+                                            <p className="font-semibold text-[15px] text-foreground">Henüz performans verisi yok</p>
+                                            <p className="text-[13px] text-muted-foreground max-w-md mx-auto leading-relaxed">
+                                                STK&apos;lar Meta hesabını bağlayıp kampanya yayınladıkça gösterim/tıklama metrikleri burada görünür.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-border/50 max-h-[28rem] overflow-y-auto">
+                                            {metaPerf.map((m) => (
+                                                <div key={m.ngoId} className="px-4 py-3 space-y-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0"><BarChart3 className="h-4 w-4" /></span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-[14px] font-medium text-foreground truncate">{ngoNameById.get(m.ngoId) || m.ngoId}</p>
+                                                            {m.adAccountId && <p className="text-[12px] text-muted-foreground truncate">Reklam Hesabı: {m.adAccountId}</p>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 ml-12">
+                                                        <PerfStat icon={Eye} label="Gösterim" value={formatN(m.impressions)} />
+                                                        <PerfStat icon={MousePointerClick} label="Tıklama" value={formatN(m.clicks)} />
+                                                        <PerfStat icon={Percent} label="CTR" value={formatCtr(m.ctr)} />
+                                                        <PerfStat icon={Wallet} label="Harcama" value={formatSpend(m.spend)} />
                                                     </div>
                                                 </div>
                                             ))}
