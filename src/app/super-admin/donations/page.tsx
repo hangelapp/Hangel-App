@@ -16,10 +16,11 @@ import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import {
-    collection, doc, query, orderBy, updateDoc, addDoc, serverTimestamp, writeBatch,
+    collection, doc, query, orderBy, updateDoc, addDoc, setDoc, serverTimestamp, writeBatch,
 } from 'firebase/firestore';
+import { normalizeRates, type DonationRates } from '@/lib/donation-split';
 import {
     HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText, Wallet,
 } from 'lucide-react';
@@ -44,6 +45,10 @@ type Donation = {
     status?: string;
     ngo?: string[];
     ngoIds?: string[];
+    ngoSplit?: { ngoId: string; ngoName: string; amount: number }[];
+    split?: { gross?: number; netAfterTax?: number; ngoShareTotal?: number; hangelShare?: number; perNgo?: number; ngoCount?: number };
+    period?: string;
+    settlementStatus?: string;
     createdAt?: unknown;
     payoutDate?: unknown;
 };
@@ -130,13 +135,18 @@ export default function DonationsAdminPage() {
         const map = new Map<string, EarningRow>();
         for (const d of list) {
             if (d.type === 'income') continue;
-            const amount = parseFloat(d.donationAmount || '0') || 0;
-            const ngoNames = d.ngo && d.ngo.length > 0 ? d.ngo : ['Atanmamış'];
             const status = d.status || 'İşleme Alındı';
             const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
             const payoutMaybe = d.payoutDate as { toDate?: () => Date } | undefined;
             const payoutMs = payoutMaybe?.toDate ? payoutMaybe.toDate().getTime() : null;
-            for (const n of ngoNames) {
+            // NET hak ediş: yeni kayıtlar ngoSplit taşır (dernek başına net tutar).
+            // Eski kayıtlar (ngoSplit yok) → brüt donationAmount'ı dernek sayısına böl.
+            const gross = parseFloat(d.donationAmount || '0') || 0;
+            const entries: { name: string; amount: number }[] =
+                Array.isArray(d.ngoSplit) && d.ngoSplit.length > 0
+                    ? d.ngoSplit.map(s => ({ name: s.ngoName || s.ngoId, amount: Number(s.amount) || 0 }))
+                    : (d.ngo && d.ngo.length > 0 ? d.ngo : ['Atanmamış']).map(n => ({ name: n, amount: gross / (d.ngo?.length || 1) }));
+            for (const { name: n, amount } of entries) {
                 if (!map.has(n)) {
                     map.set(n, {
                         ngo: n, totalAmount: 0, pendingAmount: 0, paidAmount: 0,
@@ -161,6 +171,57 @@ export default function DonationsAdminPage() {
     }, [list]);
 
     const [payoutTarget, setPayoutTarget] = useState<string | null>(null);
+    const [nowMs] = useState<number>(() => Date.now());
+
+    // Bağış oranları (ayarlanabilir) — webhook bunları okuyup dağıtımı yapar.
+    const ratesRef = useMemoFirebase(() => (db ? doc(db, COLLECTIONS.siteSettings, 'donationRates') : null), [db]);
+    const { data: ratesDoc } = useDoc<Partial<DonationRates>>(ratesRef);
+    const rates = useMemo(() => normalizeRates(ratesDoc), [ratesDoc]);
+    const [rateForm, setRateForm] = useState<{ incomeTaxRate: string; vatRate: string; hangelCommissionRate: string } | null>(null);
+    const [savingRates, setSavingRates] = useState(false);
+    const effRateForm = rateForm ?? {
+        incomeTaxRate: String(Math.round(rates.incomeTaxRate * 100)),
+        vatRate: String(Math.round(rates.vatRate * 100)),
+        hangelCommissionRate: String(Math.round(rates.hangelCommissionRate * 100)),
+    };
+    const saveRates = async () => {
+        if (!db || !ratesRef) return;
+        setSavingRates(true);
+        try {
+            const toFrac = (s: string) => Math.min(1, Math.max(0, (parseFloat(s) || 0) / 100));
+            await setDoc(ratesRef, {
+                incomeTaxRate: toFrac(effRateForm.incomeTaxRate),
+                vatRate: toFrac(effRateForm.vatRate),
+                hangelCommissionRate: toFrac(effRateForm.hangelCommissionRate),
+                updatedAt: serverTimestamp(),
+            }, { merge: true });
+            toast({ title: 'Oranlar kaydedildi', description: 'Yeni bağışlardan itibaren bu oranlar uygulanır.' });
+            setRateForm(null);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Kaydedilemedi', description: e instanceof Error ? e.message : '' });
+        } finally { setSavingRates(false); }
+    };
+
+    // Marka kazançları — her markanın oluşturduğu bağış (brüt + net + hangel) + aylık/günlük.
+    const brandEarnings = useMemo(() => {
+        const todayStr = new Date(nowMs).toISOString().slice(0, 10);
+        const monthStr = todayStr.slice(0, 7);
+        const map = new Map<string, { brand: string; gross: number; ngoNet: number; hangel: number; count: number; monthGross: number; todayGross: number }>();
+        for (const d of list) {
+            if (d.type === 'income') continue;
+            const key = d.brandName || d.brand || d.brandId || 'Bilinmeyen';
+            if (!map.has(key)) map.set(key, { brand: key, gross: 0, ngoNet: 0, hangel: 0, count: 0, monthGross: 0, todayGross: 0 });
+            const e = map.get(key)!;
+            const gross = parseFloat(d.donationAmount || '0') || 0;
+            e.gross += gross;
+            e.ngoNet += Number(d.split?.ngoShareTotal) || 0;
+            e.hangel += Number(d.split?.hangelShare) || 0;
+            e.count++;
+            if ((d.period || d.date?.slice(0, 7)) === monthStr) e.monthGross += gross;
+            if (d.date === todayStr) e.todayGross += gross;
+        }
+        return Array.from(map.values()).sort((a, b) => b.gross - a.gross);
+    }, [list, nowMs]);
 
     const fmtApproval = (ms: number | null) => {
         if (!ms) return '—';
@@ -299,19 +360,43 @@ export default function DonationsAdminPage() {
                 </Card>
             </div>
 
+            {/* Bağış oranları — webhook dağıtımı bunları uygular */}
+            <Card className="rounded-2xl border-primary/20 bg-primary/5">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2"><Wallet className="h-4 w-4 text-primary" /> Bağış Dağıtım Oranları</CardTitle>
+                    <CardDescription>Brüt bağıştan düşülür; kalan net kullanıcının 2 derneğine %50/%50 paylaşılır. Yeni bağışlardan itibaren geçerli.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap items-end gap-3">
+                    {([['incomeTaxRate', 'Gelir Vergisi %'], ['vatRate', 'KDV %'], ['hangelCommissionRate', 'hangel Komisyonu %']] as const).map(([k, label]) => (
+                        <div key={k} className="space-y-1">
+                            <Label className="text-xs">{label}</Label>
+                            <Input type="number" min={0} max={100} className="h-10 w-28 rounded-xl"
+                                value={effRateForm[k]}
+                                onChange={e => setRateForm({ ...effRateForm, [k]: e.target.value })} />
+                        </div>
+                    ))}
+                    <Button onClick={saveRates} disabled={savingRates} className="rounded-xl h-10">
+                        {savingRates ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Oranları Kaydet
+                    </Button>
+                </CardContent>
+            </Card>
+
             <Card className="rounded-[2rem] border-black/5 shadow-xl">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><HandCoins className="h-5 w-5" /> Bağışlar &amp; Hakedişler</CardTitle>
-                    <CardDescription>İşlem detayları ve STK bazında toplam hak edişler.</CardDescription>
+                    <CardDescription>İşlem detayları, STK bazında hak edişler ve marka bazında oluşan bağışlar.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="donations">
-                        <TabsList className="grid w-full grid-cols-2">
+                        <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="donations">
                                 <FileText className="h-4 w-4 mr-2" /> BAĞIŞLAR ({stats.count})
                             </TabsTrigger>
                             <TabsTrigger value="earnings">
                                 <Building className="h-4 w-4 mr-2" /> HAKEDİŞLER ({ngoEarnings.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="brands">
+                                <Wallet className="h-4 w-4 mr-2" /> MARKALAR ({brandEarnings.length})
                             </TabsTrigger>
                         </TabsList>
 
@@ -464,6 +549,44 @@ export default function DonationsAdminPage() {
                                                 <td className="p-4" />
                                                 <td className="p-4" />
                                             </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="brands" className="mt-4">
+                            {brandEarnings.length === 0 ? (
+                                <div className="py-16 text-center text-muted-foreground">
+                                    <Wallet className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                                    <p>Marka bağışı yok.</p>
+                                </div>
+                            ) : (
+                                <div className="border rounded-2xl overflow-hidden overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-muted/30">
+                                            <tr>
+                                                <th className="text-left p-4 font-bold">Marka</th>
+                                                <th className="text-right p-4 font-bold">Toplam Bağış (brüt)</th>
+                                                <th className="text-right p-4 font-bold text-green-600">STK Net</th>
+                                                <th className="text-right p-4 font-bold text-primary">hangel</th>
+                                                <th className="text-right p-4 font-bold">Bu Ay</th>
+                                                <th className="text-right p-4 font-bold">Bugün</th>
+                                                <th className="text-right p-4 font-bold">İşlem</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {brandEarnings.map(b => (
+                                                <tr key={b.brand} className="hover:bg-muted/20">
+                                                    <td className="p-4 font-semibold">{b.brand}</td>
+                                                    <td className="p-4 text-right font-bold">{fmtAmount(b.gross)}</td>
+                                                    <td className="p-4 text-right text-green-700">{fmtAmount(b.ngoNet)}</td>
+                                                    <td className="p-4 text-right text-primary">{fmtAmount(b.hangel)}</td>
+                                                    <td className="p-4 text-right">{fmtAmount(b.monthGross)}</td>
+                                                    <td className="p-4 text-right">{fmtAmount(b.todayGross)}</td>
+                                                    <td className="p-4 text-right text-muted-foreground">{b.count}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>

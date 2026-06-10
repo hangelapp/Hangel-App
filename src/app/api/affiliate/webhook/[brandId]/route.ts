@@ -34,6 +34,7 @@ import crypto from 'crypto';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
+import { normalizeRates, computeDonationSplit, periodKey, type DonationRates } from '@/lib/donation-split';
 
 export const runtime = 'nodejs';
 
@@ -257,6 +258,35 @@ export async function POST(req: Request, { params }: { params: Promise<{ brandId
     const nowDate = new Date(payload.completedAt * 1000);
     const datePart = nowDate.toISOString().split('T')[0];
     const timePart = nowDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const period = periodKey(nowDate);
+
+    // Bağış dağıtımı: oranlar + kullanıcının seçtiği 2 dernek. Vergi+komisyon
+    // düşülüp net %50/%50 paylaştırılır; 2 dernek seçilmemişse "atanmamış" kalır.
+    let rates: DonationRates;
+    try {
+      const rSnap = await db.collection(COLLECTIONS.siteSettings).doc('donationRates').get();
+      rates = normalizeRates(rSnap.exists ? (rSnap.data() as Partial<DonationRates>) : null);
+    } catch { rates = normalizeRates(null); }
+
+    let supportedNgoIds: string[] = [];
+    try {
+      const uSnap = await userRef.get();
+      const arr = (uSnap.data() as { supportedNgos?: string[] } | undefined)?.supportedNgos;
+      if (Array.isArray(arr)) supportedNgoIds = arr.filter((x): x is string => typeof x === 'string').slice(0, 2);
+    } catch { /* okunamazsa atanmamış kalır */ }
+
+    const ngoNames: string[] = [];
+    for (const nid of supportedNgoIds) {
+      try {
+        const nSnap = await db.collection(COLLECTIONS.ngos).doc(nid).get();
+        ngoNames.push((nSnap.data() as { name?: string } | undefined)?.name || nid);
+      } catch { ngoNames.push(nid); }
+    }
+
+    const split = computeDonationSplit(payload.commission, rates, supportedNgoIds.length);
+    const assigned = supportedNgoIds.length === 2;
+    const perNgoEntries = supportedNgoIds.map((nid, i) => ({ ngoId: nid, ngoName: ngoNames[i] || nid, amount: split.perNgo }));
+
     try {
       await db.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
@@ -285,12 +315,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ brandId
           currency: payload.currency ?? 'TRY',
           date: datePart,
           time: timePart,
+          period,
           type: 'expense',
-          // PDF madde #2: işleme alındı (turuncu). Süper admin 72 gün sonra
+          // PDF madde #2: işleme alındı (turuncu). Süper admin hesap kesiminde
           // "Yatırıldı" (yeşil) yapacak.
           status: 'İşleme Alındı',
-          ngo: ['Atanmamış'],
-          ngoIds: [],
+          // Dağıtım: kullanıcının 2 derneğine %50/%50 (seçilmemişse atanmamış).
+          ngo: assigned ? ngoNames : ['Atanmamış'],
+          ngoIds: assigned ? supportedNgoIds : [],
+          ngoSplit: perNgoEntries,        // [{ngoId, ngoName, amount}]
+          split: {                         // vergi/komisyon kırılımı (kayıtlı)
+            gross: split.gross,
+            incomeTax: split.incomeTax,
+            vat: split.vat,
+            netAfterTax: split.netAfterTax,
+            ngoShareTotal: split.ngoShareTotal,
+            hangelShare: split.hangelShare,
+            perNgo: split.perNgo,
+            ngoCount: split.ngoCount,
+            rates,
+          },
+          // Hak ediş/ödeme takibi: atanmamış → bekliyor; atanan → 'pending' (ödenmedi).
+          settlementStatus: assigned ? 'pending' : 'unassigned',
           createdAt: FieldValue.serverTimestamp(),
           confirmationId: confId,
         });
