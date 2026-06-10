@@ -294,6 +294,21 @@ export default function NgoSelectionPage() {
                 return;
             }
         }
+        // 2 dernek seçildiğinde: daha önce "atanmamış" kalan bağışları geriye dönük
+        // bu 2 derneğe dağıt (best-effort; başarısız olsa da seçim kaydedildi).
+        if (selectedNgos.length === 2 && authUser) {
+            try {
+                const token = await authUser.getIdToken();
+                const res = await fetch('/api/donations/assign-unassigned', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const data = await res.json().catch(() => null) as { assigned?: number } | null;
+                if (res.ok && data?.assigned && data.assigned > 0) {
+                    toast({ title: 'Bekleyen bağışların atandı', description: `${data.assigned} bağış seçtiğin derneklere dağıtıldı.` });
+                }
+            } catch { /* backfill best-effort */ }
+        }
         // Radikal onboarding kısaltma: ngo-selection ZORUNLU adım. Sonrası
         // opsiyonel. Direkt /timeline'a yönlendiriyoruz — kullanıcı orada
         // banner ile profil tamamlama daveti görür.
