@@ -282,7 +282,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         await sendPushToUser(adminUid, {
           title: notifTitle,
           body: notifBody,
-          clickAction: `/ngo-admin/volunteer-completions/${completionRef.id}`,
+          // /ngo-admin/volunteer-completions/{id} rotası YOK → 404 → siyah ekran.
+          // Completion onayları /ngo-admin/volunteer sayfasında yapılıyor; oraya yönlendir
+          // (completionId data'da duruyor).
+          clickAction: `/ngo-admin/volunteer`,
           data: {
             type: 'volunteer_completion_pending_review',
             completionId: completionRef.id,

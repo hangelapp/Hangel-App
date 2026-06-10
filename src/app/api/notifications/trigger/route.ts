@@ -112,7 +112,10 @@ function buildPayloadAndPath(event: string, ctx: TriggerContext): { payload: Pus
                 payload: {
                     title: `🩸 Acil kan ihtiyacı — ${ctx.bloodType || 'tüm gruplar'}`,
                     body: `${ctx.city || 'Yakınında'} acil kan bağışına ihtiyaç var.`,
-                    clickAction: ctx.requestId ? `/emergency/${ctx.requestId}` : '/emergency',
+                    // /emergency/{requestId} dinamik rotası YOK → 404 → iOS/Android WebView'de
+                    // siyah ekran (notificationActionPerformed window.location.assign ile 404'e
+                    // gidiyordu). requestId zaten data'da taşınıyor; var olan liste sayfasına yönlendir.
+                    clickAction: '/emergency',
                     data: { type: 'blood_emergency', requestId: ctx.requestId || '', bloodType: ctx.bloodType || '' },
                 },
                 notifData: {
