@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { allProvinces, districtsData, neighborhoodsData } from '@/lib/data';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
-import TransparencyEditor from './TransparencyEditor';
+import TransparencyEditor from '@/components/super-admin/transparency-editor';
 
 const MEMBERSHIP_OPTIONS = [
     'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',

@@ -12,9 +12,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox, CheckCircle, Clock } from 'lucide-react';
+import { Edit3, Loader2, Plus, ShieldCheck, Trash2, Search, Inbox, CheckCircle, Clock, Eye, ExternalLink, FileText, FolderOpen } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
+import TransparencyEditor from '@/components/super-admin/transparency-editor';
 
 interface NGORow extends NGO {
   id: string;
@@ -136,9 +137,12 @@ export default function TransparencyPage() {
   // Onay bekleyen şeffaflık belgeleri — STK'ların transparency/{adminUid} kayıtları.
   const { user: authUser } = useUser();
   const transparencyQuery = useMemoFirebase(() => (db ? collection(db, COLLECTIONS.transparency) : null), [db]);
-  type TItem = { id: number; name: string; points: number; isCompleted?: boolean; status?: string };
+  type TItem = { id: number; name: string; points: number; isCompleted?: boolean; status?: string; type?: string; fileUrl?: string; fileName?: string; linkUrl?: string; textValue?: string; selectedOptions?: string[] };
   const { data: transparencyDocs, isLoading: tLoading } = useCollection<{ id: string; criteria?: TItem[] }>(transparencyQuery);
   const [approvingKey, setApprovingKey] = useState<string | null>(null);
+  const [previewItem, setPreviewItem] = useState<TItem | null>(null);
+  // Süper-admin'in belge/bilgi düzenleyip onaylayabildiği tam editör hedefi.
+  const [editorTarget, setEditorTarget] = useState<{ ngoId: string; ownerUid: string; name: string } | null>(null);
 
   const ngoByAdmin = useMemo(() => {
     const m = new Map<string, NGORow>();
@@ -276,24 +280,41 @@ export default function TransparencyPage() {
               {pendingQueue.map(p => (
                 <Card key={p.ownerUid} className="rounded-2xl border-amber-300/50">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-amber-500" />
-                      {p.ngo?.name || `STK (admin: ${p.ownerUid.slice(0, 6)}…)`}
-                    </CardTitle>
-                    <CardDescription>{p.items.length} belge/bilgi onay bekliyor</CardDescription>
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="min-w-0">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-amber-500" />
+                          {p.ngo?.name || `STK (admin: ${p.ownerUid.slice(0, 6)}…)`}
+                        </CardTitle>
+                        <CardDescription>{p.items.length} belge/bilgi onay bekliyor</CardDescription>
+                      </div>
+                      {p.ngo?.id && (
+                        <Button size="sm" variant="outline" className="rounded-xl shrink-0" onClick={() => setEditorTarget({ ngoId: p.ngo!.id, ownerUid: p.ownerUid, name: p.ngo!.name })}>
+                          <Edit3 className="h-4 w-4 mr-1.5" /> İncele & Düzenle
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {p.items.map(it => (
-                      <div key={it.id} className="flex items-center justify-between gap-3 p-2.5 rounded-xl border bg-amber-500/5">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{it.name}</p>
-                          <p className="text-[11px] text-muted-foreground">+{it.points} puan</p>
+                    {p.items.map(it => {
+                      const hasContent = !!(it.fileUrl || it.linkUrl || it.textValue || (it.selectedOptions && it.selectedOptions.length));
+                      return (
+                        <div key={it.id} className="flex items-center justify-between gap-3 p-2.5 rounded-xl border bg-amber-500/5">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{it.name}</p>
+                            <p className="text-[11px] text-muted-foreground">+{it.points} puan</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button size="icon" variant="ghost" className="h-9 w-9" aria-label="İncele" disabled={!hasContent} onClick={() => setPreviewItem(it)}>
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button size="sm" disabled={approvingKey === `${p.ownerUid}:${it.id}`} onClick={() => approveItem(p.ownerUid, it.id, true)} className="bg-green-600 hover:bg-green-700">
+                              {approvingKey === `${p.ownerUid}:${it.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 mr-1.5" /> Onayla</>}
+                            </Button>
+                          </div>
                         </div>
-                        <Button size="sm" disabled={approvingKey === `${p.ownerUid}:${it.id}`} onClick={() => approveItem(p.ownerUid, it.id, true)} className="bg-green-600 hover:bg-green-700">
-                          {approvingKey === `${p.ownerUid}:${it.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <><CheckCircle className="h-4 w-4 mr-1.5" /> Onayla</>}
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               ))}
@@ -336,8 +357,11 @@ export default function TransparencyPage() {
                       <ShieldCheck className="mr-1 h-3 w-3 text-primary" />
                       {ngo.transparencyScore || 0} puan
                     </Badge>
+                    <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setEditorTarget({ ngoId: ngo.id, ownerUid: (ngo as { adminUserId?: string }).adminUserId || '', name: ngo.name })}>
+                      <FolderOpen className="mr-2 h-4 w-4" /> Belgeler
+                    </Button>
                     <Button size="sm" variant="outline" className="rounded-xl" onClick={() => setEditingNgo(ngo)}>
-                      <Edit3 className="mr-2 h-4 w-4" /> Düzenle
+                      <Edit3 className="mr-2 h-4 w-4" /> Puan
                     </Button>
                   </div>
                 ))}
@@ -440,6 +464,59 @@ export default function TransparencyPage() {
         onOpenChange={(o) => !o && setEditingNgo(null)}
         onSave={handleSaveNgo}
       />
+
+      {/* Tam şeffaflık editörü — süper-admin STK'nın belge/link/bilgilerini düzenler + onaylar */}
+      <Dialog open={!!editorTarget} onOpenChange={(o) => !o && setEditorTarget(null)}>
+        <DialogContent className="rounded-3xl max-w-2xl max-h-[88vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" /> {editorTarget?.name} — Şeffaflık Belgeleri
+            </DialogTitle>
+            <DialogDescription>Belge yükle/değiştir, link veya bilgi gir, işaretle ve kaydet. Kaydedilen maddeler onaylı sayılır, STK puanı otomatik hesaplanır.</DialogDescription>
+          </DialogHeader>
+          {editorTarget && (
+            <TransparencyEditor ngoId={editorTarget.ngoId} ownerUid={editorTarget.ownerUid || null} ngoName={editorTarget.name} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Tekil madde önizleme — onay bekleyen belge/link/bilgi */}
+      <Dialog open={!!previewItem} onOpenChange={(o) => !o && setPreviewItem(null)}>
+        <DialogContent className="rounded-3xl max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{previewItem?.name}</DialogTitle>
+          </DialogHeader>
+          {previewItem && (
+            <div className="py-2 space-y-3 max-h-[70vh] overflow-y-auto">
+              {previewItem.fileUrl && (
+                <div className="space-y-2">
+                  {/\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(previewItem.fileUrl) ? (
+                    <img src={previewItem.fileUrl} alt={previewItem.fileName || previewItem.name} className="w-full rounded-lg border" />
+                  ) : /\.pdf(\?|$)/i.test(previewItem.fileUrl) ? (
+                    <iframe src={previewItem.fileUrl} title={previewItem.name} className="w-full h-[60vh] rounded-lg border" />
+                  ) : null}
+                  <a href={previewItem.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                    <FileText className="h-4 w-4" /> {previewItem.fileName || 'Belgeyi yeni sekmede aç'}
+                  </a>
+                </div>
+              )}
+              {previewItem.linkUrl && (
+                <a href={previewItem.linkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline break-all">
+                  <ExternalLink className="h-4 w-4 shrink-0" /> {previewItem.linkUrl}
+                </a>
+              )}
+              {previewItem.textValue && (
+                <p className="text-sm bg-muted/50 rounded-lg p-3 whitespace-pre-wrap">{previewItem.textValue}</p>
+              )}
+              {previewItem.selectedOptions && previewItem.selectedOptions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {previewItem.selectedOptions.map(o => <Badge key={o} variant="secondary">{o}</Badge>)}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
