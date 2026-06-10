@@ -16,6 +16,7 @@ export const ROUTE_KINDS: Record<string, EntityKind[]> = {
     '/ngo-admin/website': ['ngo'],
     '/ngo-admin/sms': ['ngo'],
     '/ngo-admin/mail': ['ngo'],
+    '/ngo-admin/messaging-packages': ['ngo'],
     '/ngo-admin/ads': ['ngo'],
     '/ngo-admin/online-meeting': ['ngo'],
     '/ngo-admin/design-tools': ['ngo'],

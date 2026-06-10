@@ -46,6 +46,7 @@ import {
   LineChart,
   Loader2,
   Image as ImageIcon,
+  Wallet,
   type LucideIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -135,10 +136,11 @@ const NGO_MENU: MenuGroup[] = [
     ],
   },
   {
-    title: 'Pazarlama & İletişim (Yakında)',
+    title: 'Pazarlama & İletişim',
     items: [
-      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare, comingSoon: true },
-      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, comingSoon: true },
+      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare },
+      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail },
+      { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet },
       { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, comingSoon: true },
       { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Send, comingSoon: true },
     ],
