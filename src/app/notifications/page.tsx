@@ -25,6 +25,7 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'invitation': UserPlus,
   'emergency-blood': Droplet,
   'emergency-blood-contact': Droplet,
+  'emergency-blood-thanks': Heart,
   'volunteer': Heart,
   'donation': Sparkles,
   'authorization': ShieldCheck,
@@ -35,6 +36,7 @@ const typeColor: Record<string, string> = {
   'invitation': 'text-blue-600 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/30',
   'emergency-blood': 'text-red-600 bg-red-100 dark:text-red-300 dark:bg-red-900/30',
   'emergency-blood-contact': 'text-red-700 bg-red-50 dark:text-red-300 dark:bg-red-900/20',
+  'emergency-blood-thanks': 'text-primary bg-primary/10',
   'volunteer': 'text-green-600 bg-green-100 dark:text-green-300 dark:bg-green-900/30',
   'donation': 'text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30',
   'authorization': 'text-indigo-600 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30',
@@ -142,60 +144,24 @@ export default function NotificationsPage() {
           });
         } catch { /* mesaj iletilemese de yanıt kaydı oluştu */ }
 
-        const hospital = notif.data?.hospitalName || '';
-        const address = notif.data?.hospitalAddress || '';
-        const hospitalPhone = (notif.data as { hospitalPhone?: string })?.hospitalPhone || '';
-        const city = (notif.data as { city?: string })?.city || '';
-        const district = (notif.data as { district?: string })?.district || '';
-        const hospitalCity = (notif.data as { hospitalCity?: string })?.hospitalCity || '';
-        const hospitalDistrict = (notif.data as { hospitalDistrict?: string })?.hospitalDistrict || '';
-        const patientName = (notif.data as { patientName?: string })?.patientName || '';
-        const units = (notif.data as { units?: number })?.units;
-        const bloodType = notif.data?.bloodType || '';
-        const contactName = notif.data?.contactName || '';
-        const contactPhone = notif.data?.contactPhone || '';
-        // Hastane konumunu öne al; yoksa hedef konuma düş.
-        const location = [hospitalDistrict, hospitalCity].filter(Boolean).join(', ') || [district, city].filter(Boolean).join(', ');
-        const bodyParts: string[] = [];
-        if (hospital) bodyParts.push(`🏥 Hastane: ${hospital}`);
-        if (location) bodyParts.push(`📍 Konum: ${location}`);
-        if (address) bodyParts.push(`Adres: ${address}`);
-        if (hospitalPhone) bodyParts.push(`☎ Hastane Tel: ${hospitalPhone}`);
-        if (bloodType) bodyParts.push(`🩸 Kan Grubu: ${bloodType}`);
-        if (units) bodyParts.push(`Ünite: ${units}`);
-        if (patientName) bodyParts.push(`Hasta: ${patientName}`);
-        if (contactName) bodyParts.push(`İrtibat: ${contactName}`);
-        if (contactPhone) bodyParts.push(`📞 İrtibat Tel: ${contactPhone}`);
-        // Hiç iletişim verisi yoksa sessizce geç — sadece toast yeterli olur.
-        if (bodyParts.length > 0) {
-          try {
-            await addDoc(collection(db, COLLECTIONS.notifications), {
-              userId: authUser.uid,
-              type: 'emergency-blood-contact',
-              title: '🩸 Kan Talebi Detayları',
-              body: bodyParts.join('\n'),
-              data: {
-                requestId: notif.data?.requestId || notif.id,
-                hospitalName: hospital,
-                hospitalAddress: address,
-                hospitalPhone,
-                city,
-                district,
-                patientName,
-                units: units ?? null,
-                contactName,
-                contactPhone,
-                bloodType,
-              },
-              read: false,
-              pushSent: true, // detay bildirimi push'a gerek yok (zaten kullanıcı uygulamada)
-              createdAt: serverTimestamp(),
-              createdBy: 'emergency-system',
-            });
-          } catch (notifErr) {
-            // Takip bildirimi yazılamasa da yanıt kaydı oluştu — sessiz bırak.
-            console.warn('emergency contact notification failed:', notifErr);
-          }
+        // Detay bilgileri (hastane/hasta/kan/irtibat) BİLDİRİME yazılmaz — kullanıcı
+        // isteği: detay yalnızca /messages'a gider (yukarıdaki respond route yazdı).
+        // Bildirimlere yalnızca KALICI bir teşekkür bildirimi düşer.
+        try {
+          await addDoc(collection(db, COLLECTIONS.notifications), {
+            userId: authUser.uid,
+            type: 'emergency-blood-thanks',
+            title: 'Teşekkürler 🧡',
+            body: 'Yardım çağrısına yanıt verdiğin için teşekkürler. Kan talebinin tüm detayları (hastane, irtibat, kan grubu, yol tarifi) Mesajlarım sayfanda seni bekliyor.',
+            data: { requestId: notif.data?.requestId || notif.id, link: '/messages' },
+            read: false,
+            pushSent: true,
+            createdAt: serverTimestamp(),
+            createdBy: 'emergency-system',
+          });
+        } catch (notifErr) {
+          // Teşekkür bildirimi yazılamasa da yanıt + mesaj zaten kaydedildi.
+          console.warn('emergency thanks notification failed:', notifErr);
         }
 
         // iOS Live Activity başlat — kullanıcı hastaneye giderken Lock
@@ -251,6 +217,7 @@ export default function NotificationsPage() {
       case 'message':
       case 'welcome':
       case 'emergency-confirmation':
+      case 'emergency-blood-thanks':
         return '/messages';
       case 'badge':
       case 'badge_earned':

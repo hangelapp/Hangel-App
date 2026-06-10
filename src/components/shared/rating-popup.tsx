@@ -321,7 +321,7 @@ export function RatingPopup() {
                     </div>
                 ) : (
                     <div className="text-center py-8 space-y-3">
-                        <div className="text-5xl">🙏</div>
+                        <div className="text-5xl">🧡</div>
                         <p className="text-xl font-bold">Teşekkürler!</p>
                         <p className="text-muted-foreground text-sm">Yanıtlarınız kaydedildi.</p>
                     </div>
