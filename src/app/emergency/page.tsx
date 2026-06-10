@@ -478,6 +478,21 @@ export default function EmergencyPage() {
                 requestedByEmail: authUser.email || '',
                 createdAt: serverTimestamp(),
             });
+            // Talep sahibine KALICI bildirim — kaybolan toast'a ek olarak bildirim
+            // sayfasında da görünsün ("onay sonrası yakındakilere gönderilecek").
+            try {
+                await addDoc(collection(db, COLLECTIONS.notifications), {
+                    userId: authUser.uid,
+                    type: 'emergency-blood-received',
+                    title: t('emergency_root.toastBloodReceivedTitle'),
+                    body: t('emergency_root.toastBloodReceivedDesc'),
+                    data: { hospitalName: data.hospital || '', bloodType: data.bloodType || '' },
+                    read: false,
+                    pushSent: true,
+                    createdAt: serverTimestamp(),
+                    createdBy: 'emergency-system',
+                });
+            } catch { /* bildirim yazılamasa da talep oluştu */ }
             toast({
                 title: t('emergency_root.toastBloodReceivedTitle'),
                 description: t('emergency_root.toastBloodReceivedDesc'),
