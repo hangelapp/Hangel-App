@@ -74,6 +74,7 @@ import { COLLECTIONS } from '@/firebase/collections';
 import { signOut } from 'firebase/auth';
 import { isNativeApp } from '@/lib/capacitor';
 import { VerifyEmailBanner } from '@/components/shared/verify-email-banner';
+import { ProfileNudgeBanner } from '@/components/shared/profile-nudge-banner';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -565,6 +566,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <AppHeader onMenuClick={() => setDrawerOpen(true)} />
             <VerifyEmailBanner />
             <main className="flex-1" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}>
+              <ProfileNudgeBanner />
               <AutoBreadcrumb />
               {children}
             </main>

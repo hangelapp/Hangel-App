@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Post, Brand } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser, useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, doc, updateDoc, arrayUnion, arrayRemove, addDoc, serverTimestamp } from 'firebase/firestore';
 import { openExternalUrl } from '@/lib/capacitor';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -150,7 +150,7 @@ export default function BrandProfilePage() {
     setBrand(null);
   }, [slug, apiBrands, firestoreBrands, firestoreLoading]);
 
-  const handleStartShopping = () => {
+  const handleStartShopping = async () => {
     if (!authUser) {
         toast({ variant: 'destructive', title: "Giriş Yapmalısınız", description: "Bağış sürecini başlatmak için lütfen oturum açın." });
         return;
@@ -164,20 +164,41 @@ export default function BrandProfilePage() {
     }
 
     setIsDonating(true);
-    // Bağış kaydı VE bildirim, marka affiliate webhook'u alışverişi onayladıktan
-    // sonra `POST /api/affiliate/webhook/[brandId]` tarafından oluşturulur.
-    // Buradan donations/notifications koleksiyonuna yazmıyoruz — aksi takdirde
-    // kullanıcı sadece linke tıklayıp alışveriş yapmadan "bağış işleme alındı"
-    // bildirimi görür ki bu yanıltıcıdır (PDF madde #4, #6).
+    // GERÇEK bağış kaydı, marka affiliate webhook'u alışverişi onayladıktan sonra
+    // `POST /api/affiliate/webhook/[brandId]` tarafından oluşturulur. Burada
+    // donations koleksiyonuna YAZMIYORUZ — aksi takdirde kullanıcı alışveriş
+    // yapmadan "bağış işlendi" sanır. Bunun yerine sadece "alışveriş başlatıldı"
+    // bilgilendirme izini bildirim olarak bırakıyoruz; böylece webhook gelmese
+    // bile kullanıcı süreci "Bağışlarım" sayfasından takip edebilir.
     // Capacitor Browser ile native aç (iOS popup blocker'a takılmaz)
     openExternalUrl(brand.link);
 
     toast({
-        title: 'Mağazaya Yönlendirildi',
-        description: `${brand.name} sitesi açıldı. Alışverişini tamamladığında bağışın işleme alınacaktır.`,
+        title: 'Alışveriş başlatıldı',
+        description: `Alışverişini tamamladığında bağışın otomatik hesabına işlenecek. İşlenmesi markaya göre birkaç dakika–saat sürebilir; "Bağışlarım" sayfasından takip edebilirsin.`,
     });
 
-    setTimeout(() => setIsDonating(false), 1500);
+    // Tıklama izi: bilgilendirme bildirimi yaz (best-effort). Bu bir bağış kaydı
+    // DEĞİL; yalnızca kullanıcının "başlattım ama henüz işlenmedi" durumunu
+    // görmesini sağlar. Hata olursa link akışını bozmayız.
+    if (db) {
+        try {
+            await addDoc(collection(db, COLLECTIONS.notifications), {
+                userId: authUser.uid,
+                type: 'donation',
+                title: 'Alışveriş başlatıldı',
+                body: `${brand.name} alışverişin tamamlanınca bağışın işlenecek. Bağışlarım sayfasından takip et.`,
+                data: { brandId: brand.id, link: '/my-donations' },
+                read: false,
+                createdAt: serverTimestamp(),
+                createdBy: 'market-click',
+            });
+        } catch {
+            // Bildirim yazımı başarısız olsa bile alışveriş akışı devam eder.
+        }
+    }
+
+    setIsDonating(false);
   };
 
   if (brand === undefined) {
@@ -262,6 +283,14 @@ export default function BrandProfilePage() {
                         {isFollowing ? 'Takipte' : 'Takip Et'}
                     </Button>
                 </div>
+                <button
+                    type="button"
+                    onClick={() => router.push('/my-donations')}
+                    className="w-full flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 py-3 rounded-2xl border border-dashed border-black/5 hover:bg-muted/50 transition-colors"
+                >
+                    <Info className="h-4 w-4 shrink-0 text-primary" />
+                    <span>Alışverişin tamamlanınca bağışın otomatik işlenir. <span className="font-bold text-foreground underline">Bağışlarım</span> sayfasından takip et.</span>
+                </button>
             </div>
         </div>
 

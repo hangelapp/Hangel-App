@@ -61,19 +61,20 @@ export function generateCertificateHtml(input: CertificateInput): string {
 <meta charset="UTF-8" />
 <title>hangel sertifikası — ${escapeHtml(userName)}</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
   @page { size: A4 landscape; margin: 0; }
-  body { margin: 0; font-family: 'Helvetica', 'Arial', sans-serif; background: #fafafa; }
+  body { margin: 0; font-family: 'Poppins', 'Helvetica', 'Arial', sans-serif; background: #fafafa; }
   .cert {
     width: 297mm; height: 210mm; box-sizing: border-box;
     padding: 28mm 24mm; background: #fff; position: relative;
-    border: 4px solid #1a73e8; color: #111;
+    border: 4px solid #f34723; color: #111;
   }
   .header { display: flex; justify-content: space-between; align-items: baseline; }
-  .brand { font-size: 22pt; font-weight: 800; color: #1a73e8; letter-spacing: -0.5px; }
+  .brand { font-size: 22pt; font-weight: 800; color: #f34723; letter-spacing: -0.5px; }
   .cert-id { font-size: 9pt; color: #777; }
   h1 { font-size: 36pt; margin: 40px 0 10px; text-align: center; font-weight: 800; }
   .subtitle { text-align: center; font-size: 13pt; color: #555; margin-bottom: 28px; }
-  .name { text-align: center; font-size: 30pt; font-weight: 700; margin: 10px 0; color: #1a73e8; }
+  .name { text-align: center; font-size: 30pt; font-weight: 700; margin: 10px 0; color: #f34723; }
   .body-text { text-align: center; font-size: 13pt; line-height: 1.6; max-width: 220mm; margin: 16px auto; }
   .stats {
     display: flex; justify-content: center; gap: 36px;
@@ -89,7 +90,7 @@ export function generateCertificateHtml(input: CertificateInput): string {
   }
   .stamp { text-align: right; }
   .stamp-org { font-weight: 700; color: #111; font-size: 11pt; }
-  @media print { body { background: #fff; } .cert { border: 4px solid #1a73e8; } }
+  @media print { body { background: #fff; } .cert { border: 4px solid #f34723; } }
 </style>
 </head>
 <body>

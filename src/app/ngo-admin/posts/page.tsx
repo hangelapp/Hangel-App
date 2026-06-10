@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, Timestamp, addDoc, updateDoc, deleteDoc, setDoc, getDoc, increment } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -82,6 +83,42 @@ export default function PostsPage() {
         };
         return [...list].sort((a, b) => ts(b) - ts(a));
     }, [firestorePosts]);
+
+    const handleImageUpload = async (file: File) => {
+        if (!activeEntity?.data?.id) {
+            toast({ variant: 'destructive', title: t('ngo_admin_posts.toastNoEntityTitle'), description: t('ngo_admin_posts.toastNoEntityDesc') });
+            return;
+        }
+        if (!file.type.startsWith('image/')) {
+            toast({ variant: 'destructive', title: 'Geçersiz dosya', description: 'Lütfen bir görsel dosyası seçin.' });
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ variant: 'destructive', title: 'Görsel çok büyük', description: 'Lütfen 5MB altında bir görsel seçin.' });
+            return;
+        }
+        setIsUploading(true);
+        try {
+            const storage = getStorage();
+            const folder = activeEntity.kind === 'ngo' ? 'ngos' : activeEntity.kind === 'brand' ? 'brands' : 'clubs';
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `${folder}/${activeEntity.data.id}/posts/${Date.now()}-${safeName}`;
+            const r = storageRef(storage, path);
+            await uploadBytes(r, file);
+            const url = await getDownloadURL(r);
+            setImageDraft(url);
+            toast({ title: 'Görsel yüklendi', description: 'Onayla butonuna basınca gönderiye eklenir.' });
+        } catch (error) {
+            const err = error as { code?: string; message?: string };
+            toast({
+                variant: 'destructive',
+                title: 'Görsel yüklenemedi',
+                description: err?.code === 'storage/unauthorized' ? t('ngo_admin_posts.toastPermissionDenied') : (err?.message?.slice(0, 160) || t('ngo_admin_posts.toastUnexpected')),
+            });
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleCreatePost = async () => {
         if (!newPostContent.trim()) {
@@ -348,27 +385,12 @@ export default function PostsPage() {
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  if (file.size > 1024 * 1024) {
-                    toast({ variant: 'destructive', title: t('ngo_admin_posts.imageTooLargeTitle'), description: t('ngo_admin_posts.imageTooLargeDesc') });
-                    e.target.value = '';
-                    return;
-                  }
-                  setIsUploading(true);
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    const result = typeof reader.result === 'string' ? reader.result : '';
-                    setImageDraft(result);
-                    setIsUploading(false);
-                  };
-                  reader.onerror = () => {
-                    toast({ variant: 'destructive', title: t('ngo_admin_posts.imageReadError') });
-                    setIsUploading(false);
-                  };
-                  reader.readAsDataURL(file);
+                  void handleImageUpload(file);
+                  e.target.value = '';
                 }}
               />
               {isUploading && (
-                <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> {t('ngo_admin_posts.imagePreparing')}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader2 className="h-3 w-3 animate-spin" /> Görsel yükleniyor...</p>
               )}
             </div>
             {imageDraft && (/^https?:\/\//i.test(imageDraft) || imageDraft.startsWith('data:image/')) && (

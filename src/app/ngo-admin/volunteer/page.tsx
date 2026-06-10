@@ -65,6 +65,27 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
                 });
             }
 
+            // 3 tarafa (kullanıcı + STK yöneticisi + süper-admin) fan-out bildirim.
+            // Best-effort: hata UI akışını bozmaz.
+            try {
+                const token = await authUser?.getIdToken();
+                if (token) {
+                    await fetch('/api/volunteer/application-notify', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            applicationId: application.id,
+                            stage: decision === 'approved' ? 'approved' : 'rejected',
+                        }),
+                    });
+                }
+            } catch (notifyErr) {
+                console.error('[ngo-admin/volunteer] application-notify failed', notifyErr);
+            }
+
             toast({
                 title: `Başvuru ${status}`,
                 description: decision === 'approved'
@@ -131,26 +152,46 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
 
 const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities: Volunteering[], isLoading: boolean }) => {
     const { toast } = useToast();
+    const db = useFirestore();
 
-    const handleDeactivate = (_oppId: string) => {
-        toast({
-            title: "İlan Pasife Alındı",
-            description: "Gönüllülük ilanı yayından kaldırıldı (Simüle edildi)."
-        });
+    const handleToggleStatus = async (opp: Volunteering) => {
+        const isActive = (opp as Volunteering & { status?: string }).status !== 'Pasif';
+        const nextStatus = isActive ? 'Pasif' : 'Aktif';
+        try {
+            await updateDoc(doc(db, COLLECTIONS.volunteering, opp.id), {
+                status: nextStatus,
+                ...(isActive ? { deactivatedAt: serverTimestamp() } : { reactivatedAt: serverTimestamp() }),
+            });
+            toast({
+                title: isActive ? 'İlan Pasife Alındı' : 'İlan Yayına Alındı',
+                description: isActive
+                    ? 'Gönüllülük ilanı yayından kaldırıldı.'
+                    : 'Gönüllülük ilanı yeniden yayınlandı.',
+            });
+        } catch (err) {
+            console.error('[ngo-admin/volunteer] handleToggleStatus failed', err);
+            toast({
+                variant: 'destructive',
+                title: 'İşlem başarısız',
+                description: 'İlan durumu güncellenirken bir hata oluştu. Lütfen tekrar deneyin.',
+            });
+        }
     };
 
     if (isLoading) return <div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>;
 
     return (
         <div className="space-y-4">
-            {opportunities.length > 0 ? opportunities.map((opp) => (
+            {opportunities.length > 0 ? opportunities.map((opp) => {
+              const isPassive = (opp as Volunteering & { status?: string }).status === 'Pasif';
+              return (
               <Card key={opp.id}>
                 <CardHeader className='pb-4'>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex justify-between items-center text-sm">
                     <div>
-                        <p><strong>Durum:</strong> <Badge>Aktif</Badge></p>
+                        <p><strong>Durum:</strong> <Badge variant={isPassive ? 'secondary' : 'default'}>{isPassive ? 'Pasif' : 'Aktif'}</Badge></p>
                         <p><strong>Başvurular:</strong> {opp.volunteerCount?.applications || 0}</p>
                     </div>
                 </CardContent>
@@ -158,10 +199,15 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
                     <Button asChild variant="secondary" size="sm" className='flex-1'>
                         <Link href={`/volunteering/${opp.id}`}>Görüntüle</Link>
                     </Button>
-                    <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleDeactivate(opp.id)}>Pasife Al</Button>
+                    {isPassive ? (
+                        <Button variant="default" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Yayına Al</Button>
+                    ) : (
+                        <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
+                    )}
                 </CardFooter>
               </Card>
-            )) : <p className="text-center p-8 text-muted-foreground">Aktif ilanınız bulunmuyor.</p>}
+              );
+            }) : <p className="text-center p-8 text-muted-foreground">Aktif ilanınız bulunmuyor.</p>}
         </div>
     );
 };

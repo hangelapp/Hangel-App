@@ -27,7 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { EtkiTabContent } from '@/components/profile/etki-tab-content';
 import { enrichBadges } from '@/lib/badge-points';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAuth } from '@/firebase';
+import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -199,6 +199,36 @@ export default function ProfilePage() {
 
     const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
 
+    // CANLI ETKİ METRİKLERİ — statik user.stats yerine gerçek kayıtlardan hesapla.
+    // Bağışlar: donations/{userId} → type 'expense' olanların donationAmount toplamı + adedi.
+    // Gönüllülük saati: volunteerCompletions/{userId} → ngoApproved === true olanların hoursLogged toplamı.
+    type DonationRecord = { type?: string; donationAmount?: string | number };
+    type CompletionRecord = { hoursLogged?: number; ngoApproved?: boolean };
+
+    const donationsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.donations), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: donationRecords } = useCollection<DonationRecord>(donationsQuery);
+
+    const volunteerCompletionsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.volunteerCompletions), where('userId', '==', authUser.uid)) : null),
+        [db, authUser?.uid],
+    );
+    const { data: completionRecords } = useCollection<CompletionRecord>(volunteerCompletionsQuery);
+
+    const liveDonationStats = useMemo(() => {
+        const expenses = (donationRecords ?? []).filter(d => d.type === 'expense');
+        const total = expenses.reduce((acc, d) => acc + (Number(d.donationAmount) || 0), 0);
+        return { total, count: expenses.length, hasData: (donationRecords ?? []).length > 0 };
+    }, [donationRecords]);
+
+    const liveVolunteerHours = useMemo(() => {
+        const approved = (completionRecords ?? []).filter(c => c.ngoApproved === true);
+        const total = approved.reduce((acc, c) => acc + (Number(c.hoursLogged) || 0), 0);
+        return { total, hasData: approved.length > 0 };
+    }, [completionRecords]);
+
     const emptyUser = {
         id: authUser?.uid || '',
         name: authUser?.displayName || '',
@@ -222,6 +252,14 @@ export default function ProfilePage() {
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userData, authUser]);
+
+    // Canlı bağış/saat değerleri statik stats'in önüne geçer; kayıt yoksa statik fallback.
+    const liveStats = useMemo(() => ({
+        ...currentUser.stats,
+        totalDonation: liveDonationStats.hasData ? liveDonationStats.total : currentUser.stats.totalDonation,
+        donationCount: liveDonationStats.hasData ? liveDonationStats.count : currentUser.stats.donationCount,
+        volunteerHours: liveVolunteerHours.hasData ? liveVolunteerHours.total : currentUser.stats.volunteerHours,
+    }), [currentUser.stats, liveDonationStats, liveVolunteerHours]);
 
     const supportedNgoIds: string[] = Array.isArray((userData as { supportedNgos?: string[] } | null)?.supportedNgos) ? (userData as { supportedNgos?: string[] }).supportedNgos! : [];
     const volunteerNgoIds: string[] = Array.isArray((userData as { volunteerNgos?: string[] } | null)?.volunteerNgos) ? (userData as { volunteerNgos?: string[] }).volunteerNgos! : [];
@@ -487,8 +525,8 @@ export default function ProfilePage() {
             const storyPromises = Array(5).fill(0).map(() =>
                 getImpactStory({
                     userName: currentUser.name.split(' ')[0],
-                    donations: `${currentUser.stats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${currentUser.stats.mostSupportedNgo}.`,
-                    volunteering: `${currentUser.stats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${currentUser.stats.mostActiveVolunteerArea}.`,
+                    donations: `${liveStats.totalDonation} TL bağış yapıldı. En çok desteklenen STK: ${currentUser.stats.mostSupportedNgo}.`,
+                    volunteering: `${liveStats.volunteerHours} saat gönüllülük yapıldı. En aktif alan: ${currentUser.stats.mostActiveVolunteerArea}.`,
                     badges: `Toplamda ${badges.filter(b => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length} rozet kazanıldı.`
                 }, idToken)
             );
@@ -667,7 +705,7 @@ export default function ProfilePage() {
                     
                     <TabsContent value="impact" className="p-3 space-y-3">
                         <EtkiTabContent
-                            user={{ impactScore: realImpactScore, stats: currentUser.stats }}
+                            user={{ impactScore: realImpactScore, stats: liveStats }}
                             earnedBadgeCount={badges.filter((b: { currentPoints?: number; pointsRequired?: number }) => (b.currentPoints ?? 0) >= (b.pointsRequired ?? 0)).length}
                             certificateCount={certificates.length}
                             impactCardTitle={t('dashboard.profile.impactCardTitle')}
@@ -1041,8 +1079,8 @@ export default function ProfilePage() {
                                                         name: currentUser.name || t('profilePage.anonMember'),
                                                         avatarUrl: currentUser.avatarUrl,
                                                         impactScore: Number(currentUser.impactScore) || 0,
-                                                        totalDonation: Number(currentUser.stats.totalDonation) || 0,
-                                                        volunteerHours: Number(currentUser.stats.volunteerHours) || 0,
+                                                        totalDonation: Number(liveStats.totalDonation) || 0,
+                                                        volunteerHours: Number(liveStats.volunteerHours) || 0,
                                                         totalImpactValue: Number(currentUser.stats.totalImpactValue) || 0,
                                                         highestBadgeLevel,
                                                         certificateCount: certificates.length,

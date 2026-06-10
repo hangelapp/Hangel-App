@@ -27,6 +27,10 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { collection, query, where } from 'firebase/firestore';
+import { useFirestore, useMemoFirebase, useCollection, useUser } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import { generateCertificateHtml } from '@/lib/certificates/generate';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -57,13 +61,37 @@ export interface NgoLite {
 
 export interface PastVolunteeringDoc {
     id: string;
+    /** Eski şema (manuel kayıt): title/organization. */
     title?: string;
     organization?: string;
+    /** Yeni şema (volunteerCompletions onayı → pastVolunteering): volunteeringTitle/ngoName. */
+    volunteeringTitle?: string;
+    ngoName?: string;
     ngoId?: string;
     description?: string;
     dates?: { eventEnd?: string };
-    completedAt?: string;
+    /** ISO string (eski) veya Firestore Timestamp ({ seconds }) olabilir. */
+    completedAt?: string | { seconds: number } | null;
+    completionId?: string;
+    hoursLogged?: number;
+    impactValueTRY?: number;
     review?: { rating?: number; comment?: string };
+}
+
+/** Onaylı gönüllü tamamlama kaydı (volunteerCompletions koleksiyonu). */
+export interface VolunteerCompletionDoc {
+    id: string;
+    userId?: string;
+    taskId?: string;
+    ngoId?: string;
+    professionLabel?: string;
+    hoursLogged?: number;
+    adjustedHours?: number;
+    impactValueTRY?: number;
+    ngoApproved?: boolean;
+    status?: string;
+    completedAt?: string | { seconds: number } | null;
+    approvedAt?: string | { seconds: number } | null;
 }
 
 export interface ApprovedApp {
@@ -89,6 +117,14 @@ export interface VolunteeringCertificate {
     organization: string;
     /** ISO veya kullanıcı dostu string */
     completedAt: string;
+    /** Sertifika gövdesi için ham tarih (Date'e çevrilebilir). */
+    completedAtRaw?: string;
+    /** Onaylı tamamlamadan gelen gerçek değerler (sertifikaya basılır). */
+    hoursLogged?: number;
+    impactValueTRY?: number;
+    professionLabel?: string;
+    /** Sertifika numarası (volunteerCompletions doc id). */
+    completionId?: string;
     ngoLogoUrl?: string;
     rating?: number;
     comment?: string;
@@ -113,15 +149,28 @@ function pickNgoLogo(ngo?: NgoLite): string | undefined {
     return ngo.avatarUrl || ngo.logoUrl || ngo.files?.logo;
 }
 
-function formatDate(value: string, locale: 'tr' | 'en'): string {
-    if (!value) return '';
-    try {
+/**
+ * ISO string ya da Firestore Timestamp ({ seconds }) → Date | null.
+ * (admin-SDK serileştirmesinde `_seconds`, client SDK'da `seconds` gelebilir.)
+ */
+function toDate(value: string | { seconds?: number; _seconds?: number } | null | undefined): Date | null {
+    if (!value) return null;
+    if (typeof value === 'string') {
         const d = value.includes('T') ? parseISO(value) : new Date(value);
-        if (Number.isNaN(d.getTime())) return value;
-        return format(d, 'dd MMMM yyyy', { locale: locale === 'tr' ? tr : undefined });
-    } catch {
-        return value;
+        return Number.isNaN(d.getTime()) ? null : d;
     }
+    const secs = value.seconds ?? value._seconds;
+    if (typeof secs === 'number') return new Date(secs * 1000);
+    return null;
+}
+
+function formatDate(
+    value: string | { seconds?: number; _seconds?: number } | null | undefined,
+    locale: 'tr' | 'en',
+): string {
+    const d = toDate(value);
+    if (!d) return typeof value === 'string' ? value : '';
+    return format(d, 'dd MMMM yyyy', { locale: locale === 'tr' ? tr : undefined });
 }
 
 /**
@@ -194,11 +243,25 @@ function renderLanyardCanvas(
     ctx.font = `${Math.round(H * 0.034)}px Arial`;
     ctx.fillText(cert.organization, W / 2, Math.round(H * 0.68));
 
+    // Saat + mali etki (varsa)
+    const metaParts: string[] = [];
+    if (typeof cert.hoursLogged === 'number' && cert.hoursLogged > 0) {
+        metaParts.push(`${cert.hoursLogged.toLocaleString('tr-TR')} saat gönüllülük`);
+    }
+    if (typeof cert.impactValueTRY === 'number' && cert.impactValueTRY > 0) {
+        metaParts.push(`${cert.impactValueTRY.toLocaleString('tr-TR')} ₺ sosyal etki`);
+    }
+    if (metaParts.length > 0) {
+        ctx.fillStyle = '#ea580c';
+        ctx.font = `bold ${Math.round(H * 0.032)}px Arial`;
+        ctx.fillText(metaParts.join('  •  '), W / 2, Math.round(H * 0.74));
+    }
+
     // Tarih
     ctx.fillStyle = '#525252';
     ctx.font = `${Math.round(H * 0.03)}px Arial`;
     if (cert.completedAt) {
-        ctx.fillText(cert.completedAt, W / 2, Math.round(H * 0.78));
+        ctx.fillText(cert.completedAt, W / 2, Math.round(H * 0.81));
     }
 
     // Rozet alt-band
@@ -249,7 +312,24 @@ export function VolunteeringCertificates({
 }: Props) {
     const { t, language } = useTranslation();
     const { toast } = useToast();
+    const db = useFirestore();
+    const { user: authUser } = useUser();
     const [previewing, setPreviewing] = useState<VolunteeringCertificate | null>(null);
+
+    // Onaylı gönüllü tamamlamaları — sertifikanın asıl kaynağı.
+    // userId == profil sahibi (kendi /profile sayfası); onaylıları client'ta süzeriz
+    // (ngoApproved === true || status === 'approved' — iki bayrak da yazılıyor).
+    const completionsRef = useMemoFirebase(
+        () =>
+            db && authUser
+                ? query(
+                      collection(db, COLLECTIONS.volunteerCompletions),
+                      where('userId', '==', authUser.uid),
+                  )
+                : null,
+        [db, authUser?.uid],
+    );
+    const { data: completionsData } = useCollection<VolunteerCompletionDoc>(completionsRef);
 
     // NGO logo lookup haritası (id → logoUrl). Hem id hem isim üzerinden ara.
     const ngoLogoById = useMemo<Record<string, string>>(() => {
@@ -273,6 +353,7 @@ export function VolunteeringCertificates({
     const certificates = useMemo<VolunteeringCertificate[]>(() => {
         const merged: VolunteeringCertificate[] = [];
         const seen = new Set<string>();
+        const loc = language === 'tr' ? ('tr' as const) : ('en' as const);
         const addUnique = (c: VolunteeringCertificate) => {
             const key = `${c.title.trim()}|${c.organization.trim()}`.toLowerCase();
             if (seen.has(key)) return;
@@ -280,17 +361,59 @@ export function VolunteeringCertificates({
             merged.push(c);
         };
 
-        // 1) pastVolunteering (en zengin: review + ngoId)
+        // pastVolunteering kayıtlarını completionId ile indeksle — volunteerCompletions
+        // doc'unda title/ngoName YOK; bunları buradan zenginleştiririz.
+        const pvByCompletionId = new Map<string, PastVolunteeringDoc>();
         for (const pv of pastVolunteering) {
-            const title = pv.title || '';
-            const organization = pv.organization || '';
+            if (pv.completionId) pvByCompletionId.set(pv.completionId, pv);
+        }
+        const pvTitle = (pv: PastVolunteeringDoc) => pv.title || pv.volunteeringTitle || '';
+        const pvOrg = (pv: PastVolunteeringDoc) => pv.organization || pv.ngoName || '';
+
+        // 0) Onaylı gönüllü tamamlamaları (volunteerCompletions) — ASIL kaynak.
+        //    Gerçek saat + mali etki + meslek + sertifika no taşır.
+        for (const comp of completionsData ?? []) {
+            const approved = comp.ngoApproved === true || comp.status === 'approved';
+            if (!approved) continue;
+            const linked = pvByCompletionId.get(comp.id);
+            const title = (linked && pvTitle(linked)) || comp.professionLabel || 'Gönüllülük görevi';
+            const organization = (linked && pvOrg(linked)) || 'STK';
+            const hours =
+                typeof comp.adjustedHours === 'number' ? comp.adjustedHours : comp.hoursLogged;
+            const completedRaw = comp.approvedAt ?? comp.completedAt;
+            addUnique({
+                id: `comp-${comp.id}`,
+                title,
+                organization,
+                completedAt: formatDate(completedRaw, loc),
+                completedAtRaw: toDate(completedRaw)?.toISOString(),
+                hoursLogged: hours,
+                impactValueTRY: comp.impactValueTRY,
+                professionLabel: comp.professionLabel,
+                completionId: comp.id,
+                ngoLogoUrl: comp.ngoId
+                    ? ngoLogoById[comp.ngoId]
+                    : ngoLogoByName[organization.trim().toLowerCase()],
+                rating: linked?.review?.rating,
+                comment: linked?.review?.comment,
+            });
+        }
+
+        // 1) pastVolunteering (review + ngoId; completion ile eşleşmeyenler de dahil)
+        for (const pv of pastVolunteering) {
+            const title = pvTitle(pv);
+            const organization = pvOrg(pv);
             if (!title || !organization) continue;
-            const completedRaw = pv.dates?.eventEnd || pv.completedAt || '';
+            const completedRaw = pv.dates?.eventEnd ?? pv.completedAt ?? '';
             addUnique({
                 id: `pv-${pv.id}`,
                 title,
                 organization,
-                completedAt: formatDate(completedRaw, language === 'tr' ? 'tr' : 'en'),
+                completedAt: formatDate(completedRaw, loc),
+                completedAtRaw: toDate(completedRaw)?.toISOString(),
+                hoursLogged: pv.hoursLogged,
+                impactValueTRY: pv.impactValueTRY,
+                completionId: pv.completionId,
                 ngoLogoUrl: pv.ngoId
                     ? ngoLogoById[pv.ngoId]
                     : ngoLogoByName[organization.trim().toLowerCase()],
@@ -309,7 +432,8 @@ export function VolunteeringCertificates({
                 id: `app-${app.id ?? title}`,
                 title,
                 organization,
-                completedAt: formatDate(app.date || '', language === 'tr' ? 'tr' : 'en'),
+                completedAt: formatDate(app.date || '', loc),
+                completedAtRaw: toDate(app.date || '')?.toISOString(),
                 ngoLogoUrl: app.entityId
                     ? ngoLogoById[app.entityId]
                     : ngoLogoByName[organization.trim().toLowerCase()],
@@ -323,13 +447,22 @@ export function VolunteeringCertificates({
                 id: c.id ? `manual-${c.id}` : `manual-${c.title}`,
                 title: c.title,
                 organization: c.organization,
-                completedAt: formatDate(c.date || '', language === 'tr' ? 'tr' : 'en'),
+                completedAt: formatDate(c.date || '', loc),
+                completedAtRaw: toDate(c.date || '')?.toISOString(),
                 ngoLogoUrl: ngoLogoByName[c.organization.trim().toLowerCase()],
             });
         }
 
         return merged;
-    }, [pastVolunteering, approvedApplications, manualCertificates, ngoLogoById, ngoLogoByName, language]);
+    }, [
+        completionsData,
+        pastVolunteering,
+        approvedApplications,
+        manualCertificates,
+        ngoLogoById,
+        ngoLogoByName,
+        language,
+    ]);
 
     const handleDownloadJpg = (cert: VolunteeringCertificate) => {
         try {
@@ -371,6 +504,56 @@ export function VolunteeringCertificates({
             });
         } catch (e) {
             console.error('Lanyard PDF generation failed:', e);
+            toast({
+                variant: 'destructive',
+                title: t('profile_certificates.downloadFail'),
+                description: t('profile_certificates.downloadFailDesc'),
+            });
+        }
+    };
+
+    /**
+     * Tam boy resmi sertifika (A4 yatay). `@/lib/certificates/generate` ile aynı
+     * HTML şablonu üretilir, yeni sekmede açılır ve yazdırma diyaloğu tetiklenir —
+     * kullanıcı "PDF olarak kaydet" ile indirir (yeni paket yok). Event handler
+     * içinde `new Date()` kullanımı render dışı olduğu için React 19 saf.
+     */
+    const handleOpenCertificate = (cert: VolunteeringCertificate) => {
+        try {
+            const completedAt = cert.completedAtRaw ? new Date(cert.completedAtRaw) : new Date();
+            const html = generateCertificateHtml({
+                completionId: cert.completionId ?? cert.id,
+                userName: userName || 'Gönüllü',
+                taskTitle: cert.title,
+                ngoName: cert.organization,
+                professionLabel: cert.professionLabel,
+                hoursLogged: cert.hoursLogged ?? 0,
+                impactValueTRY: cert.impactValueTRY ?? 0,
+                completedAt,
+            });
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank');
+            if (win) {
+                win.addEventListener('load', () => {
+                    win.focus();
+                    win.print();
+                });
+            } else {
+                // Pop-up engellendi → en azından indirilebilir .html ver.
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sertifika-${cert.title.replace(/\s+/g, '-').toLowerCase()}.html`;
+                a.click();
+            }
+            // Blob URL'i bir süre sonra serbest bırak (yeni sekme yüklenene dek tut).
+            window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+            toast({
+                title: t('profile_certificates.downloaded'),
+                description: `${cert.title} (sertifika)`,
+            });
+        } catch (e) {
+            console.error('Certificate HTML generation failed:', e);
             toast({
                 variant: 'destructive',
                 title: t('profile_certificates.downloadFail'),
@@ -464,6 +647,25 @@ export function VolunteeringCertificates({
                                     />
                                 </div>
 
+                                {(typeof cert.hoursLogged === 'number' && cert.hoursLogged > 0) ||
+                                (typeof cert.impactValueTRY === 'number' && cert.impactValueTRY > 0) ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {typeof cert.hoursLogged === 'number' && cert.hoursLogged > 0 && (
+                                            <Badge variant="outline" className="rounded-full font-medium">
+                                                {cert.hoursLogged.toLocaleString('tr-TR')} saat
+                                            </Badge>
+                                        )}
+                                        {typeof cert.impactValueTRY === 'number' && cert.impactValueTRY > 0 && (
+                                            <Badge
+                                                variant="outline"
+                                                className="rounded-full font-medium text-[#f34723] border-[#f34723]/40"
+                                            >
+                                                {cert.impactValueTRY.toLocaleString('tr-TR')} ₺ sosyal etki
+                                            </Badge>
+                                        )}
+                                    </div>
+                                ) : null}
+
                                 {typeof cert.rating === 'number' && (
                                     <div
                                         className="flex items-center gap-1"
@@ -493,6 +695,14 @@ export function VolunteeringCertificates({
                                 )}
 
                                 <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                                    <Button
+                                        size="sm"
+                                        className="bg-[#f34723] text-white hover:bg-[#d83c1c]"
+                                        onClick={() => handleOpenCertificate(cert)}
+                                    >
+                                        <FileText className="mr-1.5 h-4 w-4" />
+                                        {language === 'tr' ? 'Sertifika' : 'Certificate'}
+                                    </Button>
                                     <Button
                                         size="sm"
                                         variant="outline"
@@ -558,9 +768,19 @@ export function VolunteeringCertificates({
                                     <Download className="mr-2 h-4 w-4" />
                                     JPG
                                 </Button>
-                                <Button onClick={() => handleDownloadPdf(previewing)}>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => handleDownloadPdf(previewing)}
+                                >
                                     <Download className="mr-2 h-4 w-4" />
                                     PDF
+                                </Button>
+                                <Button
+                                    className="bg-[#f34723] text-white hover:bg-[#d83c1c]"
+                                    onClick={() => handleOpenCertificate(previewing)}
+                                >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    {language === 'tr' ? 'Sertifika' : 'Certificate'}
                                 </Button>
                             </>
                         )}

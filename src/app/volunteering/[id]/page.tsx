@@ -145,19 +145,41 @@ export default function VolunteeringDetailPage() {
     
     setIsApplying(true);
     const appRef = collection(db, COLLECTIONS.applications);
-    
+    const today = new Date().toISOString().split('T')[0];
+
     // Perform non-blocking write to Firestore
-    addDocumentNonBlocking(appRef, {
+    const createPromise = addDocumentNonBlocking(appRef, {
         userId: authUser.uid,
         userName: authUser.displayName || authUser.email?.split('@')[0] || 'Gönüllü',
         title: opportunity.title,
         type: 'Gönüllülük',
         org: opportunity.organization,
         entityId: opportunity.id,
-        date: new Date().toISOString().split('T')[0],
+        date: today,
         status: 'Beklemede',
         location: opportunity.location.city
     });
+
+    // Başvuru oluşunca 3 tarafa (kullanıcı + STK yöneticisi + süper-admin)
+    // fan-out bildirim. Best-effort: hata başvuru akışını bozmaz.
+    createPromise
+        .then(async (docRef) => {
+            if (!docRef) return;
+            try {
+                const token = await authUser.getIdToken();
+                await fetch('/api/volunteer/application-notify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ applicationId: docRef.id, stage: 'applied' }),
+                });
+            } catch (notifyErr) {
+                console.error('[volunteering] application-notify failed', notifyErr);
+            }
+        })
+        .catch(() => { /* addDocumentNonBlocking kendi hata kanalını yönetir */ });
 
     // Simulated UX delay
     setTimeout(() => {
