@@ -92,6 +92,7 @@ export default function MessageDetailPage() {
   const isSystemMessage = otherId === 'hangel-system';
 
   let timestampText = '';
+  let fullTimestampText = '';
   try {
     const d =
       typeof msg.timestamp === 'object' && msg.timestamp !== null && 'toDate' in msg.timestamp
@@ -99,7 +100,11 @@ export default function MessageDetailPage() {
         : typeof msg.timestamp === 'string'
           ? new Date(msg.timestamp)
           : null;
-    if (d) timestampText = formatDistanceToNow(d, { addSuffix: true, locale: tr });
+    if (d) {
+      timestampText = formatDistanceToNow(d, { addSuffix: true, locale: tr });
+      // Net tarih/saat — minik detay olarak mesaj kartının altında.
+      fullTimestampText = d.toLocaleString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
   } catch {}
 
   return (
@@ -148,6 +153,9 @@ export default function MessageDetailPage() {
               <div className="text-sm whitespace-pre-wrap leading-relaxed">
                 {msg.content || msg.excerpt || t('dashboard.messages.noContent') || 'İçerik yok.'}
               </div>
+            )}
+            {fullTimestampText && (
+              <p className="mt-4 pt-3 border-t border-border/40 text-[11px] text-muted-foreground text-right">{fullTimestampText}</p>
             )}
           </CardContent>
         </Card>

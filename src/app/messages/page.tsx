@@ -163,9 +163,31 @@ export default function MessagesPage() {
         recipient?: { id?: string; name?: string; avatarUrl?: string | null };
         recipientId?: string;
         subject?: string; excerpt?: string; content?: string; time?: string;
+        timestamp?: { toDate?: () => Date } | string;
         senderType?: string; unread?: boolean;
         readBy?: Record<string, unknown>;
     }
+
+    // Mesaj tarih/saatini minik bir detay olarak biçimlendir:
+    // bugün → "14:32", bu yıl → "10 Eki 14:32", daha eski → "10.10.2025 14:32".
+    const formatMsgTime = (ts: MessageItem['timestamp']): string => {
+        let d: Date | null = null;
+        if (ts && typeof ts === 'object' && 'toDate' in ts && ts.toDate) {
+            try { d = ts.toDate(); } catch { d = null; }
+        } else if (typeof ts === 'string') {
+            const t = Date.parse(ts);
+            if (!Number.isNaN(t)) d = new Date(t);
+        }
+        if (!d || Number.isNaN(d.getTime())) return '';
+        const now = new Date();
+        const time = d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        if (d.toDateString() === now.toDateString()) return time;
+        const sameYear = d.getFullYear() === now.getFullYear();
+        const date = d.toLocaleDateString('tr-TR', sameYear
+            ? { day: '2-digit', month: 'short' }
+            : { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return `${date} ${time}`;
+    };
 
     // Sender / recipient adını her iki şemadan da güvenli çıkar
     const getSenderName = (m: MessageItem): string => typeof m.sender === 'string' ? m.sender : (m.sender?.name || t('dashboard.messages.senderFallback'));
@@ -392,7 +414,7 @@ export default function MessagesPage() {
                                                 <div className="p-1 bg-muted rounded-full text-muted-foreground">{senderTypeIcons[msg.senderType] || null}</div>
                                             )}
                                         </div>
-                                        <span className="text-[10px] text-muted-foreground">{msg.time}</span>
+                                        <span className="text-[10px] text-muted-foreground shrink-0">{formatMsgTime(msg.timestamp) || msg.time}</span>
                                     </div>
                                     <p className="text-sm font-semibold text-foreground truncate">{msg.subject}</p>
                                     <p className="text-xs text-muted-foreground truncate">{msg.excerpt || msg.content}</p>
@@ -434,10 +456,11 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-center mb-1">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
                                                 <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{t('dashboard.messages.recipientLabel')}</span>
                                                 <span className="font-bold text-sm truncate">{recipientName}</span>
                                             </div>
+                                            <span className="text-[10px] text-muted-foreground shrink-0">{formatMsgTime(msg.timestamp) || msg.time}</span>
                                         </div>
                                         <p className="text-sm font-semibold text-foreground truncate">{msg.subject || t('dashboard.messages.noSubject')}</p>
                                         <p className="text-xs text-muted-foreground truncate">{msg.excerpt || msg.content}</p>
