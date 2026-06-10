@@ -92,3 +92,14 @@ env:
     value: "hangel"
     availability:
       - RUNTIME
+
+  # Meta (Facebook/Instagram) Ads — STK reklam entegrasyonu (Faz 1).
+  # Secret Manager'da; App Review (ads_management) onayı gelince tam aktif.
+  - variable: META_APP_ID
+    secret: META_APP_ID
+    availability:
+      - RUNTIME
+  - variable: META_APP_SECRET
+    secret: META_APP_SECRET
+    availability:
+      - RUNTIME
