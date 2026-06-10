@@ -27,6 +27,8 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'fire
 import { getApp } from 'firebase/app';
 import { useToast } from '@/hooks/use-toast';
 import { LocationFields } from '@/components/shared/location-fields';
+import { COLLECTIONS } from '@/firebase/collections';
+import { EntityMultiSelect } from './entity-multi-select';
 import type { UserRow } from './types';
 
 type EducationRow = { level: string; school: string };
@@ -96,6 +98,11 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
   // 30-günlük STK seçim kilidi başlangıç tarihi — son STK seçim değişikliği
   // ngo profil sayfası ve settings/ngo-selection burayı kontrol eder.
   const [ngoLockSince, setNgoLockSince] = useState(''); // YYYY-MM-DD
+  // Üyelikler / ilişkiler — kurum id dizileri
+  const [supportedNgos, setSupportedNgos] = useState<string[]>([]);   // bağışçısı/desteklediği STK
+  const [volunteerNgos, setVolunteerNgos] = useState<string[]>([]);   // gönüllüsü olduğu STK
+  const [followedBrands, setFollowedBrands] = useState<string[]>([]); // takip ettiği marka
+  const [joinedClubs, setJoinedClubs] = useState<string[]>([]);       // katıldığı kulüp
 
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -227,6 +234,12 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
       if (rawLock && typeof rawLock.toDate === 'function') lockDate = rawLock.toDate();
       else if (rawLock && typeof rawLock.seconds === 'number') lockDate = new Date(rawLock.seconds * 1000);
       setNgoLockSince(lockDate ? lockDate.toISOString().slice(0, 10) : '');
+
+      const rel = user as unknown as { supportedNgos?: string[]; volunteerNgos?: string[]; followedBrands?: string[]; joinedClubs?: string[] };
+      setSupportedNgos(Array.isArray(rel.supportedNgos) ? rel.supportedNgos : []);
+      setVolunteerNgos(Array.isArray(rel.volunteerNgos) ? rel.volunteerNgos : []);
+      setFollowedBrands(Array.isArray(rel.followedBrands) ? rel.followedBrands : []);
+      setJoinedClubs(Array.isArray(rel.joinedClubs) ? rel.joinedClubs : []);
     }
   }, [user]);
 
@@ -276,6 +289,11 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
         username: username.trim(),
         avatarUrl: avatarUrl.trim(),
         role,
+        // Üyelikler / ilişkiler
+        supportedNgos,
+        volunteerNgos,
+        followedBrands,
+        joinedClubs,
         personalInfo: {
           ...prevPi,
           email: email.trim(),
@@ -454,6 +472,15 @@ export const EditUserDialog = ({ user, open, onOpenChange, onSave }: {
                 {!ngoLockSince && ' Alanı boş bırakırsanız kilit tamamen kaldırılır.'}
               </p>
             </div>
+          </div>
+
+          {/* Üyelikler & İlişkiler — gönüllü/bağışçı STK, takip marka, kulüp */}
+          <div className="space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Üyelikler & İlişkiler</p>
+            <EntityMultiSelect collectionName={COLLECTIONS.ngos} label="Gönüllüsü Olduğu STK'lar" value={volunteerNgos} onChange={setVolunteerNgos} emptyText="Gönüllü olduğu STK yok" />
+            <EntityMultiSelect collectionName={COLLECTIONS.ngos} label="Bağışçısı / Desteklediği STK'lar" value={supportedNgos} onChange={setSupportedNgos} emptyText="Desteklediği STK yok" />
+            <EntityMultiSelect collectionName={COLLECTIONS.brands} label="Takip Ettiği Markalar" value={followedBrands} onChange={setFollowedBrands} emptyText="Takip ettiği marka yok" />
+            <EntityMultiSelect collectionName={COLLECTIONS.clubs} label="Katıldığı Kulüpler" value={joinedClubs} onChange={setJoinedClubs} emptyText="Katıldığı kulüp yok" />
           </div>
 
           {/* İletişim */}
