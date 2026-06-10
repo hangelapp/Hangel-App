@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, CreditCard, Target, Copy } from 'lucide-react';
+import { ArrowLeft, Building, Heart, Info, Rss, Handshake, Calendar, MapPin, Award, Store, Users, ShieldCheck, Mail, Phone, Globe, Instagram, Linkedin, Facebook, CheckCircle, AlertCircle, Eye, Share2, CreditCard, Target, Copy, ExternalLink } from 'lucide-react';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,21 @@ import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, ru
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
+
+// transparency/{adminUid}.criteria[] öğesi — şeffaflık sekmesinde gerçek belge/bilgi.
+interface ProfileCriteriaItem {
+  id: number;
+  name: string;
+  points: number;
+  isCompleted?: boolean;
+  type?: 'document' | 'link' | 'text' | 'document-link' | 'multi-select';
+  fileName?: string;
+  fileUrl?: string;
+  linkUrl?: string;
+  textValue?: string;
+  selectedOptions?: string[];
+  status?: 'pending' | 'approved';
+}
 
 const XIcon = (props: React.ComponentProps<'svg'>) => (
     <svg
@@ -121,6 +136,16 @@ export default function NgoProfilePage() {
     volunteerNgos?: string[];
     lastNgoSelectionChange?: { toDate?: () => Date; seconds?: number; nanoseconds?: number } | null;
   }>(userDocRef);
+
+  // Gerçek şeffaflık verisi: transparency/{adminUserId}.criteria — STK'nın yüklediği
+  // belge/link/bilgiler ve tamamlanma/onay durumları burada. Eski mock (puana göre
+  // türetilen) yerine bunu kullanıp gerçek yüzdeyi hesaplar + belgeleri önizletiriz.
+  const transparencyAdminUid = (ngo as (NGO & { adminUserId?: string }) | null | undefined)?.adminUserId;
+  const transparencyDocRef = useMemoFirebase(
+    () => (db && transparencyAdminUid ? doc(db, COLLECTIONS.transparency, transparencyAdminUid) : null),
+    [db, transparencyAdminUid],
+  );
+  const { data: transparencyDoc } = useDoc<{ criteria?: ProfileCriteriaItem[] }>(transparencyDocRef);
 
   const isSupporter = Array.isArray(userData?.supportedNgos) && userData!.supportedNgos!.includes(id);
   const isVolunteer = Array.isArray(userData?.volunteerNgos) && userData!.volunteerNgos!.includes(id);
@@ -300,18 +325,30 @@ export default function NgoProfilePage() {
     }
   };
   
-  const transparencyScore = ngo.transparencyScore ?? 0;
   const donorsCount = realStats?.donors ?? ngo.stats?.donors ?? 0;
   const volunteersCount = realStats?.volunteers ?? ngo.stats?.volunteers ?? 0;
-  const transparencyCriteria = [
-    { name: 'Faaliyet Belgesi', completed: true },
-    { name: 'Tüzük / Vakıf Senedi', completed: true },
-    { name: 'Yönetim Kurulu Listesi', completed: transparencyScore > 80 },
-    { name: 'Yıllık Faaliyet Raporu', completed: true },
-    { name: 'Finansal Tablolar', completed: transparencyScore > 85 },
-    { name: 'Bağımsız Denetim Raporu', completed: transparencyScore > 90 },
-    { name: 'Etki Raporu', completed: transparencyScore > 75 },
-  ];
+
+  // Gerçek şeffaflık kriterleri (varsa). Onaylı = isCompleted && status !== 'pending'.
+  const realCriteria = Array.isArray(transparencyDoc?.criteria) ? transparencyDoc!.criteria : null;
+  const transparencyTotalPoints = realCriteria && realCriteria.length > 0
+    ? realCriteria.reduce((s, c) => s + (Number(c.points) || 0), 0)
+    : 100;
+  const transparencyMetPoints = realCriteria
+    ? realCriteria.filter(c => c.isCompleted && c.status !== 'pending').reduce((s, c) => s + (Number(c.points) || 0), 0)
+    : 0;
+  // Gerçek yüzde: karşılanan puan / toplam puan. Gerçek veri yoksa kayıtlı skora düş.
+  const transparencyPercent = realCriteria
+    ? Math.round((transparencyMetPoints / (transparencyTotalPoints || 100)) * 100)
+    : (ngo.transparencyScore ?? 0);
+  const transparencyScore = transparencyPercent;
+  // Sekmede gösterilecek kriter listesi: gerçek veri varsa onu, yoksa eski türetilmiş liste.
+  const transparencyCriteria: ProfileCriteriaItem[] = realCriteria
+    ? realCriteria
+    : [
+        { id: 1, name: 'Faaliyet Belgesi', points: 10, isCompleted: true, status: 'approved' },
+        { id: 2, name: 'Tüzük / Vakıf Senedi', points: 10, isCompleted: true, status: 'approved' },
+        { id: 4, name: 'Yıllık Faaliyet Raporu', points: 10, isCompleted: (ngo.transparencyScore ?? 0) > 50, status: 'approved' },
+      ];
 
   const ngoAnalytics = (ngo as NGO & { analytics?: { gaId?: string; gtmId?: string; metaPixelId?: string } }).analytics;
 
@@ -597,42 +634,82 @@ export default function NgoProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div>
-                        <p className="text-3xl font-bold text-primary">{transparencyScore} / 100</p>
+                        <p className="text-3xl font-bold text-primary">%{transparencyScore}</p>
                         <Progress value={transparencyScore} className="mt-2 h-2" />
+                        {realCriteria && (
+                            <p className="text-xs text-muted-foreground mt-1.5">
+                                {transparencyMetPoints} / {transparencyTotalPoints} puan · {realCriteria.filter(c => c.isCompleted && c.status !== 'pending').length} / {realCriteria.length} kriter karşılandı
+                            </p>
+                        )}
                     </div>
                     <div className="pt-4 space-y-3">
                         <h4 className="font-semibold text-sm">Karşılanan Kriterler</h4>
-                        {transparencyCriteria.map(item => (
-                            <div key={item.name} className="flex items-center justify-between text-sm p-3 rounded-lg bg-muted/50">
-                                <div className='flex items-center'>
-                                     {item.completed ? (
-                                        <CheckCircle className="h-4 w-4 mr-2 text-green-500"/>
-                                    ) : (
-                                        <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground"/>
-                                    )}
-                                    <span className={!item.completed ? 'text-muted-foreground' : ''}>{item.name}</span>
+                        {transparencyCriteria.map(item => {
+                            const met = !!item.isCompleted && item.status !== 'pending';
+                            const pending = !!item.isCompleted && item.status === 'pending';
+                            const hasContent = !!(item.fileUrl || item.linkUrl || item.textValue || (item.selectedOptions && item.selectedOptions.length));
+                            const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(item.fileUrl || '');
+                            const isPdf = /\.pdf(\?|$)/i.test(item.fileUrl || '');
+                            return (
+                                <div key={item.id ?? item.name} className="flex items-center justify-between text-sm p-3 rounded-lg bg-muted/50">
+                                    <div className='flex items-center min-w-0'>
+                                        {met ? (
+                                            <CheckCircle className="h-4 w-4 mr-2 text-green-500 shrink-0"/>
+                                        ) : pending ? (
+                                            <AlertCircle className="h-4 w-4 mr-2 text-amber-500 shrink-0"/>
+                                        ) : (
+                                            <AlertCircle className="h-4 w-4 mr-2 text-muted-foreground shrink-0"/>
+                                        )}
+                                        <span className={!met ? 'text-muted-foreground truncate' : 'truncate'}>{item.name}</span>
+                                        {pending && <span className="ml-2 text-[10px] text-amber-600 shrink-0">onay bekliyor</span>}
+                                    </div>
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0" aria-label="İncele" disabled={!hasContent && !met}>
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-2xl">
+                                            <DialogHeader>
+                                                <DialogTitle>{item.name}</DialogTitle>
+                                            </DialogHeader>
+                                            <div className="py-2 space-y-3 max-h-[70vh] overflow-y-auto">
+                                                {item.fileUrl && (
+                                                    <div className="space-y-2">
+                                                        {isImage ? (
+                                                            <img src={item.fileUrl} alt={item.fileName || item.name} className="w-full rounded-lg border" />
+                                                        ) : isPdf ? (
+                                                            <iframe src={item.fileUrl} title={item.name} className="w-full h-[60vh] rounded-lg border" />
+                                                        ) : null}
+                                                        <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                                                            <ExternalLink className="h-4 w-4" /> {item.fileName || 'Belgeyi yeni sekmede aç'}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {item.linkUrl && (
+                                                    <a href={item.linkUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline break-all">
+                                                        <ExternalLink className="h-4 w-4 shrink-0" /> {item.linkUrl}
+                                                    </a>
+                                                )}
+                                                {item.textValue && (
+                                                    <p className="text-sm bg-muted/50 rounded-lg p-3 whitespace-pre-wrap">{item.textValue}</p>
+                                                )}
+                                                {item.selectedOptions && item.selectedOptions.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {item.selectedOptions.map(o => <Badge key={o} variant="secondary">{o}</Badge>)}
+                                                    </div>
+                                                )}
+                                                {!hasContent && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {met ? 'Bu kriter karşılandı ancak görüntülenecek ek belge/bilgi eklenmemiş.' : 'Bu kriter henüz karşılanmamıştır.'}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 </div>
-                                <Dialog>
-                                    <DialogTrigger asChild>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8" aria-label="Görüntüle">
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                        <DialogHeader>
-                                            <DialogTitle>{item.name}</DialogTitle>
-                                        </DialogHeader>
-                                        <div className="py-4">
-                                            {item.completed ? (
-                                                <p>Bu kriterle ilgili belge veya bilgi burada görüntülenecektir.</p>
-                                            ) : (
-                                                <p>Bu kriter henüz karşılanmamıştır. Kuruluş tarafından ilgili belge veya bilgi yüklendiğinde burada görüntülenecektir.</p>
-                                            )}
-                                        </div>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </CardContent>
             </Card>
