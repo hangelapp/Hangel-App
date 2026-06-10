@@ -21,9 +21,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { checkAndConsumeAIQuota, MAX_OUTPUT_TOKENS, sanitizeUserInput } from '@/ai/guards';
 import { AIQuotaExceededError, verifyAIFlowUserId } from '@/ai/flow-auth';
-
-export const AD_PLATFORMS = ['google', 'meta', 'tiktok'] as const;
-export type AdPlatform = (typeof AD_PLATFORMS)[number];
+// 'use server' dosyaları const/tip export edemez → ayrı dosyadan import.
+import { AD_PLATFORMS, type AdPlatform } from './ad-platforms';
 
 const AdPlanInputSchema = z.object({
   orgName: z.string().describe('Kuruluşun adı (dernek/vakıf/kulüp).'),

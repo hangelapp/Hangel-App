@@ -9,7 +9,8 @@
  * Hata: { errorCode, message }.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { planAdCampaigns, AD_PLATFORMS, type AdPlatform } from '@/ai/flows/ad-campaign-planner-flow';
+import { planAdCampaigns } from '@/ai/flows/ad-campaign-planner-flow';
+import { AD_PLATFORMS, type AdPlatform } from '@/ai/flows/ad-platforms';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { getAdminAuth } from '@/lib/firebase-admin';
 
