@@ -201,7 +201,7 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
 
   try {
     // 1) Messages — kalıcı, /messages gelen kutusunda
-    await fs.collection(COLLECTIONS.messages).add({
+    const msgRef = await fs.collection(COLLECTIONS.messages).add({
       sender: { id: 'hangel-system', name: 'Hangel Acil', avatarUrl: '' },
       senderId: 'hangel-system',
       senderType: 'system',
@@ -222,7 +222,9 @@ Son 48 saatte alkol almamış olman gerekiyor. Aç gitme, biraz su iç ve bu sü
     // shortBody artık kullanılmıyor (ileride lazım olursa diye satır içi tutuldu).
     void shortBody;
 
-    return NextResponse.json({ ok: true });
+    // messageId döndür → çağıran taraf teşekkür bildirimini doğrudan bu mesaja
+    // (/messages/{id}) bağlayabilir.
+    return NextResponse.json({ ok: true, messageId: msgRef.id });
   } catch (err) {
     console.error('emergency/respond error', err);
     return NextResponse.json({ errorCode: 'INTERNAL_ERROR', message: 'Detay iletilemedi.' }, { status: 500 });

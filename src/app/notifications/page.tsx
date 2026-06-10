@@ -137,13 +137,18 @@ export default function NotificationsPage() {
       //    yerine /notifications akışında bu bilgiyi her zaman geri okuyabilir.
       if (status === 'positive') {
         // Kan Talebi Detayları'nı /messages gelen kutusuna mesaj olarak ilet (hastane konumu dahil).
+        let detailMessageId: string | null = null;
         try {
           const token = await authUser.getIdToken();
-          await fetch('/api/emergency/respond', {
+          const res = await fetch('/api/emergency/respond', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify({ requestId: notif.data?.requestId || notif.id, data: notif.data }),
           });
+          if (res.ok) {
+            const payload = await res.json().catch(() => null);
+            if (payload?.messageId) detailMessageId = payload.messageId as string;
+          }
         } catch { /* mesaj iletilemese de yanıt kaydı oluştu */ }
 
         // Detay bilgileri (hastane/hasta/kan/irtibat) BİLDİRİME yazılmaz — kullanıcı
@@ -154,8 +159,9 @@ export default function NotificationsPage() {
             userId: authUser.uid,
             type: 'emergency-blood-thanks',
             title: 'Teşekkürler 🧡',
-            body: 'Yardım çağrısına yanıt verdiğin için teşekkürler. Kan talebinin tüm detayları (hastane, irtibat, kan grubu, yol tarifi) Mesajlarım sayfanda seni bekliyor.',
-            data: { requestId: notif.data?.requestId || notif.id, link: '/messages' },
+            body: 'Yardım çağrısına yanıt verdiğin için teşekkürler. Kan talebinin tüm detayları (hastane, irtibat, kan grubu, yol tarifi) için bu bildirime dokun.',
+            // Detaylı mesaj oluştuysa doğrudan ona, yoksa Mesajlarım gelen kutusuna yönlendir.
+            data: { requestId: notif.data?.requestId || notif.id, link: detailMessageId ? `/messages/${detailMessageId}` : '/messages' },
             read: false,
             pushSent: true,
             createdAt: serverTimestamp(),
@@ -216,10 +222,12 @@ export default function NotificationsPage() {
         return '/admin';
       case 'donation':
         return '/my-donations';
+      case 'emergency-blood-thanks':
+        // Detaylı kan talebi mesajına doğrudan git (data.link = /messages/{id}).
+        return n.data?.link || '/messages';
       case 'message':
       case 'welcome':
       case 'emergency-confirmation':
-      case 'emergency-blood-thanks':
         return '/messages';
       case 'badge':
       case 'badge_earned':
