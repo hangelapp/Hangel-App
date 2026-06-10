@@ -17,8 +17,8 @@ import { Separator } from '@/components/ui/separator';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useFirestore, useDoc, useMemoFirebase, useUser } from '@/firebase';
-import { doc, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { useFirestore, useDoc, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { doc, collection, query, where, updateDoc, increment, arrayUnion, arrayRemove, serverTimestamp, runTransaction } from 'firebase/firestore';
 import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -146,6 +146,14 @@ export default function NgoProfilePage() {
     [db, transparencyAdminUid],
   );
   const { data: transparencyDoc } = useDoc<{ criteria?: ProfileCriteriaItem[] }>(transparencyDocRef);
+
+  // Bu STK'nın gerçek gönüllülük ilanları: volunteering koleksiyonu, ngoId == id.
+  // (Eski `ngo.opportunities` alanı doldurulmuyordu.)
+  const volunteeringQuery = useMemoFirebase(
+    () => (db && id ? query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', id)) : null),
+    [db, id],
+  );
+  const { data: volunteeringOpps } = useCollection<Volunteering>(volunteeringQuery);
 
   const isSupporter = Array.isArray(userData?.supportedNgos) && userData!.supportedNgos!.includes(id);
   const isVolunteer = Array.isArray(userData?.volunteerNgos) && userData!.volunteerNgos!.includes(id);
@@ -473,7 +481,7 @@ export default function NgoProfilePage() {
       <Tabs defaultValue="about" className="w-full">
         <TabsList className="flex flex-wrap justify-center h-auto p-1">
             <TabsTrigger value="about">Hakkında</TabsTrigger>
-            <TabsTrigger value="opportunities">Fırsatlar</TabsTrigger>
+            <TabsTrigger value="opportunities">Gönüllülük</TabsTrigger>
             <TabsTrigger value="stats">İstatistikler</TabsTrigger>
             <TabsTrigger value="transparency">Şeffaflık</TabsTrigger>
             <TabsTrigger value="posts">Gönderiler</TabsTrigger>
@@ -585,8 +593,8 @@ export default function NgoProfilePage() {
             </Card>
         </TabsContent>
         <TabsContent value="opportunities" className="p-4 space-y-4">
-             {ngo.opportunities && ngo.opportunities.length > 0 ? (
-                ngo.opportunities.map(opp => <OpportunityCard key={opp.id} opp={opp} />)
+             {volunteeringOpps && volunteeringOpps.length > 0 ? (
+                volunteeringOpps.map(opp => <OpportunityCard key={opp.id} opp={opp} />)
              ) : (
                 <div className="text-center text-muted-foreground py-16">
                     <Handshake className="mx-auto h-12 w-12 text-muted-foreground/50"/>
