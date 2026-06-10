@@ -54,50 +54,67 @@ const getDomainFromUrl = (urlString: string, fallback: string): string => {
 // tıklayan kullanıcı kırık tracking link görüyor. Panel'deki "Canlı Teklifler"
 // (approved) listesi ile karşılaştırılarak elde edildi (2026-06-05).
 // Kaynak: scripts/affiliate-panel-deep-scrape.ts + scripts/affiliate-panel-reklamaction-only.ts
+// 2026-06-10 — Rüya hanım yanıtı sonrası canlı API approval_status taraması ile
+// güncellendi (Affiliate_Offer.findAll + fields[]=approval_status). Yalnızca
+// approval_status != 'approved' (rejected/pending) olan offer'lar bloklanır;
+// approved olanlar Market'te kullanıcıya gösterilir.
 const DENIED_OFFER_IDS_BY_NETWORK: Record<string, Set<string>> = {
   reklamaction: new Set([
-    // 2026-06-05 RA yanıtı: 17 marka açıldı (Sportive, Columbia, D&R, Colins,
-    // Saat ve Saat, Koton, Linens, Koçtaş, Touristica, GAP, M&S, PUMA, Taç,
-    // Toyzz Shop, Hotiç, Sporthink, DAGİ) — blocklist'ten çıkarıldı.
-    // Aşağıdaki 15 RA tarafından "açmayalım" dendi + 3 cevap gelmedi → kalır.
-    '580',   // Modanisa Kuponlu Takip (cevap gelmedi, takip)
-    '9555',  // Banggood (açmayalım)
-    '12437', // Beymen (açmayalım)
-    '59527', // S Sport Plus (açmayalım)
-    '60598', // havhav.com.tr (açmayalım)
-    '60810', // Supplementler (açmayalım)
-    '60816', // Vitaminler (açmayalım)
-    '61275', // Fitmoda (açmayalım)
-    '61440', // Tatildekirala.com (açmayalım)
-    '61532', // miyav.com.tr (açmayalım)
-    '61589', // Kuponkod.com Promo Landers (cevap gelmedi, takip)
-    '62180', // I Find Location (açmayalım)
-    '62356', // Idefix AndroidIos (açmayalım)
-    '62369', // Portfun (açmayalım)
-    '62372', // Chat Fun (açmayalım)
-    '62374', // Flo Influencer Install+Satis (açmayalım)
-    '62412', // Modanisa JO+GCC+UAESA (açmayalım)
-    '62504', // LG Coupon Attribution (cevap gelmedi, takip)
+    // 2026-06-10: 9 marka onaylandı (Banggood, S Sport Plus, havhav, Supplementler,
+    // Vitaminler, Fitmoda, miyav, Kuponkod, LG Coupon) → açıldı, artık Market'te görünür.
+    // Aşağıdakiler hâlâ pending (approval_status=null) → kalır:
+    '580',   // Modanisa Kuponlu Takip
+    '12437', // Beymen
+    '61440', // Tatildekirala.com
+    '62180', // I Find Location CPL
+    '62356', // Idefix Android-Ios
+    '62369', // Portfun TR
+    '62372', // Chat Fun TR
+    '62374', // Flo Influencer Install+Satis
+    '62412', // Modanisa JO+GCC+UAE-SA
   ]),
   affocean: new Set([
-    '621',  // Network
-    '623',  // Divarese
-    '1246', // Media Markt
-    '1688', // Arçelik
-    '2032', // Nautica
-    '2036', // Gant
-    '2040', // Occasion
-    '2136', // Yargıcı
-    '2228', // Benetton
-    '2284', // Bloom and Fresh
-    '2294', // SPX
-    '2398', // SuperStep
-    '2546', // Beko
-    '2697', // Suwen
-    '2720', // Bilişim HR
-    '2723', // Bitcointr PN
+    // 2026-06-10: 14 marka onaylandı (Network, Divarese, Media Markt, Arçelik,
+    // Nautica, Gant, Occasion, Yargıcı, Benetton, Bloom and Fresh, SPX, SuperStep,
+    // Beko, Suwen) → açıldı. Kalan 2 pending (CPC, retail değil):
+    '2720', // Bilişim - HR [CPC]
+    '2723', // Bitcointr [CPC] - PN
   ]),
-  gelirortaklari: new Set<string>(),
+  gelirortaklari: new Set([
+    // 2026-06-10: deniedSet eskiden boştu → 13 rejected + 16 pending marka
+    // kullanıcıya KIRIK tracking link gösteriyordu. API taramasıyla bloklandı.
+    // rejected (link çalışmaz):
+    '6131', // Altınbaş
+    '6718', // Amazon TR
+    '6833', // Bilet.com
+    '6871', // Boyner Now
+    '6658', // Cacharel
+    '6840', // CamperTR
+    '6786', // Decathlon
+    '4908', // Etstur
+    '5396', // IKEA
+    '6196', // Penti
+    '6659', // Pierre Cardin
+    '6647', // Samsung [CPC]
+    '6655', // US Polo Assn
+    // pending (onay bekliyor — onaylanınca çıkarılır):
+    '6782', // Carter's
+    '6899', // Getir Büyük
+    '6895', // Getir
+    '6779', // Gratis
+    '5754', // idefix
+    '6908', // Karaca Core Affiliate
+    '6918', // Karaca Influencer Affiliate
+    '2020', // Mavi
+    '6673', // Mavi Influencer
+    '6776', // MinyCenter
+    '6920', // Pazarama
+    '6646', // Samsung [CPS]
+    '6894', // Tatilbudur
+    '6605', // Tchibo
+    '6743', // Vitaminler
+    '6909', // Yalıspor
+  ]),
 };
 
 // ── Generic HasOffers/Tune API ───────────────────────────────────────────────
