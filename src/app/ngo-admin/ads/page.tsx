@@ -19,7 +19,7 @@ import Link from 'next/link';
 import {
     Megaphone, HandCoins, Users, Heart, Sparkles, Globe, Check, ExternalLink,
     Loader2, ChevronRight, AlertTriangle, Clock, Search, Wand2, Link2, BadgeCheck, Copy,
-    Facebook, Music2,
+    Facebook, Music2, Building2,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-entity-context';
@@ -138,12 +138,16 @@ export default function AdsPage() {
     const [metaConnectionLoaded, setMetaConnectionLoaded] = useState(false);
     const [metaConnecting, setMetaConnecting] = useState(false);
     const [metaPublishingId, setMetaPublishingId] = useState<string | null>(null);
+    // "Meta reklam hesabın var mı?" dallanması (bağlanabilir ama henüz bağlı değilken)
+    const [metaHasAccount, setMetaHasAccount] = useState<'unknown' | 'yes' | 'no'>('unknown');
 
     // TikTok bağlantı durumu — Meta ile birebir paralel
     const [tiktokConnection, setTiktokConnection] = useState<TiktokConnectionState>({ configured: false, connected: false });
     const [tiktokConnectionLoaded, setTiktokConnectionLoaded] = useState(false);
     const [tiktokConnecting, setTiktokConnecting] = useState(false);
     const [tiktokPublishingId, setTiktokPublishingId] = useState<string | null>(null);
+    // "TikTok reklam hesabın var mı?" dallanması (bağlanabilir ama henüz bağlı değilken)
+    const [tiktokHasAccount, setTiktokHasAccount] = useState<'unknown' | 'yes' | 'no'>('unknown');
 
     // Kayıtlı planları çek; 'selected' Set'ini hidrate et.
     useEffect(() => {
@@ -1009,10 +1013,57 @@ export default function AdsPage() {
                                         </p>
                                     </div>
                                 </div>
+                                {/* Reklam hesabı var mı? dallanması — Bağla butonundan önce */}
+                                {metaHasAccount === 'unknown' ? (
+                                    <div className="rounded-2xl bg-muted/40 border border-border/60 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-[#1877f2] mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-foreground">Meta reklam hesabın var mı?</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <button onClick={() => setMetaHasAccount('yes')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Evet, var</p>
+                                            </button>
+                                            <button onClick={() => setMetaHasAccount('no')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Hayır, yok</p>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : metaHasAccount === 'no' ? (
+                                    <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-amber-900">Meta reklam hesabı aç</p>
+                                        </div>
+                                        <ol className="space-y-1.5 text-[12px] text-amber-800 leading-relaxed list-decimal list-inside">
+                                            <li>Meta Business&apos;ta bir işletme hesabı oluştur.</li>
+                                            <li>İşletme hesabına bir reklam hesabı ekle.</li>
+                                            <li>Reklam hesabına bir ödeme yöntemi ekle.</li>
+                                            <li>Buraya dön ve hesabını bağla.</li>
+                                        </ol>
+                                        <a href="https://business.facebook.com/" target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-11 rounded-2xl bg-[#1877f2] text-white flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition">
+                                            Meta Business&apos;ı Aç <ExternalLink className="h-4 w-4" />
+                                        </a>
+                                        <p className="text-[11px] text-amber-800 text-center">Not: Meta reklamları ücretlidir.</p>
+                                        <button onClick={() => setMetaHasAccount('yes')}
+                                            className="w-full text-[12px] font-semibold text-amber-900 underline underline-offset-2">
+                                            Zaten açtım, bağlanayım
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
                                 <button onClick={connectMeta} disabled={metaConnecting}
                                     className="w-full h-12 rounded-2xl bg-[#1877f2] text-white flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
                                     {metaConnecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Facebook className="h-[18px] w-[18px]" /> Meta Hesabını Bağla</>}
                                 </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Mevcut hesabını ve izinlerini kullanarak bağla.
+                                </p>
+                                    </>
+                                )}
                                 <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
                                     Not: Meta reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
                                 </p>
@@ -1109,10 +1160,57 @@ export default function AdsPage() {
                                         </p>
                                     </div>
                                 </div>
+                                {/* Reklam hesabı var mı? dallanması — Bağla butonundan önce */}
+                                {tiktokHasAccount === 'unknown' ? (
+                                    <div className="rounded-2xl bg-muted/40 border border-border/60 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-foreground mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-foreground">TikTok reklam hesabın var mı?</p>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2.5">
+                                            <button onClick={() => setTiktokHasAccount('yes')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Evet, var</p>
+                                            </button>
+                                            <button onClick={() => setTiktokHasAccount('no')}
+                                                className="rounded-2xl border border-border/60 bg-card p-3 text-center active:scale-[0.97] transition">
+                                                <p className="text-[14px] font-semibold text-foreground">Hayır, yok</p>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : tiktokHasAccount === 'no' ? (
+                                    <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 space-y-3">
+                                        <div className="flex items-start gap-2">
+                                            <Building2 className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                                            <p className="text-[14px] font-semibold text-amber-900">TikTok reklam hesabı aç</p>
+                                        </div>
+                                        <ol className="space-y-1.5 text-[12px] text-amber-800 leading-relaxed list-decimal list-inside">
+                                            <li>TikTok Ads Manager&apos;a kaydol.</li>
+                                            <li>Bir reklam hesabı oluştur.</li>
+                                            <li>Reklam hesabına bir ödeme yöntemi ekle.</li>
+                                            <li>Buraya dön ve hesabını bağla.</li>
+                                        </ol>
+                                        <a href="https://ads.tiktok.com/" target="_blank" rel="noopener noreferrer"
+                                            className="w-full h-11 rounded-2xl bg-black text-[#25F4EE] flex items-center justify-center gap-2 text-[14px] font-semibold active:scale-[0.98] transition">
+                                            TikTok Ads Manager&apos;ı Aç <ExternalLink className="h-4 w-4" />
+                                        </a>
+                                        <p className="text-[11px] text-amber-800 text-center">Not: TikTok reklamları ücretlidir.</p>
+                                        <button onClick={() => setTiktokHasAccount('yes')}
+                                            className="w-full text-[12px] font-semibold text-amber-900 underline underline-offset-2">
+                                            Zaten açtım, bağlanayım
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
                                 <button onClick={connectTiktok} disabled={tiktokConnecting}
                                     className="w-full h-12 rounded-2xl bg-black text-[#25F4EE] flex items-center justify-center gap-2 text-[15px] font-semibold shadow-sm active:scale-[0.98] transition disabled:opacity-60">
                                     {tiktokConnecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Bağlanıyor...</> : <><Music2 className="h-[18px] w-[18px]" /> TikTok Hesabını Bağla</>}
                                 </button>
+                                <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+                                    Mevcut hesabını ve izinlerini kullanarak bağla.
+                                </p>
+                                    </>
+                                )}
                                 <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
                                     Not: TikTok reklamları ücretlidir (Google Ad Grants gibi bedava değildir).
                                 </p>
