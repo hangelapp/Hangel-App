@@ -26,7 +26,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Loader2, CheckCircle, XCircle, Clock, ShieldCheck, Building, Store, School, Mail, MapPin, User } from "lucide-react";
-import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
 import { collection, doc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 
@@ -317,6 +317,7 @@ const PendingApplicationCard = ({ item, onApprove, onReject }: { item: Applicati
 
 export default function ApplicationsPage() {
   const db = useFirestore();
+  const { user: authUser } = useUser();
   const { toast } = useToast();
 
   const appsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.applications), [db]);
@@ -509,6 +510,22 @@ export default function ApplicationsPage() {
           approvedAt: serverTimestamp(),
           createdEntityId: entityId,
         });
+
+        // STK: kayıt formunda yüklenen yasal belgeleri (tüzük/faaliyet) şeffaflık
+        // onay kuyruğuna ekle — onaylanınca puana dahil olur. (Admin SDK; client
+        // transparency/{adminUid} yazamaz.)
+        if (app.entityType === 'NGO' && app.userId && Array.isArray(app.documents) && app.documents.length > 0) {
+          try {
+            const token = await authUser?.getIdToken();
+            if (token) {
+              await fetch('/api/super-admin/transparency/seed-from-docs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ ownerUid: app.userId, ngoId: entityId, documents: app.documents }),
+              });
+            }
+          } catch { /* şeffaflık seed best-effort — onay yine de tamamlandı */ }
+        }
 
         if (userId) {
           const userRef = doc(db, COLLECTIONS.users, userId);

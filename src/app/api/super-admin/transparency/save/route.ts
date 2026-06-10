@@ -89,7 +89,14 @@ export async function POST(req: NextRequest) {
   }
 
   // Super-admin düzenlemesi yetkilidir: tamamlanan her madde 'approved'.
-  const normalized: CriteriaItem[] = criteria.map((c) => ({
+  // ÖNEMLİ: Admin SDK .set() `undefined` değerleri reddeder; tamamlanmamış maddeler
+  // fileUrl/status vb. için undefined taşır. Her maddeden undefined alanları temizle.
+  const stripUndefined = <T extends Record<string, unknown>>(obj: T): T => {
+    const out = {} as Record<string, unknown>;
+    for (const [k, v] of Object.entries(obj)) if (v !== undefined) out[k] = v;
+    return out as T;
+  };
+  const normalized: CriteriaItem[] = criteria.map((c) => stripUndefined({
     ...c,
     status: c.isCompleted ? ('approved' as const) : undefined,
     updatedAt: new Date().toISOString(),

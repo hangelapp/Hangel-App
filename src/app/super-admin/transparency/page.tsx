@@ -163,6 +163,20 @@ export default function TransparencyPage() {
     return m;
   }, [ngos]);
 
+  // adminUid → yüklenen (tamamlanan) ve onay bekleyen madde sayısı. Geçmiş + güncel
+  // tüm yükleyenleri STK Profilleri sekmesinde görünür kılar.
+  const statsByAdmin = useMemo(() => {
+    const m = new Map<string, { completed: number; pending: number }>();
+    (transparencyDocs || []).forEach(td => {
+      const items = td.criteria || [];
+      m.set(td.id, {
+        completed: items.filter(c => c.isCompleted).length,
+        pending: items.filter(c => c.isCompleted && c.status === 'pending').length,
+      });
+    });
+    return m;
+  }, [transparencyDocs]);
+
   const pendingQueue = useMemo(() => {
     return (transparencyDocs || [])
       .map(td => {
@@ -418,6 +432,16 @@ export default function TransparencyPage() {
                       <p className="font-bold truncate">{ngo.name}</p>
                       <p className="text-xs text-muted-foreground">{ngo.category} · {ngo.type}</p>
                     </div>
+                    {(() => {
+                      const st = statsByAdmin.get((ngo as { adminUserId?: string }).adminUserId || '');
+                      if (!st || st.completed === 0) return <Badge variant="secondary" className="text-[10px] text-muted-foreground">Belge yok</Badge>;
+                      return (
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="secondary" className="text-[10px] gap-1"><FileText className="h-3 w-3" />{st.completed} belge/bilgi</Badge>
+                          {st.pending > 0 && <Badge className="text-[10px] bg-amber-500 hover:bg-amber-500 gap-1"><Clock className="h-3 w-3" />{st.pending} onay bekliyor</Badge>}
+                        </div>
+                      );
+                    })()}
                     <Badge variant="outline" className="font-black">
                       <ShieldCheck className="mr-1 h-3 w-3 text-primary" />
                       {ngo.transparencyScore || 0} puan
