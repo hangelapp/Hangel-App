@@ -112,18 +112,6 @@ const grants = [
   },
 ];
 
-// Benzer destek sağlayan diğer kurumlar (kısa liste).
-const moreGrantOrgs = [
-  'TechSoup Türkiye (yazılım & donanım indirimleri)',
-  'Microsoft for Nonprofits',
-  'AB Sivil Düşün Programı',
-  'TÜSEV (kaynak geliştirme)',
-  'Sabancı Vakfı Hibe Programları',
-  'Turkey Mozaik Foundation',
-  'Açık Toplum Vakfı',
-  'Sivil Toplum için Destek Vakfı',
-];
-
 const audience = [
   { icon: Users, title: 'Kimler Katılabilir?', desc: 'Dernek, vakıf ve spor kulüplerinin gönüllü ve yöneticilerine özeldir.' },
   { icon: UserCheck, title: 'Kontenjan', desc: 'Her STK için başkan + 2 kişilik kontenjan planlanmıştır.' },
@@ -297,18 +285,16 @@ export default function IncomeModelConferencePage() {
               );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* Hibe ve Destekler */}
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Hibe ve Destekler: Nereye, Nasıl Başvurulur?</h2>
-          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-            Ulusal ve uluslararası kuruluşlar STK&apos;lara ücretsiz araç, fon ve uzman desteği sunar. İşte başlıca kapılar ve başvuru yolları.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Hibe ve Destekler — "Ne Öğreneceksiniz?" ile aynı zemin; eğitim içeriği */}
+          <div className="mt-16 pt-12 border-t border-black/10">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Hibe ve Destekler: Nereye, Nasıl Başvurulur?</h2>
+              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+                Ulusal ve uluslararası kuruluşlar STK&apos;lara ücretsiz araç, fon ve uzman desteği sunar. İşte başlıca kapılar ve başvuru yolları.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {grants.map((g) => {
             const external = g.href.startsWith('http');
             return (
@@ -332,17 +318,8 @@ export default function IncomeModelConferencePage() {
               </Card>
             );
           })}
-        </div>
-        <div className="mt-8 rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
-          <p className="text-sm font-semibold mb-2">Benzer destek sağlayan diğer kurumlar</p>
-          <div className="flex flex-wrap gap-2">
-            {moreGrantOrgs.map((o) => (
-              <span key={o} className="rounded-full bg-white border border-black/5 px-3 py-1 text-xs text-muted-foreground">{o}</span>
-            ))}
+            </div>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Konferansta bu kurumların başvuru süreçlerini, gerekli belgeleri ve kabul kriterlerini adım adım ele alıyoruz.
-          </p>
         </div>
       </section>
 

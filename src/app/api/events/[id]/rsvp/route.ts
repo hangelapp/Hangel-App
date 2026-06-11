@@ -28,6 +28,7 @@ import { NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
+import { notifyUser } from '@/lib/notify-user';
 
 export const runtime = 'nodejs';
 
@@ -91,8 +92,15 @@ export async function POST(
         throw new RsvpError('event_not_found', 'Etkinlik bulunamadı', 404);
       }
       const eventData = eventSnap.data() as
-        | { capacity?: { max?: number; current?: number } | number }
+        | {
+            capacity?: { max?: number; current?: number } | number;
+            name?: string;
+            slug?: string;
+            location?: { city?: string };
+          }
         | undefined;
+      const eventName = eventData?.name || 'Etkinlik';
+      const eventSlug = eventData?.slug || eventId;
 
       // capacity.max is the cap; 0/undefined/null means unlimited
       let cap: number | null = null;
@@ -132,7 +140,7 @@ export async function POST(
           { merge: true }
         );
         const newCount = wasGoing ? goingCount : goingCount + 1;
-        return { status: 'going' as const, count: newCount };
+        return { status: 'going' as const, count: newCount, newlyGoing: !wasGoing, eventName, eventSlug };
       }
 
       // action === 'cancel'
@@ -148,10 +156,29 @@ export async function POST(
         );
       }
       const newCount = wasGoing ? Math.max(0, goingCount - 1) : goingCount;
-      return { status: 'cancelled' as const, count: newCount };
+      return { status: 'cancelled' as const, count: newCount, newlyGoing: false, eventName, eventSlug };
     });
 
-    return NextResponse.json(result);
+    // Yeni katılımda: katılımcıya yaka kartı DM'i + bildirim gönder (best-effort).
+    if (result.status === 'going' && result.newlyGoing) {
+      try {
+        await notifyUser({
+          userId: uid,
+          type: 'badge_earned',
+          title: 'Yaka kartınız hazır 🎫',
+          body: `${result.eventName} etkinliğine kaydınız alındı. Dijital yaka kartınızı etkinlik sayfasından görüntüleyebilirsiniz.`,
+          link: `/events/${result.eventSlug}`,
+          data: { eventId, eventName: result.eventName },
+          storeAsMessage: true,
+          messageSubject: 'Yaka Kartınız Hazır 🎫',
+          messageContent: `${result.eventName} etkinliğine katılımınız onaylandı. Etkinlik günü girişte kullanacağınız QR kodlu dijital yaka kartınız hazır — etkinlik sayfasındaki "Yaka Kartı" butonundan görüntüleyip indirebilirsiniz. Görüşmek üzere!`,
+        });
+      } catch (notifyErr) {
+        console.warn('[api/events/rsvp] notify failed', notifyErr);
+      }
+    }
+
+    return NextResponse.json({ status: result.status, count: result.count });
   } catch (err) {
     if (err instanceof RsvpError) {
       return errJson(err.errorCode, err.message, err.status);
