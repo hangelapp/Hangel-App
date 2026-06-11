@@ -9,7 +9,10 @@ export interface NgoSiteSettings {
   banners?: NgoSiteBanner[];
   sections?: Record<string, boolean>;
   stats?: { volunteers?: number; donors?: number; foundedYear?: number; activeCampaigns?: number };
+  published?: boolean;
   publishedAt?: { toDate?: () => Date } | string;
+  dnsVerified?: boolean;
+  dnsVerifiedAt?: { toDate?: () => Date } | string;
   updatedAt?: unknown;
 }
 

@@ -466,6 +466,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     const isPreviewPage = pathname === '/ngo-admin/website/preview';
     const isSuperAdminPage = pathname.startsWith('/super-admin');
+    // STK yayınlanmış sitesi: {slug}.hangel.org.tr → /ngo-sites/** rewrite.
+    // Tamamen standalone (app chrome/menü/header YOK) — kendi layout'u render eder.
+    const isNgoSitePage = pathname.startsWith('/ngo-sites');
 
     const publicWebsitePaths = [
         '/',
@@ -504,7 +507,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // (authUser henüz yok) web görünümü gösterilir, flash minimumda kalır.
     const isAppHubPage = pathname === '/app' || pathname.startsWith('/app/');
 
-    if (isPreviewPage || isSuperAdminPage || isPublicPage || (isAppHubPage && !authUser)) {
+    if (isPreviewPage || isSuperAdminPage || isNgoSitePage || isPublicPage || (isAppHubPage && !authUser)) {
         return <div className="min-h-dvh bg-background">{children}</div>;
     }
 
