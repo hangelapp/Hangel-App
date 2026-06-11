@@ -52,6 +52,24 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/**
+ * Firestore `undefined` değer kabul etmez (ör. donationRate verilmediğinde mapper
+ * undefined üretebilir). Yazmadan önce undefined alanları derinlemesine ayıkla.
+ */
+function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((v) => stripUndefined(v)) as unknown as T;
+  }
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== undefined) out[k] = stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
+}
+
 export async function POST(req: NextRequest) {
   if (!(await verifySuperAdmin(req))) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
@@ -103,7 +121,7 @@ export async function POST(req: NextRequest) {
       const slice = products.slice(i, i + 450);
       const batch = fs.batch();
       for (const p of slice) {
-        batch.set(fs.collection(PRODUCTS).doc(p.id), p, { merge: true });
+        batch.set(fs.collection(PRODUCTS).doc(p.id), stripUndefined(p), { merge: true });
       }
       await batch.commit();
       written += slice.length;
