@@ -166,14 +166,15 @@ const SETTINGS_SECTIONS = [
   { id: 'general', label: 'Genel Platform', icon: SlidersHorizontal },
   { id: 'ai', label: 'Yapay Zeka Entegrasyonu', icon: Sparkles },
 ] as const;
-type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]['id'];
+// Eski sol-nav kaldırıldı; tüm bölümler tek sayfada akış halinde gösterilir.
+// SETTINGS_SECTIONS yalnızca üstteki link kartlarını üretmek için kullanılır.
 
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user: authUser, isUserLoading } = useUser();
-  const [activeSection, setActiveSection] = useState<SettingsSectionId>('notifications');
+  // (eski) activeSection state kaldırıldı — tüm bölümler tek sayfada akış halinde.
 
   const settingsRef = useMemoFirebase(() => {
     if (!firestore || !authUser) return null;
@@ -326,45 +327,41 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-lg font-semibold md:text-2xl">Panel Ayarları</h1>
-      <div className="grid lg:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
-        {/* Sol menü — her başlık ayrı bölüm; yeni başlıklar SETTINGS_SECTIONS'a eklenir */}
-        <nav className="lg:sticky lg:top-4 flex lg:flex-col gap-1 overflow-x-auto rounded-2xl border bg-card p-2">
-          {SETTINGS_SECTIONS.map((s) => {
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      <div>
+        <h1 className="text-3xl font-black tracking-tighter text-[#1d1d1f]">Panel Ayarları</h1>
+        <p className="text-muted-foreground text-sm font-medium mt-1">
+          Platformun konfigürasyonu, bildirim politikaları, AI entegrasyonu ve alt modüller.
+        </p>
+      </div>
+
+      {/* Hızlı erişim link kartları — super-admin ana sayfa pattern'ı */}
+      <Card className="rounded-2xl border-black/5 shadow-sm overflow-hidden">
+        <div className="px-6 pt-6 pb-2 bg-muted/20 border-b border-black/5">
+          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Alt Sayfalar</p>
+        </div>
+        <div className="divide-y divide-black/5">
+          {SETTINGS_SECTIONS.filter((s) => 'href' in s && s.href).map((s) => {
             const SIcon = s.icon;
-            // href varsa Link (yeni sayfaya git), yoksa button (section değiştir)
-            const linkHref = (s as { href?: string }).href;
-            if (linkHref) {
-              return (
-                <Link
-                  key={s.id}
-                  href={linkHref}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left whitespace-nowrap transition-colors shrink-0 text-foreground hover:bg-accent"
-                >
-                  <SIcon className="h-4 w-4 shrink-0" /> {s.label}
-                  <ChevronRight className="h-3.5 w-3.5 ml-auto opacity-50" />
-                </Link>
-              );
-            }
+            const href = (s as { href: string }).href;
             return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setActiveSection(s.id as Exclude<SettingsSectionId, 'access-control' | 'volunteer-scoring' | 'app-stores'>)}
-                className={cn(
-                  'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left whitespace-nowrap transition-colors shrink-0',
-                  activeSection === s.id ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
-                )}
-              >
-                <SIcon className="h-4 w-4 shrink-0" /> {s.label}
-              </button>
+              <Link key={s.id} href={href} className="flex items-center p-6 hover:bg-muted/30 transition-all group">
+                <div className="h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110 bg-primary">
+                  <SIcon className="h-6 w-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{s.label}</p>
+                </div>
+                <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
+              </Link>
             );
           })}
-        </nav>
+        </div>
+      </Card>
 
-        <div className="space-y-6 min-w-0">
-          <div className={cn(activeSection !== 'notifications' && 'hidden')}>
+      {/* Bölümler — hep birlikte sayfada akış halinde, sol nav yok */}
+      <div className="space-y-6 min-w-0">
+          <div>
       <Card>
         <CardHeader>
           <div className="flex items-start gap-3">
@@ -507,7 +504,7 @@ export default function SettingsPage() {
       </Card>
           </div>
 
-          <div className={cn(activeSection !== 'general' && 'hidden')}>
+          <div>
       <Card>
         <CardHeader>
           <CardTitle>Genel Platform Ayarları</CardTitle>
@@ -555,10 +552,9 @@ export default function SettingsPage() {
       </Card>
           </div>
 
-          <div className={cn(activeSection !== 'ai' && 'hidden')}>
+          <div>
             <AiIntegrationSection />
           </div>
-        </div>
       </div>
     </div>
   );
