@@ -4,6 +4,26 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
+  // genkit → @genkit-ai/core → @opentelemetry/sdk-node sunucuda Node tarafından
+  // require edilsin, webpack bundle'ına girmesin. Aksi halde sdk-node'un statik
+  // require ettiği opsiyonel exporter'lar (jaeger/zipkin) "Module not found" verip
+  // App Hosting prod build'ini SESSİZCE kilitliyor (kurulu değiller, runtime'da da
+  // kullanılmıyorlar). Server-only oldukları için external yapmak güvenli.
+  serverExternalPackages: [
+    'genkit',
+    '@genkit-ai/core',
+    '@genkit-ai/googleai',
+    '@opentelemetry/sdk-node',
+  ],
+  webpack: (config) => {
+    // Defansif: external listesinden kaçan bir yol kalırsa bile, sdk-node'un
+    // kurulu olmayan opsiyonel exporter'ını boş modüle çözerek build'i koru.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@opentelemetry/exporter-jaeger': false,
+    };
+    return config;
+  },
   typescript: {
     // 0 errors baseline; CI also enforces. Switch to true only if a regression
     // must be merged in an emergency.
