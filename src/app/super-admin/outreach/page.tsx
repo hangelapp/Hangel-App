@@ -192,7 +192,7 @@ const CATEGORY_CARDS: Array<{
   { key: 'dernekler',    label: 'Dernekler',                      icon: Heart,     color: 'bg-rose-500',   count: 100967,  targetTab: 'dernekler' },
   { key: 'sivil-toplum', label: 'Sivil Toplum Müdürlükleri',      icon: Building2, color: 'bg-blue-500',   count: 81,      targetTab: 'outreach', typeFilter: 'SivilToplumMüdürlüğü' },
   { key: 'federasyonlar', label: 'Federasyonlar',                 icon: Landmark,  color: 'bg-emerald-500', count: 98,      targetTab: 'outreach', typeFilter: 'Federasyon' },
-  { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 0,       targetTab: 'outreach', typeFilter: 'SporKulübü' },
+  { key: 'spor',         label: 'Spor Kulüpleri',                 icon: Trophy,    color: 'bg-orange-500', count: 5266,    targetTab: 'outreach', typeFilter: 'SporKulübü' },
   { key: 'genc-spor-mudurluk', label: 'Gençlik ve Spor İl Müdürlükleri', icon: Server, color: 'bg-violet-500', count: 81, targetTab: 'outreach', typeFilter: 'GencSporMudurlugu' },
 ];
 
@@ -364,6 +364,7 @@ export default function OutreachHubPage() {
   const [ilceFilter, setIlceFilter] = useState('');
   const [mahalleFilter, setMahalleFilter] = useState('');
   const [emailOnly, setEmailOnly] = useState(false);
+  const [phoneOnly, setPhoneOnly] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editData, setEditData] = useState<(OutreachRow & { neighborhood?: string }) | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -389,7 +390,8 @@ export default function OutreachHubPage() {
       });
       if (nextCursor) params.set('cursor', nextCursor);
       if (searchTerm.trim()) params.set('search', searchTerm.trim());
-      if (emailOnly && activeTab === 'vakiflar') params.set('emailOnly', 'true');
+      if (emailOnly) params.set('emailOnly', 'true');
+      if (phoneOnly) params.set('phoneOnly', 'true');
       if (showUnsubscribed) params.set('showUnsubscribed', 'true');
       if (kamuYarariOnly && activeTab === 'dernekler') params.set('kamuYarariOnly', 'true');
       // İl filtresi server-side. Dernekler için `il` alanı backfill ile dolduruldu
@@ -423,7 +425,7 @@ export default function OutreachHubPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user, activeTab, searchTerm, emailOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter]);
+  }, [user, activeTab, searchTerm, emailOnly, phoneOnly, pageSize, showUnsubscribed, kamuYarariOnly, ilFilter]);
 
   // "Tümünü Yükle" — loop ile son sayfaya kadar fetch et.
   // hasMore false olunca durur. Max 1000 sayfa güvenlik limiti (= 1M kayıt).
@@ -708,18 +710,51 @@ export default function OutreachHubPage() {
                   className="pl-9"
                 />
               </div>
-              <Button
-                variant={showUnsubscribed ? 'default' : 'outline'}
-                size="icon"
-                className="h-10 w-10 shrink-0"
-                onClick={() => setShowUnsubscribed((v) => !v)}
-                aria-label={showUnsubscribed ? 'Aktif kayıtlara dön' : 'Listeden çıkanları göster'}
-                title={showUnsubscribed
-                  ? 'Listeden Çıkanları gösteriyorsun — aktif kayıtlara dön'
-                  : 'Listeden Çıkanlar (unsubscribed) — göster'}
-              >
-                <UserMinus className="h-4 w-4" />
-              </Button>
+              {/* 4'lü ikon süzgeç grubu — Telefon var, Email var, Listeden Çıkan, Kamu Yararı */}
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant={phoneOnly ? 'default' : 'outline'}
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => setPhoneOnly((v) => !v)}
+                  aria-label="Sadece telefonu olanlar"
+                  title="📞 Sadece telefonu olanlar"
+                >
+                  <Phone className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={emailOnly ? 'default' : 'outline'}
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => setEmailOnly((v) => !v)}
+                  aria-label="Sadece e-postası olanlar"
+                  title="📧 Sadece e-postası olanlar"
+                >
+                  <Mail className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={showUnsubscribed ? 'default' : 'outline'}
+                  size="icon"
+                  className="h-10 w-10"
+                  onClick={() => setShowUnsubscribed((v) => !v)}
+                  aria-label={showUnsubscribed ? 'Aktif kayıtlara dön' : 'Listeden çıkanları göster'}
+                  title={showUnsubscribed ? '🚫 Listeden çıkanları gösteriyorsun — aktif listeye dön' : '🚫 Listeden çıkanlar'}
+                >
+                  <UserMinus className="h-4 w-4" />
+                </Button>
+                {activeTab === 'dernekler' && (
+                  <Button
+                    variant={kamuYarariOnly ? 'default' : 'outline'}
+                    size="icon"
+                    className="h-10 w-10"
+                    onClick={() => setKamuYarariOnly((v) => !v)}
+                    aria-label="Kamu Yararına çalışan dernekler"
+                    title="🏛 Kamu Yararına çalışan dernekler (326 kayıt)"
+                  >
+                    <Landmark className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
 
               {/* Spor Kulüpleri için Faaliyet Alanı (branş) filtresi */}
               {typeFilter === 'SporKulübü' && (
@@ -775,21 +810,6 @@ export default function OutreachHubPage() {
                 />
               </div>
 
-              {/* Dernekler tab'da Kamu Yararı filter butonu (icon-only) */}
-              {activeTab === 'dernekler' && (
-                <Button
-                  variant={kamuYarariOnly ? 'default' : 'outline'}
-                  size="icon"
-                  className="h-10 w-10 shrink-0"
-                  onClick={() => setKamuYarariOnly((v) => !v)}
-                  aria-label="Kamu Yararına Çalışan Dernekler"
-                  title={kamuYarariOnly
-                    ? 'Kamu Yararı filtresi açık — kaldır'
-                    : 'Kamu Yararına Çalışan Dernekler — filtrele'}
-                >
-                  <Landmark className="h-4 w-4" />
-                </Button>
-              )}
 
               <div className="w-36">
                 <SearchableSelect options={ilOptions} value={ilFilter} placeholder="İl" searchPlaceholder="İl ara..."
@@ -976,7 +996,10 @@ export default function OutreachHubPage() {
                                     <DetailField label="Kütük No" value={editData.kutukNo} onChange={(v) => setEditData({ ...editData, kutukNo: v })} />
                                     <DetailField label="Kuruluş Tarihi" value={editData.kurulusTarihi} onChange={(v) => setEditData({ ...editData, kurulusTarihi: v })} />
                                     <DetailField label="Web Sitesi" value={editData.website} onChange={(v) => setEditData({ ...editData, website: v })} />
+                                    <DetailField label="Telefon-1" value={editData.phone} onChange={(v) => setEditData({ ...editData, phone: v })} />
+                                    <DetailField label="Telefon-2" value={editData.phone2} onChange={(v) => setEditData({ ...editData, phone2: v })} />
                                     <DetailField label="E-Posta" value={editData.email} onChange={(v) => setEditData({ ...editData, email: v })} />
+                                    <DetailField label="E-Tebligat" value={editData.etebligat} onChange={(v) => setEditData({ ...editData, etebligat: v })} />
                                     <DetailField label="Adres" value={editData.address} onChange={(v) => setEditData({ ...editData, address: v })} wide />
                                     <div className="space-y-1">
                                       <label className="text-[11px] font-medium text-muted-foreground">İl</label>

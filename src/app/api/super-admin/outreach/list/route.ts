@@ -200,6 +200,7 @@ export async function GET(req: NextRequest) {
   const search = (searchParams.get('search') || '').toLocaleLowerCase('tr').trim();
   const city = searchParams.get('city') || null;
   const emailOnly = searchParams.get('emailOnly') === 'true';
+  const phoneOnly = searchParams.get('phoneOnly') === 'true';
   // Default: aktif kayıtlar gösterilir (status != 'unsubscribed').
   // showUnsubscribed=true → sadece listeden çıkanlar gösterilir.
   const showUnsubscribed = searchParams.get('showUnsubscribed') === 'true';
@@ -251,7 +252,7 @@ export async function GET(req: NextRequest) {
   let lastCursorDoc: FirebaseFirestore.QueryDocumentSnapshot | null = null;
   let fetched = 0;
   const baseLimit = limitNum;
-  const perFetch = emailOnly || search ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
+  const perFetch = emailOnly || phoneOnly || search ? Math.min(MAX_LIMIT, baseLimit * 3) : baseLimit;
 
   for (let iter = 0; iter < 5 && finalRows.length < baseLimit; iter++) {
     let iterQ = q;
@@ -269,6 +270,7 @@ export async function GET(req: NextRequest) {
       if (showUnsubscribed && !isUnsubscribed) continue;
       if (!showUnsubscribed && isUnsubscribed) continue;
       if (emailOnly && !row.email) continue;
+      if (phoneOnly && !row.phone) continue;
       if (search && !(row.name.toLocaleLowerCase('tr').includes(search) || (row.address || '').toLocaleLowerCase('tr').includes(search))) continue;
       finalRows.push(row);
       if (finalRows.length >= baseLimit) break;

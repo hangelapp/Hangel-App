@@ -73,7 +73,9 @@ function toDocFields(source: Source, p: NormalizedPatch): Record<string, unknown
     set(has('district'), 'ilce', p.district, o);
     set(has('neighborhood'), 'mahalle', p.neighborhood, o);
     set(has('phone'), 'telefon1', p.phone, o);
+    set(has('phone2'), 'telefon2', p.phone2, o);
     set(has('email'), 'ePosta', p.email, o);
+    set(has('etebligat'), 'eTebligat', p.etebligat, o);
     set(has('website'), 'webSite', p.website, o);
     set(has('address'), 'adres', p.address, o);
     set(has('faaliyetAlani'), 'faaliyetAlani', p.faaliyetAlani, o);
