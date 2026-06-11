@@ -167,7 +167,7 @@ export const brandSectorOptions = [
 
 export const ngoPlatformOptions = [
     "Afet Platformu", "Açık Açık", "Tüsev", "Adım Adım", "Ability Pool",
-    "HelpSteps", "Candid", "Global Compact",
+    "HelpSteps", "Candid", "Goodstack", "Global Compact",
     "Idealist", "gonulluyuzbiz.gov.tr", "TGSP", "Diğer",
 ];
 

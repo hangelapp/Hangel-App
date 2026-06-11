@@ -49,7 +49,7 @@ export interface CriteriaItem {
 
 export const TRANSPARENCY_MEMBERSHIP_OPTIONS = [
   'Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool',
-  'HelpSteps', 'Candid', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr',
+  'HelpSteps', 'Candid', 'Goodstack', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr',
   'TGSP', 'Diğer',
 ];
 

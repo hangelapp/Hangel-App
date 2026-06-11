@@ -71,6 +71,7 @@ const PLATFORMS = [
   'Ability Pool',
   'HelpSteps',
   'Candid',
+  'Goodstack',
   'Global Compact',
   'Idealist',
   'gonulluyuzbiz.gov.tr',
