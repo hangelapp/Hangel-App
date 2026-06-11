@@ -74,6 +74,30 @@ export const HANGEL_AI_CONTEXT = [
   'GÜVENLİK: API anahtarı / panel şifresi / token AI sohbetine veya knowledge\'ına ASLA konmaz; gerekiyorsa tarif et, değerini paylaşma.',
 ].join('\n');
 
+/**
+ * Kısa yönerge — AI araçlarının "Custom Instructions / System prompt / GPT
+ * Instructions" alanına yapıştırmak için (knowledge değil, talimat). Tek paragraf.
+ */
+export const HANGEL_AI_SHORT = [
+  'hangel: STK, marka, öğrenci kulübü ve kullanıcıları buluşturan bağış-destekli',
+  'sosyal ticaret + gönüllülük + sosyal etki platformu. Marka adı her zaman küçük "hangel".',
+  'Stack: Next.js 15 (App Hosting / hangel.org.tr) + Firebase + Capacitor (iOS/Android,',
+  'uzaktan hangel.org.tr yükler → web deploy mobile anında yansır). Markalar hem marka',
+  'hem ürün bazlı listelenir (affiliate komisyonu → bağış). Türkçe yanıt ver,',
+  'cerrahi ve üretim-kalitesinde kod yaz, 🙏 emoji kullanma (yerine 🧡). API anahtarı/şifre',
+  'isteme/paylaşma. Detaylı bağlam için "hangel bağlam paketi"ni kullan.',
+].join(' ');
+
+export const HANGEL_AI_SHORT_EN = [
+  'hangel: a donation-powered social-commerce + volunteering + social-impact platform',
+  'connecting NGOs, brands, student clubs and users. Brand name is always lowercase "hangel".',
+  'Stack: Next.js 15 (App Hosting / hangel.org.tr) + Firebase + Capacitor (iOS/Android,',
+  'remotely loads hangel.org.tr → a web deploy reflects in the mobile app instantly).',
+  'Brands are listed both as brands and at product level (affiliate commission → donation).',
+  'Reply in Turkish, write surgical production-quality code, never use the 🙏 emoji (use 🧡),',
+  'never request/share API keys or passwords. Use the "hangel context pack" for full detail.',
+].join(' ');
+
 /** English version of the context pack (for English-speaking AI sessions). */
 export const HANGEL_AI_CONTEXT_EN = [
   'hangel — AI Context Pack (updated: 2026-06-11)',

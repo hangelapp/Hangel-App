@@ -23,7 +23,7 @@ import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
-import { HANGEL_AI_CONTEXT, HANGEL_AI_CONTEXT_EN, HANGEL_AI_CONTEXT_UPDATED } from '@/lib/ai-context';
+import { HANGEL_AI_CONTEXT, HANGEL_AI_CONTEXT_EN, HANGEL_AI_CONTEXT_UPDATED, HANGEL_AI_SHORT, HANGEL_AI_SHORT_EN } from '@/lib/ai-context';
 import { AI_CHANGELOG, AI_CHANGELOG_GENERATED } from '@/lib/ai-changelog';
 
 type AiToolType = 'claude' | 'chatgpt' | 'gemini' | 'other';
@@ -60,6 +60,7 @@ export function AiIntegrationSection() {
 
   const [lang, setLang] = useState<'tr' | 'en'>('tr');
   const [copied, setCopied] = useState(false);
+  const [copiedShort, setCopiedShort] = useState(false);
   const [notes, setNotes] = useState('');
   const [notesSaving, setNotesSaving] = useState(false);
 
@@ -86,12 +87,25 @@ export function AiIntegrationSection() {
     : '';
   const fullContext = baseContext + changelogText + notesText;
 
+  const shortText = lang === 'en' ? HANGEL_AI_SHORT_EN : HANGEL_AI_SHORT;
+
   const copyContext = async () => {
     try {
       await navigator.clipboard.writeText(fullContext);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({ title: 'Kopyalandı', description: 'Bağlam panoya kopyalandı. Claude/ChatGPT knowledge\'ına yapıştır.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Metni elle seçip kopyalayabilirsin.' });
+    }
+  };
+
+  const copyShort = async () => {
+    try {
+      await navigator.clipboard.writeText(shortText);
+      setCopiedShort(true);
+      setTimeout(() => setCopiedShort(false), 2000);
+      toast({ title: 'Kopyalandı', description: 'Kısa yönerge panoya kopyalandı. AI aracının "Custom Instructions" alanına yapıştır.' });
     } catch {
       toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Metni elle seçip kopyalayabilirsin.' });
     }
@@ -165,6 +179,21 @@ export function AiIntegrationSection() {
           <p className="text-[11px] text-muted-foreground">
             Nasıl kullanılır: <strong>Claude</strong> → bir Project aç, &quot;Project knowledge&quot;a yapıştır. <strong>ChatGPT</strong> → Project veya Custom GPT &quot;Knowledge&quot;ına yapıştır. (Claude Code için repo&apos;da CLAUDE.md zaten var.)
           </p>
+        </div>
+
+        {/* 1a) Kısa yönerge (Custom Instructions) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <Label className="text-sm font-bold">Kısa Yönerge (Custom Instructions)</Label>
+              <p className="text-xs text-muted-foreground">AI aracının &quot;Custom Instructions / GPT Instructions&quot; alanına yapıştır (knowledge değil, talimat). Seçili dil: {lang.toUpperCase()}.</p>
+            </div>
+            <Button type="button" variant="outline" size="sm" className="rounded-xl font-bold" onClick={copyShort}>
+              {copiedShort ? <Check className="mr-2 h-4 w-4 text-emerald-600" /> : <Copy className="mr-2 h-4 w-4" />}
+              {copiedShort ? 'Kopyalandı' : 'Yönergeyi Kopyala'}
+            </Button>
+          </div>
+          <pre className="rounded-xl border bg-muted/30 p-3 text-[11px] leading-relaxed whitespace-pre-wrap">{shortText}</pre>
         </div>
 
         {/* 1b) Son değişiklikler (otomatik — git) */}
