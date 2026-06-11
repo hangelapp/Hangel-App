@@ -1,0 +1,54 @@
+/**
+ * Kanonik ürün kütüphanesi (PIM) — tüm kaynaklardan (GelirOrtakları Go Feed,
+ * ileride ikas/ideasoft/tsoft, direkt XML/CSV) gelen ürünler bu tek şemaya
+ * normalize edilir. Hem hangel Market'te ürün listeleme, hem ileride başka
+ * platformlara (Google Merchant/Cimri/Akakçe) export bu şema üzerinden yapılır.
+ */
+
+// Bir markanın hangel'da nasıl listeleneceği:
+//  - 'brand'   : sadece marka kartı (mevcut/varsayılan davranış)
+//  - 'product' : sadece ürün bazlı (feed'inden ürünler)
+//  - 'both'    : hem marka kartı hem ürünleri
+export type ListingMode = 'brand' | 'product' | 'both';
+
+export const DEFAULT_LISTING_MODE: ListingMode = 'brand';
+
+export const LISTING_MODE_LABELS: Record<ListingMode, string> = {
+  brand: 'Sadece marka',
+  product: 'Sadece ürün',
+  both: 'Marka + ürün',
+};
+
+// Bir kaynaktan gelen ürün feed'i (marka düzeyi metadata).
+export interface ProductFeed {
+  source: string;   // 'gelirortaklari' | 'ikas' | ...
+  feedId: string;
+  offerId: string;
+  name: string;     // marka adı (feed adı)
+  type: string;     // 'google' | 'akakce' | ...
+}
+
+// Normalize edilmiş tek ürün.
+export interface CanonicalProduct {
+  id: string;             // global benzersiz: `${source}-${feedId}-${externalId}`
+  source: string;         // hangi ağ/platform
+  feedId: string;
+  offerId: string;
+  brandId?: string | null;// hangel brands koleksiyonundaki id (bağlandıysa)
+  brandName: string;
+  externalId: string;     // feed içindeki ürün id
+  title: string;
+  description?: string;
+  price: number;          // sayısal (ana fiyat)
+  salePrice?: number | null;
+  currency: string;       // 'TRY'
+  imageLink?: string;
+  additionalImages?: string[];
+  productUrl: string;     // affiliate-tracked link (komisyon dahil)
+  category?: string;
+  availability?: string;  // 'in stock'
+  gtin?: string;
+  mpn?: string;
+  donationRate?: number;  // bağışa giden %
+  updatedAt: number;      // epoch ms (ingest zamanı)
+}

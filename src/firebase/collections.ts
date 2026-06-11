@@ -34,6 +34,8 @@ export const COLLECTIONS = {
   // Entities (NGO / Brand / Club)
   ngos: 'ngos',
   brands: 'brands',
+  // Kanonik ürün kütüphanesi (feed ingest — src/lib/feed). Public read, super-admin write.
+  products: 'products',
   clubs: 'clubs',
   studentClubs: 'studentClubs',
   ngoTrustScores: 'ngoTrustScores',

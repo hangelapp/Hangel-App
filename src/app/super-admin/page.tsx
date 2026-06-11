@@ -129,6 +129,7 @@ const superAdminNavSections = [
             { href: '/super-admin/users', label: 'Kullanıcı Yönetimi', icon: 'UserCog', description: 'Platformdaki kullanıcıları görüntüle ve yönet.' },
             { href: '/super-admin/ngos', label: 'STK Yönetimi', icon: 'Building', description: 'Platformdaki STK\'ları görüntüle ve yönet.' },
             { href: '/super-admin/brands', label: 'Marka Yönetimi', icon: 'Store', description: 'Platformdaki markaları görüntüle ve yönet.' },
+            { href: '/super-admin/feed', label: 'Ürün Feed & Listeleme', icon: 'Library', description: 'Marka feed\'lerinden ürünleri çek (ingest) ve markaların marka/ürün listeleme modunu yönet.' },
             { href: '/super-admin/clubs', label: 'Kulüp Yönetimi', icon: 'School', description: 'Öğrenci kulüplerini görüntüle ve yönet.' },
         ],
     },

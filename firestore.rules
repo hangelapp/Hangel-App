@@ -114,6 +114,13 @@ service cloud.firestore {
       ));
     }
 
+    // Ürün kütüphanesi (feed ingest) — public read (Market ürün listeleme),
+    // yazma yalnız super-admin / Admin SDK (feed ingest route). Kullanıcı yazamaz.
+    match /products/{productId} {
+      allow read, list: if true;
+      allow write: if isSuperAdmin();
+    }
+
     // Öğrenci kulüpleri (public read, super-admin global write)
     match /clubs/{clubId} {
       allow read, list: if true;
