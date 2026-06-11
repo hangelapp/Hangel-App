@@ -174,26 +174,26 @@ const projectCardsStatic = [
     {
       key: 'legislation',
       ctaHref: "/hangelassociation/legislation",
-      imageUrl: "https://picsum.photos/seed/legislation/600/800",
-      imageHint: "legal document gavel",
+      imageUrl: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1974&auto=format&fit=crop",
+      imageHint: "parliament legislation law social enterprise",
     },
     {
       key: 'employment',
       ctaHref: "/hangelassociation/projects/istihdam-protokolu",
-      imageUrl: "https://picsum.photos/seed/protocol/600/800",
-      imageHint: "handshake meeting",
+      imageUrl: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=2070&auto=format&fit=crop",
+      imageHint: "diverse team collaborating, impact employment",
     },
     {
       key: 'academic',
       ctaHref: "/hangelassociation/workshop",
-      imageUrl: "https://picsum.photos/seed/academy/600/800",
-      imageHint: "university graduation",
+      imageUrl: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop",
+      imageHint: "university students campus social innovation",
     },
     {
       key: 'atlas',
       ctaHref: "/hangelassociation/projects/etki-atlasi",
-      imageUrl: "https://picsum.photos/seed/atlas/600/800",
-      imageHint: "digital map",
+      imageUrl: "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop",
+      imageHint: "data map of turkey social impact atlas",
     },
 ] as const;
 
@@ -455,8 +455,8 @@ export default function LoginPage() {
             title: t('landing.discovery.ngo.title'),
             description: t('landing.discovery.ngo.description'),
             href: "/login/selection?action=register&type=corporate&entity=NGO",
-            imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "volunteers working",
+            imageUrl: "/discovery/stk.png",
+            imageHint: "diverse hands together in solidarity",
             linkText: t('landing.discovery.ngo.linkText'),
             linkText2: t('landing.discovery.ngo.linkText2'),
             href2: "/ngo-onboarding"
@@ -485,8 +485,8 @@ export default function LoginPage() {
             title: t('landing.discovery.library.title'),
             description: t('landing.discovery.library.description'),
             href: "/library",
-            imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "digital and traditional library merging, glowing screens among classic bookshelves",
+            imageUrl: "/discovery/library.png",
+            imageHint: "coral library shelves blending with digital sparkle",
             linkText: t('landing.discovery.library.linkText'),
             linkText2: t('landing.discovery.library.linkText2'),
             href2: "/library/about"
@@ -495,8 +495,8 @@ export default function LoginPage() {
             title: t('landing.discovery.emergency.title'),
             description: t('landing.discovery.emergency.description'),
             href: "/emergency",
-            imageUrl: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "blood donation and emergency response, hands helping",
+            imageUrl: "/discovery/emergency.png",
+            imageHint: "blood drop above cupped hands, hopeful rescue",
             linkText: t('landing.discovery.emergency.linkText'),
             linkText2: t('landing.discovery.emergency.linkText2'),
             href2: "/emergency/about"
@@ -505,8 +505,8 @@ export default function LoginPage() {
             title: t('landing.discovery.public.title'),
             description: t('landing.discovery.public.description'),
             href: "/corporate",
-            imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "modern government municipality building, civic architecture",
+            imageUrl: "/discovery/public.png",
+            imageHint: "government building with civic network and handshake",
             linkText: t('landing.discovery.public.linkText'),
             linkText2: t('landing.discovery.public.linkText2'),
             href2: "/corporate"
@@ -697,6 +697,50 @@ export default function LoginPage() {
                                 <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
                             </div>
                         </Carousel>
+                    </div>
+                </section>
+
+                {/* STK Gelir Modeli Eğitim Konferansları — dernek etkinliği */}
+                <section id="gelir-modeli-konferanslari" className="py-16 md:py-24 bg-[#0a0a0a] text-white overflow-hidden">
+                    <div className="container mx-auto px-4 max-w-6xl">
+                        <div className="grid lg:grid-cols-2 gap-10 items-center">
+                            <div className="space-y-5">
+                                <span className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-xs font-bold text-primary">
+                                    <TrendingUp className="h-3.5 w-3.5" /> Ücretsiz · Sertifikalı · 6 Şehir
+                                </span>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-[1.05]">
+                                    STK Gelir Modeli Oluşturma <br className="hidden md:block" />Eğitim Konferansları
+                                </h2>
+                                <p className="text-base md:text-lg text-white/70 leading-relaxed max-w-xl">
+                                    Sivil toplum kuruluşunuzun yarınını bugün güvence altına alın. Sürdürülebilir ve çeşitlendirilmiş bir gelir modeli kurmanın yollarını uzmanlarla keşfedin. Dernek, vakıf ve spor kulüplerinin yönetici ve gönüllülerine özel.
+                                </p>
+                                <p className="text-lg font-semibold text-primary italic">&ldquo;Yok öyle yalnız başına mücadele etmek!&rdquo;</p>
+                                <div className="flex flex-wrap items-center gap-3 pt-2">
+                                    <Button asChild size="lg" className="rounded-full px-8 h-12 font-bold shadow-xl shadow-primary/20">
+                                        <Link href="/gelir-modeli-konferanslari">Detaylar ve Başvuru</Link>
+                                    </Button>
+                                    <span className="text-xs text-white/50">İç İşleri Bakanlığı STK Genel Müdürlüğü desteğiyle</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {[
+                                    { city: 'Tekirdağ', date: '13 Haziran', venue: 'Tekirdağ' },
+                                    { city: 'Antalya', date: '15 Haziran', venue: 'Muratpaşa' },
+                                    { city: 'Ankara', date: '17 Haziran', venue: 'Kent Konseyi' },
+                                    { city: 'İstanbul', date: '24 Haziran', venue: 'Kadıköy' },
+                                    { city: 'İstanbul', date: '25 Haziran', venue: 'Avcılar' },
+                                    { city: 'Bursa', date: '8 Temmuz', venue: 'Bursa' },
+                                ].map((e, i) => (
+                                    <Link key={i} href="/gelir-modeli-konferanslari" className="group rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 p-4 transition-colors">
+                                        <p className="text-lg font-bold leading-tight">{e.city}</p>
+                                        <p className="text-sm text-white/60">{e.date} · 14:30</p>
+                                        <p className="mt-1 flex items-center gap-1 text-xs font-medium text-primary">
+                                            <MapPin className="h-3 w-3" /> {e.venue}
+                                        </p>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </section>
 
