@@ -29,7 +29,11 @@ import {
   Save,
   Play,
   Square,
+  Layers,
+  SlidersHorizontal,
+  Sparkles,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
@@ -148,11 +152,22 @@ function resolveWebPath(sound: NotificationSound): string | null {
   return `/sounds/${sound.filename}`;
 }
 
+// Ayarlar menüsü — her başlık ayrı bir bölüm. Yeni başlık eklemek için buraya
+// bir satır + return içine ilgili bölümü ekle (hepsi aynı anda görünmez, menüden seçilir).
+const SETTINGS_SECTIONS = [
+  { id: 'modules', label: 'Alt Modüller', icon: Layers },
+  { id: 'notifications', label: 'Bildirimler', icon: Bell },
+  { id: 'general', label: 'Genel Platform', icon: SlidersHorizontal },
+  { id: 'ai', label: 'Yapay Zeka Entegrasyonu', icon: Sparkles },
+] as const;
+type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]['id'];
+
 export default function SettingsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user: authUser, isUserLoading } = useUser();
+  const [activeSection, setActiveSection] = useState<SettingsSectionId>('notifications');
 
   const settingsRef = useMemoFirebase(() => {
     if (!firestore || !authUser) return null;
@@ -305,9 +320,31 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <>
+    <div className="space-y-6">
       <h1 className="text-lg font-semibold md:text-2xl">Panel Ayarları</h1>
+      <div className="grid lg:grid-cols-[230px_minmax(0,1fr)] gap-6 items-start">
+        {/* Sol menü — her başlık ayrı bölüm; yeni başlıklar SETTINGS_SECTIONS'a eklenir */}
+        <nav className="lg:sticky lg:top-4 flex lg:flex-col gap-1 overflow-x-auto rounded-2xl border bg-card p-2">
+          {SETTINGS_SECTIONS.map((s) => {
+            const SIcon = s.icon;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setActiveSection(s.id)}
+                className={cn(
+                  'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left whitespace-nowrap transition-colors shrink-0',
+                  activeSection === s.id ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
+                )}
+              >
+                <SIcon className="h-4 w-4 shrink-0" /> {s.label}
+              </button>
+            );
+          })}
+        </nav>
 
+        <div className="space-y-6 min-w-0">
+          <div className={cn(activeSection !== 'modules' && 'hidden')}>
       <Card>
         <CardHeader>
           <CardTitle>Alt Modüller</CardTitle>
@@ -347,7 +384,9 @@ export default function SettingsPage() {
           </Link>
         </CardContent>
       </Card>
+          </div>
 
+          <div className={cn(activeSection !== 'notifications' && 'hidden')}>
       <Card>
         <CardHeader>
           <div className="flex items-start gap-3">
@@ -488,7 +527,9 @@ export default function SettingsPage() {
           )}
         </CardContent>
       </Card>
+          </div>
 
+          <div className={cn(activeSection !== 'general' && 'hidden')}>
       <Card>
         <CardHeader>
           <CardTitle>Genel Platform Ayarları</CardTitle>
@@ -534,8 +575,13 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+          </div>
 
-      <AiIntegrationSection />
-    </>
+          <div className={cn(activeSection !== 'ai' && 'hidden')}>
+            <AiIntegrationSection />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
