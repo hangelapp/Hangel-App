@@ -41,6 +41,7 @@ import {
   SOUND_ID_SILENT,
   type NotificationSound,
 } from '@/lib/notification-sounds';
+import { AiIntegrationSection } from './_components/ai-integration-section';
 
 // Bildirim kanalları — Switch column'larında gösterilir.
 const NOTIFICATION_CHANNELS = ['inApp', 'email', 'sms'] as const;
@@ -533,6 +534,8 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <AiIntegrationSection />
     </>
   );
 }

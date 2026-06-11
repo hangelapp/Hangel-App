@@ -1,0 +1,75 @@
+/**
+ * hangel AI Bağlam Paketi — Claude/ChatGPT'ye verilecek kalıcı bağlam metni.
+ *
+ * Tek kaynak: bu sabit. Süper Admin → Ayarlar → "Yapay Zekalar ile Entegrasyon"
+ * bölümünde gösterilir + kopyalanır. hangel'de büyük bir değişiklik olduğunda
+ * BU SABİT güncellenir → panel otomatik güncel kalır. (Repo kopyası:
+ * docs/hangel-context-pack.md — ikisi senkron tutulur.)
+ *
+ * SIR YOK: API anahtarı / şifre / token buraya ASLA yazılmaz (dış servise gider).
+ */
+export const HANGEL_AI_CONTEXT_UPDATED = '2026-06-11';
+
+export const HANGEL_AI_CONTEXT = [
+  'hangel — AI Bağlam Paketi (güncel: 2026-06-11)',
+  'Marka adı her zaman küçük harf: "hangel". Yanıtlar Türkçe. 🙏 emoji kullanma (yerine 🧡).',
+  'Bu metinde SIR yoktur (API anahtarı/şifre/token yok).',
+  '',
+  '1) TEK CÜMLE',
+  'hangel; STK\'lar, markalar, öğrenci kulüpleri ve kullanıcıları tek çatıda buluşturan, bağış-destekli sosyal ticaret + gönüllülük + sosyal etki platformudur.',
+  '',
+  '2) VİZYON & İŞ MODELİ',
+  '- Kullanıcı markadan alışveriş yapar → hangel affiliate komisyonu kazanır → bir kısmı STK\'lara bağış olur ("bağış-destekli Cimri" + sosyal etki).',
+  '- STK: bağış toplar, gönüllü yönetir, şeffaflık/etki raporlar, kendi web sitesini alır.',
+  '- Marka: hem marka hem ürün bazlı listelenir (ürün feed kütüphanesi; listingMode = brand|product|both).',
+  '- Öğrenci kulübü: etkinlik/üyelik/içerik. Acil durum: kan bağışı + afet çağrıları (eşleştirme + bildirim + iOS Live Activity).',
+  '- Gönüllülük: ilan → başvuru → onay → tamamlama → sertifika + etki puanı.',
+  '',
+  '3) ÇEKİRDEK VARLIKLAR & ROLLER',
+  '- User: profil, impactScore, rozet, sertifika, bağış/gönüllülük geçmişi.',
+  '- NGO/STK (ngos koleksiyonu, yönetici ngo-admin), Brand/Marka (brands, brand-admin), Club (clubs, club-admin).',
+  '- Roller: super-admin, ngo-admin, brand-admin, club-admin, user. Süper-admin yetkileri superAdminPermissions ile granular.',
+  '',
+  '4) KULLANICI MODÜLLERİ (rotalar)',
+  'Market (affiliate alışveriş) + /market/products (ürün listeleme) + /products/[id]; bağış (/my-donations); gönüllülük (/volunteering, /my-applications); acil/kan (/emergency, /blood); mesajlar (/messages); bildirimler (/notifications); profil (/profile, /u/[id]); rozetler (/my-badges); liderlik; etkinlikler; içerik (/library, /posts, /stories, /press); davet (/invite); arama; STK/marka/kulüp vitrinleri; QR ödeme; onboarding akışları.',
+  '',
+  '5) STK YÖNETİM PANELİ (/ngo-admin/*)',
+  'dashboard, donations, volunteer/volunteering/volunteer-completions/volunteer-portal, opportunities, events, posts, messaging/sms/mail/dm/inbox, crm, demographics, analytics-tools, reports, transparency, sustainability, impact-story, funds, accounting, payment-systems, brand-earnings, ecommerce, ads, community-invite, university-volunteering, field-team, hr-integration, online-meeting, virtual-office/virtual-pbx, website (STK kendi sitesi), manage-profile, users, settings, qr.',
+  '',
+  '6) SÜPER ADMIN PANELİ (/super-admin/*)',
+  'users, ngos, brands, clubs, applications, feed (Ürün Feed & Listeleme), donations, volunteer, events, posts, emergency, hospitals, messaging/messaging-quota, communications, inbox, support, feedback, surveys, ads/ngo-ads, analytics, ai-management, data-enrichment, outreach, public-relations, contracts, pages, web-content, association-content, library, transparency, funds, demographics, activity (giriş/çıkış), set-superadmin, maintenance, setup, settings.',
+  '',
+  '7) BACKEND İŞLERİ (Cloud Functions)',
+  'blood-match (kan eşleştirme), disaster-geofence, email-digest, sms-reminder, twilio, live-activity (iOS APNs), volunteer-cron, onNotificationCreated (push).',
+  '',
+  '8) TEKNOLOJİ YIĞINI & MİMARİ',
+  '- Web: Next.js 15 (App Router, SSR) + React + TypeScript + Tailwind + shadcn/ui. API route hata formatı: { errorCode, message }.',
+  '- Backend: Firebase — Auth, Firestore, App Hosting (web prod), Cloud Functions, FCM (push), Crashlytics. Sunucu tarafı Admin SDK (rules bypass).',
+  '- Mobil: Capacitor (iOS + Android). App UZAKTAN https://hangel.org.tr yükleyen bir WebView wrapper (server.url). ÖNEMLİ: web deploy = mobil app\'e ANINDA yansır (JS/route değişiklikleri rebuild gerektirmez; sadece native config/plugin rebuild ister).',
+  '- iOS ekstra: Apple Watch, App Clip, Live Activity (Dynamic Island), Universal Links, SIWA.',
+  '- Ödeme: N-Kolay (POS). E-posta: Resend. AI: Genkit.',
+  '- CI/CD: GitHub (hangelapp/new-app) → main push → App Hosting otomatik build (web). Mobil: Codemagic (manuel) → TestFlight / Play (AAB).',
+  '',
+  '9) PLATFORMLAR',
+  '- Web: https://hangel.org.tr (App Hosting); STK\'lara *.hangel.org.tr alt alan (Cloudflare for SaaS).',
+  '- iOS: App Store (Team NKZNY8NU8S), bundle com.hangel.ios.app.',
+  '- Android: Google Play, paket com.hangel.app (üretimde).',
+  '- Chrome Extension: planlı.',
+  '',
+  '10) ENTEGRASYONLAR',
+  '- Affiliate ağları: GelirOrtakları (ürün feed API\'si VAR: feed.gelirortaklari.com), Affocean, ReklamAction (HasOffers — sadece offer/marka, ürün feed yok).',
+  '- Ürün feed platformu (kendi PIM kütüphanemiz, src/lib/feed): kanonik ürün şeması + giriş adaptörleri (gelirortaklari, generic Google Merchant XML → ikas/ideasoft/tsoft) + export (Google Merchant/Cimri/Akakçe). Ingest: /api/feed/ingest. Koleksiyon: products.',
+  '- Reklam: Google/Meta/TikTok Ads (kod hazır, credential/onay bekliyor). SMS/Mail kota sistemi (havuz + N-Kolay POS).',
+  '',
+  '11) ALTYAPI (sır yok, sadece referans)',
+  '- Firebase projesi: hangel-new-v18-87297865-9bcc3. GitHub: hangelapp/new-app (main). Domain: hangel.org.tr.',
+  '- Bazı hesaplar farklı maillerde (ör. Play şu an ihadiguzel@gmail.com); hepsini ismailhilmi@hangel.org altında toplama hedefi var.',
+  '',
+  '12) KOD & ÇALIŞMA STANDARTLARI',
+  '- Cerrahi edit; gereksiz refactor/abstraction yok. Yeni "as any" / "@ts-ignore" / üretimde console.log yok.',
+  '- Türkçe metin; kullanıcıya görünen her yerde "hangel" küçük harf. 🙏 asla (yerine 🧡).',
+  '- Gate: npm run typecheck (hızlı), npm run build (prod — dynamic route/tip değişiminde zorunlu), firestore.rules değişiminde dikkat.',
+  '- Deploy: web otomatik (main push), mobil Codemagic. Repo\'da Claude Code için CLAUDE.md (ajan orkestrasyon) var.',
+  '',
+  'GÜVENLİK: API anahtarı / panel şifresi / token AI sohbetine veya knowledge\'ına ASLA konmaz; gerekiyorsa tarif et, değerini paylaşma.',
+].join('\n');
