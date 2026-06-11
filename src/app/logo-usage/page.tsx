@@ -354,6 +354,13 @@ export default function LogoUsagePage() {
             content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
         },
         {
+            title: "Kare Logo",
+            description: "Turuncu kare zemin, tam logo — sosyal medya/avatar (PNG / JPG / PDF)",
+            baseName: 'hangel-kare-logo',
+            captureBg: '#f34723',
+            content: <div className="bg-primary rounded-[1.25rem] aspect-square w-32 flex items-center justify-center"><HangelLogo className="text-3xl text-white" href={null} /></div>
+        },
+        {
             title: "App Icon",
             description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
             baseName: 'hangel-app-icon',
@@ -383,6 +390,13 @@ export default function LogoUsagePage() {
             baseName: 'hangel-dernek-beyaz-logo',
             captureBg: '#000000',
             content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
+        },
+        {
+            title: "Kare Logo",
+            description: "Lacivert kare zemin, tam logo — sosyal medya/avatar (PNG / JPG / PDF)",
+            baseName: 'hangel-dernek-kare-logo',
+            captureBg: '#042654',
+            content: <div className="rounded-[1.25rem] aspect-square w-32 flex items-center justify-center" style={{backgroundColor: '#042654'}}><HangelLogo className="text-3xl text-white" href={null} /></div>
         },
         {
             title: "Dernek Icon",
