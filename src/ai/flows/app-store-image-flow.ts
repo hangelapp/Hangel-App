@@ -18,7 +18,10 @@ import { checkAndConsumeAIQuota, sanitizeUserInput } from '@/ai/guards';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { BRAND_BRIEF, FEATURES, PLATFORMS, type FeatureKey, type PlatformKey } from '@/lib/app-store-specs';
 
-const MODEL = 'gemini-2.5-flash-image-preview';
+// `gemini-2.5-flash-image-preview` preview modeli GA'ya geçince retire edildi →
+// v1beta'da 404 NOT_FOUND. GA model adı: `gemini-2.5-flash-image`. Daha yeni
+// model (ör. `gemini-3.1-flash` / Nano Banana 2) için GEMINI_IMAGE_MODEL env ile override.
+const MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-2.5-flash-image';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
