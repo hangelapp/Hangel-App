@@ -265,6 +265,13 @@ export default function MarketPage() {
           </DropdownMenu>
         </div>
 
+        <Button asChild variant="outline" className="w-full rounded-2xl gap-2 border-none bg-primary/10 text-primary font-bold shadow-sm hover:bg-primary/15">
+          <Link href="/market/products">
+            <ShoppingBag className="h-5 w-5" />
+            Ürünleri Keşfet
+          </Link>
+        </Button>
+
         <Tabs defaultValue="all" onValueChange={setBrandType} className="w-full">
           <TabsList className="flex w-full overflow-x-auto sm:grid sm:grid-cols-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <TabsTrigger value="all" className="shrink-0 sm:shrink whitespace-nowrap text-[11px] px-3">{t('marketPage.tabAll')}</TabsTrigger>

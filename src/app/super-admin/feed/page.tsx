@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Download, Library, Package, RefreshCw, Search } from 'lucide-react';
+import { Loader2, Download, Library, Package, RefreshCw, Search, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
@@ -39,6 +39,12 @@ export default function FeedAdminPage() {
   const [search, setSearch] = useState('');
   const [savingMode, setSavingMode] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Manuel generic feed URL ekleme formu (ikas/ideasoft/tsoft/Google Merchant)
+  const [manualUrl, setManualUrl] = useState('');
+  const [manualName, setManualName] = useState('');
+  const [manualDonation, setManualDonation] = useState('');
+  const [manualBusy, setManualBusy] = useState(false);
 
   const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
   const { data: brands, isLoading: brandsLoading } = useCollection<BrandRow>(brandsQuery);
@@ -78,6 +84,34 @@ export default function FeedAdminPage() {
       toast({ variant: 'destructive', title: 'Ingest başarısız', description: e instanceof Error ? e.message : 'Hata' });
     } finally {
       setIngesting(null);
+    }
+  };
+
+  const ingestManual = async () => {
+    const feedUrl = manualUrl.trim();
+    const name = manualName.trim();
+    if (!feedUrl || !name) {
+      toast({ variant: 'destructive', title: 'Eksik bilgi', description: 'Feed URL ve marka adı zorunlu.' });
+      return;
+    }
+    const donationRate = manualDonation.trim() ? Number(manualDonation.replace(',', '.')) : undefined;
+    setManualBusy(true);
+    try {
+      const res = await authedFetch({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: 'generic', feedUrl, name, donationRate, limit: 500 }),
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload?.message || `HTTP ${res.status}`);
+      toast({ title: `${name} ürünleri çekildi`, description: `${payload.ingested} ürün ürün kütüphanesine eklendi.` });
+      setManualUrl('');
+      setManualName('');
+      setManualDonation('');
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Ingest başarısız', description: e instanceof Error ? e.message : 'Hata' });
+    } finally {
+      setManualBusy(false);
     }
   };
 
@@ -165,6 +199,55 @@ export default function FeedAdminPage() {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* 1b) Manuel generic feed URL ekle */}
+      <Card className="rounded-[2rem] border-black/5 shadow-xl">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Link2 className="h-5 w-5" /> Manuel feed URL ekle (ikas/ideasoft/tsoft/Google Merchant)</CardTitle>
+          <CardDescription>Platformun ürettiği Google Merchant XML feed URL&apos;sini yapıştır; ürünler kütüphaneye çekilir.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2 space-y-1">
+              <label className="text-xs font-bold text-muted-foreground">Feed URL</label>
+              <Input
+                placeholder="https://magaza.example.com/feed/google-merchant.xml"
+                className="h-10 rounded-xl"
+                value={manualUrl}
+                onChange={(e) => setManualUrl(e.target.value)}
+                disabled={manualBusy}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground">Marka adı</label>
+              <Input
+                placeholder="Marka adı"
+                className="h-10 rounded-xl"
+                value={manualName}
+                onChange={(e) => setManualName(e.target.value)}
+                disabled={manualBusy}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-muted-foreground">Bağış % (opsiyonel)</label>
+              <Input
+                placeholder="örn. 5"
+                inputMode="decimal"
+                className="h-10 rounded-xl"
+                value={manualDonation}
+                onChange={(e) => setManualDonation(e.target.value)}
+                disabled={manualBusy}
+              />
+            </div>
+          </div>
+          <div className="pt-4">
+            <Button onClick={ingestManual} disabled={manualBusy} className="rounded-xl font-bold">
+              {manualBusy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+              Ürünleri Çek
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

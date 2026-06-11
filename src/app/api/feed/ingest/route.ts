@@ -2,8 +2,10 @@
  * Ürün feed ingest — super-admin.
  *
  * GET  /api/feed/ingest                → mevcut feed'lerin listesi (GelirOrtakları Go Feed)
- * POST /api/feed/ingest { feedId, offerId, name, brandId?, limit?, donationRate? }
- *      → feed'in ilk N ürününü canonical şemaya çevirip `products` koleksiyonuna yazar.
+ * POST /api/feed/ingest
+ *   GelirOrtakları: { source?: 'gelirortaklari', feedId, offerId, name, brandId?, limit?, donationRate? }
+ *   Generic feed  : { source: 'generic', feedUrl, name, brandId?, limit?, donationRate? }
+ *      → ürünleri canonical şemaya çevirip `products` koleksiyonuna yazar (ikas/ideasoft/tsoft/Google Merchant).
  *
  * Not (POC): /product feed'i büyük (44MB'a kadar) ve tek dosya; bu route ilk N
  * ürünü (default 300) ingest eder. Tam/sürekli senkron için scheduled Cloud
@@ -14,7 +16,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { COLLECTIONS } from '@/firebase/collections';
-import { listGelirOrtaklariFeeds, fetchGelirOrtaklariProducts } from '@/lib/feed/gelirortaklari';
+import { listGelirOrtaklariFeeds } from '@/lib/feed/gelirortaklari';
+import { ingestProducts, type FeedSourceKind } from '@/lib/feed/registry';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -54,19 +57,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'Super-admin yetkisi gerekli.' }, { status: 403 });
   }
   const body = await req.json().catch(() => null) as
-    | { feedId?: string; offerId?: string; name?: string; type?: string; brandId?: string; limit?: number; donationRate?: number }
+    | { source?: string; feedId?: string; offerId?: string; feedUrl?: string; name?: string; type?: string; brandId?: string; limit?: number; donationRate?: number }
     | null;
-  const feedId = typeof body?.feedId === 'string' ? body.feedId : '';
-  const offerId = typeof body?.offerId === 'string' ? body.offerId : '';
-  if (!feedId || !offerId) {
-    return NextResponse.json({ errorCode: 'INVALID_BODY', message: 'feedId ve offerId zorunlu.' }, { status: 400 });
+
+  const kind: FeedSourceKind = body?.source === 'generic' ? 'generic' : 'gelirortaklari';
+  const limit = typeof body?.limit === 'number' ? body.limit : 300;
+  const donationRate = typeof body?.donationRate === 'number' ? body.donationRate : undefined;
+  const brandId = typeof body?.brandId === 'string' ? body.brandId : null;
+  const brandName = typeof body?.name === 'string' && body.name ? body.name : 'Marka';
+
+  if (kind === 'generic') {
+    const feedUrl = typeof body?.feedUrl === 'string' ? body.feedUrl.trim() : '';
+    if (!feedUrl) {
+      return NextResponse.json({ errorCode: 'INVALID_BODY', message: 'generic kaynak için feedUrl zorunlu.' }, { status: 400 });
+    }
+  } else {
+    const feedId = typeof body?.feedId === 'string' ? body.feedId : '';
+    const offerId = typeof body?.offerId === 'string' ? body.offerId : '';
+    if (!feedId || !offerId) {
+      return NextResponse.json({ errorCode: 'INVALID_BODY', message: 'feedId ve offerId zorunlu.' }, { status: 400 });
+    }
   }
 
   try {
-    const products = await fetchGelirOrtaklariProducts(
-      { source: 'gelirortaklari', feedId, offerId, name: body?.name || 'Marka', type: body?.type || 'google' },
-      { limit: body?.limit ?? 300, brandId: body?.brandId ?? null, donationRate: body?.donationRate },
-    );
+    const products = await ingestProducts({
+      kind,
+      brandId,
+      brandName,
+      limit,
+      donationRate,
+      feedId: typeof body?.feedId === 'string' ? body.feedId : undefined,
+      offerId: typeof body?.offerId === 'string' ? body.offerId : undefined,
+      type: typeof body?.type === 'string' ? body.type : undefined,
+      feedUrl: typeof body?.feedUrl === 'string' ? body.feedUrl : undefined,
+      source: kind === 'generic' ? 'generic' : undefined,
+    });
     if (products.length === 0) {
       return NextResponse.json({ ok: true, ingested: 0, message: 'Feed boş veya ürün parse edilemedi.' });
     }
