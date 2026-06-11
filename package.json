@@ -6,6 +6,7 @@
     "dev": "next dev --hostname 127.0.0.1",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
+    "prebuild": "node scripts/gen-ai-changelog.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

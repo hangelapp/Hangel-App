@@ -24,6 +24,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useToast } from '@/hooks/use-toast';
 import { HANGEL_AI_CONTEXT, HANGEL_AI_CONTEXT_EN, HANGEL_AI_CONTEXT_UPDATED } from '@/lib/ai-context';
+import { AI_CHANGELOG, AI_CHANGELOG_GENERATED } from '@/lib/ai-changelog';
 
 type AiToolType = 'claude' | 'chatgpt' | 'gemini' | 'other';
 interface AiIntegration {
@@ -75,9 +76,15 @@ export function AiIntegrationSection() {
   }, [settingsDoc?.aiContextNotes]);
 
   const baseContext = lang === 'en' ? HANGEL_AI_CONTEXT_EN : HANGEL_AI_CONTEXT;
-  const fullContext = notes.trim()
-    ? `${baseContext}\n\n--- ${lang === 'en' ? 'EXTRA NOTES' : 'EK BAĞLAM NOTLARI'} ---\n${notes.trim()}`
-    : baseContext;
+  // "Son değişiklikler" git commit'lerinden otomatik (her deploy'da prebuild yeniler).
+  const changelogText = AI_CHANGELOG.length
+    ? `\n\n--- ${lang === 'en' ? 'RECENT CHANGES (auto, from git)' : 'SON DEĞİŞİKLİKLER (otomatik, git)'} — ${AI_CHANGELOG_GENERATED} ---\n` +
+      AI_CHANGELOG.map((c) => `- ${c.date} ${c.subject}`).join('\n')
+    : '';
+  const notesText = notes.trim()
+    ? `\n\n--- ${lang === 'en' ? 'EXTRA NOTES' : 'EK BAĞLAM NOTLARI'} ---\n${notes.trim()}`
+    : '';
+  const fullContext = baseContext + changelogText + notesText;
 
   const copyContext = async () => {
     try {
@@ -158,6 +165,25 @@ export function AiIntegrationSection() {
           <p className="text-[11px] text-muted-foreground">
             Nasıl kullanılır: <strong>Claude</strong> → bir Project aç, &quot;Project knowledge&quot;a yapıştır. <strong>ChatGPT</strong> → Project veya Custom GPT &quot;Knowledge&quot;ına yapıştır. (Claude Code için repo&apos;da CLAUDE.md zaten var.)
           </p>
+        </div>
+
+        {/* 1b) Son değişiklikler (otomatik — git) */}
+        <div className="space-y-2">
+          <Label className="text-sm font-bold">Son Değişiklikler (otomatik)</Label>
+          <p className="text-[11px] text-muted-foreground">
+            Yaptığımız her commit buraya <strong>otomatik</strong> düşer (her deploy&apos;da git&apos;ten yenilenir) ve &quot;Bağlamı Kopyala&quot;ya dahil edilir. Üretim: {AI_CHANGELOG_GENERATED}.
+          </p>
+          {AI_CHANGELOG.length > 0 ? (
+            <div className="max-h-44 overflow-auto rounded-xl border bg-muted/20 p-3 space-y-1">
+              {AI_CHANGELOG.map((c) => (
+                <p key={c.hash} className="text-[11px] font-mono leading-relaxed">
+                  <span className="text-muted-foreground">{c.date}</span> {c.subject}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">Değişiklik kaydı yok.</p>
+          )}
         </div>
 
         {/* 2) Ek bağlam notları */}
