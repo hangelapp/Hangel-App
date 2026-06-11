@@ -587,6 +587,7 @@ export default function EventDetailPage() {
                 {isRsvpLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Etkinliğe Katıl'}
               </Button>
             )}
+            {isGoing && (
             <AlertDialog>
             <AlertDialogTrigger asChild>
                 <Button size="lg" variant="secondary" className="h-14 rounded-2xl font-black">Yaka Kartı</Button>
@@ -679,7 +680,8 @@ export default function EventDetailPage() {
                 </AlertDialogFooter>
             </AlertDialogContent>
             </AlertDialog>
-            
+            )}
+
             <ShareButtons url={profileUrl} title={`${event.name} - hangel Etkinliği`} />
         </div>
       </div>
