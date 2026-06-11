@@ -32,6 +32,12 @@ import {
   SlidersHorizontal,
   Sparkles,
   ImageIcon,
+  Layers,
+  Brain,
+  CreditCard,
+  Link2,
+  DatabaseBackup,
+  Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -158,13 +164,42 @@ function resolveWebPath(sound: NotificationSound): string | null {
 // Bildirimler altına Yetkili & Rol Yönetimi, Gönüllülük Puantajı, App Storlar
 // link'lerini direkt menüden erişilebilir hale getirdik (eski "Alt Modüller"
 // sekmesi kaldırıldı).
+// Her item süper-admin ana sayfa pattern'ına göre: renkli icon + description.
+// href varsa Link olarak başka sayfaya navigate, yoksa bu sayfada inline render.
 const SETTINGS_SECTIONS = [
-  { id: 'notifications', label: 'Bildirimler', icon: Bell },
-  { id: 'access-control', label: 'Yetkili & Rol Yönetimi', icon: ShieldCheck, href: '/super-admin/set-superadmin' },
-  { id: 'volunteer-scoring', label: 'Gönüllülük Puantajı', icon: Handshake, href: '/super-admin/settings/volunteer-scoring' },
-  { id: 'app-stores', label: 'App Storlar — Görsel Üreteç', icon: ImageIcon, href: '/super-admin/app-stores' },
-  { id: 'general', label: 'Genel Platform', icon: SlidersHorizontal },
-  { id: 'ai', label: 'Yapay Zeka Entegrasyonu', icon: Sparkles },
+  { id: 'notifications', label: 'Bildirimler', icon: Bell, color: 'bg-amber-500',
+    description: 'Olay başına in-app + e-posta + SMS kanal seçimi ve bildirim sesi.' },
+  { id: 'access-control', label: 'Yetkili & Rol Yönetimi', icon: ShieldCheck, color: 'bg-emerald-600',
+    href: '/super-admin/set-superadmin',
+    description: 'Kullanıcı bul, süper admin yetkilerini sayfa sayfa atayarak ekibi delege et.' },
+  { id: 'volunteer-scoring', label: 'Gönüllülük Puantajı', icon: Handshake, color: 'bg-rose-500',
+    href: '/super-admin/settings/volunteer-scoring',
+    description: 'İlan iş kalemleri, saat başı etki puanı ve adam-saat maliyeti.' },
+  { id: 'app-stores', label: 'App Storlar — Görsel Üreteç', icon: ImageIcon, color: 'bg-violet-500',
+    href: '/super-admin/app-stores',
+    description: '8 mağaza (App Store, Play, AppGallery, Watch, Mac, Vision, MS, Chrome) için AI ile ekran görüntüsü.' },
+  { id: 'messaging-quota', label: 'SMS / E-Posta Kota', icon: Layers, color: 'bg-blue-500',
+    href: '/super-admin/messaging-quota',
+    description: 'Bayilik havuzu, STK kota tahsisi, kontör paketleri ve bekleyen siparişler.' },
+  { id: 'ai-management', label: 'Yapay Zeka Yönetimi', icon: Brain, color: 'bg-indigo-600',
+    href: '/super-admin/ai-management',
+    description: 'Kütüphane AI Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
+  { id: 'payment-providers', label: 'Ödeme Sağlayıcı Yönetimi', icon: CreditCard, color: 'bg-green-600',
+    href: '/super-admin/settings/payment-providers',
+    description: 'N-Kolay (mevcut) + İyzico/Stripe/PayTR alternatifleri, komisyon ayarları, A/B test.' },
+  { id: 'asset-links', label: 'Digital Asset Links', icon: Link2, color: 'bg-sky-500',
+    href: '/super-admin/settings/asset-links',
+    description: 'Android Play Store ↔ hangel.org.tr ilişkilendirmesi (assetlinks.json).' },
+  { id: 'backup-export', label: 'Yedekleme & Dışa Aktarma', icon: DatabaseBackup, color: 'bg-orange-600',
+    href: '/super-admin/settings/backup-export',
+    description: 'Firestore + Storage + tüm hangel altyapısının yedeği — tek butonla indir.' },
+  { id: 'email-templates', label: 'E-posta Şablonları', icon: Mail, color: 'bg-pink-500',
+    href: '/super-admin/settings/email-templates',
+    description: 'Resend ile gönderilen tüm e-postaların görsel düzenleyici (KVKK, davet, hoş geldin).' },
+  { id: 'general', label: 'Genel Platform', icon: SlidersHorizontal, color: 'bg-slate-600',
+    description: 'Platform genel parametreleri.' },
+  { id: 'ai', label: 'Yapay Zeka Entegrasyonu', icon: Sparkles, color: 'bg-fuchsia-600',
+    description: 'AI provider entegrasyonu (Genkit + Google AI).' },
 ] as const;
 // Eski sol-nav kaldırıldı; tüm bölümler tek sayfada akış halinde gösterilir.
 // SETTINGS_SECTIONS yalnızca üstteki link kartlarını üretmek için kullanılır.
@@ -344,15 +379,20 @@ export default function SettingsPage() {
           {SETTINGS_SECTIONS.filter((s) => 'href' in s && s.href).map((s) => {
             const SIcon = s.icon;
             const href = (s as { href: string }).href;
+            const color = (s as { color?: string }).color || 'bg-primary';
+            const description = (s as { description?: string }).description || '';
             return (
               <Link key={s.id} href={href} className="flex items-center p-6 hover:bg-muted/30 transition-all group">
-                <div className="h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110 bg-primary">
+                <div className={cn('h-12 w-12 flex items-center justify-center mr-6 rounded-2xl shadow-sm transition-transform group-hover:scale-110', color)}>
                   <SIcon className="h-6 w-6 text-white" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 space-y-0.5 min-w-0">
                   <p className="font-bold text-lg text-[#1d1d1f] group-hover:text-primary transition-colors">{s.label}</p>
+                  {description && (
+                    <p className="text-sm text-muted-foreground font-medium leading-tight">{description}</p>
+                  )}
                 </div>
-                <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1" />
+                <ChevronRight className="h-6 w-6 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-1 shrink-0 ml-3" />
               </Link>
             );
           })}
