@@ -485,11 +485,31 @@ export default function LoginPage() {
             title: t('landing.discovery.library.title'),
             description: t('landing.discovery.library.description'),
             href: "/library",
-            imageUrl: "https://picsum.photos/seed/library/1080/1080",
-            imageHint: "books library shelf",
+            imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "digital and traditional library merging, glowing screens among classic bookshelves",
             linkText: t('landing.discovery.library.linkText'),
             linkText2: t('landing.discovery.library.linkText2'),
-            href2: "/library"
+            href2: "/library/about"
+        },
+        {
+            title: t('landing.discovery.emergency.title'),
+            description: t('landing.discovery.emergency.description'),
+            href: "/emergency",
+            imageUrl: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "blood donation and emergency response, hands helping",
+            linkText: t('landing.discovery.emergency.linkText'),
+            linkText2: t('landing.discovery.emergency.linkText2'),
+            href2: "/emergency/about"
+        },
+        {
+            title: t('landing.discovery.public.title'),
+            description: t('landing.discovery.public.description'),
+            href: "/corporate",
+            imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "modern government municipality building, civic architecture",
+            linkText: t('landing.discovery.public.linkText'),
+            linkText2: t('landing.discovery.public.linkText2'),
+            href2: "/corporate"
         }
     ];
 
@@ -633,7 +653,7 @@ export default function LoginPage() {
                             <h2 className="text-4xl font-bold tracking-tight">{t('landing.discoverTitle')}</h2>
                             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{t('landing.discoverDescription')}</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                             {discoveryItems.map((item, index) => (
                                 <DiscoveryCarouselCard key={index} {...item} />
                             ))}
