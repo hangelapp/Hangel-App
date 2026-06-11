@@ -29,7 +29,6 @@ import {
   Save,
   Play,
   Square,
-  Layers,
   SlidersHorizontal,
   Sparkles,
   ImageIcon,
@@ -153,11 +152,17 @@ function resolveWebPath(sound: NotificationSound): string | null {
   return `/sounds/${sound.filename}`;
 }
 
-// Ayarlar menüsü — her başlık ayrı bir bölüm. Yeni başlık eklemek için buraya
-// bir satır + return içine ilgili bölümü ekle (hepsi aynı anda görünmez, menüden seçilir).
+// Ayarlar menüsü — iki tip item:
+//   1) section: sağ panelde bir bölüm render eder (id var, href yok)
+//   2) link: ayrı bir sayfaya navigate eder (id+href var)
+// Bildirimler altına Yetkili & Rol Yönetimi, Gönüllülük Puantajı, App Storlar
+// link'lerini direkt menüden erişilebilir hale getirdik (eski "Alt Modüller"
+// sekmesi kaldırıldı).
 const SETTINGS_SECTIONS = [
-  { id: 'modules', label: 'Alt Modüller', icon: Layers },
   { id: 'notifications', label: 'Bildirimler', icon: Bell },
+  { id: 'access-control', label: 'Yetkili & Rol Yönetimi', icon: ShieldCheck, href: '/super-admin/set-superadmin' },
+  { id: 'volunteer-scoring', label: 'Gönüllülük Puantajı', icon: Handshake, href: '/super-admin/settings/volunteer-scoring' },
+  { id: 'app-stores', label: 'App Storlar — Görsel Üreteç', icon: ImageIcon, href: '/super-admin/app-stores' },
   { id: 'general', label: 'Genel Platform', icon: SlidersHorizontal },
   { id: 'ai', label: 'Yapay Zeka Entegrasyonu', icon: Sparkles },
 ] as const;
@@ -328,11 +333,25 @@ export default function SettingsPage() {
         <nav className="lg:sticky lg:top-4 flex lg:flex-col gap-1 overflow-x-auto rounded-2xl border bg-card p-2">
           {SETTINGS_SECTIONS.map((s) => {
             const SIcon = s.icon;
+            // href varsa Link (yeni sayfaya git), yoksa button (section değiştir)
+            const linkHref = (s as { href?: string }).href;
+            if (linkHref) {
+              return (
+                <Link
+                  key={s.id}
+                  href={linkHref}
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left whitespace-nowrap transition-colors shrink-0 text-foreground hover:bg-accent"
+                >
+                  <SIcon className="h-4 w-4 shrink-0" /> {s.label}
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto opacity-50" />
+                </Link>
+              );
+            }
             return (
               <button
                 key={s.id}
                 type="button"
-                onClick={() => setActiveSection(s.id)}
+                onClick={() => setActiveSection(s.id as Exclude<SettingsSectionId, 'access-control' | 'volunteer-scoring' | 'app-stores'>)}
                 className={cn(
                   'flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-left whitespace-nowrap transition-colors shrink-0',
                   activeSection === s.id ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-accent',
@@ -345,64 +364,6 @@ export default function SettingsPage() {
         </nav>
 
         <div className="space-y-6 min-w-0">
-          <div className={cn(activeSection !== 'modules' && 'hidden')}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Alt Modüller</CardTitle>
-          <CardDescription>Belirli alanlara özel ayar sayfaları.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Link
-            href="/super-admin/set-superadmin"
-            className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
-          >
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold">Yetkili & Rol Yönetimi</p>
-              <p className="text-xs text-muted-foreground">
-                Kullanıcı adı veya telefon ile kişi bul, süper admin yetkilerini sayfa sayfa
-                işaretleyerek ata. Ekip kurarken herkese tüm yetkiyi vermeden delege et.
-              </p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </Link>
-          <Link
-            href="/super-admin/settings/volunteer-scoring"
-            className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
-          >
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Handshake className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold">Gönüllülük Puantajı</p>
-              <p className="text-xs text-muted-foreground">
-                İlan iş kalemleri, saat başı etki puanı ve adam-saat maliyeti.
-              </p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </Link>
-          <Link
-            href="/super-admin/app-stores"
-            className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
-          >
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <ImageIcon className="h-5 w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold">App Storlar — Görsel Üreteç</p>
-              <p className="text-xs text-muted-foreground">
-                8 mağaza (App Store, Google Play, AppGallery, Watch, Mac, Vision,
-                Microsoft, Chrome) için AI ile ekran görüntüsü üret + yönet.
-              </p>
-            </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground" />
-          </Link>
-        </CardContent>
-      </Card>
-          </div>
-
           <div className={cn(activeSection !== 'notifications' && 'hidden')}>
       <Card>
         <CardHeader>
