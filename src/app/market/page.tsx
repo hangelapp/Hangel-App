@@ -11,8 +11,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { Brand } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, limit, query } from 'firebase/firestore';
 import { Card } from '@/components/ui/card';
+import { ProductCard } from '@/components/market/product-card';
+import type { CanonicalProduct } from '@/lib/feed/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslation } from '@/components/providers/language-provider';
@@ -88,6 +90,15 @@ export default function MarketPage() {
   // Firestore brands (manually added/approved)
   const brandsQuery = useMemoFirebase(() => collection(db, COLLECTIONS.brands), [db]);
   const { data: firestoreBrands, isLoading: firestoreLoading } = useCollection<Brand>(brandsQuery);
+
+  // "Ürünler" kategorisi: tüm markaların ürünleri (feed ile çekilmiş).
+  const productsQuery = useMemoFirebase(() => query(collection(db, COLLECTIONS.products), limit(120)), [db]);
+  const { data: allProducts, isLoading: productsLoading } = useCollection<CanonicalProduct>(productsQuery);
+  const productsToShow = useMemo(() => {
+    const lower = searchTerm.trim().toLowerCase();
+    const list = allProducts || [];
+    return lower ? list.filter((p) => p.title?.toLowerCase().includes(lower) || p.brandName?.toLowerCase().includes(lower)) : list;
+  }, [allProducts, searchTerm]);
 
   // API brands from affiliate networks (Tune/ReklamAction + others)
   const [apiBrands, setApiBrands] = useState<Brand[]>([]);
@@ -219,7 +230,7 @@ export default function MarketPage() {
         for (const c of multi) if (c) cats.add(c);
       }
     }
-    return ['Tümü', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'tr'))];
+    return ['Ürünler', 'Tümü', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'tr'))];
   }, [brandsToShow]);
 
   return (
@@ -304,7 +315,23 @@ export default function MarketPage() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-4 pb-32">
-          {isLoading && brandsToShow.length === 0 ? (
+          {activeCategory === 'Ürünler' ? (
+            productsLoading && (allProducts?.length ?? 0) === 0 ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => <Card key={i} variant="glass" className="h-64 animate-pulse" />)}
+              </div>
+            ) : productsToShow.length === 0 ? (
+              <EmptyState
+                icon={ShoppingBag}
+                title="Ürün bulunamadı"
+                description={searchTerm ? 'Aramanıza uygun ürün yok.' : 'Henüz listelenecek ürün yok.'}
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {productsToShow.map((p) => <ProductCard key={p.id} product={p} />)}
+              </div>
+            )
+          ) : isLoading && brandsToShow.length === 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[...Array(12)].map((_, i) => <Card key={i} variant="glass" className="h-32 animate-pulse" />)}
             </div>
