@@ -496,6 +496,11 @@ export const translations: Record<Language, any> = {
           subtitle: 'Türkiye\'nin iyilik haritasını çiziyoruz.',
           cta: 'Atlası Keşfet',
         },
+        conference: {
+          title: 'STK Gelir Modeli Konferansları',
+          subtitle: 'Sürdürülebilir gelir için ücretsiz, sertifikalı eğitim turu.',
+          cta: 'Şehrini Seç, Kayıt Ol',
+        },
       },
       values: {
         sustainability: {
@@ -4871,6 +4876,11 @@ export const translations: Record<Language, any> = {
           title: 'Social Impact Atlas',
           subtitle: 'We\'re drawing the kindness map of Türkiye.',
           cta: 'Explore the Atlas',
+        },
+        conference: {
+          title: 'NGO Income Model Conferences',
+          subtitle: 'A free, certified training tour for sustainable income.',
+          cta: 'Pick Your City, Register',
         },
       },
       values: {

@@ -195,6 +195,23 @@ const projectCardsStatic = [
       imageUrl: "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop",
       imageHint: "data map of turkey social impact atlas",
     },
+    {
+      key: 'conference',
+      ctaHref: "/gelir-modeli-konferanslari",
+      imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+      imageHint: "ngo income model training conference seminar audience",
+    },
+] as const;
+
+// Gelir Modeli Konferansı durakları — sayılar buradan türetilir (ileride şehir
+// eklendikçe "N şehir / N etkinlik" başlıkları otomatik güncellenir).
+const conferenceStops = [
+    { city: 'Tekirdağ', date: '13 Haziran', venue: 'Tekirdağ' },
+    { city: 'Antalya', date: '15 Haziran', venue: 'Muratpaşa' },
+    { city: 'Ankara', date: '17 Haziran', venue: 'Kent Konseyi' },
+    { city: 'İstanbul', date: '24 Haziran', venue: 'Kadıköy' },
+    { city: 'İstanbul', date: '25 Haziran', venue: 'Avcılar' },
+    { city: 'Bursa', date: '8 Temmuz', venue: 'Bursa' },
 ] as const;
 
 const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
@@ -455,8 +472,8 @@ export default function LoginPage() {
             title: t('landing.discovery.ngo.title'),
             description: t('landing.discovery.ngo.description'),
             href: "/login/selection?action=register&type=corporate&entity=NGO",
-            imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "volunteers working",
+            imageUrl: "/discovery/stk.png",
+            imageHint: "diverse hands stacked together in solidarity, minimal",
             linkText: t('landing.discovery.ngo.linkText'),
             linkText2: t('landing.discovery.ngo.linkText2'),
             href2: "/ngo-onboarding"
@@ -485,8 +502,8 @@ export default function LoginPage() {
             title: t('landing.discovery.library.title'),
             description: t('landing.discovery.library.description'),
             href: "/library",
-            imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "digital and traditional library merging, glowing screens among classic bookshelves",
+            imageUrl: "/discovery/library.png",
+            imageHint: "open book dissolving into coral light particles, minimal",
             linkText: t('landing.discovery.library.linkText'),
             linkText2: t('landing.discovery.library.linkText2'),
             href2: "/library/about"
@@ -495,8 +512,8 @@ export default function LoginPage() {
             title: t('landing.discovery.emergency.title'),
             description: t('landing.discovery.emergency.description'),
             href: "/emergency",
-            imageUrl: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "blood donation and emergency response, hands helping",
+            imageUrl: "/discovery/emergency.png",
+            imageHint: "blood drop above cupped hands, minimal hopeful",
             linkText: t('landing.discovery.emergency.linkText'),
             linkText2: t('landing.discovery.emergency.linkText2'),
             href2: "/emergency/about"
@@ -505,8 +522,8 @@ export default function LoginPage() {
             title: t('landing.discovery.public.title'),
             description: t('landing.discovery.public.description'),
             href: "/corporate",
-            imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
-            imageHint: "modern government municipality building, civic architecture",
+            imageUrl: "/discovery/public.png",
+            imageHint: "minimal civic building with coral network arc",
             linkText: t('landing.discovery.public.linkText'),
             linkText2: t('landing.discovery.public.linkText2'),
             href2: "/corporate"
@@ -706,7 +723,7 @@ export default function LoginPage() {
                         <div className="grid lg:grid-cols-2 gap-10 items-center">
                             <div className="space-y-5">
                                 <span className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-xs font-bold text-primary">
-                                    <TrendingUp className="h-3.5 w-3.5" /> Ücretsiz · Sertifikalı · 6 Şehir
+                                    <TrendingUp className="h-3.5 w-3.5" /> Ücretsiz · Sertifikalı · {conferenceStops.length} Şehir · {conferenceStops.length} Etkinlik
                                 </span>
                                 <h2 className="text-3xl md:text-5xl font-black tracking-tighter leading-[1.05]">
                                     STK Gelir Modeli Oluşturma <br className="hidden md:block" />Eğitim Konferansları
@@ -723,14 +740,7 @@ export default function LoginPage() {
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { city: 'Tekirdağ', date: '13 Haziran', venue: 'Tekirdağ' },
-                                    { city: 'Antalya', date: '15 Haziran', venue: 'Muratpaşa' },
-                                    { city: 'Ankara', date: '17 Haziran', venue: 'Kent Konseyi' },
-                                    { city: 'İstanbul', date: '24 Haziran', venue: 'Kadıköy' },
-                                    { city: 'İstanbul', date: '25 Haziran', venue: 'Avcılar' },
-                                    { city: 'Bursa', date: '8 Temmuz', venue: 'Bursa' },
-                                ].map((e, i) => (
+                                {conferenceStops.map((e, i) => (
                                     <Link key={i} href="/gelir-modeli-konferanslari" className="group rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 p-4 transition-colors">
                                         <p className="text-lg font-bold leading-tight">{e.city}</p>
                                         <p className="text-sm text-white/60">{e.date} · 14:30</p>

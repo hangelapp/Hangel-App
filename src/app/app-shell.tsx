@@ -507,7 +507,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     // (authUser henüz yok) web görünümü gösterilir, flash minimumda kalır.
     const isAppHubPage = pathname === '/app' || pathname.startsWith('/app/');
 
-    if (isPreviewPage || isSuperAdminPage || isNgoSitePage || isPublicPage || (isAppHubPage && !authUser)) {
+    // Giriş YAPMAMIŞ kullanıcıya hiçbir sayfada APP menüsü / sol sidebar gösterme —
+    // app chrome'suz, salt içerik. Auth çözülürken (isUserLoading) bekle, flash olmasın.
+    const isLoggedOut = !isUserLoading && !authUser;
+
+    if (isPreviewPage || isSuperAdminPage || isNgoSitePage || isPublicPage || isLoggedOut || (isAppHubPage && !authUser)) {
         return <div className="min-h-dvh bg-background">{children}</div>;
     }
 

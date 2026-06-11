@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { collection, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft,
   CalendarDays,
@@ -17,23 +20,28 @@ import {
   TrendingUp,
   HandCoins,
   Building2,
-  Landmark,
   ShoppingBag,
   ShieldCheck,
   Lightbulb,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 import { PublicFooter } from '@/components/layout/public-footer';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { COLLECTIONS } from '@/firebase/collections';
+import type { Event } from '@/lib/types';
 
 const APPLY_URL = 'https://socialbusinessglobal.org';
+const SERIES_TAG = 'gelir-modeli-konferansi';
 
-const events = [
-  { city: 'Tekirdağ', date: '13 Haziran Cuma', time: '14:30', venue: 'Tekirdağ' },
-  { city: 'Antalya', date: '15 Haziran Pazar', time: '14:30', venue: 'Muratpaşa' },
-  { city: 'Ankara', date: '17 Haziran Salı', time: '14:30', venue: 'Ankara Kent Konseyi' },
-  { city: 'İstanbul', date: '24 Haziran Salı', time: '14:30', venue: 'Kadıköy' },
-  { city: 'İstanbul', date: '25 Haziran Çarşamba', time: '14:30', venue: 'Avcılar' },
-  { city: 'Bursa', date: '8 Temmuz Salı', time: '14:30', venue: 'Bursa' },
+// Firestore'da etkinlik yoksa/yüklenirken gösterilecek poster takvimi (fallback).
+const fallbackSchedule = [
+  { city: 'Tekirdağ', date: '13 Haziran Cuma', venue: 'Tekirdağ' },
+  { city: 'Antalya', date: '15 Haziran Pazar', venue: 'Muratpaşa' },
+  { city: 'Ankara', date: '17 Haziran Salı', venue: 'Ankara Kent Konseyi' },
+  { city: 'İstanbul', date: '24 Haziran Salı', venue: 'Kadıköy' },
+  { city: 'İstanbul', date: '25 Haziran Çarşamba', venue: 'Avcılar' },
+  { city: 'Bursa', date: '8 Temmuz Salı', venue: 'Bursa' },
 ];
 
 const curriculum = [
@@ -53,11 +61,6 @@ const curriculum = [
     desc: 'Destekçilerinizin günlük alışverişini düzenli gelire dönüştüren hangel Bağış ekosistemini öğrenin.',
   },
   {
-    icon: Landmark,
-    title: 'Hibe ve Fon Yazımı',
-    desc: 'Ulusal ve uluslararası fonlara kazandıran proje başvurusu nasıl yazılır, bütçe nasıl kurulur?',
-  },
-  {
     icon: Lightbulb,
     title: 'Sosyal Girişimcilik',
     desc: 'İktisadi işletme, sosyal girişim ve gelir getirici faaliyetlerle kurumunuzu mali olarak güçlendirin.',
@@ -69,11 +72,63 @@ const curriculum = [
   },
 ];
 
+// Ulusal/uluslararası kuruluşların STK'lara verdiği hibe ve destekler + nasıl başvurulur.
+const grants = [
+  {
+    name: 'Google for Nonprofits',
+    offer: 'Ad Grants ile aylık 10.000 $ değerinde ücretsiz Google Ads reklam kredisi + ücretsiz Google Workspace ve YouTube ayrıcalıkları.',
+    how: 'TechSoup üzerinden kurum doğrulaması yapın, ardından google.com/nonprofits üzerinden başvurun.',
+    href: 'https://www.google.com/nonprofits/',
+  },
+  {
+    name: 'Canva for Nonprofits',
+    offer: "STK'lara ücretsiz Canva Pro: sınırsız tasarım, marka kiti, ekip çalışması ve premium görsel arşivi.",
+    how: 'Kuruluş belgelerinizle canva.com/canva-for-nonprofits sayfasından başvurun; onay genelde birkaç gün sürer.',
+    href: 'https://www.canva.com/canva-for-nonprofits/',
+  },
+  {
+    name: 'Help Steps',
+    offer: 'Kullanıcıların attığı adımları bağışa dönüştüren mobil platform; STK\'lar kampanya açarak sponsor markalardan fon toplar.',
+    how: 'Help Steps STK paneline kayıt olun, kampanyanızı oluşturun ve sponsorlarla eşleşin.',
+    href: 'https://helpsteps.com/',
+  },
+  {
+    name: 'hangel',
+    offer: 'Alışverişle bağış, şeffaflık endeksi, gönüllülük ve reklam yönetimi — tek panelde, tamamen ücretsiz sürdürülebilir gelir altyapısı.',
+    how: 'hangel STK başvurusunu doldurun; kurumunuz onaylandığında panel anında aktifleşir.',
+    href: '/ngo-onboarding',
+  },
+  {
+    name: 'Ability Pool',
+    offer: 'Pro-bono yetenek havuzu: tasarımcı, yazılımcı, hukukçu ve danışmanların STK projelerine ücretsiz uzman desteği.',
+    how: 'Kurumunuzu ve ihtiyaç duyduğunuz yetkinliği tanımlayın; uygun gönüllü uzmanlarla eşleşin.',
+    href: 'https://abilitypool.org/',
+  },
+  {
+    name: 'Gönüllüyüz Biz',
+    offer: 'Kurumsal gönüllülük programları; şirket çalışanlarını STK projelerine gönüllü ve kaynak olarak yönlendirir.',
+    how: 'STK olarak projenizi platforma ekleyin; kurumsal gönüllü ekiplerden destek talep edin.',
+    href: 'https://www.gonulluyuzbiz.com/',
+  },
+];
+
+// Benzer destek sağlayan diğer kurumlar (kısa liste).
+const moreGrantOrgs = [
+  'TechSoup Türkiye (yazılım & donanım indirimleri)',
+  'Microsoft for Nonprofits',
+  'AB Sivil Düşün Programı',
+  'TÜSEV (kaynak geliştirme)',
+  'Sabancı Vakfı Hibe Programları',
+  'Turkey Mozaik Foundation',
+  'Açık Toplum Vakfı',
+  'Sivil Toplum için Destek Vakfı',
+];
+
 const audience = [
   { icon: Users, title: 'Kimler Katılabilir?', desc: 'Dernek, vakıf ve spor kulüplerinin gönüllü ve yöneticilerine özeldir.' },
   { icon: UserCheck, title: 'Kontenjan', desc: 'Her STK için başkan + 2 kişilik kontenjan planlanmıştır.' },
   { icon: Sparkles, title: 'Genç Yöneticilere Öncelik', desc: 'Genç yöneticilere öncelik verilmesi önemle rica olunur.' },
-  { icon: ClipboardCheck, title: 'Katılım Formu', desc: 'Katılım için lütfen başvuru formunu eksiksiz doldurunuz.' },
+  { icon: ClipboardCheck, title: 'Kayıt', desc: 'Katılmak istediğiniz şehri seçip giriş yaparak kaydınızı oluşturun.' },
   { icon: Award, title: 'Sertifikalı', desc: 'Konferans katılımcılarına resmî katılım sertifikası verilir.' },
 ];
 
@@ -83,8 +138,59 @@ const SupportBadge = () => (
   </p>
 );
 
+// Etkinlik kartı — etkinlik sayfasındaki gibi; tıklanınca /events/[slug] kayıt akışına gider.
+function EventCard({ ev }: { ev: Event & { id: string } }) {
+  const href = `/events/${ev.slug || ev.id}`;
+  const capacityLabel = ev.capacity?.max ? `${ev.capacity.current ?? 0}/${ev.capacity.max} kayıt` : 'Kontenjan açık';
+  return (
+    <Link href={href} className="group block focus:outline-none">
+      <Card className="overflow-hidden flex flex-col h-full border-black/5 hover:border-primary/30 hover:shadow-lg transition-all rounded-2xl">
+        <div className="relative aspect-[16/10] w-full bg-muted">
+          {ev.imageUrl ? (
+            <Image src={ev.imageUrl} alt={ev.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={ev.imageHint || 'konferans'} />
+          ) : null}
+          <div className="absolute top-2 left-2">
+            <Badge className="bg-white/90 text-primary border-none font-bold text-[10px] uppercase tracking-wider">{ev.type || 'Konferans'}</Badge>
+          </div>
+        </div>
+        <CardContent className="p-4 flex flex-col gap-1">
+          <h3 className="text-lg font-bold leading-tight">{ev.location?.city || ev.name}</h3>
+          <p className="flex items-center gap-1 text-sm text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5" /> {ev.date} · {ev.time || '14:30'}
+          </p>
+          <p className="flex items-center gap-1 text-sm font-medium text-primary">
+            <MapPin className="h-3.5 w-3.5" /> {ev.location?.district || ev.location?.city}
+          </p>
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">{capacityLabel}</span>
+            <span className="text-sm font-semibold text-primary flex items-center group-hover:underline">
+              Kayıt Ol <ChevronRight className="h-4 w-4" />
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
 export default function IncomeModelConferencePage() {
   const router = useRouter();
+  const db = useFirestore();
+
+  const eventsQuery = useMemoFirebase(
+    () => (db ? query(collection(db, COLLECTIONS.events), where('tags', 'array-contains', SERIES_TAG)) : null),
+    [db],
+  );
+  const { data: liveEventsRaw, isLoading } = useCollection<Event>(eventsQuery);
+
+  const liveEvents = useMemo(() => {
+    const list = (liveEventsRaw || []) as (Event & { id: string; status?: string })[];
+    return [...list]
+      .filter((e) => e.status === 'Yayında' || !e.status)
+      .sort((a, b) => (a.startDate || a.date || '').localeCompare(b.startDate || b.date || ''));
+  }, [liveEventsRaw]);
+
+  const eventCount = liveEvents.length || fallbackSchedule.length;
 
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
@@ -97,7 +203,7 @@ export default function IncomeModelConferencePage() {
           <div className="flex items-center gap-4 text-[12px] font-medium text-[#1d1d1f]/80">
             <span className="hidden sm:inline">Gelir Modeli Konferansları</span>
             <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold">
-              <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer">Başvur</Link>
+              <Link href="#takvim">Kayıt Ol</Link>
             </Button>
           </div>
         </div>
@@ -119,39 +225,51 @@ export default function IncomeModelConferencePage() {
           <p className="mt-4 text-lg font-semibold text-primary italic">&ldquo;Yok öyle yalnız başına mücadele etmek!&rdquo;</p>
           <div className="mt-8 flex items-center justify-center gap-3">
             <Button asChild size="lg" className="h-12 rounded-full px-8 font-bold shadow-xl shadow-primary/20">
-              <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer">Hemen Başvur</Link>
+              <Link href="#takvim">Şehrini Seç, Kayıt Ol</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="h-12 rounded-full px-6 font-bold border-black/10">
-              <Link href="#takvim">Takvimi Gör</Link>
+              <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer">Başvuru Formu</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Takvim */}
-      <section id="takvim" className="mx-auto max-w-4xl px-6 py-16">
+      {/* Takvim — canlı etkinlik kartları */}
+      <section id="takvim" className="mx-auto max-w-5xl px-6 py-16">
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">6 Şehir, 6 Buluşma</h2>
-          <p className="mt-2 text-muted-foreground">Size en yakın şehri seçin, yerinizi ayırtın.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Şehrini Seç, Yerini Ayırt</h2>
+          <p className="mt-2 text-muted-foreground">
+            {eventCount} şehir · {eventCount} etkinlik. Bir karta dokunup giriş yaparak kaydını oluştur — yakında yeni şehirler eklenecek.
+          </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {events.map((e, i) => (
-            <Card key={i} className="border-black/5 hover:border-primary/30 hover:shadow-lg transition-all">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <CalendarDays className="h-6 w-6 text-primary" aria-hidden="true" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold leading-tight">{e.city}</h3>
-                  <p className="text-sm text-muted-foreground">{e.date} · {e.time}</p>
-                  <p className="mt-1 flex items-center gap-1 text-sm font-medium text-primary">
-                    <MapPin className="h-3.5 w-3.5" /> {e.venue}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+
+        {liveEvents.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {liveEvents.map((ev) => (
+              <EventCard key={ev.id} ev={ev} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {fallbackSchedule.map((e, i) => (
+              <Card key={i} className="border-black/5">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <CalendarDays className="h-6 w-6 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold leading-tight">{e.city}</h3>
+                    <p className="text-sm text-muted-foreground">{e.date} · 14:30</p>
+                    <p className="mt-1 flex items-center gap-1 text-sm font-medium text-primary">
+                      <MapPin className="h-3.5 w-3.5" /> {e.venue}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {isLoading && <p className="col-span-full text-center text-sm text-muted-foreground">Etkinlikler yükleniyor…</p>}
+          </div>
+        )}
       </section>
 
       {/* Müfredat */}
@@ -160,7 +278,7 @@ export default function IncomeModelConferencePage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Bu Konferansta Ne Öğreneceksiniz?</h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Teoriden öteye geçen, hemen uygulanabilir altı başlıkta sürdürülebilir gelir modelinin tüm yapı taşları.
+              Teoriden öteye geçen, hemen uygulanabilir başlıklarda sürdürülebilir gelir modelinin yapı taşları.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -182,43 +300,91 @@ export default function IncomeModelConferencePage() {
         </div>
       </section>
 
-      {/* Kimler katılabilir */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Katılım Koşulları</h2>
+      {/* Hibe ve Destekler */}
+      <section className="mx-auto max-w-6xl px-6 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Hibe ve Destekler: Nereye, Nasıl Başvurulur?</h2>
+          <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+            Ulusal ve uluslararası kuruluşlar STK&apos;lara ücretsiz araç, fon ve uzman desteği sunar. İşte başlıca kapılar ve başvuru yolları.
+          </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {audience.map((a) => {
-            const Icon = a.icon;
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {grants.map((g) => {
+            const external = g.href.startsWith('http');
             return (
-              <Card key={a.title} className="bg-card/60 border-black/5">
-                <CardContent className="p-5 text-center">
-                  <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+              <Card key={g.name} className="border-black/5 hover:shadow-md transition-shadow">
+                <CardContent className="p-6 flex flex-col h-full">
+                  <h3 className="text-lg font-bold mb-2">{g.name}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">{g.offer}</p>
+                  <div className="mt-3 rounded-xl bg-primary/5 p-3">
+                    <p className="text-xs font-semibold text-primary mb-0.5">Nasıl başvurulur?</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{g.how}</p>
                   </div>
-                  <h3 className="text-sm font-bold mb-1">{a.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{a.desc}</p>
+                  <Link
+                    href={g.href}
+                    target={external ? '_blank' : undefined}
+                    rel={external ? 'noopener noreferrer' : undefined}
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                  >
+                    {external ? 'Başvuru sayfası' : 'hangel başvurusu'} {external ? <ExternalLink className="h-3.5 w-3.5" /> : <ChevronRight className="h-4 w-4" />}
+                  </Link>
                 </CardContent>
               </Card>
             );
           })}
         </div>
+        <div className="mt-8 rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
+          <p className="text-sm font-semibold mb-2">Benzer destek sağlayan diğer kurumlar</p>
+          <div className="flex flex-wrap gap-2">
+            {moreGrantOrgs.map((o) => (
+              <span key={o} className="rounded-full bg-white border border-black/5 px-3 py-1 text-xs text-muted-foreground">{o}</span>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Konferansta bu kurumların başvuru süreçlerini, gerekli belgeleri ve kabul kriterlerini adım adım ele alıyoruz.
+          </p>
+        </div>
+      </section>
+
+      {/* Katılım koşulları */}
+      <section className="bg-[#f5f5f7] py-16">
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Katılım Koşulları</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {audience.map((a) => {
+              const Icon = a.icon;
+              return (
+                <Card key={a.title} className="bg-white border-black/5">
+                  <CardContent className="p-5 text-center">
+                    <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                      <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-sm font-bold mb-1">{a.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{a.desc}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-3xl px-6 pb-20">
+      <section className="mx-auto max-w-3xl px-6 py-20">
         <div className="rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 p-8 sm:p-12 text-center">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Yerinizi Ayırtın</h2>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            Kontenjan sınırlıdır. Katılım formunu doldurarak şehir seçiminizi yapın; ekibimiz katılım detaylarını sizinle paylaşsın.
+            Kontenjan sınırlıdır. Şehrinizi seçip giriş yaparak kaydınızı oluşturun; katılım detaylarını sizinle paylaşalım.
           </p>
           <Button asChild size="lg" className="mt-6 h-12 rounded-full px-8 font-bold">
-            <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer">
-              Katılım Formunu Doldur <ChevronRight className="ml-1 h-4 w-4" />
+            <Link href="#takvim">
+              Şehrini Seç, Kayıt Ol <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
           <p className="mt-4 text-sm text-muted-foreground">
-            Detaylı bilgi ve başvuru: <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">socialbusinessglobal.org</Link>
+            Detaylı bilgi: <Link href={APPLY_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary hover:underline">socialbusinessglobal.org</Link>
           </p>
           <div className="mt-8 border-t border-black/5 pt-6">
             <SupportBadge />
