@@ -16,17 +16,18 @@ import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import {
-    collection, doc, query, orderBy, updateDoc, addDoc, setDoc, serverTimestamp, writeBatch,
+    collection, doc, query, orderBy, updateDoc, addDoc, setDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { normalizeRates, type DonationRates } from '@/lib/donation-split';
 import {
-    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText, Wallet,
+    HandCoins, Search, CheckCircle2, Clock, XCircle, Loader2, Building, FileText, Wallet, Receipt,
 } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { COLLECTIONS } from '@/firebase/collections';
+import { printPayoutReceipt } from '@/components/shared/payout-receipt';
 
 type Donation = {
     id: string;
@@ -51,6 +52,20 @@ type Donation = {
     settlementStatus?: string;
     createdAt?: unknown;
     payoutDate?: unknown;
+};
+
+type Payout = {
+    id: string;
+    ngoId?: string;
+    ngoName?: string;
+    period?: string;
+    amount?: number;
+    donationCount?: number;
+    status?: string;
+    reference?: string;
+    notes?: string;
+    paidAt?: { toDate?: () => Date } | null;
+    createdAt?: unknown;
 };
 
 const STATUS_TONES: Record<string, { class: string; icon: React.ComponentType<{ className?: string }>; label: string }> = {
@@ -78,6 +93,7 @@ const fmtDate = (v: unknown) => {
 
 export default function DonationsAdminPage() {
     const db = useFirestore();
+    const { user: authUser } = useUser();
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -91,6 +107,13 @@ export default function DonationsAdminPage() {
         [db],
     );
     const { data: donations, isLoading } = useCollection<Donation>(donationsQuery);
+
+    const payoutsQuery = useMemoFirebase(
+        () => (db ? query(collection(db, COLLECTIONS.payouts), orderBy('createdAt', 'desc')) : null),
+        [db],
+    );
+    const { data: payouts } = useCollection<Payout>(payoutsQuery);
+    const payoutList = useMemo(() => payouts || [], [payouts]);
 
     const list = useMemo(() => donations || [], [donations]);
 
@@ -121,39 +144,51 @@ export default function DonationsAdminPage() {
         return { totalDonation, pending, paid, totalPurchase, count: list.length };
     }, [list]);
 
-    // STK hak edişleri (her STK için toplam bağış miktarı + işlem sayısı)
+    // STK hak edişleri — ngoId bazında toplanır (payout route ngoId ister).
+    // Her STK için ayrıca DÖNEM (period) kırılımı tutulur: o dönemin bekleyen
+    // net toplamı + bekleyen sayısı. "O dönemi öde" butonu period payout çağırır.
+    type PeriodRow = { period: string; pendingAmount: number; pendingCount: number };
     type EarningRow = {
+        ngoId: string;
         ngo: string;
         totalAmount: number;
         pendingAmount: number;
         paidAmount: number;
         count: number;
-        pendingIds: string[];
+        pendingCount: number;
         lastApprovalAt: number | null;
+        periods: PeriodRow[];
     };
     const ngoEarnings = useMemo<EarningRow[]>(() => {
-        const map = new Map<string, EarningRow>();
+        const map = new Map<string, EarningRow & { _periods: Map<string, PeriodRow> }>();
         for (const d of list) {
             if (d.type === 'income') continue;
             const status = d.status || 'İşleme Alındı';
             const isPaid = status === 'Yatırıldı' || status === 'Tamamlandı';
             const payoutMaybe = d.payoutDate as { toDate?: () => Date } | undefined;
             const payoutMs = payoutMaybe?.toDate ? payoutMaybe.toDate().getTime() : null;
-            // NET hak ediş: yeni kayıtlar ngoSplit taşır (dernek başına net tutar).
-            // Eski kayıtlar (ngoSplit yok) → brüt donationAmount'ı dernek sayısına böl.
+            const docPeriod = d.period || (d.date ? d.date.slice(0, 7) : '—');
+            // NET hak ediş: yeni kayıtlar ngoSplit taşır (dernek başına net tutar +
+            // ngoId). Eski kayıtlar (ngoSplit yok) → brüt donationAmount'ı dernek
+            // sayısına böl ve ngoIds/ngo'dan id+ad türet.
             const gross = parseFloat(d.donationAmount || '0') || 0;
-            const entries: { name: string; amount: number }[] =
+            const entries: { ngoId: string; name: string; amount: number }[] =
                 Array.isArray(d.ngoSplit) && d.ngoSplit.length > 0
-                    ? d.ngoSplit.map(s => ({ name: s.ngoName || s.ngoId, amount: Number(s.amount) || 0 }))
-                    : (d.ngo && d.ngo.length > 0 ? d.ngo : ['Atanmamış']).map(n => ({ name: n, amount: gross / (d.ngo?.length || 1) }));
-            for (const { name: n, amount } of entries) {
-                if (!map.has(n)) {
-                    map.set(n, {
-                        ngo: n, totalAmount: 0, pendingAmount: 0, paidAmount: 0,
-                        count: 0, pendingIds: [], lastApprovalAt: null,
+                    ? d.ngoSplit.map(s => ({ ngoId: s.ngoId, name: s.ngoName || s.ngoId, amount: Number(s.amount) || 0 }))
+                    : (d.ngoIds && d.ngoIds.length > 0
+                        ? d.ngoIds.map((id, i) => ({ ngoId: id, name: d.ngo?.[i] || id, amount: gross / d.ngoIds!.length }))
+                        : [{ ngoId: '', name: d.ngo?.[0] || 'Atanmamış', amount: gross }]);
+            for (const { ngoId, name, amount } of entries) {
+                const key = ngoId || name;
+                if (!map.has(key)) {
+                    map.set(key, {
+                        ngoId, ngo: name, totalAmount: 0, pendingAmount: 0, paidAmount: 0,
+                        count: 0, pendingCount: 0, lastApprovalAt: null, periods: [],
+                        _periods: new Map(),
                     });
                 }
-                const e = map.get(n)!;
+                const e = map.get(key)!;
+                if (!e.ngo || e.ngo === e.ngoId) e.ngo = name;
                 e.totalAmount += amount;
                 e.count++;
                 if (isPaid) {
@@ -163,13 +198,25 @@ export default function DonationsAdminPage() {
                     }
                 } else {
                     e.pendingAmount += amount;
-                    if (status === 'İşleme Alındı') e.pendingIds.push(d.id);
+                    if (status === 'İşleme Alındı') {
+                        e.pendingCount++;
+                        const p = e._periods.get(docPeriod) || { period: docPeriod, pendingAmount: 0, pendingCount: 0 };
+                        p.pendingAmount += amount;
+                        p.pendingCount++;
+                        e._periods.set(docPeriod, p);
+                    }
                 }
             }
         }
-        return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+        return Array.from(map.values())
+            .map(({ _periods, ...rest }) => ({
+                ...rest,
+                periods: Array.from(_periods.values()).sort((a, b) => (a.period < b.period ? 1 : -1)),
+            }))
+            .sort((a, b) => b.totalAmount - a.totalAmount);
     }, [list]);
 
+    // payoutTarget: `${ngoId}:${period}` veya `${ngoId}:__all__` (kilit + spinner).
     const [payoutTarget, setPayoutTarget] = useState<string | null>(null);
     const [nowMs] = useState<number>(() => Date.now());
 
@@ -228,28 +275,37 @@ export default function DonationsAdminPage() {
         try { return format(new Date(ms), 'd MMM yyyy', { locale: tr }); } catch { return '—'; }
     };
 
-    const handlePayoutNgo = async (row: EarningRow) => {
-        if (!db || row.pendingIds.length === 0) {
-            toast({ title: 'Bekleyen hak ediş yok', description: `${row.ngo} için ödenecek bağış bulunamadı.` });
+    // Ödeme route'u (Admin SDK) — donations'a doğrudan client batch yerine
+    // /api/super-admin/payout çağrılır: daha güvenli + payout kaydı + bildirim.
+    const runPayout = async (
+        row: EarningRow,
+        opts: { action: 'payPeriod'; period: string } | { action: 'payAll' },
+    ) => {
+        if (!authUser || !row.ngoId) {
+            toast({ variant: 'destructive', title: 'Hata', description: 'Bu STK için ngoId bulunamadı, ödeme yapılamaz.' });
             return;
         }
-        setPayoutTarget(row.ngo);
+        const targetKey = `${row.ngoId}:${opts.action === 'payPeriod' ? opts.period : '__all__'}`;
+        setPayoutTarget(targetKey);
         try {
-            const batch = writeBatch(db);
-            for (const id of row.pendingIds) {
-                batch.update(doc(db, COLLECTIONS.donations, id), {
-                    status: 'Yatırıldı',
-                    payoutDate: serverTimestamp(),
-                });
-            }
-            await batch.commit();
+            const token = await authUser.getIdToken();
+            const res = await fetch('/api/super-admin/payout', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(
+                    opts.action === 'payPeriod'
+                        ? { action: 'payPeriod', ngoId: row.ngoId, period: opts.period }
+                        : { action: 'payAll', ngoId: row.ngoId },
+                ),
+            });
+            const body = await res.json();
+            if (!res.ok) throw new Error(body.message || 'Ödeme başarısız oldu.');
             toast({
-                title: 'Hakediş ödendi',
-                description: `${row.ngo} için ${row.pendingIds.length} bağış "Yatırıldı" olarak işaretlendi.`,
+                title: 'Hak ediş ödendi',
+                description: `${body.ngoName || row.ngo} · ${body.period} · ${fmtAmount(body.amount)} (${body.donationCount} bağış)${body.notified ? '' : ' — STK yöneticisi bulunamadı, bildirim gitmedi.'}`,
             });
         } catch (e) {
-            console.error('Payout batch failed:', e);
-            const message = e instanceof Error ? e.message : 'Hakediş ödemesi başarısız oldu.';
+            const message = e instanceof Error ? e.message : 'Hak ediş ödemesi başarısız oldu.';
             toast({ variant: 'destructive', title: 'Hata', description: message });
         } finally {
             setPayoutTarget(null);
@@ -388,12 +444,15 @@ export default function DonationsAdminPage() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="donations">
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className="grid w-full grid-cols-4">
                             <TabsTrigger value="donations">
                                 <FileText className="h-4 w-4 mr-2" /> BAĞIŞLAR ({stats.count})
                             </TabsTrigger>
                             <TabsTrigger value="earnings">
                                 <Building className="h-4 w-4 mr-2" /> HAKEDİŞLER ({ngoEarnings.length})
+                            </TabsTrigger>
+                            <TabsTrigger value="payouts">
+                                <Receipt className="h-4 w-4 mr-2" /> ÖDEMELER ({payoutList.length})
                             </TabsTrigger>
                             <TabsTrigger value="brands">
                                 <Wallet className="h-4 w-4 mr-2" /> MARKALAR ({brandEarnings.length})
@@ -508,10 +567,13 @@ export default function DonationsAdminPage() {
                                         </thead>
                                         <tbody>
                                             {ngoEarnings.map(e => {
-                                                const isLoadingRow = payoutTarget === e.ngo;
-                                                const canPay = e.pendingIds.length > 0;
+                                                const allKey = `${e.ngoId}:__all__`;
+                                                const isLoadingAll = payoutTarget === allKey;
+                                                const canPay = e.pendingCount > 0 && !!e.ngoId;
+                                                const pendingPeriods = (e.periods || []).filter(p => p.pendingAmount > 0);
                                                 return (
-                                                    <tr key={e.ngo} className="border-t hover:bg-muted/20">
+                                                    <React.Fragment key={e.ngoId || e.ngo}>
+                                                    <tr className="border-t hover:bg-muted/20">
                                                         <td className="p-4 font-bold">{e.ngo}</td>
                                                         <td className="p-4 text-right font-bold text-primary">{fmtAmount(e.totalAmount)}</td>
                                                         <td className="p-4 text-right text-orange-600">{fmtAmount(e.pendingAmount)}</td>
@@ -521,17 +583,39 @@ export default function DonationsAdminPage() {
                                                         <td className="p-4 text-right">
                                                             <Button
                                                                 size="sm"
-                                                                disabled={!canPay || isLoadingRow}
+                                                                disabled={!canPay || isLoadingAll}
                                                                 className="rounded-xl bg-green-600 hover:bg-green-700"
-                                                                onClick={() => handlePayoutNgo(e)}
+                                                                onClick={() => runPayout(e, { action: 'payAll' })}
                                                             >
-                                                                {isLoadingRow
+                                                                {isLoadingAll
                                                                     ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
                                                                     : <Wallet className="h-3.5 w-3.5 mr-1" />}
-                                                                Hakedişi Öde
+                                                                Tümünü Öde
                                                             </Button>
                                                         </td>
                                                     </tr>
+                                                    {pendingPeriods.length > 0 && (
+                                                        <tr className="bg-muted/10">
+                                                            <td colSpan={7} className="px-4 pb-3 pt-0">
+                                                                <div className="flex flex-wrap gap-2 items-center">
+                                                                    <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Dönem kesimi:</span>
+                                                                    {pendingPeriods.map(p => {
+                                                                        const pk = `${e.ngoId}:${p.period}`;
+                                                                        const loadingP = payoutTarget === pk;
+                                                                        return (
+                                                                            <Button key={p.period} size="sm" variant="outline" disabled={loadingP || !e.ngoId}
+                                                                                className="rounded-xl h-8 text-xs"
+                                                                                onClick={() => runPayout(e, { action: 'payPeriod', period: p.period })}>
+                                                                                {loadingP ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Wallet className="h-3 w-3 mr-1" />}
+                                                                                {p.period} · {fmtAmount(p.pendingAmount)} öde
+                                                                            </Button>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                    </React.Fragment>
                                                 );
                                             })}
                                             <tr className="border-t-2 bg-muted/30 font-black">
@@ -549,6 +633,56 @@ export default function DonationsAdminPage() {
                                                 <td className="p-4" />
                                                 <td className="p-4" />
                                             </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="payouts" className="mt-4">
+                            {payoutList.length === 0 ? (
+                                <div className="py-16 text-center text-muted-foreground">
+                                    <Receipt className="h-10 w-10 mx-auto opacity-30 mb-2" />
+                                    <p>Henüz ödeme kaydı yok.</p>
+                                </div>
+                            ) : (
+                                <div className="border rounded-2xl overflow-hidden overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-muted/30">
+                                            <tr>
+                                                <th className="text-left p-4 font-bold">STK</th>
+                                                <th className="text-left p-4 font-bold">Dönem</th>
+                                                <th className="text-right p-4 font-bold text-green-600">Tutar (net)</th>
+                                                <th className="text-right p-4 font-bold">Bağış</th>
+                                                <th className="text-right p-4 font-bold">Tarih</th>
+                                                <th className="text-right p-4 font-bold">Makbuz</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {payoutList.map(p => (
+                                                <tr key={p.id} className="hover:bg-muted/20">
+                                                    <td className="p-4 font-semibold">{p.ngoName || p.ngoId}</td>
+                                                    <td className="p-4">{p.period || '—'}</td>
+                                                    <td className="p-4 text-right text-green-700 font-bold">{fmtAmount(p.amount)}</td>
+                                                    <td className="p-4 text-right text-muted-foreground">{p.donationCount ?? 0}</td>
+                                                    <td className="p-4 text-right text-xs text-muted-foreground">{fmtDate(p.paidAt)}</td>
+                                                    <td className="p-4 text-right">
+                                                        <Button size="sm" variant="outline" className="rounded-xl"
+                                                            onClick={() => printPayoutReceipt({
+                                                                ngoName: p.ngoName || '',
+                                                                period: p.period || '',
+                                                                amount: p.amount || 0,
+                                                                donationCount: p.donationCount || 0,
+                                                                paidAtMs: p.paidAt?.toDate ? p.paidAt.toDate().getTime() : null,
+                                                                reference: p.reference,
+                                                                notes: p.notes,
+                                                                payoutId: p.id,
+                                                            })}>
+                                                            <Receipt className="h-3.5 w-3.5 mr-1" /> Makbuz
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>

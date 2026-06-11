@@ -108,6 +108,14 @@ export const COLLECTIONS = {
   funds: 'funds',
   fundApplications: 'fundApplications',
   monthlyEarnings: 'monthlyEarnings',
+  // Ay-sonu manuel hesap-kesim / ödeme (payout) kayıtları. Gerçek banka API'si
+  // yok; ödeme manuel yapılır, bu koleksiyon makbuz + geçmiş + denetim izini
+  // tutar. Bir doc = bir STK'ya tek seferde ödenen net hak ediş (dönem bazlı
+  // veya tüm bekleyenler). SADECE Admin SDK yazar (api/super-admin/payout);
+  // client okur (super-admin tümünü, STK kendi ngoId'sini). Alanlar: ngoId,
+  // ngoName, period, amount(net), donationIds[], donationCount, status('paid'),
+  // paidAt, paidBy(uid), reference?, notes?, createdAt.
+  payouts: 'payouts',
   // Affiliate webhook audit trail (Admin SDK only; brand-signed POST → impact++).
   // Doc id = `{brandId}__{orderId}` for create-or-fail idempotency.
   affiliateConfirmations: 'affiliateConfirmations',

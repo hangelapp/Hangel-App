@@ -15,6 +15,7 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+import { printPayoutReceipt } from '@/components/shared/payout-receipt';
 
 interface NgoSplitEntry {
     ngoId: string;
@@ -150,6 +151,20 @@ export default function DonationsPage() {
     }, [firestore, ngoId]);
 
     const { data: donationDocs, isLoading: isDonationsLoading } = useCollection<DonationDoc>(donationsQuery);
+
+    // Ödeme geçmişi: bu STK'ya yapılan hak ediş ödemeleri (payouts kaydı).
+    const payoutsQuery = useMemoFirebase(() => {
+        if (!ngoId) return null;
+        return query(collection(firestore, COLLECTIONS.payouts), where('ngoId', '==', ngoId));
+    }, [firestore, ngoId]);
+    const { data: payoutDocs } = useCollection<{ id: string; period?: string; amount?: number; donationCount?: number; status?: string; reference?: string; notes?: string; ngoName?: string; paidAt?: { toDate?: () => Date } | null }>(payoutsQuery);
+    const payoutHistory = useMemo(() => {
+        return (payoutDocs || []).slice().sort((a, b) => {
+            const am = a.paidAt?.toDate ? a.paidAt.toDate().getTime() : 0;
+            const bm = b.paidAt?.toDate ? b.paidAt.toDate().getTime() : 0;
+            return bm - am;
+        });
+    }, [payoutDocs]);
 
     // Load monthly earnings from Firestore (yardımcı/legacy gösterim).
     const earningsQuery = useMemoFirebase(() => {
@@ -441,6 +456,48 @@ export default function DonationsPage() {
             </Tabs>
         </CardContent>
       </Card>
+
+      {payoutHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Ödeme Geçmişi</CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y">
+            {payoutHistory.map(p => (
+              <div key={p.id} className="flex items-center justify-between gap-3 py-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm">{p.period || '—'} dönemi</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(p.amount || 0).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}
+                    {p.donationCount ? ` · ${p.donationCount} bağış` : ''}
+                    {p.paidAt?.toDate ? ` · ${format(p.paidAt.toDate(), 'd MMM yyyy', { locale: tr })}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Badge className="bg-green-100 text-green-700 border-green-200">Ödendi</Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    onClick={() => printPayoutReceipt({
+                      ngoName: p.ngoName || '',
+                      period: p.period || '',
+                      amount: p.amount || 0,
+                      donationCount: p.donationCount || 0,
+                      paidAtMs: p.paidAt?.toDate ? p.paidAt.toDate().getTime() : null,
+                      reference: p.reference,
+                      notes: p.notes,
+                      payoutId: p.id,
+                    })}
+                  >
+                    Makbuz
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
