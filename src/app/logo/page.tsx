@@ -124,7 +124,7 @@ const appArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: 
 const associationArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
     { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
     { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
-    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "hangel Sosyal Etki Envanteri", description: "Sosyal etki verilerini derler ve envanterler." },
     { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
     { href: "/hangelassociation/workshop", icon: 'Users', label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];

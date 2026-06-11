@@ -18,6 +18,7 @@ import {
     Share2,
     Tv,
     Shield,
+    ChevronRight,
     ShieldCheck,
     MessageSquare,
     Megaphone,
@@ -103,10 +104,14 @@ const SectionTitle = ({ children, className, ...props }: React.HTMLAttributes<HT
 );
 
 const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, title: string, children: React.ReactNode }) => (
-    <Card className="bg-white rounded-3xl p-8 shadow-lg border border-black/5 text-left h-full">
-        <Icon className="h-10 w-10 text-primary mb-4" />
-        <CardHeader className="p-0"><CardTitle className="text-lg text-foreground mb-2">{title}</CardTitle></CardHeader>
-        <CardContent className="p-0 text-sm text-muted-foreground space-y-2">
+    <Card className="group relative bg-white rounded-[1.75rem] p-7 shadow-sm border border-black/5 text-left h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-primary/20">
+        {/* Üstte ince marka aksanı */}
+        <span className="absolute inset-x-0 top-0 h-1 bg-primary/80 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-5 transition-colors group-hover:bg-primary group-hover:text-white">
+            <Icon className="h-6 w-6" />
+        </div>
+        <CardHeader className="p-0"><CardTitle className="text-lg font-bold tracking-tight text-foreground mb-3 leading-snug">{title}</CardTitle></CardHeader>
+        <CardContent className="p-0 text-sm text-muted-foreground leading-relaxed space-y-2.5">
             {children}
         </CardContent>
     </Card>
@@ -124,7 +129,7 @@ const appArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: 
 const associationArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
     { href: "/hangelassociation/projects/sosyal-inovasyon", icon: 'Sparkles', label: "Sosyal İnovasyon Merkezi", description: "Toplumsal sorunlara yenilikçi çözümler geliştirir." },
     { href: "/hangelassociation/projects/sanat", icon: 'Palette', label: "hangel Sanat", description: "Sanatın birleştirici gücüyle farkındalık projeleri." },
-    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "Global Sosyal Girişim Atlası", description: "Dünya genelindeki sosyal girişimleri haritalar." },
+    { href: "/hangelassociation/projects/etki-atlasi", icon: 'Globe', label: "hangel Sosyal Etki Envanteri", description: "Sosyal etki verilerini derler ve envanterler." },
     { href: "/hangelassociation/workshop", icon: 'BookCopy', label: "Girişimcilik Kütüphanesi", description: "Sosyal girişimciler için bilgi ve kaynak merkezi." },
     { href: "/hangelassociation/workshop", icon: 'Users', label: "Uluslararası Sosyal Girişimcilik Çalıştayı", description: "Küresel sorunlara kolektif çözümler üretir." },
 ];
@@ -137,16 +142,18 @@ const ShowcaseCard = ({
   themeConfig: { bg: string; subtitleColor: string; titleColor: string; linkColor: string; iconColor: string };
 }) => {
   const Icon = iconMap[item.icon] || HelpCircle;
+  // Başlığa/karta tıklanınca alt markanın "daha fazla bilgi" sayfasına gider (item.href).
   return (
-    <Link href={item.href} className="group block h-full">
+    <Link href={item.href} className="group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
       {/* Kompakt: alt markalar yarı boyutta sergilenir (min-h ~90, küçük ikon/metin). */}
-      <div className={cn("rounded-2xl p-2.5 text-center flex flex-col justify-between min-h-[92px]", themeConfig.bg)}>
+      <div className={cn("rounded-2xl p-2.5 text-center flex flex-col justify-between min-h-[100px] transition-all group-hover:-translate-y-0.5 group-hover:shadow-md", themeConfig.bg)}>
         <div>
-          <h3 className={cn("text-sm font-black leading-tight", themeConfig.titleColor)}>{item.label}</h3>
+          <h3 className={cn("text-sm font-black leading-tight group-hover:underline underline-offset-2", themeConfig.titleColor)}>{item.label}</h3>
           <p className={cn("text-[10px] mt-0.5 leading-snug line-clamp-2", themeConfig.subtitleColor)}>{item.description}</p>
         </div>
-        <div className="mt-1.5 flex items-end justify-center">
-            <div className="w-6 h-6 relative">
+        <div className="mt-1.5 flex items-center justify-between gap-1">
+            <span className={cn("text-[9px] font-semibold inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity", themeConfig.linkColor)}>Detay <ChevronRight className="h-2.5 w-2.5" /></span>
+            <div className="w-6 h-6 relative shrink-0 ml-auto">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
         </div>
