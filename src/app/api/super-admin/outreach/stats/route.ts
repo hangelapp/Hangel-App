@@ -7,7 +7,8 @@
  *   - byCollection: { registryVakiflar, registryDernekler, outreachContacts } count
  *   - byType (outreachContacts): SivilToplumMüdürlüğü, Federasyon, SporKulübü, ...
  *   - outreachByCategory (faaliyetAlani breakdown — Federasyon için Spor/STK/Mesleki)
- *   - coverage: email kapsama + telefon kapsama (vakıflar)
+ *   - coverage: email kapsama + telefon kapsama (vakıflar + dernekler — dernek 0
+ *               olabilir çünkü import script ePosta/telefon1 yazmamış)
  *   - unsubscribedCount (status='unsubscribed' tüm collection'larda)
  *   - sendsHistory: son 30 günde gönderilen mail/SMS sayısı, başarı/başarısız
  *   - topCities: en çok kayıt olan 10 il (vakıflar registry'sinden)
@@ -236,14 +237,18 @@ const computeStats = unstable_cache(
     const dernekTotalCount = dernekTotal?.data().count ?? 0;
     const outreachTotalCount = outreachTotal?.data().count ?? 0;
     const grandTotal = vakifTotalCount + dernekTotalCount + outreachTotalCount;
+    // categories.all email/phone aggregate hesabı — dernekEmail/dernekPhone
+    // şu an 0 (import script atlamış); 0 olsalar bile tutarlılık için topluyoruz.
+    const totalEmail = emailDolu + dernekEmail + (federasyonDetail.email || 0) + (kulupDetail.email || 0) + (ilMudurlukDetail.email || 0) + (gencSporMudurlukDetail.email || 0);
+    const totalPhone = telDolu + dernekPhone + (federasyonDetail.phone || 0) + (kulupDetail.phone || 0) + (ilMudurlukDetail.phone || 0) + (gencSporMudurlukDetail.phone || 0);
     const categories = {
       all: {
         label: 'Tümü',
         total: grandTotal,
-        email: emailDolu + (federasyonDetail.email || 0) + (kulupDetail.email || 0) + (ilMudurlukDetail.email || 0) + (gencSporMudurlukDetail.email || 0),
-        phone: telDolu + (federasyonDetail.phone || 0) + (kulupDetail.phone || 0) + (ilMudurlukDetail.phone || 0) + (gencSporMudurlukDetail.phone || 0),
-        emailPct: grandTotal ? Math.round(((emailDolu + (federasyonDetail.email || 0) + (kulupDetail.email || 0) + (ilMudurlukDetail.email || 0) + (gencSporMudurlukDetail.email || 0)) / grandTotal) * 100) : 0,
-        phonePct: grandTotal ? Math.round(((telDolu + (federasyonDetail.phone || 0) + (kulupDetail.phone || 0) + (ilMudurlukDetail.phone || 0) + (gencSporMudurlukDetail.phone || 0)) / grandTotal) * 100) : 0,
+        email: totalEmail,
+        phone: totalPhone,
+        emailPct: grandTotal ? Math.round((totalEmail / grandTotal) * 100) : 0,
+        phonePct: grandTotal ? Math.round((totalPhone / grandTotal) * 100) : 0,
         unsubscribed: unsubscribed.total,
         kamuYarari: kamuYarariCount,
         topCities,
@@ -258,15 +263,23 @@ const computeStats = unstable_cache(
         unsubscribed: unsubscribed.vakiflar,
         topCities: vakifTop,
       },
-      // Dernek: registryDernekler de ePosta/telefon1 tutar → vakıf gibi
-      // email+telefon kapsama + top-10 il + kamu yararı gösterilir.
+      // Dernek: registryDernekler import script'i ePosta/telefon1 alanlarını
+      // YAZMAMIŞ — bu yüzden dernekEmail/dernekPhone şu an 0 dönüyor. UI'da
+      // %0 yanıltıcı olduğu için 0 ise email/phone field'ları undefined
+      // dönderiyoruz; CategoryDetailPanel `cat.email !== undefined` kontrolü
+      // ile kartları sadece veri varsa render eder. İleride backfill yapılınca
+      // koşul otomatik açılır.
       dernek: {
         label: 'Dernek',
         total: dernekTotalCount,
-        email: dernekEmail,
-        phone: dernekPhone,
-        emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
-        phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
+        ...(dernekEmail > 0 && {
+          email: dernekEmail,
+          emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
+        }),
+        ...(dernekPhone > 0 && {
+          phone: dernekPhone,
+          phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
+        }),
         unsubscribed: unsubscribed.dernekler,
         kamuYarari: kamuYarariCount,
         topCities: dernekTop,
@@ -308,6 +321,15 @@ const computeStats = unstable_cache(
           phone: telDolu,
           emailPct: vakifTotal?.data().count ? Math.round((emailDolu / vakifTotal.data().count) * 100) : 0,
           phonePct: vakifTotal?.data().count ? Math.round((telDolu / vakifTotal.data().count) * 100) : 0,
+        },
+        // Dernekler için email/phone şu an 0 (import script ePosta/telefon1 yazmamış).
+        // İleride backfill yapılırsa otomatik dolacak.
+        dernekler: {
+          total: dernekTotalCount,
+          email: dernekEmail,
+          phone: dernekPhone,
+          emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
+          phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
         },
         kamuYarariDernekler: kamuYarariCount,
       },

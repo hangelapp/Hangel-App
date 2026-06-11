@@ -58,6 +58,13 @@ interface StatsResp {
       emailPct: number;
       phonePct: number;
     };
+    dernekler?: {
+      total: number;
+      email: number;
+      phone: number;
+      emailPct: number;
+      phonePct: number;
+    };
     kamuYarariDernekler?: number;
   };
   unsubscribed: {
@@ -323,6 +330,9 @@ function CoverageCard({ label, value, total, pct, color, icon: Icon }: { label: 
 function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
   const hasContact = cat.email !== undefined || cat.phone !== undefined;
   const isSampled = cat.sample !== undefined && cat.total > cat.sample;
+  // Dernek: import script ePosta/telefon1 yazmadığı için bu alanlar undefined.
+  // Kullanıcıyı bilgilendirmek için banner göster.
+  const missingContact = cat.total > 0 && cat.email === undefined && cat.phone === undefined && cat.label === 'Dernek';
   return (
     <div className="space-y-4">
       {/* Kategori toplamı */}
@@ -337,6 +347,17 @@ function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
           )}
         </CardContent>
       </Card>
+
+      {missingContact && (
+        <Card className="border-amber-300 bg-amber-50/60">
+          <CardContent className="p-3 text-[12px] text-amber-900 leading-relaxed">
+            <strong>ℹ Bilgi:</strong> Dernek kayıtlarında <em>e-posta</em> ve <em>telefon</em> alanları
+            henüz import edilmedi (T.C. Dernekler Dairesi açık veri setinde mevcut değil).
+            Kamu Yararı ve il dağılımı verisi tam çalışıyor. Email/telefon backfill
+            yapılınca bu uyarı kaybolur.
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPI */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
