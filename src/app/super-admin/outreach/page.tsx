@@ -72,6 +72,8 @@ const PLATFORMS = [
   'HelpSteps',
   'Candid',
   'Goodstack',
+  'GlobalGiving',
+  'Fonzip',
   'Global Compact',
   'Idealist',
   'gonulluyuzbiz.gov.tr',

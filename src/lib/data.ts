@@ -188,7 +188,7 @@ export const allSdgs = [
     '16. Barış, Adalet ve Güçlü Kurumlar',
     '17. Amaçlar için Ortaklıklar'
 ];
-export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Goodstack', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr', 'TGSP', 'Diğer...'];
+export const allMemberships = ['Afet Platformu', 'Açık Açık', 'Tüsev', 'Adım Adım', 'Ability Pool', 'HelpSteps', 'Candid', 'Goodstack', 'GlobalGiving', 'Fonzip', 'Global Compact', 'Idealist', 'www.gonulluyuzbiz.gov.tr', 'TGSP', 'Diğer...'];
 export const years = Array.from({ length: 2025 - 1850 }, (_, i) => (2024 - i).toString());
 
 export const allUniversities: string[] = [
