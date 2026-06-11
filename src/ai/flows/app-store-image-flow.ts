@@ -28,8 +28,10 @@ export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
 
 /**
  * Platform spec'ten cihaz boyutuna en yakın aspect ratio'yu seç.
+ * NOT: 'use server' dosyası yalnızca async fonksiyon export edebilir; bu sync
+ * yardımcı yalnızca dosya içinde kullanıldığı için export edilmez (build fix).
  */
-export function pickAspectRatio(w: number, h: number): AspectRatio {
+function pickAspectRatio(w: number, h: number): AspectRatio {
   const r = w / h;
   // İdeal eşleşmeler
   if (Math.abs(r - 1) < 0.05) return '1:1';
