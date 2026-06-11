@@ -73,6 +73,7 @@ export function PublicFooter({ currentPageLabel }: { currentPageLabel?: string }
         { label: 'X.com', href: 'https://x.com/hangelorg' },
         { label: 'YouTube', href: 'https://youtube.com/@hangelorg' },
         { label: 'LinkedIn', href: 'https://linkedin.com/company/hangelorg' },
+        { label: 'Spotify', href: 'https://open.spotify.com/playlist/3spoOQSyiGdxxnqjNt5cYN?si=U0VREHryQn-RqhUHfdeJzA' },
         { label: 'TikTok', href: 'https://tiktok.com/@hangelorg' },
         { label: 'Next Sosyal', href: 'https://nextsosyal.com/@hangelorg' },
     ];

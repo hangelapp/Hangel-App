@@ -18,7 +18,7 @@ import { HangelLogo } from '@/components/icons';
 import {
   Apple, Smartphone, Globe, Watch, Monitor, Laptop, Chrome,
   Instagram, Linkedin, Twitter, Youtube, Facebook, MessageCircle,
-  Mail, Send, Music2, ExternalLink, QrCode, AtSign,
+  Mail, Send, Music2, Music, ExternalLink, QrCode, AtSign,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -216,6 +216,14 @@ const SOCIALS: SocialChannel[] = [
     icon: Music2,
     iconBg: 'bg-foreground/10',
     iconColor: 'text-foreground',
+  },
+  {
+    name: 'Spotify',
+    handle: 'Çalma Listesi',
+    href: 'https://open.spotify.com/playlist/3spoOQSyiGdxxnqjNt5cYN?si=U0VREHryQn-RqhUHfdeJzA',
+    icon: Music,
+    iconBg: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-600',
   },
   {
     name: 'WhatsApp Kanal',
