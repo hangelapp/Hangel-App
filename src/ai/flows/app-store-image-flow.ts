@@ -3,56 +3,44 @@
 /**
  * src/ai/flows/app-store-image-flow.ts
  *
- * App Store ekran görüntüsü üretimi — Google Imagen 3 REST API'ye direkt fetch.
+ * App Store ekran görüntüsü üretimi — Google Gemini 2.5 Flash Image
+ * (nano-banana) modeli. Google AI Generative Language API'de Imagen 3
+ * mevcut DEĞİL (sadece Vertex AI'da var); bu yüzden generateContent
+ * endpoint'i + responseModalities: ['IMAGE'] kullanılır.
  *
- * Genkit `imagenPredict` helper'ı yerine REST'i tercih ettik çünkü:
- *   1. Aspect ratio + sampleCount paramlarını net kontrol edebiliyoruz
- *   2. Hata mesajlarını raw görebiliyoruz (Genkit wrap'i bazen yutuyor)
- *   3. Quota guard mevcut yapımıza daha kolay otururuyor
+ * Input: BRAND_BRIEF + platform vibe + feature template + kullanıcı prompt
+ * birleştirilir, sonra Gemini'ye text-to-image olarak gönderilir.
  *
- * Input: BRAND_BRIEF + platform vibe + feature template + kullanıcı prompt'u
- * birleştirilir, sonra Imagen 3'e gönderilir.
- *
- * Aspect ratio Imagen 3 sabit: '1:1' | '3:4' | '4:3' | '9:16' | '16:9'.
- * Cihaz spec boyutları client tarafında render edilirken resize/letterbox edilir.
+ * Aspect ratio prompt'a explicit eklenir ("Generate a 9:16 portrait...").
  */
 
 import { checkAndConsumeAIQuota, sanitizeUserInput } from '@/ai/guards';
 import { AIQuotaExceededError } from '@/ai/flow-auth';
 import { BRAND_BRIEF, FEATURES, PLATFORMS, type FeatureKey, type PlatformKey } from '@/lib/app-store-specs';
 
-const IMAGEN_MODEL = 'imagen-3.0-generate-002';
-const IMAGEN_URL = `https://generativelanguage.googleapis.com/v1beta/models/${IMAGEN_MODEL}:predict`;
+const MODEL = 'gemini-2.5-flash-image-preview';
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export type AspectRatio = '1:1' | '3:4' | '4:3' | '9:16' | '16:9';
 
-/**
- * Platform spec'ten cihaz boyutuna en yakın aspect ratio'yu seç.
- * NOT: 'use server' dosyası yalnızca async fonksiyon export edebilir; bu sync
- * yardımcı yalnızca dosya içinde kullanıldığı için export edilmez (build fix).
- */
+/** Platform spec'ten cihaz boyutuna en yakın aspect ratio'yu seç (sync helper). */
 function pickAspectRatio(w: number, h: number): AspectRatio {
   const r = w / h;
-  // İdeal eşleşmeler
   if (Math.abs(r - 1) < 0.05) return '1:1';
   if (Math.abs(r - 9 / 16) < 0.1) return '9:16';
   if (Math.abs(r - 16 / 9) < 0.1) return '16:9';
   if (Math.abs(r - 3 / 4) < 0.1) return '3:4';
   if (Math.abs(r - 4 / 3) < 0.1) return '4:3';
-  // Yakın eşleşmeler — portrait fallback
   if (r < 0.7) return '9:16';
   if (r > 1.5) return '16:9';
   return r < 1 ? '3:4' : '4:3';
 }
 
 export interface GenerateAppStoreImageInput {
-  /** Süper-admin uid'si (quota guard için). */
   userId: string;
   platform: PlatformKey;
   feature: FeatureKey;
-  /** Kullanıcının özel prompt'u (boş ise feature default'u kullanılır). */
   customPrompt?: string;
-  /** Cihaz boyutu — aspect ratio'yu belirler. */
   deviceW: number;
   deviceH: number;
 }
@@ -67,7 +55,6 @@ export interface GenerateAppStoreImageOutput {
 export async function generateAppStoreImage(
   input: GenerateAppStoreImageInput,
 ): Promise<GenerateAppStoreImageOutput> {
-  // Quota — günlük 20 görsel üretim hakkı
   await checkAndConsumeAIQuota(input.userId, 'app-store-image', 20);
 
   const platform = PLATFORMS.find((p) => p.key === input.platform);
@@ -76,7 +63,13 @@ export async function generateAppStoreImage(
   if (!feature) throw new Error(`Bilinmeyen feature: ${input.feature}`);
 
   const userPrompt = sanitizeUserInput(input.customPrompt || feature.defaultPrompt);
+  const aspectRatio = pickAspectRatio(input.deviceW, input.deviceH);
+  const orientation = aspectRatio === '9:16' || aspectRatio === '3:4' ? 'portrait'
+    : aspectRatio === '16:9' || aspectRatio === '4:3' ? 'landscape' : 'square';
+
   const fullPrompt = [
+    `Generate a ${aspectRatio} ${orientation} app store screenshot image.`,
+    '',
     `[BRAND BRIEF]\n${BRAND_BRIEF}`,
     '',
     `[PLATFORM TONE — ${platform.label}]\n${platform.vibe}`,
@@ -84,47 +77,60 @@ export async function generateAppStoreImage(
     `[FEATURE — ${feature.label}]`,
     userPrompt,
     '',
-    '[OUTPUT]',
-    'Tek görsel. Çok yüksek detay. Photorealistic device mockup (gerçek iPhone/iPad/Watch frame).',
-    'Marka kuralları: yanlış logo yok, telif sorunu çıkarabilecek görsel yok.',
+    '[REQUIREMENTS]',
+    `- Exactly ${aspectRatio} aspect ratio (${input.deviceW}x${input.deviceH} target resolution)`,
+    '- Photorealistic device mockup (real iPhone/iPad/Watch frame)',
+    '- High detail, premium quality, vibrant colors',
+    '- Marka kurallarına uyumlu: yanlış logo yok, telif sorunu çıkmasın',
+    '- Tek görsel, başka frame eklemeden',
   ].join('\n');
-
-  const aspectRatio = pickAspectRatio(input.deviceW, input.deviceH);
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY yok — env\'e ekle.');
 
-  const res = await fetch(`${IMAGEN_URL}?key=${apiKey}`, {
+  const res = await fetch(`${API_URL}?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      instances: [{ prompt: fullPrompt }],
-      parameters: {
-        sampleCount: 1,
-        aspectRatio,
-        safetyFilterLevel: 'block_some',
-        personGeneration: 'allow_adult',
+      contents: [{
+        parts: [{ text: fullPrompt }],
+      }],
+      generationConfig: {
+        responseModalities: ['IMAGE'],
       },
     }),
   });
 
   if (!res.ok) {
     const errText = await res.text().catch(() => 'unknown');
-    if (res.status === 429) throw new AIQuotaExceededError('Imagen rate limit aşıldı — birkaç saniye bekle.');
-    throw new Error(`Imagen 3 hata (${res.status}): ${errText.slice(0, 300)}`);
+    if (res.status === 429) throw new AIQuotaExceededError('Gemini rate limit aşıldı — birkaç saniye bekle.');
+    throw new Error(`Gemini image gen hata (${res.status}): ${errText.slice(0, 400)}`);
   }
 
   const data = await res.json() as {
-    predictions?: Array<{ bytesBase64Encoded?: string; mimeType?: string }>;
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{
+          inlineData?: { mimeType?: string; data?: string };
+          text?: string;
+        }>;
+      };
+    }>;
   };
-  const pred = data.predictions?.[0];
-  if (!pred?.bytesBase64Encoded) {
-    throw new Error('Imagen 3 prediction boş döndü');
+
+  // İlk image part'ı bul (Gemini sometimes returns text + image in mixed parts)
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find((p) => p.inlineData?.data);
+  if (!imagePart?.inlineData?.data) {
+    // Hata mesajı text part'ında olabilir
+    const textPart = parts.find((p) => p.text);
+    const reason = textPart?.text?.slice(0, 200) || 'image yok';
+    throw new Error(`Gemini görsel dönmedi: ${reason}`);
   }
 
   return {
-    base64Image: pred.bytesBase64Encoded,
-    mimeType: pred.mimeType || 'image/png',
+    base64Image: imagePart.inlineData.data,
+    mimeType: imagePart.inlineData.mimeType || 'image/png',
     aspectRatio,
     fullPrompt,
   };

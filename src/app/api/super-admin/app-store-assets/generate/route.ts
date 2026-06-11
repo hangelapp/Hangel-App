@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       active: true,
       createdAt: FieldValue.serverTimestamp(),
       createdBy: auth.uid,
-      model: 'imagen-3.0-generate-002',
+      model: 'gemini-2.5-flash-image-preview',
     });
 
     return NextResponse.json({

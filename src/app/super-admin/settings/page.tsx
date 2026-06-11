@@ -32,6 +32,7 @@ import {
   Layers,
   SlidersHorizontal,
   Sparkles,
+  ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -378,6 +379,22 @@ export default function SettingsPage() {
               <p className="font-semibold">Gönüllülük Puantajı</p>
               <p className="text-xs text-muted-foreground">
                 İlan iş kalemleri, saat başı etki puanı ve adam-saat maliyeti.
+              </p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </Link>
+          <Link
+            href="/super-admin/app-stores"
+            className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent transition-colors"
+          >
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <ImageIcon className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold">App Storlar — Görsel Üreteç</p>
+              <p className="text-xs text-muted-foreground">
+                8 mağaza (App Store, Google Play, AppGallery, Watch, Mac, Vision,
+                Microsoft, Chrome) için AI ile ekran görüntüsü üret + yönet.
               </p>
             </div>
             <ChevronRight className="h-5 w-5 text-muted-foreground" />
