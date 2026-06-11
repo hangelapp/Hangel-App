@@ -28,6 +28,7 @@ import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-enti
 import { useTranslation } from '@/components/providers/language-provider';
 import { SectionCard } from './_components/section-card';
 import { DomainSection } from './_components/domain-section';
+import { CustomDomainSection } from './_components/custom-domain-section';
 import { ColorsSection } from './_components/colors-section';
 import { BannersSection } from './_components/banners-section';
 import { PresidentSection } from './_components/president-section';
@@ -268,6 +269,14 @@ export default function WebsiteBuilderPage() {
                         onRegistrarChange={setSelectedRegistrar}
                         onCopy={copyToClipboard}
                     />
+                    {ngoId && (
+                        <div className="mt-6 pt-6 border-t">
+                            <CustomDomainSection
+                                ngoId={ngoId}
+                                initial={(ngoData?.siteSettings as { customDomain?: { hostname?: string; status?: string; sslStatus?: string; cnameTarget?: string } } | undefined)?.customDomain}
+                            />
+                        </div>
+                    )}
                 </SectionCard>
 
                 <SectionCard
