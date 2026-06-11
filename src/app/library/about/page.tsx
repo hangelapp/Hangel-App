@@ -105,7 +105,7 @@ export default function LibraryAboutPage() {
                 cta1Href="/library"
                 cta2={t('marketing.library.sectionCta2')}
                 cta2Href="/library"
-                imageUrl={cms.heroImageUrl || '/discovery/library.png'}
+                imageUrl={cms.heroImageUrl || 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop'}
                 imageHint="digital and traditional library merging, glowing screens among classic bookshelves"
             />
 

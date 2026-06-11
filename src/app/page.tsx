@@ -455,8 +455,8 @@ export default function LoginPage() {
             title: t('landing.discovery.ngo.title'),
             description: t('landing.discovery.ngo.description'),
             href: "/login/selection?action=register&type=corporate&entity=NGO",
-            imageUrl: "/discovery/stk.png",
-            imageHint: "diverse hands together in solidarity",
+            imageUrl: "https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "volunteers working",
             linkText: t('landing.discovery.ngo.linkText'),
             linkText2: t('landing.discovery.ngo.linkText2'),
             href2: "/ngo-onboarding"
@@ -485,8 +485,8 @@ export default function LoginPage() {
             title: t('landing.discovery.library.title'),
             description: t('landing.discovery.library.description'),
             href: "/library",
-            imageUrl: "/discovery/library.png",
-            imageHint: "coral library shelves blending with digital sparkle",
+            imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "digital and traditional library merging, glowing screens among classic bookshelves",
             linkText: t('landing.discovery.library.linkText'),
             linkText2: t('landing.discovery.library.linkText2'),
             href2: "/library/about"
@@ -495,8 +495,8 @@ export default function LoginPage() {
             title: t('landing.discovery.emergency.title'),
             description: t('landing.discovery.emergency.description'),
             href: "/emergency",
-            imageUrl: "/discovery/emergency.png",
-            imageHint: "blood drop above cupped hands, hopeful rescue",
+            imageUrl: "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "blood donation and emergency response, hands helping",
             linkText: t('landing.discovery.emergency.linkText'),
             linkText2: t('landing.discovery.emergency.linkText2'),
             href2: "/emergency/about"
@@ -505,8 +505,8 @@ export default function LoginPage() {
             title: t('landing.discovery.public.title'),
             description: t('landing.discovery.public.description'),
             href: "/corporate",
-            imageUrl: "/discovery/public.png",
-            imageHint: "government building with civic network and handshake",
+            imageUrl: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
+            imageHint: "modern government municipality building, civic architecture",
             linkText: t('landing.discovery.public.linkText'),
             linkText2: t('landing.discovery.public.linkText2'),
             href2: "/corporate"
