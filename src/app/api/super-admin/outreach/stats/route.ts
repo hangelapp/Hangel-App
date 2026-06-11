@@ -263,23 +263,17 @@ const computeStats = unstable_cache(
         unsubscribed: unsubscribed.vakiflar,
         topCities: vakifTop,
       },
-      // Dernek: registryDernekler import script'i ePosta/telefon1 alanlarını
-      // YAZMAMIŞ — bu yüzden dernekEmail/dernekPhone şu an 0 dönüyor. UI'da
-      // %0 yanıltıcı olduğu için 0 ise email/phone field'ları undefined
-      // dönderiyoruz; CategoryDetailPanel `cat.email !== undefined` kontrolü
-      // ile kartları sadece veri varsa render eder. İleride backfill yapılınca
-      // koşul otomatik açılır.
+      // Dernek: vakıf ile aynı yapı (email/phone KPI + coverage bar). T.C. Dernekler
+      // Dairesi açık veri setinde ePosta/telefon yok → şu an 0/0% gözükür.
+      // Amber bilgi banner'ı CategoryDetailPanel'de kullanıcıya neden boş olduğunu
+      // anlatır. Backfill yapılınca otomatik dolar.
       dernek: {
         label: 'Dernek',
         total: dernekTotalCount,
-        ...(dernekEmail > 0 && {
-          email: dernekEmail,
-          emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
-        }),
-        ...(dernekPhone > 0 && {
-          phone: dernekPhone,
-          phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
-        }),
+        email: dernekEmail,
+        phone: dernekPhone,
+        emailPct: dernekTotalCount ? Math.round((dernekEmail / dernekTotalCount) * 100) : 0,
+        phonePct: dernekTotalCount ? Math.round((dernekPhone / dernekTotalCount) * 100) : 0,
         unsubscribed: unsubscribed.dernekler,
         kamuYarari: kamuYarariCount,
         topCities: dernekTop,

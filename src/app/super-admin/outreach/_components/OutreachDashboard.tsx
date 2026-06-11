@@ -330,9 +330,9 @@ function CoverageCard({ label, value, total, pct, color, icon: Icon }: { label: 
 function CategoryDetailPanel({ cat }: { cat: CategoryDetail }) {
   const hasContact = cat.email !== undefined || cat.phone !== undefined;
   const isSampled = cat.sample !== undefined && cat.total > cat.sample;
-  // Dernek: import script ePosta/telefon1 yazmadığı için bu alanlar undefined.
-  // Kullanıcıyı bilgilendirmek için banner göster.
-  const missingContact = cat.total > 0 && cat.email === undefined && cat.phone === undefined && cat.label === 'Dernek';
+  // Dernek: T.C. Dernekler Dairesi açık veri setinde ePosta/telefon yok.
+  // Banner her zaman gösterilir (email/phone 0 olsa bile yapı vakıf gibi göründüğü için).
+  const missingContact = cat.label === 'Dernek' && (cat.email ?? 0) === 0 && (cat.phone ?? 0) === 0;
   return (
     <div className="space-y-4">
       {/* Kategori toplamı */}
