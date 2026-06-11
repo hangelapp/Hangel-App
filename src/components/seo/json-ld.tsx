@@ -203,6 +203,7 @@ export function HangelOrgSchema() {
                     'https://facebook.com/hangelorg',
                     'https://tiktok.com/@hangelorg',
                     'https://open.spotify.com/playlist/3spoOQSyiGdxxnqjNt5cYN?si=U0VREHryQn-RqhUHfdeJzA',
+                    'https://www.canva.com/brand/kAGT3dRzyOw',
                     'https://threads.net/@hangelorg',
                     'https://t.me/hangelorg',
                     'https://nextsosyal.com/@hangelorg',

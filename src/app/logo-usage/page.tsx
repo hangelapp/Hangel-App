@@ -18,7 +18,6 @@ import {
     Share2,
     Tv,
     Shield,
-    ChevronRight,
     ShieldCheck,
     MessageSquare,
     Megaphone,
@@ -140,18 +139,14 @@ const ShowcaseCard = ({
   const Icon = iconMap[item.icon] || HelpCircle;
   return (
     <Link href={item.href} className="group block h-full">
-      <div className={cn("rounded-[2rem] p-4 text-center flex flex-col justify-between min-h-[180px]", themeConfig.bg)}>
+      {/* Kompakt: alt markalar yarı boyutta sergilenir (min-h ~90, küçük ikon/metin). */}
+      <div className={cn("rounded-2xl p-2.5 text-center flex flex-col justify-between min-h-[92px]", themeConfig.bg)}>
         <div>
-          <h3 className={cn("text-xl font-black leading-tight", themeConfig.titleColor)}>{item.label}</h3>
-          <p className={cn("text-xs mt-1", themeConfig.subtitleColor)}>{item.description}</p>
-          <div className="mt-2">
-             <span className={cn("text-xs font-semibold flex items-center justify-center", themeConfig.linkColor)}>
-                Daha fazla bilgi edin <ChevronRight className="h-3 w-3 ml-0.5" />
-             </span>
-          </div>
+          <h3 className={cn("text-sm font-black leading-tight", themeConfig.titleColor)}>{item.label}</h3>
+          <p className={cn("text-[10px] mt-0.5 leading-snug line-clamp-2", themeConfig.subtitleColor)}>{item.description}</p>
         </div>
-        <div className="mt-2 flex-1 flex items-end justify-center">
-            <div className="w-12 h-12 relative">
+        <div className="mt-1.5 flex items-end justify-center">
+            <div className="w-6 h-6 relative">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
         </div>
@@ -468,7 +463,7 @@ export default function LogoUsagePage() {
                         </div>
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.appSubBrandsTitle')}</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {appArchitecture.map((item) => (
                                     <ShowcaseCard
                                         key={item.href}
@@ -480,7 +475,7 @@ export default function LogoUsagePage() {
                         </div>
                          <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.dernekSubBrandsTitle')}</h3>
-                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard
                                         key={`${item.href}-${index}`}
@@ -570,7 +565,7 @@ export default function LogoUsagePage() {
                                          <p className="text-muted-foreground max-w-md mx-auto">{t('marketing.logo.canvaDesc')}</p>
                                      </div>
                                      <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold">
-                                         <a href="https://www.canva.com/" target="_blank" rel="noopener noreferrer">{t('marketing.logo.canvaCta')}</a>
+                                         <a href="https://www.canva.com/brand/kAGT3dRzyOw" target="_blank" rel="noopener noreferrer">{t('marketing.logo.canvaCta')}</a>
                                      </Button>
                                  </Card>
                              </div>
