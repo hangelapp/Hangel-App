@@ -117,12 +117,13 @@ const RuleCard = ({ icon: Icon, title, children }: { icon: React.ElementType, ti
     </Card>
 );
 
+// Alt marka kartları tanıtım/bilgi sayfalarına yönlendirir (işlevsel sayfalara değil).
 const appArchitecture: ReadonlyArray<{ href: string; icon: LogoIconName; label: string; description: string }> = [
-    { href: "/volunteering", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
-    { href: "/market", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
-    { href: "/admin/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
-    { href: "/merchant", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
-    { href: "/ngo-onboarding", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
+    { href: "/imece", icon: 'HeartHandshake', label: "hangel imece", description: "Yetenek bazlı gönüllülük platformu." },
+    { href: "/social-impact", icon: 'HandCoins', label: "hangel bağış", description: "Alışverişle sosyal fayda yaratma modeli." },
+    { href: "/clubs", icon: 'School', label: "hangel clubs", description: "Öğrenci kulüpleri için dijital yönetim ve etki merkezi." },
+    { href: "/corporate", icon: 'Store', label: "hangel marka", description: "Sosyal fayda odaklı markalar ve işletmeler." },
+    { href: "/social-entrepreneurship", icon: 'Building2', label: "hangel STK", description: "Sivil toplum kuruluşları için dijital dönüşüm araçları." },
     { href: "/library", icon: 'Library', label: "hangel kütüphane", description: "Sosyal etki ve sivil toplum kaynak merkezi." },
 ];
 
@@ -146,13 +147,13 @@ const ShowcaseCard = ({
   return (
     <Link href={item.href} className="group block h-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
       {/* Kompakt: alt markalar yarı boyutta sergilenir (min-h ~90, küçük ikon/metin). */}
-      <div className={cn("rounded-2xl p-2.5 text-center flex flex-col justify-between min-h-[100px] transition-all group-hover:-translate-y-0.5 group-hover:shadow-md", themeConfig.bg)}>
+      <div className={cn("rounded-2xl p-3.5 text-left flex flex-col justify-between min-h-[112px] border border-black/5 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:border-primary/20", themeConfig.bg)}>
         <div>
-          <h3 className={cn("text-sm font-black leading-tight group-hover:underline underline-offset-2", themeConfig.titleColor)}>{item.label}</h3>
-          <p className={cn("text-[10px] mt-0.5 leading-snug line-clamp-2", themeConfig.subtitleColor)}>{item.description}</p>
+          <h3 className={cn("text-sm font-bold tracking-tight leading-tight", themeConfig.titleColor)}>{item.label}</h3>
+          <p className={cn("text-[10px] mt-1 leading-snug line-clamp-2", themeConfig.subtitleColor)}>{item.description}</p>
         </div>
-        <div className="mt-1.5 flex items-center justify-between gap-1">
-            <span className={cn("text-[9px] font-semibold inline-flex items-center opacity-0 group-hover:opacity-100 transition-opacity", themeConfig.linkColor)}>Detay <ChevronRight className="h-2.5 w-2.5" /></span>
+        <div className="mt-2 flex items-center justify-between gap-1">
+            <span className={cn("text-[9px] font-semibold inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity", themeConfig.linkColor)}>Detay <ChevronRight className="h-2.5 w-2.5" /></span>
             <div className="w-6 h-6 relative shrink-0 ml-auto">
                 <Icon className={cn("w-full h-full", themeConfig.iconColor)} />
             </div>
@@ -187,23 +188,23 @@ const LogoShowcaseCard = ({
         }
     };
     return (
-        <Card className="rounded-[1.75rem] h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-xl transition-shadow group">
-            <div className="relative aspect-square w-full flex items-center justify-center p-4 bg-muted/30">
+        <Card className="rounded-3xl h-full flex flex-col bg-white overflow-hidden shadow-sm border border-black/5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+            <div className="relative aspect-square w-full flex items-center justify-center p-6 bg-[#f5f5f7] border-b border-black/5">
                 <div ref={logoRef} className="flex items-center justify-center">
                     {children}
                 </div>
             </div>
             <CardContent className="p-4 flex-1 flex flex-col">
-                <h4 className="font-semibold text-sm">{title}</h4>
-                <p className="text-xs text-muted-foreground mt-1 flex-1">{description}</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('png')}>
+                <h4 className="font-bold text-sm tracking-tight text-foreground">{title}</h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed flex-1">{description}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('png')}>
                         PNG <Download className="ml-1 h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('jpg')}>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('jpg')}>
                         JPG <Download className="ml-1 h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5" onClick={() => trigger('pdf')}>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2.5 rounded-full border-black/10 hover:border-primary/40 hover:text-primary" onClick={() => trigger('pdf')}>
                         PDF <Download className="ml-1 h-3 w-3" />
                     </Button>
                 </div>
@@ -215,31 +216,31 @@ const LogoShowcaseCard = ({
 // Poppins, next/font/google üzerinden gelir (self-host edilmiş .ttf/.woff dosyası yok).
 // Bu nedenle font, resmi Google Fonts kaynağından indirilir.
 const FontCard = ({ title, fontName, downloadHref }: { title: string, fontName: string, downloadHref: string }) => (
-    <div className="border rounded-2xl p-4 text-center space-y-2 bg-white/50">
-        <p className="text-xs font-bold text-muted-foreground">{title}</p>
-        <p className={cn("text-2xl", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
-        <p className="text-base font-semibold">{fontName}</p>
-        <Button asChild size="sm" variant="link" className="text-primary">
+    <div className="rounded-2xl p-6 text-center space-y-3 bg-[#f5f5f7] border border-black/5 transition-colors hover:border-primary/20">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{title}</p>
+        <p className={cn("text-5xl leading-none text-foreground", fontName.includes('Bold') && 'font-bold', fontName.includes('SemiBold') && 'font-semibold')}>Aa</p>
+        <p className="text-sm font-semibold text-foreground">{fontName}</p>
+        <Button asChild size="sm" variant="link" className="text-primary h-auto p-0">
             <a href={downloadHref} target="_blank" rel="noopener noreferrer" download>Fontu tıkla ve indir</a>
         </Button>
     </div>
 );
 
 const ColorCard = ({ hex, name, rgb, cmyk, onCopy }: { hex: string, name: string, rgb: string, cmyk: string, onCopy: () => void }) => (
-    <div 
-        className="group cursor-pointer bg-white rounded-2xl shadow-sm overflow-hidden border border-black/5 hover:shadow-xl transition-all duration-300 flex flex-col h-[220px]"
+    <div
+        className="group cursor-pointer bg-white rounded-3xl shadow-sm overflow-hidden border border-black/5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col h-[240px]"
         onClick={onCopy}
     >
-        <div className="relative w-full h-16" style={{ backgroundColor: hex }} />
-        <div className="p-4 flex-1 flex flex-col">
-            <h4 className="font-bold text-base text-foreground">{name}</h4>
+        <div className="relative w-full h-24" style={{ backgroundColor: hex }} />
+        <div className="p-5 flex-1 flex flex-col">
+            <h4 className="font-bold text-base tracking-tight text-foreground">{name}</h4>
             <div className="mt-2 text-xs text-muted-foreground space-y-1 font-mono flex-1">
                 <p>HEX: {hex}</p>
                 <p>RGB: {rgb}</p>
                 <p>CMYK: {cmyk}</p>
             </div>
-            <div className="mt-2 pt-2 border-t border-black/5">
-                <span className="text-primary text-xs font-semibold flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="mt-2 pt-3 border-t border-black/5">
+                <span className="text-primary text-xs font-semibold flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
                     <Copy className="w-3 h-3" /> Kodu Kopyala
                 </span>
             </div>
@@ -338,41 +339,44 @@ export default function LogoUsagePage() {
         });
     };
     
+    // İndirilen görseller kullanıcının verdiği gibi: wordmark tam ortada (yatay+dikey),
+    // doğru renk tonları (turuncu zeminde beyaz, beyaz zeminde turuncu, dernek için lacivert).
+    // href={null} → indirme sırasında <a> sarmalayıcısı yok, html2canvas temiz yakalar.
     const asLogos = [
         {
             title: "Birincil Logo",
             description: "Zeminsiz Logo (PNG / JPG / PDF)",
             baseName: 'hangel-birincil-logo',
             captureBg: '#ffffff',
-            content: <HangelLogo className="text-4xl text-primary" />
+            content: <div className="flex items-center justify-center px-6 py-4"><HangelLogo href={null} className="text-4xl text-primary" /></div>
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG / JPG / PDF)",
             baseName: 'hangel-ikincil-logo',
             captureBg: '#f34723',
-            content: <div className="p-3 bg-primary rounded-xl"><HangelLogo className="text-4xl text-white" /></div>
+            content: <div className="flex items-center justify-center bg-primary rounded-2xl px-6 py-4"><HangelLogo href={null} className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG / JPG / PDF) – (Zorunlu hallerde)",
             baseName: 'hangel-beyaz-logo',
-            captureBg: '#000000',
-            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
+            captureBg: '#1f1f1f',
+            content: <div className="flex items-center justify-center rounded-2xl px-6 py-4" style={{ backgroundColor: '#1f1f1f' }}><HangelLogo href={null} className="text-4xl text-white" /></div>
         },
         {
             title: "Kare Logo",
             description: "Turuncu kare zemin, tam logo — sosyal medya/avatar (PNG / JPG / PDF)",
             baseName: 'hangel-kare-logo',
             captureBg: '#f34723',
-            content: <div className="bg-primary rounded-[1.25rem] aspect-square w-32 flex items-center justify-center"><HangelLogo className="text-3xl text-white" href={null} /></div>
+            content: <div className="bg-primary rounded-2xl aspect-square w-32 flex items-center justify-center"><HangelLogo href={null} className="text-3xl text-white" /></div>
         },
         {
             title: "App Icon",
             description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
             baseName: 'hangel-app-icon',
             captureBg: '#f34723',
-            content: <div className="p-3 bg-primary rounded-2xl"><span className="text-2xl font-black text-white">h</span></div>
+            content: <div className="bg-primary rounded-[22%] aspect-square w-28 flex items-center justify-center"><HangelLogo href={null} className="text-3xl text-white" /></div>
         },
     ];
 
@@ -382,35 +386,35 @@ export default function LogoUsagePage() {
             description: "Zeminsiz Logo (PNG / JPG / PDF)",
             baseName: 'hangel-dernek-birincil-logo',
             captureBg: '#ffffff',
-            content: <HangelLogo className="text-4xl" style={{color: '#042654'}} />
+            content: <div className="flex items-center justify-center px-6 py-4"><HangelLogo href={null} className="text-4xl" style={{ color: '#042654' }} /></div>
         },
         {
             title: "İkincil Logo",
             description: "Zeminli Logo (PNG / JPG / PDF)",
             baseName: 'hangel-dernek-ikincil-logo',
             captureBg: '#042654',
-            content: <div className="p-3 rounded-xl" style={{backgroundColor: '#042654'}}><HangelLogo className="text-4xl text-white" /></div>
+            content: <div className="flex items-center justify-center rounded-2xl px-6 py-4" style={{ backgroundColor: '#042654' }}><HangelLogo href={null} className="text-4xl text-white" /></div>
         },
         {
             title: "Üçüncül Logo",
             description: "Beyaz Logo (PNG / JPG / PDF)",
             baseName: 'hangel-dernek-beyaz-logo',
-            captureBg: '#000000',
-            content: <div className="p-3 bg-black rounded-xl w-full h-full flex items-center justify-center"><HangelLogo className="text-4xl text-white" /></div>
+            captureBg: '#1f1f1f',
+            content: <div className="flex items-center justify-center rounded-2xl px-6 py-4" style={{ backgroundColor: '#1f1f1f' }}><HangelLogo href={null} className="text-4xl text-white" /></div>
         },
         {
             title: "Kare Logo",
             description: "Lacivert kare zemin, tam logo — sosyal medya/avatar (PNG / JPG / PDF)",
             baseName: 'hangel-dernek-kare-logo',
             captureBg: '#042654',
-            content: <div className="rounded-[1.25rem] aspect-square w-32 flex items-center justify-center" style={{backgroundColor: '#042654'}}><HangelLogo className="text-3xl text-white" href={null} /></div>
+            content: <div className="rounded-2xl aspect-square w-32 flex items-center justify-center" style={{ backgroundColor: '#042654' }}><HangelLogo href={null} className="text-3xl text-white" /></div>
         },
         {
             title: "Dernek Icon",
             description: "Mobil Uygulama Simgesi (PNG / JPG / PDF)",
             baseName: 'hangel-dernek-app-icon',
             captureBg: '#042654',
-            content: <div className="p-3 bg-primary rounded-2xl" style={{backgroundColor: '#042654'}}><span className="text-2xl font-black text-white">h</span></div>
+            content: <div className="rounded-[22%] aspect-square w-28 flex items-center justify-center" style={{ backgroundColor: '#042654' }}><HangelLogo href={null} className="text-3xl text-white" /></div>
         },
     ];
     
@@ -431,9 +435,9 @@ export default function LogoUsagePage() {
     ] as const;
 
     const themeConfigs = [
-        { bg: 'bg-[#f5f5f7]', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
-        { bg: 'bg-white', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/20' },
-        { bg: 'bg-black', subtitleColor: 'text-white/60', titleColor: 'text-white', linkColor: 'text-blue-500', iconColor: 'text-white/20' },
+        { bg: 'bg-white', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/25' },
+        { bg: 'bg-[#f5f5f7]', subtitleColor: 'text-muted-foreground', titleColor: 'text-foreground', linkColor: 'text-primary', iconColor: 'text-primary/25' },
+        { bg: 'bg-[#1f1f1f]', subtitleColor: 'text-white/60', titleColor: 'text-white', linkColor: 'text-primary', iconColor: 'text-white/25' },
     ];
     
      const colors = [
@@ -483,7 +487,7 @@ export default function LogoUsagePage() {
                              <HangelLogo className="text-5xl" />
                         </div>
                         <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.appSubBrandsTitle')}</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-center text-primary">{t('marketing.logo.appSubBrandsTitle')}</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {appArchitecture.map((item) => (
                                     <ShowcaseCard
@@ -495,7 +499,7 @@ export default function LogoUsagePage() {
                             </div>
                         </div>
                          <div className="space-y-8">
-                            <h3 className="text-3xl font-bold tracking-tight text-center text-primary">{t('marketing.logo.dernekSubBrandsTitle')}</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-center text-primary">{t('marketing.logo.dernekSubBrandsTitle')}</h3>
                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                                 {associationArchitecture.map((item, index) => (
                                     <ShowcaseCard
@@ -545,7 +549,7 @@ export default function LogoUsagePage() {
 
                         <div className="space-y-12">
                             <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.fontsTitle')}</h3>
-                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white">
+                            <Card className="max-w-4xl mx-auto rounded-3xl p-10 bg-white shadow-sm border border-black/5">
                                <CardHeader className="text-center">
                                    <CardTitle>{t('marketing.logo.fontGuideTitle')}</CardTitle>
                                </CardHeader>
@@ -569,7 +573,7 @@ export default function LogoUsagePage() {
                         <div className="space-y-8">
                             <h3 className="text-3xl font-bold tracking-tight text-center">{t('marketing.logo.kurumsalKimlikTitle')}</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-sm border border-black/5 hover:shadow-lg transition-shadow bg-white">
                                      <DownloadCloud className="h-16 w-16 mx-auto text-primary" />
                                      <div className="space-y-1">
                                          <h3 className="text-2xl font-bold">{t('marketing.logo.kimlikKilavuzuTitle')}</h3>
@@ -579,7 +583,7 @@ export default function LogoUsagePage() {
                                          {t('marketing.logo.downloadPdf')}
                                      </Button>
                                  </Card>
-                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-xl bg-white">
+                                 <Card className="rounded-3xl text-center p-12 space-y-6 shadow-sm border border-black/5 hover:shadow-lg transition-shadow bg-white">
                                      <Image src="https://www.google.com/s2/favicons?domain=canva.com&sz=128" alt="Canva Logo" width={64} height={64} className="mx-auto h-16 w-16" />
                                      <div className="space-y-1">
                                          <h3 className="text-2xl font-bold">{t('marketing.logo.canvaTitle')}</h3>
@@ -611,25 +615,41 @@ export default function LogoUsagePage() {
                     </div>
                 </Section>
                 
-                <Section className="text-left">
-                    <div className="text-sm text-muted-foreground max-w-3xl space-y-4">
-                        <p>
-                           {t('marketing.logo.legalBlurb')}
+                {/* Final bölüm: SON SÖZ + fikri mülkiyet/legal metni derli toplu, ortalı tek blok. */}
+                <Section className="bg-white">
+                    <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-8">
+                            <ShieldCheck className="h-8 w-8" />
+                        </div>
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('marketing.logo.sonSozLabel')}</h3>
+                        <p className="mt-4 text-xl md:text-2xl font-medium leading-relaxed text-foreground">
+                            {t('marketing.logo.sonSozBody')}
+                        </p>
+                        <p className="mt-6 text-lg font-bold text-foreground" dangerouslySetInnerHTML={{ __html: t('marketing.logo.sonSozMotto') }} />
+                        <div className="mt-10 h-px w-16 bg-black/10" />
+                        <p className="mt-10 text-sm leading-relaxed text-muted-foreground">
+                            {t('marketing.logo.legalBlurb')}
                         </p>
                     </div>
                 </Section>
 
-                <Section className="text-center">
-                    <Card className="max-w-3xl mx-auto rounded-3xl p-12 space-y-6 shadow-xl bg-white">
-                        <ShieldCheck className="h-16 w-16 mx-auto text-primary" />
-                        <div className="space-y-2">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{t('marketing.logo.sonSozLabel')}</h3>
-                            <p className="text-xl md:text-2xl font-medium text-foreground max-w-2xl mx-auto">
-                                {t('marketing.logo.sonSozBody')}
-                            </p>
+                {/* Basın Odası yönlendirmesi — sayfanın en altı. */}
+                <Section className="pt-0">
+                    <div className="relative max-w-4xl mx-auto overflow-hidden rounded-[2rem] bg-[#1f1f1f] px-8 py-14 text-center md:px-16">
+                        <span className="absolute inset-x-0 top-0 h-1 bg-primary" />
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 text-primary mx-auto mb-6">
+                            <Megaphone className="h-7 w-7" />
                         </div>
-                        <p className="text-lg font-bold text-foreground" dangerouslySetInnerHTML={{ __html: t('marketing.logo.sonSozMotto') }} />
-                    </Card>
+                        <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Basın Odası</h3>
+                        <p className="mt-4 text-base leading-relaxed text-white/70 max-w-xl mx-auto">
+                            Basın bültenleri, kurumsal görseller, marka varlıkları ve medya başvuruları için basın odamızı ziyaret edin.
+                        </p>
+                        <Button asChild size="lg" className="mt-8 rounded-full px-10 h-14 text-base font-bold">
+                            <Link href="/press">
+                                Basın Odası <ChevronRight className="ml-1.5 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
                 </Section>
             </main>
 

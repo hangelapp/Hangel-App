@@ -4,7 +4,7 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Target, Briefcase, Map, DollarSign, ArrowRight, type LucideIcon } from 'lucide-react';
+import { ArrowLeft, Target, Briefcase, Map, DollarSign, ArrowRight, Lightbulb, Palette, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import { PublicFooter } from '@/components/layout/public-footer';
 import { useToast } from '@/hooks/use-toast';
@@ -44,6 +44,22 @@ const projectContents: Record<string, ProjectContent> = {
         icon: DollarSign,
         imageUrl: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop",
         hint: "coins money growth"
+    },
+    'sosyal-inovasyon': {
+        title: "Sosyal İnovasyon Merkezi.",
+        subtitle: "Toplumsal sorunlara yenilikçi ve ölçeklenebilir çözümler.",
+        desc: "Sosyal İnovasyon Merkezi; toplumsal sorunları veriyle anlayan, tasarım odaklı yöntemlerle çözüm üreten ve bu çözümleri ölçeklenebilir modellere dönüştüren bir laboratuvardır. Akademiyi, sivil toplumu ve özel sektörü aynı masada buluşturarak fikirden etkiye giden yolu kısaltıyor; denenmiş, kanıta dayalı sosyal çözümleri yaygınlaştırıyoruz.",
+        icon: Lightbulb,
+        imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop",
+        hint: "innovation lab teamwork"
+    },
+    'sanat': {
+        title: "hangel Sanat.",
+        subtitle: "Sanatın birleştirici gücüyle farkındalık.",
+        desc: "hangel Sanat; sanatı toplumsal dönüşümün aracı olarak kullanır. Sergiler, atölyeler ve kamusal sanat projeleriyle dezavantajlı grupların sesini görünür kılar; empatiyi, dayanışmayı ve birlikte üretmeyi güçlendirir. Sanatçıları toplumsal fayda projeleriyle buluşturarak kalıcı etki yaratıyoruz.",
+        icon: Palette,
+        imageUrl: "https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?q=80&w=2070&auto=format&fit=crop",
+        hint: "art exhibition community"
     }
 };
 
