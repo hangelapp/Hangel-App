@@ -66,8 +66,19 @@ async function getMessagingInstance(): Promise<Messaging | null> {
   }
 }
 
+function isCapacitorNative(): boolean {
+  if (typeof window === 'undefined') return false;
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  return !!(cap?.isNativePlatform && cap.isNativePlatform());
+}
+
 async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!isBrowser() || !('serviceWorker' in navigator)) return null;
+  // Why: Capacitor (iOS/Android) içinde Service Worker eski cache'i tutup
+  // navigation fetch'i offline-fallback HTML ile değiştirebiliyor; bu da
+  // native app'in beyaz ekranda kalmasına neden oluyor (v2.0.4 Android crash).
+  // Native push FCM Cloud Messaging plugin'i (FCM SW yerine) kullanır.
+  if (isCapacitorNative()) return null;
   try {
     // Reuse an existing registration if one exists for the SW path.
     const existing = await navigator.serviceWorker.getRegistration(SW_PATH);

@@ -8,6 +8,14 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://hangel.org.tr',
     cleartext: false,
+    // Why: Capacitor 8'de default androidScheme 'https' ise WebView kendi origin'ini
+    // https://localhost sayar. server.url ile hangel.org.tr'yi yüklerken Service
+    // Worker (firebase-messaging-sw.js) + Firebase Auth reCAPTCHA iframe cross-origin
+    // olur, eski SW cache APK'ya kilitlenir → açılmama bug'ı. hostname explicit
+    // verince WebView origin = https://hangel.org.tr olur, iOS WKWebView ile aynı
+    // davranış. (v2.0.4 / vc 28 Android crash root cause).
+    hostname: 'hangel.org.tr',
+    androidScheme: 'https',
   },
   ios: {
     contentInset: 'never',
