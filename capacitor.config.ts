@@ -6,16 +6,13 @@ const config: CapacitorConfig = {
   appName: 'hangel',
   webDir: 'out',
   server: {
+    // Uzaktan hangel.org.tr yüklenir; WebView origin doğrudan https://hangel.org.tr olur
+    // (SW + reCAPTCHA gerçek origin'de düzgün çalışır). DİKKAT: server.hostname'i
+    // YAYIN ADRESİYLE AYNI ('hangel.org.tr') yapmak Android'de Capacitor yerel
+    // sunucusunun bu host'u yakalayıp boş out/'u sunmasına → BEYAZ EKRAN'a yol açar.
+    // Bu yüzden hostname/androidScheme verilmez (vc29 beyaz ekran kök nedeni).
     url: 'https://hangel.org.tr',
     cleartext: false,
-    // Why: Capacitor 8'de default androidScheme 'https' ise WebView kendi origin'ini
-    // https://localhost sayar. server.url ile hangel.org.tr'yi yüklerken Service
-    // Worker (firebase-messaging-sw.js) + Firebase Auth reCAPTCHA iframe cross-origin
-    // olur, eski SW cache APK'ya kilitlenir → açılmama bug'ı. hostname explicit
-    // verince WebView origin = https://hangel.org.tr olur, iOS WKWebView ile aynı
-    // davranış. (v2.0.4 / vc 28 Android crash root cause).
-    hostname: 'hangel.org.tr',
-    androidScheme: 'https',
   },
   ios: {
     contentInset: 'never',
