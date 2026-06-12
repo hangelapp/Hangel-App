@@ -21,17 +21,16 @@ import React, { useMemo, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDocs, getDoc, setDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, updateDoc, deleteDoc, query, where, addDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { NgoListItem } from '@/components/shared/ngo-list-item';
 import { useNgoRealtimeStats } from '@/hooks/use-ngo-stats';
 import {
   Loader2, Trash2, Edit3, Power, PowerOff, UserCog, CheckCircle,
-  XCircle, Search, Database, Upload, RefreshCw, X, ArrowDownUp,
+  XCircle, Search, X, ArrowDownUp,
 } from 'lucide-react';
 import type { NGO } from '@/lib/types';
 import { normalizePhone } from '@/lib/messaging/phone';
-import seedNgos from '../../../../docs/database-exports/ngos.json';
 import { COLLECTIONS } from '@/firebase/collections';
 
 type NgoItem = (NGO & { id: string }) & {
@@ -439,80 +438,6 @@ export default function NgosPage() {
     }
   };
 
-  const [bulkOp, setBulkOp] = useState<'idle' | 'clearing' | 'seeding'>('idle');
-
-  const handleClearAll = async () => {
-    setBulkOp('clearing');
-    try {
-      const snap = await getDocs(collection(db, COLLECTIONS.ngos));
-      const batches: ReturnType<typeof writeBatch>[] = [];
-      let current = writeBatch(db);
-      let count = 0;
-      snap.docs.forEach(d => {
-        current.delete(d.ref);
-        count += 1;
-        if (count >= 450) {
-          batches.push(current);
-          current = writeBatch(db);
-          count = 0;
-        }
-      });
-      if (count > 0) batches.push(current);
-      await Promise.all(batches.map(b => b.commit()));
-      toast({
-        variant: 'destructive',
-        title: 'STK Listesi Temizlendi',
-        description: `${snap.size} STK kaydı silindi.`,
-      });
-    } catch (e) {
-      console.error('Clear all NGOs failed:', e);
-      const code = (e as { code?: string } | null)?.code;
-      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-      toast({
-        variant: 'destructive',
-        title: 'Temizleme başarısız',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
-      });
-    } finally {
-      setBulkOp('idle');
-    }
-  };
-
-  const handleSeed = async () => {
-    setBulkOp('seeding');
-    try {
-      let count = 0;
-      for (const n of (seedNgos as Array<{ id: string } & Record<string, unknown>>)) {
-        await setDoc(doc(db, COLLECTIONS.ngos, n.id), { ...n, status: 'Aktif' }, { merge: true });
-        count += 1;
-      }
-      toast({
-        title: 'STK Verisi Yüklendi',
-        description: `${count} STK Firestore'a aktarıldı (mevcut kayıtların üzerine yazıldı).`,
-      });
-    } catch (e) {
-      console.error('Seed NGOs failed:', e);
-      const code = (e as { code?: string } | null)?.code;
-      const message = e instanceof Error ? e.message : 'Bilinmeyen hata.';
-      toast({
-        variant: 'destructive',
-        title: 'Yükleme başarısız',
-        description: code === 'permission-denied'
-          ? 'Bu işlem için super-admin yetkisi gerekli.'
-          : message,
-      });
-    } finally {
-      setBulkOp('idle');
-    }
-  };
-
-  const handleResetAndSeed = async () => {
-    await handleClearAll();
-    await handleSeed();
-  };
-
   const handleAssignAdmin = async (ngoId: string, newUserId: string, newUserName: string, role: NgoRole) => {
     try {
       // 1. NGO doc'una yetkili kullanıcıyı işaretle (yalnızca Genel Yönetici ana yetkili olarak kaydedilir)
@@ -655,71 +580,6 @@ export default function NgosPage() {
           Yayında olan ve başvuru sürecindeki tüm STK'ları görüntüleyin, yönetin, yetkili kişi atayın.
         </p>
       </div>
-
-      {/* Bulk admin tools */}
-      <Card className="rounded-2xl border-amber-200 bg-amber-50/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2"><Database className="h-4 w-4" /> Veri Yönetim Araçları</CardTitle>
-          <CardDescription>Demo verileri temizle ve mevcut STK datalarını (20 kuruluş) Firestore'a yükle.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row gap-2 flex-wrap">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={bulkOp !== 'idle'} className="gap-1.5">
-                <Trash2 className="h-4 w-4" /> Tüm STK'ları Temizle
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Tüm STK kayıtları silinsin mi?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Bu işlem <strong>kalıcıdır</strong>. Firestore'daki <code>ngos</code> koleksiyonundaki tüm dokümanlar silinir.
-                  Başvurular ve kullanıcı bağlantıları etkilenmez.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                <AlertDialogAction
-                  className={cn(buttonVariants({ variant: 'destructive' }))}
-                  onClick={handleClearAll}>
-                  {bulkOp === 'clearing' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Evet, Tümünü Sil
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <Button variant="outline" onClick={handleSeed} disabled={bulkOp !== 'idle'} className="gap-1.5">
-            {bulkOp === 'seeding' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            STK Datalarını Yükle ({(seedNgos as unknown[]).length} kuruluş)
-          </Button>
-
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button disabled={bulkOp !== 'idle'} className="gap-1.5 bg-red-600 hover:bg-red-700">
-                <RefreshCw className="h-4 w-4" /> Sıfırla ve Yeniden Yükle
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Sıfırla ve Yeniden Yükle?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Önce mevcut tüm STK kayıtları silinir, ardından <strong>{(seedNgos as unknown[]).length} STK</strong> Firestore'a aktarılır.
-                  Bu işlem geri alınamaz.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Vazgeç</AlertDialogCancel>
-                <AlertDialogAction
-                  className={cn(buttonVariants({ variant: 'destructive' }))}
-                  onClick={handleResetAndSeed}>
-                  Devam Et
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardContent>
-      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
