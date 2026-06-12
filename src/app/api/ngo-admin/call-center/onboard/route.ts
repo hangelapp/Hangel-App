@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
   const documentsRefs = Array.isArray(body.documentsRefs)
     ? (body.documentsRefs as unknown[]).filter((s): s is string => typeof s === 'string')
     : [];
-  const companyType = typeof body.companyType === 'string' ? body.companyType : 'STK';
+  const companyType = typeof body.companyType === 'string' ? body.companyType : 'Dernek';
   const formData =
     body.formData && typeof body.formData === 'object' && !Array.isArray(body.formData)
       ? (body.formData as Record<string, unknown>)

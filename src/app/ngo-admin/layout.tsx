@@ -553,24 +553,8 @@ function EntityIdentityBanner() {
         </Button>
       </div>
 
-      {!hasLogo && (
-        <div className="mb-6 rounded-2xl border border-primary/30 bg-primary/5 p-4 flex items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
-            <ImageIcon className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold">Logonuzu yükleyin</p>
-            <p className="text-xs text-muted-foreground">
-              {entityPossessive(current.kind, current.subType)} kamu profili ve listelerde görünmesi için bir logo ekleyin.
-            </p>
-          </div>
-          <Button asChild size="sm" className="shrink-0 text-xs">
-            <Link href={withEntityParams('/ngo-admin/manage-profile')}>
-              Logo Yükle
-            </Link>
-          </Button>
-        </div>
-      )}
+      {/* Logo yükle banner'ı kullanıcı talebiyle kaldırıldı (2026-06-12) —
+          her sayfada görünmesi rahatsız edici. Logo manage-profile sayfasında. */}
     </>
   );
 }

@@ -29,6 +29,21 @@ import { cn } from '@/lib/utils';
 const NUMBER_POOL = 'santralNumberPool';
 const PACKAGES = 'santralPackages';
 
+// Hangel'in desteklediği kurum tipleri — her birinin kütük/tescil numarası farklı
+// kaynaktan gelir; doğru placeholder + açıklama vermek için tip-spesifik meta.
+type CompanyType = 'Dernek' | 'Vakıf' | 'Federasyon' | 'SporKulübü' | 'ÖğrenciKulübü' | 'Sendika' | 'Oda' | 'Kooperatif' | 'Diğer';
+const COMPANY_TYPES: Array<{ value: CompanyType; label: string; numberHint: string; numberPlaceholder: string }> = [
+  { value: 'Dernek',         label: 'Dernek',                       numberHint: 'T.C. Dernekler Dairesi kütük numarası (8 hane, format XX-XXX-XXX). Dernek tüzüğünün üst köşesinde veya DERBİS kaydında yer alır.', numberPlaceholder: '06-154-120' },
+  { value: 'Vakıf',          label: 'Vakıf',                        numberHint: 'T.C. Vakıflar Genel Müdürlüğü kütük numarası. Vakıf senedinin onay sayfasında veya VGM Vakbis kaydında bulunur.',                    numberPlaceholder: 'V-1234' },
+  { value: 'Federasyon',     label: 'Federasyon / Konfederasyon',   numberHint: 'SHGM (Spor Hizmetleri Genel Müdürlüğü) tescil numarası veya Sivil Toplumla İlişkiler GM kayıt no.',                                  numberPlaceholder: 'SHGM-2024-XXXX' },
+  { value: 'SporKulübü',     label: 'Spor Kulübü',                  numberHint: 'GSB SPORBİS tescil numarası (7405 sayılı Kanun sonrası). Spor il müdürlüğünden alınan tescil belgesi üzerinde.',                       numberPlaceholder: '06-1234' },
+  { value: 'ÖğrenciKulübü',  label: 'Üniversite Öğrenci Kulübü',   numberHint: 'Üniversitenin SKS Daire Başkanlığı tarafından verilen kulüp kayıt numarası.',                                                          numberPlaceholder: 'SKS-2024-12' },
+  { value: 'Sendika',        label: 'Sendika',                      numberHint: 'Çalışma ve Sosyal Güvenlik Bakanlığı sendika tescil no.',                                                                            numberPlaceholder: 'ÇSGB-XXXX' },
+  { value: 'Oda',            label: 'Oda / Borsa',                  numberHint: 'TOBB veya ilgili meslek odası kayıt numarası.',                                                                                       numberPlaceholder: 'TOBB-XXXX' },
+  { value: 'Kooperatif',     label: 'Kooperatif',                   numberHint: 'Ticaret Sicil Müdürlüğü kooperatif sicil numarası.',                                                                                  numberPlaceholder: 'TSM-XXXX' },
+  { value: 'Diğer',          label: 'Diğer',                        numberHint: 'Maliye / Gelir İdaresi vergi numarası (10 hane).',                                                                                    numberPlaceholder: '1234567890' },
+];
+
 interface PackageRow {
   id: string;
   name?: string;
@@ -111,7 +126,7 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
   const [documentLabels, setDocumentLabels] = useState<string>('');
   const [selectedNumberId, setSelectedNumberId] = useState<string>('');
   const [dpaAccepted, setDpaAccepted] = useState(false);
-  const [companyType, setCompanyType] = useState<'STK' | 'Dernek' | 'Vakıf'>('STK');
+  const [companyType, setCompanyType] = useState<CompanyType>('Dernek');
   const [companyTaxId, setCompanyTaxId] = useState<string>('');
   const [contactPerson, setContactPerson] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
@@ -276,22 +291,27 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
               <select
                 id="companyType"
                 value={companyType}
-                onChange={(e) => setCompanyType(e.target.value as 'STK' | 'Dernek' | 'Vakıf')}
+                onChange={(e) => setCompanyType(e.target.value as CompanyType)}
                 className="w-full rounded-md border bg-background px-3 py-2 text-sm"
               >
-                <option value="STK">STK</option>
-                <option value="Dernek">Dernek</option>
-                <option value="Vakıf">Vakıf</option>
+                {COMPANY_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="taxId">Vergi / Kütük Numarası</Label>
+              <Label htmlFor="taxId">
+                {companyType === 'Diğer' ? 'Vergi Numarası' : 'Kütük / Tescil Numarası'}
+              </Label>
               <Input
                 id="taxId"
                 value={companyTaxId}
                 onChange={(e) => setCompanyTaxId(e.target.value)}
-                placeholder="Örn. 1234567890"
+                placeholder={COMPANY_TYPES.find((t) => t.value === companyType)?.numberPlaceholder || ''}
               />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                {COMPANY_TYPES.find((t) => t.value === companyType)?.numberHint}
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact">İletişim Sorumlusu (Ad Soyad)</Label>
@@ -299,19 +319,25 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
                 id="contact"
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
-                placeholder="STK adına başvuruyu yapan kişi"
+                placeholder="STK kayıtlı kullanıcılarından arama (yakında)"
               />
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                🚧 Yakında: STK'nın mevcut kullanıcıları arasından telefonla arama yaparak
+                yetkilendirme. Şu an manuel ad-soyad gir.
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="docs">Belgeler (dosya etiketleri)</Label>
+              <Label htmlFor="docs">Belgeler</Label>
               <Input
                 id="docs"
                 value={documentLabels}
                 onChange={(e) => setDocumentLabels(e.target.value)}
-                placeholder="Örn: tüzük.pdf, faaliyet-belgesi.pdf"
+                placeholder="Örn: tüzük.pdf, faaliyet-belgesi.pdf, vergi-levhası.pdf"
               />
-              <p className="text-xs text-muted-foreground">
-                İleride bu alan Firebase Storage upload widget'ı ile değiştirilecek.
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                🚧 Yakında: STK'nın daha önce yüklediği belgeler otomatik gözükür.
+                Son 6 ay içinde yüklenen belgeler için yeniden yükleme gerekmeyecek.
+                Şu an manuel dosya etiketi (virgülle ayır).
               </p>
             </div>
           </div>
