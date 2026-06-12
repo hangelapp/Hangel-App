@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, CheckCircle2, FileText, Phone, Package, ShieldCheck } from 'lucide-react';
+import { Loader2, CheckCircle2, FileText, Phone, Package, ShieldCheck, AlertCircle, ExternalLink, RefreshCw } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -135,6 +135,12 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
   const [userSearchQuery, setUserSearchQuery] = useState<string>('');
   const [userResults, setUserResults] = useState<Array<{ uid: string; name: string; email: string; phone: string; role: string }>>([]);
   const [userSearchLoading, setUserSearchLoading] = useState(false);
+  // Belge arşivi — documentArchive'den STK'nın belgeleri + 6 ay tazelik
+  const [archivedDocs, setArchivedDocs] = useState<Array<{
+    id: string; docType: string; fileUrl: string; year: string;
+    uploadedAt: string | null; isFresh: boolean; daysUntilExpiry: number;
+  }>>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ formId: string } | null>(null);
   const { user: authedUser } = useUser();
@@ -161,6 +167,28 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
     const t = setTimeout(fetchUsers, userSearchQuery ? 300 : 0);
     return () => { cancelled = true; clearTimeout(t); };
   }, [authedUser, userSearchQuery]);
+
+  // STK'nın documentArchive belgelerini çek — Belgeler adımı için 6 ay tazelik kontrolü
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchDocs() {
+      if (!authedUser) return;
+      setDocsLoading(true);
+      try {
+        const token = await authedUser.getIdToken();
+        const res = await fetch('/api/ngo-admin/documents/list', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { documents: typeof archivedDocs };
+        if (!cancelled) setArchivedDocs(data.documents);
+      } finally {
+        if (!cancelled) setDocsLoading(false);
+      }
+    }
+    fetchDocs();
+    return () => { cancelled = true; };
+  }, [authedUser]);
 
   // Paket listesi — koleksiyon henüz boş olabilir; fallback ile birleştirilir.
   const pkgQuery = useMemoFirebase(
@@ -202,10 +230,13 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
     }
     setSubmitting(true);
     try {
-      const documentsRefs = documentLabels
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
+      // Belgeler: arşivde varsa onların doc ID'leri + docType etiketi geçer;
+      // arşiv boşsa eski manuel "etiket" alanı fallback olarak kullanılır.
+      const documentsRefs = archivedDocs.length > 0
+        ? archivedDocs.map((d) => `${d.docType} (${d.isFresh ? 'taze' : 'bayatlamış'} · ${d.id})`)
+        : documentLabels.split(',').map((s) => s.trim()).filter(Boolean);
+      const archivedFresh = archivedDocs.filter((d) => d.isFresh).map((d) => d.id);
+      const archivedStale = archivedDocs.filter((d) => !d.isFresh).map((d) => d.id);
       const result = await messagingFetch<{ ok: boolean; ngoCallCenterId: string; formId: string; message: string }>(
         '/api/ngo-admin/call-center/onboard',
         {
@@ -221,6 +252,8 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
               contactPerson: contactPerson || null,
               contactUid: contactUid || null,
               contactPhone: contactPhone || null,
+              archivedDocsFresh: archivedFresh,
+              archivedDocsStale: archivedStale,
             },
           }),
         },
@@ -410,18 +443,89 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="docs">Belgeler</Label>
-              <Input
-                id="docs"
-                value={documentLabels}
-                onChange={(e) => setDocumentLabels(e.target.value)}
-                placeholder="Örn: tüzük.pdf, faaliyet-belgesi.pdf, vergi-levhası.pdf"
-              />
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                🚧 Yakında: STK'nın daha önce yüklediği belgeler otomatik gözükür.
-                Son 6 ay içinde yüklenen belgeler için yeniden yükleme gerekmeyecek.
-                Şu an manuel dosya etiketi (virgülle ayır).
-              </p>
+              <Label>Belgeler</Label>
+              {docsLoading ? (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" /> STK belgeleri yükleniyor...
+                </p>
+              ) : archivedDocs.length === 0 ? (
+                <div className="rounded-md border border-dashed bg-muted/20 p-3 text-xs space-y-1.5">
+                  <p className="font-medium">Bu STK için henüz belge arşivinde kayıt yok.</p>
+                  <p className="text-muted-foreground">
+                    Tüzük, faaliyet belgesi ve vergi levhasını STK Yönetim → Belge Arşivi
+                    bölümünden yükleyebilirsiniz. Yüklenen belgeler 6 ay boyunca tüm
+                    başvurularda yeniden istenmez.
+                  </p>
+                  <Input
+                    value={documentLabels}
+                    onChange={(e) => setDocumentLabels(e.target.value)}
+                    placeholder="Geçici: dosya etiketleri (virgülle ayır)"
+                    className="mt-2"
+                  />
+                </div>
+              ) : (
+                <>
+                  <p className="text-[11px] text-muted-foreground">
+                    Arşivdeki belgeler — son 6 ay içinde yüklenenler geçerli sayılır.
+                    Bayatlamış belgeleri güncellediğinizde tüm başvurularınızda otomatik tazelenir.
+                  </p>
+                  <div className="space-y-2">
+                    {archivedDocs.map((d) => {
+                      const fresh = d.isFresh;
+                      const days = Math.abs(d.daysUntilExpiry);
+                      return (
+                        <div
+                          key={d.id}
+                          className={cn(
+                            'flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs',
+                            fresh ? 'border-emerald-200 bg-emerald-50/30' : 'border-amber-300 bg-amber-50/40',
+                          )}
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">{d.docType}</p>
+                            <p className="text-muted-foreground truncate">
+                              {d.uploadedAt
+                                ? `Yüklendi: ${new Date(d.uploadedAt).toLocaleDateString('tr-TR')}`
+                                : 'Yükleme tarihi bilinmiyor'}
+                              {d.year && ` · ${d.year}`}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {fresh ? (
+                              <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-300 text-[9px]">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Geçerli · {days} gün kaldı
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300 text-[9px]">
+                                <AlertCircle className="h-3 w-3 mr-1" />
+                                {days} gün önce · güncelle
+                              </Badge>
+                            )}
+                            {d.fileUrl && (
+                              <a
+                                href={d.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-foreground"
+                                title="Belgeyi aç"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <a
+                    href="/ngo-admin/transparency"
+                    className="inline-flex items-center gap-1 text-[11px] text-emerald-700 hover:underline mt-1"
+                  >
+                    <RefreshCw className="h-3 w-3" /> Belge Arşivi'nde güncelle
+                  </a>
+                </>
+              )}
             </div>
           </div>
         )}
