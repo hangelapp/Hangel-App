@@ -45,7 +45,6 @@ import {
   Network,
   LineChart,
   Loader2,
-  Image as ImageIcon,
   Wallet,
   type LucideIcon,
 } from 'lucide-react';
