@@ -75,7 +75,7 @@ const HangelLiveActivity = registerPlugin<HangelLiveActivityPlugin>('HangelLiveA
 export async function diagnoseLiveActivity(): Promise<string> {
   const platform = Capacitor.getPlatform();
   const native = Capacitor.isNativePlatform();
-  let appInfo = 'app info yok';
+  let appInfo: string;
   try {
     const { App } = await import('@capacitor/app');
     const i = await App.getInfo();
@@ -90,7 +90,7 @@ export async function diagnoseLiveActivity(): Promise<string> {
     out += `isSupported=${JSON.stringify(r)}\n`;
     if (!r?.supported) return out + '→ DESTEKLENMİYOR (iOS<16.2 / Ayarlar kapalı / plugin yok)';
   } catch (e) {
-    return out + `→ isSupported THREW: ${e instanceof Error ? e.message : String(e)}\n(plugin binary\'de yoksa "not implemented" = eski build)`;
+    return out + `→ isSupported THREW: ${e instanceof Error ? e.message : String(e)}\n(plugin binaryde yoksa "not implemented" = eski build)`;
   }
   try {
     const r = await HangelLiveActivity.startEmergencyBlood({
