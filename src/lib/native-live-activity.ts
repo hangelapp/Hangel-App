@@ -68,6 +68,44 @@ interface HangelLiveActivityPlugin {
 const HangelLiveActivity = registerPlugin<HangelLiveActivityPlugin>('HangelLiveActivity');
 
 /**
+ * GEÇİCİ TEŞHİS — Live Activity neden başlamıyor cihazda görünür kılar.
+ * Hataları YUTMAZ; insan-okur bir string döner (toast/kutuda gösterilir).
+ * Sorun çözülünce kaldırılacak.
+ */
+export async function diagnoseLiveActivity(): Promise<string> {
+  const platform = Capacitor.getPlatform();
+  const native = Capacitor.isNativePlatform();
+  let appInfo = 'app info yok';
+  try {
+    const { App } = await import('@capacitor/app');
+    const i = await App.getInfo();
+    appInfo = `app ${i.version} (${i.build})`;
+  } catch (e) {
+    appInfo = `app info hata: ${e instanceof Error ? e.message : String(e)}`;
+  }
+  let out = `platform=${platform} native=${native}\n${appInfo}\n`;
+  if (!native) return out + '→ WEB: Live Activity yalnızca iOS uygulamasında.';
+  try {
+    const r = await HangelLiveActivity.isSupported();
+    out += `isSupported=${JSON.stringify(r)}\n`;
+    if (!r?.supported) return out + '→ DESTEKLENMİYOR (iOS<16.2 / Ayarlar kapalı / plugin yok)';
+  } catch (e) {
+    return out + `→ isSupported THREW: ${e instanceof Error ? e.message : String(e)}\n(plugin binary\'de yoksa "not implemented" = eski build)`;
+  }
+  try {
+    const r = await HangelLiveActivity.startEmergencyBlood({
+      bloodType: '0+', city: 'Teşhis', requestId: 'diag-' + Date.now(),
+      hospitalName: 'Teşhis Hastanesi', minutesLeft: 60, status: 'Test',
+    });
+    const aid = (r as { activityId?: string })?.activityId ?? '?';
+    const tok = (r as { pushToken?: string | null })?.pushToken ? 'var' : 'yok';
+    return out + `→ START OK ✅ activityId=${aid} pushToken=${tok}\nKilit ekranına düştü mü? Düştüyse plugin çalışıyor.`;
+  } catch (e) {
+    return out + `→ startEmergencyBlood THREW: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+/**
  * Live Activity desteği var mı? (iOS 16.1+ + ActivityKit enabled + user Settings'te kapatmamış)
  * Web'de veya plugin yoksa false döner.
  */

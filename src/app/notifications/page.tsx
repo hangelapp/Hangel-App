@@ -13,7 +13,7 @@ import { collection, query, where, orderBy, doc, updateDoc, addDoc, serverTimest
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 import { formatDistanceToNow } from 'date-fns';
-import { startEmergencyBloodActivity } from '@/lib/native-live-activity';
+import { startEmergencyBloodActivity, diagnoseLiveActivity } from '@/lib/native-live-activity';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -245,6 +245,15 @@ export default function NotificationsPage() {
   };
 
   const [contractDialog, setContractDialog] = useState<{ slug: string; title: string; version: string } | null>(null);
+  // GEÇİCİ: Live Activity teşhisi (cihazda neyin başarısız olduğunu görmek için).
+  const [diag, setDiag] = useState<string | null>(null);
+  const [diagBusy, setDiagBusy] = useState(false);
+  const runDiag = async () => {
+    setDiagBusy(true); setDiag('Çalışıyor…');
+    try { setDiag(await diagnoseLiveActivity()); }
+    catch (e) { setDiag('Teşhis hatası: ' + (e instanceof Error ? e.message : String(e))); }
+    finally { setDiagBusy(false); }
+  };
 
   const openContract = (n: NotifItem) => {
     const slug = n.data?.contractSlug || (n.data?.link || '').split('/').filter(Boolean).pop() || '';
@@ -272,6 +281,18 @@ export default function NotificationsPage() {
           )}
         </h1>
       </div>
+
+      {/* GEÇİCİ TEŞHİS — Canlı Etkinlik neden başlamıyor. Sorun çözülünce kaldırılacak. */}
+      <Card className="rounded-2xl border-amber-300 bg-amber-50 dark:bg-amber-950/20">
+        <CardContent className="p-3 space-y-2">
+          <Button onClick={runDiag} disabled={diagBusy} size="sm" variant="outline" className="w-full border-amber-400">
+            {diagBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : '🔧 Canlı Etkinlik Testi'}
+          </Button>
+          {diag && (
+            <pre className="text-[11px] leading-snug whitespace-pre-wrap break-words bg-background/60 rounded-lg p-2 border border-amber-200 select-all">{diag}</pre>
+          )}
+        </CardContent>
+      </Card>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
