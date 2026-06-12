@@ -231,7 +231,7 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'marketing', href: '/ngo-admin/marketing', label: t('ngo_admin_dashboard.itemMarketing'), icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
             { id: 'accounting', href: '/ngo-admin/accounting', label: t('ngo_admin_dashboard.itemAccounting'), icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
             { id: 'crm', href: '/ngo-admin/crm', label: t('ngo_admin_dashboard.itemCrm'), icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'virtual-pbx', href: '/ngo-admin/virtual-pbx', label: t('ngo_admin_dashboard.itemVirtualPbx'), icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
+            { id: 'call-center', href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: false },
             { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: t('ngo_admin_dashboard.itemVirtualOffice'), icon: 'building-2', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
             { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: t('ngo_admin_dashboard.itemUniversityVolunteering'), icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
             { id: 'field-team', href: '/ngo-admin/field-team', label: t('ngo_admin_dashboard.itemFieldTeam'), icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
