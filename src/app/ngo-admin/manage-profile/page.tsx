@@ -67,6 +67,8 @@ type EntityKind = 'ngo' | 'brand' | 'club';
 interface EntityDoc {
     id: string;
     name?: string;
+    avatarUrl?: string;
+    logoUrl?: string;
     shortName?: string;
     adminUserId?: string;
     ngoType?: string;
@@ -89,6 +91,22 @@ interface EntityDoc {
         email?: string;
         phoneCountryCode?: string;
         phone?: string;
+        website?: string;
+        social?: {
+            instagram?: string;
+            twitter?: string;
+            linkedin?: string;
+            facebook?: string;
+            youtube?: string;
+        };
+        address?: {
+            country?: string;
+            city?: string;
+            district?: string;
+            neighborhood?: string;
+            fullAddress?: string;
+            doorNo?: string;
+        };
     };
     socialMedia?: {
         instagram?: string;
@@ -280,19 +298,24 @@ export default function ManageProfilePage() {
     setDonationCategories(Array.isArray(dcs) && dcs.length > 0
       ? dcs.map((x, i) => ({ id: x.id || String(i + 1), category: x.category || '', rate: x.rate || '' }))
       : [{ id: '1', category: '', rate: '' }]);
-    setCountry(d.address?.country || 'Türkiye');
-    setCity(d.address?.city || '');
-    setDistrict(d.address?.district || '');
-    setNeighborhood(d.address?.neighborhood || '');
-    setStreet((d.address as { street?: string } | undefined)?.street || '');
+    // Adres/sosyal kanonik konum: `contact.address` / `contact.social`
+    // (super-admin edit + tüm detay sayfaları bunları okur). Eski top-level
+    // `address`/`socialMedia` yalnızca geriye-dönük fallback.
+    setCountry(d.contact?.address?.country || d.address?.country || 'Türkiye');
+    setCity(d.contact?.address?.city || d.address?.city || '');
+    setDistrict(d.contact?.address?.district || d.address?.district || '');
+    setNeighborhood(d.contact?.address?.neighborhood || d.address?.neighborhood || '');
+    setStreet(d.contact?.address?.fullAddress || (d.address as { street?: string } | undefined)?.street || '');
     setEmail(d.contact?.email || '');
     setPhoneCode(d.contact?.phoneCountryCode || '90');
     setPhone(d.contact?.phone || '');
-    setInstagram(d.socialMedia?.instagram || '');
-    setTwitter(d.socialMedia?.twitter || '');
-    setLinkedin(d.socialMedia?.linkedin || '');
-    setYoutube(d.socialMedia?.youtube || '');
-    setLogoFile(d.files?.logo);
+    setInstagram(d.contact?.social?.instagram || d.socialMedia?.instagram || '');
+    setTwitter(d.contact?.social?.twitter || d.socialMedia?.twitter || '');
+    setLinkedin(d.contact?.social?.linkedin || d.socialMedia?.linkedin || '');
+    setYoutube(d.contact?.social?.youtube || d.socialMedia?.youtube || '');
+    // Logo gösterim alanı kurum tipine göre değişir: NGO/club → `avatarUrl`,
+    // brand → `logoUrl`, eski → `files.logo`. Hangisi doluysa onu göster.
+    setLogoFile(d.avatarUrl || d.logoUrl || d.files?.logo);
     setActivityCertificate(d.files?.activityCertificate);
     setCharterFile(d.files?.charter);
     setRepFullName(d.representative?.fullName || '');
@@ -368,10 +391,34 @@ export default function ManageProfilePage() {
           memberships,
           ...(activeEntity.kind === 'brand' ? { sector, donationCategories: donationCategories.filter(d => d.category.trim()) } : {}),
           ...(activeEntity.kind === 'club' ? { university, clubAffiliation: university } : {}),
-          address: { country, city, district, neighborhood, street },
-          contact: { email, phoneCountryCode: phoneCode, phone },
-          socialMedia: { instagram, twitter, linkedin, youtube },
+          // KÖK NEDEN FIX: Adres + iletişim + sosyal medya KANONIK olarak
+          // `contact.*` altında saklanır (super-admin edit bunu yazar, tüm detay
+          // sayfaları + market bunu okur). Önceden manage-profile yanlış top-level
+          // `address`/`socialMedia`'ya yazıyor ve `contact: {...}` ile tüm contact
+          // objesini değiştirip mevcut `contact.social`/`contact.address`'i SİLİYORDU
+          // → adres/sosyal/website güncellemeleri görünmüyor + kayboluyordu.
+          // Dot-notation ile sadece ilgili nested alanları yazıyoruz (geri kalan
+          // contact alanları — website, doorNo, facebook — korunur).
+          'contact.email': email,
+          'contact.phoneCountryCode': phoneCode,
+          'contact.phone': phone,
+          'contact.social.instagram': instagram || null,
+          'contact.social.twitter': twitter || null,
+          'contact.social.linkedin': linkedin || null,
+          'contact.social.youtube': youtube || null,
+          'contact.address.country': country || null,
+          'contact.address.city': city || null,
+          'contact.address.district': district || null,
+          'contact.address.neighborhood': neighborhood || null,
+          'contact.address.fullAddress': street || null,
           representative: { fullName: repFullName, title: repTitle, email: repEmail },
+          // KÖK NEDEN FIX: Logo gösterim alanı kurum tipine göre farklı okunuyor —
+          // NGO/club detay+kartlar `avatarUrl`, brand market `logoUrl`, eski yüzeyler
+          // `files.logo`. Önceden yalnız `files.logo`'ya yazılıyordu → yüklenen logo
+          // hiçbir yerde görünmüyordu ("logo yüklenmedi"). Üçüne de yaz ki her
+          // yüzeyde görünsün.
+          avatarUrl: logoFile ?? null,
+          logoUrl: logoFile ?? null,
           'files.logo': logoFile ?? null,
           'files.activityCertificate': activityCertificate ?? null,
           'files.charter': charterFile ?? null,
