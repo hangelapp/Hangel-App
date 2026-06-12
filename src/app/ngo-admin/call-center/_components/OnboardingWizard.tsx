@@ -12,7 +12,7 @@
  * Submit → POST /api/ngo-admin/call-center/onboard
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, CheckCircle2, FileText, Phone, Package, ShieldCheck } from 'lucide-react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { messagingFetch } from '@/lib/messaging/client';
@@ -129,8 +129,38 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
   const [companyType, setCompanyType] = useState<CompanyType>('Dernek');
   const [companyTaxId, setCompanyTaxId] = useState<string>('');
   const [contactPerson, setContactPerson] = useState<string>('');
+  // İletişim sorumlusu user search — STK kayıtlı kullanıcılarından
+  const [contactUid, setContactUid] = useState<string>('');
+  const [contactPhone, setContactPhone] = useState<string>('');
+  const [userSearchQuery, setUserSearchQuery] = useState<string>('');
+  const [userResults, setUserResults] = useState<Array<{ uid: string; name: string; email: string; phone: string; role: string }>>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ formId: string } | null>(null);
+  const { user: authedUser } = useUser();
+
+  // STK kullanıcılarını listele — Iletisim Sorumlusu picker için
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchUsers() {
+      if (!authedUser) return;
+      setUserSearchLoading(true);
+      try {
+        const token = await authedUser.getIdToken();
+        const url = userSearchQuery.trim()
+          ? `/api/ngo-admin/users/list?q=${encodeURIComponent(userSearchQuery.trim())}`
+          : '/api/ngo-admin/users/list';
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) return;
+        const data = (await res.json()) as { users: typeof userResults };
+        if (!cancelled) setUserResults(data.users);
+      } finally {
+        if (!cancelled) setUserSearchLoading(false);
+      }
+    }
+    const t = setTimeout(fetchUsers, userSearchQuery ? 300 : 0);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [authedUser, userSearchQuery]);
 
   // Paket listesi — koleksiyon henüz boş olabilir; fallback ile birleştirilir.
   const pkgQuery = useMemoFirebase(
@@ -189,6 +219,8 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
             formData: {
               companyTaxId: companyTaxId || null,
               contactPerson: contactPerson || null,
+              contactUid: contactUid || null,
+              contactPhone: contactPhone || null,
             },
           }),
         },
@@ -314,16 +346,67 @@ export function OnboardingWizard({ ngoId }: OnboardingWizardProps) {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact">İletişim Sorumlusu (Ad Soyad)</Label>
+              <Label htmlFor="contact">İletişim Sorumlusu</Label>
               <Input
-                id="contact"
-                value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
-                placeholder="STK kayıtlı kullanıcılarından arama (yakında)"
+                id="contact-search"
+                value={userSearchQuery}
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+                placeholder="İsim, e-posta veya telefonla ara..."
+                autoComplete="off"
               />
+              {userSearchLoading && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" /> Kullanıcılar yükleniyor...
+                </p>
+              )}
+              {!userSearchLoading && userResults.length === 0 && (
+                <p className="text-[11px] text-muted-foreground">
+                  Bu sorguya uyan kullanıcı yok. Üst kullanıcı arama kutusuna isim/e-posta yaz veya
+                  STK'ya yeni kullanıcı ekleyip tekrar dene.
+                </p>
+              )}
+              {userResults.length > 0 && (
+                <div className="max-h-48 overflow-y-auto rounded-md border bg-background divide-y">
+                  {userResults.map((u) => {
+                    const selected = contactUid === u.uid;
+                    return (
+                      <button
+                        key={u.uid}
+                        type="button"
+                        onClick={() => {
+                          setContactUid(u.uid);
+                          setContactPerson(u.name);
+                          setContactPhone(u.phone);
+                        }}
+                        className={cn(
+                          'w-full text-left px-3 py-2 hover:bg-muted/40 transition-colors',
+                          selected && 'bg-emerald-50/40 border-l-2 border-emerald-500',
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-sm font-semibold">{u.name}</p>
+                          {u.role === 'ngo-admin' && (
+                            <Badge variant="outline" className="text-[9px] shrink-0">Yönetici</Badge>
+                          )}
+                          {selected && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {u.email || '—'} {u.phone && `· ${u.phone}`}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {contactUid && (
+                <div className="rounded-md bg-emerald-50/50 border border-emerald-200 p-2 text-xs">
+                  <p className="font-semibold">Seçili: {contactPerson}</p>
+                  {contactPhone && <p className="text-muted-foreground">📞 {contactPhone}</p>}
+                </div>
+              )}
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                🚧 Yakında: STK'nın mevcut kullanıcıları arasından telefonla arama yaparak
-                yetkilendirme. Şu an manuel ad-soyad gir.
+                STK'nın kayıtlı kullanıcıları arasından seç. Seçilen kişi sağlayıcı firma ile
+                iletişimde resmi temsilci olur; telefonu varsa firma onay için arayacak.
               </p>
             </div>
             <div className="space-y-2">
