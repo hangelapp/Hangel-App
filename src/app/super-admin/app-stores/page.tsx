@@ -3,9 +3,15 @@
 /**
  * /super-admin/app-stores
  *
- * Süper-admin için 8 mağaza platformu üzerinde AI destekli ekran görüntüsü
- * üretim paneli. Imagen 3 ile prompt'tan görsel üretir, Storage'a yükler,
- * Firestore meta tutar. Mevcut görseller: indir, sil, aktif/pasif toggle.
+ * Süper-admin için 8 mağaza platformu üzerinde ekran görüntüsü üretim paneli.
+ *
+ * BİRİNCİL: Deterministik HTML/CSS şablon üretimi — gerçek hangel wordmark'ı,
+ * doğru Türkçe metin, doğru cihaz çerçevesi (telefon/tablet/saat/banner/masaüstü)
+ * ve marka renkleriyle; html2canvas ile tam çözünürlükte PNG. Piksel-/metin-/
+ * marka-doğru.
+ *
+ * İKİNCİL (Deneysel): AI (Gemini text-to-image) üretimi. Metni/logoyu bozabilir;
+ * sadece taslak/ilham için. Geri planda tutulur.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,10 +22,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Sparkles, Download, Trash2, Loader2, AlertCircle, ImageIcon, RefreshCw,
+  LayoutTemplate, FlaskConical,
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
 import { PLATFORMS, FEATURES, type PlatformKey, type FeatureKey, type DeviceSpec } from '@/lib/app-store-specs';
+import { TemplateStudio } from './_components/template-studio';
 
 interface AssetRow {
   id: string;
@@ -36,6 +44,16 @@ interface AssetRow {
   base64Preview?: string;  // generate response için anında preview
 }
 
+// Şablondan üretilip indirilen görsellerin oturum-içi listesi (önizleme için).
+interface TemplateShot {
+  id: string;
+  dataUrl: string;
+  fileName: string;
+  platform: PlatformKey;
+  feature: FeatureKey;
+  deviceLabel: string;
+}
+
 export default function AppStoresPage() {
   const { user } = useUser();
   const [activePlatform, setActivePlatform] = useState<PlatformKey>('app-store');
@@ -43,13 +61,22 @@ export default function AppStoresPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Generate modal state
+  // Seçim state'i (hem şablon hem AI üretimi için ortak)
   const [genFeature, setGenFeature] = useState<FeatureKey>('genel');
   const [genDevice, setGenDevice] = useState<DeviceSpec | null>(null);
+
+  // AI (deneysel) state
   const [genPrompt, setGenPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
 
+  // Şablondan üretilen görseller (oturum-içi)
+  const [templateShots, setTemplateShots] = useState<Record<string, TemplateShot[]>>({});
+
   const activeMeta = useMemo(() => PLATFORMS.find((p) => p.key === activePlatform)!, [activePlatform]);
+  const activeFeatureLabel = useMemo(
+    () => FEATURES.find((f) => f.key === genFeature)?.label || genFeature,
+    [genFeature],
+  );
 
   const fetchAssets = useCallback(async () => {
     if (!user) return;
@@ -72,7 +99,7 @@ export default function AppStoresPage() {
 
   useEffect(() => { void fetchAssets(); }, [fetchAssets]);
 
-  // Feature template prompt'unu yükle
+  // Feature template prompt'unu yükle (AI alanı için)
   useEffect(() => {
     const f = FEATURES.find((x) => x.key === genFeature);
     if (f && !genPrompt) setGenPrompt(f.defaultPrompt);
@@ -83,6 +110,27 @@ export default function AppStoresPage() {
     const firstRequired = activeMeta.devices.find((d) => d.required) || activeMeta.devices[0];
     setGenDevice(firstRequired);
   }, [activeMeta]);
+
+  const handleTemplateCaptured = useCallback(
+    (item: { dataUrl: string; fileName: string }) => {
+      if (!genDevice) return;
+      setTemplateShots((prev) => ({
+        ...prev,
+        [activePlatform]: [
+          {
+            id: `${Date.now()}`,
+            dataUrl: item.dataUrl,
+            fileName: item.fileName,
+            platform: activePlatform,
+            feature: genFeature,
+            deviceLabel: genDevice.device,
+          },
+          ...(prev[activePlatform] || []),
+        ],
+      }));
+    },
+    [activePlatform, genFeature, genDevice],
+  );
 
   async function handleGenerate() {
     if (!user || !genDevice) return;
@@ -107,7 +155,6 @@ export default function AppStoresPage() {
         throw new Error(err?.message || `Üretim hatası (${res.status})`);
       }
       const data: { id: string; storageUrl: string; aspectRatio: string; base64Preview: string } = await res.json();
-      // Yeni asset'i listenin başına ekle (preview ile)
       setAssets((prev) => ({
         ...prev,
         [activePlatform]: [
@@ -171,14 +218,15 @@ export default function AppStoresPage() {
   }
 
   const currentAssets = assets[activePlatform] || [];
+  const currentShots = templateShots[activePlatform] || [];
 
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold font-headline">App Storlar — Görsel Üreteç</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          AI ile her mağaza için ekran görüntüsü üret. Mağaza tasarım değiştirilirken
-          veya yeni özellik eklendiğinde buradan prompt girip yeni görsel üretebilirsin.
+          Her mağaza için ekran görüntüsü üret. <strong>Şablondan üret</strong> gerçek hangel logosu,
+          doğru Türkçe metin ve doğru cihaz çerçevesiyle tam çözünürlükte, marka-doğru PNG verir.
         </p>
       </div>
 
@@ -206,15 +254,10 @@ export default function AppStoresPage() {
           <TabsContent key={p.key} value={p.key} className="space-y-4 mt-4">
             {p.key === activePlatform && (
               <>
-                {/* Generator */}
+                {/* Ortak seçim: özellik + cihaz */}
                 <Card>
                   <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <h2 className="text-sm font-bold">Yeni Görsel Üret — {p.label}</h2>
-                    </div>
                     <p className="text-[11px] text-muted-foreground italic">{p.vibe}</p>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Özellik</label>
@@ -251,40 +294,95 @@ export default function AppStoresPage() {
                         </select>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* BİRİNCİL: Şablondan üret */}
+                <Card className="border-primary/30">
+                  <CardContent className="p-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <LayoutTemplate className="h-4 w-4 text-primary" />
+                      <h2 className="text-sm font-bold">Şablondan Üret — {p.label}</h2>
+                      <Badge className="text-[9px] bg-primary">Önerilen</Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      Gerçek hangel wordmark'ı + doğru Türkçe metin + doğru cihaz çerçevesi + marka renkleri.
+                      Önizlemeyi gör, tam çözünürlükte PNG indir.
+                    </p>
+                    {genDevice && (
+                      <TemplateStudio
+                        platformKey={p.key}
+                        device={genDevice}
+                        feature={genFeature}
+                        featureLabel={activeFeatureLabel}
+                        onCaptured={handleTemplateCaptured}
+                      />
+                    )}
+
+                    {/* Şablondan indirilen görseller (oturum) */}
+                    {currentShots.length > 0 && (
+                      <div className="pt-2 border-t">
+                        <p className="text-[11px] font-bold mb-2">Bu oturumda indirilenler ({currentShots.length})</p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                          {currentShots.map((s) => (
+                            <a
+                              key={s.id}
+                              href={s.dataUrl}
+                              download={s.fileName}
+                              className="block rounded-lg border overflow-hidden bg-muted hover:opacity-90"
+                              title={s.fileName}
+                            >
+                              {/* Şablon görseli dataURL — next/image gerekmiyor. */}
+                              <img src={s.dataUrl} alt={s.deviceLabel} className="w-full h-auto" loading="lazy" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* İKİNCİL: Deneysel (AI) */}
+                <Card className="border-dashed bg-muted/30">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FlaskConical className="h-4 w-4 text-amber-600" />
+                      <h2 className="text-sm font-bold text-muted-foreground">Deneysel (AI) — metin/logoyu bozabilir</h2>
+                    </div>
+                    <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                      ⚠️ AI text-to-image markayı/metni uydurabilir (bozuk logo, anlamsız Türkçe, yanlış cihaz).
+                      Sadece taslak/ilham için. Mağazaya yüklemeden önce <strong>şablondan üret</strong>i tercih et.
+                    </p>
 
                     <div className="space-y-1">
                       <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                        Prompt (Türkçe yaz, AI Imagen 3'e gider)
+                        Prompt (Türkçe)
                       </label>
                       <Textarea
                         value={genPrompt}
                         onChange={(e) => setGenPrompt(e.target.value)}
-                        rows={5}
+                        rows={4}
                         className="text-sm font-mono"
                         placeholder="hangel uygulamasında bağış akışını gösteren phone mockup..."
                       />
-                      <p className="text-[10px] text-muted-foreground">
-                        💡 Brand brief (renkler, ton, kurallar) + platform tonu prompt'a otomatik eklenir.
-                        Sen sadece "ne göstereceğini" yaz.
-                      </p>
                     </div>
 
                     <Button
                       onClick={handleGenerate}
                       disabled={generating || !genDevice || !genPrompt.trim()}
                       size="sm"
-                      className="bg-primary"
+                      variant="outline"
                     >
                       {generating
                         ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Üretiliyor (10-30 sn)…</>
-                        : <><Sparkles className="h-4 w-4 mr-1" /> Görseli Üret</>}
+                        : <><Sparkles className="h-4 w-4 mr-1" /> Deneysel AI ile üret</>}
                     </Button>
                   </CardContent>
                 </Card>
 
-                {/* Mevcut görseller */}
+                {/* Mevcut AI görselleri */}
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold">Üretilmiş Görseller ({currentAssets.length})</h2>
+                  <h2 className="text-sm font-bold">AI ile Üretilmiş Görseller ({currentAssets.length})</h2>
                   <Button variant="ghost" size="sm" onClick={fetchAssets} disabled={loading}>
                     <RefreshCw className={cn('h-4 w-4 mr-1', loading && 'animate-spin')} /> Yenile
                   </Button>
@@ -298,7 +396,7 @@ export default function AppStoresPage() {
                   <Card className="border-dashed">
                     <CardContent className="p-8 text-center text-sm text-muted-foreground">
                       <ImageIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      Bu platform için henüz görsel üretilmedi. Yukarıdan başla.
+                      Bu platform için AI görseli üretilmedi. Şablondan üretmen önerilir.
                     </CardContent>
                   </Card>
                 ) : (
@@ -306,7 +404,7 @@ export default function AppStoresPage() {
                     {currentAssets.map((a) => (
                       <Card key={a.id} className={cn('overflow-hidden', !a.active && 'opacity-50')}>
                         <div className="relative aspect-[9/16] bg-muted">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          {/* AI çıktısı dataURL/Storage URL — next/image gerekmiyor. */}
                           <img
                             src={a.base64Preview || a.storageUrl}
                             alt={a.deviceLabel}

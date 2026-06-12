@@ -14,7 +14,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Phone, PhoneCall, FileAudio, Languages, Shield, CheckCircle2, Clock, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Phone, PhoneCall, FileAudio, Languages, Shield, Clock } from 'lucide-react';
 
 const PROVIDERS = [
   {

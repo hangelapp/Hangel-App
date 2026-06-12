@@ -1,365 +1,500 @@
-
-
 'use client';
 
+/**
+ * /ngo-onboarding — STK yöneticileri için "Daha Fazla Bilgi Al" tanıtım sayfası.
+ *
+ * Apple marka kimliği, tek aksan rengi narçiçeği (#f34723). Tüm yapı
+ * '@/components/marketing/apple-kit' bileşenleriyle kurulur. İçerik iki dilli
+ * (TR birincil, EN ayna); rozetler özelliğin gerçek durumunu yansıtır.
+ */
+
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { 
-    ShieldCheck, 
-    HeartHandshake, 
-    HandCoins, 
-    BarChart3, 
-    Users, 
-    QrCode, 
-    Globe, 
-    MessageSquare, 
-    Mail, 
-    Megaphone, 
-    Calendar, 
-    Video, 
-    Palette, 
-    CreditCard, 
-    Target, 
-    Calculator, 
-    Database, 
-    PhoneCall, 
-    Building2, 
-    GraduationCap, 
-    MapPin, 
-    MessageCircle, 
-    ShoppingCart,
-    ChevronRight,
-    ArrowLeft,
-    Sparkles,
-    Briefcase,
-    Network,
-    LineChart,
-    type LucideIcon
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { PublicFooter } from '@/components/layout/public-footer';
-import { Badge } from '@/components/ui/badge';
-import { useWebPage } from '@/hooks/use-site-content';
-import { useTranslation } from '@/components/providers/language-provider';
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+  ShieldCheck,
+  HandCoins,
+  HeartHandshake,
+  BarChart3,
+  MessageSquare,
+  Globe,
+  CalendarDays,
+  Sparkles,
+  Inbox,
+  UserPlus,
+  Users,
+  QrCode,
+  Megaphone,
+  Database,
+  Calculator,
+  CreditCard,
+  Video,
+  Palette,
+  Landmark,
+  Send,
+  LineChart,
+} from 'lucide-react';
+import {
+  MarketingNav,
+  AppleSection,
+  SectionHeading,
+  FeatureGrid,
+  CompareNote,
+  type FeatureItem,
+} from '@/components/marketing/apple-kit';
+import { PublicFooter } from '@/components/layout/public-footer';
+import { useTranslation } from '@/components/providers/language-provider';
+import { useWebPage } from '@/hooks/use-site-content';
 
-const AdvantageCard = ({
-  category,
-  title,
-  description,
-  imageUrl,
-  imageHint,
-  link
-}: {
-  category: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  imageHint: string;
-  link: { label: string, href: string };
-}) => (
-  <div className="bg-white rounded-[1.75rem] h-full flex flex-col text-left overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300 group border border-black/5">
-    <div className="relative aspect-[16/10] w-full overflow-hidden">
-      <Image src={imageUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" data-ai-hint={imageHint} />
-    </div>
-    <div className="p-6 flex flex-col flex-1">
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{category}</p>
-      <h3 className="text-xl font-bold mt-1 text-foreground leading-tight">{title}</h3>
-      <p className="text-sm text-muted-foreground/90 mt-2 flex-1 leading-relaxed">{description}</p>
-      <div className="mt-6 pt-4 border-t border-black/5">
-        <Link href={link.href} className="text-sm text-primary hover:underline flex items-center font-semibold">
-          {link.label}
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Link>
-      </div>
-    </div>
-  </div>
-);
+const SLUG = 'ngo-onboarding';
+const REGISTER_HREF = '/login/selection?action=register&type=corporate&entity=NGO';
 
+/* ----------------------------- TR içerik ----------------------------- */
 
-// New component for the large feature cards
-const FeatureShowcaseCard = ({
-  title,
-  description,
-  icon: Icon
-}: {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-}) => {
-  const { t } = useTranslation();
-  return (
-  <div className="group relative bg-white rounded-[2.5rem] p-8 md:p-12 transition-all hover:shadow-2xl border border-black/5 overflow-hidden flex flex-col justify-between min-h-[450px]">
-    <div className="relative z-10">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-white border shadow-sm">
-        <Icon className="h-8 w-8 text-primary" />
-      </div>
-      <div className="space-y-3">
-        <h3 className="text-3xl font-bold tracking-tight text-foreground">{title}</h3>
-        <p className="text-lg text-muted-foreground leading-relaxed font-medium max-w-md">{description}</p>
-      </div>
-    </div>
-    <div className="relative z-10 pt-8">
-      <span className="text-primary font-bold flex items-center text-base opacity-70 group-hover:opacity-100 transition-opacity">
-        {t('marketing.ngoOnboarding.moreInfoInline')} <ChevronRight className="h-4 w-4 ml-1" />
-      </span>
-    </div>
-  </div>
-  );
+const TR = {
+  navLabel: 'hangel STK',
+  navCta: 'Ücretsiz Başvur',
+  back: 'Ana sayfa',
+
+  heroEyebrow: 'hangel STK',
+  heroTitle: 'Kurumunuz için sürdürülebilir geleceği bugün kurun.',
+  heroSubtitle: 'Şeffaflık, kaynak ve gönüllü gücü. Hepsi tek panelde.',
+  heroDescription:
+    'hangel, derneğinizi ve vakfınızı dijitalde güçlendiren bütünleşik bir yönetim platformudur. Şeffaflığınızı görünür kılın, düzenli kaynak yaratın, gönüllülerinizi yönetin; tek bir panelden.',
+  heroImage:
+    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
+  heroPrimary: 'Ücretsiz Başvur',
+  heroLink: 'Daha Fazla',
+
+  transparencyEyebrow: 'Şeffaflık Endeksi',
+  transparencyTitle: 'Güven, ölçülebilir hale geliyor.',
+  transparencyDescription:
+    'Yasal belgelerinizi ve raporlarınızı yükleyin; kurumunuz 0–100 arası bir şeffaflık puanı kazansın. Bu puan profilinizde halka açık görünür ve destekçilerinize güveni kanıtlar.',
+
+  donationEyebrow: 'hangel Bağışı',
+  donationTitle: 'Alışveriş, düzenli bağışa dönüşüyor.',
+  donationDescription:
+    'Destekçileriniz anlaşmalı markalardan her alışveriş yaptığında kurumunuza gelir aktarılır. Marka, işlem ve komisyon bilgilerini panelinizden şeffaf biçimde takip edersiniz.',
+
+  volunteerEyebrow: 'Gönüllülük Yönetimi',
+  volunteerTitle: 'Doğru gönüllü, doğru göreve.',
+  volunteerDescription:
+    'Yetenek bazlı ilanlar yayınlayın. hangel, her gönüllüye otomatik yüzde uyum eşleştirmesi yapar; başvuruları tek ekrandan yönetirsiniz.',
+
+  compareTransparency:
+    "Dünyada şeffaflık derecelendirmesi ve alışverişle bağış benzerleri çoğu zaman ücretli ve parçalıdır. hangel'de bu, Türkiye'ye özel, ücretsiz ve tek panelde.",
+
+  toolsEyebrow: 'Tek Panel',
+  toolsTitle: 'Kurumunuzun her işi, tek panelde.',
+  toolsDescription:
+    'Bağıştan gönüllüye, iletişimden etkinliğe kadar derneğinizin tüm operasyonu için tasarlanmış, yayında olan araçlar.',
+
+  soonEyebrow: 'Yol Haritası',
+  soonTitle: 'Yakında panelinizde.',
+  soonDescription:
+    'Yönetim panelinde "yakında" etiketiyle hazırlığı süren modüller. Henüz kullanıma açılmadı; geldiğinde panelinizde otomatik görünecek.',
+
+  finalEyebrow: 'Başlayın',
+  finalTitle: 'Dijital dönüşümü bugün başlatın.',
+  finalSubtitle: 'Başvuru ücretsiz. Kurulum dakikalar sürer.',
+  finalDescription:
+    'Kurumunuzu hangel ile dakikalar içinde kaydedin; şeffaflığınızı, kaynağınızı ve etkinizi büyütmeye hemen başlayın.',
+  finalPrimary: 'Ücretsiz Başvur',
+  finalSecondary: 'Daha Fazla',
+
+  footerLabel: 'STK Başvuru',
+
+  tools: {
+    transparency: {
+      title: 'Şeffaflık Endeksi',
+      description:
+        'Yasal belge ve raporlarınızı yükleyerek 0–100 şeffaflık puanı kazanın; profilinizde halka açık görünür.',
+    },
+    donation: {
+      title: 'hangel Bağışı',
+      description:
+        'Destekçilerin anlaşmalı markalardan alışverişi düzenli gelire döner; marka, işlem ve komisyonu panelden takip edin.',
+    },
+    volunteer: {
+      title: 'Gönüllülük Yönetimi',
+      description:
+        'Yetenek bazlı ilan açın; gönüllülere otomatik yüzde uyum eşleştirmesi yapılır, başvuruları tek ekrandan yönetin.',
+    },
+    demographics: {
+      title: 'Demografi Analizi',
+      description:
+        'Destekçi tabanınızın yaş, şehir, meslek ve ilgi dağılımını canlı grafiklerle görün.',
+    },
+    messaging: {
+      title: 'SMS ve E-posta Gönderimi',
+      description:
+        'Segment veya CSV alıcılara kotaya dayalı toplu SMS ve mail gönderin; değişkenlerle kişiselleştirin. Kontör paketleri dahil.',
+    },
+    website: {
+      title: 'Web Sitesi Yönetimi',
+      description:
+        'Kodsuz, markanıza özel kurumsal web sitesi; ücretsiz alan adı ya da kendi alan adınızla yayınlayın.',
+    },
+    events: {
+      title: 'Etkinlik Yönetimi',
+      description:
+        'Fiziksel veya online etkinlik oluşturun; kayıt ve RSVP alın, yaka kartı üretin, katılımcıları yönetin.',
+    },
+    impact: {
+      title: 'Etki Hikayesi',
+      description:
+        'Proje ve etki anlatınızı yayınlayın; hangel akışında destekçilerinize görünür olun.',
+    },
+    inbox: {
+      title: 'Gelen Kutusu ve Destekçi Mesajlaşma',
+      description:
+        'Destekçilerinizle iki yönlü yazışın; tüm sohbetleri tek gelen kutusunda toplayın.',
+    },
+    invite: {
+      title: 'Topluluğunu Davet Et',
+      description:
+        'Cihaz rehberinizden kişileri içe aktarın (native) ve topluluğunuzu toplu davet edin.',
+    },
+    roles: {
+      title: 'Yetkili Yönetimi',
+      description:
+        'Ekip üyelerine kapsam bazlı roller verin: Genel Yönetici, Gönüllü Koordinatörü, Mali İşler ve daha fazlası.',
+    },
+    presence: {
+      title: 'STK Profili, Gönderiler ve Bildirimler',
+      description:
+        'Profil QR kodu, akış gönderileri ve bildirim merkezi ile kurumunuzu görünür ve güncel tutun.',
+    },
+    ads: {
+      title: 'Reklam Yönetimi',
+      description:
+        'Google, Meta, TikTok ve Google Ad Grants için reklam kurulum sihirbazı; AI reklam metni ve landing önerisi. Onay sürecindedir.',
+    },
+  },
+
+  soon: {
+    crm: {
+      title: 'CRM Entegrasyonu',
+      description: 'Destekçi ilişkilerini dış CRM sistemlerinizle bağlayın.',
+    },
+    accounting: {
+      title: 'Ön Muhasebe Entegrasyonu',
+      description: 'Mali kayıtlarınızı ön muhasebe araçlarıyla senkronize edin.',
+    },
+    pos: {
+      title: 'POS ve Ödeme Sistemleri',
+      description: 'Saha ve online tahsilat için POS ile ödeme altyapısı.',
+    },
+    meeting: {
+      title: 'Online Eğitim ve Toplantı',
+      description: 'Gönüllü ve ekip için online eğitim ile toplantı araçları.',
+    },
+    design: {
+      title: 'Tasarım Programları',
+      description: 'Kurumsal görseller için entegre tasarım araçları.',
+    },
+    grants: {
+      title: 'Hibeler ve Fonlar',
+      description: 'Uygun hibe ve fon fırsatlarını keşfedin, başvuru yönetin.',
+    },
+    marketing: {
+      title: 'Pazarlama İletişimi',
+      description: 'Kampanya ve pazarlama iletişimi için bütünleşik araçlar.',
+    },
+    analytics: {
+      title: 'Web Analiz Araçları',
+      description: 'Web sitenizin ziyaretçi ve performans analizini izleyin.',
+    },
+  },
 };
 
+/* ----------------------------- EN içerik ----------------------------- */
 
-// New component for smaller feature items
-const ToolGridItem = ({ icon: Icon, title, description, tag, href }: { icon: LucideIcon, title: string, description: string, tag?: string, href: string }) => (
-    <Link href={href} className="group block h-full">
-        <div className="relative flex flex-col items-center text-center gap-4 p-6 bg-white rounded-[2rem] border border-black/5 shadow-sm hover:shadow-xl transition-all h-full">
-            {tag && (
-                <Badge className="absolute -top-2 right-4">{tag}</Badge>
-            )}
-            <div className="p-4 bg-[#f5f5f7] rounded-2xl text-primary">
-                <Icon className="h-7 w-7" />
-            </div>
-            <h4 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{title}</h4>
-            <p className="text-xs text-muted-foreground leading-relaxed flex-1">{description}</p>
-        </div>
-    </Link>
-);
+const EN: typeof TR = {
+  navLabel: 'hangel NGO',
+  navCta: 'Apply Free',
+  back: 'Home',
+
+  heroEyebrow: 'hangel NGO',
+  heroTitle: 'Build a sustainable future for your organization, today.',
+  heroSubtitle: 'Transparency, resources and volunteer power. All in one panel.',
+  heroDescription:
+    'hangel is an integrated management platform that strengthens your association or foundation online. Make your transparency visible, generate steady resources, manage your volunteers; all from a single panel.',
+  heroImage:
+    'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=2400&auto=format&fit=crop',
+  heroPrimary: 'Apply Free',
+  heroLink: 'Learn More',
+
+  transparencyEyebrow: 'Transparency Index',
+  transparencyTitle: 'Trust, made measurable.',
+  transparencyDescription:
+    'Upload your legal documents and reports; let your organization earn a transparency score from 0 to 100. This score appears publicly on your profile and proves trust to your supporters.',
+
+  donationEyebrow: 'hangel Donation',
+  donationTitle: 'Shopping turns into steady giving.',
+  donationDescription:
+    'Every time your supporters shop at partner brands, income is directed to your organization. Track brand, transaction and commission details transparently from your panel.',
+
+  volunteerEyebrow: 'Volunteer Management',
+  volunteerTitle: 'The right volunteer, for the right role.',
+  volunteerDescription:
+    'Post skill-based listings. hangel automatically computes a percentage match for each volunteer; you manage applications from a single screen.',
+
+  compareTransparency:
+    'Worldwide, transparency ratings and shop-to-donate equivalents are often paid and fragmented. On hangel, this is tailored to Türkiye, free, and in a single panel.',
+
+  toolsEyebrow: 'One Panel',
+  toolsTitle: "Your organization's every job, in one panel.",
+  toolsDescription:
+    'Live tools designed for your entire operation, from donations to volunteers, communication to events.',
+
+  soonEyebrow: 'Roadmap',
+  soonTitle: 'Coming soon to your panel.',
+  soonDescription:
+    'Modules in preparation, marked "coming soon" in the admin panel. Not yet available; they will appear in your panel automatically once ready.',
+
+  finalEyebrow: 'Get Started',
+  finalTitle: 'Start your digital transformation today.',
+  finalSubtitle: 'Applying is free. Setup takes minutes.',
+  finalDescription:
+    'Register your organization with hangel in minutes; start growing your transparency, resources and impact right away.',
+  finalPrimary: 'Apply Free',
+  finalSecondary: 'Learn More',
+
+  footerLabel: 'NGO Application',
+
+  tools: {
+    transparency: {
+      title: 'Transparency Index',
+      description:
+        'Upload legal documents and reports to earn a 0–100 transparency score; it appears publicly on your profile.',
+    },
+    donation: {
+      title: 'hangel Donation',
+      description:
+        "Supporters' shopping at partner brands turns into steady income; track brand, transaction and commission from the panel.",
+    },
+    volunteer: {
+      title: 'Volunteer Management',
+      description:
+        'Open skill-based listings; volunteers get an automatic percentage match, and you manage applications from one screen.',
+    },
+    demographics: {
+      title: 'Demographic Analysis',
+      description:
+        "View your supporter base's age, city, profession and interest distribution with live charts.",
+    },
+    messaging: {
+      title: 'SMS and Email Delivery',
+      description:
+        'Send quota-based bulk SMS and mail to segment or CSV recipients; personalize with variables. Credit packages included.',
+    },
+    website: {
+      title: 'Website Management',
+      description:
+        'A code-free, brand-specific corporate website; publish with a free domain or your own domain.',
+    },
+    events: {
+      title: 'Event Management',
+      description:
+        'Create physical or online events; collect registrations and RSVPs, generate name badges, manage attendees.',
+    },
+    impact: {
+      title: 'Impact Story',
+      description:
+        'Publish your project and impact narrative; become visible to your supporters in the hangel feed.',
+    },
+    inbox: {
+      title: 'Inbox and Supporter Messaging',
+      description:
+        'Exchange two-way messages with your supporters; collect all conversations in a single inbox.',
+    },
+    invite: {
+      title: 'Invite Your Community',
+      description:
+        'Import contacts from your device address book (native) and bulk-invite your community.',
+    },
+    roles: {
+      title: 'Authorization Management',
+      description:
+        'Give team members scope-based roles: General Manager, Volunteer Coordinator, Finance and more.',
+    },
+    presence: {
+      title: 'NGO Profile, Posts and Notifications',
+      description:
+        'Keep your organization visible and up to date with a profile QR code, feed posts and a notification center.',
+    },
+    ads: {
+      title: 'Ad Management',
+      description:
+        'A setup wizard for Google, Meta, TikTok and Google Ad Grants; AI ad copy and landing suggestions. Pending approval.',
+    },
+  },
+
+  soon: {
+    crm: {
+      title: 'CRM Integration',
+      description: 'Connect supporter relations with your external CRM systems.',
+    },
+    accounting: {
+      title: 'Pre-Accounting Integration',
+      description: 'Sync your financial records with pre-accounting tools.',
+    },
+    pos: {
+      title: 'POS and Payment Systems',
+      description: 'POS and payment infrastructure for field and online collection.',
+    },
+    meeting: {
+      title: 'Online Training and Meetings',
+      description: 'Online training and meeting tools for volunteers and teams.',
+    },
+    design: {
+      title: 'Design Programs',
+      description: 'Integrated design tools for your corporate visuals.',
+    },
+    grants: {
+      title: 'Grants and Funds',
+      description: 'Discover eligible grant and fund opportunities, manage applications.',
+    },
+    marketing: {
+      title: 'Marketing Communication',
+      description: 'Integrated tools for campaigns and marketing communication.',
+    },
+    analytics: {
+      title: 'Web Analytics Tools',
+      description: 'Monitor your website visitor and performance analytics.',
+    },
+  },
+};
+
+/* ----------------------------- Sayfa ----------------------------- */
 
 export default function NgoOnboardingPage() {
-    const router = useRouter();
-    const cms = useWebPage('ngo-onboarding');
-    const { t } = useTranslation();
-    const plugin = React.useRef(
-        Autoplay({ delay: 4000, stopOnInteraction: true })
-    );
+  const { language } = useTranslation();
+  const C = language === 'en' ? EN : TR;
+  const cms = useWebPage(SLUG);
 
-    // P2-5f: text fields resolved via `marketing.ngoOnboarding.advantages.<key>.*` keys;
-    // image/href stay in-code (structural).
-    const advantageItems = [
-        {
-            tkey: 'dijital',
-            imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
-            imageHint: 'data analytics dashboard',
-            href: '/ngo-admin/dashboard',
-        },
-        {
-            tkey: 'kaynak',
-            imageUrl: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?q=80&w=2070&auto=format&fit=crop',
-            imageHint: 'contactless payment store',
-            href: '/market',
-        },
-        {
-            tkey: 'gonullu',
-            imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=2070&auto=format&fit=crop',
-            imageHint: 'volunteers working',
-            href: '/ngo-admin/volunteer',
-        },
-        {
-            tkey: 'seffaflik',
-            imageUrl: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2070&auto=format&fit=crop',
-            imageHint: 'person reviewing document',
-            href: '/ngo-admin/transparency',
-        },
-        {
-            tkey: 'demografi',
-            imageUrl: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?q=80&w=2076&auto=format&fit=crop',
-            imageHint: 'world map data connection',
-            href: '/ngo-admin/demographics',
-        },
-    ] as const;
+  const heroTitle = cms.title || C.heroTitle;
+  const heroSubtitle = cms.subtitle || C.heroSubtitle;
+  const heroDescription = cms.description || C.heroDescription;
+  const heroImage = cms.heroImageUrl || C.heroImage;
 
-    const mainFeatures = [
-        {
-            icon: ShieldCheck,
-            title: t('marketing.ngoOnboarding.mainFeatTransparencyTitle'),
-            description: t('marketing.ngoOnboarding.mainFeatTransparencyDesc'),
-        },
-        {
-            icon: HeartHandshake,
-            title: t('marketing.ngoOnboarding.mainFeatVolunteerTitle'),
-            description: t('marketing.ngoOnboarding.mainFeatVolunteerDesc'),
-        },
-        {
-            icon: HandCoins,
-            title: t('marketing.ngoOnboarding.mainFeatDonationTitle'),
-            description: t('marketing.ngoOnboarding.mainFeatDonationDesc'),
-        },
-        {
-            icon: BarChart3,
-            title: t('marketing.ngoOnboarding.mainFeatDemoTitle'),
-            description: t('marketing.ngoOnboarding.mainFeatDemoDesc'),
-        }
-    ];
+  const liveTools: FeatureItem[] = [
+    { icon: ShieldCheck, title: C.tools.transparency.title, description: C.tools.transparency.description, badge: { kind: 'hangel' } },
+    { icon: HandCoins, title: C.tools.donation.title, description: C.tools.donation.description, badge: { kind: 'hangel' } },
+    { icon: HeartHandshake, title: C.tools.volunteer.title, description: C.tools.volunteer.description, badge: { kind: 'hangel' } },
+    { icon: BarChart3, title: C.tools.demographics.title, description: C.tools.demographics.description },
+    { icon: MessageSquare, title: C.tools.messaging.title, description: C.tools.messaging.description, badge: { kind: 'yeni' } },
+    { icon: Globe, title: C.tools.website.title, description: C.tools.website.description },
+    { icon: CalendarDays, title: C.tools.events.title, description: C.tools.events.description, badge: { kind: 'yeni' } },
+    { icon: Sparkles, title: C.tools.impact.title, description: C.tools.impact.description },
+    { icon: Inbox, title: C.tools.inbox.title, description: C.tools.inbox.description },
+    { icon: UserPlus, title: C.tools.invite.title, description: C.tools.invite.description },
+    { icon: Users, title: C.tools.roles.title, description: C.tools.roles.description },
+    { icon: QrCode, title: C.tools.presence.title, description: C.tools.presence.description },
+    { icon: Megaphone, title: C.tools.ads.title, description: C.tools.ads.description, badge: { kind: 'beta' } },
+  ];
 
-    // P2-5f: tool list i18n via `marketing.ngoOnboarding.tools.<key>.{title,description}`.
-    // `tagKey` ∈ {'new','beta'} → resolved to `marketing.ngoOnboarding.tag{New,Beta}`.
-    const toolsetFeatures: ReadonlyArray<{ href: string; icon: LucideIcon; tkey: string; tagKey?: 'new' | 'beta' }> = [
-        { href: '/ngo-admin/users', icon: Users, tkey: 'users' },
-        { href: '/ngo-admin/qr', icon: QrCode, tkey: 'qr' },
-        { href: '/ngo-admin/website', icon: Globe, tkey: 'website' },
-        { href: '/ngo-admin/sms', icon: MessageSquare, tkey: 'sms' },
-        { href: '/ngo-admin/mail', icon: Mail, tkey: 'mail' },
-        { href: '/ngo-admin/ads', icon: Megaphone, tkey: 'ads', tagKey: 'new' },
-        { href: '/ngo-admin/events', icon: Calendar, tkey: 'events' },
-        { href: '/ngo-admin/online-meeting', icon: Video, tkey: 'onlineMeeting' },
-        { href: '/ngo-admin/design-tools', icon: Palette, tkey: 'designTools' },
-        { href: '/ngo-admin/payment-systems', icon: CreditCard, tkey: 'paymentSystems' },
-        { href: '/ngo-admin/marketing', icon: Target, tkey: 'marketing' },
-        { href: '/ngo-admin/accounting', icon: Calculator, tkey: 'accounting', tagKey: 'beta' },
-        { href: '/ngo-admin/crm', icon: Database, tkey: 'crm' },
-        { href: '/ngo-admin/virtual-pbx', icon: PhoneCall, tkey: 'virtualPbx' },
-        { href: '/ngo-admin/virtual-office', icon: Building2, tkey: 'virtualOffice' },
-        { href: '/ngo-admin/university-volunteering', icon: GraduationCap, tkey: 'universityVolunteering' },
-        { href: '/ngo-admin/field-team', icon: MapPin, tkey: 'fieldTeam', tagKey: 'new' },
-        { href: '/ngo-admin/dm', icon: MessageCircle, tkey: 'dm' },
-        { href: '/ngo-admin/ecommerce', icon: ShoppingCart, tkey: 'ecommerce' },
-        { href: '/ngo-admin/hr-integration', icon: Briefcase, tkey: 'hrIntegration' },
-        { href: '/ngo-admin/volunteer-portal', icon: Network, tkey: 'volunteerPortal' },
-        { href: '/ngo-admin/analytics-tools', icon: LineChart, tkey: 'analyticsTools' },
-    ];
+  const soonTools: FeatureItem[] = [
+    { icon: Database, title: C.soon.crm.title, description: C.soon.crm.description, badge: { kind: 'yakinda' } },
+    { icon: Calculator, title: C.soon.accounting.title, description: C.soon.accounting.description, badge: { kind: 'yakinda' } },
+    { icon: CreditCard, title: C.soon.pos.title, description: C.soon.pos.description, badge: { kind: 'yakinda' } },
+    { icon: Video, title: C.soon.meeting.title, description: C.soon.meeting.description, badge: { kind: 'yakinda' } },
+    { icon: Palette, title: C.soon.design.title, description: C.soon.design.description, badge: { kind: 'yakinda' } },
+    { icon: Landmark, title: C.soon.grants.title, description: C.soon.grants.description, badge: { kind: 'yakinda' } },
+    { icon: Send, title: C.soon.marketing.title, description: C.soon.marketing.description, badge: { kind: 'yakinda' } },
+    { icon: LineChart, title: C.soon.analytics.title, description: C.soon.analytics.description, badge: { kind: 'yakinda' } },
+  ];
 
-    return (
-        <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
-            {/* Header */}
-            <header className="fixed top-0 inset-x-0 z-[100] bg-white/80 backdrop-blur-md border-b border-black/5">
-                <div className="container mx-auto px-4 h-12 flex items-center justify-between max-w-6xl">
-                    <Button onClick={() => router.back()} variant="ghost" className="rounded-full h-8 px-3 text-[12px] font-medium">
-                        <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> {t('marketing.common.back')}
-                    </Button>
-                    <span className="text-[12px] font-bold tracking-tight uppercase">{t('marketing.ngoOnboarding.navLabel')}</span>
-                    <Button asChild size="sm" className="h-7 rounded-full px-4 text-[11px] font-bold bg-primary hover:bg-primary/90">
-                        <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.applyCta')}</Link>
-                    </Button>
-                </div>
-            </header>
+  return (
+    <div className="min-h-screen bg-white font-sans selection:bg-primary/30">
+      <MarketingNav
+        label={C.navLabel}
+        ctaLabel={C.navCta}
+        ctaHref={REGISTER_HREF}
+        backLabel={C.back}
+      />
 
-            {/* Hero Section */}
-            <section className="container mx-auto px-4 pt-32 pb-16 text-center space-y-6">
-                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary mb-4">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-[10px] font-bold tracking-widest uppercase">{t('marketing.ngoOnboarding.heroBadge')}</span>
-                </div>
-                <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-[#1d1d1f] max-w-5xl mx-auto leading-[0.95]">
-                    {cms.title || t('marketing.ngoOnboarding.heroTitleFallback')}
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
-                    {cms.description || t('marketing.ngoOnboarding.heroDescriptionFallback')}
-                </p>
-                <div className="pt-8 flex flex-col items-center gap-4">
-                    <Button asChild size="lg" className="rounded-full px-10 h-14 text-lg font-bold bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20">
-                        <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.freeApplyCta')}</Link>
-                    </Button>
-                </div>
-            </section>
-            
-            <section className="py-20 bg-[#f5f5f7] border-y">
-                <div className="container mx-auto px-4">
-                    <div className="text-center mb-12 space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight">{t('marketing.ngoOnboarding.whyTitle')}</h2>
-                        <p className="text-muted-foreground">{t('marketing.ngoOnboarding.whyDescription')}</p>
-                    </div>
-                    <Carousel
-                        plugins={[plugin.current]}
-                        opts={{ align: "start" }}
-                        className="w-full"
-                    >
-                        <CarouselContent className="-ml-6">
-                            {advantageItems.map((item, index) => (
-                                <CarouselItem key={index} className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
-                                    <div className="h-full">
-                                        <AdvantageCard
-                                            category={t(`marketing.ngoOnboarding.advantages.${item.tkey}.category`)}
-                                            title={t(`marketing.ngoOnboarding.advantages.${item.tkey}.title`)}
-                                            description={t(`marketing.ngoOnboarding.advantages.${item.tkey}.description`)}
-                                            imageUrl={item.imageUrl}
-                                            imageHint={item.imageHint}
-                                            link={{ label: t(`marketing.ngoOnboarding.advantages.${item.tkey}.linkLabel`), href: item.href }}
-                                        />
-                                    </div>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <div className="hidden md:flex justify-end gap-2 mt-8 px-6">
-                            <CarouselPrevious className="static translate-y-0 h-12 w-12 border-black/10" />
-                            <CarouselNext className="static translate-y-0 h-12 w-12 border-black/10" />
-                        </div>
-                    </Carousel>
-                </div>
-            </section>
+      {/* Hero */}
+      <AppleSection
+        id="hero"
+        eyebrow={C.heroEyebrow}
+        title={heroTitle}
+        subtitle={heroSubtitle}
+        description={heroDescription}
+        image={{ url: heroImage, hint: 'ngo team collaboration' }}
+        actions={[
+          { label: C.heroPrimary, href: REGISTER_HREF, variant: 'primary' },
+          { label: C.heroLink, href: '#tek-panel', variant: 'link' },
+        ]}
+      />
 
+      {/* Statement: Şeffaflık (dark) */}
+      <AppleSection
+        id="seffaflik"
+        theme="dark"
+        eyebrow={C.transparencyEyebrow}
+        title={C.transparencyTitle}
+        description={C.transparencyDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2400&auto=format&fit=crop', hint: 'transparent reports dashboard' }}
+      />
 
-            {/* Main Features Grid */}
-            <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-6 my-24 bg-white">
-                {mainFeatures.map(feature => <FeatureShowcaseCard key={feature.title} {...feature} />)}
-            </section>
+      {/* Statement: hangel Bağışı (light) */}
+      <AppleSection
+        id="hangel-bagisi"
+        eyebrow={C.donationEyebrow}
+        title={C.donationTitle}
+        description={C.donationDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1556742502-ec7c0e9f34b1?q=80&w=2400&auto=format&fit=crop', hint: 'shopping to donation flow' }}
+      />
 
-            {/* Toolset Section */}
-            <section className="container mx-auto px-4 space-y-16">
-                <div className="text-center space-y-4 max-w-3xl mx-auto">
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight">{t('marketing.ngoOnboarding.toolsetTitle')}</h2>
-                    <p className="text-lg text-muted-foreground font-medium">{t('marketing.ngoOnboarding.toolsetSubtitle')}</p>
-                     <p className="text-base text-muted-foreground max-w-2xl mx-auto">{t('marketing.ngoOnboarding.toolsetDescription')}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {toolsetFeatures.map(tool => (
-                        <ToolGridItem
-                            key={tool.tkey}
-                            href={tool.href}
-                            icon={tool.icon}
-                            title={t(`marketing.ngoOnboarding.tools.${tool.tkey}.title`)}
-                            description={t(`marketing.ngoOnboarding.tools.${tool.tkey}.description`)}
-                            tag={tool.tagKey ? t(`marketing.ngoOnboarding.tag${tool.tagKey === 'new' ? 'New' : 'Beta'}`) : undefined}
-                        />
-                    ))}
-                </div>
-            </section>
+      {/* Statement: Gönüllülük (dark) */}
+      <AppleSection
+        id="gonulluluk"
+        theme="dark"
+        eyebrow={C.volunteerEyebrow}
+        title={C.volunteerTitle}
+        description={C.volunteerDescription}
+        badges={[{ kind: 'hangel' }]}
+        image={{ url: 'https://images.unsplash.com/photo-1593113630400-ea4288922497?q=80&w=2400&auto=format&fit=crop', hint: 'volunteers matching skills' }}
+      />
 
-             {/* Become a Partner CTA */}
-            <section className="container mx-auto px-4 pt-24">
-                <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-[3rem] p-12 text-center space-y-8">
-                    <Sparkles className="h-12 w-12 text-primary mx-auto" />
-                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight relative z-10">{t('marketing.ngoOnboarding.partnerTitle')}</h2>
-                    <p className="text-lg md:text-xl text-foreground/70 max-w-3xl mx-auto relative z-10">
-                        {t('marketing.ngoOnboarding.partnerDesc')}
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
-                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold">
-                            <Link href="/contact/companies">{t('marketing.ngoOnboarding.partnerCta')}</Link>
-                        </Button>
-                    </div>
-                </div>
-            </section>
+      {/* Tek panelde her şey — live tools */}
+      <section id="tek-panel" className="bg-[#f5f5f7] py-24 border-b border-black/5">
+        <SectionHeading
+          eyebrow={C.toolsEyebrow}
+          title={C.toolsTitle}
+          description={C.toolsDescription}
+        />
+        <FeatureGrid items={liveTools} columns={3} />
+        <CompareNote>{C.compareTransparency}</CompareNote>
+      </section>
 
+      {/* Yakında */}
+      <section id="yakinda" className="bg-white py-24 border-b border-black/5">
+        <SectionHeading
+          eyebrow={C.soonEyebrow}
+          title={C.soonTitle}
+          description={C.soonDescription}
+        />
+        <FeatureGrid items={soonTools} columns={4} />
+      </section>
 
-            {/* Final CTA */}
-            <section className="container mx-auto px-4 pt-24 pb-12">
-                <div className="bg-black rounded-[3rem] p-12 text-center text-white space-y-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <h2 className="text-4xl md:text-6xl font-bold tracking-tight relative z-10" dangerouslySetInnerHTML={{ __html: t('marketing.ngoOnboarding.finalTitle') }} />
-                    <p className="text-lg md:text-xl text-white/70 max-w-xl mx-auto relative z-10">
-                        {t('marketing.ngoOnboarding.finalDesc')}
-                    </p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 relative z-10">
-                        <Button asChild size="lg" className="rounded-full px-12 h-14 text-lg font-bold bg-white text-black hover:bg-white/90">
-                            <Link href="/login/selection?action=register&type=corporate">{t('marketing.ngoOnboarding.finalApply')}</Link>
-                        </Button>
-                        <Button asChild variant="ghost" size="lg" className="rounded-full px-12 h-14 text-lg font-bold text-white hover:bg-white/10 hover:text-white">
-                            <Link href="/support">{t('marketing.ngoOnboarding.finalSupport')}</Link>
-                        </Button>
-                    </div>
-                </div>
-            </section>
+      {/* Final CTA (dark) */}
+      <AppleSection
+        id="basla"
+        theme="dark"
+        eyebrow={C.finalEyebrow}
+        title={C.finalTitle}
+        subtitle={C.finalSubtitle}
+        description={C.finalDescription}
+        actions={[
+          { label: C.finalPrimary, href: REGISTER_HREF, variant: 'primary' },
+          { label: C.finalSecondary, href: '#tek-panel', variant: 'secondary' },
+        ]}
+      />
 
-            <PublicFooter currentPageLabel={t('marketing.ngoOnboarding.footerLabel')} />
-        </div>
-    );
+      <PublicFooter currentPageLabel={C.footerLabel} />
+    </div>
+  );
 }
