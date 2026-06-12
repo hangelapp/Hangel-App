@@ -38,6 +38,7 @@ import {
   Link2,
   DatabaseBackup,
   Mail,
+  PhoneCall,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -184,6 +185,9 @@ const SETTINGS_SECTIONS = [
   { id: 'messaging-providers', label: 'SMS / E-Posta Sağlayıcıları', icon: Mail, color: 'bg-violet-500',
     href: '/super-admin/settings/messaging-providers',
     description: 'NetGSM + Resend mevcut. Yeni anlaşma yapıldığında API key + sender + şablon buradan girilir.' },
+  { id: 'call-center', label: 'Sanal Santral & Call Center', icon: PhoneCall, color: 'bg-cyan-600',
+    href: '/super-admin/settings/call-center',
+    description: 'Outreach kayıtlarını panel içinden ara, görüşme kaydı + transkripsiyon + KVKK arşiv.' },
   { id: 'ai-management', label: 'Yapay Zeka Yönetimi', icon: Brain, color: 'bg-indigo-600',
     href: '/super-admin/ai-management',
     description: 'Kütüphane AI Asistanı ve Proje Yazma Asistanı yapay zekalarını eğit ve yönet.' },
