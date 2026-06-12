@@ -140,6 +140,7 @@ const NGO_MENU: MenuGroup[] = [
     items: [
       { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare },
       { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail },
+      { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall },
       { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet },
       { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, comingSoon: true },
       { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Send, comingSoon: true },
@@ -155,7 +156,6 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: CreditCard, comingSoon: true },
       { href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: Store, comingSoon: true },
       { href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: Contact, comingSoon: true },
-      { href: '/ngo-admin/virtual-pbx', label: 'Sanal Santral Yönetimi', icon: PhoneCall, comingSoon: true },
       { href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: Building2, comingSoon: true },
       { href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: MapPin, comingSoon: true },
       { href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: GraduationCap, comingSoon: true },
