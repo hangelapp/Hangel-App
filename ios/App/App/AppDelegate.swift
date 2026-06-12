@@ -97,3 +97,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
+
+// MARK: - Capacitor app-local plugin kaydı
+//
+// Capacitor 6+ uygulama içi (paket olmayan) Swift plugin'leri OTOMATİK kaydolmaz;
+// `CAPBridgeViewController` subclass'ında `capacitorDidLoad()` ile açıkça register
+// edilmeleri ZORUNLU. Bu yapılmadığında web tarafı her çağrıda
+// `"<plugin>" plugin is not implemented on ios` hatası alır (Live Activity dahil).
+// Main.storyboard root view controller bu sınıfa bağlandı.
+class MainViewController: CAPBridgeViewController {
+    override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(HangelLiveActivityPlugin())
+        bridge?.registerPluginInstance(HangelAppleSignInPlugin())
+        bridge?.registerPluginInstance(HangelWatchConnectivityPlugin())
+        bridge?.registerPluginInstance(HangelSilentPushPlugin())
+        bridge?.registerPluginInstance(HangelBackgroundTasksPlugin())
+    }
+}
