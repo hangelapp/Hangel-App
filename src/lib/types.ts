@@ -67,6 +67,12 @@ export type Brand = {
   coverPhotoUrl?: string;
   donationRate: number;
   donationRateDisplay?: string;
+  /**
+   * Target site domain (e.g. "trendyol.com") — extracted from HasOffers
+   * preview_url. Used by Chrome Extension to match the user's current tab
+   * against known affiliate brands. Optional for backwards compatibility.
+   */
+  targetDomain?: string;
   stats?: {
     supporters: number;
     totalDonation: number;

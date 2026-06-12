@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>hangel</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="header">
+    <img src="../icons/icon-48.png" alt="hangel" class="logo" />
+    <div class="title-block">
+      <div class="title">hangel</div>
+      <div class="subtitle">Alışverişin bağışa dönüşsün</div>
+    </div>
+  </div>
+
+  <div class="status-card" id="status-card">
+    <div class="status-row">
+      <span class="status-label">Kayıtlı marka</span>
+      <span class="status-value" id="brand-count">—</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Son güncelleme</span>
+      <span class="status-value" id="last-update">—</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">Bu marka için</span>
+      <span class="status-value" id="current-brand">—</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="btn-open-hangel" class="btn btn-primary">hangel.org.tr aç</button>
+    <button id="btn-refresh" class="btn btn-secondary">Markaları güncelle</button>
+    <button id="btn-clear-dismissals" class="btn btn-ghost">Tüm "bir daha sorma" kayıtlarını sıfırla</button>
+  </div>
+
+  <div class="footer">
+    <p>Komisyonun seçtiğin <strong>2 STK</strong>'ya bağış olarak gider.</p>
+    <p class="privacy">🔒 Hangi siteleri ziyaret ettiğin hangel'e GİTMEZ. Sadece "Yapsın" tıkladığında bilgi paylaşılır.</p>
+    <a href="https://hangel.org.tr/privacy" target="_blank" rel="noopener">Gizlilik Politikası</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

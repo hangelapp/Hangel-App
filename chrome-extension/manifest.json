@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "hangel — Alışverişin Bağışa Dönüşsün",
+  "short_name": "hangel",
+  "description": "hangel kayıtlı markalarda otomatik hatırlatıcı: 'Yapsın' de, komisyon seçtiğin STK'lara bağış olarak gitsin.",
+  "version": "1.0.0",
+  "default_locale": "tr",
+  "homepage_url": "https://hangel.org.tr",
+  "author": "hangel Uluslararası Sosyal Fayda Derneği",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_title": "hangel — Bağışa Dönüştür",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://hangel.org.tr/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon-128.png"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

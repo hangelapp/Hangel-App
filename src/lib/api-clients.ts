@@ -251,6 +251,7 @@ async function fetchHasOffersOffers(config: HasOffersConfig): Promise<Brand[]> {
         category,
         about: offer.description ? offer.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 500) : undefined,
         link: buildAffiliateLink(config, previewUrl) || undefined,
+        targetDomain: domain,
       });
     }
 
