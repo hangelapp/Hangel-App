@@ -924,7 +924,21 @@ export default function OutreachHubPage() {
                             {r.district && <p className="text-muted-foreground">{r.district}</p>}
                           </td>
                           <td className="px-3 py-2 hidden lg:table-cell text-xs font-mono">
-                            {r.phone ? <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{r.phone}</span> : <span className="text-muted-foreground/50">—</span>}
+                            {r.phone ? (
+                              <span className="flex items-center gap-1 group">
+                                <Phone className="h-3 w-3" />
+                                {r.phone}
+                                {/* Click-to-call placeholder — santral aktif olunca buradan arama başlar */}
+                                <Link
+                                  href={`/super-admin/call-center?dial=${encodeURIComponent(r.phone)}&contactId=${r.id}`}
+                                  className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-700"
+                                  title="📞 Panelden ara (yakında)"
+                                  aria-label="Numarayi ara"
+                                >
+                                  <Phone className="h-2.5 w-2.5" />
+                                </Link>
+                              </span>
+                            ) : <span className="text-muted-foreground/50">—</span>}
                           </td>
                           <td className="px-3 py-2 hidden lg:table-cell text-xs">
                             {r.email ? <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{r.email}</span> : <span className="text-muted-foreground/50">—</span>}

@@ -1,0 +1,257 @@
+/**
+ * POST /api/ngo-admin/calls/originate
+ *
+ * STK agent'ı outbound çağrı başlatır. Concurrent limit kontrolü (STK başına
+ * 2 eş zamanlı çağrı max) yapılır. Provider seçimi STK'nın `ngoCallCenter`
+ * dokümanındaki `providerId`'sine göre yapılır; gerçek dial işlemi
+ * `src/lib/santral/` altındaki adapter (StubSantralProvider) tarafından
+ * gerçekleştirilir. Bu route adapter import yerine **dynamic import** kullanır;
+ * gerçek provider plug edilene dek lib'in var olmaması bu route'u kırmaz.
+ *
+ * KVKK: recording byte yazılmaz; yalnızca metadata + recordingStorageUrl
+ * (provider callback'i ile ileride doldurulur).
+ *
+ * Body:
+ *   - contactPhone: string  (E.164 normalize, +90... beklenir)
+ *   - contactId:    string  (CRM contact doc id)
+ *   - notes?:       string  (opsiyonel)
+ *
+ * Yanıt: { ok, callSessionId, status, providerCallId? }
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTIONS } from '@/firebase/collections';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const CALL_SESSIONS = 'callSessions';
+const AUDIT_LOG = 'callAuditLog';
+const NGO_CALL_CENTER = 'ngoCallCenter';
+const CONCURRENT_LIMIT = 2;
+
+interface OriginateBody {
+  contactPhone?: unknown;
+  contactId?: unknown;
+  notes?: unknown;
+}
+
+interface AgentContext {
+  uid: string;
+  ngoId: string;
+  role?: string;
+}
+
+interface ProviderOriginateResult {
+  providerCallId: string;
+  status: 'ringing' | 'queued' | 'failed';
+  error?: string;
+}
+
+interface ProviderAdapter {
+  originate(args: {
+    fromNumber: string;
+    toNumber: string;
+    ngoId: string;
+    agentUid: string;
+    callSessionId: string;
+  }): Promise<ProviderOriginateResult>;
+}
+
+async function authorize(req: NextRequest): Promise<AgentContext | null> {
+  const authHeader = req.headers.get('authorization') || '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+  if (!idToken) return null;
+  try {
+    const decoded = await getAdminAuth().verifyIdToken(idToken) as { uid: string; role?: string };
+    const snap = await getAdminFirestore().collection(COLLECTIONS.users).doc(decoded.uid).get();
+    if (!snap.exists) return null;
+    const d = snap.data() as { role?: string; managedNgoId?: string };
+    if (!d?.managedNgoId) return null;
+    if (d.role !== 'ngo-admin' && d.role !== 'super-admin') return null;
+    return { uid: decoded.uid, ngoId: d.managedNgoId, role: d.role };
+  } catch {
+    return null;
+  }
+}
+
+async function loadProviderAdapter(): Promise<ProviderAdapter | null> {
+  // src/lib/santral/ ayrı bir worker tarafından yazılıyor. Henüz mevcut
+  // değilse fallback stub kullanılır — çağrı yine kayıt altına alınır ama
+  // gerçek dial yapılmaz.
+  try {
+    const mod = (await import('@/lib/santral')) as {
+      StubSantralProvider?: new () => ProviderAdapter;
+      default?: new () => ProviderAdapter;
+    };
+    const Ctor = mod.StubSantralProvider ?? mod.default;
+    if (!Ctor) return null;
+    return new Ctor();
+  } catch {
+    return null;
+  }
+}
+
+function inlineStubProvider(): ProviderAdapter {
+  return {
+    async originate({ callSessionId }) {
+      return {
+        providerCallId: `stub-${callSessionId}`,
+        status: 'ringing',
+      };
+    },
+  };
+}
+
+function normalizePhone(raw: string): string | null {
+  const trimmed = raw.replace(/\s+/g, '');
+  if (!trimmed) return null;
+  // Basit doğrulama; gerçek normalize phone-normalize.ts'ye delegate edilebilir.
+  if (!/^\+?[0-9]{10,15}$/.test(trimmed)) return null;
+  return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+}
+
+export async function POST(req: NextRequest) {
+  const ctx = await authorize(req);
+  if (!ctx) {
+    return NextResponse.json({ errorCode: 'FORBIDDEN', message: 'NGO admin yetkisi gerekli.' }, { status: 403 });
+  }
+
+  let body: OriginateBody;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ errorCode: 'BAD_JSON', message: 'Geçersiz JSON gövdesi.' }, { status: 400 });
+  }
+
+  const rawPhone = typeof body.contactPhone === 'string' ? body.contactPhone : '';
+  const contactId = typeof body.contactId === 'string' ? body.contactId.trim() : '';
+  const notes = typeof body.notes === 'string' ? body.notes.slice(0, 2000) : '';
+  if (!rawPhone || !contactId) {
+    return NextResponse.json(
+      { errorCode: 'BAD_INPUT', message: 'contactPhone ve contactId zorunlu.' },
+      { status: 400 },
+    );
+  }
+  const toNumber = normalizePhone(rawPhone);
+  if (!toNumber) {
+    return NextResponse.json({ errorCode: 'BAD_PHONE', message: 'Telefon numarası geçersiz.' }, { status: 400 });
+  }
+
+  const db = getAdminFirestore();
+
+  // STK call-center tenant durumu — aktif değilse RED.
+  const ccSnap = await db.collection(NGO_CALL_CENTER).doc(ctx.ngoId).get();
+  if (!ccSnap.exists) {
+    return NextResponse.json(
+      { errorCode: 'NOT_ONBOARDED', message: 'Çağrı merkezi başvurunuz bulunmuyor.' },
+      { status: 409 },
+    );
+  }
+  const ccData = ccSnap.data() as {
+    status?: string;
+    callerIdNumber?: string;
+    providerId?: string;
+    monthlyMinutesQuota?: number;
+    currentMonthUsage?: number;
+  };
+  if (ccData.status !== 'active') {
+    return NextResponse.json(
+      { errorCode: 'INACTIVE', message: 'Çağrı merkezi henüz aktif değil.' },
+      { status: 409 },
+    );
+  }
+  if (!ccData.callerIdNumber) {
+    return NextResponse.json(
+      { errorCode: 'NO_CALLER_ID', message: 'Caller ID numaranız atanmamış.' },
+      { status: 409 },
+    );
+  }
+
+  // Concurrent limit — bu STK'nın ringing/in-progress oturumları say.
+  const activeSnap = await db
+    .collection(CALL_SESSIONS)
+    .where('ngoId', '==', ctx.ngoId)
+    .where('status', 'in', ['ringing', 'in-progress'])
+    .get();
+  if (activeSnap.size >= CONCURRENT_LIMIT) {
+    return NextResponse.json(
+      {
+        errorCode: 'CONCURRENT_LIMIT',
+        message: `Aynı anda en fazla ${CONCURRENT_LIMIT} aktif çağrı yapabilirsiniz.`,
+      },
+      { status: 429 },
+    );
+  }
+
+  // callSessions doc'unu önce oluştur ki provider callback'i bu id'yi referans alabilsin.
+  const sessionRef = db.collection(CALL_SESSIONS).doc();
+  const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null;
+
+  await sessionRef.set({
+    agentUid: ctx.uid,
+    ngoId: ctx.ngoId,
+    contactId,
+    calledNumber: toNumber,
+    callerNumber: ccData.callerIdNumber,
+    startedAt: FieldValue.serverTimestamp(),
+    endedAt: null,
+    duration: 0,
+    outcome: null,
+    recordingStorageUrl: null,
+    status: 'ringing',
+    direction: 'outbound',
+    notes: notes || null,
+    providerId: ccData.providerId ?? null,
+    providerCallId: null,
+    createdAt: FieldValue.serverTimestamp(),
+  });
+
+  // Provider adapter — yoksa inline stub fallback.
+  const adapter = (await loadProviderAdapter()) ?? inlineStubProvider();
+  let providerResult: ProviderOriginateResult;
+  try {
+    providerResult = await adapter.originate({
+      fromNumber: ccData.callerIdNumber,
+      toNumber,
+      ngoId: ctx.ngoId,
+      agentUid: ctx.uid,
+      callSessionId: sessionRef.id,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Provider hata verdi';
+    await sessionRef.update({ status: 'failed', endedAt: FieldValue.serverTimestamp(), outcome: 'provider_error' });
+    return NextResponse.json({ errorCode: 'PROVIDER_ERROR', message: msg }, { status: 502 });
+  }
+
+  await sessionRef.update({
+    providerCallId: providerResult.providerCallId,
+    status: providerResult.status === 'failed' ? 'failed' : 'ringing',
+  });
+
+  // Audit log — actor + action + resource. KVKK: recording byte yok, sadece metadata.
+  await db.collection(AUDIT_LOG).add({
+    actorUid: ctx.uid,
+    action: 'call.originate',
+    resourceType: 'callSessions',
+    resourceId: sessionRef.id,
+    timestamp: FieldValue.serverTimestamp(),
+    ipAddress: ip,
+    details: {
+      ngoId: ctx.ngoId,
+      contactId,
+      calledNumber: toNumber,
+      callerNumber: ccData.callerIdNumber,
+      providerId: ccData.providerId ?? null,
+      providerCallId: providerResult.providerCallId,
+    },
+  });
+
+  return NextResponse.json({
+    ok: true,
+    callSessionId: sessionRef.id,
+    status: providerResult.status === 'failed' ? 'failed' : 'ringing',
+    providerCallId: providerResult.providerCallId,
+  });
+}
