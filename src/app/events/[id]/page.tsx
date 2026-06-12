@@ -3,6 +3,7 @@ import { notFound, useRouter, useParams } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, limit } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
+import { startEventCountdownActivity } from '@/lib/native-live-activity';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -183,6 +184,17 @@ export default function EventDetailPage() {
         title: data.status === 'going' ? 'Kayıt alındı' : 'Kaydın iptal edildi',
         description: data.status === 'going' ? 'Etkinliğe katılıyorsun.' : 'RSVP iptal edildi.',
       });
+      // Katılımda telefon ekranında canlı etkinlik (Live Activity) başlat (iOS native; web no-op).
+      if (data.status === 'going' && resolvedEventId) {
+        void startEventCountdownActivity({
+          eventTitle: event?.name || 'Etkinlik',
+          location: typeof event?.location === 'string'
+            ? event.location
+            : (event?.location?.address || event?.location?.city || ''),
+          eventId: resolvedEventId,
+          statusLabel: 'Kayıtlı',
+        });
+      }
     } catch (err) {
       const e = err as { message?: string };
       toast({ variant: 'destructive', title: 'Kayıt başarısız', description: e?.message || 'Beklenmeyen hata.' });

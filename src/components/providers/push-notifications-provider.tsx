@@ -23,6 +23,7 @@ import { Capacitor } from '@capacitor/core';
 import { useUser } from '@/firebase';
 import { registerForPushToken } from '@/lib/fcm';
 import { attachNativePushListeners, registerNativePushToken } from '@/lib/native-push';
+import { requestAllNativePermissions } from '@/lib/native-permissions';
 import { setCrashlyticsUser } from '@/lib/native-crashlytics';
 
 export function PushNotificationsProvider() {
@@ -51,6 +52,8 @@ export function PushNotificationsProvider() {
     if (Capacitor.isNativePlatform()) {
       void registerNativePushToken(user.uid);
       cleanupRef.current = attachNativePushListeners(user.uid);
+      // Girişte tüm native izinleri iste (konum + rehber; push yukarıda).
+      void requestAllNativePermissions();
       return;
     }
 

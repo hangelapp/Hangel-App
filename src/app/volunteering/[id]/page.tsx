@@ -16,6 +16,7 @@ import type { Volunteering, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
+import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
 
 export default function VolunteeringDetailPage() {
   const router = useRouter();
@@ -158,6 +159,14 @@ export default function VolunteeringDetailPage() {
         date: today,
         status: 'Beklemede',
         location: opportunity.location.city
+    });
+
+    // Başvuru sürecini telefon ekranında canlı etkinlik (Live Activity) olarak göster (iOS native; web no-op).
+    void startVolunteerTaskActivity({
+        taskTitle: opportunity.title,
+        ngoName: opportunity.organization || '',
+        location: opportunity.location?.city || '',
+        taskId: opportunity.id,
     });
 
     // Başvuru oluşunca 3 tarafa (kullanıcı + STK yöneticisi + süper-admin)
