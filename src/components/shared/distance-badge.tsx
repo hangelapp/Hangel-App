@@ -12,7 +12,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MapPin, Loader2 } from 'lucide-react';
 import { getCurrentPositionUnified } from '@/lib/native-geolocation';
-import { distanceSummary, type LatLon } from '@/lib/geo-distance';
+import { distanceSummary, formatKm, formatMinutes, type LatLon } from '@/lib/geo-distance';
 import { cn } from '@/lib/utils';
 
 type Status = 'unknown' | 'loading' | 'ready' | 'denied';
@@ -48,6 +48,7 @@ export function DistanceBadge({
   const hasTarget = Number.isFinite(target?.lat) && Number.isFinite(target?.lon);
   const [coords, setCoords] = useState<LatLon | null>(null);
   const [status, setStatus] = useState<Status>('unknown');
+  const [result, setResult] = useState<string | null>(null);
 
   const request = useCallback(async () => {
     setStatus('loading');
@@ -78,10 +79,33 @@ export function DistanceBadge({
     }
   }, [hasTarget, request]);
 
+  // Konum + hedef hazır → gerçek sürüş mesafesi/süresi (OSRM); başarısızsa kuş-uçuşu tahmin.
+  useEffect(() => {
+    if (status !== 'ready' || !coords || !hasTarget) return;
+    const tLat = target!.lat as number;
+    const tLon = target!.lon as number;
+    let active = true;
+    (async () => {
+      try {
+        const r = await fetch(`/api/route?fromLat=${coords.lat}&fromLon=${coords.lon}&toLat=${tLat}&toLon=${tLon}`);
+        if (r.ok) {
+          const j = await r.json() as { km?: number; minutes?: number };
+          if (active && typeof j.km === 'number' && typeof j.minutes === 'number') {
+            setResult(`${formatKm(j.km)} · ${formatMinutes(j.minutes, false)}`);
+            return;
+          }
+        }
+      } catch { /* OSRM başarısız → tahmine düş */ }
+      if (active) setResult(distanceSummary(coords, { lat: tLat, lon: tLon }).text);
+    })();
+    return () => { active = false; };
+  }, [status, coords, hasTarget, target]);
+
   if (!hasTarget) return null;
 
   if (status === 'ready' && coords) {
-    const { text } = distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number });
+    // Gerçek sürüş (OSRM) hazırsa onu, değilse anında kuş-uçuşu tahmini göster.
+    const text = result ?? distanceSummary(coords, { lat: target!.lat as number, lon: target!.lon as number }).text;
     return (
       <span className={cn('inline-flex items-center gap-1 text-xs font-semibold text-primary', className)}>
         <MapPin className="h-3.5 w-3.5" /> {text} uzakta

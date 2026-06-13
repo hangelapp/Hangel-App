@@ -459,6 +459,7 @@ export default function EmergencyManagementPage() {
             bloodType: req.bloodType,
             contactName: (req as EmergencyDoc & { contactName?: string }).contactName || req.requestedByName || null,
             contactPhone: req.contactPhone || null,
+            coordinates: (req as EmergencyDoc & { coordinates?: { lat: number; lng: number } }).coordinates ?? null,
           },
           read: false,
           createdAt: serverTimestamp(),
@@ -531,6 +532,16 @@ export default function EmergencyManagementPage() {
       //    orijinal pending dokümanı güncellenir; değilse yeni doküman açılır.
       //    requestId her zaman bu dokümanın id'sidir (bildirim → yanıt eşleşmesi).
       const pendingId = pendingApprovalIdRef.current;
+      // Hastane konumunu koordinata çevir (best-effort) → donör bildiriminde "xx km · ~xx dk mesafede".
+      let hospitalCoords: { lat: number; lng: number } | null = null;
+      try {
+        const gq = [hospitalName, hospitalDistrict, hospitalCity, 'Türkiye'].filter((s) => s && s.trim()).join(', ');
+        const gr = await fetch(`/api/geocode?q=${encodeURIComponent(gq)}`);
+        if (gr.ok) {
+          const gj = await gr.json() as { lat?: number; lon?: number };
+          if (typeof gj.lat === 'number' && typeof gj.lon === 'number') hospitalCoords = { lat: gj.lat, lng: gj.lon };
+        }
+      } catch { /* geocode best-effort */ }
       const requestData = {
         type: 'blood',
         hospitalName: hospitalName.trim(),
@@ -546,6 +557,7 @@ export default function EmergencyManagementPage() {
         city: city || null,
         district: district || null,
         neighborhood: neighborhood || null,
+        coordinates: hospitalCoords,
         gender,
         message: message.trim(),
         contactName: contactName.trim(),
@@ -595,6 +607,7 @@ export default function EmergencyManagementPage() {
               hospitalDistrict: hospitalDistrict.trim() || null,
               city: city || null,
               district: district || null,
+              coordinates: hospitalCoords,
               bloodType,
               needType,
               units: (Number(unitsNeeded) || extraReqRef.current.units) ?? null,

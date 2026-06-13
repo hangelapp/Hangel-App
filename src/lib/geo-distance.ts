@@ -38,12 +38,13 @@ export function formatKm(km: number): string {
   return `${Math.round(km)} km`;
 }
 
-/** "~26 dk" / "~1 sa 10 dk" biçimi. */
-export function formatMinutes(min: number): string {
-  if (min < 60) return `~${min} dk`;
+/** "26 dk" / "1 sa 10 dk" biçimi. approx=true ise başına "~" konur (tahmin). */
+export function formatMinutes(min: number, approx = true): string {
+  const p = approx ? '~' : '';
+  if (min < 60) return `${p}${min} dk`;
   const h = Math.floor(min / 60);
   const m = min % 60;
-  return m === 0 ? `~${h} sa` : `~${h} sa ${m} dk`;
+  return m === 0 ? `${p}${h} sa` : `${p}${h} sa ${m} dk`;
 }
 
 /** Hedef koordinata göre "12 km · ~26 dk" özeti. */
