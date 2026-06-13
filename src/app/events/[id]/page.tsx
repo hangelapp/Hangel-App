@@ -75,14 +75,15 @@ export default function EventDetailPage() {
     try {
       const { default: html2canvas } = await import('html2canvas');
 
-      const opts = { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false };
+      // Düşük MB + hızlı indirme: scale 2 (3 yerine) → ~2x daha az piksel, baskı için yeterli netlik.
+      const opts = { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false };
       const frontCanvas = await html2canvas(cardFrontRef.current, opts);
       const backCanvas = await html2canvas(cardBackRef.current, opts);
 
-      // A4 portre @ ~200 DPI: 210×297mm → 1654×2339px
-      const MM = (mm: number) => Math.round((mm / 25.4) * 200);
-      const pageW = MM(210); // 1654
-      const pageH = MM(297); // 2339
+      // A4 portre @ 150 DPI: 210×297mm → 1240×1754px (200 DPI'dan ~%44 daha az piksel → küçük JPG)
+      const MM = (mm: number) => Math.round((mm / 25.4) * 150);
+      const pageW = MM(210); // 1240
+      const pageH = MM(297); // 1754
 
       const out = document.createElement('canvas');
       out.width = pageW;
@@ -100,18 +101,20 @@ export default function EventDetailPage() {
       const gap = MM(6);
       const totalW = cardW * 2 + gap;
       const startX = Math.round((pageW - totalW) / 2);
-      const startY = Math.round((pageH - cardH) / 2);
+      // Üste hizala (ortaya değil): üstten 16mm boşluk → kartlar sayfanın üstünde.
+      const startY = MM(16);
 
       ctx.drawImage(frontCanvas, startX, startY, cardW, cardH);
       ctx.drawImage(backCanvas, startX + cardW + gap, startY, cardW, cardH);
 
-      // Alt ortaya küçük gri etiket
-      ctx.fillStyle = '#888888';
-      ctx.font = '24px sans-serif';
+      // Kartların hemen altına küçük gri etiket (kartlarla birlikte üstte).
+      ctx.fillStyle = '#999999';
+      ctx.font = `${MM(3.2)}px sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('hangel — etkinlik yaka kartı', pageW / 2, pageH - MM(10));
+      ctx.fillText('hangel — etkinlik yaka kartı', pageW / 2, startY + cardH + MM(8));
 
-      const dataUrl = out.toDataURL('image/jpeg', 0.92);
+      // JPEG 0.85 (0.92 yerine) → görsel kalite korunur, dosya boyutu küçülür.
+      const dataUrl = out.toDataURL('image/jpeg', 0.85);
       const a = document.createElement('a');
       a.href = dataUrl;
       a.download = `yaka-karti-${event?.id || 'hangel'}.jpg`;
@@ -651,13 +654,17 @@ export default function EventDetailPage() {
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
                     <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                            <span className="text-xl font-black text-primary">hangel</span>
-                            {organizerLogo && (
-                                <Avatar className="h-10 w-10 bg-white border">
-                                    <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                    <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
-                                </Avatar>
-                            )}
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xl font-black text-primary">hangel</span>
+                                {organizerLogo && (
+                                    <Avatar className="h-8 w-8 bg-white border shrink-0">
+                                        <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                        <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                            </div>
+                            {/* Yaka kartı askı deliği (tasarım öğesi) */}
+                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
                         </div>
                         <div className="p-6 flex-1 flex flex-col justify-between items-center text-center">
                             <div className="space-y-1">
@@ -670,9 +677,11 @@ export default function EventDetailPage() {
                                     <p className="text-sm font-black uppercase tracking-[0.2em]">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</p>
                                 </div>
                                 <p className="text-xl font-black pt-2 truncate">{user.name}</p>
-                                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
-                                    {user.volunteerInfo?.education?.[0]?.school || 'Eğitim Bilgisi Yok'}
-                                </p>
+                                {user.volunteerInfo?.education?.[0]?.school && (
+                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1 truncate">
+                                        {user.volunteerInfo.education[0].school}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className='bg-[#f5f5f7] p-3 text-[10px] text-muted-foreground border-t text-center font-mono'>
@@ -685,13 +694,17 @@ export default function EventDetailPage() {
                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Arka Yüzü</h3>
                     <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
                         <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                            <span className="text-xl font-black text-primary">hangel</span>
-                            {organizerLogo && (
-                                <Avatar className="h-10 w-10 bg-white border">
-                                    <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
-                                    <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
-                                </Avatar>
-                            )}
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="text-xl font-black text-primary">hangel</span>
+                                {organizerLogo && (
+                                    <Avatar className="h-8 w-8 bg-white border shrink-0">
+                                        <AvatarImage src={organizerLogo} alt={event.organizer} className="p-1 object-contain"/>
+                                        <AvatarFallback>{event.organizer.slice(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                            </div>
+                            {/* Yaka kartı askı deliği (tasarım öğesi) */}
+                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
                         </div>
                         <div className="p-6 flex-1 flex flex-col justify-center items-center text-center space-y-6">
                             <h3 className="text-lg font-black uppercase tracking-widest">İLETİŞİM BİLGİLERİ</h3>

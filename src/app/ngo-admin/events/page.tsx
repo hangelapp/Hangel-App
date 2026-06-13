@@ -24,6 +24,7 @@ import {
     Trash2,
     Mic2,
     ListOrdered,
+    Pencil,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -136,8 +137,11 @@ export default function EventManagementPage() {
     );
     const { data: myEvents } = useCollection<ClubEventDoc>(myEventsQ);
 
-    // ---- New event dialog state ----
+    // ---- New / edit event dialog state ----
     const [createOpen, setCreateOpen] = useState(false);
+    // null = oluşturma modu; doc id = o etkinliği düzenleme modu.
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [existingPosterUrl, setExistingPosterUrl] = useState<string>('');
     const [submitting, setSubmitting] = useState(false);
     const [evName, setEvName] = useState('');
     const [evDate, setEvDate] = useState('');
@@ -268,7 +272,49 @@ export default function EventManagementPage() {
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
         setEvPosterPreview(null);
+        setEditingId(null);
+        setExistingPosterUrl('');
         if (posterInputRef.current) posterInputRef.current.value = '';
+    };
+
+    // Mevcut bir etkinliği düzenlemek için formu doldurup dialog'u açar.
+    const openCreate = () => {
+        resetForm();
+        setCreateOpen(true);
+    };
+    const openEdit = (ev: ClubEventDoc) => {
+        const e = ev as ClubEventDoc & {
+            time?: string; endDate?: string; tags?: string[]; type?: string;
+            capacity?: { max?: number }; language?: string; providesCertificate?: boolean;
+            location?: { address?: string; city?: string; district?: string; lat?: string; lon?: string };
+            description?: string; imageUrl?: string;
+            contributors?: EventContributor[]; agenda?: EventAgendaItem[];
+        };
+        setEvName(e.name || '');
+        setEvDate(e.date || (e.startDate || '').split(' ')[0] || '');
+        setEvStartTime(e.time || '');
+        const [endD, endT] = (e.endDate || '').split(' ');
+        setEvEndDate(endD || '');
+        setEvEndTime(endT || '');
+        setEvCity(e.location?.city || '');
+        setEvDistrict(e.location?.district || '');
+        setEvAddress(e.location?.address || '');
+        setEvLat(e.location?.lat || '');
+        setEvLon(e.location?.lon || '');
+        setEvDescription(e.description || '');
+        setEvTypes(e.tags && e.tags.length ? e.tags : (e.type ? [e.type] : []));
+        setEvCapacity(e.capacity?.max ? String(e.capacity.max) : '');
+        setEvLanguage(e.language || 'Türkçe');
+        setEvCertificate(Boolean(e.providesCertificate));
+        const contribs = e.contributors || [];
+        setContributors(contribs.map((c) => ({ name: c.name || '', title: c.title || '', role: c.role || 'speaker', ...(c.userId ? { userId: c.userId } : {}) })));
+        setContributorLookups(contribs.map((c) => ({ phone: '', status: c.userId ? 'member' as const : 'idle' as const, locked: Boolean(c.userId) })));
+        setAgenda((e.agenda || []).map((a) => ({ time: a.time || '', title: a.title || '' })));
+        setEvPosterFile(null);
+        setEvPosterPreview(e.imageUrl || null);
+        setExistingPosterUrl(e.imageUrl || '');
+        setEditingId(ev.id);
+        setCreateOpen(true);
     };
 
     const handleCreateEvent = async (e: React.FormEvent) => {
@@ -292,15 +338,17 @@ export default function EventManagementPage() {
                 .replace(/(^-|-$)/g, '');
 
             const finalSlug = `${slug}-${Date.now().toString(36)}`;
+            const posterKey = editingId || finalSlug;
 
-            // Afiş upload (varsa) — Firebase Storage'a yükle
-            let posterUrl = '';
+            // Afiş upload (varsa) — Firebase Storage'a yükle. Düzenlemede yeni dosya
+            // yoksa mevcut afiş korunur.
+            let posterUrl = editingId ? existingPosterUrl : '';
             if (evPosterFile) {
                 setEvPosterUploading(true);
                 try {
                     const storage = getStorage();
                     const ext = (evPosterFile.name.split('.').pop() || 'jpg').toLowerCase();
-                    const r = storageRef(storage, `event-posters/${activeEntity.data.id}/${finalSlug}.${ext}`);
+                    const r = storageRef(storage, `event-posters/${activeEntity.data.id}/${posterKey}.${ext}`);
                     await uploadBytes(r, evPosterFile, { contentType: evPosterFile.type });
                     posterUrl = await getDownloadURL(r);
                 } catch (uploadErr) {
@@ -335,6 +383,59 @@ export default function EventManagementPage() {
             // Düzenleyen kuruluşun logosu (avatarUrl/logoUrl); yoksa boş string.
             const organizerLogoUrl = activeEntity.data.logoUrl || activeEntity.data.avatarUrl || '';
 
+            // ---- DÜZENLEME modu: server-side update + tüm katılımcı/konuşmacıya bildirim ----
+            if (editingId) {
+                if (!authUser) {
+                    toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Düzenleme için giriş yapın.' });
+                    return;
+                }
+                const idToken = await authUser.getIdToken();
+                const res = await fetch(`/api/events/${editingId}/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                    body: JSON.stringify({
+                        name: evName.trim(),
+                        date: evDate,
+                        startDate: startDateStr,
+                        endDate: endDateStr,
+                        time: evStartTime || '',
+                        type: evTypes[0] || '',
+                        tags: evTypes,
+                        language: evLanguage,
+                        capacity: { max: Number(evCapacity) || 0 },
+                        participationCondition: 'Herkese Açık',
+                        providesCertificate: evCertificate,
+                        location: {
+                            type: 'Fiziksel',
+                            address: evAddress.trim(),
+                            city: evCity.trim(),
+                            district: evDistrict.trim(),
+                            lat: evLat || '',
+                            lon: evLon || '',
+                        },
+                        description: evDescription.trim(),
+                        imageUrl: posterUrl,
+                        contributors: cleanContributors,
+                        agenda: cleanAgenda,
+                        organizerLogoUrl,
+                    }),
+                });
+                const resBody = (await res.json().catch(() => null)) as { notified?: number; message?: string } | null;
+                if (!res.ok) {
+                    toast({ variant: 'destructive', title: 'Güncellenemedi', description: resBody?.message || 'Etkinlik güncellenemedi.' });
+                    return;
+                }
+                const notified = typeof resBody?.notified === 'number' ? resBody.notified : 0;
+                toast({
+                    title: 'Etkinlik güncellendi',
+                    description: notified > 0 ? `Değişiklikler kaydedildi · ${notified} katılımcı/konuşmacıya bildirim gönderildi.` : 'Değişiklikler kaydedildi.',
+                });
+                resetForm();
+                setCreateOpen(false);
+                return;
+            }
+
+            // ---- OLUŞTURMA modu ----
             // Force status='Beklemede' regardless of any other inputs
             await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
@@ -419,10 +520,10 @@ export default function EventManagementPage() {
                 </Card>
             )}
 
-            <Tabs defaultValue="venues">
+            <Tabs defaultValue="my-events">
                 <TabsList className="grid w-full grid-cols-3 max-w-lg">
-                    <TabsTrigger value="venues"><Landmark className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabVenues')}</TabsTrigger>
                     <TabsTrigger value="my-events"><Calendar className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabMyEvents')}</TabsTrigger>
+                    <TabsTrigger value="venues"><Landmark className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabVenues')}</TabsTrigger>
                     <TabsTrigger value="booking"><CheckCircle2 className="mr-2 h-4 w-4" /> {t('ngo_admin_events.tabBooking')}</TabsTrigger>
                 </TabsList>
 
@@ -457,7 +558,7 @@ export default function EventManagementPage() {
                             <Button
                                 size="sm"
                                 disabled={!isClub}
-                                onClick={() => isClub && setCreateOpen(true)}
+                                onClick={() => isClub && openCreate()}
                                 aria-disabled={!isClub}
                             >
                                 <Plus className="mr-2 h-4 w-4" /> {t('ngo_admin_events.newEventBtn')}
@@ -493,7 +594,12 @@ export default function EventManagementPage() {
                                                     {event.location?.city ? ` • ${event.location.city}` : ''}
                                                 </p>
                                             </div>
-                                            <EventAttendees eventId={event.id} />
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Button variant="outline" size="sm" onClick={() => openEdit(event)}>
+                                                    <Pencil className="h-4 w-4 mr-1.5" /> Düzenle
+                                                </Button>
+                                                <EventAttendees eventId={event.id} />
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -517,7 +623,7 @@ export default function EventManagementPage() {
             <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetForm(); }}>
                 <DialogContent className="sm:max-w-lg rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="font-bold">{t('ngo_admin_events.dialogTitle')}</DialogTitle>
+                        <DialogTitle className="font-bold">{editingId ? 'Etkinliği Düzenle' : t('ngo_admin_events.dialogTitle')}</DialogTitle>
                         <DialogDescription className="text-xs">
                             {t('ngo_admin_events.dialogDesc')}
                         </DialogDescription>
@@ -782,8 +888,8 @@ export default function EventManagementPage() {
                             <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading}>{t('ngo_admin_events.cancelBtn')}</Button>
                             <Button type="submit" disabled={submitting || evPosterUploading}>
                                 {(submitting || evPosterUploading)
-                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {evPosterUploading ? 'Afiş yükleniyor...' : t('ngo_admin_events.submitting')}</>
-                                    : t('ngo_admin_events.submitBtn')}
+                                    ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> {evPosterUploading ? 'Afiş yükleniyor...' : (editingId ? 'Güncelleniyor...' : t('ngo_admin_events.submitting'))}</>
+                                    : (editingId ? 'Güncelle' : t('ngo_admin_events.submitBtn'))}
                             </Button>
                         </DialogFooter>
                     </form>

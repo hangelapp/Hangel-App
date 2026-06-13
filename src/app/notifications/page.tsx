@@ -72,6 +72,8 @@ export default function NotificationsPage() {
     createdAt?: { toDate?: () => Date } | string | null;
     read?: boolean;
     responseStatus?: 'positive' | 'negative';
+    /** notifyUser doc'u link'i TOP-LEVEL yazar (data içinde değil). */
+    link?: string;
     data?: {
       requestId?: string;
       bloodType?: string;
@@ -232,19 +234,20 @@ export default function NotificationsPage() {
       case 'emergency-confirmation':
         return '/messages';
       case 'badge_earned':
-        // Yaka kartı bildirimi — etkinlik linki varsa oraya (/events/{slug}), yoksa rozetlere.
-        return n.data?.link || '/my-badges';
+        // Yaka kartı bildirimi — etkinlik linki (notifyUser top-level `link` yazar) varsa
+        // oraya (/events/{slug}), yoksa rozetlere.
+        return n.link || n.data?.link || '/my-badges';
       case 'badge':
-        return '/my-badges';
+        return n.link || '/my-badges';
       case 'event_created':
-        return n.data?.link || '/events';
+        return n.link || n.data?.link || '/events';
       case 'broadcast':
       case 'dm':
-        return n.data?.link || null;
+        return n.link || n.data?.link || null;
       case 'emergency-blood':
         return null;
       default:
-        return n.data?.link || n.data?.href || null;
+        return n.link || n.data?.link || n.data?.href || null;
     }
   };
 
