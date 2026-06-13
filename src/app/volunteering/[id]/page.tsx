@@ -440,7 +440,8 @@ export default function VolunteeringDetailPage() {
         taskId: opportunity.id,
         weatherEmoji,
         weatherTemp,
-        organizerLogoUrl: opportunity.organizerLogoUrl || '',
+        // İlan doc'unda logo yoksa NGO avatarına düş → Live Activity'de org logosu hep görünür.
+        organizerLogoUrl: organizerLogo || '',
         activityStartEpoch: toEpoch(dts?.eventStart, dts?.eventStartTime),
         activityEndEpoch: toEpoch(dts?.eventEnd, dts?.eventEndTime),
       });
