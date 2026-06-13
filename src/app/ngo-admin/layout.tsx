@@ -65,6 +65,7 @@ import { collection, doc, query, where, Timestamp, type Query, type DocumentData
 import { COLLECTIONS } from '@/firebase/collections';
 import { roleTitleHasScope, type NgoScope } from '@/lib/ngo-admin/role-scopes';
 import { useMenuBadge, type BadgeConfig } from '@/components/shared/use-menu-badge';
+import { useToast } from '@/hooks/use-toast';
 import {
   ActiveEntityProvider,
   useActiveEntity,
@@ -80,6 +81,8 @@ type MenuItem = {
   label: string;
   icon: LucideIcon;
   comingSoon?: boolean;
+  /** "beta" rozeti — aktif/tıklanabilir ama erken erişim olarak işaretli. */
+  beta?: boolean;
   /** Rol-bazlı kısıtlama: tanımlıysa yalnız bu kapsama yetkili roller görür
    *  (Genel Yönetici / sahip / süper-admin her zaman görür). Tanımsız = herkese açık. */
   scope?: NgoScope;
@@ -98,7 +101,7 @@ const NGO_MENU: MenuGroup[] = [
       { href: '/ngo-admin/manage-profile', label: 'Profili Güncelle', icon: UserCog },
       { href: '/ngo-admin/qr', label: 'STK Profil QR Kodu', icon: QrCode },
       { href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: Users },
-      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads' },
+      { href: '/ngo-admin/ads', label: 'Reklam Yönetimi', icon: Megaphone, scope: 'ads', beta: true },
     ],
   },
   {
@@ -137,13 +140,13 @@ const NGO_MENU: MenuGroup[] = [
   {
     title: 'Pazarlama & İletişim',
     items: [
-      { href: '/ngo-admin/messaging', label: 'Toplu Mesaj & Kampanyalar', icon: Send },
-      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare },
-      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail },
-      { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall },
-      { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet },
-      { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle },
-      { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Megaphone },
+      { href: '/ngo-admin/messaging', label: 'Toplu Mesaj & Kampanyalar', icon: Send, beta: true },
+      { href: '/ngo-admin/sms', label: 'SMS Gönderimi', icon: MessageSquare, beta: true },
+      { href: '/ngo-admin/mail', label: 'Mail Gönderimi', icon: Mail, beta: true },
+      { href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: PhoneCall, beta: true },
+      { href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: Wallet, beta: true },
+      { href: '/ngo-admin/dm', label: 'DM Mesajlaşma Yönetimi', icon: MessageCircle, beta: true },
+      { href: '/ngo-admin/marketing', label: 'Pazarlama İletişimi', icon: Megaphone, comingSoon: true },
     ],
   },
   {
@@ -152,18 +155,18 @@ const NGO_MENU: MenuGroup[] = [
       // Etkinlik Yönetimi NGO için bilinçli olarak "Yakında" (aktif kullanım kulüplere özel;
       // SideMenu guard'ı comingSoon=false olunca NGO'da gizliyor — bu yüzden burada kalmalı).
       { href: '/ngo-admin/events', label: 'Etkinlik Yönetimi', icon: Calendar, comingSoon: true },
-      { href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: Video },
-      { href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: Palette },
-      { href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: Calculator },
-      { href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: CreditCard },
-      { href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: Store },
-      { href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: Contact },
-      { href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: Building2 },
-      { href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: MapPin },
-      { href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: GraduationCap },
-      { href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: Briefcase },
-      { href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: Network },
-      { href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: LineChart },
+      { href: '/ngo-admin/online-meeting', label: 'Online Eğitim/Toplantı Araçları', icon: Video, comingSoon: true },
+      { href: '/ngo-admin/design-tools', label: 'Tasarım Programları', icon: Palette, comingSoon: true },
+      { href: '/ngo-admin/accounting', label: 'Ön Muhasebe Yönetimi', icon: Calculator, comingSoon: true },
+      { href: '/ngo-admin/payment-systems', label: 'Pos & Ödeme Sistemleri', icon: CreditCard, comingSoon: true },
+      { href: '/ngo-admin/ecommerce', label: 'İktisadi İşletme Yönetimi', icon: Store, comingSoon: true },
+      { href: '/ngo-admin/crm', label: 'CRM Yönetimi', icon: Contact, comingSoon: true },
+      { href: '/ngo-admin/virtual-office', label: 'Sanal ve Fiziki Ofis', icon: Building2, comingSoon: true },
+      { href: '/ngo-admin/field-team', label: 'Saha Ekip Yönetimi', icon: MapPin, comingSoon: true },
+      { href: '/ngo-admin/university-volunteering', label: 'Üniversite Gönüllülük Dersi', icon: GraduationCap, comingSoon: true },
+      { href: '/ngo-admin/hr-integration', label: 'İK Şirketleri Entegrasyonu', icon: Briefcase, comingSoon: true },
+      { href: '/ngo-admin/volunteer-portal', label: 'Gönüllülük Portalı Entegrasyonu', icon: Network, comingSoon: true },
+      { href: '/ngo-admin/analytics-tools', label: 'Web Analiz Araçları', icon: LineChart, comingSoon: true },
     ],
   },
 ];
@@ -335,6 +338,7 @@ function MenuItemLink({
   hrefResolved: string;
 }) {
   const db = useFirestore();
+  const { toast } = useToast();
   void active;
   const badgeConfig = React.useMemo<BadgeConfig>(() => {
     if (!entityId) return { kind: 'custom', build: () => null };
@@ -396,7 +400,19 @@ function MenuItemLink({
 
   if (item.comingSoon) {
     return (
-      <button type="button" aria-disabled="true" className={cn(baseClasses, 'w-full text-left cursor-not-allowed')}>
+      <button
+        type="button"
+        aria-disabled="true"
+        onClick={() => {
+          // Tıklanamaz ama tıklayınca bilgilendir: 2 sn sonra kendiliğinden kapanır.
+          const { dismiss } = toast({
+            title: 'Çok yakında 🧡',
+            description: 'Bu özelliği aktif etmek için çok çalışıyoruz; çok yakında yayına alacağız.',
+          });
+          setTimeout(() => dismiss(), 2000);
+        }}
+        className={cn(baseClasses, 'w-full text-left cursor-not-allowed text-muted-foreground hover:bg-transparent')}
+      >
         {content}
       </button>
     );
@@ -470,10 +486,16 @@ function SideMenu() {
                     <span className="flex-1 truncate">{displayLabel}</span>
                     {item.comingSoon && (
                       <Badge
-                        variant="secondary"
-                        className="ml-auto gap-1 px-1.5 py-0 text-[9px] font-bold uppercase tracking-widest"
+                        className="ml-auto gap-1 px-1.5 py-0 text-[9px] font-bold uppercase tracking-widest border-transparent bg-[#F4624A]/15 text-[#F4624A] hover:bg-[#F4624A]/15"
                       >
                         <Clock className="h-2.5 w-2.5" /> Yakında
+                      </Badge>
+                    )}
+                    {item.beta && !item.comingSoon && (
+                      <Badge
+                        className="ml-auto px-1.5 py-0 text-[9px] font-bold lowercase tracking-widest border-transparent bg-blue-500/15 text-blue-600 hover:bg-blue-500/15"
+                      >
+                        beta
                       </Badge>
                     )}
                   </>
