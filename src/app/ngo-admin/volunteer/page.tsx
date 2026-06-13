@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2 } from "lucide-react";
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2 } from "lucide-react";
 import React, { useMemo, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -223,6 +223,77 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
 };
 
 
+// Tek kod bloğu kartı (iframe/API/RSS) — kopyalanabilir.
+const PublishCodeBlock = ({ icon: Icon, title, desc, value, label, onCopy }: {
+  icon: React.ElementType; title: string; desc: string; value: string; label: string;
+  onCopy: (text: string, label: string) => void;
+}) => (
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-base flex items-center gap-2"><Icon className="h-4 w-4 text-primary" /> {title}</CardTitle>
+      <CardDescription className="text-xs">{desc}</CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <pre className="text-[11px] bg-muted rounded-xl p-3 overflow-x-auto whitespace-pre-wrap break-all font-mono">{value}</pre>
+      <Button size="sm" variant="outline" onClick={() => onCopy(value, label)}><Copy className="h-3.5 w-3.5 mr-1.5" /> Kopyala</Button>
+    </CardContent>
+  </Card>
+);
+
+// Web'de Yayınla — STK kendi sitesinde gönüllülük ilanlarını göstersin diye
+// iframe / JSON API / RSS kodları (tek ilan veya tümü). Tüm uçlar public + CORS.
+const PublishTab = ({ ngoId, opportunities }: { ngoId: string | null; opportunities: Volunteering[] }) => {
+  const { toast } = useToast();
+  const [selected, setSelected] = React.useState<string>('all');
+  if (!ngoId) return <p className="text-center text-muted-foreground p-8">Kurum bulunamadı.</p>;
+
+  const base = 'https://hangel.org.tr';
+  const embedUrl = selected === 'all'
+    ? `${base}/api/public/volunteering/${ngoId}/embed`
+    : `${base}/api/public/volunteering/${ngoId}/embed?listing=${selected}`;
+  const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" style="border:0;border-radius:16px" loading="lazy" title="Gönüllülük İlanları"></iframe>`;
+  const apiUrl = `${base}/api/public/volunteering/${ngoId}`;
+  const rssUrl = `${base}/api/public/volunteering/${ngoId}/rss`;
+
+  const copy = async (text: string, label: string) => {
+    try { await navigator.clipboard.writeText(text); toast({ title: `${label} kopyalandı` }); }
+    catch { toast({ variant: 'destructive', title: 'Kopyalanamadı', description: 'Metni elle seçip kopyalayın.' }); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="p-4 text-xs text-muted-foreground leading-relaxed">
+          Gönüllülük ilanlarını kendi web sitende göster. Aşağıdaki kodları sitene yapıştır — ilanlar otomatik güncellenir. Tek bir ilanı yayınlamak için aşağıdan seç.
+        </CardContent>
+      </Card>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-semibold">Hangi ilan(lar)?</label>
+        <select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="w-full h-11 rounded-xl border bg-card px-3 text-sm"
+        >
+          <option value="all">Tüm yayındaki ilanlar</option>
+          {opportunities.map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
+        </select>
+      </div>
+
+      <PublishCodeBlock icon={Code2} title="iframe (web sitesine göm)" desc="HTML sayfanın istediğin yerine yapıştır." value={iframeCode} label="iframe kodu" onCopy={copy} />
+      <PublishCodeBlock icon={Link2} title="JSON API" desc="Geliştirici için: ilanları JSON olarak çek (CORS açık)." value={apiUrl} label="API adresi" onCopy={copy} />
+      <PublishCodeBlock icon={Rss} title="RSS akışı" desc="RSS okuyucu / site beslemesi için." value={rssUrl} label="RSS adresi" onCopy={copy} />
+
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-base">Canlı Önizleme</CardTitle></CardHeader>
+        <CardContent>
+          <iframe src={embedUrl} className="w-full h-[420px] rounded-xl border" loading="lazy" title="Önizleme" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const VolunteerPage = () => {
   const db = useFirestore();
   // Aktif kurumu tek kaynaktan (ActiveEntityProvider) çöz. Eski kod
@@ -254,15 +325,19 @@ const VolunteerPage = () => {
           </div>
 
           <Tabs defaultValue="applications" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="applications">Başvurular</TabsTrigger>
               <TabsTrigger value="opportunities">İlan Yönetimi</TabsTrigger>
+              <TabsTrigger value="publish">Web'de Yayınla</TabsTrigger>
             </TabsList>
             <TabsContent value="applications" className="mt-4">
                 <VolunteerApplicationsTab opportunities={opportunities || []} />
             </TabsContent>
             <TabsContent value="opportunities" className="mt-4">
                 <OpportunityManagementTab opportunities={opportunities || []} isLoading={isLoading} />
+            </TabsContent>
+            <TabsContent value="publish" className="mt-4">
+                <PublishTab ngoId={activeId} opportunities={opportunities || []} />
             </TabsContent>
           </Tabs>
         </div>
