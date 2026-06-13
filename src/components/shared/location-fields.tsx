@@ -305,7 +305,9 @@ export function LocationFields({
               }
               onChange({
                 ...value,
-                openAddress: sel.address || sel.display,
+                // Tam adres + mekan adı: Nominatim display_name POI'lerde mekan adıyla
+                // başlar ve tüm adresi içerir. Önce display (tam), yoksa sokak.
+                openAddress: sel.display || sel.address,
                 city: nextCity,
                 district: nextDistrict,
                 lat: sel.lat,

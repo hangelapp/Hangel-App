@@ -61,8 +61,18 @@ interface EntityDoc {
 
 const CONTRIBUTOR_ROLE_OPTIONS: { value: EventContributorRole; label: string }[] = [
     { value: 'speaker', label: 'Konuşmacı' },
-    { value: 'artist', label: 'Sanatçı' },
     { value: 'moderator', label: 'Moderatör' },
+    { value: 'panelist', label: 'Panelist' },
+    { value: 'instructor', label: 'Eğitmen' },
+    { value: 'host', label: 'Sunucu' },
+    { value: 'artist', label: 'Sanatçı' },
+    { value: 'musician', label: 'Müzisyen' },
+    { value: 'dj', label: 'DJ' },
+    { value: 'performer', label: 'Performans Sanatçısı' },
+    { value: 'writer', label: 'Yazar' },
+    { value: 'academic', label: 'Akademisyen' },
+    { value: 'jury', label: 'Jüri Üyesi' },
+    { value: 'guest', label: 'Özel Konuk' },
 ];
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
@@ -147,6 +157,7 @@ export default function EventManagementPage() {
     const [evDate, setEvDate] = useState('');
     const [evCity, setEvCity] = useState('');
     const [evDistrict, setEvDistrict] = useState('');
+    const [evNeighborhood, setEvNeighborhood] = useState('');
     const [evAddress, setEvAddress] = useState('');
     const [evLat, setEvLat] = useState('');
     const [evLon, setEvLon] = useState('');
@@ -255,6 +266,7 @@ export default function EventManagementPage() {
         setEvDate('');
         setEvCity('');
         setEvDistrict('');
+        setEvNeighborhood('');
         setEvAddress('');
         setEvLat('');
         setEvLon('');
@@ -286,7 +298,7 @@ export default function EventManagementPage() {
         const e = ev as ClubEventDoc & {
             time?: string; endDate?: string; tags?: string[]; type?: string;
             capacity?: { max?: number }; language?: string; providesCertificate?: boolean;
-            location?: { address?: string; city?: string; district?: string; lat?: string; lon?: string };
+            location?: { address?: string; city?: string; district?: string; neighborhood?: string; lat?: string; lon?: string };
             description?: string; imageUrl?: string;
             contributors?: EventContributor[]; agenda?: EventAgendaItem[];
         };
@@ -298,6 +310,7 @@ export default function EventManagementPage() {
         setEvEndTime(endT || '');
         setEvCity(e.location?.city || '');
         setEvDistrict(e.location?.district || '');
+        setEvNeighborhood(e.location?.neighborhood || '');
         setEvAddress(e.location?.address || '');
         setEvLat(e.location?.lat || '');
         setEvLon(e.location?.lon || '');
@@ -410,6 +423,7 @@ export default function EventManagementPage() {
                             address: evAddress.trim(),
                             city: evCity.trim(),
                             district: evDistrict.trim(),
+                            neighborhood: evNeighborhood.trim(),
                             lat: evLat || '',
                             lon: evLon || '',
                         },
@@ -458,6 +472,7 @@ export default function EventManagementPage() {
                     address: evAddress.trim(),
                     city: evCity.trim(),
                     district: evDistrict.trim(),
+                    neighborhood: evNeighborhood.trim(),
                     lat: evLat || '',
                     lon: evLon || '',
                 },
@@ -693,16 +708,16 @@ export default function EventManagementPage() {
                             </div>
                         </div>
                         <LocationFields
-                            value={{ country: 'Türkiye', city: evCity, district: evDistrict, openAddress: evAddress, lat: evLat, lon: evLon }}
+                            value={{ country: 'Türkiye', city: evCity, district: evDistrict, neighborhood: evNeighborhood, openAddress: evAddress, lat: evLat, lon: evLon }}
                             onChange={(next) => {
                                 setEvCity(next.city ?? '');
                                 setEvDistrict(next.district ?? '');
+                                setEvNeighborhood(next.neighborhood ?? '');
                                 setEvAddress(next.openAddress ?? '');
                                 setEvLat(next.lat ?? '');
                                 setEvLon(next.lon ?? '');
                             }}
                             showCountry={false}
-                            showNeighborhood={false}
                             showOpenAddress
                             labelCity={t('ngo_admin_events.labelCity')}
                             labelOpenAddress={t('ngo_admin_events.labelAddress')}

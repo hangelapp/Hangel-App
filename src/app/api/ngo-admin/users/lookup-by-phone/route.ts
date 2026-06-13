@@ -84,14 +84,14 @@ export async function POST(req: NextRequest) {
         if (e164) {
             try {
                 const user = await auth.getUserByPhoneNumber(e164);
-                // Auth displayName boşsa users doc'undan adı çözmeyi dene.
-                let name = user.displayName || '';
-                if (!name) {
-                    try {
-                        const udoc = await db.collection(COLLECTIONS.users).doc(user.uid).get();
-                        name = resolveName(udoc.data() as Record<string, unknown> | undefined);
-                    } catch { /* yoksa boş ad ile dön */ }
-                }
+                // ÖNCE users doc'undan tam adı (ad + SOYAD) çöz; Auth displayName
+                // çoğu kez yalnız ad olduğu için soyad kaybolmasın. Doc boşsa Auth'a düş.
+                let name = '';
+                try {
+                    const udoc = await db.collection(COLLECTIONS.users).doc(user.uid).get();
+                    name = resolveName(udoc.data() as Record<string, unknown> | undefined);
+                } catch { /* doc yoksa Auth displayName'e düş */ }
+                if (!name) name = user.displayName || '';
                 return NextResponse.json({ found: true, uid: user.uid, name });
             } catch {
                 // auth/user-not-found — Firestore'a düş.
