@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2 } from "lucide-react";
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone } from "lucide-react";
 import React, { useMemo, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -205,7 +205,7 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
                         <p><strong>Başvurular:</strong> {opp.volunteerCount?.applications || 0}</p>
                     </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
+                <CardFooter className="flex flex-wrap gap-2">
                     <Button asChild variant="secondary" size="sm" className='flex-1'>
                         <Link href={`/volunteering/${opp.id}`}>Görüntüle</Link>
                     </Button>
@@ -214,6 +214,12 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
                     ) : (
                         <Button variant="destructive" size="sm" className='flex-1' onClick={() => handleToggleStatus(opp)}>Pasife Al</Button>
                     )}
+                    {/* Google Ad Grants ile ücretsiz tanıtım — ilan başlığı + sosyal alanı ads sihirbazına taşınır */}
+                    <Button asChild variant="outline" size="sm" className="basis-full">
+                        <Link href={`/ngo-admin/ads?source=volunteering&listingId=${opp.id}&q=${encodeURIComponent(opp.title || '')}`}>
+                            <Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google&apos;da Ücretsiz Tanıt
+                        </Link>
+                    </Button>
                 </CardFooter>
               </Card>
               );
