@@ -19,7 +19,7 @@ import { parse, differenceInDays } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { collection, doc, query, orderBy, limit as fsLimit } from 'firebase/firestore';
+import { collection, doc, query, orderBy, where, limit as fsLimit } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
@@ -166,10 +166,11 @@ function computeMatch(opp: Volunteering, profile: MatchingUserProfile) {
     };
 }
 
-const OpportunityCard = ({ opp, profile, hasProfile }: {
+const OpportunityCard = ({ opp, profile, hasProfile, appStatus }: {
     opp: Volunteering;
     profile: MatchingUserProfile;
     hasProfile: boolean;
+    appStatus?: string | null;
 }) => {
     const { t } = useTranslation();
     const ngo = ngos.find(n => n.id === opp.ngoId);
@@ -198,6 +199,14 @@ const OpportunityCard = ({ opp, profile, hasProfile }: {
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[11px] font-medium text-muted-foreground truncate leading-tight">{opp.organization}</p>
                                     <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors line-clamp-2">{opp.title}</h3>
+                                    {appStatus && (
+                                        <span className={`inline-flex items-center gap-1 mt-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                            appStatus === 'Onaylandı' ? 'bg-emerald-100 text-emerald-700'
+                                                : appStatus === 'Reddedildi' ? 'bg-red-100 text-red-700'
+                                                    : 'bg-amber-100 text-amber-700'}`}>
+                                            {appStatus === 'Onaylandı' ? '✓ Onaylandı' : appStatus === 'Reddedildi' ? 'Kabul edilmedi' : 'Başvuruldu'}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                             {/* Sağ üst köşe: İncele butonu (kibar tasarım) */}
@@ -273,6 +282,20 @@ export default function VolunteeringPage() {
         [db],
     );
     const { data: oppsData, isLoading } = useCollection<Volunteering>(oppsQuery);
+
+    // Kullanıcının kendi başvuruları → ilan kartında durum rozeti (entityId → status).
+    const myAppsQuery = useMemoFirebase(
+        () => (db && authUser ? query(collection(db, COLLECTIONS.applications), where('userId', '==', authUser.uid)) : null),
+        [db, authUser],
+    );
+    const { data: myApps } = useCollection<{ entityId?: string; status?: string }>(myAppsQuery);
+    const appStatusByEntity = useMemo(() => {
+        const map: Record<string, string> = {};
+        for (const a of myApps || []) {
+            if (a.entityId) map[a.entityId] = a.status || 'Beklemede';
+        }
+        return map;
+    }, [myApps]);
 
     const userDocRef = useMemoFirebase(() => {
         if (!db || !authUser) return null;
@@ -489,6 +512,7 @@ export default function VolunteeringPage() {
                       opp={opp}
                       profile={matchingProfile}
                       hasProfile={hasVolunteerProfile}
+                      appStatus={appStatusByEntity[opp.id]}
                   />
               ))
           ) : (

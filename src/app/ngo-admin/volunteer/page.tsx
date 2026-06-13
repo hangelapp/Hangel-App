@@ -15,6 +15,7 @@ import type { Volunteering, Application as UserApplication } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
+import { VolunteerApplicants } from '@/components/volunteering/volunteer-applicants';
 
 
 const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteering[] }) => {
@@ -117,9 +118,16 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
         <div className="space-y-6">
             {Object.keys(groupedApplications).length > 0 ? Object.entries(groupedApplications).map(([opportunityTitle, apps]) => (
                 <Card key={opportunityTitle}>
-                    <CardHeader>
-                        <CardTitle>{opportunityTitle}</CardTitle>
-                        <CardDescription>{apps.length} başvuru</CardDescription>
+                    <CardHeader className="flex flex-row items-start justify-between gap-2">
+                        <div>
+                            <CardTitle>{opportunityTitle}</CardTitle>
+                            <CardDescription>{apps.length} başvuru</CardDescription>
+                        </div>
+                        {/* Başvuran listesi: indir / yazdır / paylaş (etkinliklerdeki gibi) */}
+                        <VolunteerApplicants
+                            title={opportunityTitle}
+                            applicants={apps.map((a) => ({ name: a.userName || 'Gönüllü', status: a.status, date: a.date }))}
+                        />
                     </CardHeader>
                     <CardContent className="space-y-3">
                         {apps.map((app) => (
@@ -185,7 +193,9 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
             {opportunities.length > 0 ? opportunities.map((opp) => {
               const isPassive = (opp as Volunteering & { status?: string }).status === 'Pasif';
               return (
-              <Card key={opp.id}>
+              // Yayındaki (Aktif) ilan renkli/vurgulu; yayında olmayan (Pasif) gri/soluk.
+              <Card key={opp.id} className={isPassive ? 'opacity-60 grayscale' : 'border-primary/30 ring-1 ring-primary/10'}>
+
                 <CardHeader className='pb-4'>
                   <CardTitle className="text-base">{opp.title}</CardTitle>
                 </CardHeader>
