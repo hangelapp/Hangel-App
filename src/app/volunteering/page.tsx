@@ -341,16 +341,28 @@ export default function VolunteeringPage() {
     }, [userData]);
 
     const { interestOptions, skillOptions, cityOptions, socialAreaOptions } = useMemo(() => {
+        // İlanların gerçek detay alanlarından türetilen benzersiz değerler.
+        // Boş/whitespace değerler atlanır; trim'lenmiş haliyle eklenir.
         const interests = new Set<string>();
         const skills = new Set<string>();
         const cities = new Set<string>();
         const socialAreas = new Set<string>();
+        const addClean = (set: Set<string>, value: unknown) => {
+            if (typeof value !== 'string') return;
+            const v = value.trim();
+            if (v) set.add(v);
+        };
         (oppsData || []).forEach(opp => {
-            if (opp.socialArea) interests.add(opp.socialArea);
-            if (opp.socialArea) socialAreas.add(opp.socialArea);
-            (opp.interests || []).forEach(i => interests.add(i));
-            (opp.skills || []).forEach(s => skills.add(s));
-            if (opp.location?.city) cities.add(opp.location.city);
+            const oppExtra = opp as Volunteering & { dailySkills?: string[] };
+            // Hassasiyet → socialArea + interests birleşik benzersiz küme
+            addClean(interests, opp.socialArea);
+            addClean(socialAreas, opp.socialArea);
+            (opp.interests || []).forEach(i => addClean(interests, i));
+            // Yetkinlikler → skills + dailySkills benzersiz küme
+            (opp.skills || []).forEach(s => addClean(skills, s));
+            (oppExtra.dailySkills || []).forEach(s => addClean(skills, s));
+            // Konum → location.city benzersiz küme
+            addClean(cities, opp.location?.city);
         });
         return {
             interestOptions: Array.from(interests).sort((a, b) => a.localeCompare(b, 'tr')),
@@ -406,18 +418,31 @@ export default function VolunteeringPage() {
             return true;
         });
 
+        // Türkçe normalize (büyük/küçük + trim) ile çoklu-seçim eşleştirme.
+        // Bir ilan, ilgili detay alanında seçili değerlerden HERHANGİ birini
+        // taşıyorsa gösterilir.
         if (interestFilter.length > 0) {
-            filtered = filtered.filter(opp =>
-                interestFilter.includes(opp.socialArea) ||
-                (opp.interests || []).some(i => interestFilter.includes(i)),
-            );
+            const wanted = new Set(interestFilter.map(normTr));
+            filtered = filtered.filter(opp => {
+                const oppInterests = [opp.socialArea, ...(opp.interests || [])];
+                return oppInterests.some(i => wanted.has(normTr(i)));
+            });
         }
         if (skillFilter.length > 0) {
-            filtered = filtered.filter(opp => (opp.skills || []).some(s => skillFilter.includes(s)));
+            const wanted = new Set(skillFilter.map(normTr));
+            filtered = filtered.filter(opp => {
+                const oppExtra = opp as Volunteering & { dailySkills?: string[] };
+                const oppSkills = [...(opp.skills || []), ...(oppExtra.dailySkills || [])];
+                return oppSkills.some(s => wanted.has(normTr(s)));
+            });
         }
-        if (cityFilter.length > 0) filtered = filtered.filter(opp => cityFilter.includes(opp.location.city));
+        if (cityFilter.length > 0) {
+            const wanted = new Set(cityFilter.map(normTr));
+            filtered = filtered.filter(opp => wanted.has(normTr(opp.location?.city)));
+        }
         if (socialAreaFilter.length > 0) {
-            filtered = filtered.filter(opp => socialAreaFilter.includes(opp.socialArea));
+            const wanted = new Set(socialAreaFilter.map(normTr));
+            filtered = filtered.filter(opp => wanted.has(normTr(opp.socialArea)));
         }
         if (taskTypeFilter.length > 0) {
             filtered = filtered.filter(opp => taskTypeFilter.includes(opp.taskType));

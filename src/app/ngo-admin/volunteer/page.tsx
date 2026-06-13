@@ -2,16 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone } from "lucide-react";
-import React, { useMemo, Suspense } from 'react';
+import { PlusCircle, Loader2, Copy, Code2, Rss, Link2, Megaphone, Globe, Send, MessageCircle, Check } from "lucide-react";
+import React, { useMemo, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, query, where, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
-import type { Volunteering, Application as UserApplication } from '@/lib/types';
+import type { Volunteering, Application as UserApplication, NGO } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
@@ -87,6 +87,27 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
                 console.error('[ngo-admin/volunteer] application-notify failed', notifyErr);
             }
 
+            // volunteerCount.approved bakımı: bu ilana (entityId) ait Onaylandı
+            // başvuru sayısını yeniden hesaplayıp listing doc'una yaz. Detay
+            // sayfası bu alanı "Onaylanan gönüllü" göstergesi olarak okur.
+            // applications zaten bu component'in state'inde; güncel kararı da
+            // (status) yerel olarak uygula ki sayım yeni değeri yansıtsın.
+            const targetId = application.entityId;
+            if (targetId) {
+                const approvedCount = applications.filter((a) => {
+                    if (a.entityId !== targetId) return false;
+                    const effectiveStatus = a.id === application.id ? status : a.status;
+                    return effectiveStatus === 'Onaylandı';
+                }).length;
+                try {
+                    await updateDoc(doc(db, COLLECTIONS.volunteering, targetId), {
+                        'volunteerCount.approved': approvedCount,
+                    });
+                } catch (countErr) {
+                    console.error('[ngo-admin/volunteer] volunteerCount.approved update failed', countErr);
+                }
+            }
+
             toast({
                 title: `Başvuru ${status}`,
                 description: decision === 'approved'
@@ -112,10 +133,38 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
         }, {} as Record<string, UserApplication[]>);
     }, [applications]);
 
+    // Özet sayaç: toplam / onaylanan / bekleyen başvuru sayısı.
+    const counts = useMemo(() => {
+        let approved = 0, pending = 0, rejected = 0;
+        for (const a of applications) {
+            if (a.status === 'Onaylandı') approved++;
+            else if (a.status === 'Reddedildi') rejected++;
+            else pending++;
+        }
+        return { total: applications.length, approved, pending, rejected };
+    }, [applications]);
+
     if (isLoading) return <div className="space-y-4"><Skeleton className="h-40 w-full" /><Skeleton className="h-40 w-full" /></div>;
 
     return (
         <div className="space-y-6">
+            {applications.length > 0 && (
+                <Card className="bg-muted/40">
+                    <CardContent className="p-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        <span className="font-semibold">Toplam başvuru: {counts.total}</span>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-green-600 font-medium">Onaylanan: {counts.approved}</span>
+                        <span className="text-muted-foreground">·</span>
+                        <span className="text-amber-600 font-medium">Bekleyen: {counts.pending}</span>
+                        {counts.rejected > 0 && (
+                            <>
+                                <span className="text-muted-foreground">·</span>
+                                <span className="text-red-600 font-medium">Reddedilen: {counts.rejected}</span>
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
             {Object.keys(groupedApplications).length > 0 ? Object.entries(groupedApplications).map(([opportunityTitle, apps]) => (
                 <Card key={opportunityTitle}>
                     <CardHeader className="flex flex-row items-start justify-between gap-2">
@@ -141,12 +190,21 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
                                         <p className="text-xs text-muted-foreground">{app.date}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 basis-full sm:basis-auto justify-end">
+                                <div className="flex items-center gap-2 basis-full sm:basis-auto justify-end">
                                   <Button variant="outline" size="sm" className="flex-1 sm:flex-grow-0" asChild>
                                     <Link href={`/profile/${app.userId}`}>Profil</Link>
                                   </Button>
-                                  <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
-                                  <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
+                                  {app.status === 'Onaylandı' ? (
+                                    <Badge className="bg-green-600 hover:bg-green-600 text-white"><Check className="h-3.5 w-3.5 mr-1" /> Onaylandı</Badge>
+                                  ) : app.status === 'Reddedildi' ? (
+                                    <Badge variant="destructive">Reddedildi</Badge>
+                                  ) : (
+                                    <>
+                                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">Beklemede</Badge>
+                                      <Button variant="secondary" size="sm" className="flex-1 sm:flex-grow-0 text-green-600 border-green-600 hover:bg-green-100" onClick={() => handleApplication(app, 'approved')}>Onayla</Button>
+                                      <Button variant="destructive" size="sm" className="flex-1 sm:flex-grow-0" onClick={() => handleApplication(app, 'rejected')}>Reddet</Button>
+                                    </>
+                                  )}
                                 </div>
                             </div>
                         ))}
@@ -161,6 +219,9 @@ const VolunteerApplicationsTab = ({ opportunities }: { opportunities: Volunteeri
 const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities: Volunteering[], isLoading: boolean }) => {
     const { toast } = useToast();
     const db = useFirestore();
+    // Herkese açık ilan linki için origin. SSR/ilk render'da window yok → canlı
+    // domaine düş (PublishTab ile tutarlı), client'ta gerçek origin'e geçer.
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://hangel.org.tr';
 
     const handleToggleStatus = async (opp: Volunteering) => {
         const isActive = (opp as Volunteering & { status?: string }).status !== 'Pasif';
@@ -220,6 +281,37 @@ const OpportunityManagementTab = ({ opportunities, isLoading }: { opportunities:
                             <Megaphone className="h-3.5 w-3.5 mr-1.5" /> Google&apos;da Ücretsiz Tanıt
                         </Link>
                     </Button>
+                    {/* Paylaş / yayınla: herkese açık ilan linki üzerinden web / Telegram / WhatsApp */}
+                    {(() => {
+                      const publicUrl = `${origin}/volunteering/${opp.id}`;
+                      return (
+                        <div className="basis-full flex flex-wrap gap-2">
+                          <Button asChild variant="outline" size="sm" className="flex-1">
+                            <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                              <Globe className="h-3.5 w-3.5 mr-1.5" /> Web sitende
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline" size="sm" className="flex-1">
+                            <a
+                              href={`https://t.me/share/url?url=${encodeURIComponent(publicUrl)}&text=${encodeURIComponent(opp.title || '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Send className="h-3.5 w-3.5 mr-1.5" /> Telegram&apos;da
+                            </a>
+                          </Button>
+                          <Button asChild variant="outline" size="sm" className="flex-1">
+                            <a
+                              href={`https://wa.me/?text=${encodeURIComponent(`${opp.title || ''} ${publicUrl}`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> WhatsApp&apos;ta
+                            </a>
+                          </Button>
+                        </div>
+                      );
+                    })()}
                 </CardFooter>
               </Card>
               );
@@ -321,6 +413,47 @@ const VolunteerPage = () => {
 
   const { data: opportunities, isLoading: oppsLoading } = useCollection<Volunteering>(oppsQuery);
   const isLoading = entityLoading || oppsLoading;
+
+  // Aktif STK doc'u — bozuk ilan self-heal için ad + logo kaynağı.
+  const ngoDocRef = useMemoFirebase(() => {
+    if (!db || !activeId) return null;
+    return doc(db, COLLECTIONS.ngos, activeId);
+  }, [db, activeId]);
+  const { data: ngoDoc } = useDoc<NGO>(ngoDocRef);
+
+  // Bir kez düzeltilmiş ilan id'lerini tut (oturum içi idempotency; her snapshot
+  // güncellemesinde yeniden yazmayı önler).
+  const healedRef = useRef<Set<string>>(new Set());
+
+  // SELF-HEAL: eski ilanlar ngoId=admin uid ile yazılmış, organization='Kuruluş'
+  // placeholder + organizerLogoUrl boş kalmıştı. Aktif STK bilindiğine göre bunları
+  // bir kez düzelt. Sadece gerçekten değişen alanları yaz (gereksiz write yok),
+  // undefined yazma yok.
+  useEffect(() => {
+    if (!db || !activeId || !ngoDoc || !opportunities) return;
+    const orgName = ngoDoc.name;
+    const orgLogo = ngoDoc.avatarUrl;
+    for (const opp of opportunities) {
+      if (healedRef.current.has(opp.id)) continue;
+      const update: Record<string, string> = {};
+      const needsNgoId = opp.ngoId !== activeId;
+      const needsOrg = opp.organization === 'Kuruluş';
+      if (!needsNgoId && !needsOrg) continue; // düzeltme gerekmeyenlere dokunma
+      if (needsNgoId) update.ngoId = activeId;
+      if (orgName && (needsOrg || opp.organization === 'Kuruluş' || !opp.organization)) {
+        update.organization = orgName;
+      }
+      if (orgLogo && !opp.organizerLogoUrl) {
+        update.organizerLogoUrl = orgLogo;
+      }
+      if (Object.keys(update).length === 0) continue; // yazılacak (tanımlı) alan yok
+      healedRef.current.add(opp.id);
+      updateDoc(doc(db, COLLECTIONS.volunteering, opp.id), update).catch((err) => {
+        console.error('[ngo-admin/volunteer] self-heal failed', opp.id, err);
+        healedRef.current.delete(opp.id); // başarısızsa tekrar denenebilsin
+      });
+    }
+  }, [db, activeId, ngoDoc, opportunities]);
 
   return (
     <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin" /></div>}>

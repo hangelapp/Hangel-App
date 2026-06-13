@@ -23,7 +23,7 @@ import { differenceInDays, format, parse } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where } from 'firebase/firestore';
+import { collection, doc, query, where, updateDoc, increment } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Volunteering, NGO, User as UserType } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -188,6 +188,25 @@ export default function VolunteeringDetailPage() {
     }
   };
 
+  // Tarih + ayrı saat alanını birleştirip "dd MMMM yyyy, HH:mm" üretir.
+  // Saat boş/geçersizse yalnız tarih döner ("dd MMMM yyyy").
+  const formatDateWithTime = (dateStr?: string, timeStr?: string): string => {
+    if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return '—';
+    try {
+      const dateOnly = parse(dateStr.slice(0, 10), 'yyyy-MM-dd', new Date());
+      if (isNaN(dateOnly.getTime())) return safeFormatDateTime(dateStr);
+      const t = (timeStr || '').trim();
+      if (t && /^\d{1,2}:\d{2}$/.test(t)) {
+        const combined = parse(`${dateStr.slice(0, 10)} ${t}`, 'yyyy-MM-dd HH:mm', new Date());
+        if (!isNaN(combined.getTime())) return format(combined, 'dd MMMM yyyy, HH:mm', { locale: tr });
+      }
+      // Saat ayrı alanda yoksa dateStr içinde gömülü olabilir (örn. "yyyy-MM-dd HH:mm").
+      return safeFormatDateTime(dateStr);
+    } catch {
+      return safeFormatDateTime(dateStr);
+    }
+  };
+
   const daysRemaining = (() => {
     if (!opportunity.dates?.applicationEnd) return -1;
     try {
@@ -200,10 +219,38 @@ export default function VolunteeringDetailPage() {
     }
   })();
   const countdownText = daysRemaining > 0 ? `Son ${daysRemaining} Gün` : (daysRemaining === 0 ? 'Son Gün' : 'Süre Doldu');
-  const opp = opportunity as Volunteering & { providesCertificate?: boolean; amenities?: { providesCertificate?: boolean }; taskType?: string; commitment?: string };
+  const opp = opportunity as Volunteering & {
+    providesCertificate?: boolean;
+    amenities?: { providesCertificate?: boolean };
+    taskType?: string;
+    commitment?: string;
+    dates?: Volunteering['dates'] & {
+      applicationStartTime?: string;
+      applicationEndTime?: string;
+      eventStartTime?: string;
+      eventEndTime?: string;
+    };
+    volunteerCount?: Volunteering['volunteerCount'] & { approved?: number };
+  };
   const providesCertificate = opp.providesCertificate ?? opp.amenities?.providesCertificate ?? false;
   const taskType = opp.taskType || opp.commitment || '—';
   const isPhysical = locType === 'Saha' || locType === 'Hibrit';
+
+  // Organize eden STK adı — ngo adı öncelikli, yoksa ilan placeholder'ı.
+  const organizerName = ngo?.name || opportunity.organization;
+  // Yaka kartı logosu yoksa STK adının baş harfleri (ilk iki kelimeden).
+  const organizerInitials = (organizerName || '')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join('')
+    .toUpperCase() || 'STK';
+
+  // Gönüllü sayıları: İhtiyaç / Başvuran / Onaylanan.
+  const neededCount = opp.volunteerCount?.needed ?? 0;
+  const applicationsCount = opp.volunteerCount?.applications ?? 0;
+  const approvedCount = opp.volunteerCount?.approved ?? 0;
 
   // Başvuru durumu (events RSVP benzeri) — başvurmuş kullanıcıya yaka kartı / wallet / NFC göster.
   const hasApplied = Boolean(authUser && (myApplications?.length ?? 0) > 0);
@@ -344,6 +391,11 @@ export default function VolunteeringDetailPage() {
         location: opportunity.location.city
     });
 
+    // İlanın başvuran sayacını atomik olarak artır (best-effort; hata başvuru akışını bozmaz).
+    void updateDoc(doc(db, COLLECTIONS.volunteering, opportunity.id), {
+        'volunteerCount.applications': increment(1),
+    }).catch(() => { /* sayaç best-effort */ });
+
     // Başvuru sürecini telefon ekranında canlı etkinlik (Live Activity) olarak göster (iOS native; web no-op).
     // Saha/Hibrit gönüllülükte hava durumu + STK logosu da geçilir (best-effort).
     void (async () => {
@@ -424,7 +476,7 @@ export default function VolunteeringDetailPage() {
         <div className="p-4 space-y-6 -mt-16 relative z-10">
             <div className='p-1 bg-background/80 backdrop-blur-xl rounded-2xl'>
                  <h1 className="text-2xl font-bold font-headline text-foreground p-3">{opportunity.title}</h1>
-                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-foreground/90 text-base font-medium hover:underline px-3 pb-3 block">{opportunity.organization}</Link>
+                 <Link href={`/ngos/${opportunity.ngoId}`} className="text-foreground/90 text-base font-medium hover:underline px-3 pb-3 block">{organizerName}</Link>
             </div>
 
             {authUser && hasProfile && (
@@ -447,7 +499,17 @@ export default function VolunteeringDetailPage() {
             <div className="space-y-4 mt-4">
                 <Card>
                     <CardContent className="p-4 grid grid-cols-2 gap-4 text-center">
-                        <div className="p-2 bg-muted/50 rounded-lg">
+                        <div className="p-2 bg-muted/50 rounded-lg relative">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <button type="button" className="absolute top-1.5 right-1.5 text-muted-foreground hover:text-primary" aria-label="Etki puanı nasıl hesaplanır?">
+                                        <Info className="h-3.5 w-3.5" />
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-72 text-xs text-muted-foreground whitespace-pre-line leading-relaxed">
+                                    Etki Puanı, iş kaleminin saatlik puanı × tahmini gönüllü saati ile hesaplanır; gönüllülüğün sembolik etki skorudur.
+                                </PopoverContent>
+                            </Popover>
                             <p className="font-bold text-lg text-primary">{opportunity.points}</p>
                             <p className="text-xs text-muted-foreground">Etki Puanı</p>
                         </div>
@@ -500,7 +562,14 @@ export default function VolunteeringDetailPage() {
                         <div className='flex items-center gap-3'><MapPin className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.location.city}, {opportunity.location.district} ({opportunity.location.type})</span></div>
                         <div className='flex items-center gap-3'><Calendar className="h-4 w-4 text-muted-foreground" /> <span>{opportunity.commitment} ({taskType})</span></div>
                         <div className='flex items-center gap-3'><Award className="h-4 w-4 text-muted-foreground" /> <span>Sertifika: {providesCertificate ? 'Veriliyor' : 'Verilmiyor'}</span></div>
-                        <div className='flex items-center gap-3'><Users className="h-4 w-4 text-muted-foreground" /> <span>Gönüllü Kapasitesi: {opportunity.volunteerCount.needed}{typeof opportunity.volunteerCount.applications === 'number' ? ` (Başvuran: ${opportunity.volunteerCount.applications})` : ''}</span></div>
+                        <div className='flex items-center gap-3'>
+                            <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <span><span className="text-muted-foreground">İhtiyaç:</span> <span className="font-bold">{neededCount}</span></span>
+                                <span><span className="text-muted-foreground">Başvuran:</span> <span className="font-bold">{applicationsCount}</span></span>
+                                <span><span className="text-muted-foreground">Onaylanan:</span> <span className="font-bold text-emerald-700">{approvedCount}</span></span>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -525,10 +594,10 @@ export default function VolunteeringDetailPage() {
                  <Card>
                     <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Başlangıç:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.applicationStart)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Bitiş:</span><span className='font-normal text-primary text-right'>{safeFormatDateTime(opportunity.dates?.applicationEnd)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Başlangıç:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.eventStart)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Bitiş:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.eventEnd)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Başlangıç:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.applicationStart, opp.dates?.applicationStartTime)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Bitiş:</span><span className='font-normal text-primary text-right'>{formatDateWithTime(opp.dates?.applicationEnd, opp.dates?.applicationEndTime)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Başlangıç:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Bitiş:</span><span className='font-normal text-right'>{formatDateWithTime(opp.dates?.eventEnd, opp.dates?.eventEndTime)}</span></div>
                     </CardContent>
                 </Card>
 
@@ -630,23 +699,18 @@ export default function VolunteeringDetailPage() {
                                 <div className="my-6 flex flex-col items-center gap-8">
                                     <div>
                                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Ön Yüzü</h3>
-                                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
-                                        <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-xl font-black text-primary">hangel</span>
-                                                {organizerLogo && (
-                                                    <Avatar className="h-8 w-8 bg-white border shrink-0">
-                                                        <AvatarImage src={organizerLogo} alt={opportunity.organization} className="p-1 object-contain"/>
-                                                        <AvatarFallback>{opportunity.organization.slice(0, 2)}</AvatarFallback>
-                                                    </Avatar>
-                                                )}
-                                            </div>
-                                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
+                                    <div ref={cardFrontRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col overflow-hidden mx-auto">
+                                        <div className="p-3 bg-[#f5f5f7] flex justify-between items-center gap-2 border-b shrink-0">
+                                            <span className="text-lg font-black text-primary shrink-0">hangel</span>
+                                            <Avatar className="h-11 w-11 bg-white border shrink-0">
+                                                {organizerLogo && <AvatarImage src={organizerLogo} alt={organizerName} className="p-1 object-contain" />}
+                                                <AvatarFallback className="text-xs font-black text-primary">{organizerInitials}</AvatarFallback>
+                                            </Avatar>
                                         </div>
-                                        <div className="p-6 flex-1 flex flex-col justify-between items-center text-center">
-                                            <div className="space-y-1">
-                                                <p className="text-lg font-black text-foreground leading-tight">{opportunity.title}</p>
-                                                <p className="text-xs font-bold text-primary uppercase">{safeFormatDateTime(opportunity.dates?.eventStart)}</p>
+                                        <div className="p-5 flex-1 flex flex-col justify-between items-center text-center min-h-0">
+                                            <div className="space-y-1 w-full">
+                                                <p className="text-base font-black text-foreground leading-tight line-clamp-2">{opportunity.title}</p>
+                                                <p className="text-[11px] font-bold text-primary uppercase">{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</p>
                                             </div>
                                             <div className='w-full'>
                                                 <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={100} height={100} className="mx-auto my-4 rounded-2xl border p-1 bg-white shadow-sm" />
@@ -661,8 +725,8 @@ export default function VolunteeringDetailPage() {
                                                 )}
                                             </div>
                                         </div>
-                                        <div className='bg-[#f5f5f7] p-3 text-[10px] text-muted-foreground border-t text-center font-mono'>
-                                            <p>{opportunity.organization}</p>
+                                        <div className='bg-[#f5f5f7] p-3 text-[10px] text-muted-foreground border-t text-center font-mono shrink-0'>
+                                            <p className="truncate">{organizerName}</p>
                                         </div>
                                     </div>
                                     </div>
@@ -670,19 +734,14 @@ export default function VolunteeringDetailPage() {
                                     <div>
                                     <h3 className="font-bold text-center mb-3 text-xs uppercase tracking-widest text-muted-foreground">Kart Arka Yüzü</h3>
                                     <div ref={cardBackRef} className="w-full max-w-[300px] aspect-[105/148] bg-white rounded-3xl shadow-2xl border flex flex-col justify-between overflow-hidden mx-auto">
-                                        <div className="p-4 bg-[#f5f5f7] flex justify-between items-center border-b">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-xl font-black text-primary">hangel</span>
-                                                {organizerLogo && (
-                                                    <Avatar className="h-8 w-8 bg-white border shrink-0">
-                                                        <AvatarImage src={organizerLogo} alt={opportunity.organization} className="p-1 object-contain"/>
-                                                        <AvatarFallback>{opportunity.organization.slice(0, 2)}</AvatarFallback>
-                                                    </Avatar>
-                                                )}
-                                            </div>
-                                            <span className="h-8 w-8 rounded-full border-2 border-muted-foreground/25 bg-white shrink-0" aria-hidden />
+                                        <div className="p-3 bg-[#f5f5f7] flex justify-between items-center gap-2 border-b shrink-0">
+                                            <span className="text-lg font-black text-primary shrink-0">hangel</span>
+                                            <Avatar className="h-11 w-11 bg-white border shrink-0">
+                                                {organizerLogo && <AvatarImage src={organizerLogo} alt={organizerName} className="p-1 object-contain" />}
+                                                <AvatarFallback className="text-xs font-black text-primary">{organizerInitials}</AvatarFallback>
+                                            </Avatar>
                                         </div>
-                                        <div className="p-6 flex-1 flex flex-col justify-center items-center text-center space-y-6">
+                                        <div className="p-5 flex-1 flex flex-col justify-center items-center text-center space-y-5 min-h-0">
                                             <h3 className="text-lg font-black uppercase tracking-widest">İLETİŞİM BİLGİLERİ</h3>
                                             <div className="my-2">
                                                 <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={120} height={120} className="mx-auto rounded-2xl border-2 border-primary/20 p-1 bg-white shadow-sm" />
@@ -732,14 +791,28 @@ export default function VolunteeringDetailPage() {
         </div>
 
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-lg p-4 border-t mt-auto">
-             <Button
-                size="lg"
-                className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20"
-                disabled={isApplying || daysRemaining < 0}
-                onClick={handleApply}
-            >
-              {isApplying ? <Loader2 className="animate-spin h-5 w-5" /> : daysRemaining < 0 ? 'Başvuru Süresi Doldu' : `${countdownText}, Hemen Başvur`}
-            </Button>
+             {applicationStatus === 'Beklemede' ? (
+                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-base font-bold px-4 text-center">
+                    <Clock className="h-5 w-5 shrink-0" /> Başvurun alındı, onay bekliyorsunuz
+                </div>
+             ) : applicationStatus === 'Onaylandı' ? (
+                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-emerald-600 text-white text-base font-bold px-4 text-center">
+                    <CheckCircle2 className="h-5 w-5 shrink-0" /> Başvurunuz onaylandı
+                </div>
+             ) : applicationStatus === 'Reddedildi' ? (
+                <div className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 bg-muted border text-muted-foreground text-base font-bold px-4 text-center">
+                    <XCircle className="h-5 w-5 shrink-0" /> Başvurun bu sefer onaylanmadı
+                </div>
+             ) : (
+                <Button
+                    size="lg"
+                    className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl shadow-primary/20"
+                    disabled={isApplying || daysRemaining < 0}
+                    onClick={handleApply}
+                >
+                  {isApplying ? <Loader2 className="animate-spin h-5 w-5" /> : daysRemaining < 0 ? 'Başvuru Süresi Doldu' : `${countdownText}, Hemen Başvur`}
+                </Button>
+             )}
         </div>
     </div>
   );
