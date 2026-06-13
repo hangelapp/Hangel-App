@@ -205,12 +205,16 @@ export default function EventDetailPage() {
       if (data.status === 'going' && resolvedEventId) {
         // Etkinlik başlangıç tarihini epoch'a çevir → widget Text(timerInterval:) ile
         // cihazda kendiliğinden geri sayar (push gerekmez).
-        let eventStartEpoch = 0;
-        if (event?.startDate) {
-          let d = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
-          if (isNaN(d.getTime())) d = parse(event.startDate, 'yyyy-MM-dd', new Date());
-          if (!isNaN(d.getTime())) eventStartEpoch = d.getTime();
-        }
+        // Başlangıç + bitiş tarihini epoch'a çevir → widget'ta otomatik geri sayım
+        // (başlamadan önce) ve etkinlik akış-line'ı (sırasında). Push gerekmez.
+        const toEpoch = (s?: string): number => {
+          if (!s) return 0;
+          let d = parse(s, 'yyyy-MM-dd HH:mm', new Date());
+          if (isNaN(d.getTime())) d = parse(s, 'yyyy-MM-dd', new Date());
+          return isNaN(d.getTime()) ? 0 : d.getTime();
+        };
+        const eventStartEpoch = toEpoch(event?.startDate);
+        const eventEndEpoch = toEpoch(event?.endDate);
         const _role = getUserEventRole(event?.contributors, authUser?.uid);
         const _roleLabel = _role === 'participant'
           ? 'Katılımcı'
@@ -222,6 +226,7 @@ export default function EventDetailPage() {
             : (event?.location?.address || event?.location?.city || ''),
           eventId: resolvedEventId,
           eventStartEpoch,
+          eventEndEpoch,
           statusLabel: _roleLabel,
         });
       }

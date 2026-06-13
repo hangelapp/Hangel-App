@@ -157,28 +157,73 @@ export default function EventManagementPage() {
     const [evCapacity, setEvCapacity] = useState('');
     const [evLanguage, setEvLanguage] = useState('Türkçe');
     const [evCertificate, setEvCertificate] = useState(false);
-    // Konuşmacılar / Sanatçılar. NOT: Projede reuse edilebilir bağımsız bir hangel
-    // kullanıcı arama picker'ı yok (mevcut user-search OnboardingWizard içine gömülü).
-    // Bu yüzden her satıra opsiyonel e-posta alanı koyuyoruz; userId şimdilik boş kalır
-    // (e-postadan uid çözümleme ileride backend tarafında yapılabilir).
+    // Konuşmacılar / Sanatçılar. Kişi hangel üyesiyse TELEFONLA sorgulanır; üyeyse
+    // adı otomatik gelir + userId bağlanır (isim kilitlenir, ünvan elle girilir).
+    // Üye değilse isim-soyisim elle yazılır, userId boş kalır.
     const [contributors, setContributors] = useState<EventContributor[]>([]);
-    const [contributorEmails, setContributorEmails] = useState<string[]>([]);
+    // Her contributor satırının telefon sorgu durumu (paralel dizi).
+    type ContributorLookup = {
+        phone: string;
+        status: 'idle' | 'loading' | 'member' | 'notfound';
+        locked: boolean; // üye bulundu → isim alanı readonly
+    };
+    const [contributorLookups, setContributorLookups] = useState<ContributorLookup[]>([]);
     const [agenda, setAgenda] = useState<EventAgendaItem[]>([]);
     const posterInputRef = useRef<HTMLInputElement>(null);
 
     const addContributor = () => {
         setContributors((prev) => [...prev, { name: '', title: '', role: 'speaker' }]);
-        setContributorEmails((prev) => [...prev, '']);
+        setContributorLookups((prev) => [...prev, { phone: '', status: 'idle', locked: false }]);
     };
     const updateContributor = (idx: number, patch: Partial<EventContributor>) => {
         setContributors((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)));
     };
-    const updateContributorEmail = (idx: number, email: string) => {
-        setContributorEmails((prev) => prev.map((e, i) => (i === idx ? email : e)));
+    const updateContributorLookup = (idx: number, patch: Partial<ContributorLookup>) => {
+        setContributorLookups((prev) => prev.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
+    };
+    // Telefonu değiştirince üyelik bağı sıfırlanır (yeniden elle isim girilebilsin).
+    const handleContributorPhoneChange = (idx: number, phone: string) => {
+        updateContributorLookup(idx, { phone, status: 'idle', locked: false });
+        updateContributor(idx, { userId: undefined });
+    };
+    const lookupContributorPhone = async (idx: number) => {
+        const phone = (contributorLookups[idx]?.phone || '').trim();
+        if (!phone) return;
+        if (!authUser) {
+            toast({ variant: 'destructive', title: 'Oturum gerekli', description: 'Sorgu için giriş yapın.' });
+            return;
+        }
+        updateContributorLookup(idx, { status: 'loading' });
+        try {
+            const idToken = await authUser.getIdToken();
+            const res = await fetch('/api/ngo-admin/users/lookup-by-phone', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ phone }),
+            });
+            const data = (await res.json().catch(() => null)) as
+                | { found?: boolean; uid?: string; name?: string; message?: string }
+                | null;
+            if (!res.ok) {
+                updateContributorLookup(idx, { status: 'idle', locked: false });
+                toast({ variant: 'destructive', title: 'Sorgu başarısız', description: data?.message || 'Telefon sorgulanamadı.' });
+                return;
+            }
+            if (data?.found && data.uid) {
+                updateContributor(idx, { userId: data.uid, name: data.name || contributors[idx]?.name || '' });
+                updateContributorLookup(idx, { status: 'member', locked: true });
+            } else {
+                updateContributor(idx, { userId: undefined });
+                updateContributorLookup(idx, { status: 'notfound', locked: false });
+            }
+        } catch {
+            updateContributorLookup(idx, { status: 'idle', locked: false });
+            toast({ variant: 'destructive', title: 'Sorgu başarısız', description: 'Telefon sorgulanamadı.' });
+        }
     };
     const removeContributor = (idx: number) => {
         setContributors((prev) => prev.filter((_, i) => i !== idx));
-        setContributorEmails((prev) => prev.filter((_, i) => i !== idx));
+        setContributorLookups((prev) => prev.filter((_, i) => i !== idx));
     };
 
     const addAgendaItem = () => setAgenda((prev) => [...prev, { time: '', title: '' }]);
@@ -218,7 +263,7 @@ export default function EventManagementPage() {
         setEvLanguage('Türkçe');
         setEvCertificate(false);
         setContributors([]);
-        setContributorEmails([]);
+        setContributorLookups([]);
         setAgenda([]);
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
@@ -272,7 +317,7 @@ export default function EventManagementPage() {
                 : '';
 
             // Konuşmacı/sanatçı listesi — boş isimli satırları at, undefined alan yazma.
-            // userId şu an yok (e-postadan uid çözme backend işi); satırda userId varsa korunur.
+            // Telefon sorgusu üyeyi bulduysa satırda userId set olur; yoksa undefined kalır.
             const cleanContributors: EventContributor[] = contributors
                 .map((c) => ({ ...c, name: c.name.trim(), title: c.title.trim() }))
                 .filter((c) => c.name.length > 0)
@@ -615,13 +660,51 @@ export default function EventManagementPage() {
                                 </p>
                             ) : (
                                 <div className="space-y-3">
-                                    {contributors.map((c, idx) => (
+                                    {contributors.map((c, idx) => {
+                                        const lookup = contributorLookups[idx] ?? { phone: '', status: 'idle' as const, locked: false };
+                                        return (
                                         <div key={idx} className="p-3 border rounded-xl bg-card space-y-2">
+                                            {/* hangel üyesi mi? Telefonla sorgula */}
+                                            <div className="space-y-1">
+                                                <Label className="text-[11px] text-muted-foreground">hangel üye telefonu (opsiyonel)</Label>
+                                                <div className="flex items-end gap-2">
+                                                    <Input
+                                                        type="tel"
+                                                        inputMode="tel"
+                                                        value={lookup.phone}
+                                                        onChange={(e) => handleContributorPhoneChange(idx, e.target.value)}
+                                                        placeholder="05XX XXX XX XX"
+                                                        className="flex-1"
+                                                    />
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="shrink-0"
+                                                        disabled={lookup.status === 'loading' || !lookup.phone.trim()}
+                                                        onClick={() => lookupContributorPhone(idx)}
+                                                    >
+                                                        {lookup.status === 'loading'
+                                                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                            : 'Sorgula'}
+                                                    </Button>
+                                                </div>
+                                                {lookup.status === 'member' && (
+                                                    <Badge variant="secondary" className="mt-1 gap-1 text-emerald-700 bg-emerald-50 border-emerald-200">
+                                                        <CheckCircle2 className="h-3 w-3" /> hangel üyesi
+                                                    </Badge>
+                                                )}
+                                                {lookup.status === 'notfound' && (
+                                                    <p className="text-[11px] text-amber-600 mt-1">Üye bulunamadı, ismi elle girin.</p>
+                                                )}
+                                            </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 <Input
                                                     value={c.name}
                                                     onChange={(e) => updateContributor(idx, { name: e.target.value })}
                                                     placeholder="İsim (örn. Ayşe Yılmaz)"
+                                                    readOnly={lookup.locked}
+                                                    className={lookup.locked ? 'bg-muted/60 cursor-not-allowed' : undefined}
                                                 />
                                                 <Input
                                                     value={c.title}
@@ -644,15 +727,6 @@ export default function EventManagementPage() {
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <Label className="text-[11px] text-muted-foreground">hangel üye e-postası (opsiyonel)</Label>
-                                                    <Input
-                                                        type="email"
-                                                        value={contributorEmails[idx] ?? ''}
-                                                        onChange={(e) => updateContributorEmail(idx, e.target.value)}
-                                                        placeholder="uye@ornek.com"
-                                                    />
-                                                </div>
                                             </div>
                                             <div className="flex justify-end">
                                                 <Button type="button" variant="ghost" size="sm" onClick={() => removeContributor(idx)}>
@@ -660,7 +734,8 @@ export default function EventManagementPage() {
                                                 </Button>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>

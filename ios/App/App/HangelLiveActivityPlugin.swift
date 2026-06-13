@@ -88,7 +88,7 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
               let eventId = call.getString("eventId") else {
             call.reject("eventTitle, location, eventId zorunlu"); return
         }
-        let attrs = EventCountdownAttributes(eventTitle: eventTitle, location: location, eventId: eventId, eventStartEpoch: call.getDouble("eventStartEpoch") ?? 0)
+        let attrs = EventCountdownAttributes(eventTitle: eventTitle, location: location, eventId: eventId, eventStartEpoch: call.getDouble("eventStartEpoch") ?? 0, eventEndEpoch: call.getDouble("eventEndEpoch") ?? 0)
         let state = EventCountdownAttributes.ContentState(
             minutesLeft: call.getInt("minutesLeft") ?? 60,
             statusLabel: call.getString("statusLabel") ?? "Yakında"

@@ -77,12 +77,14 @@ public struct EventCountdownAttributes: ActivityAttributes {
     public var eventTitle: String
     public var location: String
     public var eventId: String
-    public var eventStartEpoch: Double   // ms since 1970 — widget Text(timerInterval:) ile otomatik geri sayım. 0 = bilinmiyor.
-    public init(eventTitle: String, location: String, eventId: String, eventStartEpoch: Double = 0) {
+    public var eventStartEpoch: Double   // ms since 1970 — başlangıç. Text(timerInterval:) ile otomatik geri sayım. 0 = bilinmiyor.
+    public var eventEndEpoch: Double      // ms since 1970 — bitiş. Etkinlik akış-line'ı (ProgressView(timerInterval:)) için. 0 = bilinmiyor.
+    public init(eventTitle: String, location: String, eventId: String, eventStartEpoch: Double = 0, eventEndEpoch: Double = 0) {
         self.eventTitle = eventTitle
         self.location = location
         self.eventId = eventId
         self.eventStartEpoch = eventStartEpoch
+        self.eventEndEpoch = eventEndEpoch
     }
 }
 

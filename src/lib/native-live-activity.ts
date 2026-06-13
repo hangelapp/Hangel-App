@@ -52,6 +52,7 @@ interface HangelLiveActivityPlugin {
     location: string;
     eventId: string;
     eventStartEpoch?: number;
+    eventEndEpoch?: number;
     minutesLeft?: number;
     statusLabel?: string;
   }): Promise<BaseStartResult>;
@@ -148,6 +149,7 @@ export async function startEventCountdownActivity(input: {
   location: string;
   eventId: string;
   eventStartEpoch?: number;
+  eventEndEpoch?: number;
   minutesLeft?: number;
   statusLabel?: string;
 }): Promise<string | null> {
