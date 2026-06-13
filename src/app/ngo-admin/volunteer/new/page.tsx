@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useActiveEntity } from '@/app/ngo-admin/active-entity-context';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, addDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
@@ -59,7 +60,7 @@ const MultiSelect = ({ title, options, selected, onSelectedChange }: { title: st
             ) : `${title} seçin...`}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-[60vh] overflow-y-auto overscroll-contain">
           {options.map((option) => (
             <DropdownMenuCheckboxItem
               key={option}
@@ -96,8 +97,12 @@ function NewOpportunityForm() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user: authUser } = useUser();
+  // Yönetim sayfası (ngo-admin/volunteer) ilanları useActiveEntity().id ile sorgular.
+  // Yeni ilan da AYNI aktif STK id'siyle yazılmalı; aksi halde ngoId admin'in user
+  // uid'sine düşüp eşleşmiyor ve STK kendi ilanını göremiyordu (#8).
+  const { id: activeId } = useActiveEntity();
 
-  const entityId = searchParams.get('id') || authUser?.uid || null;
+  const entityId = searchParams.get('id') || activeId || authUser?.uid || null;
 
   const ngoDocRef = useMemoFirebase(() => {
     if (!db || !entityId) return null;
@@ -386,7 +391,7 @@ function NewOpportunityForm() {
               <Label htmlFor="socialArea">Sosyal Alan</Label>
               <Select value={socialArea} onValueChange={setSocialArea}>
                 <SelectTrigger id="socialArea"><SelectValue placeholder="İlanın ilgili olduğu sosyal alanı seçin..." /></SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[50vh] overflow-y-auto overscroll-contain">
                   {allInterests.map(interest => <SelectItem key={interest} value={interest}>{interest}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -416,7 +421,7 @@ function NewOpportunityForm() {
                   onValueChange={(v) => { setCountry(v); setCities([]); setDistricts([]); setNeighborhoods([]); }}
                 >
                   <SelectTrigger id="country"><SelectValue placeholder="Ülke seçin..." /></SelectTrigger>
-                  <SelectContent className="max-h-72">
+                  <SelectContent className="max-h-[50vh] overflow-y-auto overscroll-contain">
                     <SelectItem value="Türkiye">Türkiye</SelectItem>
                     {allCountriesList.filter(c => c.name !== 'Turkey').map(c => (
                       <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
@@ -606,7 +611,7 @@ function NewOpportunityForm() {
                     <SelectTrigger id="taskType">
                       <SelectValue placeholder={activeScoringItems.length === 0 ? 'Katalog boş — süper-admin doldurmalı' : 'Seçiniz...'} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[50vh] overflow-y-auto overscroll-contain">
                       {activeScoringItems.map(item => (
                         <SelectItem key={item.id} value={item.id}>
                           {item.taskType} <span className="text-muted-foreground text-xs">({item.pointsPerHour} pt/saat)</span>

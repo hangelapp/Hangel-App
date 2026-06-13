@@ -211,6 +211,8 @@ export default function VolunteeringDetailPage() {
   const applicationStatus = (myApplications && myApplications.length > 0)
     ? (myApplications[0].status || 'Beklemede')
     : null;
+  // Wallet / NFC / Yaka Kartı yalnız başvuru ONAYLANINCA aktif.
+  const isApproved = applicationStatus === 'Onaylandı';
 
   // Adres tarifi linki — coordinates varsa lat/lon, yoksa açık adres metni.
   const directionsUrl = (() => {
@@ -415,7 +417,7 @@ export default function VolunteeringDetailPage() {
               </Button>
             </div>
             <div className="absolute top-4 right-4 z-10">
-                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük Fırsatı`} />
+                <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
             </div>
         </div>
 
@@ -523,10 +525,10 @@ export default function VolunteeringDetailPage() {
                  <Card>
                     <CardHeader><CardTitle className="text-lg">Tarihler</CardTitle></CardHeader>
                     <CardContent className="space-y-3">
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Başlangıç:</span><span className='font-bold text-right'>{safeFormatDateTime(opportunity.dates?.applicationStart)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Bitiş:</span><span className='font-bold text-primary text-right'>{safeFormatDateTime(opportunity.dates?.applicationEnd)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Başlangıç:</span><span className='font-bold text-right'>{safeFormatDateTime(opportunity.dates?.eventStart)}</span></div>
-                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Bitiş:</span><span className='font-bold text-right'>{safeFormatDateTime(opportunity.dates?.eventEnd)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Başlangıç:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.applicationStart)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Başvuru Bitiş:</span><span className='font-normal text-primary text-right'>{safeFormatDateTime(opportunity.dates?.applicationEnd)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Başlangıç:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.eventStart)}</span></div>
+                        <div className='flex justify-between text-sm gap-3'><span className='text-muted-foreground font-medium'>Aktivite Bitiş:</span><span className='font-normal text-right'>{safeFormatDateTime(opportunity.dates?.eventEnd)}</span></div>
                     </CardContent>
                 </Card>
 
@@ -540,10 +542,11 @@ export default function VolunteeringDetailPage() {
                     </Card>
                 )}
 
-                {/* STK adı — başlık olarak STK adı, tıklanınca profile gider */}
+                {/* Organize eden STK — başlık "Organize Eden: {ad}", tıklanınca profile gider */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="text-lg">
+                            Organize Eden:{' '}
                             <Link href={`/ngos/${opportunity.ngoId}`} className="hover:underline text-primary">{ngo?.name || opportunity.organization}</Link>
                         </CardTitle>
                     </CardHeader>
@@ -585,8 +588,13 @@ export default function VolunteeringDetailPage() {
                     </div>
                 )}
 
-                {/* Başvurmuş kullanıcıya: Wallet + NFC + Yaka Kartı */}
-                {hasApplied && applicationStatus !== 'Reddedildi' && (
+                {/* Başvuru onaylanmış kullanıcıya: Wallet + NFC + Yaka Kartı (yalnız Onaylandı) */}
+                {hasApplied && !isApproved && applicationStatus !== 'Reddedildi' && (
+                    <p className="text-xs text-muted-foreground px-1">
+                        Başvurun onaylanınca yaka kartın, Apple Wallet ve NFC seçeneklerin burada görünecek.
+                    </p>
+                )}
+                {isApproved && (
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                         <Button
                             size="lg"
@@ -715,9 +723,9 @@ export default function VolunteeringDetailPage() {
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                            <HeartHandshake className="h-4 w-4 text-primary" /> Bu fırsatı paylaş
+                            <HeartHandshake className="h-4 w-4 text-primary" /> Bu gönüllülük ilanını paylaş
                         </div>
-                        <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük Fırsatı`} />
+                        <ShareButtons url={profileUrl} title={`${opportunity.title} - hangel Gönüllülük İlanı`} />
                     </CardContent>
                 </Card>
             </div>

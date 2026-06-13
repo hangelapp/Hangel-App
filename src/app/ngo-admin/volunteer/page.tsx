@@ -308,11 +308,16 @@ const VolunteerPage = () => {
   // localStorage → managedNgoId → adminUserId önceliğiyle doğru STK id'sini verir,
   // böylece STK yalnızca KENDİ ilanlarını ve onlara gelen başvuruları görür.
   const { id: activeId, isLoading: entityLoading } = useActiveEntity();
+  const { user: authUser } = useUser();
 
+  // ngoId eşleşmesi: doğru STK id'si (activeId) VE — eski hatalı kayıtlar için —
+  // admin'in user uid'si. Create form bir dönem ngoId'yi uid'ye düşürdüğü için
+  // (bkz #8) o ilanlar uid ile yazılmıştı; ikisini birden sorgulayıp kurtarıyoruz.
   const oppsQuery = useMemoFirebase(() => {
     if (!db || !activeId) return null;
-    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', '==', activeId));
-  }, [db, activeId]);
+    const ids = Array.from(new Set([activeId, authUser?.uid].filter(Boolean))) as string[];
+    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', 'in', ids));
+  }, [db, activeId, authUser?.uid]);
 
   const { data: opportunities, isLoading: oppsLoading } = useCollection<Volunteering>(oppsQuery);
   const isLoading = entityLoading || oppsLoading;

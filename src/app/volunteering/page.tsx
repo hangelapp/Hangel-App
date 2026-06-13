@@ -382,6 +382,16 @@ export default function VolunteeringPage() {
         setCertificateOnly(false);
     };
 
+    // Her ilan için profil uygunluğunu (match %) bir kez hesapla; sıralamada kullan.
+    // Profil yoksa computeMatch zaten 0 döner, sıralamayı etkilemez.
+    const matchPercentById = useMemo(() => {
+        const map: Record<string, number> = {};
+        for (const opp of oppsData || []) {
+            map[opp.id] = computeMatch(opp, matchingProfile).percent;
+        }
+        return map;
+    }, [oppsData, matchingProfile]);
+
     const filteredOpps = useMemo(() => {
         if (!oppsData) return [];
         const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -427,15 +437,28 @@ export default function VolunteeringPage() {
             );
         }
 
-        if (sortBy === 'deadline') {
-            return filtered.sort((a, b) => {
+        // Mevcut sıralama kriteri (puan / son tarih) — match eşitliğinde tie-breaker.
+        const baseCompare = (a: Volunteering, b: Volunteering) => {
+            if (sortBy === 'deadline') {
                 const ad = differenceInDays(parse(a.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
                 const bd = differenceInDays(parse(b.dates.applicationEnd, 'yyyy-MM-dd', new Date()), new Date());
                 return ad - bd;
+            }
+            return b.points - a.points;
+        };
+
+        // Kullanıcının gönüllü profili varsa: Profil Uygunluğu (match %) AZALAN
+        // öncelikli; eşitlikte mevcut puan/son tarih kriteri korunur.
+        // Profil yoksa: mevcut sıralama aynen kalır.
+        if (hasVolunteerProfile) {
+            return filtered.sort((a, b) => {
+                const diff = (matchPercentById[b.id] ?? 0) - (matchPercentById[a.id] ?? 0);
+                return diff !== 0 ? diff : baseCompare(a, b);
             });
         }
-        return filtered.sort((a, b) => b.points - a.points);
-    }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, certificateOnly, searchTerm, sortBy, matchingProfile]);
+
+        return filtered.sort(baseCompare);
+    }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, certificateOnly, searchTerm, sortBy, hasVolunteerProfile, matchPercentById]);
 
   return (
     <div className="space-y-4 animate-in fade-in-0">

@@ -33,6 +33,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -56,28 +64,100 @@ const statusColor: Record<Status, string> = {
   Beklemede: 'bg-amber-100 text-amber-700 border-amber-300',
 };
 
-const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, patch: Partial<Volunteering>) => Promise<void> }) => {
+// Virgülle ayrılmış metni string[]'e çevirir (boş elemanları atar)
+const toList = (s: string): string[] =>
+  s.split(',').map(x => x.trim()).filter(Boolean);
+
+const LOCATION_TYPES = ['Online', 'Saha', 'Hibrit'] as const;
+const TASK_TYPES = ['Tek Gün', 'Dönemsel', 'Sürekli'] as const;
+const STATUS_OPTIONS: Status[] = ['Beklemede', 'Aktif', 'Pasif'];
+
+const EditDialog = ({ opp, onSave }: { opp: Volunteering & { status?: Status }, onSave: (id: string, patch: Partial<Volunteering>) => Promise<void> }) => {
   const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Temel
   const [title, setTitle] = useState(opp.title || '');
-  const [description, setDescription] = useState((opp as Volunteering & { description?: string }).description || '');
   const [organization, setOrganization] = useState(opp.organization || '');
+  const [description, setDescription] = useState(opp.description || '');
+  const [socialArea, setSocialArea] = useState(opp.socialArea || '');
+  const [status, setStatus] = useState<Status>((opp.status as Status) || 'Aktif');
+
+  // Konum
   const [city, setCity] = useState(opp.location?.city || '');
   const [district, setDistrict] = useState(opp.location?.district || '');
-  const [points, setPoints] = useState(String(opp.points || 0));
+  const [locationType, setLocationType] = useState<Volunteering['location']['type']>(opp.location?.type || 'Saha');
+  const [address, setAddress] = useState(opp.location?.address || '');
+  const [lat, setLat] = useState(String(opp.location?.coordinates?.lat ?? ''));
+  const [lon, setLon] = useState(String(opp.location?.coordinates?.lon ?? ''));
+
+  // Katılım & görev
+  const [participationCondition, setParticipationCondition] = useState(opp.participationCondition || '');
+  const [commitment, setCommitment] = useState(opp.commitment || '');
+  const [taskType, setTaskType] = useState<Volunteering['taskType']>(opp.taskType || 'Tek Gün');
+
+  // Tarihler
+  const [applicationStart, setApplicationStart] = useState(opp.dates?.applicationStart || '');
+  const [applicationEnd, setApplicationEnd] = useState(opp.dates?.applicationEnd || '');
+  const [eventStart, setEventStart] = useState(opp.dates?.eventStart || '');
+  const [eventEnd, setEventEnd] = useState(opp.dates?.eventEnd || '');
+
+  // Sayılar
   const [needed, setNeeded] = useState(String(opp.volunteerCount?.needed || 0));
-  const [saving, setSaving] = useState(false);
+  const [points, setPoints] = useState(String(opp.points || 0));
+
+  // Listeler (virgülle ayrılmış)
+  const [skills, setSkills] = useState((opp.skills || []).join(', '));
+  const [interests, setInterests] = useState((opp.interests || []).join(', '));
+  const [languages, setLanguages] = useState((opp.languages || []).join(', '));
+  const [requirements, setRequirements] = useState((opp.requirements || []).join(', '));
+
+  // Olanaklar & sertifika
+  const [providesCertificate, setProvidesCertificate] = useState(!!opp.providesCertificate);
+  const [transport, setTransport] = useState(!!opp.amenities?.transport);
+  const [food, setFood] = useState(!!opp.amenities?.food);
+  const [accommodation, setAccommodation] = useState(!!opp.amenities?.accommodation);
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      const latNum = Number(lat);
+      const lonNum = Number(lon);
+      const hasCoords = lat.trim() !== '' && lon.trim() !== '' && !Number.isNaN(latNum) && !Number.isNaN(lonNum);
       await onSave(opp.id, {
         title: title.trim(),
-        description: description.trim(),
         organization: organization.trim(),
-        location: { ...(opp.location || {}), city: city.trim(), district: district.trim() } as Volunteering['location'],
+        description: description.trim(),
+        socialArea: socialArea.trim(),
+        status,
+        location: {
+          city: city.trim(),
+          district: district.trim(),
+          type: locationType,
+          address: address.trim(),
+          coordinates: hasCoords ? { lat: latNum, lon: lonNum } : { lat: 0, lon: 0 },
+        },
+        participationCondition: participationCondition.trim(),
+        commitment: commitment.trim(),
+        taskType,
+        dates: {
+          applicationStart: applicationStart.trim(),
+          applicationEnd: applicationEnd.trim(),
+          eventStart: eventStart.trim(),
+          eventEnd: eventEnd.trim(),
+        },
+        volunteerCount: {
+          needed: Number(needed) || 0,
+          applications: opp.volunteerCount?.applications || 0,
+        },
         points: Number(points) || 0,
-        volunteerCount: { needed: Number(needed) || 0, applications: opp.volunteerCount?.applications || 0 },
-      });
+        skills: toList(skills),
+        interests: toList(interests),
+        languages: toList(languages),
+        requirements: toList(requirements),
+        providesCertificate,
+        amenities: { transport, food, accommodation },
+      } as Partial<Volunteering>);
       setOpen(false);
     } finally {
       setSaving(false);
@@ -89,12 +169,13 @@ const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, p
       <DialogTrigger asChild>
         <Button variant="secondary" size="sm">Düzenle</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>İlanı Düzenle</DialogTitle>
-          <DialogDescription>İlan bilgilerini güncelleyin.</DialogDescription>
+          <DialogDescription>İlanın tüm detaylarını güncelleyin.</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
+          {/* Temel bilgiler */}
           <div className="space-y-1.5">
             <Label>Başlık</Label>
             <Input value={title} onChange={e => setTitle(e.target.value)} />
@@ -109,6 +190,25 @@ const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, p
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
+              <Label>Sosyal Alan</Label>
+              <Input value={socialArea} onChange={e => setSocialArea(e.target.value)} placeholder="örn. Eğitim, Çevre" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Durum</Label>
+              <Select value={status} onValueChange={v => setStatus(v as Status)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map(s => (
+                    <SelectItem key={s} value={s}>{statusLabel[s]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Konum */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
               <Label>Şehir</Label>
               <Input value={city} onChange={e => setCity(e.target.value)} />
             </div>
@@ -116,15 +216,123 @@ const EditDialog = ({ opp, onSave }: { opp: Volunteering, onSave: (id: string, p
               <Label>İlçe</Label>
               <Input value={district} onChange={e => setDistrict(e.target.value)} />
             </div>
+            <div className="space-y-1.5">
+              <Label>Tür</Label>
+              <Select value={locationType} onValueChange={v => setLocationType(v as Volunteering['location']['type'])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {LOCATION_TYPES.map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Açık Adres</Label>
+            <Input value={address} onChange={e => setAddress(e.target.value)} placeholder="Saha / fiziksel adres" />
           </div>
           <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Enlem (lat)</Label>
+              <Input type="number" value={lat} onChange={e => setLat(e.target.value)} placeholder="örn. 41.0082" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Boylam (lon)</Label>
+              <Input type="number" value={lon} onChange={e => setLon(e.target.value)} placeholder="örn. 28.9784" />
+            </div>
+          </div>
+
+          {/* Katılım & görev */}
+          <div className="space-y-1.5">
+            <Label>Katılım Koşulu</Label>
+            <Input value={participationCondition} onChange={e => setParticipationCondition(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Taahhüt (commitment)</Label>
+              <Input value={commitment} onChange={e => setCommitment(e.target.value)} placeholder="örn. Haftada 4 saat" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Görev Tipi</Label>
+              <Select value={taskType} onValueChange={v => setTaskType(v as Volunteering['taskType'])}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {TASK_TYPES.map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Tarihler */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Başvuru Başlangıç</Label>
+              <Input value={applicationStart} onChange={e => setApplicationStart(e.target.value)} placeholder="GG.AA.YYYY" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Başvuru Bitiş</Label>
+              <Input value={applicationEnd} onChange={e => setApplicationEnd(e.target.value)} placeholder="GG.AA.YYYY" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Etkinlik Başlangıç</Label>
+              <Input value={eventStart} onChange={e => setEventStart(e.target.value)} placeholder="GG.AA.YYYY" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Etkinlik Bitiş</Label>
+              <Input value={eventEnd} onChange={e => setEventEnd(e.target.value)} placeholder="GG.AA.YYYY" />
+            </div>
+          </div>
+
+          {/* Kapasite & puan */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Aranan Gönüllü (kapasite)</Label>
+              <Input type="number" value={needed} onChange={e => setNeeded(e.target.value)} />
+            </div>
             <div className="space-y-1.5">
               <Label>Puan</Label>
               <Input type="number" value={points} onChange={e => setPoints(e.target.value)} />
             </div>
-            <div className="space-y-1.5">
-              <Label>Aranan Gönüllü</Label>
-              <Input type="number" value={needed} onChange={e => setNeeded(e.target.value)} />
+          </div>
+
+          {/* Listeler */}
+          <div className="space-y-1.5">
+            <Label>Yetenekler <span className="text-muted-foreground text-xs">(virgülle ayırın)</span></Label>
+            <Input value={skills} onChange={e => setSkills(e.target.value)} placeholder="örn. iletişim, organizasyon" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>İlgi Alanları <span className="text-muted-foreground text-xs">(virgülle ayırın)</span></Label>
+            <Input value={interests} onChange={e => setInterests(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Diller <span className="text-muted-foreground text-xs">(virgülle ayırın)</span></Label>
+            <Input value={languages} onChange={e => setLanguages(e.target.value)} placeholder="örn. Türkçe, İngilizce" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Gereksinimler / Belgeler <span className="text-muted-foreground text-xs">(virgülle ayırın)</span></Label>
+            <Input value={requirements} onChange={e => setRequirements(e.target.value)} />
+          </div>
+
+          {/* Olanaklar & sertifika */}
+          <div className="space-y-3 rounded-md border p-3">
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`cert-${opp.id}`}>Sertifika veriliyor</Label>
+              <Switch id={`cert-${opp.id}`} checked={providesCertificate} onCheckedChange={setProvidesCertificate} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`transport-${opp.id}`}>Ulaşım sağlanıyor</Label>
+              <Switch id={`transport-${opp.id}`} checked={transport} onCheckedChange={setTransport} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`food-${opp.id}`}>Yemek sağlanıyor</Label>
+              <Switch id={`food-${opp.id}`} checked={food} onCheckedChange={setFood} />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`accommodation-${opp.id}`}>Konaklama sağlanıyor</Label>
+              <Switch id={`accommodation-${opp.id}`} checked={accommodation} onCheckedChange={setAccommodation} />
             </div>
           </div>
         </div>
