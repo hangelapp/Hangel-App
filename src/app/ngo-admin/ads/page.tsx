@@ -117,6 +117,35 @@ interface TiktokConnectionState {
 const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
 const GOOGLE_ADS_URL = 'https://ads.google.com/';
 
+// Üst sekme menüsü — üç platform tek sayfada yığılmaz, her biri kendi sekmesinde.
+const PLATFORM_TABS: { key: AdPlatform; label: string; Icon: React.ElementType }[] = [
+    { key: 'google', label: 'Google', Icon: Search },
+    { key: 'meta', label: 'Meta', Icon: Facebook },
+    { key: 'tiktok', label: 'TikTok', Icon: Music2 },
+];
+
+// Aktif sekmeye göre hero (başlık/alt başlık/ikon/degrade).
+const PLATFORM_HERO: Record<AdPlatform, { title: string; subtitle: string; Icon: React.ElementType; gradient: string }> = {
+    google: {
+        title: 'Google Reklam Hakkın',
+        subtitle: 'Uygun STK’lara Google’dan ayda 10.000 USD ücretsiz reklam hakkı. hangel senin için planlar, sen sadece seçersin.',
+        Icon: Search,
+        gradient: 'from-[#4285F4] to-[#34A853]',
+    },
+    meta: {
+        title: 'Meta Reklamları',
+        subtitle: 'Facebook ve Instagram’da hedef kitlene ulaş. hangel yapay zekayla reklam planını hazırlar, sen yayına alırsın.',
+        Icon: Facebook,
+        gradient: 'from-[#1877f2] to-[#c13584]',
+    },
+    tiktok: {
+        title: 'TikTok Reklamları',
+        subtitle: 'Kısa videolarla genç kitlelere ulaş. hangel yapay zekayla video reklam konseptini hazırlar, sen yayına alırsın.',
+        Icon: Music2,
+        gradient: 'from-black to-[#25F4EE]',
+    },
+};
+
 export default function AdsPage() {
     const { user } = useUser();
     const { id: entityId, kind: entityKind, isLoading } = useActiveEntity();
@@ -133,6 +162,8 @@ export default function AdsPage() {
     // AI öneriler — platforma özel (her platformun kendi öneri listesi + yükleniyor durumu)
     const [loadingPlatform, setLoadingPlatform] = useState<AdPlatform | null>(null);
     const [proposalsByPlatform, setProposalsByPlatform] = useState<Record<AdPlatform, AdProposal[]>>({ google: [], meta: [], tiktok: [] });
+    // Aktif platform sekmesi — Google/Meta/TikTok tek sayfada yığılmaz, sekmeyle ayrılır.
+    const [activePlatform, setActivePlatform] = useState<AdPlatform>('google');
     const [selected, setSelected] = useState<Set<ProposalKind>>(new Set());
 
     // STK'nın kayıtlı planları (Google ilerleme durumu)
@@ -681,18 +712,20 @@ export default function AdsPage() {
         );
     }
 
+    const hero = PLATFORM_HERO[activePlatform];
+    const HeroIcon = hero.Icon;
     return (
         <div className="min-h-dvh bg-[#f5f5f7]">
             <div className="mx-auto w-full max-w-2xl px-4 sm:px-5 py-6 space-y-6 animate-in fade-in-0 duration-300">
 
-                {/* HERO */}
+                {/* HERO — aktif sekmeye göre */}
                 <div className="text-center space-y-3 pt-2">
-                    <span className="inline-flex h-[76px] w-[76px] items-center justify-center rounded-[24px] bg-gradient-to-br from-primary to-[#ff7a55] shadow-[0_10px_30px_-8px_rgba(243,71,35,0.5)]">
-                        <Megaphone className="h-9 w-9 text-white" strokeWidth={1.8} />
+                    <span className={cn('inline-flex h-[76px] w-[76px] items-center justify-center rounded-[24px] bg-gradient-to-br shadow-[0_10px_30px_-8px_rgba(0,0,0,0.25)]', hero.gradient)}>
+                        <HeroIcon className="h-9 w-9 text-white" strokeWidth={1.8} />
                     </span>
-                    <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-foreground leading-[1.1]">Google Reklam Hakkın</h1>
+                    <h1 className="text-[28px] sm:text-[32px] font-bold tracking-tight text-foreground leading-[1.1]">{hero.title}</h1>
                     <p className="text-[15px] text-muted-foreground max-w-md mx-auto leading-relaxed">
-                        Uygun STK&apos;lara Google&apos;dan <span className="font-semibold text-foreground">ayda 10.000 USD</span> ücretsiz reklam hakkı. hangel senin için planlar, sen sadece seçersin.
+                        {hero.subtitle}
                     </p>
                 </div>
 
@@ -709,6 +742,19 @@ export default function AdsPage() {
                     </div>
                 </div>
 
+                {/* PLATFORM SEKME MENÜSÜ — Google / Meta / TikTok ayrı sekmeler */}
+                <div className="flex gap-1.5 rounded-2xl bg-muted/60 p-1">
+                    {PLATFORM_TABS.map(({ key, label, Icon }) => (
+                        <button key={key} type="button" onClick={() => setActivePlatform(key)}
+                            className={cn('flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-[13px] font-semibold transition active:scale-[0.98]',
+                                activePlatform === key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>
+                            <Icon className="h-4 w-4" /> {label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* ====== GOOGLE SEKMESİ ====== */}
+                {activePlatform === 'google' && (<>
                 {/* DURUM STEPPER */}
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Durumun</h2>
@@ -953,6 +999,10 @@ export default function AdsPage() {
                     </div>
                 </section>
 
+                </>)}
+
+                {/* ====== META SEKMESİ (Facebook / Instagram) ====== */}
+                {activePlatform === 'meta' && (<>
                 {/* META AI ÖNERİLER */}
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">Meta · Yapay Zeka Reklam Planı</h2>
@@ -1120,6 +1170,10 @@ export default function AdsPage() {
                     </div>
                 </section>
 
+                </>)}
+
+                {/* ====== TIKTOK SEKMESİ ====== */}
+                {activePlatform === 'tiktok' && (<>
                 {/* TIKTOK AI ÖNERİLER */}
                 <section className="space-y-2.5">
                     <h2 className="px-1 text-[13px] font-semibold uppercase tracking-wide text-muted-foreground">TikTok · Yapay Zeka Reklam Planı</h2>
@@ -1286,6 +1340,7 @@ export default function AdsPage() {
                         )}
                     </div>
                 </section>
+                </>)}
             </div>
         </div>
     );
