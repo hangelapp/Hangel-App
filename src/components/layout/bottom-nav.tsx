@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 import { Store, Calendar, UserCircle, HeartHandshake, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { COLLECTIONS } from "@/firebase/collections";
 
 // Why: kısa label'lar (truncate'i önlemek için max 7 char). Translation key'leri
 // karşılığı yoktu, key string'i ham görünüyordu.
@@ -21,6 +23,18 @@ export default function AppBottomNav() {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
   const { user } = useUser();
+  const db = useFirestore();
+
+  // Etkinlik sekmesi yalnız bir kulübe ÜYE olan (joinedClubs) ya da kulüp
+  // yöneten (managedClubId) kullanıcılarda görünür.
+  const userRef = useMemoFirebase(
+    () => (db && user ? doc(db, COLLECTIONS.users, user.uid) : null),
+    [db, user],
+  );
+  const { data: userDoc } = useDoc<{ joinedClubs?: string[]; managedClubId?: string | null }>(userRef);
+  const isClubMember =
+    (Array.isArray(userDoc?.joinedClubs) && userDoc!.joinedClubs!.length > 0) ||
+    Boolean(userDoc?.managedClubId);
 
   useEffect(() => {
     setIsMounted(true);
@@ -51,13 +65,17 @@ export default function AppBottomNav() {
   const isEventDetail = /^\/events\/[^/]+/.test(pathname);
   if (isEventDetail) return null;
 
+  // Etkinlik sekmesini sadece kulüp üyesi/yöneticisine göster.
+  const visibleItems = navItems.filter((item) => item.href !== '/events' || isClubMember);
+  const gridColsClass = visibleItems.length === 5 ? 'grid-cols-5' : 'grid-cols-4';
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 glass-prominent border-t border-glass-black-8 dark:border-glass-white-8 pb-[env(safe-area-inset-bottom)]">
       {/* Why: h-16 (64px) - pt-1 (4px) - pb-2 (8px) = 52px content area > 44px Apple touch target.
           Her Link tap area en az 44x44 — accessibility-friendly.
           Glass: iOS 26 dock pattern'i — alttaki sayfa içeriği refractive sızar. */}
-      <div className="mx-auto grid h-16 max-w-md grid-cols-5 items-center px-1 pb-2 pt-1 lg:max-w-2xl">
-        {navItems.map((item) => {
+      <div className={cn("mx-auto grid h-16 max-w-md items-center px-1 pb-2 pt-1 lg:max-w-2xl", gridColsClass)}>
+        {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
 
