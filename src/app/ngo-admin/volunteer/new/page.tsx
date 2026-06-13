@@ -122,6 +122,7 @@ function NewOpportunityForm() {
   const [eventStartTime, setEventStartTime] = useState('');
   const [eventEnd, setEventEnd] = useState('');
   const [eventEndTime, setEventEndTime] = useState('');
+  const [participationCondition, setParticipationCondition] = useState('');
   const [commitment, setCommitment] = useState('');
   const [commitmentDetail, setCommitmentDetail] = useState('');
   const [volunteerNeeded, setVolunteerNeeded] = useState('');
@@ -270,11 +271,19 @@ function NewOpportunityForm() {
           address: meetingAddress.trim(),
           lat: meetingLat || '',
           lon: meetingLon || '',
+          // Detay sayfası "Adres Tarifi Al" + hava durumu + Live Activity logosu
+          // location.coordinates'tan okur; lat/lon varsa sayısal olarak da yaz.
+          ...(meetingLat && meetingLon && !isNaN(Number(meetingLat)) && !isNaN(Number(meetingLon))
+            ? { coordinates: { lat: Number(meetingLat), lon: Number(meetingLon) } }
+            : {}),
           cities,
           districts,
           neighborhoods,
           type: locationTypeMap[locationType] || 'Saha',
         },
+        participationCondition: participationCondition.trim() || '',
+        organizerLogoUrl: (ngoData as { avatarUrl?: string; logoUrl?: string } | null | undefined)?.avatarUrl
+          || (ngoData as { avatarUrl?: string; logoUrl?: string } | null | undefined)?.logoUrl || '',
         commitment: [commitmentMap[commitment], commitmentDetail.trim()].filter(Boolean).join(' — '),
         volunteerCount: {
           needed: Number(volunteerNeeded) || 0,
@@ -368,6 +377,10 @@ function NewOpportunityForm() {
             <div className="space-y-2">
               <Label htmlFor="description">İlan Açıklaması</Label>
               <Textarea id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Gönüllülerden beklentileri, yapılacak işleri ve projenin amacını detaylıca açıklayın." />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="participationCondition">Katılım Koşulu (opsiyonel)</Label>
+              <Textarea id="participationCondition" value={participationCondition} onChange={e => setParticipationCondition(e.target.value)} placeholder="Örn: 18 yaş üstü, ehliyet sahibi, hafta sonu müsait olabilen gönüllüler. Boş bırakılırsa herkese açık sayılır." />
             </div>
             <div className="space-y-2">
               <Label htmlFor="socialArea">Sosyal Alan</Label>
