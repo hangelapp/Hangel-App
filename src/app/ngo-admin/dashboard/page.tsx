@@ -41,6 +41,9 @@ import {
   Target,
   UserCog,
   Video,
+  Inbox,
+  Send,
+  Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -81,6 +84,9 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   UserCog,
   Users,
   Video,
+  Inbox,
+  Send,
+  Wallet,
 };
 import { useSearchParams } from 'next/navigation';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
@@ -121,6 +127,9 @@ const iconColorMap: { [key: string]: string } = {
   'building-2': 'bg-slate-600',
   'graduation-cap': 'bg-blue-700',
   'map-pin': 'bg-teal-600',
+  'inbox': 'bg-indigo-500',
+  'send': 'bg-sky-600',
+  'wallet': 'bg-amber-600',
   'briefcase': 'bg-blue-600',
   'network': 'bg-rose-500',
   'line-chart': 'bg-amber-600',
@@ -191,11 +200,13 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
         items: [
             { id: 'profile', href: '/ngo-admin/manage-profile', label: t('ngo_admin_dashboard.itemProfile'), icon: 'user-cog', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'qr', href: '/ngo-admin/qr', label: t('ngo_admin_dashboard.itemQr'), icon: 'qr-code', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'], labelByKind: { ngo: t('ngo_admin_dashboard.itemQrNgo'), brand: t('ngo_admin_dashboard.itemQrBrand'), club: t('ngo_admin_dashboard.itemQrClub') } },
+            { id: 'community-invite', href: '/ngo-admin/community-invite', label: 'Topluluğunu Davet Et', icon: 'users', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
         ]
     },
     {
         title: t('ngo_admin_dashboard.groupCommunication'),
         items: [
+            { id: 'inbox', href: '/ngo-admin/inbox', label: 'Gelen Kutusu', icon: 'inbox', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'notifications', href: '/ngo-admin/notifications', label: t('ngo_admin_dashboard.itemNotifications'), icon: 'bell', roles: ['Genel Yönetici', 'Finans Yöneticisi', 'Gönüllü Yöneticisi', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'posts', href: '/ngo-admin/posts', label: t('ngo_admin_dashboard.itemPosts'), icon: 'newspaper', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
             { id: 'impact-story', href: '/ngo-admin/impact-story', label: t('ngo_admin_dashboard.itemImpactStory'), icon: 'sparkles', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'brand', 'club'] },
@@ -223,23 +234,25 @@ const buildNavGroups = (t: (key: string) => string): { title: string; items: Nav
             { id: 'website', href: '/ngo-admin/website', label: t('ngo_admin_dashboard.itemWebsite'), icon: 'globe', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
             { id: 'ads', href: '/ngo-admin/ads', label: t('ngo_admin_dashboard.itemAds'), icon: 'megaphone', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: false },
             { id: 'events', href: '/ngo-admin/events', label: t('ngo_admin_dashboard.itemEvents'), icon: 'calendar', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo', 'club'], comingSoon: false },
-            { id: 'sms', href: '/ngo-admin/sms', label: t('ngo_admin_dashboard.itemSms'), icon: 'message-square', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: t('ngo_admin_dashboard.itemOnlineMeeting'), icon: 'video', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'design-tools', href: '/ngo-admin/design-tools', label: t('ngo_admin_dashboard.itemDesignTools'), icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: t('ngo_admin_dashboard.itemPaymentSystems'), icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'marketing', href: '/ngo-admin/marketing', label: t('ngo_admin_dashboard.itemMarketing'), icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'accounting', href: '/ngo-admin/accounting', label: t('ngo_admin_dashboard.itemAccounting'), icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'crm', href: '/ngo-admin/crm', label: t('ngo_admin_dashboard.itemCrm'), icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'messaging', href: '/ngo-admin/messaging', label: 'Toplu Mesaj & Kampanyalar', icon: 'send', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'sms', href: '/ngo-admin/sms', label: t('ngo_admin_dashboard.itemSms'), icon: 'message-square', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'mail', href: '/ngo-admin/mail', label: t('ngo_admin_dashboard.itemMail'), icon: 'mail', roles: ['Genel Yönetici'], kinds: ['ngo'] },
             { id: 'call-center', href: '/ngo-admin/call-center', label: 'Çağrı Merkezi (Sanal Santral)', icon: 'phone-call', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: false },
-            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: t('ngo_admin_dashboard.itemVirtualOffice'), icon: 'building-2', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: t('ngo_admin_dashboard.itemUniversityVolunteering'), icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'field-team', href: '/ngo-admin/field-team', label: t('ngo_admin_dashboard.itemFieldTeam'), icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'dm', href: '/ngo-admin/dm', label: t('ngo_admin_dashboard.itemDm'), icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: t('ngo_admin_dashboard.itemEcommerce'), icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: t('ngo_admin_dashboard.itemHrIntegration'), icon: 'briefcase', roles: ['Genel Yönetici'], kinds: ['ngo'], comingSoon: true },
-            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: t('ngo_admin_dashboard.itemVolunteerPortal'), icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'], comingSoon: true },
-            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: t('ngo_admin_dashboard.itemAnalyticsTools'), icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'], comingSoon: true },
+            { id: 'messaging-packages', href: '/ngo-admin/messaging-packages', label: 'Kontör Paketleri', icon: 'wallet', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'dm', href: '/ngo-admin/dm', label: t('ngo_admin_dashboard.itemDm'), icon: 'message-circle', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'marketing', href: '/ngo-admin/marketing', label: t('ngo_admin_dashboard.itemMarketing'), icon: 'target', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
+            { id: 'online-meeting', href: '/ngo-admin/online-meeting', label: t('ngo_admin_dashboard.itemOnlineMeeting'), icon: 'video', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'design-tools', href: '/ngo-admin/design-tools', label: t('ngo_admin_dashboard.itemDesignTools'), icon: 'palette', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
+            { id: 'payment-systems', href: '/ngo-admin/payment-systems', label: t('ngo_admin_dashboard.itemPaymentSystems'), icon: 'credit-card', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
+            { id: 'accounting', href: '/ngo-admin/accounting', label: t('ngo_admin_dashboard.itemAccounting'), icon: 'calculator', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
+            { id: 'crm', href: '/ngo-admin/crm', label: t('ngo_admin_dashboard.itemCrm'), icon: 'database', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'ecommerce', href: '/ngo-admin/ecommerce', label: t('ngo_admin_dashboard.itemEcommerce'), icon: 'shopping-cart', roles: ['Genel Yönetici', 'Finans Yöneticisi'], kinds: ['ngo'] },
+            { id: 'virtual-office', href: '/ngo-admin/virtual-office', label: t('ngo_admin_dashboard.itemVirtualOffice'), icon: 'building-2', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'field-team', href: '/ngo-admin/field-team', label: t('ngo_admin_dashboard.itemFieldTeam'), icon: 'map-pin', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'university-volunteering', href: '/ngo-admin/university-volunteering', label: t('ngo_admin_dashboard.itemUniversityVolunteering'), icon: 'graduation-cap', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'hr-integration', href: '/ngo-admin/hr-integration', label: t('ngo_admin_dashboard.itemHrIntegration'), icon: 'briefcase', roles: ['Genel Yönetici'], kinds: ['ngo'] },
+            { id: 'volunteer-portal', href: '/ngo-admin/volunteer-portal', label: t('ngo_admin_dashboard.itemVolunteerPortal'), icon: 'network', roles: ['Genel Yönetici', 'Gönüllü Yöneticisi'], kinds: ['ngo'] },
+            { id: 'analytics-tools', href: '/ngo-admin/analytics-tools', label: t('ngo_admin_dashboard.itemAnalyticsTools'), icon: 'line-chart', roles: ['Genel Yönetici', 'Mini Blog Yöneticisi'], kinds: ['ngo'] },
         ]
     },
     {
