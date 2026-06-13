@@ -2,7 +2,8 @@
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, Mail, Phone, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
 import {
@@ -206,6 +207,10 @@ export default function VolunteeringDetailPage() {
 
   // Başvuru durumu (events RSVP benzeri) — başvurmuş kullanıcıya yaka kartı / wallet / NFC göster.
   const hasApplied = Boolean(authUser && (myApplications?.length ?? 0) > 0);
+  // Başvurunun güncel durumu (Beklemede/Onaylandı/Reddedildi) — liste+detayda gösterilir.
+  const applicationStatus = (myApplications && myApplications.length > 0)
+    ? (myApplications[0].status || 'Beklemede')
+    : null;
 
   // Adres tarifi linki — coordinates varsa lat/lon, yoksa açık adres metni.
   const directionsUrl = (() => {
@@ -338,12 +343,34 @@ export default function VolunteeringDetailPage() {
     });
 
     // Başvuru sürecini telefon ekranında canlı etkinlik (Live Activity) olarak göster (iOS native; web no-op).
-    void startVolunteerTaskActivity({
+    // Saha/Hibrit gönüllülükte hava durumu + STK logosu da geçilir (best-effort).
+    void (async () => {
+      let weatherEmoji = ''; let weatherTemp = '';
+      const vloc = opportunity.location;
+      if (vloc && (vloc.type === 'Saha' || vloc.type === 'Hibrit') && vloc.city) {
+        try {
+          const qs = vloc.coordinates
+            ? `lat=${vloc.coordinates.lat}&lon=${vloc.coordinates.lon}`
+            : `city=${encodeURIComponent(vloc.city)}&district=${encodeURIComponent(vloc.district || '')}`;
+          const wr = await fetch(`/api/weather?${qs}&days=7`);
+          if (wr.ok) {
+            const wj = await wr.json() as { days?: Array<{ date: string; emoji: string; tempMax: number }> };
+            const dayKey = (opportunity.dates?.eventStart || '').slice(0, 10);
+            const day = wj.days?.find(d => d.date === dayKey) || wj.days?.[0];
+            if (day) { weatherEmoji = day.emoji || ''; weatherTemp = `${day.tempMax}°`; }
+          }
+        } catch { /* hava durumu best-effort */ }
+      }
+      await startVolunteerTaskActivity({
         taskTitle: opportunity.title,
         ngoName: opportunity.organization || '',
         location: opportunity.location?.city || '',
         taskId: opportunity.id,
-    });
+        weatherEmoji,
+        weatherTemp,
+        organizerLogoUrl: opportunity.organizerLogoUrl || '',
+      });
+    })();
 
     // Başvuru oluşunca 3 tarafa (kullanıcı + STK yöneticisi + süper-admin)
     // fan-out bildirim. Best-effort: hata başvuru akışını bozmaz.
@@ -532,8 +559,34 @@ export default function VolunteeringDetailPage() {
                     </CardContent>
                 </Card>
 
+                {/* Başvuru durumu rozeti — başvuruldu/onaylandı/kabul edilmedi */}
+                {applicationStatus && (
+                    <div className={cn(
+                        'rounded-2xl border p-4 flex items-center gap-3',
+                        applicationStatus === 'Onaylandı' ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                            : applicationStatus === 'Reddedildi' ? 'bg-red-50 border-red-200 text-red-800'
+                                : 'bg-amber-50 border-amber-200 text-amber-800',
+                    )}>
+                        {applicationStatus === 'Onaylandı' ? <CheckCircle2 className="h-5 w-5 shrink-0" />
+                            : applicationStatus === 'Reddedildi' ? <XCircle className="h-5 w-5 shrink-0" />
+                                : <Clock className="h-5 w-5 shrink-0" />}
+                        <div className="min-w-0">
+                            <p className="font-bold text-sm leading-tight">
+                                {applicationStatus === 'Onaylandı' ? 'Başvurun onaylandı 🎉'
+                                    : applicationStatus === 'Reddedildi' ? 'Başvurun kabul edilmedi'
+                                        : 'Başvurun alındı'}
+                            </p>
+                            <p className="text-xs opacity-80">
+                                {applicationStatus === 'Onaylandı' ? 'Etkinlik günü yaka kartını hazır bulundur.'
+                                    : applicationStatus === 'Reddedildi' ? 'Başka ilanlara başvurmayı deneyebilirsin.'
+                                        : 'Kurum başvurunu değerlendiriyor; sonuç bildirilecek.'}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Başvurmuş kullanıcıya: Wallet + NFC + Yaka Kartı */}
-                {hasApplied && (
+                {hasApplied && applicationStatus !== 'Reddedildi' && (
                     <div className="flex flex-wrap gap-2 sm:gap-3">
                         <Button
                             size="lg"

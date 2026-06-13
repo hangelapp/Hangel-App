@@ -222,6 +222,20 @@ export default function EventDetailPage() {
         const _roleLabel = _role === 'participant'
           ? 'Katılımcı'
           : (roleLabelTr(_role).charAt(0) + roleLabelTr(_role).slice(1).toLocaleLowerCase('tr'));
+        // Fiziksel etkinlikte hava durumu — Live Activity başlığında gösterilir (best-effort).
+        let weatherEmoji = ''; let weatherTemp = '';
+        const _loc = typeof event?.location === 'string' ? null : event?.location;
+        if (_loc && _loc.type === 'Fiziksel' && _loc.city) {
+          try {
+            const wr = await fetch(`/api/weather?city=${encodeURIComponent(_loc.city)}&district=${encodeURIComponent(_loc.district || '')}&days=7`);
+            if (wr.ok) {
+              const wj = await wr.json() as { days?: Array<{ date: string; emoji: string; tempMax: number }> };
+              const dayKey = (event?.startDate || '').slice(0, 10);
+              const day = wj.days?.find(d => d.date === dayKey) || wj.days?.[0];
+              if (day) { weatherEmoji = day.emoji || ''; weatherTemp = `${day.tempMax}°`; }
+            }
+          } catch { /* hava durumu best-effort */ }
+        }
         void startEventCountdownActivity({
           eventTitle: event?.name || 'Etkinlik',
           location: typeof event?.location === 'string'
@@ -231,6 +245,9 @@ export default function EventDetailPage() {
           eventStartEpoch,
           eventEndEpoch,
           statusLabel: _roleLabel,
+          weatherEmoji,
+          weatherTemp,
+          organizerLogoUrl: event?.organizerLogoUrl || '',
         });
       }
     } catch (err) {

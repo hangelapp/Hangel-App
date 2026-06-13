@@ -15,7 +15,7 @@ struct VolunteerTaskLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    HangelIconBadge(systemName: "hand.raised.fill", size: 38)
+                    HangelLogoOrIcon(logoName: context.attributes.orgLogoName, systemName: "hand.raised.fill", size: 38)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     VStack(alignment: .trailing, spacing: 1) {
@@ -52,10 +52,11 @@ struct VolunteerTaskLiveActivity: Widget {
     @ViewBuilder
     private func lockScreenContent(context: ActivityViewContext<VolunteerTaskAttributes>) -> some View {
         VStack(spacing: 10) {
-            HangelHeaderRow(kicker: "Gönüllülük", tint: .hangelOrange)
+            HangelHeaderRow(kicker: "Gönüllülük", tint: .hangelOrange,
+                            weatherEmoji: context.attributes.weatherEmoji, weatherTemp: context.attributes.weatherTemp)
 
             HStack(alignment: .center, spacing: 12) {
-                HangelIconBadge(systemName: "hand.raised.fill")
+                HangelLogoOrIcon(logoName: context.attributes.orgLogoName, systemName: "hand.raised.fill")
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(context.attributes.taskTitle)

@@ -56,11 +56,17 @@ public struct VolunteerTaskAttributes: ActivityAttributes {
     public var ngoName: String
     public var location: String
     public var taskId: String
-    public init(taskTitle: String, ngoName: String, location: String, taskId: String) {
+    public var weatherEmoji: String   // "🌧️" — saha gönüllülüğünde hava durumu (boş = gösterme)
+    public var weatherTemp: String    // "18°"
+    public var orgLogoName: String    // App Group container'daki STK logo dosya adı (boş = ikon fallback)
+    public init(taskTitle: String, ngoName: String, location: String, taskId: String, weatherEmoji: String = "", weatherTemp: String = "", orgLogoName: String = "") {
         self.taskTitle = taskTitle
         self.ngoName = ngoName
         self.location = location
         self.taskId = taskId
+        self.weatherEmoji = weatherEmoji
+        self.weatherTemp = weatherTemp
+        self.orgLogoName = orgLogoName
     }
 }
 
@@ -79,12 +85,18 @@ public struct EventCountdownAttributes: ActivityAttributes {
     public var eventId: String
     public var eventStartEpoch: Double   // ms since 1970 — başlangıç. Text(timerInterval:) ile otomatik geri sayım. 0 = bilinmiyor.
     public var eventEndEpoch: Double      // ms since 1970 — bitiş. Etkinlik akış-line'ı (ProgressView(timerInterval:)) için. 0 = bilinmiyor.
-    public init(eventTitle: String, location: String, eventId: String, eventStartEpoch: Double = 0, eventEndEpoch: Double = 0) {
+    public var weatherEmoji: String      // "🌧️" — fiziksel etkinlikte hava durumu (boş = gösterme)
+    public var weatherTemp: String       // "18°" — sıcaklık (boş = gösterme)
+    public var orgLogoName: String       // App Group container'daki logo dosya adı (boş = ikon fallback)
+    public init(eventTitle: String, location: String, eventId: String, eventStartEpoch: Double = 0, eventEndEpoch: Double = 0, weatherEmoji: String = "", weatherTemp: String = "", orgLogoName: String = "") {
         self.eventTitle = eventTitle
         self.location = location
         self.eventId = eventId
         self.eventStartEpoch = eventStartEpoch
         self.eventEndEpoch = eventEndEpoch
+        self.weatherEmoji = weatherEmoji
+        self.weatherTemp = weatherTemp
+        self.orgLogoName = orgLogoName
     }
 }
 

@@ -24,7 +24,7 @@ struct EventCountdownLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    HangelIconBadge(systemName: "calendar", size: 38)
+                    HangelLogoOrIcon(logoName: context.attributes.orgLogoName, systemName: "calendar", size: 38)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     trailingMetric(context, big: true)
@@ -55,10 +55,11 @@ struct EventCountdownLiveActivity: Widget {
     @ViewBuilder
     private func lockScreenContent(context: ActivityViewContext<EventCountdownAttributes>) -> some View {
         VStack(spacing: 10) {
-            HangelHeaderRow(kicker: "Etkinlik", tint: .hangelOrange)
+            HangelHeaderRow(kicker: "Etkinlik", tint: .hangelOrange,
+                            weatherEmoji: context.attributes.weatherEmoji, weatherTemp: context.attributes.weatherTemp)
 
             HStack(alignment: .center, spacing: 12) {
-                HangelIconBadge(systemName: "calendar")
+                HangelLogoOrIcon(logoName: context.attributes.orgLogoName, systemName: "calendar")
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(context.attributes.eventTitle)

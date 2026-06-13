@@ -46,6 +46,9 @@ interface HangelLiveActivityPlugin {
     minutesLeft?: number;
     progressPercent?: number;
     checkInOpen?: boolean;
+    weatherEmoji?: string;
+    weatherTemp?: string;
+    organizerLogoUrl?: string;
   }): Promise<BaseStartResult>;
   startEventCountdown(opts: {
     eventTitle: string;
@@ -55,6 +58,9 @@ interface HangelLiveActivityPlugin {
     eventEndEpoch?: number;
     minutesLeft?: number;
     statusLabel?: string;
+    weatherEmoji?: string;
+    weatherTemp?: string;
+    organizerLogoUrl?: string;
   }): Promise<BaseStartResult>;
   startDonationCampaign(opts: {
     campaignTitle: string;
@@ -130,6 +136,9 @@ export async function startVolunteerTaskActivity(input: {
   minutesLeft?: number;
   progressPercent?: number;
   checkInOpen?: boolean;
+  weatherEmoji?: string;
+  weatherTemp?: string;
+  organizerLogoUrl?: string;
 }): Promise<string | null> {
   if (!Capacitor.isNativePlatform()) return null;
   try {
@@ -152,6 +161,9 @@ export async function startEventCountdownActivity(input: {
   eventEndEpoch?: number;
   minutesLeft?: number;
   statusLabel?: string;
+  weatherEmoji?: string;
+  weatherTemp?: string;
+  organizerLogoUrl?: string;
 }): Promise<string | null> {
   if (!Capacitor.isNativePlatform()) return null;
   try {

@@ -15,6 +15,7 @@
 
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - hangel marka tasarım sistemi
 
@@ -64,17 +65,69 @@ struct HangelIconBadge: View {
     }
 }
 
-/// Üst satır: tip etiketi (sol) + hangel wordmark (sağ). Tüm Live Activity'lerde ortak.
+/// App Group container'dan STK/kulüp logosunu yükle (plugin oraya indirir). Yoksa nil.
+@available(iOS 16.1, *)
+func hangelOrgLogo(_ name: String) -> UIImage? {
+    guard !name.isEmpty,
+          let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.hangel.app.shared")
+    else { return nil }
+    return UIImage(contentsOfFile: container.appendingPathComponent(name).path)
+}
+
+/// Org logosu varsa dairesel logo; yoksa SF Symbol gradyan rozet (fallback).
+@available(iOS 16.1, *)
+struct HangelLogoOrIcon: View {
+    let logoName: String
+    let systemName: String
+    var top: Color = .hangelOrange
+    var bottom: Color = .hangelOrangeDeep
+    var size: CGFloat = 46
+    var body: some View {
+        if let img = hangelOrgLogo(logoName) {
+            Image(uiImage: img).resizable().scaledToFill()
+                .frame(width: size, height: size)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Color.hangelOrange.opacity(0.6), lineWidth: 1.5))
+        } else {
+            HangelIconBadge(systemName: systemName, top: top, bottom: bottom, size: size)
+        }
+    }
+}
+
+/// Hava durumu çipi (emoji + sıcaklık). İkisi de boşsa hiçbir şey çizmez.
+@available(iOS 16.1, *)
+struct HangelWeatherChip: View {
+    let emoji: String
+    let temp: String
+    var body: some View {
+        if !emoji.isEmpty || !temp.isEmpty {
+            HStack(spacing: 3) {
+                if !emoji.isEmpty { Text(emoji).font(.system(size: 11)) }
+                if !temp.isEmpty {
+                    Text(temp).font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(Capsule().fill(Color.secondary.opacity(0.12)))
+        }
+    }
+}
+
+/// Üst satır: tip etiketi (sol) + opsiyonel hava durumu + hangel wordmark (sağ).
 @available(iOS 16.1, *)
 struct HangelHeaderRow: View {
     let kicker: String
     var tint: Color = .hangelOrange
+    var weatherEmoji: String = ""
+    var weatherTemp: String = ""
     var body: some View {
         HStack(spacing: 6) {
             Text(kicker.uppercased())
                 .font(.system(size: 11, weight: .bold, design: .rounded))
                 .foregroundStyle(tint)
                 .kerning(0.4)
+            HangelWeatherChip(emoji: weatherEmoji, temp: weatherTemp)
             Spacer(minLength: 8)
             HangelWordmark(size: 12)
         }

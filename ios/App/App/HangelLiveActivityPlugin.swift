@@ -68,7 +68,9 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
               let taskId = call.getString("taskId") else {
             call.reject("taskTitle, ngoName, location, taskId zorunlu"); return
         }
-        let attrs = VolunteerTaskAttributes(taskTitle: taskTitle, ngoName: ngoName, location: location, taskId: taskId)
+        let logoName = Self.cacheOrgLogo(urlString: call.getString("organizerLogoUrl"), id: taskId)
+        let attrs = VolunteerTaskAttributes(taskTitle: taskTitle, ngoName: ngoName, location: location, taskId: taskId,
+            weatherEmoji: call.getString("weatherEmoji") ?? "", weatherTemp: call.getString("weatherTemp") ?? "", orgLogoName: logoName)
         let state = VolunteerTaskAttributes.ContentState(
             minutesLeft: call.getInt("minutesLeft") ?? 120,
             progressPercent: call.getDouble("progressPercent") ?? 0.0,
@@ -88,7 +90,9 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
               let eventId = call.getString("eventId") else {
             call.reject("eventTitle, location, eventId zorunlu"); return
         }
-        let attrs = EventCountdownAttributes(eventTitle: eventTitle, location: location, eventId: eventId, eventStartEpoch: call.getDouble("eventStartEpoch") ?? 0, eventEndEpoch: call.getDouble("eventEndEpoch") ?? 0)
+        let logoName = Self.cacheOrgLogo(urlString: call.getString("organizerLogoUrl"), id: eventId)
+        let attrs = EventCountdownAttributes(eventTitle: eventTitle, location: location, eventId: eventId, eventStartEpoch: call.getDouble("eventStartEpoch") ?? 0, eventEndEpoch: call.getDouble("eventEndEpoch") ?? 0,
+            weatherEmoji: call.getString("weatherEmoji") ?? "", weatherTemp: call.getString("weatherTemp") ?? "", orgLogoName: logoName)
         let state = EventCountdownAttributes.ContentState(
             minutesLeft: call.getInt("minutesLeft") ?? 60,
             statusLabel: call.getString("statusLabel") ?? "Yakında"
@@ -147,6 +151,22 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         #else
         call.reject("ActivityKit unavailable")
         #endif
+    }
+
+    // STK/kulüp logosunu App Group container'a indir (fire-and-forget) ve dosya adını dön.
+    // Widget extension aynı container'dan UIImage(contentsOfFile:) ile okur. İndirme
+    // asenkron; logo bir sonraki widget yenilemesinde görünür, yoksa ikon fallback.
+    private static func cacheOrgLogo(urlString: String?, id: String) -> String {
+        guard let urlString = urlString, !urlString.isEmpty,
+              let url = URL(string: urlString),
+              let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.hangel.app.shared")
+        else { return "" }
+        let name = "orglogo-\(id).img"
+        let dest = container.appendingPathComponent(name)
+        URLSession.shared.dataTask(with: url) { data, _, _ in
+            if let data = data, !data.isEmpty { try? data.write(to: dest) }
+        }.resume()
+        return name
     }
 
     #if canImport(ActivityKit)
