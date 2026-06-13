@@ -1,0 +1,42 @@
+#!/bin/sh
+# pre-push — build-kıran eslint ERROR'larını push'tan ÖNCE yakala.
+#
+# Neden: `next build` (App Hosting), src'de TEK bir eslint ERROR olsa bile patlar
+# ve production SESSİZCE eski commit'te kalır — kimse uyarılmaz. Minik bir
+# kullanılmayan import bile tüm deploy'u kilitleyebilir. Bu hook onu engeller.
+#
+# Hız: yalnızca push edilen aralıkta DEĞİŞEN src .ts/.tsx dosyalarını lint eder
+# (genelde birkaç dosya, ~saniyeler). Build ile aynı eslint kurallarını kullanır.
+#
+# Zorlaman gerekirse (acil durum):  git push --no-verify
+
+set -e
+cd "$(git rev-parse --show-toplevel)" || exit 0
+
+# origin/main'e göre değişen dosyalar; yoksa son commit'i baz al.
+BASE=$(git merge-base origin/main HEAD 2>/dev/null || echo "")
+if [ -n "$BASE" ]; then
+  CHANGED=$(git diff --name-only --diff-filter=ACM "$BASE"..HEAD 2>/dev/null | grep -E '^src/.*\.(ts|tsx)$' || true)
+else
+  CHANGED=$(git diff --name-only --diff-filter=ACM HEAD~1..HEAD 2>/dev/null | grep -E '^src/.*\.(ts|tsx)$' || true)
+fi
+
+if [ -z "$CHANGED" ]; then
+  echo "pre-push: değişen src dosyası yok — eslint atlandı."
+  exit 0
+fi
+
+COUNT=$(printf '%s\n' "$CHANGED" | wc -l | tr -d ' ')
+echo "pre-push: eslint ERROR kontrolü ($COUNT değişen src dosyası)…"
+
+# --quiet = yalnızca ERROR'lar (warning'ler build'i kırmaz, gösterilmez).
+if printf '%s\n' "$CHANGED" | xargs npx eslint --quiet; then
+  echo "✅ eslint temiz — push devam ediyor."
+  exit 0
+else
+  echo ""
+  echo "❌ PUSH DURDURULDU — yukarıdaki eslint ERROR'ları 'next build'i kırar"
+  echo "   ve canlıyı sessizce eski commit'te bırakır. Önce düzelt, sonra tekrar push et."
+  echo "   (Gerçekten zorlamak için:  git push --no-verify )"
+  exit 1
+fi
