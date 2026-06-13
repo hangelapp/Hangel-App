@@ -1,4 +1,5 @@
 import hangelImpactInventory from './hangel-impact-inventory.json';
+import hangelDataLibrary from './hangel-data-library.json';
 import { templatesSection } from './library-templates';
 
 export interface LibraryItem {
@@ -36,6 +37,14 @@ export interface LibraryItem {
   genre?: string;
   /** Yapım ülkesi. */
   country?: string;
+  /** Veri Kütüphanesi: kaynak kurum (künye başı — örn. "OECD", "Dünya Bankası"). */
+  source?: string;
+  /** Veri Kütüphanesi: kapsam (Türkiye geneli / AB / Uluslararası / Bölgesel). */
+  scope?: string;
+  /** Veri Kütüphanesi: kaynak yayın/veri URL'i (künye linki). */
+  sourceUrl?: string;
+  /** Veri Kütüphanesi: tam künye metni ("Kurum (Yıl). Yayın. Erişim: URL"). */
+  citation?: string;
 }
 
 /**
@@ -157,6 +166,7 @@ export interface LibrarySection {
 
 export const librarySections: LibrarySection[] = [
     hangelImpactInventory as LibrarySection,
+    hangelDataLibrary as LibrarySection,
     templatesSection,
     {
         slug: 'kitaplar',
