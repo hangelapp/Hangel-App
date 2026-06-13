@@ -2,7 +2,7 @@
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, Mail, Phone, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Download, Info, HeartHandshake, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
@@ -283,13 +283,24 @@ export default function VolunteeringDetailPage() {
     volunteerInfo: { education: [] as unknown[] },
   }) as UserType;
   const nameQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(cardUser.name)}`;
+  // Doğum tarihi — yıl gizli, yalnız gün + ay (sosyal/gizlilik dengesi).
+  const cardBirthRaw = (cardUser.personalInfo as { birthDate?: string } | undefined)?.birthDate || '';
+  const birthDayLabel = (() => {
+    if (!cardBirthRaw) return '';
+    try { const d = parse(cardBirthRaw, 'yyyy-MM-dd', new Date()); return isNaN(d.getTime()) ? '' : format(d, 'd MMMM', { locale: tr }); } catch { return ''; }
+  })();
+  // hangel profil linki (sosyal medya hesabı niyetiyle).
+  const profileUrlForCard = authUser?.uid ? `hangel.org.tr/profile/${authUser.uid}` : '';
+  // Arka QR = vCard: tel + mail + doğum + profil URL kodlu (metin olarak gösterilmez).
   const backQrData = [
     'BEGIN:VCARD', 'VERSION:3.0',
     `FN:${cardUser.name}`,
     `TEL;TYPE=CELL:${cardUser.personalInfo?.phone || ''}`,
     `EMAIL:${cardUser.personalInfo?.email || ''}`,
+    cardBirthRaw ? `BDAY:${cardBirthRaw}` : '',
+    profileUrlForCard ? `URL:https://${profileUrlForCard}` : '',
     'END:VCARD',
-  ].join('\n');
+  ].filter(Boolean).join('\n');
   const backQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(backQrData)}`;
 
   const handleDownloadBadgePdf = async () => {
@@ -353,10 +364,21 @@ export default function VolunteeringDetailPage() {
       const res = await fetch(`/api/passkit/volunteer/${opportunity.id}`, {
         headers: { authorization: `Bearer ${idToken}` },
       });
+      if (res.status === 503) {
+        toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
+        return;
+      }
       if (!res.ok) throw new Error('PassKit hazır değil');
       const blob = await res.blob();
+      // Blob'u .pkpass olarak indir (location.href boş sayfa bırakabiliyordu).
       const url = URL.createObjectURL(blob);
-      window.location.href = url;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `hangel-yaka-karti-${opportunity.id}.pkpass`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
     } catch (e) {
       toast({ variant: 'destructive', title: 'Apple Wallet hazırlanamadı', description: e instanceof Error ? e.message : 'Beklenmeyen hata.' });
     }
@@ -730,19 +752,19 @@ export default function VolunteeringDetailPage() {
                                                 <AvatarFallback className="text-xs font-black text-primary">{organizerInitials}</AvatarFallback>
                                             </Avatar>
                                         </div>
-                                        <div className="p-5 flex-1 flex flex-col justify-between items-center text-center min-h-0">
-                                            <div className="space-y-1 w-full">
-                                                <p className="text-base font-black text-foreground leading-tight line-clamp-2">{opportunity.title}</p>
-                                                <p className="text-[11px] font-bold text-primary uppercase">{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</p>
+                                        <div className="p-3 flex-1 flex flex-col justify-between items-center text-center min-h-0 gap-1">
+                                            <div className="space-y-0.5 w-full">
+                                                <p className="text-sm font-black text-foreground leading-tight line-clamp-2">{opportunity.title}</p>
+                                                <p className="text-[10px] font-bold text-primary uppercase">{formatDateWithTime(opp.dates?.eventStart, opp.dates?.eventStartTime)}</p>
                                             </div>
-                                            <div className='w-full'>
-                                                <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={100} height={100} className="mx-auto my-4 rounded-2xl border p-1 bg-white shadow-sm" />
-                                                <div className="bg-primary text-primary-foreground py-1.5 w-full rounded-lg mb-2">
-                                                    <p className="text-sm font-black uppercase tracking-[0.2em]">GÖNÜLLÜ</p>
+                                            <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={84} height={84} className="mx-auto rounded-xl border p-1 bg-white shadow-sm" />
+                                            <div className='w-full space-y-1'>
+                                                <div className="bg-primary text-primary-foreground py-1 w-full rounded-lg">
+                                                    <p className="text-xs font-black uppercase tracking-[0.2em]">GÖNÜLLÜ</p>
                                                 </div>
-                                                <p className="text-xl font-black pt-2 truncate">{cardUser.name}</p>
+                                                <p className="text-base font-black truncate">{cardUser.name}</p>
                                                 {cardUser.volunteerInfo?.education?.[0]?.school && (
-                                                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1 truncate">
+                                                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider truncate">
                                                         {cardUser.volunteerInfo.education[0].school}
                                                     </p>
                                                 )}
@@ -764,15 +786,18 @@ export default function VolunteeringDetailPage() {
                                                 <AvatarFallback className="text-xs font-black text-primary">{organizerInitials}</AvatarFallback>
                                             </Avatar>
                                         </div>
-                                        <div className="p-5 flex-1 flex flex-col justify-center items-center text-center space-y-5 min-h-0">
-                                            <h3 className="text-lg font-black uppercase tracking-widest">İLETİŞİM BİLGİLERİ</h3>
-                                            <div className="my-2">
-                                                <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={120} height={120} className="mx-auto rounded-2xl border-2 border-primary/20 p-1 bg-white shadow-sm" />
-                                            </div>
-                                            <div className="text-left w-full space-y-3">
-                                                <div className="flex items-center gap-3"><UserCheck className="h-4 w-4 text-primary" /> <span className="font-bold text-sm">{cardUser.name}</span></div>
-                                                <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{cardUser.personalInfo?.email || ''}</span></div>
-                                                <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> <span className="text-xs font-bold">{cardUser.personalInfo?.phone || ''}</span></div>
+                                        <div className="p-3 flex-1 flex flex-col justify-center items-center text-center space-y-2 min-h-0">
+                                            <h3 className="text-base font-black uppercase tracking-widest">İLETİŞİM BİLGİLERİ</h3>
+                                            <Image src={backQrCodeUrl} alt="İletişim QR Kodu" width={104} height={104} className="mx-auto rounded-xl border-2 border-primary/20 p-1 bg-white shadow-sm" />
+                                            <p className="text-[9px] text-muted-foreground leading-tight px-2">Kişisel iletişim bilgileriniz bu karekodda bulunmaktadır.</p>
+                                            <div className="text-left w-full space-y-1.5 pt-1">
+                                                <div className="flex items-center gap-2"><UserCheck className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="font-bold text-xs truncate">{cardUser.name}</span></div>
+                                                {birthDayLabel && (
+                                                    <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="text-[11px] font-bold">{birthDayLabel}</span></div>
+                                                )}
+                                                {profileUrlForCard && (
+                                                    <div className="flex items-center gap-2"><HeartHandshake className="h-3.5 w-3.5 text-primary shrink-0" /> <span className="text-[10px] font-bold truncate">{profileUrlForCard}</span></div>
+                                                )}
                                             </div>
                                         </div>
                                         <div className='bg-primary/5 p-3 text-[10px] text-primary font-black border-t text-center uppercase tracking-widest'>
