@@ -22,6 +22,8 @@ import {
     XCircle,
     Upload,
     Trash2,
+    Mic2,
+    ListOrdered,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +46,7 @@ import { useActiveEntity, useActiveEntityDoc } from '@/app/ngo-admin/active-enti
 import { useTranslation } from '@/components/providers/language-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import type { EventContributor, EventContributorRole, EventAgendaItem } from '@/lib/types';
 
 type EntityKind = 'ngo' | 'brand' | 'club';
 
@@ -51,7 +54,15 @@ interface EntityDoc {
     id: string;
     name?: string;
     adminUserId?: string;
+    logoUrl?: string;
+    avatarUrl?: string;
 }
+
+const CONTRIBUTOR_ROLE_OPTIONS: { value: EventContributorRole; label: string }[] = [
+    { value: 'speaker', label: 'Konuşmacı' },
+    { value: 'artist', label: 'Sanatçı' },
+    { value: 'moderator', label: 'Moderatör' },
+];
 
 type EventStatus = 'Beklemede' | 'Yayında' | 'Aktif' | 'Reddedildi';
 
@@ -146,7 +157,35 @@ export default function EventManagementPage() {
     const [evCapacity, setEvCapacity] = useState('');
     const [evLanguage, setEvLanguage] = useState('Türkçe');
     const [evCertificate, setEvCertificate] = useState(false);
+    // Konuşmacılar / Sanatçılar. NOT: Projede reuse edilebilir bağımsız bir hangel
+    // kullanıcı arama picker'ı yok (mevcut user-search OnboardingWizard içine gömülü).
+    // Bu yüzden her satıra opsiyonel e-posta alanı koyuyoruz; userId şimdilik boş kalır
+    // (e-postadan uid çözümleme ileride backend tarafında yapılabilir).
+    const [contributors, setContributors] = useState<EventContributor[]>([]);
+    const [contributorEmails, setContributorEmails] = useState<string[]>([]);
+    const [agenda, setAgenda] = useState<EventAgendaItem[]>([]);
     const posterInputRef = useRef<HTMLInputElement>(null);
+
+    const addContributor = () => {
+        setContributors((prev) => [...prev, { name: '', title: '', role: 'speaker' }]);
+        setContributorEmails((prev) => [...prev, '']);
+    };
+    const updateContributor = (idx: number, patch: Partial<EventContributor>) => {
+        setContributors((prev) => prev.map((c, i) => (i === idx ? { ...c, ...patch } : c)));
+    };
+    const updateContributorEmail = (idx: number, email: string) => {
+        setContributorEmails((prev) => prev.map((e, i) => (i === idx ? email : e)));
+    };
+    const removeContributor = (idx: number) => {
+        setContributors((prev) => prev.filter((_, i) => i !== idx));
+        setContributorEmails((prev) => prev.filter((_, i) => i !== idx));
+    };
+
+    const addAgendaItem = () => setAgenda((prev) => [...prev, { time: '', title: '' }]);
+    const updateAgendaItem = (idx: number, patch: Partial<EventAgendaItem>) => {
+        setAgenda((prev) => prev.map((a, i) => (i === idx ? { ...a, ...patch } : a)));
+    };
+    const removeAgendaItem = (idx: number) => setAgenda((prev) => prev.filter((_, i) => i !== idx));
 
     const handlePosterFile = (file: File | null) => {
         if (!file) {
@@ -178,6 +217,9 @@ export default function EventManagementPage() {
         setEvCapacity('');
         setEvLanguage('Türkçe');
         setEvCertificate(false);
+        setContributors([]);
+        setContributorEmails([]);
+        setAgenda([]);
         if (evPosterPreview) URL.revokeObjectURL(evPosterPreview);
         setEvPosterFile(null);
         setEvPosterPreview(null);
@@ -229,6 +271,25 @@ export default function EventManagementPage() {
                 ? (evEndTime ? `${evEndDate} ${evEndTime}` : evEndDate)
                 : '';
 
+            // Konuşmacı/sanatçı listesi — boş isimli satırları at, undefined alan yazma.
+            // userId şu an yok (e-postadan uid çözme backend işi); satırda userId varsa korunur.
+            const cleanContributors: EventContributor[] = contributors
+                .map((c) => ({ ...c, name: c.name.trim(), title: c.title.trim() }))
+                .filter((c) => c.name.length > 0)
+                .map((c) => {
+                    const out: EventContributor = { name: c.name, title: c.title, role: c.role };
+                    if (c.userId) out.userId = c.userId; // undefined yazmaktan kaçın
+                    return out;
+                });
+
+            // Program/akış — saat ya da başlığı olan satırları al.
+            const cleanAgenda: EventAgendaItem[] = agenda
+                .map((a) => ({ time: a.time.trim(), title: a.title.trim() }))
+                .filter((a) => a.time.length > 0 || a.title.length > 0);
+
+            // Düzenleyen kuruluşun logosu (avatarUrl/logoUrl); yoksa boş string.
+            const organizerLogoUrl = activeEntity.data.logoUrl || activeEntity.data.avatarUrl || '';
+
             // Force status='Beklemede' regardless of any other inputs
             await addDoc(collection(firestore, COLLECTIONS.events), {
                 name: evName.trim(),
@@ -256,6 +317,9 @@ export default function EventManagementPage() {
                 },
                 description: evDescription.trim(),
                 imageUrl: posterUrl,
+                contributors: cleanContributors,
+                agenda: cleanAgenda,
+                organizerLogoUrl,
                 status: 'Beklemede' as EventStatus,
                 createdAt: Date.now(),
                 createdBy: authUser?.uid || null,
@@ -534,6 +598,110 @@ export default function EventManagementPage() {
                             <Checkbox checked={evCertificate} onCheckedChange={(c) => setEvCertificate(c === true)} />
                             <span>Bu etkinlik katılımcılara <strong>sertifika</strong> veriyor</span>
                         </label>
+
+                        {/* Konuşmacılar / Sanatçılar */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="flex items-center gap-2">
+                                    <Mic2 className="h-4 w-4 text-muted-foreground" /> Konuşmacılar / Sanatçılar
+                                </Label>
+                                <Button type="button" variant="outline" size="sm" onClick={addContributor}>
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+                                </Button>
+                            </div>
+                            {contributors.length === 0 ? (
+                                <p className="text-xs text-muted-foreground px-1">
+                                    Konuşmacı, sanatçı veya moderatör eklemek için “Ekle”ye dokun.
+                                </p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {contributors.map((c, idx) => (
+                                        <div key={idx} className="p-3 border rounded-xl bg-card space-y-2">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                <Input
+                                                    value={c.name}
+                                                    onChange={(e) => updateContributor(idx, { name: e.target.value })}
+                                                    placeholder="İsim (örn. Ayşe Yılmaz)"
+                                                />
+                                                <Input
+                                                    value={c.title}
+                                                    onChange={(e) => updateContributor(idx, { title: e.target.value })}
+                                                    placeholder="Ünvan (örn. Prof. Dr., Müzisyen)"
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
+                                                <div className="space-y-1">
+                                                    <Label className="text-[11px] text-muted-foreground">Rol</Label>
+                                                    <Select
+                                                        value={c.role}
+                                                        onValueChange={(v) => updateContributor(idx, { role: v as EventContributorRole })}
+                                                    >
+                                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                                        <SelectContent>
+                                                            {CONTRIBUTOR_ROLE_OPTIONS.map((r) => (
+                                                                <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <Label className="text-[11px] text-muted-foreground">hangel üye e-postası (opsiyonel)</Label>
+                                                    <Input
+                                                        type="email"
+                                                        value={contributorEmails[idx] ?? ''}
+                                                        onChange={(e) => updateContributorEmail(idx, e.target.value)}
+                                                        placeholder="uye@ornek.com"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end">
+                                                <Button type="button" variant="ghost" size="sm" onClick={() => removeContributor(idx)}>
+                                                    <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Sil
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Program / Akış (Agenda) */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="flex items-center gap-2">
+                                    <ListOrdered className="h-4 w-4 text-muted-foreground" /> Program / Akış
+                                </Label>
+                                <Button type="button" variant="outline" size="sm" onClick={addAgendaItem}>
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" /> Ekle
+                                </Button>
+                            </div>
+                            {agenda.length === 0 ? (
+                                <p className="text-xs text-muted-foreground px-1">
+                                    Etkinlik akışını saat saat eklemek için “Ekle”ye dokun.
+                                </p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {agenda.map((a, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <Input
+                                                type="time"
+                                                value={a.time}
+                                                onChange={(e) => updateAgendaItem(idx, { time: e.target.value })}
+                                                className="w-28 shrink-0"
+                                            />
+                                            <Input
+                                                value={a.title}
+                                                onChange={(e) => updateAgendaItem(idx, { title: e.target.value })}
+                                                placeholder="Başlık (örn. Açılış konuşması)"
+                                            />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeAgendaItem(idx)} aria-label="Satırı sil">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={submitting || evPosterUploading}>{t('ngo_admin_events.cancelBtn')}</Button>

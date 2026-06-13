@@ -29,6 +29,8 @@ import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { notifyUser } from '@/lib/notify-user';
+import { getUserEventRole } from '@/lib/event-roles';
+import type { EventContributor } from '@/lib/types';
 
 export const runtime = 'nodejs';
 
@@ -97,10 +99,13 @@ export async function POST(
             name?: string;
             slug?: string;
             location?: { city?: string };
+            contributors?: EventContributor[];
           }
         | undefined;
       const eventName = eventData?.name || 'Etkinlik';
       const eventSlug = eventData?.slug || eventId;
+      // Kullanıcının etkinlikteki rolü (contributors eşleşmesi; yoksa 'participant').
+      const role = getUserEventRole(eventData?.contributors, uid);
 
       // capacity.max is the cap; 0/undefined/null means unlimited
       let cap: number | null = null;
@@ -132,6 +137,7 @@ export async function POST(
           {
             userId: uid,
             status: 'going',
+            role,
             createdAt: rsvpSnap.exists
               ? rsvpSnap.get('createdAt') ?? FieldValue.serverTimestamp()
               : FieldValue.serverTimestamp(),
@@ -140,7 +146,7 @@ export async function POST(
           { merge: true }
         );
         const newCount = wasGoing ? goingCount : goingCount + 1;
-        return { status: 'going' as const, count: newCount, newlyGoing: !wasGoing, eventName, eventSlug };
+        return { status: 'going' as const, count: newCount, newlyGoing: !wasGoing, eventName, eventSlug, role };
       }
 
       // action === 'cancel'
@@ -156,7 +162,7 @@ export async function POST(
         );
       }
       const newCount = wasGoing ? Math.max(0, goingCount - 1) : goingCount;
-      return { status: 'cancelled' as const, count: newCount, newlyGoing: false, eventName, eventSlug };
+      return { status: 'cancelled' as const, count: newCount, newlyGoing: false, eventName, eventSlug, role };
     });
 
     // Yeni katılımda: katılımcıya yaka kartı DM'i + bildirim gönder (best-effort).
@@ -168,7 +174,7 @@ export async function POST(
           title: 'Yaka kartınız hazır 🎫',
           body: `${result.eventName} etkinliğine kaydınız alındı. Dijital yaka kartınızı etkinlik sayfasından görüntüleyebilirsiniz.`,
           link: `/events/${result.eventSlug}`,
-          data: { eventId, eventName: result.eventName },
+          data: { eventId, eventName: result.eventName, role: result.role },
           storeAsMessage: true,
           messageSubject: 'Yaka Kartınız Hazır 🎫',
           messageContent: `${result.eventName} etkinliğine katılımınız onaylandı. Etkinlik günü girişte kullanacağınız QR kodlu dijital yaka kartınız hazır — etkinlik sayfasındaki "Yaka Kartı" butonundan görüntüleyip indirebilirsiniz. Görüşmek üzere!`,

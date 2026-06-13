@@ -189,6 +189,25 @@ export type Event = {
   imageHint?: string;
   description: string;
   providesCertificate?: boolean;
+  organizerId?: string;
+  organizerLogoUrl?: string; // Etkinliği düzenleyen kulübün/STK'nın logosu (Live Activity + yaka kartı)
+  contributors?: EventContributor[]; // Konuşmacı / sanatçı / moderatör listesi (isim + ünvan + rol)
+  agenda?: EventAgendaItem[]; // Etkinlik akış programı (saat + başlık)
+};
+
+/** Etkinlikte görevli kişi — konuşmacı, sanatçı, moderatör. hangel üyesiyse userId bağlanır. */
+export type EventContributorRole = 'speaker' | 'artist' | 'moderator';
+export type EventContributor = {
+  name: string;
+  title: string; // ünvan (örn. "Prof. Dr.", "Genel Müdür", "Müzisyen")
+  role: EventContributorRole;
+  userId?: string; // hangel üyesiyse Firebase uid — rol yaka kartı/Live Activity/sertifikaya yansır
+};
+
+/** Etkinlik akış programı öğesi. */
+export type EventAgendaItem = {
+  time: string; // "HH:mm"
+  title: string;
 };
 
 export type Volunteering = {

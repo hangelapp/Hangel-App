@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck, MessageSquare } from 'lucide-react';
+import { Bell, Heart, ArrowLeft, Loader2, Droplet, UserPlus, Sparkles, CheckCircle2, AlertCircle, ShieldCheck, MessageSquare, Ticket } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useMemoFirebase, useDoc } from '@/firebase';
@@ -31,6 +31,7 @@ const typeIcon: Record<string, React.ComponentType<{ className?: string }>> = {
   'donation': Sparkles,
   'authorization': ShieldCheck,
   'message': MessageSquare,
+  'badge_earned': Ticket,
 };
 
 const typeColor: Record<string, string> = {
@@ -43,6 +44,7 @@ const typeColor: Record<string, string> = {
   'donation': 'text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30',
   'authorization': 'text-indigo-600 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30',
   'message': 'text-primary bg-primary/10',
+  'badge_earned': 'text-amber-600 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/40',
 };
 
 export default function NotificationsPage() {
@@ -229,8 +231,10 @@ export default function NotificationsPage() {
       case 'welcome':
       case 'emergency-confirmation':
         return '/messages';
-      case 'badge':
       case 'badge_earned':
+        // Yaka kartı bildirimi — etkinlik linki varsa oraya (/events/{slug}), yoksa rozetlere.
+        return n.data?.link || '/my-badges';
+      case 'badge':
         return '/my-badges';
       case 'event_created':
         return n.data?.link || '/events';

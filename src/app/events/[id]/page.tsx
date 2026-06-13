@@ -4,6 +4,7 @@ import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@
 import { collection, doc, query, where, limit } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
 import { startEventCountdownActivity } from '@/lib/native-live-activity';
+import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,38 +73,54 @@ export default function EventDetailPage() {
     if (!cardFrontRef.current || !cardBackRef.current) return;
     setIsGeneratingPdf(true);
     try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import('html2canvas'),
-        import('jspdf'),
-      ]);
+      const { default: html2canvas } = await import('html2canvas');
 
-      const opts = { scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false };
+      const opts = { scale: 3, backgroundColor: '#ffffff', useCORS: true, logging: false };
       const frontCanvas = await html2canvas(cardFrontRef.current, opts);
       const backCanvas = await html2canvas(cardBackRef.current, opts);
 
-      // A4 portre, iki kart yan yana ortalanır
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      // Kart oranı 105/148 (A6). Genişlik 70mm, yükseklik = 70*148/105 ≈ 98.67mm
-      const cardW = 70;
-      const cardH = (cardW * 148) / 105;
-      const gap = 8;
+      // A4 portre @ ~200 DPI: 210×297mm → 1654×2339px
+      const MM = (mm: number) => Math.round((mm / 25.4) * 200);
+      const pageW = MM(210); // 1654
+      const pageH = MM(297); // 2339
+
+      const out = document.createElement('canvas');
+      out.width = pageW;
+      out.height = pageH;
+      const ctx = out.getContext('2d');
+      if (!ctx) throw new Error('Canvas bağlamı oluşturulamadı.');
+
+      // Beyaz arka plan
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, pageW, pageH);
+
+      // İki kart A6 oranında (105/148), yan yana A5 alanında, A4 ortasında.
+      const cardW = MM(95); // ~95mm kart genişliği
+      const cardH = Math.round((cardW * 148) / 105);
+      const gap = MM(6);
       const totalW = cardW * 2 + gap;
-      const startX = (pageW - totalW) / 2;
-      const startY = (pageH - cardH) / 2;
+      const startX = Math.round((pageW - totalW) / 2);
+      const startY = Math.round((pageH - cardH) / 2);
 
-      pdf.addImage(frontCanvas.toDataURL('image/png'), 'PNG', startX, startY, cardW, cardH);
-      pdf.addImage(backCanvas.toDataURL('image/png'), 'PNG', startX + cardW + gap, startY, cardW, cardH);
+      ctx.drawImage(frontCanvas, startX, startY, cardW, cardH);
+      ctx.drawImage(backCanvas, startX + cardW + gap, startY, cardW, cardH);
 
-      pdf.setFontSize(8);
-      pdf.setTextColor(120);
-      pdf.text('hangel — etkinlik yaka kartı', pageW / 2, pageH - 10, { align: 'center' });
+      // Alt ortaya küçük gri etiket
+      ctx.fillStyle = '#888888';
+      ctx.font = '24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('hangel — etkinlik yaka kartı', pageW / 2, pageH - MM(10));
 
-      pdf.save(`yaka-karti-${event?.id || 'hangel'}.pdf`);
+      const dataUrl = out.toDataURL('image/jpeg', 0.92);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `yaka-karti-${event?.id || 'hangel'}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     } catch (err) {
       const e = err as { message?: string };
-      toast({ variant: 'destructive', title: 'PDF oluşturulamadı', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
+      toast({ variant: 'destructive', title: 'Yaka kartı oluşturulamadı', description: e?.message || 'Beklenmeyen bir hata oluştu.' });
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -194,6 +211,10 @@ export default function EventDetailPage() {
           if (isNaN(d.getTime())) d = parse(event.startDate, 'yyyy-MM-dd', new Date());
           if (!isNaN(d.getTime())) eventStartEpoch = d.getTime();
         }
+        const _role = getUserEventRole(event?.contributors, authUser?.uid);
+        const _roleLabel = _role === 'participant'
+          ? 'Katılımcı'
+          : (roleLabelTr(_role).charAt(0) + roleLabelTr(_role).slice(1).toLocaleLowerCase('tr'));
         void startEventCountdownActivity({
           eventTitle: event?.name || 'Etkinlik',
           location: typeof event?.location === 'string'
@@ -201,7 +222,7 @@ export default function EventDetailPage() {
             : (event?.location?.address || event?.location?.city || ''),
           eventId: resolvedEventId,
           eventStartEpoch,
-          statusLabel: 'Kayıtlı',
+          statusLabel: _roleLabel,
         });
       }
     } catch (err) {
@@ -558,7 +579,7 @@ export default function EventDetailPage() {
                     alert(e instanceof Error ? e.message : 'Apple Wallet hazırlanamadı');
                   }
                 }}
-                className="h-14 rounded-2xl font-black px-4 hidden sm:flex items-center gap-2"
+                className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
                 aria-label="Apple Wallet'a Ekle"
                 title="Apple Wallet'a Ekle"
               >
@@ -591,7 +612,7 @@ export default function EventDetailPage() {
                     alert(e instanceof Error ? e.message : 'NFC hatası');
                   }
                 }}
-                className="h-14 rounded-2xl font-black px-4 hidden sm:flex items-center gap-2"
+                className="h-14 rounded-2xl font-black px-4 flex items-center gap-2"
                 aria-label="NFC ile Check-in"
                 title="NFC ile Check-in"
               >
@@ -641,7 +662,7 @@ export default function EventDetailPage() {
                             <div className='w-full'>
                                 <Image src={nameQrCodeUrl} alt="İsim QR Kodu" width={100} height={100} className="mx-auto my-4 rounded-2xl border p-1 bg-white shadow-sm" />
                                 <div className="bg-primary text-primary-foreground py-1.5 w-full rounded-lg mb-2">
-                                    <p className="text-sm font-black uppercase tracking-[0.2em]">KATILIMCI</p>
+                                    <p className="text-sm font-black uppercase tracking-[0.2em]">{roleLabelTr(getUserEventRole(event?.contributors, authUser?.uid))}</p>
                                 </div>
                                 <p className="text-xl font-black pt-2 truncate">{user.name}</p>
                                 <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1">
@@ -693,7 +714,7 @@ export default function EventDetailPage() {
                     className="rounded-xl h-12 font-bold"
                 >
                     {isGeneratingPdf ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> PDF hazırlanıyor…</>
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> JPG hazırlanıyor…</>
                     ) : (
                         <><Download className="mr-2 h-4 w-4" /> Yaka Kartını İndir</>
                     )}
