@@ -9,6 +9,11 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
         classpath 'com.google.gms:google-services:4.4.4'
+        // Crashlytics Gradle plugin — firebase-crashlytics SDK'sı build-time'da
+        // "build ID" kaynağı enjekte etmek için ŞART koşar. Bu plugin olmadan
+        // CrashlyticsCore.onPreExecute → IllegalStateException → FirebaseInitProvider
+        // → app açılır açılmaz çöker (Play Vitals: ComponentMonitor.processRegistrar).
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.6'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
