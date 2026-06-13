@@ -118,9 +118,9 @@ const GOOGLE_NONPROFITS_URL = 'https://www.google.com/intl/tr/nonprofits/';
 const GOOGLE_ADS_URL = 'https://ads.google.com/';
 
 // Üst sekme menüsü — üç platform tek sayfada yığılmaz, her biri kendi sekmesinde.
-const PLATFORM_TABS: { key: AdPlatform; label: string; Icon: React.ElementType }[] = [
+const PLATFORM_TABS: { key: AdPlatform; label: string; sub?: string; Icon: React.ElementType }[] = [
     { key: 'google', label: 'Google', Icon: Search },
-    { key: 'meta', label: 'Meta', Icon: Facebook },
+    { key: 'meta', label: 'Meta', sub: '(instagram, Facebook)', Icon: Facebook },
     { key: 'tiktok', label: 'TikTok', Icon: Music2 },
 ];
 
@@ -744,11 +744,12 @@ export default function AdsPage() {
 
                 {/* PLATFORM SEKME MENÜSÜ — Google / Meta / TikTok ayrı sekmeler */}
                 <div className="flex gap-1.5 rounded-2xl bg-muted/60 p-1">
-                    {PLATFORM_TABS.map(({ key, label, Icon }) => (
+                    {PLATFORM_TABS.map(({ key, label, sub, Icon }) => (
                         <button key={key} type="button" onClick={() => setActivePlatform(key)}
-                            className={cn('flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-[13px] font-semibold transition active:scale-[0.98]',
+                            className={cn('flex-1 min-h-10 py-1.5 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[13px] font-semibold transition active:scale-[0.98]',
                                 activePlatform === key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground')}>
-                            <Icon className="h-4 w-4" /> {label}
+                            <span className="flex items-center gap-1.5"><Icon className="h-4 w-4" /> {label}</span>
+                            {sub && <span className="text-[9px] font-medium leading-none opacity-80">{sub}</span>}
                         </button>
                     ))}
                 </div>
