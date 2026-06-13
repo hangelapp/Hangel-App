@@ -452,6 +452,18 @@ export default function EmergencyPage() {
             const finalCity = data.city || addr?.city || null;
             const finalDistrict = data.district || addr?.district || null;
             const finalNeighborhood = data.neighborhood || addr?.neighborhood || null;
+            // Hastane konumunu koordinata çevir (best-effort) → bildirimde "xx km · ~xx dk mesafede".
+            let hospitalCoords: { lat: number; lng: number } | null = null;
+            try {
+              const gq = [data.hospital, data.hospitalDistrict || finalDistrict, data.hospitalCity || finalCity, 'Türkiye'].filter(Boolean).join(', ');
+              if (gq) {
+                const gr = await fetch(`/api/geocode?q=${encodeURIComponent(gq)}`);
+                if (gr.ok) {
+                  const gj = await gr.json() as { lat?: number; lon?: number };
+                  if (typeof gj.lat === 'number' && typeof gj.lon === 'number') hospitalCoords = { lat: gj.lat, lng: gj.lon };
+                }
+              }
+            } catch { /* geocode best-effort */ }
             await addDoc(collection(db, COLLECTIONS.emergencyRequests), {
                 type: 'blood',
                 hospitalName: data.hospital || '',
@@ -473,6 +485,7 @@ export default function EmergencyPage() {
                 city: finalCity,
                 district: finalDistrict,
                 neighborhood: finalNeighborhood,
+                coordinates: hospitalCoords,
                 requestedBy: authUser.uid,
                 requestedByName: authUser.displayName || authUser.email || '',
                 requestedByEmail: authUser.email || '',
@@ -486,7 +499,7 @@ export default function EmergencyPage() {
                     type: 'emergency-blood-received',
                     title: t('emergency_root.toastBloodReceivedTitle'),
                     body: t('emergency_root.toastBloodReceivedDesc'),
-                    data: { hospitalName: data.hospital || '', bloodType: data.bloodType || '' },
+                    data: { hospitalName: data.hospital || '', bloodType: data.bloodType || '', coordinates: hospitalCoords },
                     read: false,
                     pushSent: true,
                     createdAt: serverTimestamp(),

@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Award, Loader2, Users, UserCheck, Map, Dow
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { DistanceBadge } from '@/components/shared/distance-badge';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -608,6 +609,7 @@ export default function VolunteeringDetailPage() {
                             <Button variant="outline" size="sm" className="w-fit h-8 rounded-lg text-xs font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(directionsUrl, '_blank')}>
                                 <Map className="h-3.5 w-3.5" /> Adres Tarifi Al
                             </Button>
+                            <div><DistanceBadge target={coords ? { lat: coords.lat, lon: coords.lon } : null} /></div>
                         </CardContent>
                     </Card>
                 )}

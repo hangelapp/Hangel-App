@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/components/providers/language-provider';
 import { formatDistanceToNow } from 'date-fns';
 import { startEmergencyBloodActivity } from '@/lib/native-live-activity';
+import { DistanceBadge } from '@/components/shared/distance-badge';
 import { tr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -85,6 +86,7 @@ export default function NotificationsPage() {
       href?: string;
       contractSlug?: string;
       version?: string;
+      coordinates?: { lat: number; lng: number } | null;
     };
   }
   const { data: notifications, isLoading, error: notifError } = useCollection<NotifItem>(notifQuery);
@@ -323,6 +325,9 @@ export default function NotificationsPage() {
                       {!n.read && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                     </div>
                     <p className={cn('text-[13px] leading-snug whitespace-pre-line', !n.read ? 'text-foreground/80' : 'text-muted-foreground')}>{n.body}</p>
+                    {(n.type === 'emergency-blood' || n.type === 'emergency-blood-received' || n.type === 'emergency-blood-contact') && n.data?.coordinates && (
+                      <DistanceBadge target={{ lat: n.data.coordinates.lat, lon: n.data.coordinates.lng }} className="pt-0.5" />
+                    )}
                     <div className="flex items-center justify-between gap-2 pt-0.5 flex-wrap">
                       <p className="text-[10px] text-muted-foreground/70">{formatTime(n.createdAt)}</p>
                       <div className="flex items-center gap-2 flex-wrap">

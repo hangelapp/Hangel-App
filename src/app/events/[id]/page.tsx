@@ -26,6 +26,7 @@ import {
 import { useState, useEffect, useRef } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ShareButtons } from '@/components/shared/share-buttons';
+import { DistanceBadge } from '@/components/shared/distance-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -504,6 +505,12 @@ export default function EventDetailPage() {
                                             <Button variant="outline" size="sm" className="w-fit h-7 rounded-lg text-[10px] font-bold gap-1.5 border-primary/20 text-primary hover:bg-primary/5" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location.address + ' ' + event.location.district + ' ' + event.location.city)}`, '_blank')}>
                                                 <Map className="h-3 w-3" /> Adres Tarifi Al
                                             </Button>
+                                        )}
+                                        {event.location.type !== 'Online' && (
+                                            <DistanceBadge target={{
+                                                lat: parseFloat((event.location as { lat?: string }).lat || ''),
+                                                lon: parseFloat((event.location as { lon?: string }).lon || ''),
+                                            }} />
                                         )}
                                     </div>
                                 </InfoRow>
