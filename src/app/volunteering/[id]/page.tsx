@@ -354,6 +354,13 @@ export default function VolunteeringDetailPage() {
       const idToken = await authUser.getIdToken();
       const { Capacitor } = await import('@capacitor/core');
       if (Capacitor.isNativePlatform()) {
+        // Önce durum kontrolü — sertifika eksikse Safari'de ham JSON hatası
+        // göstermeyelim; temiz mesaj verelim.
+        const probe = await fetch(`/api/passkit/volunteer/${opportunity.id}`, { headers: { authorization: `Bearer ${idToken}` } });
+        if (!probe.ok) {
+          toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
+          return;
+        }
         // Capacitor WebView'da blob URL Wallet'ı tetiklemez. pkpass'i sistem
         // tarayıcısında (SFSafariViewController) aç → "Apple Wallet'a Ekle" çıkar.
         const url = `${window.location.origin}/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`;

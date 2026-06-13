@@ -678,6 +678,12 @@ export default function EventDetailPage() {
                     const idToken = await authUser.getIdToken();
                     const { Capacitor } = await import('@capacitor/core');
                     if (Capacitor.isNativePlatform()) {
+                      // Önce durum kontrolü — sertifika eksikse Safari'de ham JSON gösterme.
+                      const probe = await fetch(`/api/passkit/event/${resolvedEventId}`, { headers: { authorization: `Bearer ${idToken}` } });
+                      if (!probe.ok) {
+                        toast({ title: 'Apple Wallet yakında', description: 'hangel ekibi Wallet sertifikasını yapılandırıyor; çok yakında aktif olacak.' });
+                        return;
+                      }
                       // Capacitor WebView'da blob URL Wallet'ı tetiklemez → pkpass'i
                       // sistem tarayıcısında (SFSafariViewController) aç, Wallet ekleme çıkar.
                       const url = `${window.location.origin}/api/passkit/event/${resolvedEventId}?token=${encodeURIComponent(idToken)}`;
