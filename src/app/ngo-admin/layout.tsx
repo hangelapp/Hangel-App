@@ -437,7 +437,12 @@ function SideMenu() {
               </h3>
             )}
             <ul className="space-y-1">
-              {group.items.map((item) => {
+              {/* Aktif öğeler üstte, 'Yakında' (comingSoon) etiketliler altta.
+                  Array.sort stabil olduğu için her grupta orijinal sıra korunur,
+                  yalnız comingSoon'lar sona kayar. */}
+              {[...group.items]
+                .sort((a, b) => Number(Boolean(a.comingSoon)) - Number(Boolean(b.comingSoon)))
+                .map((item) => {
                 // Restrict the active events link to clubs only (disabled "Yakında" items still render)
                 if (item.href === '/ngo-admin/events' && !item.comingSoon && entityKind !== 'club') {
                   return null;
