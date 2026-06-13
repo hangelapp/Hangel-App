@@ -1,13 +1,10 @@
-// EventCountdownLiveActivity — Etkinlik geri sayımı Live Activity layout'u.
+// EventCountdownLiveActivity — Etkinlik geri sayımı (hangel orange, Apple tasarım dili).
 //
-// ContentState:
-//   minutesLeft   etkinlik başlangıcına kalan dakika
-//   statusLabel   "Yarın", "Bugün", "Devam ediyor", vb.
+// "Süreç ilerlemesi": geri sayım cihazda Text(timerInterval:) ile OTOMATİK tıklar
+// (push gerekmez). eventStartEpoch (ms) attribute'ünden hedef tarih hesaplanır.
 //
-// Attributes:
-//   eventTitle
-//   location
-//   eventId
+// ContentState: minutesLeft (yedek), statusLabel ("Kayıtlı"/"Yarın"/"Başladı")
+// Attributes:   eventTitle, location, eventId, eventStartEpoch
 
 import ActivityKit
 import WidgetKit
@@ -21,93 +18,83 @@ struct EventCountdownLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "calendar.badge.clock")
-                        .foregroundStyle(.blue)
-                        .font(.title3)
+                    HangelIconBadge(systemName: "calendar", size: 38)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(formattedTime(context.state.minutesLeft))
-                            .font(.title3).bold()
-                            .foregroundStyle(.white)
-                        Text(context.state.statusLabel)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        countdown(context, font: .system(.title3, design: .rounded).bold(), width: 96)
+                        Text("kaldı").font(.caption2).foregroundStyle(.secondary)
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.eventTitle)
-                            .font(.subheadline).bold()
-                            .lineLimit(1)
+                            .font(.subheadline.bold()).lineLimit(1)
                         Text(context.attributes.location)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
             } compactLeading: {
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(.blue)
+                Image(systemName: "calendar").foregroundStyle(Color.hangelOrange)
             } compactTrailing: {
-                Text(formattedTime(context.state.minutesLeft))
-                    .font(.caption2.bold())
-                    .foregroundStyle(.blue)
+                countdown(context, font: .caption2.bold(), width: 56)
             } minimal: {
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(.blue)
+                Image(systemName: "calendar").foregroundStyle(Color.hangelOrange)
             }
             .widgetURL(URL(string: "hangel://event/\(context.attributes.eventId)"))
-            .keylineTint(.blue)
+            .keylineTint(.hangelOrange)
         }
     }
 
     @ViewBuilder
     private func lockScreenContent(context: ActivityViewContext<EventCountdownAttributes>) -> some View {
-        HStack(alignment: .center, spacing: 12) {
-            ZStack {
-                Circle().fill(.blue)
-                Image(systemName: "calendar.badge.clock")
-                    .foregroundStyle(.white)
-                    .font(.title3)
-            }
-            .frame(width: 44, height: 44)
+        VStack(spacing: 10) {
+            HangelHeaderRow(kicker: "Etkinlik", tint: .hangelOrange)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Etkinlik · \(context.state.statusLabel)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(context.attributes.eventTitle)
-                    .font(.headline)
-                    .lineLimit(1)
-                Text(context.attributes.location)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            HStack(alignment: .center, spacing: 12) {
+                HangelIconBadge(systemName: "calendar")
 
-            Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(context.attributes.eventTitle)
+                        .font(.headline).lineLimit(1)
+                    Label(context.attributes.location, systemImage: "mappin.and.ellipse")
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Spacer(minLength: 0)
 
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(formattedTime(context.state.minutesLeft))
-                    .font(.title3.bold())
-                    .foregroundStyle(.blue)
-                Text("kaldı")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .trailing, spacing: 1) {
+                    countdown(context, font: .system(.title3, design: .rounded).bold(), width: 110)
+                    Text(targetDate(context) != nil ? "kaldı" : context.state.statusLabel)
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
             }
         }
         .padding(14)
-        .activityBackgroundTint(Color.blue.opacity(0.08))
-        .activitySystemActionForegroundColor(.blue)
+        .activityBackgroundTint(Color.hangelOrange.opacity(0.10))
+        .activitySystemActionForegroundColor(.hangelOrange)
     }
 
-    private func formattedTime(_ minutes: Int) -> String {
-        if minutes < 60 { return "\(minutes)dk" }
-        let hours = minutes / 60
-        let mins = minutes % 60
-        if hours < 24 {
-            return mins == 0 ? "\(hours)sa" : "\(hours)sa \(mins)dk"
+    // MARK: - Otomatik geri sayım
+    private func targetDate(_ context: ActivityViewContext<EventCountdownAttributes>) -> Date? {
+        let epoch = context.attributes.eventStartEpoch
+        guard epoch > 0 else { return nil }
+        let d = Date(timeIntervalSince1970: epoch / 1000.0)
+        return d > Date() ? d : nil
+    }
+
+    @ViewBuilder
+    private func countdown(_ context: ActivityViewContext<EventCountdownAttributes>, font: Font, width: CGFloat) -> some View {
+        if let target = targetDate(context) {
+            // Cihazda kendiliğinden tıklayan canlı geri sayım.
+            Text(timerInterval: Date()...target, countsDown: true)
+                .font(font).monospacedDigit()
+                .foregroundStyle(Color.hangelOrange)
+                .multilineTextAlignment(.trailing)
+                .frame(maxWidth: width, alignment: .trailing)
+        } else {
+            Text(context.state.statusLabel)
+                .font(font).foregroundStyle(Color.hangelOrange)
+                .lineLimit(1).minimumScaleFactor(0.7)
         }
-        let days = hours / 24
-        return "\(days)g"
     }
 }

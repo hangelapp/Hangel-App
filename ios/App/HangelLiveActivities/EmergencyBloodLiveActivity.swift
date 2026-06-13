@@ -1,23 +1,11 @@
-// EmergencyBloodLiveActivity — Acil kan ilanı Live Activity layout'u.
+// EmergencyBloodLiveActivity — Acil kan ilanı Live Activity (hangel tasarım dili).
 //
-// İki yüzü vardır:
-//  1. Lock Screen / Notification Center yüzü (lockScreenContent)
-//  2. Dynamic Island (iPhone 14 Pro+) compact / minimal / expanded
+// Acil durum olduğu için aksan rengi semantik KIRMIZI (hangelEmergency); marka
+// kimliği "hangel" wordmark + Apple-tarzı rozet/tipografi ile korunur.
 //
-// ContentState (HangelLiveActivityAttributes.swift):
-//   distance        "1.2 km uzakta"
-//   matchedDonors   0..4
-//   minutesLeft     dakika cinsinden kalan süre
-//   status          "Bekleniyor" | "Yola Çıktı" | "Tamamlandı"
-//
-// Attributes:
-//   bloodType "A Rh+"
-//   city
-//   requestId
-//   hospitalName
-//
-// Backend push güncellemeleri: ContentState alanlarını güncelleyince UI
-// otomatik refresh (WidgetKit timeline).
+// ContentState: distance, matchedDonors, minutesLeft, status
+// Attributes:   bloodType, city, requestId, hospitalName
+// Backend push (onEmergencyBloodUpdate) ContentState'i günceller → UI refresh.
 
 import ActivityKit
 import WidgetKit
@@ -27,58 +15,45 @@ import SwiftUI
 struct EmergencyBloodLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: EmergencyBloodAttributes.self) { context in
-            // Lock Screen / Notification Center layout
             lockScreenContent(context: context)
         } dynamicIsland: { context in
             DynamicIsland {
-                // Expanded (long-press / pinch-out)
                 DynamicIslandExpandedRegion(.leading) {
-                    bloodBadge(bloodType: context.attributes.bloodType)
+                    HangelIconBadge(systemName: "drop.fill", top: .hangelEmergency, bottom: .hangelEmergencyDeep, size: 38)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(context.state.matchedDonors)")
-                            .font(.title2).bold()
-                            .foregroundStyle(.white)
-                        Text("eşleşen")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
+                    bloodTypePill(context.attributes.bloodType)
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.hospitalName)
-                            .font(.subheadline).bold()
-                            .lineLimit(1)
+                            .font(.subheadline.bold()).lineLimit(1)
                         Text(context.state.distance)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.caption2).foregroundStyle(.secondary)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack {
                         Label(context.state.status, systemImage: statusIcon(context.state.status))
-                            .font(.caption)
-                            .foregroundStyle(.white)
+                            .font(.caption2.bold()).foregroundStyle(statusColor(context.state.status))
+                        Spacer()
+                        Label("\(context.state.matchedDonors) bağışçı", systemImage: "person.2.fill")
+                            .font(.caption2).foregroundStyle(.secondary)
                         Spacer()
                         Label("\(context.state.minutesLeft) dk", systemImage: "clock")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.caption2).foregroundStyle(.secondary)
                     }
                 }
             } compactLeading: {
-                bloodBadge(bloodType: context.attributes.bloodType)
-                    .frame(width: 24, height: 24)
+                Image(systemName: "drop.fill").foregroundStyle(Color.hangelEmergency)
             } compactTrailing: {
-                Text("\(context.state.minutesLeft)dk")
-                    .font(.caption2.bold())
-                    .foregroundStyle(.red)
+                Text(context.attributes.bloodType)
+                    .font(.caption2.bold()).foregroundStyle(Color.hangelEmergency)
             } minimal: {
-                bloodBadge(bloodType: context.attributes.bloodType)
-                    .frame(width: 22, height: 22)
+                Image(systemName: "drop.fill").foregroundStyle(Color.hangelEmergency)
             }
             .widgetURL(URL(string: "hangel://emergency-blood/\(context.attributes.requestId)"))
-            .keylineTint(.red)
+            .keylineTint(.hangelEmergency)
         }
     }
 
@@ -86,61 +61,53 @@ struct EmergencyBloodLiveActivity: Widget {
     @ViewBuilder
     private func lockScreenContent(context: ActivityViewContext<EmergencyBloodAttributes>) -> some View {
         VStack(spacing: 10) {
+            HangelHeaderRow(kicker: "Acil Kan İhtiyacı", tint: .hangelEmergency)
+
             HStack(alignment: .center, spacing: 12) {
-                bloodBadge(bloodType: context.attributes.bloodType)
-                    .frame(width: 56, height: 56)
+                HangelIconBadge(systemName: "drop.fill", top: .hangelEmergency, bottom: .hangelEmergencyDeep)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Acil Kan İhtiyacı")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                     Text(context.attributes.hospitalName)
-                        .font(.headline)
-                        .lineLimit(1)
+                        .font(.headline).lineLimit(1)
                     Text("\(context.attributes.city) · \(context.state.distance)")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
+                bloodTypePill(context.attributes.bloodType)
             }
 
-            Divider()
+            Divider().opacity(0.4)
 
             HStack {
                 Label("\(context.state.matchedDonors) bağışçı", systemImage: "person.2.fill")
-                    .font(.caption)
+                    .font(.caption2)
                 Spacer()
                 Label(context.state.status, systemImage: statusIcon(context.state.status))
-                    .font(.caption.bold())
-                    .foregroundStyle(statusColor(context.state.status))
+                    .font(.caption2.bold()).foregroundStyle(statusColor(context.state.status))
                 Spacer()
                 Label("\(context.state.minutesLeft) dk", systemImage: "clock")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.caption2).foregroundStyle(.secondary)
             }
         }
         .padding(14)
-        .activityBackgroundTint(Color.red.opacity(0.08))
-        .activitySystemActionForegroundColor(Color.red)
+        .activityBackgroundTint(Color.hangelEmergency.opacity(0.10))
+        .activitySystemActionForegroundColor(.hangelEmergency)
     }
 
     // MARK: - Helpers
     @ViewBuilder
-    private func bloodBadge(bloodType: String) -> some View {
-        ZStack {
-            Circle().fill(.red)
-            Text(bloodType)
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(.white)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-                .padding(.horizontal, 2)
-        }
+    private func bloodTypePill(_ bloodType: String) -> some View {
+        Text(bloodType)
+            .font(.system(size: 15, weight: .heavy, design: .rounded))
+            .foregroundStyle(.white)
+            .minimumScaleFactor(0.6).lineLimit(1)
+            .padding(.horizontal, 11).padding(.vertical, 5)
+            .background(Capsule().fill(hangelGradient(.hangelEmergency, .hangelEmergencyDeep)))
     }
 
     private func statusIcon(_ status: String) -> String {
         switch status {
-        case "Yola Çıktı": return "car.fill"
+        case "Yola Çıktı": return "figure.walk"
         case "Tamamlandı": return "checkmark.seal.fill"
         default: return "exclamationmark.triangle.fill"
         }
@@ -148,9 +115,9 @@ struct EmergencyBloodLiveActivity: Widget {
 
     private func statusColor(_ status: String) -> Color {
         switch status {
-        case "Yola Çıktı": return .orange
+        case "Yola Çıktı": return .hangelOrange
         case "Tamamlandı": return .green
-        default: return .red
+        default: return .hangelEmergency
         }
     }
 }

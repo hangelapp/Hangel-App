@@ -186,12 +186,21 @@ export default function EventDetailPage() {
       });
       // Katılımda telefon ekranında canlı etkinlik (Live Activity) başlat (iOS native; web no-op).
       if (data.status === 'going' && resolvedEventId) {
+        // Etkinlik başlangıç tarihini epoch'a çevir → widget Text(timerInterval:) ile
+        // cihazda kendiliğinden geri sayar (push gerekmez).
+        let eventStartEpoch = 0;
+        if (event?.startDate) {
+          let d = parse(event.startDate, 'yyyy-MM-dd HH:mm', new Date());
+          if (isNaN(d.getTime())) d = parse(event.startDate, 'yyyy-MM-dd', new Date());
+          if (!isNaN(d.getTime())) eventStartEpoch = d.getTime();
+        }
         void startEventCountdownActivity({
           eventTitle: event?.name || 'Etkinlik',
           location: typeof event?.location === 'string'
             ? event.location
             : (event?.location?.address || event?.location?.city || ''),
           eventId: resolvedEventId,
+          eventStartEpoch,
           statusLabel: 'Kayıtlı',
         });
       }

@@ -1,17 +1,7 @@
-// DonationCampaignLiveActivity — Bağış kampanyası progress Live Activity.
+// DonationCampaignLiveActivity — Bağış kampanyası (hangel orange, Apple tasarım dili).
 //
-// ContentState:
-//   currentAmount    güncel toplam (TRY)
-//   goalAmount       hedef
-//   donorCount       bağışçı sayısı
-//
-// Attributes:
-//   campaignTitle
-//   ngoName
-//   campaignId
-//
-// Lock Screen'de progress bar + miktar görselleştirmesi, Dynamic Island'da
-// yüzde tamamlanma.
+// ContentState: currentAmount, goalAmount, donorCount (backend push ile ilerler)
+// Attributes:   campaignTitle, ngoName, campaignId
 
 import ActivityKit
 import WidgetKit
@@ -25,106 +15,88 @@ struct DonationCampaignLiveActivity: Widget {
         } dynamicIsland: { context in
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Image(systemName: "heart.circle.fill")
-                        .foregroundStyle(.pink)
-                        .font(.title3)
+                    HangelIconBadge(systemName: "heart.fill", size: 38)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("%\(percentInt(current: context.state.currentAmount, goal: context.state.goalAmount))")
-                            .font(.title3).bold()
-                            .foregroundStyle(.white)
+                    VStack(alignment: .trailing, spacing: 1) {
+                        Text("%\(percentInt(context.state.currentAmount, context.state.goalAmount))")
+                            .font(.system(.title3, design: .rounded).bold())
+                            .foregroundStyle(Color.hangelOrange)
                         Text("\(context.state.donorCount) bağış")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.caption2).foregroundStyle(.secondary)
                     }
                 }
                 DynamicIslandExpandedRegion(.center) {
                     VStack(spacing: 2) {
                         Text(context.attributes.campaignTitle)
-                            .font(.subheadline).bold()
-                            .lineLimit(1)
+                            .font(.subheadline.bold()).lineLimit(1)
                         Text(context.attributes.ngoName)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    ProgressView(value: progressRatio(current: context.state.currentAmount, goal: context.state.goalAmount))
-                        .tint(.pink)
+                    ProgressView(value: ratio(context.state.currentAmount, context.state.goalAmount)).tint(.hangelOrange)
                 }
             } compactLeading: {
-                Image(systemName: "heart.circle.fill")
-                    .foregroundStyle(.pink)
+                Image(systemName: "heart.fill").foregroundStyle(Color.hangelOrange)
             } compactTrailing: {
-                Text("%\(percentInt(current: context.state.currentAmount, goal: context.state.goalAmount))")
-                    .font(.caption2.bold())
-                    .foregroundStyle(.pink)
+                Text("%\(percentInt(context.state.currentAmount, context.state.goalAmount))")
+                    .font(.caption2.bold()).foregroundStyle(Color.hangelOrange)
             } minimal: {
-                Image(systemName: "heart.circle.fill")
-                    .foregroundStyle(.pink)
+                Image(systemName: "heart.fill").foregroundStyle(Color.hangelOrange)
             }
             .widgetURL(URL(string: "hangel://campaign/\(context.attributes.campaignId)"))
-            .keylineTint(.pink)
+            .keylineTint(.hangelOrange)
         }
     }
 
     @ViewBuilder
     private func lockScreenContent(context: ActivityViewContext<DonationCampaignAttributes>) -> some View {
         VStack(spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
-                ZStack {
-                    Circle().fill(.pink)
-                    Image(systemName: "heart.fill")
-                        .foregroundStyle(.white)
-                        .font(.title3)
-                }
-                .frame(width: 44, height: 44)
+            HangelHeaderRow(kicker: "Bağış Kampanyası", tint: .hangelOrange)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(context.attributes.ngoName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            HStack(alignment: .center, spacing: 12) {
+                HangelIconBadge(systemName: "heart.fill")
+
+                VStack(alignment: .leading, spacing: 3) {
                     Text(context.attributes.campaignTitle)
-                        .font(.headline)
-                        .lineLimit(1)
-                    Text("\(context.state.donorCount) bağışçı")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.headline).lineLimit(1)
+                    Text(context.attributes.ngoName)
+                        .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer(minLength: 0)
+
                 VStack(alignment: .trailing, spacing: 0) {
                     Text(formatTRY(context.state.currentAmount))
-                        .font(.callout.bold())
-                        .foregroundStyle(.pink)
+                        .font(.callout.bold()).foregroundStyle(Color.hangelOrange)
                     Text("/ \(formatTRY(context.state.goalAmount))")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .font(.caption2).foregroundStyle(.secondary)
                 }
             }
 
-            ProgressView(value: progressRatio(current: context.state.currentAmount, goal: context.state.goalAmount)) {
+            ProgressView(value: ratio(context.state.currentAmount, context.state.goalAmount)) {
                 HStack {
-                    Text("Hedefe %\(percentInt(current: context.state.currentAmount, goal: context.state.goalAmount))")
-                        .font(.caption2.bold())
-                        .foregroundStyle(.pink)
+                    Text("Hedefe %\(percentInt(context.state.currentAmount, context.state.goalAmount))")
+                        .font(.caption2.bold()).foregroundStyle(Color.hangelOrange)
                     Spacer()
+                    Text("\(context.state.donorCount) bağışçı")
+                        .font(.caption2).foregroundStyle(.secondary)
                 }
             }
-            .tint(.pink)
+            .tint(.hangelOrange)
         }
         .padding(14)
-        .activityBackgroundTint(Color.pink.opacity(0.08))
-        .activitySystemActionForegroundColor(.pink)
+        .activityBackgroundTint(Color.hangelOrange.opacity(0.10))
+        .activitySystemActionForegroundColor(.hangelOrange)
     }
 
-    private func progressRatio(current: Double, goal: Double) -> Double {
+    private func ratio(_ current: Double, _ goal: Double) -> Double {
         guard goal > 0 else { return 0 }
         return min(1.0, max(0.0, current / goal))
     }
 
-    private func percentInt(current: Double, goal: Double) -> Int {
-        Int(round(progressRatio(current: current, goal: goal) * 100))
+    private func percentInt(_ current: Double, _ goal: Double) -> Int {
+        Int(round(ratio(current, goal) * 100))
     }
 
     private func formatTRY(_ value: Double) -> String {
