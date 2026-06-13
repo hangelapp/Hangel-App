@@ -101,5 +101,7 @@ playwright-report/
 
 # Android signing (NEVER commit keystore credentials)
 android/keystore.properties
+*.keystore
 *.keystore.bak
 android/app/*.yeni-bak
+android/app/upload_certificate.pem
