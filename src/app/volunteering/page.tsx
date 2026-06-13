@@ -11,6 +11,10 @@ import { ngos } from '@/lib/data';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetClose } from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { parse, differenceInDays } from 'date-fns';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -18,9 +22,7 @@ import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@
 import { collection, doc, query, orderBy, limit as fsLimit } from 'firebase/firestore';
 import type { Volunteering } from '@/lib/types';
 import { COLLECTIONS } from '@/firebase/collections';
-import { rankOpportunities, scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
-import { Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
 
 const FilterButton = ({ title, options, selected, onSelectedChange }: {
     icon?: React.ElementType;
@@ -253,8 +255,13 @@ export default function VolunteeringPage() {
     const [skillFilter, setSkillFilter] = useState<string[]>([]);
     const [cityFilter, setCityFilter] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<'points' | 'deadline'>('points');
-    const [recsOpen, setRecsOpen] = useState(false);
     const [mapOpen, setMapOpen] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
+    // Detaylı filtre paneli state'leri (yukarıdaki interest/skill/city ile paylaşımlı)
+    const [socialAreaFilter, setSocialAreaFilter] = useState<string[]>([]);
+    const [taskTypeFilter, setTaskTypeFilter] = useState<string[]>([]);
+    const [locationTypeFilter, setLocationTypeFilter] = useState<string[]>([]);
+    const [certificateOnly, setCertificateOnly] = useState(false);
 
     // PERF: ilk 100 ilanı yükle (createdAt'e göre sıralı), client-side
     // filtreleme yine çalışır ama Firestore'dan tüm collection inmez.
@@ -297,7 +304,7 @@ export default function VolunteeringPage() {
         personalInfo: userData?.personalInfo || null,
     }), [userData]);
 
-    // FEAT-IMECE-MATCH: intelligent personalized recommendations
+    // Kart rozeti (profil uyumu) için kullanıcının gönüllü profili dolu mu?
     const hasVolunteerProfile = useMemo(() => {
         const vi = userData?.volunteerInfo;
         if (!vi) return false;
@@ -310,28 +317,14 @@ export default function VolunteeringPage() {
         );
     }, [userData]);
 
-    const personalizedRecs = useMemo(() => {
-        if (!authUser || !hasVolunteerProfile || !oppsData || oppsData.length === 0) return [];
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        const activeOpps = oppsData.filter(opp => {
-            const status = (opp as Volunteering & { status?: string }).status;
-            if (status && status !== 'Aktif') return false;
-            // Süresi dolmuş ilanları gizle
-            try {
-                const end = parse(opp.dates.applicationEnd, 'yyyy-MM-dd', new Date());
-                if (!isNaN(end.getTime()) && end < today) return false;
-            } catch { /* tarih okunmazsa göster */ }
-            return true;
-        });
-        return rankOpportunities(activeOpps, matchingProfile, 5).filter(r => r.score > 0);
-    }, [authUser, hasVolunteerProfile, oppsData, matchingProfile]);
-
-    const { interestOptions, skillOptions, cityOptions } = useMemo(() => {
+    const { interestOptions, skillOptions, cityOptions, socialAreaOptions } = useMemo(() => {
         const interests = new Set<string>();
         const skills = new Set<string>();
         const cities = new Set<string>();
+        const socialAreas = new Set<string>();
         (oppsData || []).forEach(opp => {
             if (opp.socialArea) interests.add(opp.socialArea);
+            if (opp.socialArea) socialAreas.add(opp.socialArea);
             (opp.interests || []).forEach(i => interests.add(i));
             (opp.skills || []).forEach(s => skills.add(s));
             if (opp.location?.city) cities.add(opp.location.city);
@@ -340,8 +333,31 @@ export default function VolunteeringPage() {
             interestOptions: Array.from(interests).sort((a, b) => a.localeCompare(b, 'tr')),
             skillOptions: Array.from(skills).sort((a, b) => a.localeCompare(b, 'tr')),
             cityOptions: Array.from(cities).sort((a, b) => a.localeCompare(b, 'tr')),
+            socialAreaOptions: Array.from(socialAreas).sort((a, b) => a.localeCompare(b, 'tr')),
         };
     }, [oppsData]);
+
+    const taskTypeOptions = ['Tek Gün', 'Dönemsel', 'Sürekli'];
+    const locationTypeOptions = ['Online', 'Saha', 'Hibrit'];
+
+    const activeFilterCount =
+        interestFilter.length +
+        skillFilter.length +
+        cityFilter.length +
+        socialAreaFilter.length +
+        taskTypeFilter.length +
+        locationTypeFilter.length +
+        (certificateOnly ? 1 : 0);
+
+    const clearAllFilters = () => {
+        setInterestFilter([]);
+        setSkillFilter([]);
+        setCityFilter([]);
+        setSocialAreaFilter([]);
+        setTaskTypeFilter([]);
+        setLocationTypeFilter([]);
+        setCertificateOnly(false);
+    };
 
     const filteredOpps = useMemo(() => {
         if (!oppsData) return [];
@@ -367,6 +383,18 @@ export default function VolunteeringPage() {
             filtered = filtered.filter(opp => (opp.skills || []).some(s => skillFilter.includes(s)));
         }
         if (cityFilter.length > 0) filtered = filtered.filter(opp => cityFilter.includes(opp.location.city));
+        if (socialAreaFilter.length > 0) {
+            filtered = filtered.filter(opp => socialAreaFilter.includes(opp.socialArea));
+        }
+        if (taskTypeFilter.length > 0) {
+            filtered = filtered.filter(opp => taskTypeFilter.includes(opp.taskType));
+        }
+        if (locationTypeFilter.length > 0) {
+            filtered = filtered.filter(opp => locationTypeFilter.includes(opp.location?.type));
+        }
+        if (certificateOnly) {
+            filtered = filtered.filter(opp => opp.providesCertificate);
+        }
 
         if (searchTerm.trim()) {
             const lower = searchTerm.toLowerCase();
@@ -384,7 +412,7 @@ export default function VolunteeringPage() {
             });
         }
         return filtered.sort((a, b) => b.points - a.points);
-    }, [oppsData, interestFilter, skillFilter, cityFilter, searchTerm, sortBy, matchingProfile]);
+    }, [oppsData, interestFilter, skillFilter, cityFilter, socialAreaFilter, taskTypeFilter, locationTypeFilter, certificateOnly, searchTerm, sortBy, matchingProfile]);
 
   return (
     <div className="space-y-4 animate-in fade-in-0">
@@ -396,7 +424,21 @@ export default function VolunteeringPage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input placeholder={t('volunteeringPage.searchPlaceholder')} className="pl-10 h-11" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
-              <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('volunteeringPage.filterAria')} title={t('volunteeringPage.filterAria')}><Filter size={20} /></Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-11 w-11 relative"
+                aria-label={t('volunteeringPage.filterAria')}
+                title={t('volunteeringPage.filterAria')}
+                onClick={() => setFilterOpen(true)}
+              >
+                <Filter size={20} />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </Button>
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="icon" className="h-11 w-11" aria-label={t('volunteering_root.sortAria')} title={t('volunteering_root.sortAria')}><ArrowDownUp size={20} /></Button>
@@ -437,78 +479,6 @@ export default function VolunteeringPage() {
           </div>
         </div>
 
-        {personalizedRecs.length > 0 && (
-          <Card aria-labelledby="imece-recs-heading" className="overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setRecsOpen(prev => !prev)}
-              aria-expanded={recsOpen}
-              aria-controls="imece-recs-grid"
-              className="w-full flex items-center justify-between gap-2 p-3 sm:p-4 group hover:bg-accent/30 transition-colors text-left"
-            >
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <h2 id="imece-recs-heading" className="text-base font-bold">{t('volunteering_root.personalizedTitle')}</h2>
-                <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-primary/10 text-primary">
-                  {personalizedRecs.length}
-                </span>
-              </div>
-              <ChevronDown
-                className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform duration-200',
-                  recsOpen && 'rotate-180',
-                )}
-              />
-            </button>
-            <div
-              id="imece-recs-grid"
-              hidden={!recsOpen}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 sm:p-4 pt-0 border-t"
-            >
-              {personalizedRecs.map(({ opportunity, score, reasons }) => (
-                <Link key={opportunity.id} href={`/volunteering/${opportunity.id}`} className="block group">
-                  {/* Nar çiçeği (pomegranate flower) çerçeve — #E34234 */}
-                  <Card className="h-full overflow-hidden border-2 shadow-sm hover:shadow-lg transition-all"
-                        style={{ borderColor: '#E34234' }}>
-                    <CardContent className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground truncate">{opportunity.organization}</p>
-                          <h3 className="font-semibold text-sm leading-tight mt-0.5 group-hover:text-primary transition-colors line-clamp-2">{opportunity.title}</h3>
-                        </div>
-                        <span className="shrink-0 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-black text-white"
-                              style={{ backgroundColor: '#E34234' }}>
-                          %{score}
-                        </span>
-                      </div>
-                      {/* Uyum yüzdesi çubuğu */}
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-[9px] uppercase tracking-wider font-bold">
-                          <span className="text-muted-foreground">{t('volunteering_root.profileMatch')}</span>
-                          <span style={{ color: '#E34234' }}>%{score}</span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{ width: `${score}%`, backgroundColor: '#E34234' }}
-                          />
-                        </div>
-                      </div>
-                      {reasons[0] && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">{reasons[0]}</p>
-                      )}
-                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                        <span className="flex items-center gap-1"><MapPin size={12} /> {opportunity.location.city}</span>
-                        <span className="font-bold text-primary">{opportunity.points} {t('volunteering_root.points')}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </Card>
-        )}
-
         <div id="imece-all-listings" className="space-y-2 scroll-mt-32">
           {isLoading ? (
               [...Array(3)].map((_, i) => <Card key={i} className="h-32 animate-pulse bg-muted" />)
@@ -527,6 +497,133 @@ export default function VolunteeringPage() {
         </div>
       </div>
       <VolunteeringMapDialog open={mapOpen} onOpenChange={setMapOpen} items={filteredOpps} />
+
+      <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 gap-0">
+          <SheetHeader className="p-4 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              <Filter size={18} /> {t('volunteeringPage.filterAria')}
+              {activeFilterCount > 0 && (
+                <Badge variant="secondary" className="ml-1 text-[10px] font-bold">{activeFilterCount}</Badge>
+              )}
+            </SheetTitle>
+            <SheetDescription>İlanları ihtiyacına göre daralt.</SheetDescription>
+          </SheetHeader>
+
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-5">
+              <CheckboxFilterGroup
+                title={t('volunteering_root.filterSensitivity')}
+                options={interestOptions}
+                selected={interestFilter}
+                onChange={setInterestFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <CheckboxFilterGroup
+                title={t('volunteering_root.filterSkills')}
+                options={skillOptions}
+                selected={skillFilter}
+                onChange={setSkillFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <CheckboxFilterGroup
+                title="Sosyal Alan"
+                options={socialAreaOptions}
+                selected={socialAreaFilter}
+                onChange={setSocialAreaFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <CheckboxFilterGroup
+                title={t('volunteering_root.filterLocation')}
+                options={cityOptions}
+                selected={cityFilter}
+                onChange={setCityFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <CheckboxFilterGroup
+                title="Görev Türü"
+                options={taskTypeOptions}
+                selected={taskTypeFilter}
+                onChange={setTaskTypeFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <CheckboxFilterGroup
+                title="Çalışma Şekli"
+                options={locationTypeOptions}
+                selected={locationTypeFilter}
+                onChange={setLocationTypeFilter}
+                emptyLabel={t('volunteering_root.noOptions')}
+              />
+              <Separator />
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">Sertifika</p>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={certificateOnly}
+                    onCheckedChange={checked => setCertificateOnly(checked === true)}
+                  />
+                  <span className="text-sm">Sadece sertifika verenler</span>
+                </label>
+              </div>
+            </div>
+          </ScrollArea>
+
+          <SheetFooter className="flex-row gap-2 p-4 border-t">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={clearAllFilters}
+              disabled={activeFilterCount === 0}
+            >
+              {t('volunteering_root.clearFilters')}
+            </Button>
+            <SheetClose asChild>
+              <Button className="flex-1">{`Sonuçları gör (${filteredOpps.length})`}</Button>
+            </SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
+
+const CheckboxFilterGroup = ({ title, options, selected, onChange, emptyLabel }: {
+    title: string;
+    options: string[];
+    selected: string[];
+    onChange: (next: string[]) => void;
+    emptyLabel: string;
+}) => (
+    <div className="space-y-2">
+        <p className="text-sm font-semibold">{title}</p>
+        {options.length === 0 ? (
+            <p className="text-xs text-muted-foreground">{emptyLabel}</p>
+        ) : (
+            <div className="grid grid-cols-1 gap-1.5">
+                {options.map(option => {
+                    const id = `flt-${title}-${option}`;
+                    const checked = selected.includes(option);
+                    return (
+                        <label key={option} htmlFor={id} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                                id={id}
+                                checked={checked}
+                                onCheckedChange={isChecked => {
+                                    onChange(isChecked === true
+                                        ? [...selected, option]
+                                        : selected.filter(v => v !== option));
+                                }}
+                            />
+                            <span className="text-sm leading-tight">{option}</span>
+                        </label>
+                    );
+                })}
+            </div>
+        )}
+    </div>
+);

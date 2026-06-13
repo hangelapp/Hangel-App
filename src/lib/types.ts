@@ -196,7 +196,10 @@ export type Event = {
 };
 
 /** Etkinlikte görevli kişi — konuşmacı, sanatçı, moderatör. hangel üyesiyse userId bağlanır. */
-export type EventContributorRole = 'speaker' | 'artist' | 'moderator';
+export type EventContributorRole =
+  | 'speaker' | 'moderator' | 'panelist' | 'instructor' | 'host'
+  | 'artist' | 'musician' | 'dj' | 'performer'
+  | 'writer' | 'academic' | 'jury' | 'guest';
 export type EventContributor = {
   name: string;
   title: string; // ünvan (örn. "Prof. Dr.", "Genel Müdür", "Müzisyen")
@@ -219,7 +222,11 @@ export type Volunteering = {
       city: string;
       district: string;
       type: 'Online' | 'Saha' | 'Hibrit';
+      address?: string; // Açık adres (saha/fiziksel)
+      coordinates?: { lat: number; lon: number }; // Yön tarifi + hava durumu için
     };
+    participationCondition?: string; // Katılım koşulu (varsa)
+    organizerLogoUrl?: string; // Organize eden STK logosu (Live Activity + yaka kartı)
     commitment: string;
     volunteerCount: {
       needed: number;

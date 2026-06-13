@@ -32,8 +32,18 @@ export function getUserContributor(
 
 const ROLE_LABELS: Record<EventUserRole, string> = {
   speaker: 'KONUŞMACI',
-  artist: 'SANATÇI',
   moderator: 'MODERATÖR',
+  panelist: 'PANELİST',
+  instructor: 'EĞİTMEN',
+  host: 'SUNUCU',
+  artist: 'SANATÇI',
+  musician: 'MÜZİSYEN',
+  dj: 'DJ',
+  performer: 'PERFORMANS SANATÇISI',
+  writer: 'YAZAR',
+  academic: 'AKADEMİSYEN',
+  jury: 'JÜRİ ÜYESİ',
+  guest: 'ÖZEL KONUK',
   participant: 'KATILIMCI',
 };
 
@@ -46,8 +56,18 @@ export function roleLabelTr(role: EventUserRole): string {
 export function roleCertificatePhraseTr(role: EventUserRole): string {
   switch (role) {
     case 'speaker': return 'konuşmacı olarak katkıda bulunmuştur';
-    case 'artist': return 'sanatçı olarak yer almıştır';
     case 'moderator': return 'moderatör olarak görev almıştır';
+    case 'panelist': return 'panelist olarak katkıda bulunmuştur';
+    case 'instructor': return 'eğitmen olarak görev almıştır';
+    case 'host': return 'sunucu olarak görev almıştır';
+    case 'artist': return 'sanatçı olarak yer almıştır';
+    case 'musician': return 'müzisyen olarak yer almıştır';
+    case 'dj': return 'DJ olarak yer almıştır';
+    case 'performer': return 'performans sanatçısı olarak yer almıştır';
+    case 'writer': return 'yazar olarak yer almıştır';
+    case 'academic': return 'akademisyen olarak katkıda bulunmuştur';
+    case 'jury': return 'jüri üyesi olarak görev almıştır';
+    case 'guest': return 'özel konuk olarak yer almıştır';
     default: return 'katılımcı olarak yer almıştır';
   }
 }
