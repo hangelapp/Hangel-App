@@ -59,7 +59,9 @@ public struct VolunteerTaskAttributes: ActivityAttributes {
     public var weatherEmoji: String   // "🌧️" — saha gönüllülüğünde hava durumu (boş = gösterme)
     public var weatherTemp: String    // "18°"
     public var orgLogoName: String    // App Group container'daki STK logo dosya adı (boş = ikon fallback)
-    public init(taskTitle: String, ngoName: String, location: String, taskId: String, weatherEmoji: String = "", weatherTemp: String = "", orgLogoName: String = "") {
+    public var activityStartEpoch: Double  // ms — aktivite başlangıcı. Başlamadan önce geri sayım. 0 = bilinmiyor.
+    public var activityEndEpoch: Double    // ms — aktivite bitişi. Sırasında akış-line dolar. 0 = bilinmiyor.
+    public init(taskTitle: String, ngoName: String, location: String, taskId: String, weatherEmoji: String = "", weatherTemp: String = "", orgLogoName: String = "", activityStartEpoch: Double = 0, activityEndEpoch: Double = 0) {
         self.taskTitle = taskTitle
         self.ngoName = ngoName
         self.location = location
@@ -67,6 +69,8 @@ public struct VolunteerTaskAttributes: ActivityAttributes {
         self.weatherEmoji = weatherEmoji
         self.weatherTemp = weatherTemp
         self.orgLogoName = orgLogoName
+        self.activityStartEpoch = activityStartEpoch
+        self.activityEndEpoch = activityEndEpoch
     }
 }
 

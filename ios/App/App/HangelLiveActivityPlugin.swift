@@ -70,7 +70,8 @@ public class HangelLiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         let logoName = Self.cacheOrgLogo(urlString: call.getString("organizerLogoUrl"), id: taskId)
         let attrs = VolunteerTaskAttributes(taskTitle: taskTitle, ngoName: ngoName, location: location, taskId: taskId,
-            weatherEmoji: call.getString("weatherEmoji") ?? "", weatherTemp: call.getString("weatherTemp") ?? "", orgLogoName: logoName)
+            weatherEmoji: call.getString("weatherEmoji") ?? "", weatherTemp: call.getString("weatherTemp") ?? "", orgLogoName: logoName,
+            activityStartEpoch: call.getDouble("activityStartEpoch") ?? 0, activityEndEpoch: call.getDouble("activityEndEpoch") ?? 0)
         let state = VolunteerTaskAttributes.ContentState(
             minutesLeft: call.getInt("minutesLeft") ?? 120,
             progressPercent: call.getDouble("progressPercent") ?? 0.0,

@@ -60,7 +60,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, doc, query, where, Timestamp, type Query, type DocumentData } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { roleTitleHasScope, type NgoScope } from '@/lib/ngo-admin/role-scopes';
@@ -338,8 +338,28 @@ function MenuItemLink({
   hrefResolved: string;
 }) {
   const db = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
   void active;
+
+  // Gönüllülük rozeti entity-scope'tur: bu STK'nın ilanlarına gelen BEKLEMEDE
+  // başvuru sayısını gösterir. Önce bu kurumun ilan id'lerini çek (volunteer
+  // page.tsx ile aynı sorgu: ngoId in [activeId, admin uid] — eski uid-yazılmış
+  // ilanları da kapsar). Sorgu YALNIZ volunteer item'ı için kurulur; diğer
+  // item'larda null döner → gereksiz okuma yok.
+  const isVolunteerItem = item.href === '/ngo-admin/volunteer';
+  const oppsQuery = useMemoFirebase(() => {
+    if (!db || !entityId || !isVolunteerItem) return null;
+    const ids = Array.from(new Set([entityId, user?.uid].filter(Boolean))) as string[];
+    return query(collection(db, COLLECTIONS.volunteering), where('ngoId', 'in', ids));
+  }, [db, entityId, isVolunteerItem, user?.uid]);
+  const { data: opportunities } = useCollection<{ id: string }>(oppsQuery);
+  // Firestore 'in' en fazla 30 değer alır; volunteer page ile aynı sınır.
+  const opportunityIds = React.useMemo(
+    () => (opportunities ?? []).map((o) => o.id).slice(0, 30),
+    [opportunities],
+  );
+
   const badgeConfig = React.useMemo<BadgeConfig>(() => {
     if (!entityId) return { kind: 'custom', build: () => null };
     if (item.href === '/ngo-admin/inbox') {
@@ -367,16 +387,17 @@ function MenuItemLink({
     if (item.href === '/ngo-admin/volunteer') {
       return {
         kind: 'custom',
-        build: (lastSeen) => {
-          if (!db) return null;
-          // applications.entityId = volunteering opportunity id; ngoId direct
-          // değil. Sadeleştirme: applications.org alanı kurum adıyla eşleşir
-          // ama ID daha güvenli. Veri ngoId tutmuyorsa 0 döner — kabul edilir.
-          const filters = [where('status', '==', 'Beklemede'), where('type', '==', 'Gönüllülük')];
-          if (lastSeen) filters.push(where('createdAt', '>', Timestamp.fromDate(lastSeen)));
-          // org filter gevşek: tüm Beklemede başvurular sayılır (entity-scope
-          // index olmadığı için), gerçek atama sayfada yapılır.
-          return query(collection(db, COLLECTIONS.applications), ...filters) as Query<DocumentData>;
+        build: () => {
+          if (!db || opportunityIds.length === 0) return null;
+          // Entity-scope: SADECE bu STK'nın ilanlarına (entityId = ilan id)
+          // gelen BEKLEMEDE başvuruları say. volunteer/page.tsx ile birebir aynı
+          // scope — başka STK'ların başvuruları sızdırılmaz, gereksiz okuma yok.
+          // 'in' filtresi + status: composite ihtiyaçsız (eşitlik + eşitlik).
+          return query(
+            collection(db, COLLECTIONS.applications),
+            where('entityId', 'in', opportunityIds),
+            where('status', '==', 'Beklemede'),
+          ) as Query<DocumentData>;
         },
       };
     }
@@ -393,7 +414,7 @@ function MenuItemLink({
       };
     }
     return { kind: 'custom', build: () => null };
-  }, [db, entityId, item.href]);
+  }, [db, entityId, item.href, opportunityIds]);
   const badgeKey = `${entityId || 'none'}:${item.href}`;
   const { count, markSeen } = useMenuBadge(db, badgeKey, badgeConfig);
   const showBadge = count > 0;

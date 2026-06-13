@@ -9,6 +9,7 @@ import { useSuperAdminPermissions, slugFromPath } from '@/hooks/use-super-admin-
 import {
   Activity,
   BarChart3,
+  Bell,
   Brain,
   Building,
   Calendar,
@@ -39,6 +40,7 @@ import {
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Activity,
   BarChart3,
+  Bell,
   Brain,
   Building,
   Calendar,
@@ -154,6 +156,7 @@ const superAdminNavSections = [
     {
         title: 'İletişim & Bildirim',
         items: [
+            { href: '/super-admin/notifications', label: 'Bildirim Merkezi', icon: 'Bell', description: 'Platform genelinde süper-admine düşen bildirimleri görüntüle ve okundu işaretle.' },
             { href: '/super-admin/communications', label: 'DM & Uygulama-İçi Bildirim', icon: 'MessageSquare', description: 'Kullanıcılara uygulama-içi direkt mesaj ve anlık bildirim gönder.' },
             { href: '/super-admin/messaging', label: 'Toplu SMS & E-Posta', icon: 'Send', description: 'Kampanya, şablon, segment ve gönderim analitikleri.' },
             { href: '/super-admin/messaging-quota', label: 'SMS/Mail Kota', icon: 'Layers', description: 'Bayilik havuzu, STK kota tahsisi, kontör paketleri ve bekleyen siparişler.' },

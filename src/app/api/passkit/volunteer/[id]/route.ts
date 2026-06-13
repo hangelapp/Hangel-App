@@ -47,13 +47,19 @@ export async function GET(
 ): Promise<NextResponse> {
   const { id: volunteeringId } = await ctx.params;
   const authHeader = req.headers.get('authorization');
+  // Capacitor WebView blob URL Wallet'ı tetiklemediğinden pkpass sistem tarayıcısında
+  // açılır → token header yoksa ?token= query ile de kabul edilir.
+  const queryToken = req.nextUrl.searchParams.get('token');
+  const rawToken = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice('Bearer '.length).trim()
+    : (queryToken || '');
 
-  // Auth: bearer ID token (event route ile aynı).
+  // Auth: bearer header veya ?token= query (event route ile aynı).
   let uid: string | null = null;
   let userName = 'Gönüllü';
-  if (authHeader?.startsWith('Bearer ')) {
+  if (rawToken) {
     try {
-      const decoded = await getAdminAuth().verifyIdToken(authHeader.slice('Bearer '.length).trim());
+      const decoded = await getAdminAuth().verifyIdToken(rawToken);
       uid = decoded.uid;
       userName = decoded.name ?? decoded.email?.split('@')[0] ?? 'Gönüllü';
     } catch {

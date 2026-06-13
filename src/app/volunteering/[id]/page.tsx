@@ -340,6 +340,15 @@ export default function VolunteeringDetailPage() {
     if (!authUser) return;
     try {
       const idToken = await authUser.getIdToken();
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        // Capacitor WebView'da blob URL Wallet'ı tetiklemez. pkpass'i sistem
+        // tarayıcısında (SFSafariViewController) aç → "Apple Wallet'a Ekle" çıkar.
+        const url = `${window.location.origin}/api/passkit/volunteer/${opportunity.id}?token=${encodeURIComponent(idToken)}`;
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url });
+        return;
+      }
       const res = await fetch(`/api/passkit/volunteer/${opportunity.id}`, {
         headers: { authorization: `Bearer ${idToken}` },
       });
@@ -415,6 +424,15 @@ export default function VolunteeringDetailPage() {
           }
         } catch { /* hava durumu best-effort */ }
       }
+      // Aktivite başlangıç/bitiş epoch — LA'da başlamadan önce geri sayım, sırasında akış-line.
+      const dts = opportunity.dates as { eventStart?: string; eventStartTime?: string; eventEnd?: string; eventEndTime?: string } | undefined;
+      const toEpoch = (d?: string, t?: string): number => {
+        if (!d) return 0;
+        const base = d.slice(0, 10);
+        const s = t ? `${base} ${t}` : base;
+        const dt = parse(s, t ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd', new Date());
+        return isNaN(dt.getTime()) ? 0 : dt.getTime();
+      };
       await startVolunteerTaskActivity({
         taskTitle: opportunity.title,
         ngoName: opportunity.organization || '',
@@ -423,6 +441,8 @@ export default function VolunteeringDetailPage() {
         weatherEmoji,
         weatherTemp,
         organizerLogoUrl: opportunity.organizerLogoUrl || '',
+        activityStartEpoch: toEpoch(dts?.eventStart, dts?.eventStartTime),
+        activityEndEpoch: toEpoch(dts?.eventEnd, dts?.eventEndTime),
       });
     })();
 

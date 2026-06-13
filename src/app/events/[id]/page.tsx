@@ -1,7 +1,7 @@
 'use client';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import { useFirestore, useUser, useCollection, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where, limit } from 'firebase/firestore';
+import { collection, doc, query, where, limit, documentId } from 'firebase/firestore';
 import type { Event as EventType, NGO, StudentClub, User as UserType } from '@/lib/types';
 import { startEventCountdownActivity } from '@/lib/native-live-activity';
 import { getUserEventRole, roleLabelTr } from '@/lib/event-roles';
@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Languages, UserCheck, Clock, Phone, Mail, ChevronRight, Map } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Users, Tag, Download, CheckCircle, Building, Languages, UserCheck, Clock, Phone, Mail, ChevronRight, Map, Mic2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -164,6 +164,21 @@ export default function EventDetailPage() {
     return doc(db, COLLECTIONS.users, authUser.uid);
   }, [db, authUser?.uid]);
   const { data: userData } = useDoc<UserType>(userDocRef);
+
+  // Etkinlik ekibi (konuşmacı/sanatçı/moderatör) — hangel üyesi contributor'ların
+  // fotoğrafı için userId'leri TEK query ile users koleksiyonundan çek (döngüde hook yok).
+  const contributorUids = useMemoFirebase(() => {
+    const uids = (event?.contributors ?? [])
+      .map((c) => c?.userId)
+      .filter((u): u is string => typeof u === 'string' && u.length > 0);
+    return Array.from(new Set(uids)).slice(0, 30);
+  }, [event?.contributors]);
+
+  const contributorUsersQuery = useMemoFirebase(() => {
+    if (!db || contributorUids.length === 0) return null;
+    return query(collection(db, COLLECTIONS.users), where(documentId(), 'in', contributorUids));
+  }, [db, contributorUids]);
+  const { data: contributorUsers } = useCollection<UserType>(contributorUsersQuery);
 
   // FEAT-EVENT-RSVP — subscribe to user's own RSVP doc.
   const resolvedEventId = (eventsBySlug && eventsBySlug[0]?.id) || eventById?.id || null;
@@ -355,6 +370,23 @@ export default function EventDetailPage() {
     ? event.imageUrl
     : 'https://placehold.co/600x800/eee/aaa?text=Etkinlik';
 
+  // Etkinlik ekibi — userId → User eşlemesi (fotoğraf için).
+  // NOT: `Map` adı lucide-react'ten import edildiği için global Map constructor gölgeleniyor → düz Record kullan.
+  const contributors = event.contributors ?? [];
+  const contributorUserById: Record<string, UserType> = {};
+  for (const u of contributorUsers ?? []) {
+    contributorUserById[u.id] = u;
+  }
+  const getInitials = (name: string) =>
+    (name || '')
+      .trim()
+      .split(/\s+/)
+      .map((p) => p[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('')
+      .toLocaleUpperCase('tr') || '?';
+
   return (
     <div className="animate-in fade-in-0 w-full pb-8">
         {/* ===== HERO: A4 portre poster (210/297) + başlık üzerinde, kulüp afişleri için optimize ===== */}
@@ -513,6 +545,40 @@ export default function EventDetailPage() {
                             </CardContent>
                         </Card>
 
+                        {contributors.length > 0 && (
+                        <Card className="glass-surface rounded-3xl border-white/40 shadow-sm">
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-3">
+                                    <Mic2 className="h-5 w-5 text-primary" />
+                                    Etkinlik Ekibi / Konuşmacılar &amp; Sanatçılar
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="divide-y p-0">
+                                {contributors.map((c, i) => {
+                                    const u = c.userId ? contributorUserById[c.userId] : undefined;
+                                    const photo = u?.avatarUrl;
+                                    return (
+                                        <div key={c.userId || `${c.name}-${i}`} className="flex items-center gap-4 py-4 px-4 sm:px-6">
+                                            <Avatar className="h-12 w-12 shrink-0 border">
+                                                {photo && <AvatarImage src={photo} alt={c.name} className="object-cover" />}
+                                                <AvatarFallback className="bg-primary/10 text-primary font-bold">{getInitials(c.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-foreground truncate">{c.name}</p>
+                                                {c.title && (
+                                                    <p className="text-xs text-muted-foreground font-medium truncate">{c.title}</p>
+                                                )}
+                                            </div>
+                                            <Badge variant="secondary" className="shrink-0 text-[10px] font-bold uppercase tracking-wider">
+                                                {roleLabelTr(c.role)}
+                                            </Badge>
+                                        </div>
+                                    );
+                                })}
+                            </CardContent>
+                        </Card>
+                        )}
+
                         <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="rules" className="border-none glass-surface rounded-3xl px-4 sm:px-6">
                                 <AccordionTrigger className="hover:no-underline font-bold text-sm">Etkinlik Kuralları</AccordionTrigger>
@@ -592,6 +658,15 @@ export default function EventDetailPage() {
                   if (!authUser) return;
                   try {
                     const idToken = await authUser.getIdToken();
+                    const { Capacitor } = await import('@capacitor/core');
+                    if (Capacitor.isNativePlatform()) {
+                      // Capacitor WebView'da blob URL Wallet'ı tetiklemez → pkpass'i
+                      // sistem tarayıcısında (SFSafariViewController) aç, Wallet ekleme çıkar.
+                      const url = `${window.location.origin}/api/passkit/event/${resolvedEventId}?token=${encodeURIComponent(idToken)}`;
+                      const { Browser } = await import('@capacitor/browser');
+                      await Browser.open({ url });
+                      return;
+                    }
                     const res = await fetch(`/api/passkit/event/${resolvedEventId}`, {
                       headers: { authorization: `Bearer ${idToken}` },
                     });

@@ -49,6 +49,8 @@ interface HangelLiveActivityPlugin {
     weatherEmoji?: string;
     weatherTemp?: string;
     organizerLogoUrl?: string;
+    activityStartEpoch?: number;
+    activityEndEpoch?: number;
   }): Promise<BaseStartResult>;
   startEventCountdown(opts: {
     eventTitle: string;
@@ -139,6 +141,8 @@ export async function startVolunteerTaskActivity(input: {
   weatherEmoji?: string;
   weatherTemp?: string;
   organizerLogoUrl?: string;
+  activityStartEpoch?: number;
+  activityEndEpoch?: number;
 }): Promise<string | null> {
   if (!Capacitor.isNativePlatform()) return null;
   try {
