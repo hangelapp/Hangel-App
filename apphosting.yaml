@@ -105,18 +105,16 @@ env:
       - RUNTIME
 
   # Google Ads — STK ücretsiz reklam (Faz 1). Basic Access ONAYLI (2026-06-14,
-  # 15.000 işlem/gün). OAuth istemcisi contacts ile PAYLAŞILIYOR (aynı GCP
-  # uygulaması) → CLIENT_ID/SECRET için GOOGLE_CONTACTS_* secret'ları referans
-  # alınır. ÖN KOŞUL: ads redirect URI'si bu OAuth client'a eklenmeli:
-  #   https://hangel.org.tr/api/ngo-admin/ads/google/callback   (+ adwords scope)
-  # NOT: DEVELOPER_TOKEN şimdilik plaintext (Resend paterni; kullanıcı verdi
-  # 2026-06-14) → Secret Manager'a taşı (dev token MCC'ye sabit, klasik rotate yok).
+  # 15.000 işlem/gün). Özel OAuth Web istemcisi "hangel Google Ads"
+  # (1082171206975-g05...; redirect URI + adwords scope console'da hazır).
+  # NOT: CLIENT_SECRET + DEVELOPER_TOKEN şimdilik plaintext (Resend paterni;
+  # kullanıcı 2026-06-14 verdi) → Secret Manager'a taşı + eski ****RmG7 secret'ı sil.
   - variable: GOOGLE_ADS_CLIENT_ID
-    secret: GOOGLE_CONTACTS_CLIENT_ID
+    value: "1082171206975-g05bcmt2k07gvbi43dhh0n8apbpljmnf.apps.googleusercontent.com"
     availability:
       - RUNTIME
   - variable: GOOGLE_ADS_CLIENT_SECRET
-    secret: GOOGLE_CONTACTS_CLIENT_SECRET
+    value: "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"
     availability:
       - RUNTIME
   - variable: GOOGLE_ADS_DEVELOPER_TOKEN
