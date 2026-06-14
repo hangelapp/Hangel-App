@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Loader2, Sparkles } from 'lucide-react';
@@ -17,6 +17,7 @@ import { getCurrentPositionUnified } from '@/lib/native-geolocation';
 import { maybeRequestAttPermission } from '@/lib/native-att';
 import { registerNativePushToken } from '@/lib/native-push';
 import { requestContactsPermission } from '@/lib/native-contacts-permission';
+import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 
 type IntentKey =
   | 'donate'
@@ -54,6 +55,11 @@ export default function WelcomePage() {
   const [step, setStep] = useState<'welcome' | 'intents'>('welcome');
   const [selected, setSelected] = useState<Set<IntentKey>>(new Set());
   const [saving, setSaving] = useState(false);
+
+  // Intent (amaç) ekranı görüntülendiğinde analitik 'view' olayı.
+  useEffect(() => {
+    if (step === 'intents') trackOnboardingStep(firestore, 'intent', 'view');
+  }, [step, firestore]);
 
   if (isUserLoading) {
     return (
@@ -108,6 +114,7 @@ export default function WelcomePage() {
         registerNativePushToken(user.uid).catch(() => null),
         requestContactsPermission().catch(() => null),
       ]);
+      trackOnboardingStep(firestore, 'intent', 'complete', { intents });
       // İlk seçili intent'in nextPath'ı varsa oraya, yoksa /market
       const firstWithPath = INTENT_KEYS.find((k) => selected.has(k) && INTENT_PATHS[k]);
       router.replace((firstWithPath && INTENT_PATHS[firstWithPath]) ?? '/market');
@@ -210,6 +217,19 @@ export default function WelcomePage() {
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : t('welcome.submitButton')}
           </Button>
+          {/* Sürtünmesiz onboarding: kullanıcı amaç seçmeden de doğrudan ana akışa
+              (/market) girebilir. Zorunlu zincire hapsolmaz. */}
+          <button
+            type="button"
+            onClick={() => {
+              trackOnboardingStep(firestore, 'intent', 'skip');
+              router.replace('/market');
+            }}
+            className="w-full text-center text-xs font-bold text-muted-foreground underline underline-offset-4 disabled:opacity-50"
+            disabled={saving}
+          >
+            Şimdilik geç
+          </button>
         </CardContent>
       </Card>
     </div>

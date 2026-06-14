@@ -30,6 +30,7 @@ import type { Volunteering, NGO, User as UserType } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import { COLLECTIONS } from '@/firebase/collections';
 import { scoreMatch, type MatchingUserProfile } from '@/lib/volunteer-matching';
+import { useVerifiedAction } from '@/hooks/use-verified-action';
 import { startVolunteerTaskActivity } from '@/lib/native-live-activity';
 import { socialImpactValueTRY, formatTRY, socialImpactExplanation } from '@/lib/social-impact';
 
@@ -58,6 +59,7 @@ export default function VolunteeringDetailPage() {
   const [profileUrl, setProfileUrl] = useState('');
   const { user: authUser } = useUser();
   const { toast } = useToast();
+  const requireVerifiedEmail = useVerifiedAction();
   const [isApplying, setIsApplying] = useState(false);
   const [weather, setWeather] = useState<WeatherDay[] | null>(null);
   const cardFrontRef = useRef<HTMLDivElement>(null);
@@ -412,6 +414,10 @@ export default function VolunteeringDetailPage() {
         router.push(redirectUrl);
         return;
     }
+
+    // Hassas eylem kapısı: gönüllülük başvurusu için e-posta doğrulaması iste
+    // (yalnız e-posta/password ile kayıt olanlar; telefon/WhatsApp etkilenmez).
+    if (!requireVerifiedEmail()) return;
 
     setIsApplying(true);
     const appRef = collection(db, COLLECTIONS.applications);

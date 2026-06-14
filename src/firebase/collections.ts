@@ -220,6 +220,12 @@ export const COLLECTIONS = {
   // Path: superAdminSettings/{adminUid} — alanlar: notifications.{eventKey}.{channel}: boolean.
   superAdminSettings: 'superAdminSettings',
 
+  // Onboarding funnel analytics — kayıt sonrası adım adım event toplama
+  // (view/complete/skip). Süper-admin /super-admin/onboarding-funnel'da terk
+  // (drop-off) analizini görür. Pre-auth adımlar için anonim create açıktır;
+  // okuma yalnızca super-admin. Bkz. src/lib/onboarding-analytics.ts.
+  onboardingEvents: 'onboardingEvents',
+
   // Outreach / Tanıtım kontak veritabanı. Sivil Toplum Müdürlükleri, kargo
   // şirketleri, mail hizmet sağlayıcıları, manuel eklenen STK/vakıf vd. için
   // outreach kayıtları. registryDernekler + registryVakiflar zaten resmi

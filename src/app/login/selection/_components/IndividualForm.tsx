@@ -20,6 +20,7 @@ import { OtpInput } from '@/components/ui/otp-input';
 // Mail+SMS geri açıldığında: import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLanguageFromPhoneCode } from '@/lib/phone-locale';
 import { reportNonFatalError } from '@/lib/telemetry';
+import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 
 // IndividualForm — extracted verbatim from login/selection/page.tsx (P2-6c).
 // IMPORTANT: auth/Firestore flow MUST stay identical. Do not refactor logic.
@@ -339,6 +340,8 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
             } catch (e) {
                 reportNonFatalError('welcome_send_individual', e);
             }
+            trackOnboardingStep(db, 'register', 'complete', { uid: userId, method: 'email' });
+            trackOnboardingStep(db, 'verify_sent', 'view', { uid: userId });
             setStep('verify-sent');
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Bir hata oluştu.';
@@ -973,8 +976,8 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                     <Mail className="h-8 w-8 text-primary" />
                 </div>
                 <div className="space-y-2">
-                    <h3 className="text-xl font-bold">E-postanızı Doğrulayın</h3>
-                    <p className="text-sm text-muted-foreground">{email} adresine bir doğrulama linki gönderdik.</p>
+                    <h3 className="text-xl font-bold">Hoş geldin!</h3>
+                    <p className="text-sm text-muted-foreground">{email} adresine bir doğrulama linki gönderdik. Dilersen daha sonra doğrulayabilirsin — şimdi devam edebilirsin.</p>
                 </div>
                 <Button className="w-full h-12 rounded-xl font-bold" onClick={() => {
                     // Yeni kullanıcı onboarding zinciri: ngo-selection → profile → volunteer → market
@@ -991,6 +994,7 @@ export const IndividualForm = ({ onComplete }: { onComplete: (isNewUser: boolean
                             }
                         }
                     }
+                    trackOnboardingStep(db, 'verify_sent', 'complete');
                     onComplete(true);
                 }}>Devam Et</Button>
             </div>

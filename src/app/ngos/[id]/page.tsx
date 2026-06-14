@@ -23,6 +23,7 @@ import type { NGO, Post, Volunteering } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS } from '@/firebase/collections';
 import { normalizeDefs, mergeCriteria, computeScore } from '@/lib/transparency';
+import { useVerifiedAction } from '@/hooks/use-verified-action';
 
 // transparency/{adminUid}.criteria[] öğesi — şeffaflık sekmesinde gerçek belge/bilgi.
 interface ProfileCriteriaItem {
@@ -117,6 +118,7 @@ export default function NgoProfilePage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const requireVerifiedEmail = useVerifiedAction();
   const id = params.id as string;
   const db = useFirestore();
 
@@ -192,6 +194,10 @@ export default function NgoProfilePage() {
 
     const current = Array.isArray(userData?.supportedNgos) ? userData!.supportedNgos! : [];
     const isAdding = !isSupporter;
+
+    // Hassas eylem kapısı: bağışçı OLURKEN (eklerken) e-posta doğrulaması iste.
+    // Çıkış serbest. Telefon/WhatsApp ile gelenler etkilenmez.
+    if (isAdding && !requireVerifiedEmail()) return;
 
     // Bağışçı limiti (max 2) + 30 günlük kilit, settings/ngo-selection ile aynı kurallar.
     if (isAdding && current.length >= 2) {

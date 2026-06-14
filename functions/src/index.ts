@@ -137,6 +137,12 @@ export { weeklyEmailDigest } from './email-digest';
 // See ./sms-reminder.ts
 export { eventOneHourSmsReminder } from './sms-reminder';
 
+// Daily 11:00 Europe/Istanbul nudge for users who registered ~24h / ~72h ago
+// but never completed onboarding. Writes notifications doc (push via
+// onNotificationCreated) and stamps the user doc for idempotency.
+// See ./onboarding-nudge.ts
+export { onboardingNudgeCron } from './onboarding-nudge';
+
 // Disaster alert geofence trigger — disasterAlerts/{id} onCreate.
 // Tarama: users.lastKnownLocation ↔ alert.coordinates 50km radius (Haversine).
 // Eşleşenler için notifications doc yaz; onNotificationCreated push gönderir.

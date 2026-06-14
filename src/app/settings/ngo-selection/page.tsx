@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle, Search, Filter, ArrowDownUp, ShieldCheck, ShieldAlert, Loader2, Eye, Calendar, MapPin, Users, Network, HandCoins } from 'lucide-react';
@@ -23,12 +23,15 @@ import type { NGO } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 
 type NgoType = NGO['type'] | 'Tümü';
 
 type UserNgoSelectionData = {
   supportedNgos?: string[];
   lastNgoSelectionChange?: { seconds: number; nanoseconds: number } | { toDate: () => Date } | Date | null;
+  preferences?: { intents?: string[] };
+  personalInfo?: { address?: { city?: string } };
 };
 
 export default function NgoSelectionPage() {
@@ -103,6 +106,15 @@ export default function NgoSelectionPage() {
         }
     }, []);
 
+    // Onboarding STK seçim adımı görüntülendiğinde analitik 'view' (bir kez).
+    const ngoViewTrackedRef = useRef(false);
+    useEffect(() => {
+        if (isOnboarding && db && !ngoViewTrackedRef.current) {
+            ngoViewTrackedRef.current = true;
+            trackOnboardingStep(db, 'ngo_selection', 'view');
+        }
+    }, [isOnboarding, db]);
+
     useEffect(() => {
         if (userData?.supportedNgos) {
             // QR ön seçimini koru: kayıttaki STK'lara ek olarak ref'li STK seçili kalsın.
@@ -147,6 +159,38 @@ export default function NgoSelectionPage() {
         const ext = n as NgoWithLocation;
         return n.contact?.address?.city || ext.address?.city || ext.headquarters?.city;
     }, []);
+
+    // Önerilen STK'lar (onboarding): kullanıcının amaç (intent) ve şehrine göre
+    // 3-5 STK. Eşleşme yoksa popüler/şeffaf STK'lara düş. Sıfırdan listeden
+    // seçtirmek yerine tek tık "Takip et" ile sürtünmeyi azaltır.
+    const recommendedNgos = useMemo(() => {
+        if (!isOnboarding || activeNgos.length === 0) return [];
+        const intents = userData?.preferences?.intents ?? [];
+        const userCity = (userData?.personalInfo?.address?.city || '').toLowerCase();
+        // Amaç → kategori/faydalanıcı anahtar kelime ipuçları (gevşek eşleşme).
+        const intentHints: Record<string, string[]> = {
+            blood: ['kan', 'sağlık', 'saglik'],
+            volunteer: ['gönüllü', 'gonullu', 'eğitim', 'egitim'],
+            donate: [],
+            student_clubs: ['eğitim', 'egitim', 'öğrenci', 'ogrenci', 'gençlik', 'genclik'],
+            library: ['eğitim', 'egitim', 'kültür', 'kultur', 'kütüphane', 'kutuphane'],
+            emergency: ['afet', 'acil', 'arama', 'kurtarma'],
+        };
+        const hints = intents.flatMap(i => intentHints[i] ?? []);
+        const score = (n: typeof activeNgos[number]) => {
+            let s = 0;
+            const hay = `${n.category} ${(n.beneficiaryGroups ?? []).join(' ')}`.toLowerCase();
+            if (hints.some(h => hay.includes(h))) s += 3;
+            if (userCity && (getNgoCity(n) || '').toLowerCase() === userCity) s += 2;
+            // Şeffaflık + bağışçı sayısı küçük tie-breaker.
+            s += Math.min(1, (n.transparencyScore || 0) / 100);
+            s += Math.min(1, (n.stats?.followers || 0) / 10000);
+            return s;
+        };
+        return [...activeNgos]
+            .sort((a, b) => score(b) - score(a))
+            .slice(0, 5);
+    }, [isOnboarding, activeNgos, userData, getNgoCity]);
 
     const allCities = useMemo(
         () => Array.from(new Set(activeNgos.map(n => getNgoCity(n)).filter((c): c is string => !!c))).sort((a, b) => a.localeCompare(b, 'tr')),
@@ -245,6 +289,14 @@ export default function NgoSelectionPage() {
         setSelectedNgos(prev => isSelected ? prev.filter(id => id !== ngoId) : [...prev, ngoId]);
     };
 
+    // "Hepsini geç / Şimdilik geç" — onboarding'de STK seçimini atlayıp doğrudan
+    // ana akışa (/market) geçer. Hiçbir veri yazılmaz; kullanıcı sonra seçebilir.
+    const handleSkipOnboarding = () => {
+        trackOnboardingStep(db, 'ngo_selection', 'skip');
+        try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
+        router.push('/market');
+    };
+
     const handleSave = async () => {
         if (!userDocRef || !db) return;
         // Zorunluluk: en az 2 STK seçilmeli (hem onboarding hem sonradan değişiklik için).
@@ -313,6 +365,7 @@ export default function NgoSelectionPage() {
         // opsiyonel. Direkt /timeline'a yönlendiriyoruz — kullanıcı orada
         // banner ile profil tamamlama daveti görür.
         if (isOnboarding) {
+            trackOnboardingStep(db, 'ngo_selection', 'complete', { count: selectedNgos.length });
             try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
             router.push('/timeline');
         } else {
@@ -339,6 +392,50 @@ export default function NgoSelectionPage() {
                     {isOnboarding ? t('settings_ngo_selection.continueBtn') : t('dashboard.settingsNgoSelection.saveBtn')}
                 </Button>
             </div>
+
+            {/* Onboarding: önerilen STK'lar + "Hepsini geç". Sürtünmesiz akış —
+                kullanıcı sıfırdan listeden seçmek yerine tek tık "Takip et" yapar
+                ya da hepsini geçip doğrudan ana akışa girer. */}
+            {isOnboarding && (
+                <Card className="border-primary/20 bg-primary/5">
+                    <CardHeader className="p-4 pb-2 flex flex-row items-center justify-between gap-2">
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold">Sana önerilenler</p>
+                            <p className="text-xs text-muted-foreground">Tek tıkla takip et, dilersen sonra değiştir.</p>
+                        </div>
+                        <Button variant="ghost" size="sm" className="shrink-0 font-bold text-muted-foreground" onClick={handleSkipOnboarding}>
+                            Hepsini geç
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="p-3 pt-1 space-y-2">
+                        {recommendedNgos.length === 0 ? (
+                            <p className="text-xs text-muted-foreground px-1 py-2">Öneriler yükleniyor...</p>
+                        ) : recommendedNgos.map(ngo => {
+                            const isSel = selectedNgos.includes(ngo.id);
+                            return (
+                                <div key={ngo.id} className="flex items-center gap-3 rounded-xl bg-card p-2">
+                                    <Avatar className="h-9 w-9 bg-muted">
+                                        <AvatarImage src={ngo.avatarUrl} alt={ngo.name} className="object-contain p-0.5" />
+                                        <AvatarFallback className="text-primary font-bold">{ngo.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium truncate">{ngo.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{ngo.category}</p>
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        variant={isSel ? 'default' : 'outline'}
+                                        className="shrink-0 rounded-full font-bold"
+                                        onClick={() => handleNgoSelect(ngo.id)}
+                                    >
+                                        {isSel ? (<><CheckCircle className="h-4 w-4 mr-1" /> Takip ediliyor</>) : 'Takip et'}
+                                    </Button>
+                                </div>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
+            )}
 
             <Alert variant="destructive">
                 <ShieldAlert className="h-4 w-4" />
@@ -593,7 +690,12 @@ export default function NgoSelectionPage() {
                 </CardContent>
             </Card>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end items-center gap-3">
+                {isOnboarding && (
+                    <Button variant="ghost" className="font-bold text-muted-foreground" onClick={handleSkipOnboarding}>
+                        Şimdilik geç
+                    </Button>
+                )}
                 <Button onClick={handleSave}>{isOnboarding ? t('settings_ngo_selection.continueBtn') : t('dashboard.settingsNgoSelection.saveBtn')}</Button>
             </div>
 

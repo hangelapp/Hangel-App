@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { districtsData, neighborhoodsData } from '@/lib/data';
@@ -19,6 +19,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase, updateDocumentNonBlocki
 import { doc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 
 import { FilteredMultiSelect } from './_components/filtered-multi-select';
 import { FilteredSingleSelect } from './_components/filtered-single-select';
@@ -120,6 +121,15 @@ export default function VolunteerSettingsPage() {
   useEffect(() => {
     if (localStorage.getItem('onboardingStep') === 'volunteer') setIsOnboarding(true);
   }, []);
+
+  // Onboarding gönüllülük tercihleri adımı görüntülendiğinde analitik 'view' (bir kez).
+  const volunteerViewTrackedRef = useRef(false);
+  useEffect(() => {
+    if (isOnboarding && db && !volunteerViewTrackedRef.current) {
+      volunteerViewTrackedRef.current = true;
+      trackOnboardingStep(db, 'volunteer_prefs', 'view');
+    }
+  }, [isOnboarding, db]);
 
   useEffect(() => {
     if (!userData) return;
@@ -226,6 +236,8 @@ export default function VolunteerSettingsPage() {
   // burada flag'leyip /market'in açılışında AlertDialog tetiklenir.
   const handleSkipForm = () => {
     if (isOnboarding) {
+      trackOnboardingStep(db, 'volunteer_prefs', 'skip');
+      trackOnboardingStep(db, 'completed', 'complete', { via: 'skip' });
       try {
         localStorage.removeItem('onboardingStep');
         localStorage.setItem('showWelcomeBenefitsPopup', '1');
@@ -312,6 +324,8 @@ export default function VolunteerSettingsPage() {
     }
 
     if (isOnboarding) {
+      trackOnboardingStep(db, 'volunteer_prefs', 'complete');
+      trackOnboardingStep(db, 'completed', 'complete');
       toast({ title: t('dashboard.settingsVolunteer.toastOnboardingSavedTitle'), description: t('dashboard.settingsVolunteer.toastOnboardingSavedDesc') });
       try { localStorage.removeItem('onboardingStep'); } catch { /* noop */ }
       router.push('/settings/volunteer-ngo-selection');

@@ -174,6 +174,7 @@ const superAdminNavSections = [
             { href: '/super-admin/data-enrichment', label: 'Veri Zenginleştirme', icon: 'Sparkles', description: 'STK ve marka profillerini resmi web siteleri, kütük, AI fact-check ve ticari kaynaklardan teyitli bilgilerle otomatik tamamla.' },
             { href: '/super-admin/analytics', label: 'İstatistik, Analizler & Demografi', icon: 'BarChart3', description: 'Platformun genel metrikleri ve STK bazında destekçi demografi profili (yaş, cinsiyet, konum, meslek, ilgi alanları) birleşik panelde.' },
             { href: '/super-admin/activity', label: 'Aktiviteler & İşlem Logu', icon: 'Activity', description: 'Platform genelinde tüm aktivite ve sistem işlemlerinin merkezi listesi.' },
+            { href: '/super-admin/onboarding-funnel', label: 'Onboarding Funnel', icon: 'Layers', description: 'Kayıt sonrası kullanıcıların onboarding adımlarındaki ilerleme ve terk (drop-off) oranlarını gör.' },
         ],
     },
     {

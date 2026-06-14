@@ -67,6 +67,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { COLLECTIONS } from '@/firebase/collections';
 import { useTranslation } from '@/components/providers/language-provider';
+import { trackOnboardingStep } from '@/lib/onboarding-analytics';
 
 export default function ProfileSettingsPage() {
   const router = useRouter();
@@ -96,6 +97,15 @@ export default function ProfileSettingsPage() {
         setIsOnboarding(true);
     }
   }, []);
+
+  // Onboarding profil adımı görüntülendiğinde analitik 'view' (bir kez).
+  const profileViewTrackedRef = useRef(false);
+  useEffect(() => {
+    if (isOnboarding && db && !profileViewTrackedRef.current) {
+      profileViewTrackedRef.current = true;
+      trackOnboardingStep(db, 'profile', 'view');
+    }
+  }, [isOnboarding, db]);
 
   useEffect(() => {
     if (userData) {
@@ -337,6 +347,7 @@ export default function ProfileSettingsPage() {
         toast({ title: t('dashboard.settingsProfile.toastSavedTitle'), description: t('dashboard.settingsProfile.toastSavedDesc') });
 
         if (isOnboarding) {
+            trackOnboardingStep(db, 'profile', 'complete');
             localStorage.setItem('onboardingStep', 'volunteer');
             router.push('/settings/volunteer');
         } else {
@@ -652,13 +663,14 @@ export default function ProfileSettingsPage() {
               size="lg"
               className="px-8 rounded-2xl font-bold border-2"
               onClick={() => {
-                // Onboarding'i atla → direkt timeline (kullanıcı profili sonra
-                // doldurabilir; profil tamamlanma bilgi mesajı ana sayfada görünür).
-                localStorage.removeItem('onboardingStep');
-                router.push('/timeline');
+                // Onboarding'i atla → bir sonraki adıma (gönüllülük tercihleri) geç.
+                // Kullanıcı profili sonra doldurabilir; zincire hapsolmaz.
+                trackOnboardingStep(db, 'profile', 'skip');
+                localStorage.setItem('onboardingStep', 'volunteer');
+                router.push('/settings/volunteer');
               }}
             >
-              Şimdi atla, sonra tamamlarım
+              Şimdilik geç
             </Button>
           )}
           <Button type="submit" size="lg" disabled={isSaving} className="px-12 rounded-2xl font-black shadow-xl">

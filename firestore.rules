@@ -1046,6 +1046,20 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // Onboarding funnel analytics — kayıt/onboarding adım olayları (view/complete/skip).
+    // Pre-auth funnel: register/verify_sent/intent adımları henüz oturum açılmadan
+    // tetiklenebildiği için create herkese açıktır (anonim). Kötüye kullanımı sınırlamak
+    // için yalnızca beklenen alanlar + geçerli step/action enum'u kabul edilir.
+    // Okuma yalnızca super-admin (terk analizi paneli). Güncelleme/silme yasak (append-only).
+    match /onboardingEvents/{eventId} {
+      allow read, list: if isSuperAdmin();
+      allow create: if
+        request.resource.data.step in
+          ['register', 'verify_sent', 'intent', 'ngo_selection', 'profile', 'volunteer_prefs', 'completed'] &&
+        request.resource.data.action in ['view', 'complete', 'skip'];
+      allow update, delete: if false;
+    }
+
     // Global Yazma Erişimi (Sadece Super Admin)
     match /{allPaths=**} {
       allow write: if isSuperAdmin();

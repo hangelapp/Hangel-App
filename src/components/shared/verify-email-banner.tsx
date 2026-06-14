@@ -21,6 +21,12 @@ export function VerifyEmailBanner() {
 
     if (isUserLoading || !user || user.emailVerified || dismissed) return null;
 
+    // Yalnızca e-posta/şifre ile kayıt olan kullanıcıya göster. Telefon/WhatsApp
+    // ile gelenlerin (providerId 'phone' / custom token) e-postası yoktur ya da
+    // pseudo-email'dir → banner gösterilmez.
+    const isPasswordUser = user.providerData?.some((p) => p?.providerId === "password");
+    if (!isPasswordUser) return null;
+
     // Eski telefon pseudo-email hesaplar için banner göstermeye gerek yok.
     if (user.email?.endsWith("@hangel.app") || user.email?.endsWith("@hangel.org")) return null;
 
