@@ -21,65 +21,106 @@ const ROOT = join(__dirname, '..');
 const INPUT = process.argv[2] || '/tmp/library-entries.json';
 const OUTPUT = join(ROOT, 'src/lib/hangel-data-library.json');
 
+// Türkçe-güvenli ASCII katlama: İ/ı/ş/ğ/ü/ö/ç + combining dot (U+0307) sorunlarını
+// giderir. "TİKA".toLowerCase()="ti̇ka" tuzağını ortadan kaldırır.
+function fold(raw) {
+  return (raw || '')
+    .replace(/[İIı]/g, 'i')
+    .replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g').replace(/[üÜ]/g, 'u')
+    .replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c')
+    .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
 // --- Kurum adı normalizasyonu (filtre seçenekleriyle birebir eşleşmeli) ---
+// Anahtarlar fold edilmiş (ASCII, Türkçe karaktersiz) yazılır; dönüş değerleri
+// filtre opsiyonlarıyla AYNI (gerçek Türkçe) olmalı.
 function normInstitution(raw) {
-  const s = (raw || '').toLowerCase();
+  const s = fold(raw);
   const has = (...keys) => keys.some(k => s.includes(k));
+  // Uluslararası
   if (has('oecd')) return 'OECD';
-  if (has('world bank', 'dünya banka', 'dunya banka', 'worldbank')) return 'Dünya Bankası';
+  if (has('world bank', 'dunya banka', 'worldbank')) return 'Dünya Bankası';
   if (has('eurostat')) return 'Eurostat';
-  if (has('undp', 'kalkınma programı', 'kalkinma programi', 'development programme')) return 'UNDP';
-  if (has('ab komisyon', 'european commission', 'avrupa komisyon', 'avrupa birliği', 'avrupa birligi', 'eurofound', 'european union') || s === 'ab') return 'Avrupa Komisyonu';
-  if (has('oic', 'islam işbirliği', 'islam isbirligi', 'islam birliği', 'islam birligi', 'organisation of islamic', 'organization of islamic')) return 'İslam İşbirliği Teşkilatı (OIC)';
+  if (has('undp', 'kalkinma programi', 'development programme')) return 'UNDP';
+  if (has('ab komisyon', 'european commission', 'avrupa komisyon', 'avrupa birligi', 'eurofound', 'european union') || s === 'ab') return 'Avrupa Komisyonu';
+  if (has('oic', 'islam isbirligi', 'islam birligi', 'organisation of islamic', 'organization of islamic')) return 'İslam İşbirliği Teşkilatı (OIC)';
   if (has('sesric')) return 'SESRIC';
   if (has('b lab', 'b corp', 'bcorp', 'b-corp')) return 'B Lab (B Corp)';
-  if (s === 'gem' || has('global entrepreneurship', 'gem ', 'gem,', 'gem)', '(gem')) return 'Global Entrepreneurship Monitor (GEM)';
+  if (s === 'gem' || has('global entrepreneurship', '(gem')) return 'Global Entrepreneurship Monitor (GEM)';
   if (has('charities aid', 'world giving index', 'caf world')) return 'Charities Aid Foundation (CAF)';
   if (has('british council')) return 'British Council';
   if (has('dcms', 'digital, culture', 'community life', 'culture, media')) return 'Birleşik Krallık DCMS';
   if (has('goodera')) return 'Goodera';
-  if (has('tüik', 'tuik', 'turkstat', 'türkiye istatistik')) return 'TÜİK';
-  if (has('tüsev', 'tusev')) return 'TÜSEV';
-  if (has('tübitak', 'tubitak')) return 'TÜBİTAK';
-  if (has('aile ve sosyal')) return 'T.C. Aile ve Sosyal Hizmetler';
-  if (has('içişleri', 'icisleri', 'sivil toplum', 'dernekler dairesi', 'dernek istatist')) return 'T.C. İçişleri Bakanlığı';
-  if (has('sağlık bakan', 'saglik bakan')) return 'T.C. Sağlık Bakanlığı';
-  if (has('milli eğitim', 'milli egitim')) return 'T.C. Milli Eğitim Bakanlığı';
-  if (has('çevre', 'cevre', 'şehircilik')) return 'T.C. Çevre, Şehircilik ve İklim Değişikliği';
+  // Türkiye istatistik & akademi
+  if (has('tuik', 'turkstat', 'turkiye istatistik')) return 'TÜİK';
+  if (has('tusev')) return 'TÜSEV';
+  if (has('tubitak')) return 'TÜBİTAK';
+  // Bağlı kurum/ajanslar — ana bakanlıktan ÖNCE eşleşmeli
+  if (has('afad', 'afet ve acil')) return 'AFAD';
+  if (has('goc idaresi', 'migration management')) return 'Göç İdaresi Başkanlığı';
+  if (has('vakiflar genel', 'vgm', 'vakiflar gm')) return 'Vakıflar Genel Müdürlüğü';
+  if (has('tika', 'turk isbirligi')) return 'TİKA';
+  if (has('diyanet')) return 'Diyanet İşleri Başkanlığı';
+  if (has('kizilay', 'red crescent')) return 'Türk Kızılay';
+  // Ana bakanlıklar
+  if (has('aile ve sosyal', 'sosyal yardimlar', 'sydv', 'butunlesik sosyal yardim', 'engelli ve yasli', 'cocuk hizmetleri', 'kadinin statusu')) return 'T.C. Aile ve Sosyal Hizmetler';
+  if (has('calisma ve sosyal', 'calisma bakan', 'sosyal guvenlik kurumu', 'sgk', 'iskur')) return 'T.C. Çalışma ve Sosyal Güvenlik Bakanlığı';
+  if (has('genclik ve spor', 'gsb', 'genc gonullu')) return 'T.C. Gençlik ve Spor Bakanlığı';
+  if (has('kultur ve turizm')) return 'T.C. Kültür ve Turizm Bakanlığı';
+  if (has('sanayi ve teknoloji', 'sanayi bakan')) return 'T.C. Sanayi ve Teknoloji Bakanlığı';
+  if (has('tarim ve orman')) return 'T.C. Tarım ve Orman Bakanlığı';
+  if (has('ticaret bakan')) return 'T.C. Ticaret Bakanlığı';
+  if (has('disisleri')) return 'T.C. Dışişleri Bakanlığı';
+  if (has('adalet bakan')) return 'T.C. Adalet Bakanlığı';
+  if (has('icisleri', 'sivil toplum', 'dernekler dairesi', 'dernek istatist', 'siviltoplum.gov')) return 'T.C. İçişleri Bakanlığı';
+  if (has('saglik bakan')) return 'T.C. Sağlık Bakanlığı';
+  if (has('milli egitim', 'meb')) return 'T.C. Milli Eğitim Bakanlığı';
+  if (has('cevre', 'sehircilik')) return 'T.C. Çevre, Şehircilik ve İklim Değişikliği';
   if (has('hazine', 'maliye')) return 'T.C. Hazine ve Maliye';
-  if (has('cumhurbaşkanlığı', 'strateji ve bütçe', 'strateji ve butce', ' sbb')) return 'Cumhurbaşkanlığı SBB';
-  if (has('istanbul büyükşehir', 'istanbul buyuksehir', 'ibb')) return 'İstanbul Büyükşehir Belediyesi';
-  if (has('ankara büyükşehir', 'ankara buyuksehir')) return 'Ankara Büyükşehir Belediyesi';
-  if (has('izmir büyükşehir', 'izmir buyuksehir', 'i̇zmir büyükşehir')) return 'İzmir Büyükşehir Belediyesi';
-  if (has('üniversite', 'universite', 'university', 'araştırma merkezi')) return 'Üniversite Araştırması';
+  if (has('cumhurbaskanligi', 'strateji ve butce', 'sbb')) return 'Cumhurbaşkanlığı SBB';
+  // Büyükşehir belediyeleri
+  if (has('istanbul buyuksehir', 'ibb')) return 'İstanbul Büyükşehir Belediyesi';
+  if (has('ankara buyuksehir')) return 'Ankara Büyükşehir Belediyesi';
+  if (has('izmir buyuksehir')) return 'İzmir Büyükşehir Belediyesi';
+  if (has('bursa buyuksehir')) return 'Bursa Büyükşehir Belediyesi';
+  if (has('antalya buyuksehir')) return 'Antalya Büyükşehir Belediyesi';
+  if (has('konya buyuksehir')) return 'Konya Büyükşehir Belediyesi';
+  if (has('gaziantep buyuksehir')) return 'Gaziantep Büyükşehir Belediyesi';
+  if (has('kocaeli buyuksehir')) return 'Kocaeli Büyükşehir Belediyesi';
+  if (has('belediye')) return (raw || '').trim();
+  // Üniversite araştırmaları (spesifik üniversite/merkez adı künyede kalır)
+  if (has('universite', 'university', 'arastirma merkezi', 'kusif', 'edu.tr')) return 'Üniversite Araştırması';
   return (raw || '').trim() || 'Diğer';
 }
 
-const SCOPES = ['Türkiye geneli', 'İstanbul', 'Ankara', 'İzmir', 'Bölgesel', 'AB', 'Uluslararası'];
 function normScope(raw, source) {
-  const s = (raw || '').toLowerCase();
-  if (s.includes('türkiye') || s.includes('turkiye') || s.includes('turkey')) return 'Türkiye geneli';
-  if (s.includes('istanbul') || s.includes('i̇stanbul')) return 'İstanbul';
+  const s = fold(raw);
+  if (s.includes('turkiye') || s.includes('turkey')) return 'Türkiye geneli';
+  if (s.includes('istanbul')) return 'İstanbul';
   if (s.includes('ankara')) return 'Ankara';
-  if (s.includes('izmir') || s.includes('i̇zmir')) return 'İzmir';
-  if (s === 'ab' || s.includes('avrupa birliği') || s.includes('european union') || s.includes(' eu')) return 'AB';
-  if (s.includes('bölge') || s.includes('regional')) return 'Bölgesel';
-  if (SCOPES.map(x => x.toLowerCase()).includes(s)) return raw;
-  // Kurumdan çıkar: TR kurumları → Türkiye geneli; aksi → Uluslararası
-  return source && source.startsWith('T.C.') || ['TÜİK', 'TÜSEV', 'TÜBİTAK', 'Cumhurbaşkanlığı SBB'].includes(source)
-    ? 'Türkiye geneli' : 'Uluslararası';
+  if (s.includes('izmir')) return 'İzmir';
+  if (s === 'ab' || s.includes('avrupa birligi') || s.includes('european union')) return 'AB';
+  if (s.includes('uluslararasi') || s.includes('global') || s.includes('international') || s.includes('dunya')) return 'Uluslararası';
+  if (s.includes('bolge') || s.includes('regional')) return 'Bölgesel';
+  // Kurumdan çıkar: belediye → Bölgesel; TR kamu → Türkiye geneli; aksi → Uluslararası
+  if (source && source.includes('Belediyesi')) return 'Bölgesel';
+  if ((source && (source.startsWith('T.C.') || source.includes('Başkanlığı') || source.includes('Müdürlüğü')))
+      || ['TÜİK', 'TÜSEV', 'TÜBİTAK', 'Cumhurbaşkanlığı SBB', 'AFAD', 'TİKA', 'Türk Kızılay', 'Üniversite Araştırması'].includes(source)) return 'Türkiye geneli';
+  return 'Uluslararası';
 }
 
-const TOPICS = ['Sosyal Fayda', 'Sosyal Etki', 'Sosyal Girişimcilik', 'Sosyal Yardım', 'Gönüllülük', 'Bağışçılık', 'Sosyal Sorunlar', 'Eğitim', 'Sağlık', 'Çevre', 'Afet', 'Göç', 'Yoksulluk', 'Cinsiyet Eşitliği', 'Engellilik', 'Yaşlılık', 'Çocuk Hakları', 'STK Yönetimi'];
+const TOPICS = ['Sosyal Fayda', 'Sosyal Etki', 'Sosyal Girişimcilik', 'Sosyal Yardım', 'Gönüllülük', 'Bağışçılık', 'Sosyal Sorunlar', 'Sivil Toplum', 'Eğitim', 'Sağlık', 'Çevre', 'Afet', 'Göç', 'Yoksulluk', 'Cinsiyet Eşitliği', 'Engellilik', 'Yaşlılık', 'Çocuk Hakları', 'STK Yönetimi'];
 function normTopic(raw) {
-  const s = (raw || '').toLowerCase();
-  if (s.includes('girişim') || s.includes('girisim') || s.includes('entrepreneur') || s.includes('social enterprise')) return 'Sosyal Girişimcilik';
-  if (s.includes('gönül') || s.includes('gonul') || s.includes('volunt')) return 'Gönüllülük';
-  if (s.includes('bağış') || s.includes('bagis') || s.includes('donat') || s.includes('giving') || s.includes('philanthro')) return 'Bağışçılık';
-  if (s.includes('sorun') || s.includes('problem') || s.includes('yoksul') || s.includes('poverty') || s.includes('inequal') || s.includes('eşitsiz')) return 'Sosyal Sorunlar';
+  const s = fold(raw);
+  if (s.includes('girisim') || s.includes('entrepreneur') || s.includes('social enterprise')) return 'Sosyal Girişimcilik';
+  if (s.includes('gonul') || s.includes('volunt')) return 'Gönüllülük';
+  if (s.includes('bagis') || s.includes('donat') || s.includes('giving') || s.includes('philanthro') || s.includes('hayirsever')) return 'Bağışçılık';
+  if (s.includes('sivil toplum') || s.includes('civil society') || s === 'stk' || (s.includes('dernek') && !s.includes('yonet')) || s.includes('vakif')) return 'Sivil Toplum';
+  if (s.includes('sorun') || s.includes('problem') || s.includes('yoksul') || s.includes('poverty') || s.includes('inequal') || s.includes('esitsiz')) return 'Sosyal Sorunlar';
   if (s.includes('fayda')) return 'Sosyal Fayda';
   if (s.includes('etki') || s.includes('impact')) return 'Sosyal Etki';
-  const exact = TOPICS.find(t => t.toLowerCase() === s);
+  const exact = TOPICS.find(t => fold(t) === s);
   return exact || 'Sosyal Etki';
 }
 

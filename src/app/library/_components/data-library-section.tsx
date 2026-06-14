@@ -23,12 +23,24 @@ const FILTERS: FilterDef[] = [
       'İslam İşbirliği Teşkilatı (OIC)', 'SESRIC', 'B Lab (B Corp)',
       'Global Entrepreneurship Monitor (GEM)', 'British Council', 'Birleşik Krallık DCMS', 'Goodera',
       'Charities Aid Foundation (CAF)',
-      // Türkiye kamu & akademi
-      'T.C. İçişleri Bakanlığı', 'T.C. Sağlık Bakanlığı', 'T.C. Aile ve Sosyal Hizmetler',
-      'T.C. Çevre, Şehircilik ve İklim Değişikliği', 'T.C. Milli Eğitim Bakanlığı',
-      'T.C. Hazine ve Maliye', 'TÜİK', 'Cumhurbaşkanlığı SBB',
+      // Türkiye bakanlıkları
+      'T.C. Aile ve Sosyal Hizmetler', 'T.C. İçişleri Bakanlığı',
+      'T.C. Çalışma ve Sosyal Güvenlik Bakanlığı', 'T.C. Gençlik ve Spor Bakanlığı',
+      'T.C. Sağlık Bakanlığı', 'T.C. Milli Eğitim Bakanlığı',
+      'T.C. Çevre, Şehircilik ve İklim Değişikliği', 'T.C. Kültür ve Turizm Bakanlığı',
+      'T.C. Sanayi ve Teknoloji Bakanlığı', 'T.C. Tarım ve Orman Bakanlığı',
+      'T.C. Ticaret Bakanlığı', 'T.C. Dışişleri Bakanlığı', 'T.C. Adalet Bakanlığı',
+      'T.C. Hazine ve Maliye', 'Cumhurbaşkanlığı SBB',
+      // Bağlı kurum / ajanslar
+      'AFAD', 'Göç İdaresi Başkanlığı', 'Vakıflar Genel Müdürlüğü', 'TİKA',
+      'Diyanet İşleri Başkanlığı', 'Türk Kızılay',
+      // Büyükşehir belediyeleri
       'İstanbul Büyükşehir Belediyesi', 'Ankara Büyükşehir Belediyesi',
-      'İzmir Büyükşehir Belediyesi', 'TÜSEV', 'TÜBİTAK', 'Üniversite Araştırması',
+      'İzmir Büyükşehir Belediyesi', 'Bursa Büyükşehir Belediyesi',
+      'Antalya Büyükşehir Belediyesi', 'Konya Büyükşehir Belediyesi',
+      'Gaziantep Büyükşehir Belediyesi', 'Kocaeli Büyükşehir Belediyesi',
+      // Akademi & istatistik
+      'TÜİK', 'TÜSEV', 'TÜBİTAK', 'Üniversite Araştırması',
     ],
   },
   {
@@ -40,7 +52,7 @@ const FILTERS: FilterDef[] = [
     key: 'topic', label: 'topic', type: 'select',
     options: [
       'Sosyal Fayda', 'Sosyal Etki', 'Sosyal Girişimcilik', 'Sosyal Yardım',
-      'Gönüllülük', 'Bağışçılık', 'Sosyal Sorunlar',
+      'Gönüllülük', 'Bağışçılık', 'Sosyal Sorunlar', 'Sivil Toplum',
       'Eğitim', 'Sağlık', 'Çevre', 'Afet', 'Göç', 'Yoksulluk',
       'Cinsiyet Eşitliği', 'Engellilik', 'Yaşlılık', 'Çocuk Hakları', 'STK Yönetimi',
     ],
